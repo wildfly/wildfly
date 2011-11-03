@@ -22,13 +22,13 @@
 
 package org.jboss.as.jpa.classloader;
 
-import org.jboss.modules.ConcurrentClassLoader;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
+
+import org.jboss.modules.ConcurrentClassLoader;
 
 /**
  * Return a new instance of a ClassLoader that the may be used to temporarily load any classes,
@@ -72,7 +72,7 @@ public class TempClassLoader extends ConcurrentClassLoader {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
             byte[] buffer = new byte[1024];
-            for (int i = 0; (i = resource.read(buffer, 0, buffer.length)) != -1;) {
+            for (int i = 0; (i = resource.read(buffer, 0, buffer.length)) != -1; ) {
                 baos.write(buffer, 0, i);
             }
             buffer = baos.toByteArray();

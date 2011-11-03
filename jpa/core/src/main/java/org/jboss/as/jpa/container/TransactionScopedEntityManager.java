@@ -22,13 +22,14 @@
 
 package org.jboss.as.jpa.container;
 
-import org.jboss.as.jpa.transaction.TransactionUtil;
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
+import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import java.util.Map;
 
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+import org.jboss.as.jpa.transaction.TransactionUtil;
 
 /**
  * Transaction scoped entity manager will be injected into SLSB or SFSB beans.  At bean invocation time, they

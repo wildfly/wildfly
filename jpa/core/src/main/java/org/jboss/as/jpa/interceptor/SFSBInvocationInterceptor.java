@@ -22,6 +22,8 @@
 
 package org.jboss.as.jpa.interceptor;
 
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
 import org.jboss.as.jpa.container.SFSBCallStack;
@@ -30,8 +32,6 @@ import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
-
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 /**
  * Stateful session bean Invocation interceptor that is responsible for the SFSBCallStack being set for each

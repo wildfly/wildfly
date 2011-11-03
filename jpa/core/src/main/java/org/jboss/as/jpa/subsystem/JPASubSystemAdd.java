@@ -91,7 +91,8 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler implements Descript
         model.get(CommonAttributes.DEFAULT_DATASOURCE).set(defaultDSNode);
     }
 
-    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws
+        OperationFailedException {
 
         runtimeValidator.validate(operation.resolve());
         final boolean appclient = model.hasDefined(APPCLIENT) && model.get(APPCLIENT).asBoolean();
@@ -100,7 +101,7 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler implements Descript
 
                 // set Hibernate persistence provider as the default provider
                 javax.persistence.spi.PersistenceProviderResolverHolder.setPersistenceProviderResolver(
-                        PersistenceProviderResolverImpl.getInstance());
+                    PersistenceProviderResolverImpl.getInstance());
 
                 // handles parsing of persistence.xml
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_PERSISTENCE_UNIT, new PersistenceUnitParseProcessor());

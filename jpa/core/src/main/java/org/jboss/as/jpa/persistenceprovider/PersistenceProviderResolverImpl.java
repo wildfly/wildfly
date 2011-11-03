@@ -22,10 +22,11 @@
 
 package org.jboss.as.jpa.persistenceprovider;
 
-import javax.persistence.spi.PersistenceProvider;
-import javax.persistence.spi.PersistenceProviderResolver;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import javax.persistence.spi.PersistenceProvider;
+import javax.persistence.spi.PersistenceProviderResolver;
 
 /**
  * Implementation of PersistenceProviderResolver

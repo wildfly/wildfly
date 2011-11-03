@@ -126,8 +126,8 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
             final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
             PersistenceUnitMetadataHolder holder;
             if (deploymentRoot != null &&
-                    (holder = deploymentRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null &&
-                    holder.getPersistenceUnits().size() > 0) {
+                (holder = deploymentRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null &&
+                holder.getPersistenceUnits().size() > 0) {
                 ArrayList<PersistenceUnitMetadataHolder> puList = new ArrayList<PersistenceUnitMetadataHolder>(1);
                 puList.add(holder);
                 JPA_LOGGER.tracef("install persistence unit definition for jar %s", deploymentRoot.getRootName());
@@ -146,8 +146,8 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
             // handle persistence.xml definition in the root of the war
             if (deploymentRoot != null &&
-                    (holder = deploymentRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null &&
-                    holder.getPersistenceUnits().size() > 0) {
+                (holder = deploymentRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null &&
+                holder.getPersistenceUnits().size() > 0) {
                 // assemble and install the PU service
                 puList.add(holder);
             }
@@ -158,7 +158,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
             for (ResourceRoot resourceRoot : resourceRoots) {
                 if (resourceRoot.getRoot().getLowerCaseName().endsWith(".jar")) {
                     if ((holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null
-                            && holder.getPersistenceUnits().size() > 0) {
+                        && holder.getPersistenceUnits().size() > 0) {
 
                         // assemble and install the PU service
                         puList.add(holder);
@@ -196,8 +196,8 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                     ArrayList<PersistenceUnitMetadataHolder> puList = new ArrayList<PersistenceUnitMetadataHolder>(1);
 
                     if (root != null &&
-                            (holder = root.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null &&
-                            holder.getPersistenceUnits().size() > 0) {
+                        (holder = root.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null &&
+                        holder.getPersistenceUnits().size() > 0) {
                         // assemble and install the PU service
                         puList.add(holder);
                     }
@@ -221,7 +221,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
     private void addPuService(DeploymentPhaseContext phaseContext, ResourceRoot resourceRoot,
                               ArrayList<PersistenceUnitMetadataHolder> puList
     )
-            throws DeploymentUnitProcessingException {
+        throws DeploymentUnitProcessingException {
 
         if (puList.size() > 0) {
             final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -308,7 +308,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                             useDefaultDataSource) {
                             final String defaultJtaDataSource = adjustJndi(JPAService.getDefaultDataSourceName());
                             if (defaultJtaDataSource != null &&
-                                    defaultJtaDataSource.length() > 0) {
+                                defaultJtaDataSource.length() > 0) {
                                 builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(defaultJtaDataSource), new CastingInjector<DataSource>(service.getJtaDataSourceInjector(), DataSource.class));
                                 JPA_LOGGER.tracef("%s is using the default data source '%s'", puServiceName, defaultJtaDataSource);
                             }
@@ -324,24 +324,25 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                             final ContextNames.BindInfo bindingInfo = ContextNames.bindInfoFor(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), jndiName);
                             final BinderService binderService = new BinderService(bindingInfo.getBindName());
                             serviceTarget.addService(bindingInfo.getBinderServiceName(), binderService)
-                                    .addDependency(bindingInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
-                                    .addDependency(puServiceName, PersistenceUnitServiceImpl.class, new Injector<PersistenceUnitServiceImpl>() {
-                                        @Override
-                                        public void inject(final PersistenceUnitServiceImpl value) throws InjectionException {
-                                            binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue<Object>(value.getEntityManagerFactory())));
-                                        }
+                                .addDependency(bindingInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
+                                .addDependency(puServiceName, PersistenceUnitServiceImpl.class, new Injector<PersistenceUnitServiceImpl>() {
+                                    @Override
+                                    public void inject(final PersistenceUnitServiceImpl value) throws
+                                        InjectionException {
+                                        binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue<Object>(value.getEntityManagerFactory())));
+                                    }
 
-                                        @Override
-                                        public void uninject() {
-                                            binderService.getNamingStoreInjector().uninject();
-                                        }
-                                    }).install();
+                                    @Override
+                                    public void uninject() {
+                                        binderService.getNamingStoreInjector().uninject();
+                                    }
+                                }).install();
                         }
 
                         builder.setInitialMode(ServiceController.Mode.ACTIVE)
-                                .addInjection(service.getPropertiesInjector(), properties)
-                                .addInjection(persistenceUnitRegistry.getInjector())
-                                .install();
+                            .addInjection(service.getPropertiesInjector(), properties)
+                            .addInjection(persistenceUnitRegistry.getInjector())
+                            .install();
 
                         JPA_LOGGER.tracef("added PersistenceUnitService for '%s'.  PU is ready for injector action.", puServiceName);
                         addManagementConsole(deploymentUnit, pu, service, adaptor);
@@ -377,7 +378,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
      *
      */
     private PersistenceProviderAdaptor getPersistenceProviderAdaptor(final PersistenceUnitMetadata pu, final PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder) throws
-            DeploymentUnitProcessingException {
+        DeploymentUnitProcessingException {
         String adaptorModule = pu.getProperties().getProperty(Configuration.ADAPTER_MODULE);
         PersistenceProviderAdaptor adaptor = null;
         if (persistenceProviderDeploymentHolder != null) {
@@ -387,7 +388,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
             try {
                 if (adaptorModule == null &&
                     (pu.getPersistenceProviderClassName() == null ||
-                     pu.getPersistenceProviderClassName().equals(Configuration.PROVIDER_CLASS_DEFAULT))) {
+                        pu.getPersistenceProviderClassName().equals(Configuration.PROVIDER_CLASS_DEFAULT))) {
                     // if using default provider, load default adapter module
                     adaptorModule = Configuration.ADAPTER_MODULE_DEFAULT;
                 }
@@ -450,21 +451,19 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
     private PersistenceProvider getProviderByName(PersistenceUnitMetadata pu, String persistenceProviderModule) {
         String providerName = pu.getPersistenceProviderClassName();
         List<PersistenceProvider> providers =
-                PersistenceProviderResolverHolder.getPersistenceProviderResolver().getPersistenceProviders();
+            PersistenceProviderResolverHolder.getPersistenceProviderResolver().getPersistenceProviders();
         for (PersistenceProvider provider : providers) {
             if (provider.getClass().getName().equals(providerName)) {
                 if (providerName.equals(Configuration.PROVIDER_CLASS_DEFAULT)) {
-                // could be Hibernate 3 or Hibernate 4 (OGM will not match PROVIDER_CLASS_DEFAULT)
+                    // could be Hibernate 3 or Hibernate 4 (OGM will not match PROVIDER_CLASS_DEFAULT)
                     if (persistenceProviderModule.equals(Configuration.PROVIDER_MODULE_HIBERNATE3)) {
                         if (isHibernate3(provider)) {
                             return provider;            // return Hibernate3 provider
                         }
-                    }
-                    else if (!isHibernate3(provider)) { // looking for Hibernate4
+                    } else if (!isHibernate3(provider)) { // looking for Hibernate4
                         return provider;                // return Hibernate 4 provider
                     }
-                }
-                else {
+                } else {
                     return provider;                    // return the provider that matched classname
                 }
             }
@@ -480,16 +479,16 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
             Class targetCls = provider.getClass().getClassLoader().loadClass("org.hibernate.Version");
             Method m = targetCls.getMethod("getVersionString");
             Object version = m.invoke(null, null);
-            JPA_LOGGER.tracef("lookup provider checking provider version (%s)", version );
+            JPA_LOGGER.tracef("lookup provider checking provider version (%s)", version);
             if (version instanceof String &&
                 ((String) version).startsWith("3.")) {
                 result = true;
             }
+        } catch (ClassNotFoundException ignore) {
+        } catch (NoSuchMethodException ignore) {
+        } catch (InvocationTargetException ignore) {
+        } catch (IllegalAccessException ignore) {
         }
-        catch (ClassNotFoundException ignore) {}
-        catch (NoSuchMethodException ignore) {}
-        catch (InvocationTargetException ignore) {}
-        catch (IllegalAccessException ignore) {}
 
         return result;
     }
@@ -542,15 +541,15 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
     /**
      * add to management console (if ManagementAdapter is supported for provider).
-     *
+     * <p/>
      * full path to management data will be:
-     *
-     *   /deployment=Deployment/subsystem=jpa/hibernate-persistence-unit=FullyAppQualifiedPath#PersistenceUnitName/cache=EntityClassName
-     *
+     * <p/>
+     * /deployment=Deployment/subsystem=jpa/hibernate-persistence-unit=FullyAppQualifiedPath#PersistenceUnitName/cache=EntityClassName
+     * <p/>
      * example of full path:
-     *
-     *  /deployment=jpa_SecondLevelCacheTestCase.jar/subsystem=jpa/hibernate-persistence-unit=jpa_SecondLevelCacheTestCase.jar#mypc/
-     *                                                              cache=org.jboss.as.test.integration.jpa.hibernate.Employee
+     * <p/>
+     * /deployment=jpa_SecondLevelCacheTestCase.jar/subsystem=jpa/hibernate-persistence-unit=jpa_SecondLevelCacheTestCase.jar#mypc/
+     * cache=org.jboss.as.test.integration.jpa.hibernate.Employee
      *
      * @param deploymentUnit
      * @param pu
@@ -579,10 +578,12 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
         }
     }
 
-    /** TODO this is a temporary hack into internals until DeploymentUnit exposes a proper Resource-based API */
+    /**
+     * TODO this is a temporary hack into internals until DeploymentUnit exposes a proper Resource-based API
+     */
     private static Resource getOrCreateResource(final Resource parent, final PathElement element) {
-        synchronized(parent) {
-            if(parent.hasChild(element)) {
+        synchronized (parent) {
+            if (parent.hasChild(element)) {
                 return parent.requireChild(element);
             } else {
                 final Resource resource = Resource.Factory.create();

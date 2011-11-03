@@ -22,15 +22,8 @@
 
 package org.jboss.as.jpa.hibernate3;
 
-import org.hibernate.ejb.packaging.NamedInputStream;
-import org.hibernate.ejb.packaging.Scanner;
-import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.ClassInfo;
-import org.jboss.jandex.DotName;
-import org.jboss.jandex.Index;
-import org.jboss.vfs.VFS;
-import org.jboss.vfs.VirtualFile;
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -43,8 +36,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+import org.hibernate.ejb.packaging.NamedInputStream;
+import org.hibernate.ejb.packaging.Scanner;
+import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.Index;
+import org.jboss.vfs.VFS;
+import org.jboss.vfs.VirtualFile;
 
 /**
  * Annotation scanner for Hibernate
@@ -82,7 +82,7 @@ public class HibernateAnnotationScanner implements Scanner {
             Index index = getJarFileIndex(jartoScan, pu);
             if (index == null) {
                 JPA_LOGGER.tracef("No classes to scan for annotations in jar '%s' (jars with classes '%s')",
-                        jartoScan.getPath(), pu.getAnnotationIndex().keySet());
+                    jartoScan.getPath(), pu.getAnnotationIndex().keySet());
                 return new HashSet<Package>();
             }
             Collection<ClassInfo> allClasses = index.getKnownClasses();
@@ -126,7 +126,7 @@ public class HibernateAnnotationScanner implements Scanner {
         Index index = getJarFileIndex(jartoScan, pu);
         if (index == null) {
             JPA_LOGGER.tracef("No classes to scan for annotations in jar '%s' (jars with classes '%s')",
-                    jartoScan.getPath(), pu.getAnnotationIndex().keySet());
+                jartoScan.getPath(), pu.getAnnotationIndex().keySet());
             return new HashSet<Class<?>>();
         }
         if (annotationsToLookFor == null) {

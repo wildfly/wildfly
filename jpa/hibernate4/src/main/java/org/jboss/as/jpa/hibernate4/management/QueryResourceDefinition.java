@@ -39,45 +39,45 @@ import org.jboss.dmr.ModelType;
 public class QueryResourceDefinition extends SimpleResourceDefinition {
 
     public static final SimpleAttributeDefinition QUERY_NAME = new SimpleAttributeDefinitionBuilder(HibernateManagementAdaptor.ATTRIBUTE_QUERY_NAME, ModelType.STRING)
-            .build();
+        .build();
 
     public static final SimpleAttributeDefinition EXECUTE_COUNT = new SimpleAttributeDefinitionBuilder(HibernateManagementAdaptor.OPERATION_QUERY_EXECUTION_COUNT, ModelType.LONG)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-            .build();
+        .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+        .build();
 
     public static final SimpleAttributeDefinition HIT_COUNT = new SimpleAttributeDefinitionBuilder(HibernateManagementAdaptor.OPERATION_QUERY_CACHE_HIT_COUNT, ModelType.LONG)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-            .build();
+        .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+        .build();
 
     public static final SimpleAttributeDefinition PUT_COUNT = new SimpleAttributeDefinitionBuilder(HibernateManagementAdaptor.OPERATION_QUERY_CACHE_PUT_COUNT, ModelType.LONG)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-            .build();
+        .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+        .build();
 
     public static final SimpleAttributeDefinition MISS_COUNT = new SimpleAttributeDefinitionBuilder(HibernateManagementAdaptor.OPERATION_QUERY_CACHE_MISS_COUNT, ModelType.LONG)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-            .build();
+        .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+        .build();
 
     public static final SimpleAttributeDefinition EXEC_ROW_COUNT = new SimpleAttributeDefinitionBuilder(HibernateManagementAdaptor.OPERATION_QUERY_EXECUTION_ROW_COUNT, ModelType.LONG)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-            .build();
+        .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+        .build();
 
     public static final SimpleAttributeDefinition AVG_TIME = new SimpleAttributeDefinitionBuilder(HibernateManagementAdaptor.OPERATION_QUERY_EXECUTION_AVG_TIME, ModelType.LONG)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-            .build();
+        .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+        .build();
 
     public static final SimpleAttributeDefinition MAX_TIME = new SimpleAttributeDefinitionBuilder(HibernateManagementAdaptor.OPERATION_QUERY_EXECUTION_MAX_TIME, ModelType.LONG)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-            .build();
+        .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+        .build();
 
     public static final SimpleAttributeDefinition MIN_TIME = new SimpleAttributeDefinitionBuilder(HibernateManagementAdaptor.OPERATION_QUERY_EXECUTION_MIN_TIME, ModelType.LONG)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-            .build();
+        .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+        .build();
 
     private final PersistenceUnitServiceRegistry persistenceUnitRegistry;
 
     QueryResourceDefinition(final PersistenceUnitServiceRegistry persistenceUnitRegistry) {
         super(PathElement.pathElement(HibernateDescriptionConstants.QUERYCACHE),
-                HibernateDescriptions.getResourceDescriptionResolver(HibernateDescriptionConstants.QUERY_STATISTICS));
+            HibernateDescriptions.getResourceDescriptionResolver(HibernateDescriptionConstants.QUERY_STATISTICS));
         this.persistenceUnitRegistry = persistenceUnitRegistry;
     }
 

@@ -22,22 +22,22 @@
 
 package org.jboss.as.jpa.container;
 
+import static org.jboss.as.jpa.JpaLogger.ROOT_LOGGER;
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.FlushModeType;
 import javax.persistence.LockModeType;
 import javax.persistence.Query;
-import javax.persistence.TransactionRequiredException;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.metamodel.Metamodel;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
-import static org.jboss.as.jpa.JpaLogger.ROOT_LOGGER;
 
 /**
  * Abstract entity manager used by all container managed entity managers.

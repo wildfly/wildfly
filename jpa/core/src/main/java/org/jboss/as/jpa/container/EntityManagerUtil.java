@@ -22,9 +22,10 @@
 
 package org.jboss.as.jpa.container;
 
+import java.util.Map;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import java.util.Map;
 
 /**
  * EntityManager utilities

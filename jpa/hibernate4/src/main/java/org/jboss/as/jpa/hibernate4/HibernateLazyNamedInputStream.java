@@ -22,12 +22,12 @@
 
 package org.jboss.as.jpa.hibernate4;
 
-import org.hibernate.ejb.packaging.NamedInputStream;
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+import org.hibernate.ejb.packaging.NamedInputStream;
 
 /**
  * Lazy named input stream.

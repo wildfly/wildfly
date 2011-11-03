@@ -40,20 +40,20 @@ import org.jboss.dmr.ModelType;
 public class SecondLevelCacheResourceDefinition extends SimpleResourceDefinition {
 
     public static final SimpleAttributeDefinition HIT_COUNT = new SimpleAttributeDefinitionBuilder("hit-count", ModelType.LONG)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-            .build();
+        .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+        .build();
 
     public static final SimpleAttributeDefinition MISS_COUNT = new SimpleAttributeDefinitionBuilder("miss-count", ModelType.LONG)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-            .build();
+        .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+        .build();
 
     public static final SimpleAttributeDefinition PUT_COUNT = new SimpleAttributeDefinitionBuilder("put-count", ModelType.LONG)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-            .build();
+        .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+        .build();
 
     public static final SimpleAttributeDefinition ELEMENT_COUNT_IN_MEMORY = new SimpleAttributeDefinitionBuilder("element-count-in-memory", ModelType.LONG)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-            .build();
+        .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+        .build();
 
     // size in memory and element count on disk is not supported by org.hibernate.cache.infinispan.impl.BaseRegion
     //public static final SimpleAttributeDefinition ELEMENT_COUNT_ON_DISK = new SimpleAttributeDefinitionBuilder("element-count-on-disk", ModelType.LONG)
@@ -69,7 +69,7 @@ public class SecondLevelCacheResourceDefinition extends SimpleResourceDefinition
 
     SecondLevelCacheResourceDefinition(final PersistenceUnitServiceRegistry persistenceUnitRegistry) {
         super(PathElement.pathElement(HibernateDescriptionConstants.ENTITYCACHE),
-                HibernateDescriptions.getResourceDescriptionResolver(HibernateDescriptionConstants.SECOND_LEVEL_CACHE));
+            HibernateDescriptions.getResourceDescriptionResolver(HibernateDescriptionConstants.SECOND_LEVEL_CACHE));
         this.persistenceUnitRegistry = persistenceUnitRegistry;
     }
 

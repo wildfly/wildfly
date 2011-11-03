@@ -107,7 +107,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
     }
 
     private void processPersistenceAnnotations(final DeploymentUnit deploymentUnit, final EEModuleDescription eeModuleDescription, List<AnnotationInstance> persistenceContexts, final EEApplicationClasses applicationClasses) throws
-            DeploymentUnitProcessingException {
+        DeploymentUnitProcessingException {
 
         for (AnnotationInstance annotation : persistenceContexts) {
             ClassInfo declaringClass = null;
@@ -132,7 +132,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
 
     private void processField(final DeploymentUnit deploymentUnit, final AnnotationInstance annotation, final FieldInfo fieldInfo,
                               final EEModuleClassDescription eeModuleClassDescription) throws
-            DeploymentUnitProcessingException {
+        DeploymentUnitProcessingException {
 
         final String fieldName = fieldInfo.name();
         final AnnotationValue declaredNameValue = annotation.value("name");
@@ -165,7 +165,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
 
     private void processMethod(final DeploymentUnit deploymentUnit, final AnnotationInstance annotation, final MethodInfo methodInfo,
                                final EEModuleClassDescription eeModuleClassDescription) throws
-            DeploymentUnitProcessingException {
+        DeploymentUnitProcessingException {
 
         final String methodName = methodInfo.name();
         if (!methodName.startsWith("set") || methodInfo.args().length != 1) {
@@ -201,7 +201,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
 
     private void processClass(final DeploymentUnit deploymentUnit, final AnnotationInstance annotation,
                               final EEModuleClassDescription eeModuleClassDescription) throws
-            DeploymentUnitProcessingException {
+        DeploymentUnitProcessingException {
 
         final AnnotationValue nameValue = annotation.value("name");
         if (nameValue == null || nameValue.asString().isEmpty()) {
@@ -217,7 +217,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
     }
 
     private InjectionSource getBindingSource(final DeploymentUnit deploymentUnit, final AnnotationInstance annotation, String injectionTypeName, final EEModuleClassDescription classDescription)
-            throws DeploymentUnitProcessingException {
+        throws DeploymentUnitProcessingException {
         PersistenceUnitMetadata pu = getPersistenceUnit(deploymentUnit, annotation, classDescription);
         if (pu == null) {
             return null;
@@ -225,13 +225,13 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         String scopedPuName = pu.getScopedPersistenceUnitName();
         ServiceName puServiceName = getPuServiceName(scopedPuName);
         if (isPersistenceContext(annotation)) {
-            if(pu.getTransactionType() == PersistenceUnitTransactionType.RESOURCE_LOCAL) {
+            if (pu.getTransactionType() == PersistenceUnitTransactionType.RESOURCE_LOCAL) {
                 classDescription.setInvalid(MESSAGES.cannotInjectResourceLocalEntityManager());
                 return null;
             }
             AnnotationValue pcType = annotation.value("type");
             PersistenceContextType type = (pcType == null || PersistenceContextType.TRANSACTION.name().equals(pcType.asString()))
-                    ? PersistenceContextType.TRANSACTION : PersistenceContextType.EXTENDED;
+                ? PersistenceContextType.TRANSACTION : PersistenceContextType.EXTENDED;
 
             Map properties;
             AnnotationValue value = annotation.value("properties");
@@ -254,7 +254,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
     private boolean isExtendedPersistenceContext(final AnnotationInstance annotation) {
         AnnotationValue value = annotation.value("type");
         return annotation.name().local().equals("PersistenceContext") &&
-                (value != null && PersistenceContextType.EXTENDED.name().equals(value.asString()));
+            (value != null && PersistenceContextType.EXTENDED.name().equals(value.asString()));
 
     }
 
@@ -274,7 +274,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
     }
 
     private PersistenceUnitMetadata getPersistenceUnit(final DeploymentUnit deploymentUnit, final AnnotationInstance annotation, EEModuleClassDescription classDescription)
-            throws DeploymentUnitProcessingException {
+        throws DeploymentUnitProcessingException {
 
         final AnnotationValue puName = annotation.value("unitName");
         String searchName = null;   // note:  a null searchName will match the first PU definition found
@@ -282,7 +282,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         if (puName != null) {
             searchName = puName.asString();
         }
-        PersistenceUnitMetadata pu =  PersistenceUnitSearch.resolvePersistenceUnitSupplier(deploymentUnit, searchName);
+        PersistenceUnitMetadata pu = PersistenceUnitSearch.resolvePersistenceUnitSupplier(deploymentUnit, searchName);
         if (null == pu) {
             classDescription.setInvalid(MESSAGES.deploymentUnitNotFound(searchName, deploymentUnit));
             return null;
@@ -291,7 +291,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
     }
 
     private ServiceName getPuServiceName(String scopedPuName)
-            throws DeploymentUnitProcessingException {
+        throws DeploymentUnitProcessingException {
 
         return PersistenceUnitServiceImpl.getPUServiceName(scopedPuName);
     }
