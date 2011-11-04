@@ -46,6 +46,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Logger.Level;
+import org.junit.Ignore;
 import static org.junit.Assert.*;
 
 /**
@@ -134,6 +135,7 @@ public class RootLoggerTestCase extends AbstractMgmtTestBase {
     }
  
     @Test
+    @Ignore("AS7-2385")
     public void testSetRootLogger() throws Exception {
 
         // add new file loger so we can test root logger change

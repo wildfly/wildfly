@@ -21,9 +21,11 @@
  */
 package org.jboss.as.test.integration.management.api.security;
 
+import java.io.PrintWriter;
 import org.jboss.as.test.integration.management.cli.GlobalOpsTestCase;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -80,11 +82,11 @@ public class SecurityDomainTestCase extends AbstractMgmtTestBase {
 
         // specify login module options
         ModelNode loginModule = new ModelNode();
-        loginModule.get("code").set("SimpleUsers");
+        loginModule.get("code").set("Simple");
         loginModule.get("flag").set("required");
-        ModelNode moduleOptions = new ModelNode();
-        moduleOptions.add("testUser", "testPassword");
-        loginModule.get("module-options").set(moduleOptions);
+        //ModelNode moduleOptions = new ModelNode();
+        //moduleOptions.add("testUser", "testPassword");
+        //loginModule.get("module-options").set(moduleOptions);
 
         // add security domain
         ModelNode op = createOpNode("subsystem=security/security-domain=test", "add");
@@ -94,13 +96,30 @@ public class SecurityDomainTestCase extends AbstractMgmtTestBase {
         // deploy secured servlet
         deployer.deploy("secured-servlet");
 
+        // check that the servlet is secured
+        boolean failed = false;
         try {
-            String response = HttpRequest.get(url.toString() + "/SecuredServlet", 10, TimeUnit.SECONDS);
+            String response = HttpRequest.get(url.toString() + "/SecurityDomainTestCase/SecuredServlet", 10, TimeUnit.SECONDS);
         } catch (Exception e) {
-            e.printStackTrace();
+            assertTrue(e.toString().contains("Status 403"));
+            failed = true;
         }
+        assertTrue(failed);
 
+        // check that the security domain is active
+        try {
+            String response = HttpRequest.get(url.toString() + "/SecurityDomainTestCase/SecuredServlet", "test", "test", 10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            assertFalse(e.toString().contains("Status 403"));
+            throw e;
+        }
+        assertTrue(failed);        
+        
         // undeploy servlet
         deployer.undeploy("secured-servlet");
+        
+        // remove security domain
+        op = createOpNode("subsystem=security/security-domain=test", "remove");
+        executeOperation(op);
     }
 }
