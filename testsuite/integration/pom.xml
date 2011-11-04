@@ -109,7 +109,7 @@
         <!-- used to provide an absolute location for the XSLT scripts -->
         <!-- this value is overridden in modules with the correct relative pathname -->
         <xslt.scripts.dir>${basedir}/src/test/xslt</xslt.scripts.dir>
-        
+
         <!-- Enable smoke tests by default -->
         <noSmoke>true</noSmoke>
     </properties>
@@ -347,7 +347,7 @@
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
                                         <arquillian.xml>clustering-arquillian.xml</arquillian.xml>
-                                        <arquillian.launch>clustering-udp-single</arquillian.launch>
+                                        <arquillian.launch>clustering-udp</arquillian.launch>
                                         <!-- Use combine.children="append" to pick up parent properties automatically. -->
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
@@ -458,7 +458,7 @@
                                 <configuration>
                                     <!-- Tests to execute. -->
                                     <includes>
-                                        <include>org/jboss/as/test/integration/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/**/*TestCase*.java</include>
                                     </includes>
                                     <excludes>
                                         <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>

@@ -71,7 +71,6 @@
             </console-handler>
 
             <periodic-rotating-file-handler name="FILE">
-                <level name="INFO"/>
                 <formatter>
                     <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
                 </formatter>
@@ -172,16 +171,7 @@
                 </local-cache>
             </cache-container>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:jacorb:1.0">
-            <orb name="JBoss" print-version="off" giop-minor-version="2">
-                <connection max-managed-buf-size="24" outbuf-cache-timeout="-1"/>
-                <naming root-context="JBoss/Naming/root" export-corbaloc="on"/>
-            </orb>
-            <poa monitoring="off" queue-wait="off">
-                <request-processors pool-size="2" max-threads="8"/>
-            </poa>
-            <interop sun="on" chunk-custom-rmi-valuetypes="on" strict-check-on-tc-creation="off"/>
-        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:jacorb:1.1"/>
         <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
         <subsystem xmlns="urn:jboss:domain:jca:1.0">
             <archive-validation enabled="false" />
@@ -211,7 +201,6 @@
             <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
             <journal-file-size>102400</journal-file-size>
             <journal-min-files>2</journal-min-files>
-            <journal-type>NIO</journal-type>
             <!-- disable messaging persistence -->
             <persistence-enabled>false</persistence-enabled>
 
@@ -406,7 +395,6 @@
         <socket-binding name="jacorb-ssl" port="3529"/>
         <socket-binding name="jmx-connector-registry" interface="management" port="1090"/>
         <socket-binding name="jmx-connector-server" interface="management" port="1091"/>
-        <socket-binding name="jndi" port="1099"/>
         <socket-binding name="messaging" port="5445" />
         <socket-binding name="messaging-throughput" port="5455"/>
         <socket-binding name="osgi-http" interface="management" port="8090"/>

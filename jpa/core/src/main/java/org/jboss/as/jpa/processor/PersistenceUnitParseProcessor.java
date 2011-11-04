@@ -22,6 +22,21 @@
 
 package org.jboss.as.jpa.processor;
 
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
+
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
@@ -39,20 +54,6 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.Index;
 import org.jboss.metadata.parser.util.NoopXmlResolver;
 import org.jboss.vfs.VirtualFile;
-
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 /**
  * Handle parsing of Persistence unit persistence.xml files
@@ -175,8 +176,8 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
                 // look at lib/*.jar files that aren't subdeployments (subdeployments are passed
                 // to deploy(DeploymentPhaseContext)).
                 if (!SubDeploymentMarker.isSubDeployment(resourceRoot) &&
-                        resourceRoot.getRoot().getLowerCaseName().endsWith(JAR_FILE_EXTENSION) &&
-                        resourceRoot.getRoot().getParent().getName().equals(LIB_FOLDER)) {
+                    resourceRoot.getRoot().getLowerCaseName().endsWith(JAR_FILE_EXTENSION) &&
+                    resourceRoot.getRoot().getParent().getName().equals(LIB_FOLDER)) {
                     listPUHolders = new ArrayList<PersistenceUnitMetadataHolder>(1);
                     persistence_xml = resourceRoot.getRoot().getChild(META_INF_PERSISTENCE_XML);
                     parse(persistence_xml, listPUHolders, deploymentUnit, resourceRoot);
@@ -190,11 +191,11 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
     }
 
     private void parse(
-            final VirtualFile persistence_xml,
-            final List<PersistenceUnitMetadataHolder> listPUHolders,
-            final DeploymentUnit deploymentUnit,
-            final ResourceRoot deploymentRoot)
-            throws DeploymentUnitProcessingException {
+        final VirtualFile persistence_xml,
+        final List<PersistenceUnitMetadataHolder> listPUHolders,
+        final DeploymentUnit deploymentUnit,
+        final ResourceRoot deploymentRoot)
+        throws DeploymentUnitProcessingException {
 
         if (persistence_xml.exists() && persistence_xml.isFile()) {
             InputStream is = null;
@@ -228,10 +229,10 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
      * @param puHolder
      */
     private void postParseSteps(
-            final VirtualFile persistence_xml,
-            final PersistenceUnitMetadataHolder puHolder,
-            final DeploymentUnit deploymentUnit,
-            final ResourceRoot resourceRoot) {
+        final VirtualFile persistence_xml,
+        final PersistenceUnitMetadataHolder puHolder,
+        final DeploymentUnit deploymentUnit,
+        final ResourceRoot resourceRoot) {
 
         final Map<URL, Index> annotationIndexes = new HashMap<URL, Index>();
         for (ResourceRoot root : DeploymentUtils.allResourceRoots(deploymentUnit)) {

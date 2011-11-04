@@ -30,7 +30,7 @@ import org.jboss.invocation.InterceptorFactory;
 
 /**
  * Runs early in the SFSB chain, to make sure that SFSB create operations inherit extended persistence contexts properly
- *
+ * <p/>
  * TODO: This is a hack, SFSB XPC inheritance needs a big refactor
  *
  * @author Stuart Douglas

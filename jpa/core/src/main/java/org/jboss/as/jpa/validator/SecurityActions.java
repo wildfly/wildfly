@@ -51,8 +51,7 @@ final class SecurityActions {
     /**
      * Sets context classloader.
      *
-     * @param classLoader
-     *            the classloader
+     * @param classLoader the classloader
      */
     static void setContextClassLoader(final ClassLoader classLoader) {
         if (System.getSecurityManager() == null) {

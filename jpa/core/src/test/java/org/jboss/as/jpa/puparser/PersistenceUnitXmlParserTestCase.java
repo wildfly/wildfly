@@ -21,15 +21,16 @@
  */
 package org.jboss.as.jpa.puparser;
 
-import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
-import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+
+import java.io.StringReader;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
-import java.io.StringReader;
 
-import static org.junit.Assert.assertEquals;
+import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
+import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

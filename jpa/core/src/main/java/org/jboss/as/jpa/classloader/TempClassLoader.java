@@ -22,13 +22,13 @@
 
 package org.jboss.as.jpa.classloader;
 
-import org.jboss.modules.ConcurrentClassLoader;
-import org.jboss.modules.ModuleClassLoader;
-
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
+
+import org.jboss.modules.ConcurrentClassLoader;
 
 /**
  * Return a new instance of a ClassLoader that the may be used to temporarily load any classes,
@@ -37,35 +37,70 @@ import java.util.Enumeration;
  * <p/>
  * TempClassLoader is suitable for implementing javax.persistence.spi.PersistenceUnitInfo.getNewTempClassLoader()
  * <p/>
- * TODO:  prove that loaded application classes aren't visible to PUI.getClassLoader()
  *
  * @author Scott Marlow
+ * @author Antti Laisi
  */
 public class TempClassLoader extends ConcurrentClassLoader {
 
-    private final ModuleClassLoader delegate;
+    private final ClassLoader delegate;
 
-    public TempClassLoader(final ModuleClassLoader delegate) {
+    TempClassLoader(final ClassLoader delegate) {
+        super(null);
         this.delegate = delegate;
     }
 
     @Override
+    protected Class<?> findClass(String name, boolean exportsOnly, boolean resolve) throws ClassNotFoundException {
+
+        Class<?> loaded = findLoadedClass(name);
+        if (loaded != null) {
+            return loaded;
+        }
+
+        // javax.persistence classes must be loaded by module classloader, otherwise
+        // the persistence provider can't read JPA annotations with reflection
+        if (name.startsWith("javax.")) {
+            return Class.forName(name, resolve, delegate);
+        }
+
+        InputStream resource = delegate.getResourceAsStream(name.replace('.', '/') + ".class");
+        if (resource == null) {
+            throw new ClassNotFoundException(name);
+        }
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            byte[] buffer = new byte[1024];
+            for (int i = 0; (i = resource.read(buffer, 0, buffer.length)) != -1; ) {
+                baos.write(buffer, 0, i);
+            }
+            buffer = baos.toByteArray();
+            return defineClass(name, buffer, 0, buffer.length);
+        } catch (IOException e) {
+            throw new ClassNotFoundException(name, e);
+        } finally {
+            try {
+                resource.close();
+            } catch (IOException e) {
+                // ignore
+            }
+        }
+    }
+
+    @Override
     protected URL findResource(String name, boolean exportsOnly) {
-        return delegate.findResource(name, exportsOnly);
+        return delegate.getResource(name);
     }
 
     @Override
     protected Enumeration<URL> findResources(String name, boolean exportsOnly) throws IOException {
-        return delegate.findResources(name, exportsOnly);
+        return delegate.getResources(name);
     }
 
     @Override
     protected InputStream findResourceAsStream(String name, boolean exportsOnly) {
-        return super.findResourceAsStream(name, exportsOnly);
+        return delegate.getResourceAsStream(name);
     }
 
-    @Override
-    protected Class<?> findClass(String className, boolean exportsOnly, boolean resolve) throws ClassNotFoundException {
-        return super.findClass(className, exportsOnly, resolve);
-    }
 }

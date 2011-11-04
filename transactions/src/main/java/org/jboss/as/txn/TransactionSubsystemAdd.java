@@ -25,7 +25,6 @@ package org.jboss.as.txn;
 import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
 
 import java.util.List;
-import java.util.Locale;
 
 import javax.transaction.TransactionSynchronizationRegistry;
 
@@ -34,7 +33,6 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
@@ -44,7 +42,6 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
-import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.InjectionException;
@@ -190,6 +187,23 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         });
         tmBuilder.addListener(verificationHandler);
         controllers.add(tmBuilder.install());
+
+        final BinderService tmLegacyBinderService = new BinderService("TransactionManager");
+        final ServiceBuilder<ManagedReferenceFactory> tmLegacyBuilder = context.getServiceTarget().addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("TransactionManager"), tmLegacyBinderService);
+        tmLegacyBuilder.addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, ServiceBasedNamingStore.class, tmLegacyBinderService.getNamingStoreInjector());
+        tmLegacyBuilder.addDependency(TransactionManagerService.SERVICE_NAME, javax.transaction.TransactionManager.class, new Injector<javax.transaction.TransactionManager>() {
+            @Override
+            public void inject(final javax.transaction.TransactionManager value) throws InjectionException {
+                tmLegacyBinderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue<Object>(value)));
+            }
+
+            @Override
+            public void uninject() {
+                tmLegacyBinderService.getNamingStoreInjector().uninject();
+            }
+        });
+        tmLegacyBuilder.addListener(verificationHandler);
+        controllers.add(tmLegacyBuilder.install());
 
         final BinderService tsrBinderService = new BinderService("TransactionSynchronizationRegistry");
         final ServiceBuilder<ManagedReferenceFactory> tsrBuilder = context.getServiceTarget().addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("TransactionSynchronizationRegistry"), tsrBinderService);

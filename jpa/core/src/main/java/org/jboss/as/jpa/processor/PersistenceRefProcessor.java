@@ -72,7 +72,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
 
     @Override
     protected List<BindingConfiguration> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, final EEApplicationClasses applicationClasses) throws
-            DeploymentUnitProcessingException {
+        DeploymentUnitProcessingException {
         List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
         bindings.addAll(getPersistenceUnitRefs(deploymentUnit, environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription));
         bindings.addAll(getPersistenceContextRefs(deploymentUnit, environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription));
@@ -89,7 +89,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
      * @return The bindings for the environment entries
      */
     private List<BindingConfiguration> getPersistenceUnitRefs(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, ComponentDescription componentDescription) throws
-            DeploymentUnitProcessingException {
+        DeploymentUnitProcessingException {
 
         final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
@@ -142,7 +142,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
      * @return The bindings for the environment entries
      */
     private List<BindingConfiguration> getPersistenceContextRefs(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, ComponentDescription componentDescription) throws
-            DeploymentUnitProcessingException {
+        DeploymentUnitProcessingException {
 
         final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
 
@@ -196,7 +196,8 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
     }
 
 
-    private InjectionSource getPersistenceUnitBindingSource(final DeploymentUnit deploymentUnit, final String unitName) throws DeploymentUnitProcessingException {
+    private InjectionSource getPersistenceUnitBindingSource(final DeploymentUnit deploymentUnit, final String unitName) throws
+        DeploymentUnitProcessingException {
         final String searchName;
         if (isEmpty(unitName)) {
             searchName = null;
@@ -209,7 +210,8 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
         return new PersistenceUnitInjectionSource(puServiceName, deploymentUnit, EntityManagerFactory.class.getName(), pu);
     }
 
-    private InjectionSource getPersistenceContextBindingSource(final DeploymentUnit deploymentUnit, final String unitName, PersistenceContextType type, Map properties) throws DeploymentUnitProcessingException {
+    private InjectionSource getPersistenceContextBindingSource(final DeploymentUnit deploymentUnit, final String unitName, PersistenceContextType type, Map properties) throws
+        DeploymentUnitProcessingException {
         PersistenceUnitMetadata pu = getPersistenceUnit(deploymentUnit, unitName);
         if (pu.getTransactionType() == PersistenceUnitTransactionType.RESOURCE_LOCAL) {
             throw MESSAGES.cannotInjectResourceLocalEntityManager(unitName);
@@ -220,7 +222,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
     }
 
     private PersistenceUnitMetadata getPersistenceUnit(final DeploymentUnit deploymentUnit, final String puName)
-            throws DeploymentUnitProcessingException {
+        throws DeploymentUnitProcessingException {
 
         PersistenceUnitMetadata pu = PersistenceUnitSearch.resolvePersistenceUnitSupplier(deploymentUnit, puName);
         if (null == pu) {
@@ -230,7 +232,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
     }
 
     private ServiceName getPuServiceName(String scopedPuName)
-            throws DeploymentUnitProcessingException {
+        throws DeploymentUnitProcessingException {
 
         return PersistenceUnitServiceImpl.getPUServiceName(scopedPuName);
     }

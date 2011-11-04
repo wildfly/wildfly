@@ -21,10 +21,10 @@
  */
 package org.jboss.as.jpa.subsystem;
 
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 /**
  * @author Scott Marlow

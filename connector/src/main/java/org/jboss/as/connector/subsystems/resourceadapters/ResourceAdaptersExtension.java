@@ -331,16 +331,19 @@ public class ResourceAdaptersExtension implements Extension {
 
             writeNewConfigProperties(streamWriter, conDef);
 
-            if (conDef.hasDefined(MAX_POOL_SIZE.getName()) || conDef.hasDefined(MIN_POOL_SIZE.getName()) || conDef.hasDefined(POOL_USE_STRICT_MIN.getName())
-                    || conDef.hasDefined(POOL_PREFILL.getName())) {
-                if (conDef.hasDefined(INTERLEAVING.getName()) || conDef.hasDefined(WRAP_XA_RESOURCE.getName()) || conDef.hasDefined(NOTXSEPARATEPOOL.getName())
-                        || conDef.hasDefined(PAD_XID.getName()) || conDef.hasDefined(SAME_RM_OVERRIDE.getName())) {
+            if (conDef.hasDefined(MAX_POOL_SIZE.getName()) || conDef.hasDefined(MIN_POOL_SIZE.getName()) ||
+                conDef.hasDefined(POOL_USE_STRICT_MIN.getName()) || conDef.hasDefined(POOL_PREFILL.getName()) ||
+                conDef.hasDefined(POOL_FLUSH_STRATEGY.getName())) {
+                if (conDef.hasDefined(INTERLEAVING.getName()) || conDef.hasDefined(WRAP_XA_RESOURCE.getName()) ||
+                    conDef.hasDefined(NOTXSEPARATEPOOL.getName()) || conDef.hasDefined(PAD_XID.getName()) ||
+                    conDef.hasDefined(SAME_RM_OVERRIDE.getName())) {
+
                     streamWriter.writeStartElement(CommonConnDef.Tag.XA_POOL.getLocalName());
                     MIN_POOL_SIZE.marshallAsElement(conDef, false, streamWriter);
                     MAX_POOL_SIZE.marshallAsElement(conDef, false, streamWriter);
                     POOL_PREFILL.marshallAsElement(conDef, false, streamWriter);
-                    POOL_FLUSH_STRATEGY.marshallAsElement(conDef, false, streamWriter);
                     POOL_USE_STRICT_MIN.marshallAsElement(conDef, false, streamWriter);
+                    POOL_FLUSH_STRATEGY.marshallAsElement(conDef, false, streamWriter);
 
                     SAME_RM_OVERRIDE.marshallAsElement(conDef, false, streamWriter);
                     INTERLEAVING.marshallAsElement(conDef, false, streamWriter);
@@ -355,9 +358,9 @@ public class ResourceAdaptersExtension implements Extension {
                     MAX_POOL_SIZE.marshallAsElement(conDef, false, streamWriter);
                     POOL_PREFILL.marshallAsElement(conDef, false, streamWriter);
                     POOL_USE_STRICT_MIN.marshallAsElement(conDef, false, streamWriter);
+                    POOL_FLUSH_STRATEGY.marshallAsElement(conDef, false, streamWriter);
                     streamWriter.writeEndElement();
                 }
-
             }
 
             if (conDef.hasDefined(APPLICATION.getName()) || conDef.hasDefined(SECURITY_DOMAIN.getName())

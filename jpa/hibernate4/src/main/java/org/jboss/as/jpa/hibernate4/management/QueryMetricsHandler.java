@@ -59,7 +59,7 @@ public abstract class QueryMetricsHandler extends AbstractRuntimeOnlyHandler {
         final String puResourceName = address.getElement(address.size() - 2).getValue();
         final String displayQueryName = address.getLastElement().getValue();
         Statistics stats = ManagementUtility.getStatistics(persistenceUnitRegistry, puResourceName);
-        if ( stats != null) {
+        if (stats != null) {
             String[] originalQueryNames = stats.getQueries();
             if (originalQueryNames != null) {
                 for (String originalQueryName : originalQueryNames) {

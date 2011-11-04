@@ -25,7 +25,6 @@ package org.jboss.as.controller.parsing;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
@@ -47,7 +46,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYS
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
-import static org.jboss.as.controller.parsing.ParseUtils.parsePossibleExpression;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNamespace;
@@ -256,8 +254,19 @@ public class DomainXml extends CommonXml {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case SOCKET_BINDING_GROUP: {
-                    // parse binding-group
-                    parseSocketBindingGroup(reader, interfaces, address, expectedNs, list);
+                    switch (expectedNs) {
+                        case DOMAIN_1_0:
+                            // parse 1.0 socket binding group
+                            this.parseSocketBindingGroup_1_0(reader, interfaces, address, expectedNs, list);
+                            break;
+                        case DOMAIN_1_1:
+                            // parse 1.1 socket binding group
+                            this.parseSocketBindingGroup_1_1(reader, interfaces, address, expectedNs, list);
+                            break;
+                        default:
+                            unexpectedElement(reader);
+
+                    }
                     break;
                 }
                 default: {
@@ -267,18 +276,19 @@ public class DomainXml extends CommonXml {
         }
     }
 
-    void parseSocketBindingGroup(final XMLExtendedStreamReader reader, final Set<String> interfaces, final ModelNode address,
+    void parseSocketBindingGroup_1_0(final XMLExtendedStreamReader reader, final Set<String> interfaces, final ModelNode address,
                                  final Namespace expectedNs, final List<ModelNode> updates) throws XMLStreamException {
         final Set<String> includedGroups = new HashSet<String>();
-        final Set<String> socketBindings = new HashSet<String>();
+        // unique socket-binding names
+        final Set<String> uniqueBindingNames = new HashSet<String>();
 
         // Handle attributes
         final String[] attrValues = requireAttributes(reader, Attribute.NAME.getLocalName(), Attribute.DEFAULT_INTERFACE.getLocalName());
-        final String name = attrValues[0];
+        final String socketBindingGroupName = attrValues[0];
         final String defaultInterface = attrValues[1];
 
         final ModelNode groupAddress = new ModelNode().set(address);
-        groupAddress.add(SOCKET_BINDING_GROUP, name);
+        groupAddress.add(SOCKET_BINDING_GROUP, socketBindingGroupName);
 
         final ModelNode bindingGroupUpdate = new ModelNode();
         bindingGroupUpdate.get(OP_ADDR).set(groupAddress);
@@ -305,8 +315,68 @@ public class DomainXml extends CommonXml {
                 }
                 case SOCKET_BINDING: {
                     final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, updates);
-                    if (!socketBindings.add(bindingName)) {
-                        throw new XMLStreamException("socket-binding " + bindingName + " already declared", reader.getLocation());
+                    if (!uniqueBindingNames.add(bindingName)) {
+                        throw new XMLStreamException("A " + Element.SOCKET_BINDING.getLocalName() +
+                                " " + bindingName + " has already been declared in " + Element.SOCKET_BINDING_GROUP + socketBindingGroupName, reader.getLocation());
+                    }
+                    break;
+                }
+                default:
+                    throw unexpectedElement(reader);
+            }
+        }
+    }
+
+    void parseSocketBindingGroup_1_1(final XMLExtendedStreamReader reader, final Set<String> interfaces, final ModelNode address,
+                                 final Namespace expectedNs, final List<ModelNode> updates) throws XMLStreamException {
+        final Set<String> includedGroups = new HashSet<String>();
+        // both outbound-socket-bindings and socket-binding names
+        final Set<String> uniqueBindingNames = new HashSet<String>();
+
+        // Handle attributes
+        final String[] attrValues = requireAttributes(reader, Attribute.NAME.getLocalName(), Attribute.DEFAULT_INTERFACE.getLocalName());
+        final String socketBindingGroupName = attrValues[0];
+        final String defaultInterface = attrValues[1];
+
+        final ModelNode groupAddress = new ModelNode().set(address);
+        groupAddress.add(SOCKET_BINDING_GROUP, socketBindingGroupName);
+
+        final ModelNode bindingGroupUpdate = new ModelNode();
+        bindingGroupUpdate.get(OP_ADDR).set(groupAddress);
+        bindingGroupUpdate.get(OP).set(ADD);
+
+        SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.parseAndSetParameter(defaultInterface, bindingGroupUpdate, reader.getLocation());
+
+        final ModelNode includes = bindingGroupUpdate.get(INCLUDES);
+        includes.setEmptyList();
+        updates.add(bindingGroupUpdate);
+
+        // Handle elements
+        while (reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case INCLUDE: {
+                    final String includedGroup = readStringAttributeElement(reader, Attribute.SOCKET_BINDING_GROUP.getLocalName());
+                    if (!includedGroups.add(includedGroup)) {
+                        throw new XMLStreamException("Included socket-binding-group " + includedGroup + " already declared", reader.getLocation());
+                    }
+                    SocketBindingGroupResourceDefinition.INCLUDES.parseAndAddParameterElement(includedGroup, bindingGroupUpdate, reader.getLocation());
+                    break;
+                }
+                case SOCKET_BINDING: {
+                    final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, updates);
+                    if (!uniqueBindingNames.add(bindingName)) {
+                        throw new XMLStreamException("A " + Element.SOCKET_BINDING.getLocalName() + " or a " + Element.OUTBOUND_SOCKET_BINDING.getLocalName()
+                                + " " + bindingName + " has already been declared in " + Element.SOCKET_BINDING_GROUP + socketBindingGroupName, reader.getLocation());
+                    }
+                    break;
+                }
+                case OUTBOUND_SOCKET_BINDING: {
+                    final String bindingName = parseOutboundSocketBinding(reader, interfaces, socketBindingGroupName, groupAddress, updates);
+                    if (!uniqueBindingNames.add(bindingName)) {
+                        throw new XMLStreamException("A " + Element.SOCKET_BINDING.getLocalName() + " or a " + Element.OUTBOUND_SOCKET_BINDING.getLocalName()
+                                + " " + bindingName + " has already been declared in " + Element.SOCKET_BINDING_GROUP + socketBindingGroupName, reader.getLocation());
                     }
                     break;
                 }

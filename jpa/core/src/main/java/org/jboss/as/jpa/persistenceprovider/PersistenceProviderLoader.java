@@ -22,14 +22,15 @@
 
 package org.jboss.as.jpa.persistenceprovider;
 
+import java.util.ServiceLoader;
+
+import javax.persistence.spi.PersistenceProvider;
+
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
-
-import javax.persistence.spi.PersistenceProvider;
-import java.util.ServiceLoader;
 
 /**
  * For loading persistence provider modules

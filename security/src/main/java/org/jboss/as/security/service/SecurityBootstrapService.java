@@ -74,6 +74,9 @@ public class SecurityBootstrapService implements Service<Void> {
         if (log.isDebugEnabled())
             log.debug("Starting SecurityBootstrapService");
         try {
+            //Print out the current version of PicketBox
+            log.info("Picketbox version="+org.picketbox.Version.VERSION);
+
             // Get the current Policy impl
             oldPolicy = Policy.getPolicy();
             String provider = SecurityActions.getSystemProperty(JACC_POLICY_PROVIDER,

@@ -26,6 +26,7 @@ import org.jboss.as.cmp.component.CmpEntityBeanComponentDescription;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.deployment.processors.entity.EntityBeanComponentDescriptionFactory;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.metadata.ejb.spec.EntityBeanMetaData;
 import org.jboss.msc.service.ServiceName;
 
@@ -35,6 +36,11 @@ import org.jboss.msc.service.ServiceName;
 public class CmpEntityBeanComponentDescriptionFactory extends EntityBeanComponentDescriptionFactory {
     public CmpEntityBeanComponentDescriptionFactory(boolean appclient) {
         super(appclient);
+    }
+
+    @Override
+    protected void mark(final DeploymentUnit deploymentUnit) {
+        CmpDeploymentMarker.mark(deploymentUnit);
     }
 
     protected boolean shouldProcess(final EntityBeanMetaData entity) {

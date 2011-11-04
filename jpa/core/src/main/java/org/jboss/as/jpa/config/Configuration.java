@@ -120,13 +120,13 @@ public class Configuration {
     public static final String ADAPTER_CLASS = "jboss.as.jpa.adapterClass";
 
     // key = provider class name, value = module name
-    private static final Map<String,String> providerClassToModuleName = new HashMap<String,String>();
+    private static final Map<String, String> providerClassToModuleName = new HashMap<String, String>();
 
     static {
         // always choose the default hibernate version for the Hibernate provider class mapping
         // if the user wants a different version. they can specify the provider module name
         providerClassToModuleName.put(PROVIDER_CLASS_HIBERNATE, PROVIDER_MODULE_HIBERNATE4);
-        providerClassToModuleName.put(PROVIDER_CLASS_HIBERNATE_OGM,PROVIDER_MODULE_HIBERNATE_OGM);
+        providerClassToModuleName.put(PROVIDER_CLASS_HIBERNATE_OGM, PROVIDER_MODULE_HIBERNATE_OGM);
         providerClassToModuleName.put(PROVIDER_CLASS_TOPLINK_ESSENTIALS, PROVIDER_MODULE_TOPLINK);
         providerClassToModuleName.put(PROVIDER_CLASS_TOPLINK, PROVIDER_MODULE_TOPLINK);
         providerClassToModuleName.put(PROVIDER_CLASS_ECLIPSELINK, PROVIDER_MODULE_ECLIPSELINK);

@@ -22,13 +22,13 @@
 package org.jboss.as.jpa.hibernate4;
 
 
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+
 import org.hibernate.service.jta.platform.internal.JtaSynchronizationStrategy;
 import org.hibernate.service.jta.platform.internal.SynchronizationRegistryAccess;
 import org.hibernate.service.jta.platform.internal.SynchronizationRegistryBasedSynchronizationStrategy;
 import org.jboss.as.jpa.spi.JtaManager;
-
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
 
 
 /**
@@ -41,7 +41,7 @@ public class JBossAppServerJtaPlatform extends org.hibernate.service.jta.platfor
 
     public JBossAppServerJtaPlatform(final JtaManager jtaManager) {
         this.jtaManager = jtaManager;
-        this.synchronizationStrategy =  new SynchronizationRegistryBasedSynchronizationStrategy(new SynchronizationRegistryAccess() {
+        this.synchronizationStrategy = new SynchronizationRegistryBasedSynchronizationStrategy(new SynchronizationRegistryAccess() {
             @Override
             public TransactionSynchronizationRegistry getSynchronizationRegistry() {
                 return jtaManager.getSynchronizationRegistry();

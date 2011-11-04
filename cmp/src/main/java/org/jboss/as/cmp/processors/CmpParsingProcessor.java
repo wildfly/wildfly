@@ -22,24 +22,22 @@
 
 package org.jboss.as.cmp.processors;
 
-import java.io.InputStream;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamReader;
 import org.jboss.as.cmp.jdbc.metadata.JDBCApplicationMetaData;
 import org.jboss.as.cmp.jdbc.metadata.parser.JDBCMetaDataParser;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
-import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
-import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
-import org.jboss.metadata.ejb.spec.EntityBeanMetaData;
 import org.jboss.metadata.parser.util.NoopXmlResolver;
 import org.jboss.modules.Module;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
+import java.io.InputStream;
 
 /**
  * @author John Bailey
@@ -48,21 +46,12 @@ public class CmpParsingProcessor implements DeploymentUnitProcessor {
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (!EjbDeploymentMarker.isEjbDeployment(deploymentUnit)) {
+        if (!CmpDeploymentMarker.isCmpDeployment(deploymentUnit)) {
             return;
         }
         final EjbJarMetaData jarMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
         if (jarMetaData == null || jarMetaData.getEnterpriseBeans() == null) {
-            return;
-        }
-        boolean hasCmp = false;
-        for (EnterpriseBeanMetaData beanMetaData : jarMetaData.getEnterpriseBeans()) {
-            if (beanMetaData.isEntity() && EntityBeanMetaData.class.cast(beanMetaData).isCMP()) {
-                hasCmp = true;
-            }
-        }
-        if (!hasCmp) {
-            return;
+            throw new IllegalStateException("Deployment " + deploymentUnit + " illegally marked as a CMP deployment");
         }
 
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);

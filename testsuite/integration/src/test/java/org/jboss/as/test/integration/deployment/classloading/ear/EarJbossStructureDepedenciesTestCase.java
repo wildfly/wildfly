@@ -42,8 +42,17 @@ public class EarJbossStructureDepedenciesTestCase {
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
         ear.addAsModule(war);
+        //test the 1.0 parser
         ear.addAsManifestResource(new StringAsset(
-                "<jboss-deployment-structure><deployment></deployment><sub-deployment name=\"test.war\"><dependencies><module name=\"org.jboss.classfilewriter\" /></dependencies></sub-deployment></jboss-deployment-structure>"),
+                        "<jboss-deployment-structure xmlns=\"urn:jboss:deployment-structure:1.0\">" +
+                        "<deployment>" +
+                        "</deployment>" +
+                        "<sub-deployment name=\"test.war\">" +
+                        "   <dependencies>" +
+                        "       <module name=\"org.jboss.classfilewriter\" />" +
+                        "   </dependencies>" +
+                        "</sub-deployment>" +
+                "</jboss-deployment-structure>"),
                 "jboss-deployment-structure.xml");
         JavaArchive earLib = ShrinkWrap.create(JavaArchive.class, "earLib.jar");
         earLib.addClass(TestBB.class);

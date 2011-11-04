@@ -25,6 +25,13 @@ package org.jboss.as.jpa.injectors;
 
 //import org.hibernate.ejb.EntityManagerFactoryImpl;
 
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+import javax.persistence.EntityManagerFactory;
+
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
@@ -38,12 +45,6 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.ImmediateValue;
-
-import javax.persistence.EntityManagerFactory;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 /**
  * Represents the PersistenceUnit injected into a component.
@@ -92,10 +93,10 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
         private static final String ENTITY_MANAGER_FACTORY_CLASS = "javax.persistence.EntityManagerFactory";
 
         public PersistenceUnitJndiInjectable(
-                final ServiceName puServiceName,
-                final DeploymentUnit deploymentUnit,
-                final String injectionTypeName,
-                final PersistenceUnitMetadata pu) {
+            final ServiceName puServiceName,
+            final DeploymentUnit deploymentUnit,
+            final String injectionTypeName,
+            final PersistenceUnitMetadata pu) {
 
             this.puServiceName = puServiceName;
             this.deploymentUnit = deploymentUnit;
@@ -129,7 +130,7 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
 
                 Object targetValueToInject = null;
                 try {
-                    targetValueToInject = getSessionFactory.invoke(emf,new Object[0]);
+                    targetValueToInject = getSessionFactory.invoke(emf, new Object[0]);
                 } catch (IllegalAccessException e) {
                     throw MESSAGES.cannotGetSessionFactory(e);
                 } catch (InvocationTargetException e) {

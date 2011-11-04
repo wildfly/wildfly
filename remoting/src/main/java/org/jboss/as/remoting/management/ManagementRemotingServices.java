@@ -138,7 +138,7 @@ public final class ManagementRemotingServices extends RemotingServices {
     }
 
     /**
-     * Set up the services to create a channel listener. This assumes that an endpoint called {@link #ENDPOINT} exists.
+     * Set up the services to create a channel listener. This assumes that an endpoint service called {@code endpointName} exists.
      *
      * @param serviceTarget the service target to install the services into
      * @param endpointName the name of the endpoint to install a channel listener into

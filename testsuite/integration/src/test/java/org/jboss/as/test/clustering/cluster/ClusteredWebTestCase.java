@@ -35,6 +35,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
@@ -59,7 +60,8 @@ public class ClusteredWebTestCase {
         // System.out.println("system properties:\n" + sysprops) ;
     }
 
-    @Deployment(name="deployment-0") //@TargetsContainer("clustering-udp-0")
+    @Deployment(name="deployment-0")
+    @TargetsContainer("clustering-udp-0")
     public static Archive<?> deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
         war.addClass(SimpleServlet.class);
@@ -68,7 +70,8 @@ public class ClusteredWebTestCase {
         return war;
     }
 
-    @Test @OperateOnDeployment("deployment-0")
+    @Test
+    @OperateOnDeployment("deployment-0")
     public void test(@ArquillianResource(SimpleServlet.class)URL baseURL) throws ClientProtocolException, IOException {
         DefaultHttpClient client = new DefaultHttpClient();
 

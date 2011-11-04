@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.ejb.timerservice.schedule.descriptor;
 import javax.ejb.Timer;
 import java.util.Date;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Ejb with it's timers managed by a descriptor
@@ -45,7 +46,9 @@ public class DescriptorScheduleBean {
 
     public static boolean awaitTimer(){
         try {
-            latch.await();
+            final boolean success = latch.await(30, TimeUnit.SECONDS);
+            if (!success)
+                throw new IllegalStateException("Timeout method was not called");
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

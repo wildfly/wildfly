@@ -42,6 +42,7 @@ import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.server.Bootstrap;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.SystemExiter;
+import org.jboss.logmanager.handlers.ConsoleHandler;
 import org.jboss.logmanager.log4j.BridgeRepositorySelector;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -73,6 +74,12 @@ public final class Main {
         SecurityActions.addProvider(new JBossSaslProvider());
         SecurityActions.setSystemProperty("log4j.defaultInitOverride", "true");
         new BridgeRepositorySelector().start();
+
+        // Make sure our original stdio is properly captured.
+        try {
+            Class.forName(ConsoleHandler.class.getName(), true, ConsoleHandler.class.getClassLoader());
+        } catch (Throwable ignored) {
+        }
 
         // Install JBoss Stdio to avoid any nasty crosstalk.
         StdioContext.install();
@@ -274,6 +281,6 @@ public final class Main {
     private static final class ParsedOptions {
         ServerEnvironment environment;
         List<String> clientArguments;
-        String hostUrl = "remote://localhost:9999";
+        String hostUrl = "remote://localhost:4447";
     }
 }

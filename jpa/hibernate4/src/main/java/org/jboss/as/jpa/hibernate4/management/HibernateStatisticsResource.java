@@ -22,9 +22,9 @@
 
 package org.jboss.as.jpa.hibernate4.management;
 
-import static org.jboss.as.jpa.hibernate4.management.HibernateDescriptionConstants.ENTITYCACHE;
 import static org.jboss.as.jpa.hibernate4.management.HibernateDescriptionConstants.COLLECTION;
 import static org.jboss.as.jpa.hibernate4.management.HibernateDescriptionConstants.ENTITY;
+import static org.jboss.as.jpa.hibernate4.management.HibernateDescriptionConstants.ENTITYCACHE;
 import static org.jboss.as.jpa.hibernate4.management.HibernateDescriptionConstants.QUERYCACHE;
 
 import java.util.Collections;
@@ -228,8 +228,8 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
     @Override
     public void registerChild(PathElement address, Resource resource) {
         if (ENTITYCACHE.equals(address.getKey()) ||
-            ENTITY.equals(address.getKey())||
-            COLLECTION.equals(address.getKey())||
+            ENTITY.equals(address.getKey()) ||
+            COLLECTION.equals(address.getKey()) ||
             QUERYCACHE.equals(address.getKey())) {
             throw new UnsupportedOperationException(String.format("Resources of type %s cannot be registered", address.getKey()));
         } else {
@@ -240,8 +240,8 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
     @Override
     public Resource removeChild(PathElement address) {
         if (ENTITYCACHE.equals(address.getKey()) ||
-            ENTITY.equals(address.getKey())||
-            COLLECTION.equals(address.getKey())||
+            ENTITY.equals(address.getKey()) ||
+            COLLECTION.equals(address.getKey()) ||
             QUERYCACHE.equals(address.getKey())) {
             throw new UnsupportedOperationException(String.format("Resources of type %s cannot be removed", address.getKey()));
         } else {

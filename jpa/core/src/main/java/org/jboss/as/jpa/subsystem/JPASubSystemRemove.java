@@ -21,11 +21,13 @@
  */
 package org.jboss.as.jpa.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+
 import java.util.Locale;
+
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import org.jboss.dmr.ModelNode;
 
 /**

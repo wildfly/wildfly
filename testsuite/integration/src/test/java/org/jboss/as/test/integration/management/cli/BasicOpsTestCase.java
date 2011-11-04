@@ -32,32 +32,32 @@ import org.junit.runner.RunWith;
  *
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
-@RunWith(Arquillian.class)    
+@RunWith(Arquillian.class)
 public class BasicOpsTestCase {
-    
-    @Test 
+
+    @Test
     public void testConnect() throws Exception {
         CLIWrapper cli = new CLIWrapper(false);
-                        
+
         // wait for cli welcome message
-        String line = cli.readLine(5000);
+        String line = cli.readLine(10000);
         assertTrue("Wrong CLI welcome message:" + line, line.indexOf("You are disconnected") >= 0);
-        
+
         cli.sendLine("connect");
-        
-        line = cli.readLine(1000);
-        assertTrue("Connect failed:" + line, line.indexOf("Connected to standalone") >= 0);          
-        
+
+        line = cli.readLine(5000);
+        assertTrue("Connect failed:" + line, line.indexOf("Connected to standalone") >= 0);
+
         cli.quit();
-       
+
     }
-    
+
     @Test
     public void testLs() throws Exception {
         CLIWrapper cli = new CLIWrapper(true);
         cli.sendLine("ls", true);
-        String ls = cli.readAllUnformated(1000);
-        
+        String ls = cli.readAllUnformated(5000);
+
         assertTrue(ls.contains("subsystem"));
         assertTrue(ls.contains("interface"));
         assertTrue(ls.contains("extension"));
@@ -67,9 +67,9 @@ public class BasicOpsTestCase {
         assertTrue(ls.contains("socket-binding-group"));
         assertTrue(ls.contains("deployment"));
         assertTrue(ls.contains("path"));
-        
+
         cli.quit();
     }
 
-    
+
 }

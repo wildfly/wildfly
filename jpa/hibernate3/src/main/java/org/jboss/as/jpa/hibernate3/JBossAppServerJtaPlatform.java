@@ -21,12 +21,13 @@
  */
 package org.jboss.as.jpa.hibernate3;
 
+import java.util.Properties;
+
+import javax.transaction.TransactionManager;
+
 import org.hibernate.HibernateException;
 import org.hibernate.transaction.JNDITransactionManagerLookup;
 import org.jboss.as.jpa.spi.JtaManager;
-
-import javax.transaction.TransactionManager;
-import java.util.Properties;
 
 
 /**

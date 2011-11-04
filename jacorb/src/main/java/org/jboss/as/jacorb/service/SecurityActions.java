@@ -22,10 +22,10 @@
 
 package org.jboss.as.jacorb.service;
 
-import org.jboss.logging.Logger;
-
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+
+import org.jboss.logging.Logger;
 
 /**
  * <p>

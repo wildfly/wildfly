@@ -22,13 +22,14 @@
 
 package org.jboss.as.jpa.interceptor;
 
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.valves.ValveBase;
 import org.jboss.as.jpa.container.NonTxEmCloser;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
 
 /**
  * Web valve that closes the entity managers created during the servlet invocation.
