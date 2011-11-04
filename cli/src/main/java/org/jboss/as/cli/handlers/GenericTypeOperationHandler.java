@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.as.cli.ArgumentValueConverter;
 import org.jboss.as.cli.CommandArgument;
@@ -66,6 +67,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
     protected final String commandName;
     protected final String type;
     protected final String idProperty;
+    protected final String nodeType;
     protected final OperationRequestAddress nodePath;
     protected final ArgumentWithValue profile;
     protected final ArgumentWithValue name;
@@ -91,6 +93,11 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
     public GenericTypeOperationHandler(String nodeType, String idProperty, List<String> excludeOperations) {
 
         super("generic-type-operation", true);
+
+        if(nodeType == null) {
+            throw new IllegalArgumentException("Node type is null.");
+        }
+        this.nodeType = nodeType;
 
         helpArg = new ArgumentWithoutValue(this, "--help", "-h") {
             @Override
@@ -335,19 +342,43 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
     }
 
     @Override
-    protected void handleResponse(CommandContext ctx, ModelNode opResult) {
-        if (!Util.isSuccess(opResult)) {
-            ctx.printLine(Util.getFailureDescription(opResult));
+    protected void handleResponse(CommandContext ctx, ModelNode opResponse, boolean composite) {
+        if (!Util.isSuccess(opResponse)) {
+            ctx.printLine(Util.getFailureDescription(opResponse));
             return;
         }
-
-        if(opResult.hasDefined(Util.RESULT)) {
-            final ModelNode result = opResult.get(Util.RESULT);
-            final ModelNodeFormatter formatter = ModelNodeFormatter.Factory.forType(result.getType());
-            final StringBuilder buf = new StringBuilder();
-            formatter.format(buf, 0, result);
+        final StringBuilder buf = formatResponse(ctx, opResponse, composite, null);
+        if(buf != null) {
             ctx.printLine(buf.toString());
         }
+    }
+
+    protected StringBuilder formatResponse(CommandContext ctx, ModelNode opResponse, boolean composite, StringBuilder buf) {
+        if(!opResponse.hasDefined(Util.RESULT)) {
+            return null;
+        }
+        final ModelNode result = opResponse.get(Util.RESULT);
+        if(composite) {
+            final Set<String> keys;
+            try {
+                keys = result.keys();
+            } catch(Exception e) {
+                ctx.printLine("Failed to get step results from a composite operation response " + opResponse);
+                e.printStackTrace();
+                return null;
+            }
+            for(String key : keys) {
+                final ModelNode stepResponse = result.get(key);
+                buf = formatResponse(ctx, stepResponse, false, buf); // TODO nested composite ops aren't expected for now
+            }
+        } else {
+            final ModelNodeFormatter formatter = ModelNodeFormatter.Factory.forType(result.getType());
+            if(buf == null) {
+                buf = new StringBuilder();
+            }
+            formatter.format(buf, 0, result);
+        }
+        return buf;
     }
 
     protected ModelNode buildWritePropertyRequest(CommandContext ctx) throws CommandFormatException {
@@ -355,9 +386,9 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         final String name = this.name.getValue(ctx.getParsedCommandLine(), true);
 
         ModelNode composite = new ModelNode();
-        composite.get("operation").set("composite");
-        composite.get("address").setEmptyList();
-        ModelNode steps = composite.get("steps");
+        composite.get(Util.OPERATION).set(Util.COMPOSITE);
+        composite.get(Util.ADDRESS).setEmptyList();
+        ModelNode steps = composite.get(Util.STEPS);
 
         ParsedCommandLine args = ctx.getParsedCommandLine();
 
@@ -468,6 +499,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         return builder.buildRequest();
     }
 
+    @Override
     protected void printHelp(CommandContext ctx) {
 
         ParsedCommandLine args = ctx.getParsedCommandLine();
@@ -609,22 +641,76 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         if(request == null) {
             return;
         }
-        request.get("operation").set("read-resource-description");
-
+        request.get(Util.OPERATION).set(Util.READ_RESOURCE_DESCRIPTION);
+        ModelNode result = null;
         try {
-            ModelNode result = ctx.getModelControllerClient().execute(request);
-            if(!result.hasDefined("result")) {
+            result = ctx.getModelControllerClient().execute(request);
+            if(!result.hasDefined(Util.RESULT)) {
                 ctx.printLine("Node description is not available.");
                 return;
             }
-            result = result.get("result");
-            if(!result.hasDefined("description")) {
+            result = result.get(Util.RESULT);
+            if(!result.hasDefined(Util.DESCRIPTION)) {
                 ctx.printLine("Node description is not available.");
                 return;
             }
-            ctx.printLine(result.get("description").asString());
         } catch (Exception e) {
         }
+
+        final StringBuilder buf = new StringBuilder();
+
+        buf.append("\nSYNOPSIS\n\n");
+        buf.append(commandName).append(" --help [--properties | --commands] |\n");
+        for(int i = 0; i <= commandName.length(); ++i) {
+            buf.append(' ');
+        }
+        buf.append(name.getFullName()).append("=<value> --<property>=<value> (--<property>=<value>)* |\n");
+        for(int i = 0; i <= commandName.length(); ++i) {
+            buf.append(' ');
+        }
+        buf.append("<command> ").append(name.getFullName()).append("=<value> (--<parameter>=<value>)*");
+
+        buf.append("\n\nThe command is used to manage resources of type " + this.nodeType + ".");
+
+        buf.append("\n\nRESOURCE DESCRIPTION\n\n");
+        if(result != null) {
+            buf.append(result.get(Util.DESCRIPTION).asString());
+        } else {
+            buf.append("N/A. Please, open a jira issue at https://issues.jboss.org/browse/AS7 to get this fixed. Thanks!");
+        }
+
+        buf.append("\n\nARGUMENTS\n");
+
+        buf.append("\n--help                - prints this content.");
+        buf.append("\n--help --properties   - prints the list of the resource properties including their access-type");
+        buf.append("\n                        (read/write/metric), value type, and the description.");
+        buf.append("\n--help --commands     - prints the list of the commands available for the resource.");
+        buf.append("\n                        To get the complete description of a specific command (including its parameters,");
+        buf.append("\n                        their types and descriptions), execute ").append(commandName).append(" <command> --help.");
+
+        buf.append("\n\n").append(name.getFullName()).append("   - ");
+        if(idProperty == null) {
+            buf.append("is the name of the resource that completes the path ").append(nodeType).append(" and \n");
+        } else {
+            buf.append("corresponds to a property of the resourse which \n");
+        }
+        for(int i = 0; i < name.getFullName().length() + 5; ++i) {
+            buf.append(' ');
+        }
+        buf.append("is used to identify the resourse against which the command should be executed.");
+
+        buf.append("\n\n<property>   - property name of the resourse whose value should be updated.");
+        buf.append("\n               For a complete list of available property names, their types and descriptions,");
+        buf.append("\n               execute ").append(commandName).append(" --help --properties.");
+
+        buf.append("\n\n<command>    - command name provided by the resourse. For a complete list of available commands,");
+        buf.append("\n               execute ").append(commandName).append(" --help --commands.");
+
+        buf.append("\n\n<parameter>  - parameter name of the <command> provided by the resourse.");
+        buf.append("\n               For a complete list of available parameter names of a specific <command>,");
+        buf.append("\n               their types and descriptions, execute ").append(commandName).append(" <command> --help.");
+
+        ctx.printLine(buf.toString());
     }
 
     protected void printCommands(CommandContext ctx) {
@@ -632,8 +718,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         if(request == null) {
             return;
         }
-        request.get("operation").set("read-operation-names");
-
+        request.get(Util.OPERATION).set(Util.READ_OPERATION_NAMES);
         try {
             ModelNode result = ctx.getModelControllerClient().execute(request);
             if(!result.hasDefined("result")) {
@@ -655,23 +740,21 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         if(request == null) {
             return Collections.emptyList();
         }
-        request.get("operation").set("read-resource-description");
-
+        request.get(Util.OPERATION).set(Util.READ_RESOURCE_DESCRIPTION);
         ModelNode result;
         try {
             result = ctx.getModelControllerClient().execute(request);
         } catch (IOException e) {
             return Collections.emptyList();
         }
-        if(!result.hasDefined("result")) {
+        if(!result.hasDefined(Util.RESULT)) {
             return Collections.emptyList();
         }
-        result = result.get("result");
-        if(!result.hasDefined("attributes")) {
+        result = result.get(Util.RESULT);
+        if(!result.hasDefined(Util.ATTRIBUTES)) {
             return Collections.emptyList();
         }
-
-        return result.get("attributes").asPropertyList();
+        return result.get(Util.ATTRIBUTES).asPropertyList();
     }
 
     protected ModelNode getOperationDescription(CommandContext ctx, String operationName) throws IOException {
@@ -679,26 +762,25 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         if(request == null) {
             return null;
         }
-        request.get("operation").set("read-operation-description");
-        request.get("name").set(operationName);
-
+        request.get(Util.OPERATION).set(Util.READ_OPERATION_DESCRIPTION);
+        request.get(Util.NAME).set(operationName);
         ModelNode result = ctx.getModelControllerClient().execute(request);
-        if (!result.hasDefined("result")) {
+        if (!result.hasDefined(Util.RESULT)) {
             return null;
         }
-        return result.get("result");
+        return result.get(Util.RESULT);
     }
 
     protected ModelNode initRequest(CommandContext ctx) {
         ModelNode request = new ModelNode();
-        ModelNode address = request.get("address");
+        ModelNode address = request.get(Util.ADDRESS);
         if(ctx.isDomainMode()) {
             final String profileName = profile.getValue(ctx.getParsedCommandLine());
             if(profile == null) {
                 ctx.printLine("--profile argument is required to get the node description.");
                 return null;
             }
-            address.add("profile", profileName);
+            address.add(Util.PROFILE, profileName);
         }
         for(OperationRequestAddress.Node node : nodePath) {
             address.add(node.getType(), node.getName());
