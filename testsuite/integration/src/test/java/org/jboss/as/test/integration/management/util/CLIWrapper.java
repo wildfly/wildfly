@@ -81,9 +81,12 @@ public class CLIWrapper implements Runnable {
         //connect
 
         // wait for cli welcome message
-        String line = readLine(5000);
-        assertTrue("Wrong CLI welcome message:" + line, line.indexOf("You are disconnected") >= 0);
-
+        String line = readLine(10000);
+        
+        while(! line.contains("You are disconnected")) {
+            line = readLine(10000);
+        }
+        
         sendLine("connect", false);
         line = readLine(5000);
 
@@ -153,37 +156,45 @@ public class CLIWrapper implements Runnable {
 
     /**
      * Consumes all available output from CLI.
-     * @param timeout number of milliseconds to wait for each subsequent line
+     * @param timeout number of milliseconds to wait for first line
+     * @param lineTimeout number of milliseconds to wait for each subsequent line
      * @return array of CLI output lines
      */
-    public String[] readAll(long timeout) {
+    public String[] readAll(long timeout, long lineTimeout) {
         Vector<String> lines = new Vector<String>();
-        String line = null;
-        do {
-            try {
-                line = outputQueue.poll(timeout, TimeUnit.MILLISECONDS);
-                if (line != null) lines.add(line);
-            } catch (InterruptedException ioe) {}
+        try {
+            String line = outputQueue.poll(timeout, TimeUnit.MILLISECONDS);
+            while (line != null) {
+                lines.add(line);
+                line = outputQueue.poll(lineTimeout, TimeUnit.MILLISECONDS);                
+            }
+        } catch (InterruptedException ioe) {}
 
-        } while (line != null);
         return lines.toArray(new String[]{});
     }
 
     /**
      * Consumes all available output from CLI.
-     * @param timeout number of milliseconds to wait for each subsequent line
+     * @param timeout number of milliseconds to wait for first line
+     * @param lineTimeout number of milliseconds to wait for each subsequent line
      * @return array of CLI output lines
      */
-    public String readAllUnformated(long timeout) {
-        String[] lines = readAll(timeout);
+    public String readAllUnformated(long timeout, long lineTimeout) {
+        String[] lines = readAll(timeout, lineTimeout);
         StringBuilder buf = new StringBuilder();
         for(String line : lines) buf.append(line + " ");
         return buf.toString();
 
     }
 
-    public CLIOpResult readAllAsOpResult(long timeout) throws Exception {
-        String output = readAllUnformated(timeout);
+    /**
+     * Consumes all available output from CLI and converts the output to ModelNode operation format     
+     * @param timeout number of milliseconds to wait for first line
+     * @param lineTimeout number of milliseconds to wait for each subsequent line
+     * @return array of CLI output lines
+     */    
+    public CLIOpResult readAllAsOpResult(long timeout, long lineTimeout) throws Exception {
+        String output = readAllUnformated(timeout, lineTimeout);
         StreamTokenizer st = new StreamTokenizer(new StringReader(output));
         st.resetSyntax();
         st.whitespaceChars(' ', ' ');

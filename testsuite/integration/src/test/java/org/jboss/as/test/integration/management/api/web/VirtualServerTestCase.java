@@ -119,6 +119,9 @@ public class VirtualServerTestCase extends AbstractMgmtTestBase {
         }
         assertTrue("Deployment also on defaul server. " , failed);
         
+        // undeploy form virtual server
+        deployer.undeploy("vsdeployment");
+        
         // remove virtual server
         removeVirtualServer();
         
