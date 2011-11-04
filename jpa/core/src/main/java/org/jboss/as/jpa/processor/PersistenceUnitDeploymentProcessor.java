@@ -105,11 +105,8 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
     private final PersistenceUnitRegistryImpl persistenceUnitRegistry;
 
-    private final boolean appclient;    // true if we are running in EE appclient
-
-    public PersistenceUnitDeploymentProcessor(final PersistenceUnitRegistryImpl persistenceUnitRegistry, final boolean appclient) {
+    public PersistenceUnitDeploymentProcessor(final PersistenceUnitRegistryImpl persistenceUnitRegistry) {
         this.persistenceUnitRegistry = persistenceUnitRegistry;
-        this.appclient = appclient;
     }
 
 
@@ -290,8 +287,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                         final String jtaDataSource = adjustJndi(pu.getJtaDataSourceName());
                         final String nonJtaDataSource = adjustJndi(pu.getNonJtaDataSourceName());
 
-                        if (!appclient &&   // JTA datasource is not required in EE appclient
-                            jtaDataSource != null && jtaDataSource.length() > 0) {
+                        if (jtaDataSource != null && jtaDataSource.length() > 0) {
                             if (jtaDataSource.startsWith("java:")) {
                                 builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, jtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getJtaDataSourceInjector()));
                                 useDefaultDataSource = false;
@@ -310,8 +306,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                             }
                         }
                         // JPA 2.0 8.2.1.5, container provides default JTA datasource
-                        if (!appclient &&   // JTA datasource is not required in EE appclient, so no default JTA datasource
-                            useDefaultDataSource) {
+                        if (useDefaultDataSource) {
                             final String defaultJtaDataSource = adjustJndi(JPAService.getDefaultDataSourceName());
                             if (defaultJtaDataSource != null &&
                                 defaultJtaDataSource.length() > 0) {
