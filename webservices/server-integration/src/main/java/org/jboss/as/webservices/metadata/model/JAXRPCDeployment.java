@@ -24,20 +24,4 @@ package org.jboss.as.webservices.metadata.model;
 /**
  * @author <a href="ropalka@redhat.com">Richard Opalka</a>
  */
-public interface WSEndpoint {
-
-   /**
-    * Web service endpoint name.
-    *
-    * @return endpoint name
-    */
-   String getName();
-
-   /**
-    * Web service endpoint implementation class name.
-    *
-    * @return enpoint class name
-    */
-   String getClassName();
-
-}
+public final class JAXRPCDeployment extends AbstractDeployment {}

@@ -21,46 +21,7 @@
  */
 package org.jboss.as.webservices.metadata.model;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
 /**
  * @author <a href="ropalka@redhat.com">Richard Opalka</a>
  */
-public final class JAXWSDeployment {
-
-    private final List<EJBEndpoint> ejbEndpoints = new LinkedList<EJBEndpoint>();
-    private final List<EJBEndpoint> unmodifiableEjbEndpoints = Collections.unmodifiableList(ejbEndpoints);
-    private final List<POJOEndpoint> pojoEndpoints = new LinkedList<POJOEndpoint>();
-    private final List<POJOEndpoint> unmodifiablePojoEndpoints = Collections.unmodifiableList(pojoEndpoints);
-    private final Map<String, String> urlPatternToClassMapping = new HashMap<String, String>();
-
-    public List<EJBEndpoint> getEjbEndpoints() {
-        return unmodifiableEjbEndpoints;
-    }
-
-    public List<POJOEndpoint> getPojoEndpoints() {
-        return unmodifiablePojoEndpoints;
-    }
-
-    public void addEndpoint(final EJBEndpoint ep) {
-        ejbEndpoints.add(ep);
-    }
-
-    public void addEndpoint(final POJOEndpoint ep) {
-        final String urlPattern = ep.getUrlPattern();
-        final String className = ep.getClassName();
-        if (urlPatternToClassMapping.keySet().contains((urlPattern))) {
-            final String clazz = urlPatternToClassMapping.get(urlPattern);
-            throw new IllegalArgumentException("Web Service endpoint " + clazz + " with URL pattern " + urlPattern + " is already registered. " +
-                "Web service endpoint " + ep.getClassName() + " is requesting the same URL pattern.");
-        } else {
-            urlPatternToClassMapping.put(urlPattern, className);
-            pojoEndpoints.add(ep);
-        }
-    }
-
-}
+public final class JAXWSDeployment extends AbstractDeployment {}

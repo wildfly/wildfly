@@ -21,8 +21,14 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
+import static org.jboss.as.webservices.util.ASHelper.getJBossWebMetaData;
+import static org.jboss.as.webservices.util.ASHelper.getOptionalAttachment;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.CLASSLOADER_KEY;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.DEPLOYMENT_KEY;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXRPC_ENDPOINTS_KEY;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXWS_ENDPOINTS_KEY;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.JBOSS_WEBSERVICES_METADATA_KEY;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.WEBSERVICES_METADATA_KEY;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -30,14 +36,19 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.webservices.metadata.model.JAXRPCDeployment;
+import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.VirtualFileAdaptor;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.ejb.spec.EjbJarMetaData;
+import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.ws.common.ResourceLoaderAdapter;
@@ -50,6 +61,8 @@ import org.jboss.wsf.spi.deployment.DeploymentType;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.deployment.EndpointType;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
+import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
+import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
 
 /**
  * Base class for all deployment model builders.
@@ -99,11 +112,33 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
             } catch (DeploymentUnitProcessingException e) {
                 throw new RuntimeException(e);
             }
-            dep.addAttachment(DeploymentUnit.class, unit);
-            unit.putAttachment(DEPLOYMENT_KEY, dep);
+            propagateAttachments(unit, dep);
         }
 
         this.build(dep, unit);
+    }
+
+    private void propagateAttachments(final DeploymentUnit unit, final ArchiveDeployment dep) {
+        dep.addAttachment(DeploymentUnit.class, unit);
+        unit.putAttachment(DEPLOYMENT_KEY, dep);
+
+        final JBossWebMetaData webMD = getJBossWebMetaData(unit);
+        dep.addAttachment(JBossWebMetaData.class, webMD);
+
+        final WebservicesMetaData webservicesMD = getOptionalAttachment(unit, WEBSERVICES_METADATA_KEY);
+        dep.addAttachment(WebservicesMetaData.class, webservicesMD);
+
+        final JBossWebservicesMetaData jbossWebservicesMD = getOptionalAttachment(unit, JBOSS_WEBSERVICES_METADATA_KEY);
+        dep.addAttachment(JBossWebservicesMetaData.class, jbossWebservicesMD);
+
+        final JAXWSDeployment jaxwsDeployment = getOptionalAttachment(unit, JAXWS_ENDPOINTS_KEY);
+        dep.addAttachment(JAXWSDeployment.class, jaxwsDeployment);
+
+        final JAXRPCDeployment jaxrpcDeployment = getOptionalAttachment(unit, JAXRPC_ENDPOINTS_KEY);
+        dep.addAttachment(JAXRPCDeployment.class, jaxrpcDeployment);
+
+        final EjbJarMetaData ejbJarMD = getOptionalAttachment(unit, EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
+        dep.addAttachment(EjbJarMetaData.class, ejbJarMD);
     }
 
     /**

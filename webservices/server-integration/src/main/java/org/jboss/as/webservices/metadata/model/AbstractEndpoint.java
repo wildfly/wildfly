@@ -22,31 +22,24 @@
 package org.jboss.as.webservices.metadata.model;
 
 /**
- * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author <a href="ropalka@redhat.com">Richard Opalka</a>
  */
-public final class POJOEndpoint extends AbstractEndpoint {
+abstract class AbstractEndpoint {
 
-    private final String urlPattern;
-    private final boolean isDeclared;
+    private final String name;
+    private final String className;
 
-    public POJOEndpoint(final String name, final String className, final String urlPattern) {
-        super(name, className);
-        this.urlPattern = urlPattern;
-        isDeclared = true;
+    protected AbstractEndpoint(final String name, final String className) {
+        this.name = name;
+        this.className = className;
     }
 
-    public POJOEndpoint(final String className, final String urlPattern) {
-        super(className, className);
-        this.urlPattern = urlPattern;
-        this.isDeclared = false;
+    public final String getName() {
+        return name;
     }
 
-    public String getUrlPattern() {
-        return urlPattern;
-    }
-
-    public boolean isDeclared() {
-        return isDeclared;
+    public final String getClassName() {
+        return className;
     }
 
 }

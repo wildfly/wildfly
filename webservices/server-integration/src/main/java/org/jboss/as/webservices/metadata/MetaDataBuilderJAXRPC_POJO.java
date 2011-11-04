@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2006, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,34 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.webservices.metadata.model;
+
+package org.jboss.as.webservices.metadata;
+
+import static org.jboss.as.webservices.util.ASHelper.getJaxrpcPojos;
+
+import java.util.List;
+
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.webservices.metadata.model.POJOEndpoint;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public final class POJOEndpoint extends AbstractEndpoint {
+final class MetaDataBuilderJAXRPC_POJO extends AbstractMetaDataBuilderPOJO {
 
-    private final String urlPattern;
-    private final boolean isDeclared;
-
-    public POJOEndpoint(final String name, final String className, final String urlPattern) {
-        super(name, className);
-        this.urlPattern = urlPattern;
-        isDeclared = true;
-    }
-
-    public POJOEndpoint(final String className, final String urlPattern) {
-        super(className, className);
-        this.urlPattern = urlPattern;
-        this.isDeclared = false;
-    }
-
-    public String getUrlPattern() {
-        return urlPattern;
-    }
-
-    public boolean isDeclared() {
-        return isDeclared;
+    @Override
+    protected List<POJOEndpoint> getPojoEndpoints(final DeploymentUnit unit) {
+        return getJaxrpcPojos(unit);
     }
 
 }
