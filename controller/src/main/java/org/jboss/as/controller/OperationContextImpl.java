@@ -1341,12 +1341,14 @@ final class OperationContextImpl implements OperationContext {
                 for (Map.Entry<ServiceName, ContainerStateMonitor.MissingDependencyInfo> entry : containerStateChangeReport.getMissingServices().entrySet()) {
                     ContainerStateMonitor.MissingDependencyInfo missingDependencyInfo = entry.getValue();
                     Step removalStep = removalSteps.get(entry.getKey());
-                    Map<ServiceName, Set<ServiceName>> stepBadRemovals = missingByStep.get(removalStep);
-                    if (stepBadRemovals == null) {
-                        stepBadRemovals = new HashMap<ServiceName, Set<ServiceName>>();
-                        missingByStep.put(removalStep, stepBadRemovals);
+                    if (removalStep != null) {
+                        Map<ServiceName, Set<ServiceName>> stepBadRemovals = missingByStep.get(removalStep);
+                        if (stepBadRemovals == null) {
+                            stepBadRemovals = new HashMap<ServiceName, Set<ServiceName>>();
+                            missingByStep.put(removalStep, stepBadRemovals);
+                        }
+                        stepBadRemovals.put(entry.getKey(), missingDependencyInfo.getDependents());
                     }
-                    stepBadRemovals.put(entry.getKey(), missingDependencyInfo.getDependents());
                 }
             }
 

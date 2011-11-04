@@ -24,8 +24,10 @@ package org.jboss.as.test.integration.security.loginmodules;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.security.Constants.AUTHENTICATION;
 import static org.jboss.as.security.Constants.CODE;
@@ -227,25 +229,25 @@ public class CustomLoginModuleTestCase {
     }
 
     public static void removeSecurityDomains(final ModelControllerClient client) throws Exception {
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
         ModelNode op = new ModelNode();
         op.get(OP).set(REMOVE);
         op.get(OP_ADDR).add(SUBSYSTEM, "security");
         op.get(OP_ADDR).add(SECURITY_DOMAIN, "custom-login-module");
-        updates.add(op);
+        // Don't rollback when the AS detects the war needs the module
+        op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
 
-        applyUpdates(updates, client);
+        applyUpdate(op, client, true);
     }
 
     public static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws Exception {
         for (ModelNode update : updates) {
-            applyUpdate(update, client);
+            applyUpdate(update, client, false);
         }
     }
 
-    public static void applyUpdate(ModelNode update, final ModelControllerClient client) throws Exception {
+    public static void applyUpdate(ModelNode update, final ModelControllerClient client, boolean allowFailure) throws Exception {
         ModelNode result = client.execute(new OperationBuilder(update).build());
-        if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
+        if (result.hasDefined("outcome") && (allowFailure || "success".equals(result.get("outcome").asString()))) {
             if (result.hasDefined("result")) {
                 System.out.println(result.get("result"));
             }

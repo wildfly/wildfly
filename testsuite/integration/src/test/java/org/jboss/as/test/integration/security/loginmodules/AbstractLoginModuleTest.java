@@ -68,14 +68,15 @@ public abstract class AbstractLoginModuleTest {
    protected abstract String getContextPath();
 
    protected static void removeSecurityDomain(final ModelControllerClient client, final String domainName) throws Exception {
-      final List<ModelNode> updates = new ArrayList<ModelNode>();
+
       ModelNode op = new ModelNode();
       op.get(OP).set(REMOVE);
       op.get(OP_ADDR).add(SUBSYSTEM, "security");
       op.get(OP_ADDR).add(SECURITY_DOMAIN, domainName);
-      updates.add(op);
+      // Don't rollback when the AS detects the war needs the module
+      op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
 
-      applyUpdates(updates, client);
+      applyUpdate(op, client, true);
    }
 
    protected HttpResponse authAndGetResponse(String URL, String user, String pass) throws Exception {
@@ -211,13 +212,13 @@ public abstract class AbstractLoginModuleTest {
 
    public static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws Exception {
       for (ModelNode update : updates) {
-         applyUpdate(update, client);
+         applyUpdate(update, client, false);
       }
    }
 
-   public static void applyUpdate(ModelNode update, final ModelControllerClient client) throws Exception {
+   public static void applyUpdate(ModelNode update, final ModelControllerClient client, boolean allowFailure) throws Exception {
       ModelNode result = client.execute(new OperationBuilder(update).build());
-      if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
+      if (result.hasDefined("outcome") && (allowFailure || "success".equals(result.get("outcome").asString()))) {
          if (result.hasDefined("result")) {
             //System.out.println(result.get("result"));
          };
