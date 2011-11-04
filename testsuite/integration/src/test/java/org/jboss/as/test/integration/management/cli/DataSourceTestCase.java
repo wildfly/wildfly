@@ -80,7 +80,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
         // check the data source is listed
         cli.sendLine("cd /subsystem=datasources/data-source");
         cli.sendLine("ls");
-        String ls = cli.readAllUnformated(WAIT_TIMEOUT);
+        String ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         assertTrue(ls.contains("java:jboss/datasources/TestDS"));
 
         // check that it is available through JNDI
@@ -96,7 +96,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
         //check the data source is not listed
         cli.sendLine("cd /subsystem=datasources/data-source");
         cli.sendLine("ls");
-        String ls = cli.readAllUnformated(WAIT_TIMEOUT);
+        String ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         assertFalse(ls.contains("java:jboss/datasources/TestDS"));
 
     }
@@ -112,8 +112,8 @@ public class DataSourceTestCase extends AbstractCliTestBase {
         cli.sendLine(cmd.toString());
 
         // check that datasource was modified
-        cli.sendLine("/subsystem=datasources/data-source=java\\:jboss\\/datasources\\/TestDS:read-resource(recursive=true)");
-        CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT);
+        cli.sendLine("/subsystem=datasources/data-source=java\\:jboss\\/datasources\\/TestDS:read-resource(recursive=true)");       
+        CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof Map);
         Map dsProps = (Map) result.getResult();
@@ -129,7 +129,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
         //check the data source is listed
         cli.sendLine("cd /subsystem=datasources/data-source");
         cli.sendLine("ls");
-        String ls = cli.readAllUnformated(WAIT_TIMEOUT);
+        String ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         assertTrue(ls.contains("java:jboss/datasources/TestDS"));
 
     }
@@ -142,7 +142,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
         //check the data source is not listed
         cli.sendLine("cd /subsystem=datasources/data-source");
         cli.sendLine("ls");
-        String ls = cli.readAllUnformated(WAIT_TIMEOUT);
+        String ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         assertFalse(ls.contains("java:jboss/datasources/TestDS"));
 
     }
@@ -158,8 +158,8 @@ public class DataSourceTestCase extends AbstractCliTestBase {
         cli.sendLine(cmd.toString());
 
         // check that datasource was modified
-        cli.sendLine("/subsystem=datasources/data-source=java\\:jboss\\/datasources\\/TestDS:read-resource(recursive=true)");
-        CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT);
+        cli.sendLine("/subsystem=datasources/data-source=java\\:jboss\\/datasources\\/TestDS:read-resource(recursive=true)");       
+        CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof Map);
         Map dsProps = (Map) result.getResult();

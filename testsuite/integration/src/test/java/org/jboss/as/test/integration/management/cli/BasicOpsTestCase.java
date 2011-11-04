@@ -41,7 +41,10 @@ public class BasicOpsTestCase {
 
         // wait for cli welcome message
         String line = cli.readLine(10000);
-        assertTrue("Wrong CLI welcome message:" + line, line.indexOf("You are disconnected") >= 0);
+        
+        while(! line.contains("You are disconnected")) {
+            line = cli.readLine(10000);
+        }
 
         cli.sendLine("connect");
         cli.sendLine("version", false);
@@ -56,7 +59,7 @@ public class BasicOpsTestCase {
     public void testLs() throws Exception {
         CLIWrapper cli = new CLIWrapper(true);
         cli.sendLine("ls", true);
-        String ls = cli.readAllUnformated(5000);
+        String ls = cli.readAllUnformated(5000, 500);
 
         assertTrue(ls.contains("subsystem"));
         assertTrue(ls.contains("interface"));

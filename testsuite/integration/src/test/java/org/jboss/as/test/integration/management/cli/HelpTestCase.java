@@ -41,7 +41,7 @@ public class HelpTestCase extends AbstractCliTestBase {
     @Test
     public void testHelpCommand() throws Exception {
         cli.sendLine("help");
-        String help = cli.readAllUnformated(WAIT_TIMEOUT);
+        String help = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         for (String cmd : COMMANDS) assertTrue("Command '" + cmd + "' missing in help.", help.contains(cmd));
     }
 
@@ -122,7 +122,7 @@ public class HelpTestCase extends AbstractCliTestBase {
 
     private void testCmdHelp(String cmd) throws Exception {
         cli.sendLine(cmd + " --help");
-        String help = cli.readAllUnformated(WAIT_TIMEOUT);
+        String help = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         assertTrue("Command " + cmd + " help does not have synopsis section.", help.contains("SYNOPSIS"));
         assertTrue("Command " + cmd + " help does not have description section.", help.contains("DESCRIPTION"));
         assertTrue("Command " + cmd + " help does not have arguments section.", help.contains("ARGUMENTS"));
