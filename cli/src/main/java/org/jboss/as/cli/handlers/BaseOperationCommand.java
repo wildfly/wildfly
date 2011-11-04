@@ -150,10 +150,10 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
             ctx.printLine("Failed to perform operation: " + e.getLocalizedMessage());
             return;
         }
-        handleResponse(ctx, result);
+        handleResponse(ctx, result, Util.COMPOSITE.equals(request.get(Util.OPERATION).asString()));
     }
 
-    protected void handleResponse(CommandContext ctx, ModelNode result) {
+    protected void handleResponse(CommandContext ctx, ModelNode result, boolean composite) {
         if (!Util.isSuccess(result)) {
             ctx.printLine(Util.getFailureDescription(result));
             return;
