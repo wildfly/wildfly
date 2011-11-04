@@ -116,7 +116,7 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler implements Descript
                 // handles deploying a persistence provider
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_PERSISTENCE_PROVIDER, new PersistenceProviderProcessor());
                 // handles pu deployment (starts pu service)
-                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_PERSISTENTUNIT, new PersistenceUnitDeploymentProcessor(persistenceUnitRegistry, appclient));
+                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_PERSISTENTUNIT, new PersistenceUnitDeploymentProcessor(persistenceUnitRegistry));
             }
         }, OperationContext.Stage.RUNTIME);
 
