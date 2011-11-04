@@ -30,8 +30,8 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -39,28 +39,26 @@ import org.junit.runner.RunWith;
  * Tests that the <jar-file> element of persistence.xml works as expected.
  *
  * @author Stuart Douglas
+ * @author Franck Garcia
  */
 @RunWith(Arquillian.class)
 public class JpaJarFileTestCase {
 
-    private static final String ARCHIVE_NAME = "jpajarfile.war";
+    private static final String ARCHIVE_NAME = "jpajarfile.ear";
 
     @Deployment
     public static Archive<?> deploy() {
 
-        WebArchive war = ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME);
-        war.addClasses(JpaJarFileTestCase.class, JpaTestSlsb.class);
-
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "main.jar");
-        jar.addClass(MainArchiveEntity.class);
-        jar.addAsManifestResource(getPersistenceXml(), "persistence.xml");
-        war.addAsLibrary(jar);
-
-        jar = ShrinkWrap.create(JavaArchive.class, "jarfile.jar");
+        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, ARCHIVE_NAME);
+        JavaArchive ejbModule = ShrinkWrap.create(JavaArchive.class, "my-ejb-module.jar");
+        ejbModule.addClasses(JpaJarFileTestCase.class,JpaTestSlsb.class);
+        ejbModule.addAsManifestResource(getPersistenceXml(), "persistence.xml");
+        ear.addAsModule(ejbModule);
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "jarfile.jar");
         jar.addClass(JarFileEntity.class);
-        war.addAsLibrary(jar);
-
-        return war;
+        jar.addClass(MainArchiveEntity.class);
+        ear.addAsLibrary(jar);
+        return ear;
     }
 
     @Test
@@ -79,7 +77,7 @@ public class JpaJarFileTestCase {
         return new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
                 "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
                 "  <persistence-unit name=\"mainPu\">" +
-                "  <jar-file>jarfile.jar</jar-file>" +
+                "  <jar-file>lib/jarfile.jar</jar-file>" +
                 "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
                 "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
                 "</properties>" +
