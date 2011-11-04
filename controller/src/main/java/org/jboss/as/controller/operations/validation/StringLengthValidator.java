@@ -22,6 +22,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 /**
  * Validates that the given parameter is a string of an allowed length.
  *
@@ -54,10 +56,10 @@ public class StringLengthValidator extends ModelTypeValidator implements MinMaxV
         if (value.isDefined() && value.getType() != ModelType.EXPRESSION) {
             String str = value.asString();
             if (str.length() < min) {
-                throw new OperationFailedException(new ModelNode().set("\"" + str + "\" is an invalid value for parameter " + parameterName + ". Values must have a minimum length of " + min + " characters"));
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidMinLength(str, parameterName, min)));
             }
             else if (str.length() > max) {
-                throw new OperationFailedException(new ModelNode().set("\"" + str + "\" is an invalid value for parameter " + parameterName + ". Values must have a maximum length of " + max + " characters"));
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidMaxLength(str, parameterName, max)));
             }
         }
     }

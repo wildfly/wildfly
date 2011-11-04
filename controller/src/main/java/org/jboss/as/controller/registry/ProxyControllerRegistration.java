@@ -40,6 +40,8 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.dmr.ModelNode;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -213,6 +215,6 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
     }
 
     private IllegalArgumentException alreadyRegistered() {
-        return new IllegalArgumentException(String.format("A proxy handler is already registered at location '%s'", getLocationString()));
+        return MESSAGES.proxyHandlerAlreadyRegistered(getLocationString());
     }
 }

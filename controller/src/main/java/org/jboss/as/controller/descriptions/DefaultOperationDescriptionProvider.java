@@ -22,7 +22,7 @@
 
 package org.jboss.as.controller.descriptions;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
@@ -32,12 +32,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -130,6 +126,6 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
      */
     protected ModelNode getReplyValueTypeDescription(ResourceDescriptionResolver descriptionResolver, Locale locale, ResourceBundle bundle) {
         // bug -- user specifies a complex reply type but does not override this method to describe it
-        throw new IllegalStateException(String.format("An operation reply value type description is required but was not implemented for operation %s", operationName));
+        throw MESSAGES.operationReplyValueTypeRequired(operationName);
     }
 }

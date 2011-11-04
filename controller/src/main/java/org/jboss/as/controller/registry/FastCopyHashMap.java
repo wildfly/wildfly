@@ -34,6 +34,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 /**
  * A HashMap that is optimized for fast shallow copies. If the copy-ctor is
  * passed another FastCopyHashMap, or clone is called on this map, the shallow
@@ -106,13 +108,13 @@ class FastCopyHashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clon
 
     public FastCopyHashMap(int initialCapacity, float loadFactor) {
         if (initialCapacity < 0)
-            throw new IllegalArgumentException("Can not have a negative size table!");
+            throw MESSAGES.invalidTableSize();
 
         if (initialCapacity > MAXIMUM_CAPACITY)
             initialCapacity = MAXIMUM_CAPACITY;
 
         if (!(loadFactor > 0F && loadFactor <= 1F))
-            throw new IllegalArgumentException("Load factor must be greater than 0 and less than or equal to 1");
+            throw MESSAGES.invalidLoadFactor();
 
         this.loadFactor = loadFactor;
         init(initialCapacity, loadFactor);
@@ -264,7 +266,7 @@ class FastCopyHashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clon
 
             index = nextIndex(index, length);
             if (index == start)
-                throw new IllegalStateException("Table is full!");
+                throw MESSAGES.tableIsFull();
         }
 
         modCount++;

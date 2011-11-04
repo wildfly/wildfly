@@ -27,7 +27,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.InterfaceDescription;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -36,6 +35,8 @@ import org.jboss.dmr.ModelNode;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * Interface criteria write-attribute {@code OperationHandler}
@@ -72,7 +73,7 @@ public final class InterfaceCriteriaWriteHandler implements OperationStepHandler
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();
         final AttributeDefinition def = ATTRIBUTES.get(name);
         if(def == null) {
-            throw new OperationFailedException(new ModelNode().set("unknown attribute " + name));
+            throw new OperationFailedException(new ModelNode().set(MESSAGES.unknownAttribute(name)));
         }
         final ModelNode value = operation.get(ModelDescriptionConstants.VALUE);
         def.getValidator().validateParameter(name, value);
@@ -95,7 +96,7 @@ public final class InterfaceCriteriaWriteHandler implements OperationStepHandler
                 final String attributeName = definition.getName();
                 final boolean has = model.hasDefined(attributeName);
                 if(! has && isRequired(definition, model)) {
-                    throw new OperationFailedException(new ModelNode().set(attributeName + " is required"));
+                    throw new OperationFailedException(new ModelNode().set(MESSAGES.required(attributeName)));
                 }
                 if(has) {
                     if(! isAllowed(definition, model)) {
@@ -114,7 +115,7 @@ public final class InterfaceCriteriaWriteHandler implements OperationStepHandler
                                 }
                             }
                         }
-                        throw new OperationFailedException(new ModelNode().set(String.format("%s is invalid in combination with %s", attributeName, sb)));
+                        throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidAttributeCombo(attributeName, sb)));
                     }
                 }
             }

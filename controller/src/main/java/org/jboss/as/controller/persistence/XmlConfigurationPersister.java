@@ -38,10 +38,12 @@ import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLMapper;
+
+import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * A configuration persister which uses an XML file for backing storage.
@@ -49,8 +51,6 @@ import org.jboss.staxmapper.XMLMapper;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public class XmlConfigurationPersister extends AbstractConfigurationPersister {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
     private final File fileName;
     private final QName rootElement;
@@ -96,7 +96,7 @@ public class XmlConfigurationPersister extends AbstractConfigurationPersister {
                 safeClose(fos);
             }
         } catch (Exception e) {
-            throw new ConfigurationPersistenceException("Failed to store configuration", e);
+            throw MESSAGES.failedToStoreConfiguration(e);
         }
     }
 
@@ -122,7 +122,7 @@ public class XmlConfigurationPersister extends AbstractConfigurationPersister {
                 safeClose(fis);
             }
         } catch (Exception e) {
-            throw new ConfigurationPersistenceException("Failed to parse configuration", e);
+            throw MESSAGES.failedToParseConfiguration(e);
         }
         return updates;
     }
@@ -131,7 +131,7 @@ public class XmlConfigurationPersister extends AbstractConfigurationPersister {
         if (closeable != null) try {
             closeable.close();
         } catch (Throwable t) {
-            log.errorf(t, "Failed to close resource %s", closeable);
+            ROOT_LOGGER.failedToCloseResource(t, closeable);
         }
     }
 

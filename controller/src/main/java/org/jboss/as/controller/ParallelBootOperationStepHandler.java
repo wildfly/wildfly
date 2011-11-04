@@ -29,13 +29,13 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadFactory;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.parsing.CommonXml;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
+
+import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * Special handler that executes subsystem boot operations in parallel.
@@ -43,8 +43,6 @@ import org.jboss.logging.Logger;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class ParallelBootOperationStepHandler implements OperationStepHandler {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
     private final Executor executor;
     private final ImmutableManagementResourceRegistration rootRegistration;
@@ -84,7 +82,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         if (context.getType() != OperationContext.Type.SERVER) {
-            throw new IllegalStateException(String.format("%s cannot be used except in a full server boot", getClass()));
+            throw MESSAGES.fullServerBootRequired(getClass());
         }
 
         long start = System.currentTimeMillis();
@@ -134,13 +132,13 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
             context.addStep(getRuntimeStep(runtimeOpsBySubsystem), OperationContext.Stage.RUNTIME);
 
         } catch (InterruptedException e) {
-            context.getFailureDescription().set(new ModelNode().set("Interrupted awaiting subsystem boot operation execution"));
+            context.getFailureDescription().set(new ModelNode().set(MESSAGES.subsystemBootInterrupted()));
             Thread.currentThread().interrupt();
         }
 
-        if (log.isDebugEnabled()) {
+        if (ROOT_LOGGER.isDebugEnabled()) {
             long elapsed = System.currentTimeMillis() - start;
-            log.debugf("Ran subsystem model operations in [%d] ms", elapsed);
+            ROOT_LOGGER.debugf("Ran subsystem model operations in [%d] ms", elapsed);
         }
 
         // Continue boot
@@ -167,15 +165,15 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                 if (txControl.response.hasDefined(ModelDescriptionConstants.FAILURE_DESCRIPTION)) {
                     failureDesc = txControl.response.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).asString();
                 } else {
-                    failureDesc = String.format("Boot operations for subsystem %s failed without explanation", entry.getKey());
+                    failureDesc = MESSAGES.subsystemBootOperationFailed(entry.getKey());
                 }
-                log.error(failureDesc);
+                ROOT_LOGGER.error(failureDesc);
                 if (!failureRecorded) {
                     context.getFailureDescription().set(failureDesc);
                     failureRecorded = true;
                 }
             } else {
-                log.debugf("Stage %s boot ops for subsystem %s succeeded", stage, entry.getKey());
+                ROOT_LOGGER.debugf("Stage %s boot ops for subsystem %s succeeded", stage, entry.getKey());
             }
         }
     }
@@ -189,10 +187,10 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
             if (txControl.transaction != null) {
                 if (resultAction == OperationContext.ResultAction.KEEP) {
                     txControl.transaction.commit();
-                    log.debugf("Committed transaction for %s subsystem %s stage boot operations", entry.getKey(), stage);
+                    ROOT_LOGGER.debugf("Committed transaction for %s subsystem %s stage boot operations", entry.getKey(), stage);
                 } else {
                     txControl.transaction.rollback();
-                    log.debugf("Rolled back transaction for %s subsystem %s stage boot operations", entry.getKey(), stage);
+                    ROOT_LOGGER.debugf("Rolled back transaction for %s subsystem %s stage boot operations", entry.getKey(), stage);
                 }
             }
         }
@@ -234,13 +232,13 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                     checkForSubsystemFailures(context, transactionControls, OperationContext.Stage.RUNTIME);
 
                 } catch (InterruptedException e) {
-                    context.getFailureDescription().set(new ModelNode().set("Interrupted awaiting subsystem boot operation execution"));
+                    context.getFailureDescription().set(new ModelNode().set(MESSAGES.subsystemBootInterrupted()));
                     Thread.currentThread().interrupt();
                 }
 
-                if (log.isDebugEnabled()) {
+                if (ROOT_LOGGER.isDebugEnabled()) {
                     long elapsed = System.currentTimeMillis() - start;
-                    log.debugf("Ran subsystem runtime operations in [%d] ms", elapsed);
+                    ROOT_LOGGER.debugf("Ran subsystem runtime operations in [%d] ms", elapsed);
                 }
 
                 // Continue boot
@@ -295,7 +293,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                 }
                 operationContext.completeStep();
             } catch (Exception e) {
-                log.errorf(e, "Failed executing subsystem %s boot operations", subsystemName);
+                ROOT_LOGGER.failedSubsystemBootOperations(e, subsystemName);
                 if (!transactionControl.signalled) {
                     ModelNode failure = new ModelNode();
                     failure.get(ModelDescriptionConstants.SUCCESS).set(false);
@@ -315,7 +313,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                         // TODO this is really debugging
                         ModelNode failure = new ModelNode();
                         failure.get(ModelDescriptionConstants.SUCCESS).set(false);
-                        failure.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).set(String.format("Failed executing subsystem %s boot operations but no individual operation failed", subsystemName));
+                        failure.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).set(MESSAGES.subsystemBootOperationFailedExecuting(subsystemName));
                     }
                 }
                 transactionControl.operationCompleted(transactionControl.response);
@@ -361,7 +359,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                     committedLatch.await();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                    throw new RuntimeException("Interrupted awaiting transaction commit or rollback");
+                    throw MESSAGES.transactionInterrupted();
                 }
             }
         }

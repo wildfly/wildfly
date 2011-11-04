@@ -27,6 +27,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -60,7 +61,7 @@ public class ExtensionAddHandler extends AbstractAddStepHandler implements Descr
      */
     public ExtensionAddHandler(final ExtensionContext extensionContext) {
         if (extensionContext == null) {
-            throw new IllegalArgumentException("extensionContext is null");
+            throw MESSAGES.nullVar("extensionContext");
         }
         this.extensionContext = extensionContext;
     }

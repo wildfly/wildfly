@@ -24,6 +24,7 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -80,7 +81,7 @@ public class SocketBindingGroupIncludeRemoveHandler extends AbstractRemoveStepHa
         if (toRemove != null) {
             includes.set(newList);
         } else {
-            throw new OperationFailedException(new ModelNode().set("No included group with name " + group + "found"));
+            throw new OperationFailedException(new ModelNode().set(MESSAGES.groupNotFound(group)));
         }
     }
 

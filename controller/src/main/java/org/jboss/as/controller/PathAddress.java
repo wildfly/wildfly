@@ -37,6 +37,8 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 /**
  * A path address for an operation.
  *
@@ -131,13 +133,13 @@ public class PathAddress implements Iterable<PathElement> {
     }
 
     private static IllegalArgumentException duplicateElement(final String name) {
-        return new IllegalArgumentException("Duplicate path element \"" + name + "\" found");
+        return MESSAGES.duplicateElement(name);
     }
 
     private final List<PathElement> pathAddressList;
 
     PathAddress(final List<PathElement> pathAddressList) {
-        assert pathAddressList != null : "pathAddressList is null";
+        assert pathAddressList != null : MESSAGES.nullVar("pathAddressList").getLocalizedMessage();
         this.pathAddressList = pathAddressList;
     }
 

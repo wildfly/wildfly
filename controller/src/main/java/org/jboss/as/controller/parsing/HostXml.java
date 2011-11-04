@@ -23,6 +23,7 @@
 package org.jboss.as.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
@@ -429,11 +430,11 @@ public class HostXml extends CommonXml {
             switch (element) {
                 case LOCAL: {
                     if (hasLocal) {
-                        throw new XMLStreamException("Child " + element.getLocalName() + " of element "
-                                + Element.DOMAIN_CONTROLLER.getLocalName() + " already declared", reader.getLocation());
+                        throw MESSAGES.childAlreadyDeclared(element.getLocalName(),
+                                Element.DOMAIN_CONTROLLER.getLocalName(), reader.getLocation());
                     } else if (hasRemote) {
-                        throw new XMLStreamException("Child " + Element.REMOTE.getLocalName() + " of element "
-                                + Element.DOMAIN_CONTROLLER.getLocalName() + " already declared", reader.getLocation());
+                        throw MESSAGES.childAlreadyDeclared(Element.REMOTE.getLocalName(),
+                                Element.DOMAIN_CONTROLLER.getLocalName(), reader.getLocation());
                     }
                     requireNoAttributes(reader);
                     requireNoContent(reader);
@@ -442,11 +443,11 @@ public class HostXml extends CommonXml {
                 }
                 case REMOTE: {
                     if (hasRemote) {
-                        throw new XMLStreamException("Child " + element.getLocalName() + " of element "
-                                + Element.DOMAIN_CONTROLLER.getLocalName() + " already declared", reader.getLocation());
+                        throw MESSAGES.childAlreadyDeclared(element.getLocalName(),
+                                Element.DOMAIN_CONTROLLER.getLocalName(), reader.getLocation());
                     } else if (hasLocal) {
-                        throw new XMLStreamException("Child " + Element.LOCAL.getLocalName() + " of element "
-                                + Element.DOMAIN_CONTROLLER.getLocalName() + " already declared", reader.getLocation());
+                        throw MESSAGES.childAlreadyDeclared(Element.LOCAL.getLocalName(),
+                                Element.DOMAIN_CONTROLLER.getLocalName(), reader.getLocation());
                     }
                     parseRemoteDomainController(reader, address, list);
                     hasRemote = true;
@@ -457,8 +458,8 @@ public class HostXml extends CommonXml {
             }
         }
         if (!hasLocal && !hasRemote) {
-            throw new XMLStreamException("Either a " + Element.REMOTE.getLocalName() + " or " + Element.LOCAL.getLocalName()
-                    + " domain controller configuration must be declared.", reader.getLocation());
+            throw MESSAGES.domainControllerMustBeDeclared(Element.REMOTE.getLocalName(), Element.LOCAL.getLocalName(),
+                    reader.getLocation());
         }
 
         if (hasLocal) {
@@ -490,8 +491,7 @@ public class HostXml extends CommonXml {
                     case PORT: {
                         port = Integer.valueOf(value);
                         if (port.intValue() < 1) {
-                            throw new XMLStreamException("Illegal '" + attribute.getLocalName() + "' value " + port
-                                    + " -- cannot be less than one", reader.getLocation());
+                            throw MESSAGES.invalidValueGreaterThan(attribute.getLocalName(), port, 0, reader.getLocation());
                         }
                         break;
                     }
@@ -579,7 +579,7 @@ public class HostXml extends CommonXml {
                 switch (attribute) {
                     case NAME: {
                         if (!serverNames.add(value)) {
-                            throw new XMLStreamException("Duplicate server declaration " + value, reader.getLocation());
+                            throw MESSAGES.duplicateDeclaration("server", value, reader.getLocation());
                         }
                         name = value;
                         break;
@@ -627,7 +627,7 @@ public class HostXml extends CommonXml {
                 }
                 case JVM: {
                     if (sawJvm) {
-                        throw new XMLStreamException(element.getLocalName() + " already defined", reader.getLocation());
+                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
 
                     parseJvm(reader, address, expectedNs, list, new HashSet<String>(), true);
@@ -640,7 +640,7 @@ public class HostXml extends CommonXml {
                 }
                 case SOCKET_BINDING_GROUP: {
                     if (sawSocketBinding) {
-                        throw new XMLStreamException(element.getLocalName() + " already defined", reader.getLocation());
+                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
                     parseSocketBindingGroupRef(reader, address, list);
                     sawSocketBinding = true;
@@ -648,7 +648,7 @@ public class HostXml extends CommonXml {
                 }
                 case SYSTEM_PROPERTIES: {
                     if (sawSystemProperties) {
-                        throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
+                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
                     parseSystemProperties(reader, address, expectedNs, list, false);
                     sawSystemProperties = true;

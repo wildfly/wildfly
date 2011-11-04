@@ -26,6 +26,8 @@ import java.util.List;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
@@ -33,7 +35,8 @@ public class ParametersOfValidator implements ParameterValidator, MinMaxValidato
     private final ParametersValidator delegate;
 
     public ParametersOfValidator(final ParametersValidator delegate) {
-        assert delegate != null : "delegate is null";
+        if (delegate == null)
+            throw MESSAGES.nullVar("delegate");
         this.delegate = delegate;
     }
 
@@ -42,7 +45,7 @@ public class ParametersOfValidator implements ParameterValidator, MinMaxValidato
         try {
             delegate.validate(value);
         } catch (OperationFailedException e) {
-            final ModelNode failureDescription = new ModelNode().add("Validation failed for " + parameterName);
+            final ModelNode failureDescription = new ModelNode().add(MESSAGES.validationFailed(parameterName));
             failureDescription.add(e.getFailureDescription());
             throw new OperationFailedException(e.getMessage(), e.getCause(), failureDescription);
         }

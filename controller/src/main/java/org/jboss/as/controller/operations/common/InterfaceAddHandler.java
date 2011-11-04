@@ -20,6 +20,7 @@ package org.jboss.as.controller.operations.common;
 
 
 import org.jboss.as.controller.AttributeDefinition;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -91,11 +92,11 @@ public class InterfaceAddHandler extends AbstractAddStepHandler implements Descr
         final String attributeName = definition.getName();
         final boolean has = operation.has(attributeName);
         if(! has && definition.isRequired(operation)) {
-            throw new OperationFailedException(new ModelNode().set(attributeName + " is required"));
+            throw new OperationFailedException(new ModelNode().set(MESSAGES.required(attributeName)));
         }
         if(has) {
             if(! definition.isAllowed(operation)) {
-                throw new OperationFailedException(new ModelNode().set(attributeName + " is invalid"));
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalid(attributeName)));
             }
             definition.validateAndSet(operation, subModel);
         } else {

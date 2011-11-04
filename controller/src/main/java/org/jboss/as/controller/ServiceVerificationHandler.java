@@ -32,6 +32,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -67,7 +69,7 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                context.getFailureDescription().set("Operation cancelled");
+                context.getFailureDescription().set(MESSAGES.operationCancelled());
                 context.completeStep();
                 return;
             }
@@ -78,7 +80,7 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
             ModelNode failedList = null;
             for (ServiceController<?> controller : failed) {
                 if (failedList == null) {
-                    failedList = failureDescription.get("Failed services");
+                    failedList = failureDescription.get(MESSAGES.failedServices());
                 }
                 failedList.get(controller.getName().getCanonicalName()).set(controller.getStartException().toString());
             }
@@ -86,11 +88,10 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
             for (ServiceController<?> controller : problem) {
                 if (!controller.getImmediateUnavailableDependencies().isEmpty()) {
                     if (problemList == null) {
-                        problemList = failureDescription.get("Services with missing/unavailable dependencies");
+                        problemList = failureDescription.get(MESSAGES.servicesMissingDependencies());
                     }
                     final StringBuilder problem = new StringBuilder();
                     problem.append(controller.getName().getCanonicalName());
-                    problem.append(" missing [ ");
                     for(Iterator<ServiceName> i = controller.getImmediateUnavailableDependencies().iterator(); i.hasNext(); ) {
                         ServiceName missing = i.next();
                         problem.append(missing.getCanonicalName());
@@ -98,7 +99,7 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
                             problem.append(", ");
                         }
                     }
-                    problem.append(" ]");
+                    problem.append(MESSAGES.servicesMissing(problem));
                     problemList.add(problem.toString());
                 }
             }

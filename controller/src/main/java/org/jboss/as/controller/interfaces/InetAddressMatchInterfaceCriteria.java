@@ -3,6 +3,8 @@
  */
 package org.jboss.as.controller.interfaces;
 
+import static org.jboss.as.controller.ControllerLogger.SERVER_LOGGER;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY_IPV4_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY_IPV6_ADDRESS;
@@ -14,7 +16,6 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 
 /**
  * {@link InterfaceCriteria} that tests whether a given address is matches
@@ -23,8 +24,6 @@ import org.jboss.logging.Logger;
  * @author Brian Stansberry
  */
 public class InetAddressMatchInterfaceCriteria implements InterfaceCriteria {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.server");
 
     private static final long serialVersionUID = 149404752878332750L;
 
@@ -44,7 +43,7 @@ public class InetAddressMatchInterfaceCriteria implements InterfaceCriteria {
      */
     public InetAddressMatchInterfaceCriteria(final ModelNode address) {
         if (address == null)
-            throw new IllegalArgumentException("address is null");
+            throw MESSAGES.nullVar("address");
         this.address = address;
     }
 
@@ -58,7 +57,7 @@ public class InetAddressMatchInterfaceCriteria implements InterfaceCriteria {
      */
     public InetAddressMatchInterfaceCriteria(final String address) {
         if (address == null || address.isEmpty() || address.trim().isEmpty()) {
-            throw new IllegalArgumentException("address is null");
+            throw MESSAGES.nullVar("address");
         }
         this.addressString = address;
     }
@@ -86,11 +85,7 @@ public class InetAddressMatchInterfaceCriteria implements InterfaceCriteria {
             InetAddress toMatch = getAddress();
             // One time only warn against use of wildcard addresses
             if (!anyLocalLogged && toMatch.isAnyLocalAddress()) {
-                log.warnf("Address %1$s is a wildcard address, which will not match " +
-                    "against any specific address. Do not use the '%2$s' configuration element " +
-                    "to specify that an interface should use a wildcard address; " +
-                    "use '%3$s', '%4$s', or '%5$s'", this.address,
-                    INET_ADDRESS, ANY_ADDRESS, ANY_IPV4_ADDRESS, ANY_IPV6_ADDRESS);
+                SERVER_LOGGER.invalidWildcardAddress(this.address, INET_ADDRESS, ANY_ADDRESS, ANY_IPV4_ADDRESS, ANY_IPV6_ADDRESS);
                 anyLocalLogged = true;
             }
 
@@ -99,7 +94,7 @@ public class InetAddressMatchInterfaceCriteria implements InterfaceCriteria {
         } catch (UnknownHostException e) {
             // One time only log a warning
             if (!unknownHostLogged) {
-                log.warnf("Cannot resolve address %s, so cannot match it to any InetAddress", this.address);
+                SERVER_LOGGER.cannotResolveAddress(this.address);
                 unknownHostLogged = true;
             }
             return null;
