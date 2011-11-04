@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.client.helpers.standalone;
 
+import javax.security.auth.callback.CallbackHandler;
 import java.net.InetAddress;
 import java.util.concurrent.Future;
 
@@ -49,6 +50,18 @@ public interface ServerDeploymentManager {
          */
         public static ServerDeploymentManager create(final InetAddress address, int port) {
             return create(ModelControllerClient.Factory.create(address, port));
+        }
+
+        /**
+         * Create an {@link ServerDeploymentManager} instance for a remote address and port.
+         *
+         * @param address The remote address to connect to
+         * @param port The remote port
+         * @param handler The CallbackHandler for authentication
+         * @return A domain client
+         */
+        public static ServerDeploymentManager create(final InetAddress address, int port, CallbackHandler handler) {
+            return create(ModelControllerClient.Factory.create(address, port, handler));
         }
 
         /**

@@ -84,6 +84,7 @@ public class PropertiesCallbackHandler implements Service<DomainCallbackHandler>
         } else {
             plainText = false;
         }
+        System.out.println("plainTest=" + plainText);
         supportedCallbacks = plainText ? PLAIN_CALLBACKS : DIGEST_CALLBACKS;
     }
 
@@ -96,6 +97,7 @@ public class PropertiesCallbackHandler implements Service<DomainCallbackHandler>
         String file = relativeTo == null ? path : relativeTo + "/" + path;
 
         propertiesFile = new File(file);
+        System.out.println("Loading properties from " + propertiesFile.getAbsolutePath());
         try {
             getUsersProperties();
         } catch (IOException ioe) {

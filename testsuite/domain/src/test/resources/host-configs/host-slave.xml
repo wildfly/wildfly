@@ -20,9 +20,9 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<host xmlns="urn:jboss:domain:1.0"
+<host xmlns="urn:jboss:domain:1.1"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd"
+      xsi:schemaLocation="urn:jboss:domain:1.1 jboss_7_1.xsd"
       name="slave">
 
     <paths>
@@ -32,20 +32,23 @@
     <management>
         <security-realms>
             <security-realm name="ManagementRealm">
+                <server-identities>
+                     <secret value="c2xhdmVfdXNlcl9wYXNzd29yZA==" />
+                </server-identities>
                 <authentication>
-                     <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir" />
+                     <properties path="mgmt-users.properties" relative-to="jboss.domain.config.dir" />
                 </authentication>
             </security-realm>
         </security-realms>
         <management-interfaces>
-            <native-interface interface="public" port="19999" />
-            <http-interface interface="public" port="19990"/>
+            <native-interface interface="public" port="19999" security-realm="ManagementRealm"/>
+            <http-interface interface="public" port="19990" security-realm="ManagementRealm"/>
         </management-interfaces>
     </management>
 
     <domain-controller>
        <!-- Remote domain controller configuration with a host and port -->
-       <remote host="${jboss.test.host.master.address}" port="9999"/>
+       <remote host="${jboss.test.host.master.address}" port="9999" security-realm="ManagementRealm"/>
     </domain-controller>
 
     <interfaces>

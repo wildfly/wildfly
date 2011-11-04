@@ -33,6 +33,8 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 import org.jboss.util.NotImplementedException;
 
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+
 /**
  * A JBossAS deployable container
  *
@@ -64,7 +66,8 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
 
         ModelControllerClient modelControllerClient = ModelControllerClient.Factory.create(
                 containerConfig.getManagementAddress(),
-                containerConfig.getManagementPort());
+                containerConfig.getManagementPort(),
+                getCallbackHandler());
 
         managementClient = new ManagementClient(modelControllerClient, containerConfig.getManagementAddress().getHostAddress());
 
@@ -135,4 +138,5 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
             log.log(Level.WARNING, "Caught exception closing ModelControllerClient", e);
         }
     }
+
 }

@@ -21,25 +21,28 @@
  */
 package org.jboss.as.test.integration.management.http;
 
-import java.util.concurrent.TimeUnit;
-import org.jboss.as.test.integration.common.HttpRequest;
-import org.jboss.as.test.integration.management.util.HttpMgmtProxy;
-import org.junit.Before;
-import java.util.TreeSet;
-import java.util.Set;
-import java.util.List;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.net.URL;
-import org.jboss.shrinkwrap.api.Archive;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.integration.management.util.HttpMgmtProxy;
 import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import static org.junit.Assert.*;
 
 /**
  * Tests all management operation types which are available via HTTP POST requests.
@@ -63,7 +66,7 @@ public class HttpPostMgmtOpsTestCase {
     }
     
     @Before
-    public void before() throws Exception {             
+    public void before() throws Exception {
         URL mgmtURL = new URL(url.getProtocol(), url.getHost(), MGMT_PORT, MGMT_CTX);
         httpMgmt = new HttpMgmtProxy(mgmtURL);
     }

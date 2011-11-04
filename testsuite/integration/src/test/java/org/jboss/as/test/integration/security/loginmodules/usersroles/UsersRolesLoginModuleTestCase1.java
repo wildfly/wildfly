@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.security.loginmodules.usersroles;
 
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.jboss.as.security.Constants.*;
 import static org.junit.Assert.assertEquals;
@@ -129,7 +130,7 @@ public class UsersRolesLoginModuleTestCase1 extends AbstractUsersRolesLoginModul
    public static WebArchive deployment() {
       // FIXME hack to get things prepared before the deployment happens
       try {
-         final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+         final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
          // create required security domains
          createSecurityDomains(client);
       } catch (Exception e) {
@@ -146,7 +147,7 @@ public class UsersRolesLoginModuleTestCase1 extends AbstractUsersRolesLoginModul
 
    @AfterClass
    public static void after() throws Exception {
-      final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+      final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
       // remove test security domains
       removeSecurityDomains(client);
 

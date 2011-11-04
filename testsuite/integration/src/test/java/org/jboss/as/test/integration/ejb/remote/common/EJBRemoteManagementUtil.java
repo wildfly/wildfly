@@ -38,6 +38,8 @@ import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.security.auth.callback.CallbackHandler;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -63,8 +65,8 @@ public class EJBRemoteManagementUtil {
      * @param managementPort           The management port
      * @return
      */
-    public static int getEJBRemoteConnectorPort(final String managementServerHostName, final int managementPort) {
-        final ModelControllerClient modelControllerClient = getModelControllerClient(managementServerHostName, managementPort);
+    public static int getEJBRemoteConnectorPort(final String managementServerHostName, final int managementPort, final CallbackHandler handler) {
+        final ModelControllerClient modelControllerClient = getModelControllerClient(managementServerHostName, managementPort, handler);
         try {
             // first get the remote-connector from the EJB3 subsystem to find the remote connector ref
             // /subsystem=ejb3/service=remote:read-attribute(name=connector-ref)
@@ -132,9 +134,9 @@ public class EJBRemoteManagementUtil {
         return nodeName;
     }
 
-    private static ModelControllerClient getModelControllerClient(final String managementServerHostName, final int managementPort) {
+    private static ModelControllerClient getModelControllerClient(final String managementServerHostName, final int managementPort, final CallbackHandler handler) {
         try {
-            return ModelControllerClient.Factory.create(InetAddress.getByName(managementServerHostName), managementPort);
+            return ModelControllerClient.Factory.create(InetAddress.getByName(managementServerHostName), managementPort, handler);
         } catch (UnknownHostException e) {
             throw new RuntimeException("Cannot create model controller client for host: " + managementServerHostName + " and port " + managementPort, e);
         }

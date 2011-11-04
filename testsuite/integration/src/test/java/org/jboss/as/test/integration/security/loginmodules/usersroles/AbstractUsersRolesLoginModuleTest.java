@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.security.loginmodules.usersroles;
 
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.security.loginmodules.AbstractLoginModuleTest;
 import org.jboss.as.test.integration.security.loginmodules.common.Utils;
@@ -69,7 +71,7 @@ public abstract class AbstractUsersRolesLoginModuleTest extends AbstractLoginMod
 
    @AfterClass
    public static void after() throws Exception {
-      final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+      final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
       // remove test security domains
       removeSecurityDomains(client);
    }

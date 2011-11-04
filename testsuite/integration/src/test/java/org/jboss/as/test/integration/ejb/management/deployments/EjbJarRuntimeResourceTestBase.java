@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.management.deployments;
 
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 import static org.junit.Assert.*;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.*;
@@ -77,7 +78,7 @@ public class EjbJarRuntimeResourceTestBase {
 
     @Before
     public void setup() throws Exception {
-        client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
     }
 
     @After

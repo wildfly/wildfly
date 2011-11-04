@@ -22,13 +22,14 @@
 
 package org.jboss.as.test.smoke.embedded.demos.client.messaging;
 
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+
+import javax.resource.spi.IllegalStateException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.resource.spi.IllegalStateException;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -73,7 +74,7 @@ public class MessagingClientTestCase {
         final String queueName = "queue.standalone";
 
         final ClientSessionFactory sf = createClientSessionFactory("localhost", 5445);
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
 
         try {
             // Check that the queue does not exists

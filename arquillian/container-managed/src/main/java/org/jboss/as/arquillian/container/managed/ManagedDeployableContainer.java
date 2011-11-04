@@ -19,12 +19,15 @@ package org.jboss.as.arquillian.container.managed;
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.as.arquillian.container.CommonDeployableContainer;
 import org.jboss.sasl.JBossSaslProvider;
+import org.jboss.sasl.util.UsernamePasswordHashUtil;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -34,6 +37,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
+
+import static org.jboss.as.arquillian.container.Authentication.USERNAME;
+import static org.jboss.as.arquillian.container.Authentication.PASSWORD;
 
 /**
  * JBossAsManagedContainer
@@ -98,6 +104,14 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             File modulesJar = new File(jbossHomeDir + File.separatorChar + "jboss-modules.jar");
             if (!modulesJar.exists())
                 throw new IllegalStateException("Cannot find: " + modulesJar);
+
+            // No point backing up the file in a test scenario, just write what we need.
+            File usersFile = new File(jbossHomeDir + "/standalone/configuration/mgmt-users.properties");
+            FileOutputStream fos = new FileOutputStream(usersFile);
+            PrintWriter pw = new PrintWriter(fos);
+            pw.println(USERNAME + "=" + new UsernamePasswordHashUtil().generateHashedHexURP(USERNAME, "ManagementRealm", PASSWORD.toCharArray()));
+            pw.close();
+            fos.close();
 
             List<String> cmd = new ArrayList<String>();
             cmd.add("java");

@@ -21,21 +21,11 @@
  */
 package org.jboss.as.test.smoke.surefire.servermodule;
 
-import junit.framework.Assert;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
-import org.jboss.as.test.smoke.surefire.servermodule.archive.sar.Simple;
-import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.exporter.ExplodedExporter;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanServerConnection;
@@ -59,10 +49,21 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import junit.framework.Assert;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
+import org.jboss.as.test.smoke.surefire.servermodule.archive.sar.Simple;
+import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.exporter.ExplodedExporter;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests deployment to a standalone server, both via the client API and by the
@@ -77,7 +78,7 @@ public class ServerInModuleDeploymentTestCase  {
         final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
                 Simple.class.getPackage());
         final ServerDeploymentManager manager = ServerDeploymentManager.Factory
-                .create(InetAddress.getByName("localhost"), 9999);
+                .create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
 
         testDeployments(new DeploymentExecutor() {
 
@@ -110,7 +111,7 @@ public class ServerInModuleDeploymentTestCase  {
         final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
                 Simple.class.getPackage());
         final ServerDeploymentManager manager = ServerDeploymentManager.Factory
-                .create(InetAddress.getByName("localhost"), 9999);
+                .create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
         final File dir = new File("target/archives");
         dir.mkdirs();
         final File file = new File(dir, "test-deployment.sar");
@@ -144,7 +145,7 @@ public class ServerInModuleDeploymentTestCase  {
     public void testFilesystemScannerRegistration() throws Exception {
         final File deployDir = createDeploymentDir("dummy");
 
-        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
         final String scannerName = "dummy";
         addDeploymentScanner(deployDir, client, scannerName, false);
         removeDeploymentScanner(client, scannerName);
@@ -163,7 +164,7 @@ public class ServerInModuleDeploymentTestCase  {
 
         final File deployDir = createDeploymentDir("marker-deployments");
 
-        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
         final String scannerName = "markerZips";
         addDeploymentScanner(deployDir, client, scannerName, false);
 
@@ -281,7 +282,7 @@ public class ServerInModuleDeploymentTestCase  {
 
         final File deployDir = createDeploymentDir("auto-deployments");
 
-        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
         final String scannerName = "autoZips";
         addDeploymentScanner(deployDir, client, scannerName, true);
 
@@ -384,7 +385,7 @@ public class ServerInModuleDeploymentTestCase  {
 
         final File deployDir = createDeploymentDir("exploded-deployments");
 
-        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
         final String scannerName = "exploded";
         addDeploymentScanner(deployDir, client, scannerName, false);
 

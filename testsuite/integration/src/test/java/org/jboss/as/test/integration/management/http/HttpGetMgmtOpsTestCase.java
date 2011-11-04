@@ -21,23 +21,26 @@
  */
 package org.jboss.as.test.integration.management.http;
 
-import org.jboss.as.test.integration.management.util.HttpMgmtProxy;
-import java.util.TreeSet;
-import java.util.Set;
-import java.util.List;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.net.URL;
-import org.jboss.shrinkwrap.api.Archive;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.integration.management.util.HttpMgmtProxy;
 import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import static org.junit.Assert.*;
 
 /**
  * Tests all management operation types which are available via HTTP GET requests.
@@ -60,7 +63,7 @@ public class HttpGetMgmtOpsTestCase {
     }
     
     @BeforeClass
-    public static void before() {                
+    public static void before() {
     }
     
     @Test

@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api;
 
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+
 import java.net.URI;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,7 +36,6 @@ import javax.ejb.NoSuchEJBException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.ejb.remote.common.AnonymousCallbackHandler;
 import org.jboss.as.test.integration.ejb.remote.common.EJBRemoteManagementUtil;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBClientContext;
@@ -96,7 +97,6 @@ public class EJBClientAPIUsageTestCase {
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         jar.addPackage(EJBClientAPIUsageTestCase.class.getPackage());
-        jar.addClass(AnonymousCallbackHandler.class);
 
         ear.addAsModule(jar);
 
@@ -116,8 +116,8 @@ public class EJBClientAPIUsageTestCase {
 
 
         // open a connection
-        final int ejbRemotingPort = EJBRemoteManagementUtil.getEJBRemoteConnectorPort("localhost", 9999);
-        final IoFuture<Connection> futureConnection = endpoint.connect(new URI("remote://localhost:" + ejbRemotingPort), OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE), new AnonymousCallbackHandler());
+        final int ejbRemotingPort = EJBRemoteManagementUtil.getEJBRemoteConnectorPort("localhost", 9999, getCallbackHandler());
+        final IoFuture<Connection> futureConnection = endpoint.connect(new URI("remote://localhost:" + ejbRemotingPort), OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE), getCallbackHandler());
         connection = IoFutureHelper.get(futureConnection, 5, TimeUnit.SECONDS);
     }
 
