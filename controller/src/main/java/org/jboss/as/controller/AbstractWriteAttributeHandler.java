@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
@@ -35,7 +37,6 @@ import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 
 /**
  * Abstract handler for the write aspect of a
@@ -49,8 +50,6 @@ import org.jboss.logging.Logger;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public abstract class AbstractWriteAttributeHandler<T> implements OperationStepHandler {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
     private final ParametersValidator nameValidator = new ParametersValidator();
 
@@ -67,7 +66,7 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
     }
 
     protected AbstractWriteAttributeHandler(final AttributeDefinition... definitions) {
-        assert definitions != null : "definitions is null";
+        assert definitions != null : MESSAGES.nullVar("definitions").getLocalizedMessage();
         attributeDefinitions = new HashMap<String, AttributeDefinition>();
         for (AttributeDefinition def : definitions) {
             attributeDefinitions.put(def.getName(), def);
@@ -121,10 +120,9 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
                         try {
                             revertUpdateToRuntime(context, operation, attributeName, valueToRestore, resolvedValue, handback.handback);
                         } catch (Exception e) {
-                            log.errorf(e, String.format("%s caught exception attempting to revert operation %s at address %s",
-                                    getClass().getSimpleName(),
+                            ROOT_LOGGER.errorRevertingOperation(e, getClass().getSimpleName(),
                                     operation.require(ModelDescriptionConstants.OP).asString(),
-                                    PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR))));
+                                    PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)));
                         }
                         if (restartRequired) {
                             context.revertReloadRequired();

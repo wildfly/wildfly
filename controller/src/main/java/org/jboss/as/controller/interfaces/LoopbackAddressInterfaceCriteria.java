@@ -19,12 +19,14 @@
 package org.jboss.as.controller.interfaces;
 
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+
+import static org.jboss.as.controller.ControllerLogger.SERVER_LOGGER;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * A loopback criteria with a specified bind address.
@@ -33,7 +35,6 @@ import java.net.UnknownHostException;
  * @version $Revision:$
  */
 public class LoopbackAddressInterfaceCriteria implements InterfaceCriteria {
-    private static final Logger log = Logger.getLogger("org.jboss.as.server");
 
     private static final long serialVersionUID = 1L;
 
@@ -52,7 +53,7 @@ public class LoopbackAddressInterfaceCriteria implements InterfaceCriteria {
      */
     public LoopbackAddressInterfaceCriteria(final ModelNode address) {
         if (address == null)
-            throw new IllegalArgumentException("address is null");
+            throw MESSAGES.nullVar("address");
         this.address = address;
     }
 
@@ -79,7 +80,7 @@ public class LoopbackAddressInterfaceCriteria implements InterfaceCriteria {
         } catch (UnknownHostException e) {
             // One time only log a warning
             if (!unknownHostLogged) {
-                log.warnf("Cannot resolve address %s, so cannot match it to any InetAddress", this.address);
+                SERVER_LOGGER.cannotResolveAddress(this.address);
                 unknownHostLogged = true;
             }
         }

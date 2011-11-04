@@ -24,6 +24,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 /**
  * Validates that the given parameter is of the correct type.
  * <p>
@@ -122,7 +124,7 @@ public class ModelTypeValidator implements ParameterValidator {
     public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
         if (!value.isDefined()) {
             if (!nullable)
-                throw new OperationFailedException(new ModelNode().set(parameterName + " may not be null.")); //TODO i18n
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.nullNotAllowed(parameterName)));
         } else  {
             boolean matched = false;
             if (strictType) {
@@ -136,7 +138,7 @@ public class ModelTypeValidator implements ParameterValidator {
                 }
             }
             if  (!matched)
-                throw new OperationFailedException(new ModelNode().set("Wrong type for " + parameterName + ". Expected " + validTypes.toString() + " but was " + value.getType())); //TODO i18n
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.incorrectType(parameterName, validTypes, value.getType())));
         }
     }
 

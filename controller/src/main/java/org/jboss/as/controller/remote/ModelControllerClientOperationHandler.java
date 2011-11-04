@@ -21,6 +21,8 @@
  */
 package org.jboss.as.controller.remote;
 
+import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
@@ -134,7 +136,7 @@ public class ModelControllerClientOperationHandler extends AbstractModelControll
                         t.interrupt();
                     }
                     Thread.currentThread().interrupt();
-                    throw new RequestProcessingException("Thread was interrupted waiting for a response for asynch operation");
+                    throw MESSAGES.asynchOperationThreadInterrupted();
                 }
             }
         }
@@ -148,7 +150,7 @@ public class ModelControllerClientOperationHandler extends AbstractModelControll
             OperationAttachmentsProxy attachmentsProxy = new OperationAttachmentsProxy(getChannel(), batchId, attachmentsLength);
             try {
                 try {
-                    log.tracef("Executing client request %d(%d)", batchId, getHeader().getRequestId());
+                    ROOT_LOGGER.tracef("Executing client request %d(%d)", batchId, getHeader().getRequestId());
                     if (asynch) {
                         //register the cancel handler
                         asynchRequests.put(batchId, Thread.currentThread());
@@ -165,7 +167,7 @@ public class ModelControllerClientOperationHandler extends AbstractModelControll
                     result = failure;
                     attachmentsProxy.shutdown(e);
                 } finally {
-                    log.tracef("Executed client request %d", batchId);
+                    ROOT_LOGGER.tracef("Executed client request %d", batchId);
                 }
             } finally {
                 if (asynch) {
@@ -195,7 +197,7 @@ public class ModelControllerClientOperationHandler extends AbstractModelControll
                 t.interrupt();
             }
             else {
-                throw new RequestProcessingException("No asynch request with batch id " + batchId);
+                throw MESSAGES.asynchRequestNotFound(batchId);
             }
         }
     }

@@ -32,6 +32,8 @@ import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 /**
  * A registration for a management resource which consists of a resource description plus registered operation handlers.
  *
@@ -300,7 +302,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
          */
         public static ManagementResourceRegistration create(final DescriptionProvider rootModelDescriptionProvider) {
             if (rootModelDescriptionProvider == null) {
-                throw new IllegalArgumentException("rootModelDescriptionProvider is null");
+                throw MESSAGES.nullVar("rootModelDescriptionProvider");
             }
             ResourceDefinition rootResourceDefinition = new ResourceDefinition() {
 
@@ -335,7 +337,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
          */
         public static ManagementResourceRegistration create(final ResourceDefinition resourceDefinition) {
             if (resourceDefinition == null) {
-                throw new IllegalArgumentException("rootModelDescriptionProviderFactory is null");
+                throw MESSAGES.nullVar("rootModelDescriptionProviderFactory");
             }
             return new ConcreteResourceRegistration(null, null, resourceDefinition, false);
         }

@@ -43,7 +43,8 @@ import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.protocol.mgmt.ManagementResponseHandler;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
-import org.jboss.logging.Logger;
+
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  *
@@ -51,8 +52,6 @@ import org.jboss.logging.Logger;
  * @version $Revision: 1.1 $
  */
 public abstract class AbstractModelControllerOperationHandler implements ManagementOperationHandler {
-
-    final Logger log = Logger.getLogger("org.jboss.as.controller.remote");
 
     protected final ExecutorService executorService;
     protected final ModelController controller;
@@ -168,7 +167,7 @@ public abstract class AbstractModelControllerOperationHandler implements Managem
                             wait();
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
-                            throw new RuntimeException("Thread was interrupted waiting to read attachment input stream from remote caller");
+                            throw MESSAGES.remoteCallerThreadInterrupted();
                         }
                         if (error != null) {
                             if (error instanceof IOException) {

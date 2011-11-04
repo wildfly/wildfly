@@ -21,6 +21,7 @@
  */
 package org.jboss.as.controller.descriptions.common;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALTERNATIVES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
@@ -352,7 +353,7 @@ public class InterfaceDescription {
                         final ModelNode v = value.get(name);
                         if(def.getType() == ModelType.STRING) {
                             if (ModelType.LIST != v.getType()) {
-                                throw new OperationFailedException(new ModelNode().set("invalid type " + v.getType()));
+                                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidType(v.getType())));
                             }
                         } else {
                             def.getValidator().validateParameter(name, v);

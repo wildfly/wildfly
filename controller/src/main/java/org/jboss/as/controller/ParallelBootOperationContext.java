@@ -37,6 +37,8 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 /**
  * {@link OperationContext} implementation for parallel handling of subsystem operations during boot.
  *
@@ -59,7 +61,7 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     @Override
     public void addStep(OperationStepHandler step, Stage stage) throws IllegalArgumentException {
         if (activeStep == null) {
-            throw new IllegalStateException("No active step");
+            throw MESSAGES.noActiveStep();
         }
         addStep(activeStep.response, activeStep.operation, step, stage);
     }
@@ -67,7 +69,7 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     @Override
     public void addStep(ModelNode operation, OperationStepHandler step, Stage stage) throws IllegalArgumentException {
         if (activeStep == null) {
-            throw new IllegalStateException("No active step");
+            throw MESSAGES.noActiveStep();
         }
         addStep(activeStep.response, operation, step, stage);
     }

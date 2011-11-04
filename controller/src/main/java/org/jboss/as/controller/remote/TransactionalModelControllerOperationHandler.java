@@ -21,6 +21,7 @@
  */
 package org.jboss.as.controller.remote;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
@@ -127,7 +128,7 @@ public class TransactionalModelControllerOperationHandler extends AbstractModelC
                             executeRequestContext.awaitTxCompleted();
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
-                            executeRequestContext.setError("Error waiting for Tx commit/rollback");
+                            executeRequestContext.setError(MESSAGES.errorWaitingForTransaction());
                         }
                         control.operationCompleted(result);
                     }
@@ -138,7 +139,7 @@ public class TransactionalModelControllerOperationHandler extends AbstractModelC
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 executeRequestContext.setError(e.getMessage());
-                throw new RequestProcessingException("Thread was interrupted waiting for the operation to prepare/fail");
+                throw MESSAGES.prepareFailThreadInterrupted();
             }
         }
     }
@@ -154,7 +155,7 @@ public class TransactionalModelControllerOperationHandler extends AbstractModelC
         protected void processRequest() throws RequestProcessingException {
             ExecuteRequestContext executeRequestContext = activeTransactions.get(getHeader().getBatchId());
             if (executeRequestContext == null) {
-                throw new RequestProcessingException("No active tx found for id " + getHeader().getBatchId());
+                throw MESSAGES.noActiveTransaction(getHeader().getBatchId());
             }
             executeRequestContext.setTxCompleted(commitOrRollback == ModelControllerProtocol.PARAM_COMMIT);
         }
@@ -213,7 +214,7 @@ public class TransactionalModelControllerOperationHandler extends AbstractModelC
             try {
                 executeRequestContext.awaitTxCompleted();
             } catch (InterruptedException e) {
-                executeRequestContext.setError("Interrupted while waiting for request");
+                executeRequestContext.setError(MESSAGES.interruptedWaitingForRequest());
                 Thread.currentThread().interrupt();
             }
         }
@@ -285,7 +286,7 @@ public class TransactionalModelControllerOperationHandler extends AbstractModelC
             this.batchId = batchId;
             closableKey = channel.addCloseHandler(new CloseHandler<Channel>() {
                 public void handleClose(final Channel closed, final IOException exception) {
-                    setError("Channel Closed");
+                    setError(MESSAGES.channelClosed());
                 }
             });
         }

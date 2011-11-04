@@ -25,13 +25,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.jboss.as.controller.ModelController;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import static org.jboss.as.controller.ControllerLogger.SERVER_MANAGEMENT_LOGGER;
 
 /**
  * Service used to create operation handlers per incoming channel
@@ -40,8 +41,6 @@ import org.jboss.msc.value.InjectedValue;
  * @version $Revision: 1.1 $
  */
 public abstract class AbstractModelControllerOperationHandlerFactoryService<T extends AbstractModelControllerOperationHandler> implements Service<ManagementOperationHandlerFactory>, ManagementOperationHandlerFactory{
-
-    protected static final Logger log = Logger.getLogger("org.jboss.server.management");
 
     public static final ServiceName OPERATION_HANDLER_NAME_SUFFIX = ServiceName.of("operation", "handler");
 
@@ -61,7 +60,7 @@ public abstract class AbstractModelControllerOperationHandlerFactoryService<T ex
     /** {@inheritDoc} */
     @Override
     public void start(StartContext context) throws StartException {
-        log.debugf("Starting operation handler service %s", context.getController().getName());
+        SERVER_MANAGEMENT_LOGGER.debugf("Starting operation handler service %s", context.getController().getName());
     }
 
     /** {@inheritDoc} */

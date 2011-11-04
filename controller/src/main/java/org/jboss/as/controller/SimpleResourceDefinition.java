@@ -34,6 +34,8 @@ import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 /**
  * Basic implementation of {@link ResourceDefinition}.
  *
@@ -62,10 +64,10 @@ public class SimpleResourceDefinition implements ResourceDefinition {
      */
     public SimpleResourceDefinition(final PathElement pathElement, final DescriptionProvider descriptionProvider) {
         if (pathElement == null) {
-            throw new IllegalArgumentException("pathElement is null");
+            throw MESSAGES.nullVar("pathElement");
         }
         if (descriptionProvider == null) {
-            throw new IllegalArgumentException("descriptionProvider is null");
+            throw MESSAGES.nullVar("descriptionProvider");
         }
         this.pathElement = pathElement;
         this.descriptionResolver = null;
@@ -124,10 +126,10 @@ public class SimpleResourceDefinition implements ResourceDefinition {
                                     final OperationStepHandler addHandler, final OperationStepHandler removeHandler,
                                     final OperationEntry.Flag addRestartLevel, final OperationEntry.Flag removeRestartLevel) {
         if (pathElement == null) {
-            throw new IllegalArgumentException("pathElement is null");
+            throw MESSAGES.nullVar("pathElement");
         }
         if (descriptionResolver == null) {
-            throw new IllegalArgumentException("descriptionResolver is null");
+            throw MESSAGES.nullVar("descriptionProvider");
         }
         this.pathElement = pathElement;
         this.descriptionResolver = descriptionResolver;
@@ -197,8 +199,7 @@ public class SimpleResourceDefinition implements ResourceDefinition {
 
     private static OperationEntry.Flag validateRestartLevel(String paramName, OperationEntry.Flag flag) {
         if (flag != null && !RESTART_FLAGS.contains(flag)) {
-            throw new IllegalArgumentException(String.format("%s is not a valid value for parameter" +
-                    " %s -- must be one of %s", flag, paramName, RESTART_FLAGS));
+            throw MESSAGES.invalidParameterValue(flag, paramName, RESTART_FLAGS);
         }
         return flag;
     }

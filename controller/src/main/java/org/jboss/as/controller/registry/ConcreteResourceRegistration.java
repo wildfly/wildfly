@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.registry;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 
 import java.util.Collections;
@@ -87,14 +88,14 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     @Override
     public ManagementResourceRegistration registerSubModel(final ResourceDefinition resourceDefinition) {
         if (resourceDefinition == null) {
-            throw new IllegalArgumentException("resourceDefinition is null");
+            throw MESSAGES.nullVar("resourceDefinition");
         }
         final PathElement address = resourceDefinition.getPathElement();
         if (address == null) {
-            throw new IllegalArgumentException("Cannot register submodels with a null PathElement");
+            throw MESSAGES.cannotRegisterSubmodelWithNullPath();
         }
         if (runtimeOnly) {
-            throw new IllegalStateException("Cannot register non-runtime-only submodels with a runtime-only parent");
+            throw MESSAGES.cannotRegisterSubmodel();
         }
         final String key = address.getKey();
         final NodeSubregistry child = getOrCreateSubregistry(key);
@@ -107,10 +108,10 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     @Override
     public void registerSubModel(final PathElement address, final ManagementResourceRegistration subModel) {
         if (address == null) {
-            throw new IllegalArgumentException("address is null");
+            throw MESSAGES.nullVar("address");
         }
         if (subModel == null) {
-            throw new IllegalArgumentException("subModel is null");
+            throw MESSAGES.nullVar("subModel");
         }
         final String key = address.getKey();
         final NodeSubregistry child = getOrCreateSubregistry(key);
@@ -455,8 +456,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     private IllegalArgumentException alreadyRegistered(final String type, final String name) {
-        return new IllegalArgumentException(String.format("An %s named '%s' is already registered at location '%s'",
-                type, name, getLocationString()));
+        return MESSAGES.alreadyRegistered(type, name, getLocationString());
     }
 
 }

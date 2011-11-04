@@ -24,6 +24,7 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -82,7 +83,7 @@ public class NamespaceRemoveHandler extends AbstractRemoveStepHandler implements
         if (toRemove != null) {
             namespaces.set(newList);
         } else {
-            throw new OperationFailedException(new ModelNode().set("No namespace with URI " + prefix + " found"));
+            throw new OperationFailedException(new ModelNode().set(MESSAGES.namespaceNotFound(prefix)));
         }
     }
 

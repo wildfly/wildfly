@@ -23,6 +23,8 @@
 package org.jboss.as.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADVANCED_FILTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY;
@@ -147,7 +149,6 @@ import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -164,9 +165,6 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelMarshallingContext> {
-
-    // TODO perhaps have this provided by subclasses via an abstract method
-    static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
     /** The restricted path names. */
     protected static final Set<String> RESTRICTED_PATHS;
@@ -204,7 +202,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         try {
             return InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
-            throw new RuntimeException("Unable to determine a default name based on the local host name", e);
+            throw MESSAGES.cannotDetermineDefaultName(e);
         }
     }
 
@@ -375,9 +373,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                    throw new XMLStreamException(String.format("Interrupted awaiting loading of module %s", entry.getKey()));
+                    throw MESSAGES.moduleLoadingInterrupted(entry.getKey());
                 } catch (ExecutionException e) {
-                    throw new XMLStreamException(String.format("Failed loading module %s", entry.getKey()), e);
+                    throw MESSAGES.failedToLoadModule(e, entry.getKey());
                 }
 
                 addExtensionAddOperation(address, list, entry.getKey());
@@ -385,8 +383,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
 
         long elapsed = System.currentTimeMillis() - start;
-        if (log.isDebugEnabled()) {
-            log.debugf("Parsed extensions in [%d] ms", elapsed);
+        if (ROOT_LOGGER.isDebugEnabled()) {
+            ROOT_LOGGER.debugf("Parsed extensions in [%d] ms", elapsed);
         }
     }
 
@@ -414,12 +412,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 }
             }
             if (!initialized) {
-                throw new IllegalStateException("No META-INF/services/" + Extension.class.getName() + " found for "
-                        + module.getIdentifier());
+                throw MESSAGES.notFound("META-INF/services/", Extension.class.getName(), module.getIdentifier());
             }
             return null;
         } catch (final ModuleLoadException e) {
-            return new XMLStreamException("Failed to load module", e);
+            throw MESSAGES.failedToLoadModule(e);
         }
 
     }
@@ -518,9 +515,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         }
 
                     } else {
-                        String msg = String.format("Element %s is not supported in a domain.xml file",
-                                element.getLocalName());
-                        log.warn(ParseUtils.getWarningMessage(msg, reader.getLocation()));
+                        ROOT_LOGGER.warn(ParseUtils.getWarningMessage(MESSAGES.elementNotSupported(element.getLocalName(), "domain.xml"), reader.getLocation()));
                     }
                     break;
                 }
@@ -1232,10 +1227,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     case NAME: {
                         name = value.trim();
                         if (RESTRICTED_PATHS.contains(value)) {
-                            throw new XMLStreamException(name + " is reserved", reader.getLocation());
+                            throw MESSAGES.reserved(name, reader.getLocation());
                         }
                         if (!defined.add(name)) {
-                            throw new XMLStreamException(name + " already defined", reader.getLocation());
+                            throw MESSAGES.alreadyDefined(name, reader.getLocation());
                         }
                         break;
                     }
@@ -1371,16 +1366,14 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     case PORT: {
                         port = Integer.parseInt(value);
                         if (port < 0) {
-                            throw new XMLStreamException("Illegal '" + attribute.getLocalName() + "' value " + port
-                                    + " -- cannot be negative", reader.getLocation());
+                            throw MESSAGES.invalidValueNegative(attribute.getLocalName(), port, reader.getLocation());
                         }
                         break;
                     }
                     case SECURE_PORT: {
                         securePort = Integer.parseInt(value);
                         if (securePort < 0) {
-                            throw new XMLStreamException("Illegal '" + attribute.getLocalName() + "' value " + securePort
-                                    + " -- cannot be negative", reader.getLocation());
+                            throw MESSAGES.invalidValueNegative(attribute.getLocalName(), securePort, reader.getLocation());
                         }
                         break;
                     }
@@ -1388,8 +1381,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     case MAX_THREADS: {
                         maxThreads = Integer.parseInt(value);
                         if (maxThreads < 1) {
-                            throw new XMLStreamException("Illegal '" + attribute.getLocalName() + "' value " + maxThreads
-                                    + " -- must be greater than 0", reader.getLocation());
+                            throw MESSAGES.invalidValueGreaterThan(attribute.getLocalName(), maxThreads, 0, reader.getLocation());
                         }
                         break;
                     }
@@ -1466,8 +1458,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     case PORT: {
                         port = Integer.parseInt(value);
                         if (port < 0) {
-                            throw new XMLStreamException("Illegal '" + attribute.getLocalName() + "' value " + port
-                                    + " -- cannot be negative", reader.getLocation());
+                            throw MESSAGES.invalidValueNegative(attribute.getLocalName(), port, reader.getLocation());
                         }
                         break;
                     }
@@ -1528,7 +1519,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                             throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
 
                         if (!jvmNames.add(value)) {
-                            throw new XMLStreamException("Duplicate JVM declaration " + value, reader.getLocation());
+                            throw MESSAGES.duplicateDeclaration("JVM", value, reader.getLocation());
                         }
                         name = value;
                         break;
@@ -1649,7 +1640,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 }
                 case ENVIRONMENT_VARIABLES: {
                     if (hasEnvironmentVariables) {
-                        throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
+                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
                     updates.add(Util.getWriteAttributeOperation(address, JVMHandlers.JVM_ENV_VARIABLES,
                             parseProperties(reader, expectedNs)));
@@ -1658,7 +1649,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 }
                 case JVM_OPTIONS: {
                     if (hasJvmOptions) {
-                        throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
+                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
                     parseJvmOptions(reader, address, expectedNs, updates);
                     hasJvmOptions = true;
@@ -1993,8 +1984,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     try {
                         content.get(HASH).set(HashUtil.hexStringToByteArray(value));
                     } catch (final Exception e) {
-                        throw new XMLStreamException("Value " + value + " for attribute " + attribute.getLocalName()
-                                + " does not represent a properly hex-encoded SHA1 hash", reader.getLocation(), e);
+                        throw MESSAGES.invalidSha1Value(e, value, attribute.getLocalName(), reader.getLocation());
                     }
                     break;
                 default:
@@ -2089,8 +2079,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 final String[] split = value.split("/");
                 try {
                     if (split.length != 2) {
-                        throw new XMLStreamException("Invalid 'value' " + value + " -- must be of the form address/mask",
-                                reader.getLocation());
+                        throw new XMLStreamException(MESSAGES.invalidAddressMaskValue(value), reader.getLocation());
                     }
                     // todo - possible DNS hit here
                     final InetAddress addr = InetAddress.getByName(split[0]);
@@ -2104,10 +2093,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     }
                     break;
                 } catch (final NumberFormatException e) {
-                    throw new XMLStreamException("Invalid mask " + split[1] + " (" + e.getLocalizedMessage() + ")",
+                    throw new XMLStreamException(MESSAGES.invalidAddressMask(split[0], e.getLocalizedMessage()),
                             reader.getLocation(), e);
                 } catch (final UnknownHostException e) {
-                    throw new XMLStreamException("Invalid address " + split[1] + " (" + e.getLocalizedMessage() + ")",
+                    throw new XMLStreamException(MESSAGES.invalidAddressValue(split[1], e.getLocalizedMessage()),
                             reader.getLocation(), e);
                 }
             }
@@ -2131,7 +2120,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             requireSingleAttribute(reader, Attribute.NAME.getLocalName());
             final String name = reader.getAttributeValue(0);
             if (!names.add(name)) {
-                throw new XMLStreamException("Duplicate interface declaration", reader.getLocation());
+                throw MESSAGES.duplicateInterfaceDeclaration(reader.getLocation());
             }
             final ModelNode interfaceAdd = new ModelNode();
             interfaceAdd.get(OP_ADDR).set(address).add(ModelDescriptionConstants.INTERFACE, name);
@@ -2173,12 +2162,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                                 throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
                             offset = Integer.parseInt(value);
                             if (offset < 0) {
-                                throw new XMLStreamException(offset + " is not a valid " + attribute.getLocalName()
-                                        + " -- must be greater than zero", reader.getLocation());
+                                throw MESSAGES.invalidValueGreaterThan(attribute.getLocalName(), offset, 0, reader.getLocation());
                             }
                         } catch (final NumberFormatException e) {
-                            throw new XMLStreamException(offset + " is not a valid " + attribute.getLocalName(),
-                                    reader.getLocation(), e);
+                            throw MESSAGES.invalid(e, offset, attribute.getLocalName(), reader.getLocation());
                         }
                         break;
                     }
@@ -2234,8 +2221,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     }
                     case INTERFACE: {
                         if (!interfaces.contains(value)) {
-                            throw new XMLStreamException("Unknown interface " + value + " " + attribute.getLocalName()
-                                    + " must be declared in element " + Element.INTERFACES.getLocalName(), reader.getLocation());
+                            throw MESSAGES.unknownInterface(value, attribute.getLocalName(),
+                                    Element.INTERFACES.getLocalName(), reader.getLocation());
                         }
                         binding.get(INTERFACE).set(value);
                         break;
@@ -2256,14 +2243,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                             try {
                                 final InetAddress mcastAddr = InetAddress.getByName(value);
                                 if (!mcastAddr.isMulticastAddress()) {
-                                    throw new XMLStreamException("Value " + value + " for attribute "
-                                            + attribute.getLocalName() + " is not a valid multicast address",
-                                            reader.getLocation());
+                                    throw MESSAGES.invalidMulticastAddress(value, attribute.getLocalName(), reader.getLocation());
                                 }
                                 binding.get(MULTICAST_ADDRESS).set(value);
                             } catch (final UnknownHostException e) {
-                                throw new XMLStreamException("Value " + value + " for attribute " + attribute.getLocalName()
-                                        + " is not a valid multicast address", reader.getLocation(), e);
+                                    throw MESSAGES.invalidMulticastAddress(e, value, attribute.getLocalName(), reader.getLocation());
                             }
                         }
                         break;
@@ -2313,8 +2297,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     }
                     case SOURCE_INTERFACE: {
                         if (!interfaces.contains(value)) {
-                            throw new XMLStreamException("Unknown " + Attribute.SOURCE_INTERFACE.getLocalName() + " " + value + " " + Element.INTERFACE.getLocalName()
-                                    + " must be declared in element " + Element.INTERFACES.getLocalName(), reader.getLocation());
+                            throw MESSAGES.unknownValueForElement(Attribute.SOURCE_INTERFACE.getLocalName(), value,
+                                    Element.INTERFACE.getLocalName(), Element.INTERFACES.getLocalName(), reader.getLocation());
                         }
                         outboundSocketBindingAddOperation.get(SOURCE_INTERFACE).set(value);
                         break;
@@ -2342,8 +2326,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             switch (Element.forName(reader.getLocalName())) {
                 case LOCAL_DESTINATION: {
                     if (mutuallyExclusiveElementAlreadyFound) {
-                        throw new XMLStreamException("A outbound socket binding: " + outboundSocketBindingName + " cannot have both " + Element.LOCAL_DESTINATION.getLocalName()
-                                + " as well as a " + Element.REMOTE_DESTINATION.getLocalName() + " at the same time", reader.getLocation());
+                        throw MESSAGES.invalidOutboundSocketBinding(outboundSocketBindingName, Element.LOCAL_DESTINATION.getLocalName(),
+                                Element.REMOTE_DESTINATION.getLocalName(), reader.getLocation());
                     } else {
                         mutuallyExclusiveElementAlreadyFound = true;
                     }
@@ -2357,8 +2341,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 }
                 case REMOTE_DESTINATION: {
                     if (mutuallyExclusiveElementAlreadyFound) {
-                        throw new XMLStreamException("A outbound socket binding: " + outboundSocketBindingName + " cannot have both " + Element.LOCAL_DESTINATION.getLocalName()
-                                + " as well as a " + Element.REMOTE_DESTINATION.getLocalName() + " at the same time", reader.getLocation());
+                        throw MESSAGES.invalidOutboundSocketBinding(outboundSocketBindingName, Element.LOCAL_DESTINATION.getLocalName(),
+                                Element.REMOTE_DESTINATION.getLocalName(), reader.getLocation());
                     } else {
                         mutuallyExclusiveElementAlreadyFound = true;
                     }
@@ -2707,7 +2691,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 break;
             default: {
                 // TODO we perhaps should just log a warning.
-                throw new RuntimeException("Unknown property in interface criteria list: " + property.getName());
+                throw MESSAGES.unknownCriteriaInterfaceProperty(property.getName());
             }
         }
     }

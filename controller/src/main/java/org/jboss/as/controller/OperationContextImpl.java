@@ -22,6 +22,9 @@
 
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,6 +37,7 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.sun.corba.se.spi.orbutil.fsm.State;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
@@ -121,7 +125,7 @@ final class OperationContextImpl extends AbstractOperationContext {
     @Override
     void awaitModelControllerContainerMonitor() throws InterruptedException {
         if (affectsRuntime) {
-            log.debugf("Entered VERIFY stage; waiting for service container to settle");
+            ROOT_LOGGER.debugf("Entered VERIFY stage; waiting for service container to settle");
             // First wait until any removals we've initiated have begun processing, otherwise
             // the ContainerStateMonitor may not have gotten the notification causing it to untick
             final Map<ServiceName, ServiceController<?>> map = realRemovingControllers;
@@ -164,10 +168,10 @@ final class OperationContextImpl extends AbstractOperationContext {
         assert isControllingThread();
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw new IllegalStateException("Operation already complete");
+            throw MESSAGES.operationAlreadyComplete();
         }
         if (currentStage != Stage.MODEL) {
-            throw new IllegalStateException("Stage MODEL is already complete");
+            throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
         }
         if (!affectsResourceRegistration) {
             takeWriteLock();
@@ -182,7 +186,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         assert isControllingThread();
         Stage currentStage = this.currentStage;
         if (currentStage == null || currentStage == Stage.DONE) {
-            throw new IllegalStateException("Operation already complete");
+            throw MESSAGES.operationAlreadyComplete();
         }
         ImmutableManagementResourceRegistration delegate = modelController.getRootRegistration().getSubModel(address);
         return delegate == null ? null : new DelegatingImmutableManagementResourceRegistration(delegate);
@@ -192,10 +196,10 @@ final class OperationContextImpl extends AbstractOperationContext {
         assert isControllingThread();
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw new IllegalStateException("Operation already complete");
+            throw MESSAGES.operationAlreadyComplete();
         }
         if (! (!modify || currentStage == Stage.RUNTIME || currentStage == Stage.MODEL || currentStage == Stage.VERIFY || isRollingBack())) {
-            throw new IllegalStateException("Get service registry only supported in runtime operations");
+            throw MESSAGES.serviceRegistryRuntimeOperationsOnly();
         }
         if (modify && !affectsRuntime) {
             takeWriteLock();
@@ -210,10 +214,10 @@ final class OperationContextImpl extends AbstractOperationContext {
         assert isControllingThread();
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw new IllegalStateException("Operation already complete");
+            throw MESSAGES.operationAlreadyComplete();
         }
         if (currentStage != Stage.RUNTIME && currentStage != Stage.VERIFY && !isRollingBack()) {
-            throw new IllegalStateException("Service removal only supported in runtime operations");
+            throw MESSAGES.serviceRemovalRuntimeOperationsOnly();
         }
         if (!affectsRuntime) {
             takeWriteLock();
@@ -232,10 +236,10 @@ final class OperationContextImpl extends AbstractOperationContext {
         assert isControllingThread();
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw new IllegalStateException("Operation already complete");
+            throw MESSAGES.operationAlreadyComplete();
         }
         if (currentStage != Stage.RUNTIME && currentStage != Stage.VERIFY && !isRollingBack()) {
-            throw new IllegalStateException("Service removal only supported in runtime operations");
+            throw MESSAGES.serviceRemovalRuntimeOperationsOnly();
         }
         if (!affectsRuntime) {
             takeWriteLock();
@@ -281,10 +285,10 @@ final class OperationContextImpl extends AbstractOperationContext {
         assert isControllingThread();
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw new IllegalStateException("Operation already complete");
+            throw MESSAGES.operationAlreadyComplete();
         }
         if (currentStage != Stage.RUNTIME && currentStage != Stage.VERIFY && !isRollingBack()) {
-            throw new IllegalStateException("Get service target only supported in runtime operations");
+            throw MESSAGES.serviceTargetRuntimeOperationsOnly();
         }
         if (!affectsRuntime) {
             takeWriteLock();
@@ -298,14 +302,14 @@ final class OperationContextImpl extends AbstractOperationContext {
     private void takeWriteLock() {
         if (lockStep == null) {
             if (currentStage == Stage.DONE) {
-                throw new IllegalStateException("Invalid modification after completed step");
+                throw MESSAGES.invalidModificationAfterCompletedStep();
             }
             try {
                 modelController.acquireLock(respectInterruption);
                 lockStep = activeStep;
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new CancellationException("Operation cancelled asynchronously");
+                throw MESSAGES.operationCancelledAsynchronously();
             }
         }
     }
@@ -313,7 +317,7 @@ final class OperationContextImpl extends AbstractOperationContext {
     private void acquireContainerMonitor() {
         if (containerMonitorStep == null) {
             if (currentStage == Stage.DONE) {
-                throw new IllegalStateException("Invalid modification after completed step");
+                throw MESSAGES.invalidModificationAfterCompletedStep();
             }
             modelController.acquireContainerMonitor();
             containerMonitorStep = activeStep;
@@ -325,7 +329,7 @@ final class OperationContextImpl extends AbstractOperationContext {
             modelController.awaitContainerMonitor(respectInterruption, 1);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new CancellationException("Operation cancelled asynchronously");
+            throw MESSAGES.operationCancelledAsynchronously();
         }
     }
 
@@ -334,7 +338,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         assert isControllingThread();
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw new IllegalStateException("Operation already complete");
+            throw MESSAGES.operationAlreadyComplete();
         }
         Resource model = this.model;
         for (final PathElement element : address) {
@@ -349,10 +353,10 @@ final class OperationContextImpl extends AbstractOperationContext {
         assert isControllingThread();
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw new IllegalStateException("Operation already complete");
+            throw MESSAGES.operationAlreadyComplete();
         }
         if (currentStage != Stage.MODEL) {
-            throw new IllegalStateException("Stage MODEL is already complete");
+            throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
         }
         if (!isModelAffected()) {
             takeWriteLock();
@@ -364,7 +368,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         while (i.hasNext()) {
             final PathElement element = i.next();
             if (element.isMultiTarget()) {
-                throw new IllegalArgumentException("Cannot write to *");
+                throw MESSAGES.cannotWriteTo("*");
             }
             if (! i.hasNext()) {
                 final String key = element.getKey();
@@ -372,7 +376,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                     final PathAddress parent = address.subAddress(0, address.size() -1);
                     final Set<String> childrenNames = modelController.getRootRegistration().getChildNames(parent);
                     if(!childrenNames.contains(key)) {
-                        throw new IllegalStateException("no child-type " + key);
+                        throw MESSAGES.noChildType(key);
                     }
                     final Resource newModel = Resource.Factory.create();
                     model.registerChild(element, newModel);
@@ -395,7 +399,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         assert isControllingThread();
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw new IllegalStateException("Operation already complete");
+            throw MESSAGES.operationAlreadyComplete();
         }
         Resource model = this.model;
         for (final PathElement element : address) {
@@ -409,10 +413,10 @@ final class OperationContextImpl extends AbstractOperationContext {
         assert isControllingThread();
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw new IllegalStateException("Operation already complete");
+            throw MESSAGES.operationAlreadyComplete();
         }
         if (currentStage != Stage.MODEL) {
-            throw new IllegalStateException("Stage MODEL is already complete");
+            throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
         }
         if (!isModelAffected()) {
             takeWriteLock();
@@ -422,7 +426,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         Resource resource = this.model;
         for (PathElement element : address) {
             if (element.isMultiTarget()) {
-                throw new IllegalArgumentException("Cannot write to *");
+                throw MESSAGES.cannotWriteTo("*");
             }
             resource = resource.requireChild(element);
         }
@@ -440,13 +444,13 @@ final class OperationContextImpl extends AbstractOperationContext {
         assert isControllingThread();
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw new IllegalStateException("Operation already complete");
+            throw MESSAGES.operationAlreadyComplete();
         }
         if (currentStage != Stage.MODEL) {
-            throw new IllegalStateException("Stage MODEL is already complete");
+            throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
         }
         if (absoluteAddress.size() == 0) {
-            throw new IllegalStateException("Duplicate resource " + absoluteAddress);
+            throw MESSAGES.duplicateResource(absoluteAddress);
         }
         if (!isModelAffected()) {
             takeWriteLock();
@@ -458,17 +462,17 @@ final class OperationContextImpl extends AbstractOperationContext {
         while (i.hasNext()) {
             final PathElement element = i.next();
             if (element.isMultiTarget()) {
-                throw new IllegalArgumentException("Cannot write to *");
+                throw MESSAGES.cannotWriteTo("*");
             }
             if (! i.hasNext()) {
                 final String key = element.getKey();
                 if(model.hasChild(element)) {
-                    throw new IllegalStateException("Duplicate resource " + absoluteAddress);
+                    throw MESSAGES.duplicateResource(absoluteAddress);
                 } else {
                     final PathAddress parent = absoluteAddress.subAddress(0, absoluteAddress.size() -1);
                     final Set<String> childrenNames = modelController.getRootRegistration().getChildNames(parent);
                     if(!childrenNames.contains(key)) {
-                        throw new IllegalStateException("no child-type " + key);
+                        throw MESSAGES.noChildType(key);
                     }
                     model.registerChild(element, toAdd);
                     model = toAdd;
@@ -483,8 +487,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                             break;
                         }
                     }
-                    throw new IllegalStateException(String.format("Resource %s does not exist; a resource at " +
-                            "address %s cannot be created until all ancestor resources have been added", ancestor, absoluteAddress));
+                    throw MESSAGES.resourceNotFound(ancestor, absoluteAddress);
                 }
             }
         }
@@ -495,10 +498,10 @@ final class OperationContextImpl extends AbstractOperationContext {
         assert isControllingThread();
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw new IllegalStateException("Operation already complete");
+            throw MESSAGES.operationAlreadyComplete();
         }
         if (currentStage != Stage.MODEL) {
-            throw new IllegalStateException("Stage MODEL is already complete");
+            throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
         }
         if (!isModelAffected()) {
             takeWriteLock();
@@ -510,7 +513,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         while (i.hasNext()) {
             final PathElement element = i.next();
             if (element.isMultiTarget()) {
-                throw new IllegalArgumentException("Cannot remove *");
+                throw MESSAGES.cannotRemove("*");
             }
             if (! i.hasNext()) {
                 model = model.removeChild(element);
@@ -771,7 +774,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                     map.wait();
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
-                    throw new CancellationException("Service install was cancelled");
+                    throw MESSAGES.serviceInstallCancelled();
                 }
                 boolean intr = false;
                 try {
@@ -786,7 +789,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                     } catch (InterruptedException e) {
                         if (respectInterruption) {
                             Thread.currentThread().interrupt();
-                            throw new CancellationException("Service install was cancelled");
+                            throw MESSAGES.serviceInstallCancelled();
                         } else {
                             intr = true;
                         }
@@ -840,11 +843,9 @@ final class OperationContextImpl extends AbstractOperationContext {
             for (Map.Entry<Step, Map<ServiceName, Set<ServiceName>>> entry : missingByStep.entrySet()) {
                 Step step = entry.getKey();
                 if (!step.response.hasDefined(ModelDescriptionConstants.FAILURE_DESCRIPTION)) {
-                    StringBuilder sb = new StringBuilder("Removing services has lead to unsatisfied dependencies:");
+                    StringBuilder sb = new StringBuilder(MESSAGES.removingServiceUnsatisfiedDependencies());
                     for (Map.Entry<ServiceName, Set<ServiceName>> removed : entry.getValue().entrySet()) {
-                        sb.append("\nService ");
-                        sb.append(removed.getKey().getCanonicalName());
-                        sb.append(" was depended upon by ");
+                        sb.append(MESSAGES.removingServiceUnsatisfiedDependencies(removed.getKey().getCanonicalName()));
                         boolean first = true;
                         for (ServiceName dependent : removed.getValue()) {
                             if (!first) {

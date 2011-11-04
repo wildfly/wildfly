@@ -9,6 +9,8 @@ import java.net.SocketException;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 /**
  * {@link InterfaceCriteria} that tests whether a given network interface and
  * address satisfy <i>any</i> of a contained set of {@link InterfaceCriteria}.
@@ -31,7 +33,7 @@ public class AnyInterfaceCriteria implements InterfaceCriteria {
      */
     public AnyInterfaceCriteria(Set<InterfaceCriteria> criteria) {
         if (criteria == null)
-            throw new IllegalArgumentException("criteria is null");
+            throw MESSAGES.nullVar("criteria");
         this.criteria.addAll(criteria);
     }
 

@@ -36,7 +36,8 @@ import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
+
+import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
 
 /**
  * A {@link org.jboss.as.controller.OperationStepHandler} that can output a model in XML form
@@ -44,8 +45,6 @@ import org.jboss.logging.Logger;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class XmlMarshallingHandler implements OperationStepHandler, DescriptionProvider {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
     public static final String OPERATION_NAME = CommonDescriptions.READ_CONFIG_AS_XML;
 
@@ -81,7 +80,7 @@ public class XmlMarshallingHandler implements OperationStepHandler, DescriptionP
             throw e;
         } catch (Exception e) {
             // Log this
-            log.errorf(e, "Failed executing operation %s at address %s", operation.require(ModelDescriptionConstants.OP),
+            ROOT_LOGGER.failedExecutingOperation(e, operation.require(ModelDescriptionConstants.OP),
                     PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
             context.getFailureDescription().set(e.toString());
         }
@@ -96,7 +95,7 @@ public class XmlMarshallingHandler implements OperationStepHandler, DescriptionP
         if (closeable != null) try {
             closeable.close();
         } catch (Throwable t) {
-            log.errorf(t, "Failed to close resource %s", closeable);
+            ROOT_LOGGER.failedToCloseResource(t, closeable);
         }
     }
 }

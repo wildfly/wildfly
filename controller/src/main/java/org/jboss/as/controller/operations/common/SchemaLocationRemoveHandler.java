@@ -24,6 +24,7 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATION;
@@ -82,7 +83,7 @@ public class SchemaLocationRemoveHandler extends AbstractRemoveStepHandler imple
         if (toRemove != null) {
             locations.set(newList);
         } else {
-            throw new OperationFailedException(new ModelNode().set("No schema location with URI " + uri + "found"));
+            throw new OperationFailedException(new ModelNode().set(MESSAGES.schemaNotFound(uri)));
         }
     }
 

@@ -7,6 +7,8 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 /**
  * {@link InterfaceCriteria} that tests whether a given name matches the
  * network interface's {@link NetworkInterface#getName() name}.
@@ -29,7 +31,7 @@ public class NicInterfaceCriteria implements InterfaceCriteria {
      */
     public NicInterfaceCriteria(String name) {
         if (name == null)
-            throw new IllegalArgumentException("name is null");
+            throw MESSAGES.nullVar("name");
         this.name = name;
     }
 

@@ -31,18 +31,18 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
+import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ContainerStateMonitor extends AbstractServiceListener<Object> {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
     private final ServiceRegistry serviceRegistry;
     private final ServiceController<?> controllerController;
@@ -189,7 +189,7 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
                 if (changeReport != null) {
                     final String msg = createChangeReportLogMessage(changeReport);
                     changeReport = null;
-                    log.info(msg);
+                    ROOT_LOGGER.info(msg);
                 }
             }
         }
@@ -247,31 +247,30 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
 
     private synchronized String createChangeReportLogMessage(ContainerStateChangeReport changeReport) {
 
-        // TODO i18n
         final StringBuilder msg = new StringBuilder();
-        msg.append("Service status report\n");
+        msg.append(MESSAGES.serviceStatusReportHeader());
         if (!changeReport.getMissingServices().isEmpty()) {
-            msg.append("   New missing/unsatisfied dependencies:\n");
+            msg.append(MESSAGES.serviceStatusReportDependencies());
             for (Map.Entry<ServiceName, MissingDependencyInfo> entry : changeReport.getMissingServices().entrySet()) {
                 if (!entry.getValue().isUnavailable()) {
-                    msg.append("      ").append(entry.getKey()).append(" (missing)\n");
+                    msg.append(MESSAGES.serviceStatusReportMissing(entry.getKey()));
                 } else {
-                    msg.append("      ").append(entry.getKey()).append(" (unavailable)\n");
+                    msg.append(MESSAGES.serviceStatusReportUnavailable(entry.getKey()));
                 }
             }
         }
         if (!changeReport.getNoLongerMissingServices().isEmpty()) {
-            msg.append("   Newly corrected services:\n");
+            msg.append(MESSAGES.serviceStatusReportCorrected());
             for (Map.Entry<ServiceName, Boolean> entry : changeReport.getNoLongerMissingServices().entrySet()) {
                 if (!entry.getValue()) {
-                    msg.append("      ").append(entry.getKey()).append(" (no longer required)\n");
+                    msg.append(MESSAGES.serviceStatusReportNoLongerRequired(entry.getKey()));
                 } else {
-                    msg.append("      ").append(entry.getKey()).append(" (now available)\n");
+                    msg.append(MESSAGES.serviceStatusReportAvailable(entry.getKey()));
                 }
             }
         }
         if (!changeReport.getFailedControllers().isEmpty()) {
-            msg.append("  Services which failed to start:\n");
+            msg.append(MESSAGES.serviceStatusReportFailed());
             for (Map.Entry<ServiceController<?>, String> entry : changeReport.getFailedControllers().entrySet()) {
                 msg.append("      ").append(entry.getKey().getName()).append(": ").append(entry.getValue()).append('\n');
             }

@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
@@ -58,13 +60,13 @@ public final class ExtensionContextImpl implements ExtensionContext {
             final ManagementResourceRegistration deploymentOverrideRegistration,
             final SubsystemXmlWriterRegistry writerRegistry, ProcessType processType) {
         if (profileRegistration == null) {
-            throw new IllegalArgumentException("profileRegistration is null");
+            throw MESSAGES.nullVar("profileRegistration");
         }
 //        if (deploymentOverrideRegistration == null) {
 //            throw new IllegalArgumentException("deploymentOverrideRegistration is null");
 //        }
         if (writerRegistry == null) {
-            throw new IllegalArgumentException("writerRegistry is null");
+            throw MESSAGES.nullVar("writerRegistry");
         }
         this.processType = processType;
         this.profileRegistration = profileRegistration;
@@ -88,13 +90,13 @@ public final class ExtensionContextImpl implements ExtensionContext {
     @Override
     public SubsystemRegistration registerSubsystem(final String name) throws IllegalArgumentException {
         if (name == null) {
-            throw new IllegalArgumentException("name is null");
+            throw MESSAGES.nullVar("name");
         }
         return new SubsystemRegistration() {
             @Override
             public ManagementResourceRegistration registerSubsystemModel(final DescriptionProvider descriptionProvider) {
                 if (descriptionProvider == null) {
-                    throw new IllegalArgumentException("descriptionProvider is null");
+                    throw MESSAGES.nullVar("descriptionProvider");
                 }
                 PathElement pathElement = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, name);
                 return registerSubsystemModel(new SimpleResourceDefinition(pathElement, descriptionProvider));
@@ -103,7 +105,7 @@ public final class ExtensionContextImpl implements ExtensionContext {
             @Override
             public ManagementResourceRegistration registerSubsystemModel(ResourceDefinition resourceDefinition) {
                 if (resourceDefinition == null) {
-                    throw new IllegalArgumentException("descriptionProviderFactory is null");
+                    throw MESSAGES.nullVar("descriptionProviderFactory");
                 }
                 return profileRegistration.registerSubModel(resourceDefinition);
             }
@@ -111,7 +113,7 @@ public final class ExtensionContextImpl implements ExtensionContext {
             @Override
             public ManagementResourceRegistration registerDeploymentModel(final DescriptionProvider descriptionProvider) {
                 if (descriptionProvider == null) {
-                    throw new IllegalArgumentException("descriptionProvider is null");
+                    throw MESSAGES.nullVar("descriptionProvider");
                 }
                 PathElement pathElement = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, name);
                 return registerDeploymentModel(new SimpleResourceDefinition(pathElement, descriptionProvider));
@@ -120,7 +122,7 @@ public final class ExtensionContextImpl implements ExtensionContext {
             @Override
             public ManagementResourceRegistration registerDeploymentModel(ResourceDefinition resourceDefinition) {
                 if (resourceDefinition == null) {
-                    throw new IllegalArgumentException("descriptionProviderFactory is null");
+                    throw MESSAGES.nullVar("descriptionProviderFactory");
                 }
                 return subsystemDeploymentRegistration.registerSubModel(resourceDefinition);
             }
