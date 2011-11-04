@@ -55,13 +55,13 @@
         <security-realms>
             <security-realm name="ManagementRealm">
                 <authentication>
-                    <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir" plain-text="true"/>
+                    <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir"/>
                 </authentication>
             </security-realm>
         </security-realms>
         <management-interfaces>
-            <native-interface interface="management" port="9999"/>
-            <http-interface interface="management" port="9990"/>
+            <native-interface interface="management" port="9999" security-realm="ManagementRealm"/>
+            <http-interface interface="management" port="9990" security-realm="ManagementRealm"/>
         </management-interfaces>
     </management>
 
