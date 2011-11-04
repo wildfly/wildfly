@@ -35,6 +35,8 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 /**
  * A registry of values within a specific key type.
  */
@@ -81,7 +83,7 @@ final class NodeSubregistry {
         }
         final AbstractResourceRegistration appearingRegistry = childRegistriesUpdater.putIfAbsent(this, elementValue, newRegistry);
         if (appearingRegistry != null) {
-            throw new IllegalArgumentException("A node is already registered at '" + getLocationString() + elementValue + ")'");
+            throw MESSAGES.nodeAlreadyRegistered(getLocationString(), elementValue);
         }
     }
 
@@ -89,7 +91,7 @@ final class NodeSubregistry {
         final ProxyControllerRegistration newRegistry = new ProxyControllerRegistration(elementValue, this, proxyController);
         final AbstractResourceRegistration appearingRegistry = childRegistriesUpdater.putIfAbsent(this, elementValue, newRegistry);
         if (appearingRegistry != null) {
-            throw new IllegalArgumentException("A node is already registered at '" + getLocationString() + elementValue + ")'");
+            throw MESSAGES.nodeAlreadyRegistered(getLocationString(), elementValue);
         }
         //register(elementValue, newRegistry);
         return newRegistry;

@@ -19,6 +19,7 @@
 package org.jboss.as.controller.operations.common;
 
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATION;
@@ -89,7 +90,7 @@ public class SchemaLocationAddHandler extends AbstractModelUpdateHandler impleme
             String uriString = uri.asString();
             for (ModelNode node : locations.asList()) {
                 if (uriString.equals(node.asProperty().getName())) {
-                    throw new OperationFailedException(new ModelNode().set("Schema with URI " + uriString + " already registered with location " + node.asProperty().getValue().asString()));
+                    throw new OperationFailedException(new ModelNode().set(MESSAGES.schemaAlreadyRegistered(uriString, node.asProperty().getValue().asString())));
                 }
             }
         }

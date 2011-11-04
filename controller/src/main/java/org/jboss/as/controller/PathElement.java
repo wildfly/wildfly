@@ -25,6 +25,8 @@ package org.jboss.as.controller;
 import java.util.regex.Pattern;
 import org.jboss.dmr.Property;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 /**
  * An element of a path specification for matching operations with addresses.
  * @author Brian Stansberry
@@ -81,10 +83,10 @@ public class PathElement {
      */
     PathElement(final String key, final String value) {
         if (key == null || !VALID_KEY_PATTERN.matcher(key).matches()) {
-            throw new IllegalArgumentException("Invalid key specification" + key);
+            throw MESSAGES.invalidKey(key);
         }
         if (value == null || !VALID_VALUE_PATTERN.matcher(value).matches()) {
-            throw new IllegalArgumentException("Invalid value specification " + value);
+            throw MESSAGES.invalidValue(value);
         }
         boolean multiTarget = false;
         if(key.equals(WILDCARD_VALUE)) {

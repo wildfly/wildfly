@@ -24,6 +24,8 @@ package org.jboss.as.controller.persistence;
 
 import org.jboss.dmr.ModelNode;
 
+import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
+
 /**
  * {@link ConfigurationPersister.PersistenceResource} that persists to a configuration file upon commit, also
  * ensuring proper backup copies are made.
@@ -47,7 +49,7 @@ public class ConfigurationFilePersistenceResource extends FilePersistenceResourc
             super.commit();
             configurationFile.fileWritten();
         } catch (ConfigurationPersistenceException e) {
-           log.errorf(e, e.toString());
+           ROOT_LOGGER.errorf(e, e.toString());
         }
     }
 }

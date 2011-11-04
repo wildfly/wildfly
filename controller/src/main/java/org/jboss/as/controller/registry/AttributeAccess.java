@@ -27,6 +27,8 @@ import java.util.Set;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 /**
  * Information about handling an attribute in a sub-model.
  *
@@ -118,15 +120,15 @@ public final class AttributeAccess {
 
     AttributeAccess(final AccessType access, final Storage storage, final OperationStepHandler readHandler,
                     final OperationStepHandler writeHandler, AttributeDefinition definition, final EnumSet<Flag> flags) {
-        assert access != null : "access is null";
-        assert storage != null : "storage is null";
+        assert access != null : MESSAGES.nullVar("access").getLocalizedMessage();
+        assert storage != null : MESSAGES.nullVar("storage").getLocalizedMessage();
         this.access = access;
         this.readHandler = readHandler;
         this.writeHandler = writeHandler;
         this.storage = storage;
         this.definition = definition;
         if(access == AccessType.READ_WRITE && writeHandler == null) {
-            throw new IllegalArgumentException("writeHandler is null");
+            throw MESSAGES.nullVar("writeHandler");
         }
         this.flags = flags == null ? EnumSet.noneOf(Flag.class) : EnumSet.copyOf(flags);
         switch (storage) {
@@ -139,7 +141,7 @@ public final class AttributeAccess {
                 this.flags.remove(Flag.STORAGE_CONFIGURATION);
                 break;
             default:
-                throw new IllegalStateException("unexpected storage " + storage);
+                throw MESSAGES.unexpectedStorage(storage);
         }
     }
 

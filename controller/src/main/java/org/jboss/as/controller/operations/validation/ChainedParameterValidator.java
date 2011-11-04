@@ -27,6 +27,8 @@ import java.util.List;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
@@ -35,7 +37,8 @@ public class ChainedParameterValidator extends AbstractParameterValidator implem
 
 
     public ChainedParameterValidator(final ParameterValidator... validators) {
-        assert validators != null : "validators is null";
+        if (validators == null)
+            throw MESSAGES.nullVar("validators");
         this.validators = validators;
     }
 

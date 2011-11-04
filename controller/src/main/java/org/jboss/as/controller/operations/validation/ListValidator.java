@@ -24,6 +24,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 /**
  * Validates parameters of type {@link ModelType#LIST}.
  *
@@ -61,7 +63,8 @@ public class ListValidator extends ModelTypeValidator implements ParameterValida
      */
     public ListValidator(ParameterValidator elementValidator, boolean nullable, int minSize, int maxSize) {
         super(ModelType.LIST, nullable, false, true);
-        assert elementValidator != null : "elementValidator is null";
+        if (elementValidator == null)
+            throw MESSAGES.nullVar("elementValidator");
         this.min = minSize;
         this.max = maxSize;
         this.elementValidator = elementValidator;
@@ -74,10 +77,10 @@ public class ListValidator extends ModelTypeValidator implements ParameterValida
             List<ModelNode> list = value.asList();
             int size = list.size();
             if (size < min) {
-                throw new OperationFailedException(new ModelNode().set(String.format("[%d] is an invalid size for parameter %s. A minimum length of [%d] is required", size, parameterName, min)));
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidMinSize(size, parameterName, min)));
             }
             else if (size > max) {
-                throw new OperationFailedException(new ModelNode().set(String.format("[%d] is an invalid size for parameter %s. A maximum length of [%d] is required", size, parameterName, max)));
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidMaxSize(size, parameterName, max)));
             }
             else {
                 for (ModelNode element : list) {

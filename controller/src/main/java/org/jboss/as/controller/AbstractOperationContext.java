@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -45,7 +47,6 @@ import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 
 /**
  * Operation context implementation.
@@ -53,8 +54,6 @@ import org.jboss.logging.Logger;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 abstract class AbstractOperationContext implements OperationContext {
-
-    static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
     static final ThreadLocal<Thread> controllingThread = new ThreadLocal<Thread>();
 
@@ -110,33 +109,33 @@ abstract class AbstractOperationContext implements OperationContext {
                          final OperationStepHandler step, final Stage stage) throws IllegalArgumentException {
         assert isControllingThread();
         if (response == null) {
-            throw new IllegalArgumentException("response is null");
+            throw MESSAGES.nullVar("response");
         }
         if (operation == null) {
-            throw new IllegalArgumentException("operation is null");
+            throw MESSAGES.nullVar("operation");
         }
         if (step == null) {
-            throw new IllegalArgumentException("step is null");
+            throw MESSAGES.nullVar("step");
         }
         if (stage == null) {
-            throw new IllegalArgumentException("stage is null");
+            throw MESSAGES.nullVar("stage");
         }
         if (currentStage == Stage.DONE) {
-            throw new IllegalStateException("Operation already complete");
+            throw MESSAGES.operationAlreadyComplete();
         }
         if (stage.compareTo(currentStage) < 0 && (stage != Stage.IMMEDIATE || currentStage == Stage.DONE)) {
-            throw new IllegalStateException("Stage " + stage + " is already complete");
+            throw MESSAGES.stageAlreadyComplete(stage);
         }
         if (contextType == Type.MANAGEMENT && stage.compareTo(Stage.MODEL) > 0) {
             if(stage != Stage.VERIFY) { // allow verification also in mgmt mode
-                throw new IllegalArgumentException("Invalid step stage for this context type");
+                throw MESSAGES.invalidStepStageForContext();
             }
         }
         if (stage == Stage.DOMAIN && contextType != Type.HOST) {
-            throw new IllegalStateException("Stage " + stage + " is not valid for context type " + contextType);
+            throw MESSAGES.invalidStage(stage, contextType);
         }
         if (stage == Stage.DONE) {
-            throw new IllegalArgumentException("Invalid step stage specified");
+            throw MESSAGES.invalidStepStage();
         }
         if (stage == Stage.IMMEDIATE) {
             steps.get(currentStage).addFirst(new Step(step, response, operation, address));
@@ -157,9 +156,9 @@ abstract class AbstractOperationContext implements OperationContext {
         try {
             doCompleteStep();
             if (resultAction == ResultAction.KEEP) {
-                report(MessageSeverity.INFO, "Operation succeeded, committing");
+                report(MessageSeverity.INFO, MESSAGES.operationSucceeded());
             } else {
-                report(MessageSeverity.INFO, "Operation rolling back");
+                report(MessageSeverity.INFO, MESSAGES.operationRollingBack());
             }
             return resultAction;
         } finally {
@@ -169,7 +168,7 @@ abstract class AbstractOperationContext implements OperationContext {
 
     public final void completeStep(RollbackHandler rollbackHandler) {
         if (rollbackHandler == null) {
-            throw new IllegalArgumentException("rollbackHandler is null");
+            throw MESSAGES.nullVar("rollbackHandler");
         }
         this.activeStep.rollbackHandler = rollbackHandler;
         // we return and executeStep picks it up
@@ -183,7 +182,7 @@ abstract class AbstractOperationContext implements OperationContext {
         assert isControllingThread();
         // If someone called this when the operation is done, fail.
         if (currentStage == null) {
-            throw new IllegalStateException("Operation already complete");
+            throw MESSAGES.operationAlreadyComplete();
         }
 
         // If previous steps have put us in a state where we shouldn't do any more, just stop
@@ -210,7 +209,7 @@ abstract class AbstractOperationContext implements OperationContext {
                             cancelled = true;
                             if (response != null) {
                                 response.get(OUTCOME).set(CANCELLED);
-                                response.get(FAILURE_DESCRIPTION).set("Operation cancelled");
+                                response.get(FAILURE_DESCRIPTION).set(MESSAGES.operationCancelled());
                                 response.get(ROLLED_BACK).set(true);
                             }
                             resultAction = ResultAction.ROLLBACK;
@@ -248,10 +247,10 @@ abstract class AbstractOperationContext implements OperationContext {
             try {
                 persistenceResource = createPersistenceResource();
             } catch (ConfigurationPersistenceException e) {
-                log.errorf(e, "Failed to persist configuration change");
+                ROOT_LOGGER.failedToPersistConfigurationChange(e);
                 if (response != null) {
                     response.get(OUTCOME).set(FAILED);
-                    response.get(FAILURE_DESCRIPTION).set("Failed to persist configuration change: " + e);
+                    response.get(FAILURE_DESCRIPTION).set(MESSAGES.failedToPersistConfigurationChange(e.getLocalizedMessage()));
                 }
                 resultAction = ResultAction.ROLLBACK;
                 return;
@@ -261,8 +260,8 @@ abstract class AbstractOperationContext implements OperationContext {
         // Allow any containing TransactionControl to vote
         final AtomicReference<ResultAction> ref = new AtomicReference<ResultAction>(transactionControl == null ? ResultAction.KEEP : ResultAction.ROLLBACK);
         if (transactionControl != null) {
-            if (log.isTraceEnabled()) {
-                log.trace("Prepared response is " + response);
+            if (ROOT_LOGGER.isTraceEnabled()) {
+                ROOT_LOGGER.trace("Prepared response is " + response);
             }
             transactionControl.operationPrepared(new ModelController.OperationTransaction() {
                 public void commit() {
@@ -303,7 +302,7 @@ abstract class AbstractOperationContext implements OperationContext {
         if (cancelled) {
             if (activeStep != null) {
                 activeStep.response.get(OUTCOME).set(CANCELLED);
-                activeStep.response.get(FAILURE_DESCRIPTION).set("Operation cancelled");
+                activeStep.response.get(FAILURE_DESCRIPTION).set(MESSAGES.operationCancelled());
                 activeStep.response.get(ROLLED_BACK).set(true);
             }
             resultAction = ResultAction.ROLLBACK;
@@ -335,8 +334,7 @@ abstract class AbstractOperationContext implements OperationContext {
                     // Handler threw OFE before calling completeStep(); that's equivalent to
                     // a request that we set the failure description and call completeStep()
                     step.response.get(FAILURE_DESCRIPTION).set(ofe.getFailureDescription());
-                    log.errorf("Operation (%s) failed - address: (%s) - failure description: %s",
-                            step.operation.get(OP), step.operation.get(OP_ADDR), step.response.get(FAILURE_DESCRIPTION));
+                    ROOT_LOGGER.operationFailed(step.operation.get(OP), step.operation.get(OP_ADDR), step.response.get(FAILURE_DESCRIPTION));
                     completeStep();
                 }
                 else {
@@ -347,20 +345,17 @@ abstract class AbstractOperationContext implements OperationContext {
             }
         } catch (Throwable t) {
             if (t instanceof StackOverflowError) {
-                log.errorf(t, "Operation (%s) failed - address: (%s) -- due to insufficient stack space for the thread used to " +
-                        "execute operations. If this error is occurring during server boot, setting " +
-                        "system property %s to a value higher than [%d] may resolve this problem.",
-                        step.operation.get(OP), step.operation.get(OP_ADDR), AbstractControllerService.BOOT_STACK_SIZE_PROPERTY,
+                ROOT_LOGGER.operationFailed(t, step.operation.get(OP), step.operation.get(OP_ADDR), AbstractControllerService.BOOT_STACK_SIZE_PROPERTY,
                         AbstractControllerService.DEFAULT_BOOT_STACK_SIZE);
             } else {
-                log.errorf(t, "Operation (%s) failed - address: (%s)", step.operation.get(OP), step.operation.get(OP_ADDR));
+                ROOT_LOGGER.operationFailed(t, step.operation.get(OP), step.operation.get(OP_ADDR));
             }
             // If this block is entered, then the step failed
             // The question is, did it fail before or after calling completeStep()?
             if (currentStage != Stage.DONE) {
                 // It failed before, so consider the operation a failure.
                 if (! step.response.hasDefined(FAILURE_DESCRIPTION)) {
-                    step.response.get(FAILURE_DESCRIPTION).set("Operation handler failed: " + t);
+                    step.response.get(FAILURE_DESCRIPTION).set(MESSAGES.operationHandlerFailed(t.getLocalizedMessage()));
                 }
                 step.response.get(OUTCOME).set(FAILED);
                 resultAction = getFailedResultAction(t);
@@ -369,7 +364,7 @@ abstract class AbstractOperationContext implements OperationContext {
                 }
             } else {
                 // It failed after!  Just return, ignore the failure
-                report(MessageSeverity.WARN, "Step handler " + step.handler + " failed after completion");
+                report(MessageSeverity.WARN, MESSAGES.stepHandlerFailed(step.handler));
             }
         } finally {
 
@@ -547,7 +542,7 @@ abstract class AbstractOperationContext implements OperationContext {
                     // the overall operation as a failure.
                     currentStage = Stage.DONE;
                     if (! response.hasDefined(FAILURE_DESCRIPTION)) {
-                        response.get(FAILURE_DESCRIPTION).set("Operation handler failed to complete");
+                        response.get(FAILURE_DESCRIPTION).set(MESSAGES.operationHandlerFailedToComplete());
                     }
                     response.get(OUTCOME).set(FAILED);
                     response.get(ROLLED_BACK).set(true);
@@ -582,8 +577,7 @@ abstract class AbstractOperationContext implements OperationContext {
                         }
                     }
                 } catch (Exception e) {
-                    report(MessageSeverity.ERROR, String.format("Step handler %s for operation %s at address %s " +
-                            "failed handling operation rollback -- %s", handler, operation.get(OP).asString(), address, e));
+                    report(MessageSeverity.ERROR, MESSAGES.stepHandlerFailedRollback(handler, operation.get(OP).asString(), address, e.getLocalizedMessage()));
                 } finally {
                     // Clear the rollback handler so we never try and finalize this step again
                     rollbackHandler = null;

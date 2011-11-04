@@ -23,6 +23,7 @@
 package org.jboss.as.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
@@ -39,6 +40,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PAT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
@@ -309,7 +311,7 @@ public class DomainXml extends CommonXml {
                 case INCLUDE: {
                     final String includedGroup = readStringAttributeElement(reader, Attribute.SOCKET_BINDING_GROUP.getLocalName());
                     if (!includedGroups.add(includedGroup)) {
-                        throw new XMLStreamException("Included socket-binding-group " + includedGroup + " already declared", reader.getLocation());
+                        throw MESSAGES.alreadyDeclared(Attribute.SOCKET_BINDING_GROUP.getLocalName(), includedGroup, reader.getLocation());
                     }
                     SocketBindingGroupResourceDefinition.INCLUDES.parseAndAddParameterElement(includedGroup, bindingGroupUpdate, reader.getLocation());
                     break;
@@ -317,8 +319,8 @@ public class DomainXml extends CommonXml {
                 case SOCKET_BINDING: {
                     final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, updates);
                     if (!uniqueBindingNames.add(bindingName)) {
-                        throw new XMLStreamException("A " + Element.SOCKET_BINDING.getLocalName() +
-                                " " + bindingName + " has already been declared in " + Element.SOCKET_BINDING_GROUP + socketBindingGroupName, reader.getLocation());
+                        throw MESSAGES.alreadyDeclared(Element.SOCKET_BINDING.getLocalName(), bindingName,
+                                Element.SOCKET_BINDING_GROUP.getLocalName(), socketBindingGroupName, reader.getLocation());
                     }
                     break;
                 }
@@ -360,7 +362,7 @@ public class DomainXml extends CommonXml {
                 case INCLUDE: {
                     final String includedGroup = readStringAttributeElement(reader, Attribute.SOCKET_BINDING_GROUP.getLocalName());
                     if (!includedGroups.add(includedGroup)) {
-                        throw new XMLStreamException("Included socket-binding-group " + includedGroup + " already declared", reader.getLocation());
+                        throw MESSAGES.alreadyDeclared(Attribute.SOCKET_BINDING_GROUP.getLocalName(), includedGroup, reader.getLocation());
                     }
                     SocketBindingGroupResourceDefinition.INCLUDES.parseAndAddParameterElement(includedGroup, bindingGroupUpdate, reader.getLocation());
                     break;
@@ -368,16 +370,16 @@ public class DomainXml extends CommonXml {
                 case SOCKET_BINDING: {
                     final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, updates);
                     if (!uniqueBindingNames.add(bindingName)) {
-                        throw new XMLStreamException("A " + Element.SOCKET_BINDING.getLocalName() + " or a " + Element.OUTBOUND_SOCKET_BINDING.getLocalName()
-                                + " " + bindingName + " has already been declared in " + Element.SOCKET_BINDING_GROUP + socketBindingGroupName, reader.getLocation());
+                        throw MESSAGES.alreadyDeclared(Element.SOCKET_BINDING.getLocalName(), Element.OUTBOUND_SOCKET_BINDING.getLocalName(),
+                                bindingName, Element.SOCKET_BINDING_GROUP.getLocalName(), socketBindingGroupName, reader.getLocation());
                     }
                     break;
                 }
                 case OUTBOUND_SOCKET_BINDING: {
                     final String bindingName = parseOutboundSocketBinding(reader, interfaces, socketBindingGroupName, groupAddress, updates);
                     if (!uniqueBindingNames.add(bindingName)) {
-                        throw new XMLStreamException("A " + Element.SOCKET_BINDING.getLocalName() + " or a " + Element.OUTBOUND_SOCKET_BINDING.getLocalName()
-                                + " " + bindingName + " has already been declared in " + Element.SOCKET_BINDING_GROUP + socketBindingGroupName, reader.getLocation());
+                        throw MESSAGES.alreadyDeclared(Element.SOCKET_BINDING.getLocalName(), Element.OUTBOUND_SOCKET_BINDING.getLocalName(),
+                                bindingName, Element.SOCKET_BINDING_GROUP.getLocalName(), socketBindingGroupName, reader.getLocation());
                     }
                     break;
                 }
@@ -477,7 +479,7 @@ public class DomainXml extends CommonXml {
                     }
                     case DEPLOYMENTS: {
                         if (sawDeployments) {
-                            throw new XMLStreamException(element.getLocalName() + " already defined", reader.getLocation());
+                            throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
                         }
                         sawDeployments = true;
                         parseDeployments(reader, groupAddress, expectedNs, list, true);
@@ -511,7 +513,7 @@ public class DomainXml extends CommonXml {
             requireSingleAttribute(reader, Attribute.NAME.getLocalName());
             final String name = reader.getAttributeValue(0);
             if (! names.add(name)) {
-                throw new XMLStreamException("Duplicate profile declaration " + name, reader.getLocation());
+                throw MESSAGES.duplicateDeclaration("profile", name, reader.getLocation());
             }
 
             final List<ModelNode> subsystems = new ArrayList<ModelNode>();
@@ -528,7 +530,7 @@ public class DomainXml extends CommonXml {
                             throw unexpectedElement(reader);
                         }
                         if (!configuredSubsystemTypes.add(reader.getNamespaceURI())) {
-                            throw new XMLStreamException("Duplicate subsystem declaration", reader.getLocation());
+                            throw MESSAGES.duplicateDeclaration("subsystem", name, reader.getLocation());
                         }
                         // parse content
                         reader.handleAny(subsystems);
@@ -547,10 +549,10 @@ public class DomainXml extends CommonXml {
                         }
                         final String includedName = readStringAttributeElement(reader, Attribute.PROFILE.getLocalName());
                         if (! names.contains(includedName)) {
-                            throw new XMLStreamException("No profile found for inclusion", reader.getLocation());
+                            throw MESSAGES.profileNotFound(reader.getLocation());
                         }
                         if (! includes.add(includedName)) {
-                            throw new XMLStreamException("Duplicate profile include", reader.getLocation());
+                            throw MESSAGES.duplicateProfile(reader.getLocation());
                         }
                         profileIncludes.add(includedName);
                         break;
@@ -578,7 +580,7 @@ public class DomainXml extends CommonXml {
             }
 
             if (configuredSubsystemTypes.size() == 0) {
-                throw new XMLStreamException("Profile has no subsystem configurations", reader.getLocation());
+                throw MESSAGES.profileHasNoSubsystems(reader.getLocation());
             }
         }
     }

@@ -29,11 +29,12 @@ import java.util.Map;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.jboss.as.controller.persistence.ConfigurationPersister.SnapshotInfo;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLMapper;
+
+import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * Abstract superclass for {@link ExtensibleConfigurationPersister} implementations.
@@ -41,8 +42,6 @@ import org.jboss.staxmapper.XMLMapper;
  * @author Brian Stansberry
  */
 public abstract class AbstractConfigurationPersister implements ExtensibleConfigurationPersister {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
     private final XMLElementWriter<ModelMarshallingContext> rootDeparser;
     private final Map<String, XMLElementWriter<SubsystemMarshallingContext>> subsystemWriters = new HashMap<String, XMLElementWriter<SubsystemMarshallingContext>>();
@@ -106,7 +105,7 @@ public abstract class AbstractConfigurationPersister implements ExtensibleConfig
                 safeClose(streamWriter);
             }
         } catch (Exception e) {
-            throw new ConfigurationPersistenceException("Failed to write configuration", e);
+            throw MESSAGES.failedToWriteConfiguration(e);
         }
     }
 
@@ -132,7 +131,7 @@ public abstract class AbstractConfigurationPersister implements ExtensibleConfig
         if (streamWriter != null) try {
             streamWriter.close();
         } catch (Throwable t) {
-            log.errorf(t, "Failed to close resource %s", streamWriter);
+            ROOT_LOGGER.failedToCloseResource(t, streamWriter);
         }
     }
 }

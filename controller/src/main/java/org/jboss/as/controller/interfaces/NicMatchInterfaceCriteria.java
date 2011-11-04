@@ -8,6 +8,8 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.regex.Pattern;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 /**
  * {@link InterfaceCriteria} that tests whether a given {@link Pattern regex pattern}
  * matches the network interface's {@link NetworkInterface#getName() name}.
@@ -30,7 +32,7 @@ public class NicMatchInterfaceCriteria implements InterfaceCriteria {
      */
     public NicMatchInterfaceCriteria(Pattern pattern) {
         if (pattern == null)
-            throw new IllegalArgumentException("pattern is null");
+            throw MESSAGES.nullVar("pattern");
         this.pattern = pattern;
     }
 

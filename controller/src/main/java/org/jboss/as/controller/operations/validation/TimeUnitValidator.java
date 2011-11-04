@@ -32,6 +32,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 /**
  * {@link ParameterValidator} that validates the value is a string matching one of the {@link TimeUnit} names.
  *
@@ -70,8 +72,8 @@ public class TimeUnitValidator extends ModelTypeValidator implements AllowedValu
             String tuString = value.asString();
             TimeUnit tu = TimeUnit.valueOf(tuString.toUpperCase(Locale.ENGLISH));
             if (tu == null || !allowedValues.contains(tu)) {
-                throw new OperationFailedException(new ModelNode().set(String.format("Invalid value %s for %s; legal values are %s",
-                        tuString, parameterName, allowedValues)));
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidValue(tuString, parameterName,
+                        allowedValues)));
             }
         }
     }

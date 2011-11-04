@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -67,7 +68,7 @@ public final class CompositeOperationHandler implements OperationStepHandler, De
             String stepOpName = subOperation.require(OP).asString();
             OperationStepHandler stepHandler = registry.getOperationHandler(stepAddress, stepOpName);
             if (stepHandler == null) {
-                context.getFailureDescription().set(String.format("No handler for %s at address %s", stepOpName, stepAddress));
+                context.getFailureDescription().set(MESSAGES.noHandler(stepOpName, stepAddress));
                 context.completeStep();
                 return;
             }
@@ -82,17 +83,15 @@ public final class CompositeOperationHandler implements OperationStepHandler, De
 
         if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
             final ModelNode failureMsg = new ModelNode();
-            // TODO i18n
-            final String baseMsg = "Composite operation failed and was rolled back. Steps that failed:";
             for (int i = 0; i < size; i++) {
                 String stepName = "step-" + (i+1);
                 ModelNode stepResponse = responseMap.get(stepName);
                 if (stepResponse.hasDefined(FAILURE_DESCRIPTION)) {
-                    failureMsg.get(baseMsg, "Operation " + stepName).set(stepResponse.get(FAILURE_DESCRIPTION));
+                    failureMsg.get(MESSAGES.compositeOperationFailed(), MESSAGES.operation(stepName)).set(stepResponse.get(FAILURE_DESCRIPTION));
                 }
             }
             if (!failureMsg.isDefined()) {
-                failureMsg.set("Composite operation was rolled back");
+                failureMsg.set(MESSAGES.compositeOperationRolledBack());
             }
             context.getFailureDescription().set(failureMsg);
         }

@@ -7,6 +7,8 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 /**
  * {@link InterfaceCriteria} that tests whether a given address is on the
  * desired subnet.
@@ -33,7 +35,7 @@ public class SubnetMatchInterfaceCriteria implements InterfaceCriteria {
      */
     public SubnetMatchInterfaceCriteria(byte[] network, int mask) {
         if (network == null)
-            throw new IllegalArgumentException("network is null");
+            throw MESSAGES.nullVar("network");
         this.network = network;
         this.mask = mask;
     }

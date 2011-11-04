@@ -23,6 +23,7 @@
 package org.jboss.as.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 import javax.xml.XMLConstants;
 import javax.xml.stream.Location;
@@ -80,7 +81,7 @@ public final class ParseUtils {
      * @return the exception
      */
     public static XMLStreamException unexpectedElement(final XMLExtendedStreamReader reader) {
-        return new XMLStreamException("Unexpected element '" + reader.getName() + "' encountered", reader.getLocation());
+        return MESSAGES.unexpectedElement(reader.getName(), reader.getLocation());
     }
 
     /**
@@ -89,7 +90,7 @@ public final class ParseUtils {
      * @return the exception
      */
     public static XMLStreamException unexpectedEndElement(final XMLExtendedStreamReader reader) {
-        return new XMLStreamException("Unexpected end of element '" + reader.getName() + "' encountered", reader.getLocation());
+        return MESSAGES.unexpectedEndElement(reader.getName(), reader.getLocation());
     }
 
     /**
@@ -99,8 +100,7 @@ public final class ParseUtils {
      * @return the exception
      */
     public static XMLStreamException unexpectedAttribute(final XMLExtendedStreamReader reader, final int index) {
-        return new XMLStreamException("Unexpected attribute '" + reader.getAttributeName(index) + "' encountered",
-                reader.getLocation());
+        return MESSAGES.unexpectedAttribute(reader.getAttributeName(index), reader.getLocation());
     }
 
     /**
@@ -110,8 +110,7 @@ public final class ParseUtils {
      * @return the exception
      */
     public static XMLStreamException invalidAttributeValue(final XMLExtendedStreamReader reader, final int index) {
-        return new XMLStreamException("Invalid value '" + reader.getAttributeValue(index) + "' for attribute '"
-                + reader.getAttributeName(index) + "'", reader.getLocation());
+        return MESSAGES.invalidAttributeValue(reader.getAttributeValue(index), reader.getAttributeName(index), reader.getLocation());
     }
 
     /**
@@ -131,7 +130,7 @@ public final class ParseUtils {
                 b.append(", ");
             }
         }
-        return new XMLStreamException("Missing required attribute(s): " + b, reader.getLocation());
+        return MESSAGES.missingRequiredAttributes(b, reader.getLocation());
     }
 
     /**
@@ -151,7 +150,7 @@ public final class ParseUtils {
                 b.append(", ");
             }
         }
-        return new XMLStreamException("Missing required element(s): " + b, reader.getLocation());
+        return MESSAGES.missingRequiredElements(b, reader.getLocation());
     }
 
     /**
@@ -171,7 +170,7 @@ public final class ParseUtils {
                 b.append(", ");
             }
         }
-        return new XMLStreamException("Must include one of the following elements: " + b, reader.getLocation());
+        return MESSAGES.missingOneOf(b, reader.getLocation());
     }
 
     /**
@@ -221,7 +220,7 @@ public final class ParseUtils {
      * @return the exception
      */
     public static XMLStreamException duplicateAttribute(final XMLExtendedStreamReader reader, final String name) {
-        return new XMLStreamException("An attribute named '" + name + "' has already been declared", reader.getLocation());
+        return MESSAGES.duplicateAttribute(name, reader.getLocation());
     }
 
     /**
@@ -232,8 +231,7 @@ public final class ParseUtils {
      * @return the exception
      */
     public static XMLStreamException duplicateNamedElement(final XMLExtendedStreamReader reader, final String name) {
-        return new XMLStreamException("An element of this type named '" + name + "' has already been declared",
-                reader.getLocation());
+        return MESSAGES.duplicateNamedElement(name, reader.getLocation());
     }
 
     /**
@@ -403,13 +401,11 @@ public final class ParseUtils {
         try {
             final int value = Integer.parseInt(stringValue);
             if (value < minInclusive || value > maxInclusive) {
-                throw new XMLStreamException("Illegal value " + value + " for attribute '" + reader.getAttributeName(index)
-                        + "' must be between " + minInclusive + " and " + maxInclusive + " (inclusive)", reader.getLocation());
+                throw MESSAGES.invalidAttributeValue(value, reader.getAttributeName(index), minInclusive, maxInclusive, reader.getLocation());
             }
             return new ModelNode().set(value);
         } catch (NumberFormatException nfe) {
-            throw new XMLStreamException("Illegal value '" + stringValue + "' for attribute '" + reader.getAttributeName(index)
-                    + "' must be an integer", reader.getLocation(), nfe);
+            throw MESSAGES.invalidAttributeValueInt(nfe, stringValue, reader.getAttributeName(index), reader.getLocation());
         }
     }
 
@@ -428,6 +424,6 @@ public final class ParseUtils {
     }
 
     public static String getWarningMessage(final String msg, final Location location) {
-        return String.format("Parsing problem at [row,col]:[%d ,%d]\nMessage: ", location.getLineNumber(), location.getColumnNumber(), msg);
+        return MESSAGES.parsingProblem(location.getLineNumber(), location.getColumnNumber(), msg);
     }
 }

@@ -22,6 +22,9 @@
 
 package org.jboss.as.controller.persistence;
 
+import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 import javax.xml.stream.XMLStreamWriter;
 import java.io.BufferedOutputStream;
 import java.io.Closeable;
@@ -30,7 +33,6 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 
 /**
  * {@link ConfigurationPersister.PersistenceResource} that persists to a file upon commit.
@@ -38,8 +40,6 @@ import org.jboss.logging.Logger;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class FilePersistenceResource implements ConfigurationPersister.PersistenceResource {
-
-    protected static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
     private ExposedByteArrayOutputStream marshalled;
     private final File fileName;
@@ -59,14 +59,14 @@ public class FilePersistenceResource implements ConfigurationPersister.Persisten
                 safeClose(marshalled);
             }
         } catch (Exception e) {
-            throw new ConfigurationPersistenceException("Failed to marshal configuration", e);
+            throw MESSAGES.failedToMarshalConfiguration(e);
         }
     }
 
     @Override
     public void commit() {
         if (marshalled == null) {
-            throw new IllegalStateException("rollback() has already been invoked");
+            throw MESSAGES.rollbackAlreadyInvoked();
         }
         try {
             final FileOutputStream fos = new FileOutputStream(fileName);
@@ -86,7 +86,7 @@ public class FilePersistenceResource implements ConfigurationPersister.Persisten
                 safeClose(is);
             }
         } catch (Exception e) {
-            log.errorf(e, "Failed to store configuration to %s", fileName.getName());
+            ROOT_LOGGER.failedToStoreConfiguration(e, fileName.getName());
         }
     }
 
@@ -99,7 +99,7 @@ public class FilePersistenceResource implements ConfigurationPersister.Persisten
         if (closeable != null) try {
             closeable.close();
         } catch (Throwable t) {
-            log.errorf(t, "Failed to close resource %s", closeable);
+            ROOT_LOGGER.failedToCloseResource(t, closeable);
         }
     }
 }

@@ -30,14 +30,15 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ParsedBootOp;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
+
+import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * Special handler that executes extension initialization in parallel.
@@ -45,8 +46,6 @@ import org.jboss.logging.Logger;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class ParallelExtensionAddHandler implements OperationStepHandler {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
     private final ExecutorService executor;
     private final List<ParsedBootOp> extensionAdds = new ArrayList<ParsedBootOp>();
@@ -94,15 +93,15 @@ public class ParallelExtensionAddHandler implements OperationStepHandler {
                         }
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
-                        throw new RuntimeException(String.format("Interrupted awaiting initialization of module %s", entry.getKey()));
+                        throw MESSAGES.moduleInitializationInterrupted(entry.getKey());
                     } catch (ExecutionException e) {
-                        throw new RuntimeException(String.format("Failed initializing module %s", entry.getKey()), e);
+                        throw MESSAGES.failedInitializingModule(e, entry.getKey());
                     }
                 }
 
-                if (log.isDebugEnabled()) {
+                if (ROOT_LOGGER.isDebugEnabled()) {
                     long elapsed = System.currentTimeMillis() - start;
-                    log.debugf("Initialized extensions in [%d] ms", elapsed);
+                    ROOT_LOGGER.debugf("Initialized extensions in [%d] ms", elapsed);
                 }
 
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);

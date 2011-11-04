@@ -19,6 +19,7 @@
 package org.jboss.as.controller.operations.common;
 
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -90,7 +91,7 @@ public class NamespaceAddHandler extends AbstractModelUpdateHandler implements D
             String namespaceString = namespace.asString();
             for (ModelNode node : namespaces.asList()) {
                 if (namespaceString.equals(node.asProperty().getName())) {
-                    throw new OperationFailedException(new ModelNode().set("Namespace with prefix " + namespaceString + " already registered with schema URI " + node.asProperty().getValue().asString()));
+                    throw new OperationFailedException(new ModelNode().set(MESSAGES.namespaceAlreadyRegistered(namespaceString, node.asProperty().getValue().asString())));
                 }
             }
         }

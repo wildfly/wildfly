@@ -23,6 +23,8 @@
 package org.jboss.as.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
@@ -36,6 +38,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
@@ -65,7 +68,6 @@ import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -108,9 +110,9 @@ public class StandaloneXml extends CommonXml {
             }
         }
 
-        if (log.isDebugEnabled()) {
+        if (ROOT_LOGGER.isDebugEnabled()) {
             long elapsed = System.currentTimeMillis() - start;
-            log.debugf("Parsed standalone configuration in [%d] ms", elapsed);
+            ROOT_LOGGER.debugf("Parsed standalone configuration in [%d] ms", elapsed);
         }
     }
 
@@ -399,8 +401,8 @@ public class StandaloneXml extends CommonXml {
                     // FIXME JBAS-8825
                     final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, updates);
                     if (!uniqueBindingNames.add(bindingName)) {
-                        throw new XMLStreamException("A " + Element.SOCKET_BINDING.getLocalName() + " " + bindingName +
-                                " has already been declared in " + Element.SOCKET_BINDING_GROUP + socketBindingGroupName, reader.getLocation());
+                        throw MESSAGES.alreadyDeclared(Element.SOCKET_BINDING.getLocalName(), bindingName,
+                                Element.SOCKET_BINDING_GROUP.getLocalName(), socketBindingGroupName, reader.getLocation());
                     }
                     break;
                 }
@@ -467,16 +469,16 @@ public class StandaloneXml extends CommonXml {
                     // FIXME JBAS-8825
                     final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, updates);
                     if (!uniqueBindingNames.add(bindingName)) {
-                        throw new XMLStreamException("A " + Element.SOCKET_BINDING.getLocalName() + " or a " + Element.OUTBOUND_SOCKET_BINDING.getLocalName()
-                                + " " + bindingName + " has already been declared in " + Element.SOCKET_BINDING_GROUP + socketBindingGroupName, reader.getLocation());
+                        throw MESSAGES.alreadyDeclared(Element.SOCKET_BINDING.getLocalName(), Element.OUTBOUND_SOCKET_BINDING.getLocalName(),
+                                bindingName, Element.SOCKET_BINDING_GROUP.getLocalName(), socketBindingGroupName, reader.getLocation());
                     }
                     break;
                 }
                 case OUTBOUND_SOCKET_BINDING: {
                     final String bindingName = parseOutboundSocketBinding(reader, interfaces, socketBindingGroupName, groupAddress, updates);
                     if (!uniqueBindingNames.add(bindingName)) {
-                        throw new XMLStreamException("A " + Element.SOCKET_BINDING.getLocalName() + " or a " + Element.OUTBOUND_SOCKET_BINDING.getLocalName()
-                                + " " + bindingName + " has already been declared in " + Element.SOCKET_BINDING_GROUP + socketBindingGroupName, reader.getLocation());
+                        throw MESSAGES.alreadyDeclared(Element.SOCKET_BINDING.getLocalName(), Element.OUTBOUND_SOCKET_BINDING.getLocalName(),
+                                bindingName, Element.SOCKET_BINDING_GROUP.getLocalName(), socketBindingGroupName, reader.getLocation());
                     }
                     break;
                 }
@@ -498,7 +500,7 @@ public class StandaloneXml extends CommonXml {
                 throw unexpectedElement(reader);
             }
             if (!configuredSubsystemTypes.add(reader.getNamespaceURI())) {
-                throw new XMLStreamException("Duplicate subsystem declaration", reader.getLocation());
+                throw MESSAGES.duplicateDeclaration("subsystem", reader.getLocation());
             }
             // parse subsystem
             final List<ModelNode> subsystems = new ArrayList<ModelNode>();
@@ -506,10 +508,6 @@ public class StandaloneXml extends CommonXml {
 
             // Process subsystems
             for (final ModelNode update : subsystems) {
-                // TODO remove logging
-                if (!update.has(OP_ADDR)) {
-                    Logger.getLogger("missing address").error(update);
-                }
                 // Process relative subsystem path address
                 final ModelNode subsystemAddress = address.clone();
                 for (final Property path : update.get(OP_ADDR).asPropertyList()) {
@@ -572,7 +570,7 @@ public class StandaloneXml extends CommonXml {
         if (modelNode.hasDefined(SOCKET_BINDING_GROUP)) {
             Set<String> groups = modelNode.get(SOCKET_BINDING_GROUP).keys();
             if (groups.size() > 1) {
-                throw new IllegalStateException(String.format("Model contains multiple %s nodes", SOCKET_BINDING_GROUP));
+                throw MESSAGES.multipleModelNodes(SOCKET_BINDING_GROUP);
             }
             for (String group : groups) {
                 writeSocketBindingGroup(writer, modelNode.get(SOCKET_BINDING_GROUP, group), true);

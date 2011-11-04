@@ -21,6 +21,7 @@
  */
 package org.jboss.as.controller.remote;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.io.BufferedInputStream;
@@ -83,7 +84,7 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
                 RemoteProxyController.this.closed.set(true);
                 synchronized (activeRequests) {
                     for (ExecuteRequestContext context : activeRequests.values()) {
-                        context.setError("Channel closed");
+                        context.setError(MESSAGES.channelClosed());
                     }
                     activeRequests.clear();
                 }
@@ -261,7 +262,7 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
         protected void processRequest() throws RequestProcessingException {
             ExecuteRequestContext requestContext = activeRequests.get(batchId);
             if (requestContext == null) {
-                throw new RequestProcessingException("No active request found for handling report " + batchId);
+                throw MESSAGES.noActiveRequestForHandlingReport(batchId);
             }
             requestContext.getMessageHandler().handleReport(severity, message);
         }
@@ -283,7 +284,7 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
 
             ExecuteRequestContext requestContext = activeRequests.get(batchId);
             if (requestContext == null) {
-                throw new IOException("No active request found for reading inputstream report " + batchId);
+                throw MESSAGES.noActiveRequestForReadingInputStreamReport(batchId);
             }
             InputStream in = requestContext.getAttachments().getInputStreams().get(index);
             attachmentInput = in != null ? new BufferedInputStream(in) : null;
@@ -336,7 +337,7 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
         protected void processRequest() throws RequestProcessingException {
             requestContext = activeRequests.get(batchId);
             if (requestContext == null) {
-                throw new RequestProcessingException("No active request found for proxy operation control " + batchId);
+                throw MESSAGES.noActiveRequestForProxyOperation(batchId);
             }
             handle(batchId, requestContext.getControl(), response);
         }
@@ -419,7 +420,7 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
                         requestContext.awaitControlCompleted();
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
-                        throw new RuntimeException("A timeout occurred waiting for the transaction to " + (commit ? "commit" : "rollback"));
+                        throw MESSAGES.transactionTimeout(commit ? "commit" : "rollback");
                     }
                 }
             }, response);
@@ -468,7 +469,7 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
         CloseHandler<Channel> getRequestCloseHandler(){
             return new CloseHandler<Channel>() {
                 public void handleClose(final Channel closed, final IOException exception) {
-                    setError("Channel Closed");
+                    setError(MESSAGES.channelClosed());
                 }
             };
         }

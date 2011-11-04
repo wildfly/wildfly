@@ -32,7 +32,6 @@ import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -42,14 +41,15 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
+import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 /**
  * A base class for controller services.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public abstract class AbstractControllerService implements Service<ModelController> {
-
-    private static final Logger logger = Logger.getLogger(AbstractControllerService.class);
 
     /**
      * Name of the system property to set to control the stack size for the thread used to process boot operations.
@@ -88,8 +88,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
             try {
                 return Integer.parseInt(multiple) * base;
             } catch (NumberFormatException e) {
-                logger.error(String.format("Invalid value %s for system property %s -- using default value [%d]",
-                        prop, BOOT_STACK_SIZE_PROPERTY, DEFAULT_BOOT_STACK_SIZE));
+                ROOT_LOGGER.invalidSystemPropertyValue(prop, BOOT_STACK_SIZE_PROPERTY, DEFAULT_BOOT_STACK_SIZE);
                 return DEFAULT_BOOT_STACK_SIZE;
             }
         }
@@ -138,7 +137,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
     public void start(final StartContext context) throws StartException {
 
         if (configurationPersister == null) {
-            throw new StartException("No configuration persister was injected");
+            throw MESSAGES.persisterNotInjected();
         }
         final ServiceController<?> serviceController = context.getController();
         final ServiceContainer container = serviceController.getServiceContainer();
@@ -170,12 +169,9 @@ public abstract class AbstractControllerService implements Service<ModelControll
                 } catch (Throwable t) {
                     container.shutdown();
                     if (t instanceof StackOverflowError) {
-                        logger.errorf(t, "Error booting the container due to insufficient stack space for the thread used to " +
-                                "execute boot operations. The thread was configured with a stack size of [%d]. Setting " +
-                                "system property %s to a value higher than [%d] may resolve this problem.",
-                                bootStackSize, BOOT_STACK_SIZE_PROPERTY, bootStackSize);
+                        ROOT_LOGGER.errorBootingContainer(t, bootStackSize, BOOT_STACK_SIZE_PROPERTY);
                     } else {
-                        logger.error("Error booting the container", t);
+                        ROOT_LOGGER.errorBootingContainer(t);
                     }
                 }
 

@@ -25,6 +25,8 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 /**
  * Validates parameters of type {@link org.jboss.dmr.ModelType#OBJECT}.
  *
@@ -66,7 +68,8 @@ public class MapValidator extends ModelTypeValidator implements ParameterValidat
      */
     public MapValidator(ParameterValidator elementValidator, boolean nullable, int minSize, int maxSize) {
         super(ModelType.OBJECT, nullable, false, false);
-        assert elementValidator != null : "elementValidator is null";
+        if (elementValidator == null)
+            throw MESSAGES.nullVar("elementValidator");
         this.min = minSize;
         this.max = maxSize;
         this.elementValidator = elementValidator;
@@ -79,10 +82,10 @@ public class MapValidator extends ModelTypeValidator implements ParameterValidat
             List<Property> list = value.asPropertyList();
             int size = list.size();
             if (size < min) {
-                throw new OperationFailedException(new ModelNode().set(String.format("[%d] is an invalid size for parameter %s. A minimum length of [%d] is required", size, parameterName, min)));
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidMinSize(size, parameterName, min)));
             }
             else if (size > max) {
-                throw new OperationFailedException(new ModelNode().set(String.format("[%d] is an invalid size for parameter %s. A maximum length of [%d] is required", size, parameterName, max)));
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidMaxSize(size, parameterName, max)));
             }
             else {
                 for (Property property : list) {

@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
@@ -54,7 +56,6 @@ import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
@@ -67,8 +68,6 @@ import org.jboss.threads.AsyncFutureTask;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 class ModelControllerImpl implements ModelController {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
     private final ServiceRegistry serviceRegistry;
     private final ServiceTarget serviceTarget;
@@ -143,8 +142,7 @@ class ModelControllerImpl implements ModelController {
             for (ParsedBootOp parsedOp : postExtensionOps) {
                 final OperationStepHandler stepHandler = parsedOp.handler == null ? rootRegistration.getOperationHandler(parsedOp.address, parsedOp.operationName) : parsedOp.handler;
                 if (stepHandler == null) {
-                    String msg = String.format("No handler for operation %s at address %s", parsedOp.operationName, parsedOp.address);
-                    log.error(msg);
+                    ROOT_LOGGER.noHandler(parsedOp.operationName, parsedOp.address);
                     postExtContext.setRollbackOnly();
                     // stop
                     break;
@@ -220,8 +218,7 @@ class ModelControllerImpl implements ModelController {
                 if (!sawExtensionAdd && stepHandler == null) {
                     // Odd case. An op prior to the first extension add where there is no handler. This would really
                     // only happen during AS development
-                    String msg = String.format("No handler for operation %s at address %s", parsedOp.operationName, parsedOp.address);
-                    log.error(msg);
+                    ROOT_LOGGER.noHandler(parsedOp.operationName, parsedOp.address);
                     context.setRollbackOnly();
                     // stop
                     break;
@@ -308,7 +305,7 @@ class ModelControllerImpl implements ModelController {
 
             private AsyncFuture<ModelNode> executeAsync(final ModelNode operation, final OperationMessageHandler messageHandler, final OperationAttachments attachments) {
                 if (executor == null) {
-                    throw new IllegalStateException("Cannot execute asynchronous operation without an executor");
+                    throw MESSAGES.nullAsynchronousExecutor();
                 }
                 final AtomicReference<Thread> opThread = new AtomicReference<Thread>();
                 class OpTask extends AsyncFutureTask<ModelNode> {
@@ -407,8 +404,8 @@ class ModelControllerImpl implements ModelController {
 
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            if (log.isTraceEnabled()) {
-                log.trace("Executing " + operation.get(OP) + " " + operation.get(OP_ADDR));
+            if (ROOT_LOGGER.isTraceEnabled()) {
+                ROOT_LOGGER.trace("Executing " + operation.get(OP) + " " + operation.get(OP_ADDR));
             }
             final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
             final String operationName =  operation.require(OP).asString();
@@ -416,7 +413,7 @@ class ModelControllerImpl implements ModelController {
             if(stepHandler != null) {
                 context.addStep(stepHandler, OperationContext.Stage.MODEL);
             } else {
-                context.getFailureDescription().set(String.format("No handler for operation %s at address %s", operationName, address));
+                context.getFailureDescription().set(MESSAGES.noHandler(operationName, address));
             }
             context.completeStep();
         }
