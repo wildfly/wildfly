@@ -133,7 +133,8 @@ class WebConnectorAdd extends AbstractAddStepHandler implements DescriptionProvi
         final String bindingRef = operation.require(SOCKET_BINDING).asString();
 
         final boolean enabled = operation.hasDefined(ENABLED) ? operation.get(ENABLED).asBoolean() : true;
-        final WebConnectorService service = new WebConnectorService(operation.require(PROTOCOL).asString(), operation.get(SCHEME).asString());
+        final String scheme = operation.hasDefined(SCHEME) ? operation.get(SCHEME).asString() : null;
+        final WebConnectorService service = new WebConnectorService(operation.require(PROTOCOL).asString(), scheme);
         if (operation.hasDefined(SECURE)) service.setSecure(operation.get(SECURE).asBoolean());
         if (operation.hasDefined(ENABLE_LOOKUPS))
             service.setEnableLookups(operation.get(ENABLE_LOOKUPS).asBoolean());
