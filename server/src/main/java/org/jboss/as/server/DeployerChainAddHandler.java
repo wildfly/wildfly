@@ -75,40 +75,64 @@ public class DeployerChainAddHandler implements OperationStepHandler, Descriptio
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         if(context.getType() == OperationContext.Type.SERVER) {
+
+            // Our real work needs to run after all RUNTIME steps that add DUPs have run. ServerService adds
+            // this operation at the end of the boot op list, so our MODEL stage step is last, and
+            // this RUNTIME step we are about to add should therefore be last as well *at the time
+            // we register it*. However, other RUNTIME steps can themselves add new RUNTIME steps that
+            // will then come after this one. So we do the same -- add a RUNTIME step that adds another
+            // RUNTIME step that does the real work.
+            // Theoretically this kind of "predecessor runtime step adds another runtime step, so we have to
+            // add one to come later" business could go on forever. But any operation that does that with
+            // a DUP-add step is just broken and should just find another way.
+
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    final EnumMap<Phase, Set<RegisteredProcessor>> deployerMap = DEPLOYERS.get();
-                    if (deployerMap == null) {
-                        throw new IllegalStateException("No deployers set");
-                    }
-                    final EnumMap<Phase, List<DeploymentUnitProcessor>> finalDeployers = new EnumMap<Phase, List<DeploymentUnitProcessor>>(Phase.class);
-                    final List<DeploymentUnitProcessor> processorList = new ArrayList<DeploymentUnitProcessor>(256);
-                    for (Phase phase : Phase.values()) {
-                        processorList.clear();
-                        final Set<RegisteredProcessor> processorSet = deployerMap.get(phase);
-                        for (RegisteredProcessor processor : processorSet) {
-                            processorList.add(processor.getProcessor());
-                        }
-                        finalDeployers.put(phase, Arrays.asList(processorList.toArray(new DeploymentUnitProcessor[processorList.size()])));
-                    }
-                    final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                    DeployerChainsService.addService(context.getServiceTarget(), finalDeployers, verificationHandler);
 
-                    context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
+                    context.addStep(new FinalRuntimeStepHandler(), OperationContext.Stage.RUNTIME);
 
-                    if(context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                        context.removeService(Services.JBOSS_DEPLOYMENT_CHAINS);
-                    }
+                    context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 }
-            }, OperationContext.Stage.VERIFY);
+            }, OperationContext.Stage.RUNTIME);
         }
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
         //Since this instance should have EntryType.PRIVATE, there is no need for a description
         return new ModelNode();
+    }
+
+    private class FinalRuntimeStepHandler implements OperationStepHandler {
+
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            final EnumMap<Phase, Set<RegisteredProcessor>> deployerMap = DEPLOYERS.get();
+            if (deployerMap == null) {
+                throw new IllegalStateException("No deployers set");
+            }
+            final EnumMap<Phase, List<DeploymentUnitProcessor>> finalDeployers = new EnumMap<Phase, List<DeploymentUnitProcessor>>(Phase.class);
+            final List<DeploymentUnitProcessor> processorList = new ArrayList<DeploymentUnitProcessor>(256);
+            for (Phase phase : Phase.values()) {
+                processorList.clear();
+                final Set<RegisteredProcessor> processorSet = deployerMap.get(phase);
+                for (RegisteredProcessor processor : processorSet) {
+                    processorList.add(processor.getProcessor());
+                }
+                finalDeployers.put(phase, Arrays.asList(processorList.toArray(new DeploymentUnitProcessor[processorList.size()])));
+            }
+            final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
+            DeployerChainsService.addService(context.getServiceTarget(), finalDeployers, verificationHandler);
+
+            context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
+
+            context.completeStep(new OperationContext.RollbackHandler() {
+                @Override
+                public void handleRollback(OperationContext context, ModelNode operation) {
+                    context.removeService(Services.JBOSS_DEPLOYMENT_CHAINS);
+                }
+            });
+        }
     }
 
     static final class RegisteredProcessor implements Comparable<RegisteredProcessor> {
