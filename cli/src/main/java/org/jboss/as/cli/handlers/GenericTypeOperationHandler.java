@@ -37,6 +37,7 @@ import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
+import org.jboss.as.cli.ModelNodeFormatter;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
@@ -83,7 +84,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
     public GenericTypeOperationHandler(String nodeType, String idProperty) {
         this(nodeType, idProperty, Arrays.asList("read-attribute", "read-children-names", "read-children-resources",
-                "read-children-types", "read-operation-description", "read-operation-names", "read-resource",
+                "read-children-types", "read-operation-description", "read-operation-names",
                 "read-resource-description", "validate-address", "write-attribute"));
     }
 
@@ -331,6 +332,22 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             return buildWritePropertyRequest(ctx);
         }
         return buildOperationRequest(ctx, operation);
+    }
+
+    @Override
+    protected void handleResponse(CommandContext ctx, ModelNode opResult) {
+        if (!Util.isSuccess(opResult)) {
+            ctx.printLine(Util.getFailureDescription(opResult));
+            return;
+        }
+
+        if(opResult.hasDefined(Util.RESULT)) {
+            final ModelNode result = opResult.get(Util.RESULT);
+            final ModelNodeFormatter formatter = ModelNodeFormatter.Factory.forType(result.getType());
+            final StringBuilder buf = new StringBuilder();
+            formatter.format(buf, 0, result);
+            ctx.printLine(buf.toString());
+        }
     }
 
     protected ModelNode buildWritePropertyRequest(CommandContext ctx) throws CommandFormatException {
