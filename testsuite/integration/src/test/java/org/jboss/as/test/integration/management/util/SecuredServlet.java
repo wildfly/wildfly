@@ -23,6 +23,7 @@ package org.jboss.as.test.integration.management.util;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import javax.annotation.security.DeclareRoles;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.annotation.ServletSecurity;
@@ -36,7 +37,8 @@ import javax.servlet.http.HttpServletResponse;
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
 @WebServlet(urlPatterns={"/SecuredServlet"})
-@ServletSecurity(@HttpConstraint(rolesAllowed={"test"}))
+@DeclareRoles("user")
+@ServletSecurity(@HttpConstraint(rolesAllowed={"user"}))
 public class SecuredServlet extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
