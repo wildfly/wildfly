@@ -222,7 +222,7 @@
 
             <!-- process *.xml to *.xml.mod -->
             <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
-                  style="${basedir}/src/test/xslt/changeIPAddresses.xsl"
+                  style="${basedir}/src/test/xslt/addPortOffset.xsl"
                   extension=".xml.mod"
                   useImplicitFileset="false">
                 <!-- can't get this to work -->
