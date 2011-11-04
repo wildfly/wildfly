@@ -33,7 +33,8 @@ import org.junit.BeforeClass;
  */
 public class AbstractCliTestBase {
     
-    public final static long WAIT_TIMEOUT = 1000;
+    public final static long WAIT_TIMEOUT = 10000;
+    public final static long WAIT_LINETIMEOUT = 1000;
     protected static CLIWrapper cli;    
     
     @BeforeClass

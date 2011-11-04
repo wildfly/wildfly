@@ -52,18 +52,18 @@ public class JmsTestCase extends AbstractCliTestBase {
 
         // check the queue is not registered
         cli.sendLine("cd /subsystem=messaging/hornetq-server=default/jms-queue");
-        cli.sendLine("ls");
-        String ls = cli.readAllUnformated(WAIT_TIMEOUT);
-        assertFalse(ls.contains("testJmsQueue"));
-
+        cli.sendLine("ls");        
+        String ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        assertFalse(ls.contains("testJmsQueue"));              
+        
         // create queue
         cli.sendLine("add-jms-queue --name=testJmsQueue");
 
         // check it is listed
         cli.sendLine("cd /subsystem=messaging/hornetq-server=default/jms-queue");
-        cli.sendLine("ls");
-        ls = cli.readAllUnformated(WAIT_TIMEOUT);
-        assertTrue(ls.contains("testJmsQueue"));
+        cli.sendLine("ls");        
+        ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        assertTrue(ls.contains("testJmsQueue"));              
     }
 
     private void testRemoveJmsQueue() throws Exception {
@@ -73,27 +73,27 @@ public class JmsTestCase extends AbstractCliTestBase {
 
         // check it is listed
         cli.sendLine("cd /subsystem=messaging/hornetq-server=default/jms-queue");
-        cli.sendLine("ls");
-        String ls = cli.readAllUnformated(WAIT_TIMEOUT);
-        assertFalse(ls.contains("testJmsQueue"));
-    }
-
+        cli.sendLine("ls");        
+        String ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        assertFalse(ls.contains("testJmsQueue"));              
+    }    
+    
     private void testAddJmsTopic() throws Exception {
 
         // check the queue is not registered
         cli.sendLine("cd /subsystem=messaging/hornetq-server=default/jms-topic");
-        cli.sendLine("ls");
-        String ls = cli.readAllUnformated(WAIT_TIMEOUT);
-        assertFalse(ls.contains("testJmsTopic"));
-
+        cli.sendLine("ls");        
+        String ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        assertFalse(ls.contains("testJmsTopic"));              
+        
         // create queue
         cli.sendLine("add-jms-topic --name=testJmsTopic");
 
         // check it is listed
         cli.sendLine("cd /subsystem=messaging/hornetq-server=default/jms-topic");
-        cli.sendLine("ls");
-        ls = cli.readAllUnformated(WAIT_TIMEOUT);
-        assertTrue(ls.contains("testJmsTopic"));
+        cli.sendLine("ls");        
+        ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        assertTrue(ls.contains("testJmsTopic"));              
     }
 
     private void testRemoveJmsTopic() throws Exception {
@@ -103,8 +103,8 @@ public class JmsTestCase extends AbstractCliTestBase {
 
         // check it is listed
         cli.sendLine("cd /subsystem=messaging/hornetq-server=default/jms-topic");
-        cli.sendLine("ls");
-        String ls = cli.readAllUnformated(WAIT_TIMEOUT);
-        assertFalse(ls.contains("testJmsTopic"));
-    }
+        cli.sendLine("ls");        
+        String ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        assertFalse(ls.contains("testJmsTopic"));              
+    }       
 }

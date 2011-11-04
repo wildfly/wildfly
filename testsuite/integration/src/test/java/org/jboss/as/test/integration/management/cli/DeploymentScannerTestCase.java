@@ -118,7 +118,7 @@ public class DeploymentScannerTestCase extends AbstractCliTestBase {
         
         // remove deployment scanner
         cli.sendLine("/subsystem=deployment-scanner/scanner=testScanner:remove()", false);
-        CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT);
+        CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         assertTrue(result.isIsOutcomeSuccess());
         
         // delete deployment
