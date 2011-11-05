@@ -7,9 +7,9 @@ rem ############################################################################
 rem # $Id: run.conf.bat 88820 2009-05-13 15:25:44Z dimitris@jboss.org $
 
 rem #
-rem # This batch file is executed by run.bat to initialize the environment 
+rem # This batch file is executed by run.bat to initialize the environment
 rem # variables that run.bat uses. It is recommended to use this file to
-rem # configure these variables, rather than modifying run.bat itself. 
+rem # configure these variables, rather than modifying run.bat itself.
 rem #
 
 if not "x%JAVA_OPTS%" == "x" goto JAVA_OPTS_SET
@@ -45,6 +45,9 @@ set "JAVA_OPTS=-Xms64M -Xmx512M -XX:MaxPermSize=256M"
 rem # Reduce the RMI GCs to once per hour for Sun JVMs.
 set "JAVA_OPTS=%JAVA_OPTS% -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000"
 
+rem # Prefer IPv4
+set "JAVA_OPTS=%JAVA_OPTS%  -Djava.net.preferIPv4Stack=true "
+
 rem # Warn when resolving remote XML DTDs or schemas.
 set "JAVA_OPTS=%JAVA_OPTS% -Dorg.jboss.resolver.warning=true"
 
@@ -55,7 +58,7 @@ set "JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.system.pkgs=org.jboss.byteman"
 rem # Sample JPDA settings for remote socket debugging
 rem set "JAVA_OPTS=%JAVA_OPTS% -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n"
 
-rem # Sample JPDA settings for shared memory debugging 
+rem # Sample JPDA settings for shared memory debugging
 rem set "JAVA_OPTS=%JAVA_OPTS% -Xrunjdwp:transport=dt_shmem,address=jboss,server=y,suspend=n"
 
 rem # Use JBoss Modules lockless mode
