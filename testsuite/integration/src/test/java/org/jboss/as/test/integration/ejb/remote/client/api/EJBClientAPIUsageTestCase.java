@@ -38,6 +38,7 @@ import org.jboss.as.test.integration.ejb.remote.common.AnonymousCallbackHandler;
 import org.jboss.as.test.integration.ejb.remote.common.EJBRemoteManagementUtil;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.ejb.client.EJBClientTransactionContext;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.ejb.client.StatelessEJBLocator;
@@ -134,6 +135,10 @@ public class EJBClientAPIUsageTestCase {
     public void beforeTest() throws Exception {
         this.ejbClientContext = EJBClientContext.create();
         this.ejbClientContext.registerConnection(connection);
+        final EJBClientTransactionContext localUserTxContext = EJBClientTransactionContext.createLocal();
+        // set the tx context
+        EJBClientTransactionContext.setGlobalContext(localUserTxContext);
+
     }
 
     @After

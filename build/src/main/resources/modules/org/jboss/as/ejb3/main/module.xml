@@ -58,6 +58,8 @@
         <module name="org.jboss.invocation"/>
         <module name="org.jboss.ironjacamar.api"/>
         <module name="org.jboss.jandex"/>
+        <!-- For SubordinationManager for remote Xid Transaction propagation -->
+        <module name="org.jboss.jts"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.marshalling"/>
         <module name="org.jboss.marshalling.river"/>

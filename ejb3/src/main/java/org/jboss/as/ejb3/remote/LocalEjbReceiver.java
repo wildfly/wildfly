@@ -31,10 +31,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.utils.DescriptorUtils;
-import org.jboss.as.ejb3.component.interceptors.AsyncInvocationTask;
-import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
+import org.jboss.as.ejb3.component.interceptors.AsyncInvocationTask;
+import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
@@ -43,11 +43,11 @@ import org.jboss.as.ejb3.deployment.DeploymentRepositoryListener;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.ejb.client.EJBClientInvocationContext;
+import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.EJBReceiver;
 import org.jboss.ejb.client.EJBReceiverContext;
 import org.jboss.ejb.client.EJBReceiverInvocationContext;
 import org.jboss.ejb.client.EntityEJBLocator;
-import org.jboss.ejb.client.Locator;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.invocation.InterceptorContext;
@@ -81,7 +81,8 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
     private final boolean allowPassByReference;
     private volatile ObjectCloner cloner;
 
-    public LocalEjbReceiver(final boolean allowPassByReference) {
+    public LocalEjbReceiver(final String nodeName, final boolean allowPassByReference) {
+        super(nodeName);
         this.allowPassByReference = allowPassByReference;
     }
 
@@ -93,7 +94,7 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
 
     @Override
     protected void processInvocation(final EJBClientInvocationContext<Void> invocation, final EJBReceiverInvocationContext receiverContext) throws Exception {
-        final Locator locator = invocation.getLocator();
+        final EJBLocator locator = invocation.getLocator();
         final EjbDeploymentInformation ejb = findBean(locator.getAppName(), locator.getModuleName(), locator.getDistinctName(), locator.getBeanName());
         final EJBComponent ejbComponent = ejb.getEjbComponent();
 
@@ -267,7 +268,7 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
 
         @Override
         public void listenerAdded(final DeploymentRepository repository) {
-            for(Map.Entry<DeploymentModuleIdentifier, ModuleDeployment> entry : repository.getModules().entrySet()) {
+            for (Map.Entry<DeploymentModuleIdentifier, ModuleDeployment> entry : repository.getModules().entrySet()) {
                 final DeploymentModuleIdentifier module = entry.getKey();
                 LocalEjbReceiver.this.registerModule(module.getApplicationName(), module.getModuleName(), module.getModuleName());
             }
@@ -275,12 +276,12 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
 
         @Override
         public void deploymentAvailable(final DeploymentModuleIdentifier deployment, final ModuleDeployment moduleDeployment) {
-                LocalEjbReceiver.this.registerModule(deployment.getApplicationName(), deployment.getModuleName(), deployment.getModuleName());
+            LocalEjbReceiver.this.registerModule(deployment.getApplicationName(), deployment.getModuleName(), deployment.getModuleName());
         }
 
         @Override
         public void deploymentRemoved(final DeploymentModuleIdentifier deployment) {
-               //TODO: implement this
+            //TODO: implement this
         }
     }
 }

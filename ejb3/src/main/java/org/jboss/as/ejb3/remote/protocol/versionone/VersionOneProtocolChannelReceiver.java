@@ -53,6 +53,9 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
     private static final byte HEADER_INVOCATION_REQUEST = 0x03;
     private static final byte HEADER_TX_COMMIT_REQUEST = 0x0F;
     private static final byte HEADER_TX_ROLLBACK_REQUEST = 0x10;
+    private static final byte HEADER_TX_PREPARE_REQUEST = 0x11;
+    private static final byte HEADER_TX_FORGET_REQUEST = 0x12;
+    private static final byte HEADER_TX_BEFORE_COMPLETION_REQUEST = 0x13;
 
     private final Channel channel;
 
@@ -125,6 +128,15 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
                     break;
                 case HEADER_TX_ROLLBACK_REQUEST:
                     messageHandler = new TransactionRequestHandler(this.transactionsRepository, this.executorService, TransactionRequestHandler.TransactionRequestType.ROLLBACK, this.marshallingStrategy);
+                    break;
+                case HEADER_TX_FORGET_REQUEST:
+                    messageHandler = new TransactionRequestHandler(this.transactionsRepository, this.executorService, TransactionRequestHandler.TransactionRequestType.FORGET, this.marshallingStrategy);
+                    break;
+                case HEADER_TX_PREPARE_REQUEST:
+                    messageHandler = new TransactionRequestHandler(this.transactionsRepository, this.executorService, TransactionRequestHandler.TransactionRequestType.PREPARE, this.marshallingStrategy);
+                    break;
+                case HEADER_TX_BEFORE_COMPLETION_REQUEST:
+                    messageHandler = new TransactionRequestHandler(this.transactionsRepository, this.executorService, TransactionRequestHandler.TransactionRequestType.BEFORE_COMPLETION, this.marshallingStrategy);
                     break;
                 default:
                     logger.warn("Received unsupported message header 0x" + Integer.toHexString(header) + " on channel " + channel);
