@@ -106,7 +106,10 @@ public class SessionFactoryTestCase {
 //        assertTrue("name read from hibernate session is Sally", "Sally".equals(emp.getName()));
     }
 
-    // Test that a Persistence context can be injected into a Hibernate Session
+    // Test that an extended Persistence context can be injected into a Hibernate Session
+    // We use extended persistence context, otherwise the Hibernate session will be closed after each transaction and
+    // the assert test would fail (due to lazy loading of the Employee entity.
+    // Using extended persistence context allows the hibernate session to stay open long enough for the lazy fetch.
     @Test
     public void testInjectPCIntoHibernateSession() throws Exception {
         SFSBHibernateSession sfsbHibernateSession = lookup("SFSBHibernateSession",SFSBHibernateSession.class);

@@ -49,6 +49,8 @@ import org.junit.runner.RunWith;
  * Hibernate entity tests (based on the EAP 5 test), using {@link EntityTest} bean. Tests relations between entities,
  * loading entities and named queries.
  *
+ * Note that this test uses an extended persistence context, so that the Hibernate session will stay open long enough
+ * to complete each test.  A transaction scoped entity manager would be closed after each JTA transaction completes.
  *
  * @author Zbyněk Roubalík
  */
