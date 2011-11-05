@@ -235,7 +235,7 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
             }
         }
 
-        final Map<ServiceController<?>, String> currentFailedControllers = new TreeMap<ServiceController<?>, String>(failedControllers);
+        final Map<ServiceController<?>, String> currentFailedControllers = new HashMap<ServiceController<?>, String>(failedControllers);
 
         previousMissingDepSet = new HashSet<ServiceName>(missingDeps.keySet());
 
