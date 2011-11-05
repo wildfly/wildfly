@@ -160,8 +160,6 @@ public class EJBClientXidTransactionTestCase {
         if (this.ejbClientContext != null) {
             EJBClientContext.suspendCurrent();
         }
-        // cleanup the tx context
-        EJBClientTransactionContext.setSelector(new ConstantContextSelector<EJBClientTransactionContext>(null));
     }
 
     private static void instantiateTxManagement() {

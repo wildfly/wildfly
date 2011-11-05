@@ -279,6 +279,7 @@ public class EJBClientUserTransactionTestCase {
             // by passing along the tx status as a return attachment from a remote method invocation.
             // For now, let's ignore it
             //Assert.assertEquals("Unexpected transaction state", Status.STATUS_ROLLEDBACK, userTransaction.getStatus());
+            userTransaction.rollback();
         }
 
         // now retrieve and check the batch
