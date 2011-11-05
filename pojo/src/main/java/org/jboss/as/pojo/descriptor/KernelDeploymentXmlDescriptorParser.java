@@ -31,6 +31,7 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,6 +53,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
 
     private enum Element {
         BEAN(new QName(NAMESPACE, "bean")),
+        BEAN_FACTORY(new QName(NAMESPACE, "bean-factory")),
         CLASSLOADER(new QName(NAMESPACE, "classloader")),
         CONSTRUCTOR(new QName(NAMESPACE, "constructor")),
         FACTORY(new QName(NAMESPACE, "factory")),
@@ -170,12 +172,37 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                         case BEAN:
                             beansConfigs.add(parseBean(reader));
                             break;
+                        case BEAN_FACTORY:
+                            BeanMetaDataConfig bean = parseBean(reader);
+                            beansConfigs.add(toBeanFactory(bean));
+                            kernelDeploymentXmlDescriptor.incrementBeanFactoryCount();
+                            break;
                         case UNKNOWN:
                             throw unexpectedElement(reader);
                     }
                     break;
             }
         }
+    }
+
+    private BeanMetaDataConfig toBeanFactory(final BeanMetaDataConfig bean) {
+        BeanMetaDataConfig factory = new BeanMetaDataConfig();
+        factory.setBeanClass(BaseBeanFactory.class.getName());
+        PropertyConfig pc = new PropertyConfig();
+        pc.setPropertyName("bmd");
+        ValueConfig vc = new ValueConfig() {
+            protected Object getClassValue(Class<?> type) {
+                return bean;
+            }
+
+            @Override
+            protected void addChildren(ConfigVisitor visitor, List<ConfigVisitorNode> nodes) {
+                nodes.add(bean);
+            }
+        };
+        pc.setValue(vc);
+        factory.setProperties(Collections.singleton(pc));
+        return factory;
     }
 
     private BeanMetaDataConfig parseBean(final XMLExtendedStreamReader reader) throws XMLStreamException {

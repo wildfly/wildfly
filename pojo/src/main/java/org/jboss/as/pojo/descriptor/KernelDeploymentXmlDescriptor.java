@@ -40,6 +40,7 @@ public class KernelDeploymentXmlDescriptor implements Serializable {
 
     private List<BeanMetaDataConfig> beans;
     private ModeConfig mode;
+    private int beanFactoriesCount;
 
     public List<BeanMetaDataConfig> getBeans() {
         return beans;
@@ -55,5 +56,13 @@ public class KernelDeploymentXmlDescriptor implements Serializable {
 
     public void setMode(ModeConfig mode) {
         this.mode = mode;
+    }
+
+    public int getBeanFactoriesCount() {
+        return beanFactoriesCount;
+    }
+
+    public void incrementBeanFactoryCount() {
+        beanFactoriesCount++;
     }
 }
