@@ -357,6 +357,7 @@ public enum Phase {
     public static final int POST_MODULE_CMP_ENTITY_METADATA             = 0x2400;
     public static final int POST_MODULE_CMP_STORE_MANAGER               = 0x2500;
     public static final int POST_MODULE_EJB_IIOP                        = 0x2600;
+    public static final int POST_MODULE_POJO                            = 0x2700;
 
     // INSTALL
     public static final int INSTALL_JNDI_DEPENDENCY_SETUP               = 0x0100;
