@@ -185,7 +185,7 @@
         <version.org.jboss.spec.javax.faces.jboss-jsf-api_2.1_spec>2.0.0.Beta1</version.org.jboss.spec.javax.faces.jboss-jsf-api_2.1_spec>
         <version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.1_spec>1.0.0.Final</version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.1_spec>
         <version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>1.0.0.Final</version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>
-        <version.org.jboss.spec.javax.management.j2eeorg.jboss.spec.javax.management.j2ee>1.0.0.Final</version.org.jboss.spec.javax.management.j2eeorg.jboss.spec.javax.management.j2ee>
+        <version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>1.0.0.Final</version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>
         <version.org.jboss.spec.javax.resource.jboss-connector-api_1.6_spec>1.0.0.Final</version.org.jboss.spec.javax.resource.jboss-connector-api_1.6_spec>
         <version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>1.0.1.Final</version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>
         <version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.0_spec>1.0.0.Final</version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.0_spec>
@@ -4520,7 +4520,7 @@
             <dependency>
               <groupId>org.jboss.spec.javax.management.j2ee</groupId>
               <artifactId>jboss-j2eemgmt-api_1.1_spec</artifactId>
-              <version>${version.org.jboss.spec.javax.management.j2eeorg.jboss.spec.javax.management.j2ee}</version>
+              <version>${version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec}</version>
             </dependency>
 
             <dependency>
