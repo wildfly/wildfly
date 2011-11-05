@@ -27,8 +27,7 @@ import java.util.concurrent.ExecutorService;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 
-import org.jboss.as.ejb3.timerservice.mk2.TimerServiceFactoryImpl;
-import org.jboss.as.ejb3.timerservice.mk2.persistence.filestore.FileTimerPersistence;
+import org.jboss.as.ejb3.timerservice.persistence.filestore.FileTimerPersistence;
 import org.jboss.as.ejb3.timerservice.spi.TimerServiceFactory;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;

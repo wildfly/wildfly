@@ -48,7 +48,7 @@ public class TimerServiceService extends ForwardingTimerService implements Servi
 
     public static final ServiceName SERVICE_NAME = ServiceName.of("ejb", "timerService");
 
-    private volatile org.jboss.as.ejb3.timerservice.api.TimerService timerService;
+    private volatile TimerServiceImpl timerService;
     private final InjectedValue<TimerServiceFactory> timerServiceFactoryInjectedValue = new InjectedValue<TimerServiceFactory>();
     private final InjectedValue<EJBComponent> ejbComponentInjectedValue = new InjectedValue<EJBComponent>();
 
@@ -69,7 +69,7 @@ public class TimerServiceService extends ForwardingTimerService implements Servi
         if (invoker == null) {
             throw new StartException("No timed object invoke for " + component);
         }
-        final org.jboss.as.ejb3.timerservice.api.TimerService timerService = (org.jboss.as.ejb3.timerservice.api.TimerService) timerServiceFactory.createTimerService(invoker, component);
+        final TimerServiceImpl timerService = (TimerServiceImpl) timerServiceFactory.createTimerService(invoker, component);
         final List<ScheduleTimer> timers = new ArrayList<ScheduleTimer>();
 
         for (Map.Entry<Method, List<AutoTimer>> entry : autoTimers.entrySet()) {

@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.timerservice.mk2;
+package org.jboss.as.ejb3.timerservice;
 
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 
@@ -95,7 +95,7 @@ public class TimerHandleImpl implements TimerHandle {
                 throw new EJBException("Timerservice with timedObjectId: " + timedObjectId + " is not registered");
             }
         }
-        org.jboss.as.ejb3.timerservice.api.Timer timer = this.service.getTimer(this);
+        TimerImpl timer = this.service.getTimer(this);
         if (timer != null && timer.isActive() == false) {
             throw new NoSuchObjectLocalException("Timer for handle: " + this + " is not active");
         }

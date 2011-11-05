@@ -19,23 +19,8 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.timerservice.mk2;
+package org.jboss.as.ejb3.timerservice;
 
-import org.jboss.as.ejb3.timerservice.api.Timer;
-import org.jboss.as.ejb3.timerservice.api.TimerService;
-import org.jboss.as.ejb3.timerservice.mk2.persistence.TimerEntity;
-import org.jboss.as.ejb3.timerservice.mk2.task.TimerTask;
-import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
-import org.jboss.logging.Logger;
-
-import javax.ejb.EJBException;
-import javax.ejb.NoMoreTimeoutsException;
-import javax.ejb.NoSuchObjectLocalException;
-import javax.ejb.ScheduleExpression;
-import javax.ejb.TimerHandle;
-import javax.transaction.Status;
-import javax.transaction.Synchronization;
-import javax.transaction.Transaction;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,6 +28,21 @@ import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
 import java.io.Serializable;
 import java.util.Date;
+
+import javax.ejb.EJBException;
+import javax.ejb.NoMoreTimeoutsException;
+import javax.ejb.NoSuchObjectLocalException;
+import javax.ejb.ScheduleExpression;
+import javax.ejb.Timer;
+import javax.ejb.TimerHandle;
+import javax.transaction.Status;
+import javax.transaction.Synchronization;
+import javax.transaction.Transaction;
+
+import org.jboss.as.ejb3.timerservice.persistence.TimerEntity;
+import org.jboss.as.ejb3.timerservice.task.TimerTask;
+import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
+import org.jboss.logging.Logger;
 
 /**
  * Implementation of EJB3.1 {@link Timer}
@@ -67,7 +67,7 @@ public class TimerImpl implements Timer {
     protected TimerState timerState;
 
     /**
-     * The {@link TimerService} through which this timer was created
+     * The {@link javax.ejb.TimerService} through which this timer was created
      */
     protected TimerServiceImpl timerService;
 
@@ -210,7 +210,7 @@ public class TimerImpl implements Timer {
             setTimerState(TimerState.CANCELED);
         }
         // if in tx, register with tx so cancel on tx completion
-        Transaction currentTx = this.timerService.getTransaction();
+        final Transaction currentTx = this.timerService.getTransaction();
         if (currentTx == null) {
             // cancel any scheduled Future for this timer
             this.cancelTimeout();
@@ -359,7 +359,6 @@ public class TimerImpl implements Timer {
         return nextTimeoutInMillis - currentTimeInMillis;
     }
 
-    @Override
     public boolean isAutoTimer() {
         return false;
     }
@@ -715,7 +714,7 @@ public class TimerImpl implements Timer {
             if (status == Status.STATUS_COMMITTED) {
                 logger.debug("commit timer cancellation: " + this.timer);
 
-                TimerState timerState = this.timer.getState();
+                final TimerState timerState = this.timer.getState();
                 switch (timerState) {
                     case CANCELED:
                     case IN_TIMEOUT:

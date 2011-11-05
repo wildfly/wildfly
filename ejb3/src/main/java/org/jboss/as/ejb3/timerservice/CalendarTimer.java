@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.timerservice.mk2;
+package org.jboss.as.ejb3.timerservice;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -28,11 +28,11 @@ import java.util.Calendar;
 import javax.ejb.EJBException;
 import javax.ejb.ScheduleExpression;
 
-import org.jboss.as.ejb3.timerservice.mk2.persistence.CalendarTimerEntity;
-import org.jboss.as.ejb3.timerservice.mk2.persistence.TimeoutMethod;
-import org.jboss.as.ejb3.timerservice.mk2.persistence.TimerEntity;
-import org.jboss.as.ejb3.timerservice.mk2.task.CalendarTimerTask;
-import org.jboss.as.ejb3.timerservice.mk2.task.TimerTask;
+import org.jboss.as.ejb3.timerservice.persistence.CalendarTimerEntity;
+import org.jboss.as.ejb3.timerservice.persistence.TimeoutMethod;
+import org.jboss.as.ejb3.timerservice.persistence.TimerEntity;
+import org.jboss.as.ejb3.timerservice.task.CalendarTimerTask;
+import org.jboss.as.ejb3.timerservice.task.TimerTask;
 import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
 import org.jboss.logging.Logger;
 
@@ -203,7 +203,7 @@ public class CalendarTimer extends TimerImpl {
     /**
      * Returns the task which handles the timeouts on this {@link CalendarTimer}
      *
-     * @see org.jboss.as.ejb3.timerservice.mk2.task.CalendarTimerTask
+     * @see org.jboss.as.ejb3.timerservice.task.CalendarTimerTask
      */
     @Override
     protected TimerTask<?> getTimerTask() {

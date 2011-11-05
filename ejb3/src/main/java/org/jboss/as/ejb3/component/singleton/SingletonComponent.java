@@ -22,6 +22,15 @@
 
 package org.jboss.as.ejb3.component.singleton;
 
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+
+import javax.ejb.LockType;
+
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
@@ -40,14 +49,6 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StopContext;
-
-import javax.ejb.LockType;
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * {@link Component} representing a {@link javax.ejb.Singleton} EJB.
@@ -72,6 +73,9 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
 
 
     private final DefaultAccessTimeoutService defaultAccessTimeoutProvider;
+
+    private final TimedObjectInvoker timedObjectInvoker;
+
     /**
      * Construct a new instance.
      *
@@ -88,6 +92,13 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
         this.methodLockTypes = singletonComponentCreateService.getMethodApplicableLockTypes();
         this.methodAccessTimeouts = singletonComponentCreateService.getMethodApplicableAccessTimeouts();
         this.defaultAccessTimeoutProvider = singletonComponentCreateService.getDefaultAccessTimeoutService();
+        final String deploymentName;
+        if (singletonComponentCreateService.getDistinctName() == null || singletonComponentCreateService.getDistinctName().length() == 0) {
+            deploymentName = singletonComponentCreateService.getApplicationName() + "." + singletonComponentCreateService.getModuleName();
+        } else {
+            deploymentName = singletonComponentCreateService.getApplicationName() + "." + singletonComponentCreateService.getModuleName() + "." + singletonComponentCreateService.getDistinctName();
+        }
+        this.timedObjectInvoker = new SingletonTimedObjectInvokerImpl(this, deploymentName);
     }
 
     @Override
@@ -99,7 +110,7 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
             return this.singletonComponentInstance;
         }
         if (dependsOn != null) {
-            for(ServiceName serviceName : dependsOn) {
+            for (ServiceName serviceName : dependsOn) {
                 final ServiceController<Component> service = (ServiceController<Component>) CurrentServiceContainer.getServiceContainer().getRequiredService(serviceName);
                 final Component component = service.getValue();
                 if (component instanceof SingletonComponent) {
@@ -192,6 +203,6 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
 
     @Override
     public TimedObjectInvoker getTimedObjectInvoker() {
-        return new SingletonTimedObjectInvokerImpl(this);
+        return timedObjectInvoker;
     }
 }

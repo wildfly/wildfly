@@ -19,11 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.timerservice.mk2.task;
+package org.jboss.as.ejb3.timerservice.task;
 
-import org.jboss.as.ejb3.timerservice.mk2.TimerImpl;
-import org.jboss.as.ejb3.timerservice.mk2.TimerServiceImpl;
-import org.jboss.as.ejb3.timerservice.mk2.TimerState;
+import org.jboss.as.ejb3.timerservice.TimerImpl;
+import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
+import org.jboss.as.ejb3.timerservice.TimerState;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.logging.Logger;
 
@@ -58,7 +58,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
     protected T timer;
 
     /**
-     * {@link org.jboss.as.ejb3.timerservice.mk2.TimerServiceImpl} to which this {@link TimerTask} belongs
+     * {@link org.jboss.as.ejb3.timerservice.TimerServiceImpl} to which this {@link TimerTask} belongs
      */
     protected TimerServiceImpl timerService;
 
@@ -79,9 +79,9 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
 
     /**
      * Invokes the timeout method through the {@link TimedObjectInvoker} corresponding
-     * to the {@link org.jboss.as.ejb3.timerservice.mk2.TimerImpl} to which this {@link TimerTask} belongs.
+     * to the {@link org.jboss.as.ejb3.timerservice.TimerImpl} to which this {@link TimerTask} belongs.
      * <p>
-     * This method also sets other attributes on the {@link org.jboss.as.ejb3.timerservice.mk2.TimerImpl} including the
+     * This method also sets other attributes on the {@link org.jboss.as.ejb3.timerservice.TimerImpl} including the
      * next timeout of the timer and the timer state.
      * </p>
      * <p>

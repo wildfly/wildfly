@@ -21,18 +21,19 @@
  */
 package org.jboss.as.ejb3.timerservice;
 
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.rmi.RemoteException;
+
+import javax.ejb.ConcurrentAccessException;
+import javax.ejb.ConcurrentAccessTimeoutException;
+import javax.ejb.Timer;
+
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EjbComponentInstance;
 import org.jboss.as.ejb3.component.pool.PooledComponent;
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.timerservice.spi.MultiTimeoutMethodTimedObjectInvoker;
-
-import javax.ejb.ConcurrentAccessException;
-import javax.ejb.ConcurrentAccessTimeoutException;
-import javax.ejb.Timer;
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.rmi.RemoteException;
 
 /**
  * Timed object invoker for an EJB
@@ -44,8 +45,14 @@ public class PooledTimedObjectInvokerImpl implements MultiTimeoutMethodTimedObje
     private final EJBComponent ejbComponent;
     private final Pool<EjbComponentInstance> pool;
 
-    public PooledTimedObjectInvokerImpl(final EJBComponent ejbComponent) {
+    /**
+     * String that uniquely identifies a deployment
+     */
+    private final String deploymentString;
+
+    public PooledTimedObjectInvokerImpl(final EJBComponent ejbComponent, final String deploymentString) {
         this.ejbComponent = ejbComponent;
+        this.deploymentString = deploymentString;
         this.pool = ((PooledComponent<EjbComponentInstance>) ejbComponent).getPool();
     }
 
@@ -102,7 +109,7 @@ public class PooledTimedObjectInvokerImpl implements MultiTimeoutMethodTimedObje
 
     @Override
     public String getTimedObjectId() {
-        return ejbComponent.getComponentName();
+        return deploymentString + "." + ejbComponent.getComponentName();
     }
 
     @Override

@@ -54,6 +54,7 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
 
     private final Pool<StatelessSessionComponentInstance> pool;
     private final Method timeoutMethod;
+    private final TimedObjectInvoker timedObjectInvoker;
 
     /**
      * Constructs a StatelessEJBComponent for a stateless session bean
@@ -84,9 +85,14 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
         }
 
         this.timeoutMethod = slsbComponentCreateService.getTimeoutMethod();
+        final String deploymentName;
+        if (slsbComponentCreateService.getDistinctName() == null || slsbComponentCreateService.getDistinctName().length() == 0) {
+            deploymentName = slsbComponentCreateService.getApplicationName() + "." + slsbComponentCreateService.getModuleName();
+        } else {
+            deploymentName = slsbComponentCreateService.getApplicationName() + "." + slsbComponentCreateService.getModuleName() + "." + slsbComponentCreateService.getDistinctName();
+        }
+        this.timedObjectInvoker = new PooledTimedObjectInvokerImpl(this, deploymentName);
     }
-
-
 
 
     @Override
@@ -111,7 +117,7 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
 
     @Override
     public TimedObjectInvoker getTimedObjectInvoker() {
-        return new PooledTimedObjectInvokerImpl(this);
+        return timedObjectInvoker;
     }
 
     public Method getTimeoutMethod() {

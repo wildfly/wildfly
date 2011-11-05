@@ -19,26 +19,8 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.timerservice.mk2.persistence.filestore;
+package org.jboss.as.ejb3.timerservice.persistence.filestore;
 
-import org.jboss.as.ejb3.timerservice.mk2.persistence.TimerEntity;
-import org.jboss.as.ejb3.timerservice.mk2.persistence.TimerPersistence;
-import org.jboss.logging.Logger;
-import org.jboss.marshalling.InputStreamByteInput;
-import org.jboss.marshalling.Marshaller;
-import org.jboss.marshalling.MarshallerFactory;
-import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.ModularClassResolver;
-import org.jboss.marshalling.OutputStreamByteOutput;
-import org.jboss.marshalling.Unmarshaller;
-import org.jboss.marshalling.river.RiverMarshallerFactory;
-import org.jboss.modules.ModuleLoader;
-
-import javax.transaction.Status;
-import javax.transaction.Synchronization;
-import javax.transaction.SystemException;
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -52,6 +34,25 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import javax.transaction.Status;
+import javax.transaction.Synchronization;
+import javax.transaction.SystemException;
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+
+import org.jboss.as.ejb3.timerservice.persistence.TimerEntity;
+import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
+import org.jboss.logging.Logger;
+import org.jboss.marshalling.InputStreamByteInput;
+import org.jboss.marshalling.Marshaller;
+import org.jboss.marshalling.MarshallerFactory;
+import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.ModularClassResolver;
+import org.jboss.marshalling.OutputStreamByteOutput;
+import org.jboss.marshalling.Unmarshaller;
+import org.jboss.marshalling.river.RiverMarshallerFactory;
+import org.jboss.modules.ModuleLoader;
 
 /**
  * File based persistent timer store.
@@ -160,7 +161,7 @@ public class FileTimerPersistence implements TimerPersistence {
             //remove is not a transactional operation, as it only happens once the timer has expired
             final Map<String, TimerEntity> timers = getTimers(timerEntity.getTimedObjectId());
             timers.remove(timerEntity.getId());
-            File file = fileName(timerEntity.getTimedObjectId(), timerEntity.getId());
+            final File file = fileName(timerEntity.getTimedObjectId(), timerEntity.getId());
             if (file.exists()) {
                 if (!file.delete()) {
                     logger.error("Could not remove persistent timer " + file);

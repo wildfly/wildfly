@@ -19,10 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.timerservice.mk2.persistence;
+package org.jboss.as.ejb3.timerservice.persistence;
 
-import org.jboss.as.ejb3.timerservice.mk2.TimerImpl;
-import org.jboss.as.ejb3.timerservice.mk2.TimerState;
+import org.jboss.as.ejb3.timerservice.TimerImpl;
+import org.jboss.as.ejb3.timerservice.TimerState;
 
 import java.io.Serializable;
 import java.util.Date;

@@ -21,10 +21,6 @@
  */
 package org.jboss.as.ejb3.component.messagedriven;
 
-import static java.util.Collections.emptyMap;
-import static javax.ejb.TransactionAttributeType.REQUIRED;
-import static org.jboss.as.ejb3.component.MethodIntf.BEAN;
-
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
@@ -55,6 +51,10 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.StopContext;
 
+import static java.util.Collections.emptyMap;
+import static javax.ejb.TransactionAttributeType.REQUIRED;
+import static org.jboss.as.ejb3.component.MethodIntf.BEAN;
+
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
@@ -67,6 +67,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     private final MessageEndpointFactory endpointFactory;
     private final Class<?> messageListenerInterface;
     private ResourceAdapter resourceAdapter;
+    private final TimedObjectInvoker timedObjectInvoker;
 
     /**
      * Construct a new instance.
@@ -128,6 +129,13 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
             }
         };
         this.endpointFactory = new JBossMessageEndpointFactory(getComponentClass().getClassLoader(), service);
+        final String deploymentName;
+        if(ejbComponentCreateService.getDistinctName() == null || ejbComponentCreateService.getDistinctName().length() == 0) {
+            deploymentName = ejbComponentCreateService.getApplicationName() + "." + ejbComponentCreateService.getModuleName();
+        } else {
+            deploymentName = ejbComponentCreateService.getApplicationName() + "." + ejbComponentCreateService.getModuleName() + "." + ejbComponentCreateService.getDistinctName();
+        }
+        this.timedObjectInvoker = new PooledTimedObjectInvokerImpl(this, deploymentName);
     }
 
     @Override
@@ -176,6 +184,6 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
 
     @Override
     public TimedObjectInvoker getTimedObjectInvoker() {
-        return new PooledTimedObjectInvokerImpl(this);
+        return timedObjectInvoker;
     }
 }

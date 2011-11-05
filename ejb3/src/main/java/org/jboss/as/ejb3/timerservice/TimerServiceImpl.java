@@ -19,18 +19,17 @@ c * JBoss, Home of Professional Open Source.
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.timerservice.mk2;
+package org.jboss.as.ejb3.timerservice;
 
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.singleton.SingletonComponent;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
-import org.jboss.as.ejb3.timerservice.api.TimerService;
-import org.jboss.as.ejb3.timerservice.mk2.persistence.CalendarTimerEntity;
-import org.jboss.as.ejb3.timerservice.mk2.persistence.TimeoutMethod;
-import org.jboss.as.ejb3.timerservice.mk2.persistence.TimerEntity;
-import org.jboss.as.ejb3.timerservice.mk2.persistence.TimerPersistence;
-import org.jboss.as.ejb3.timerservice.mk2.task.TimerTask;
+import org.jboss.as.ejb3.timerservice.persistence.CalendarTimerEntity;
+import org.jboss.as.ejb3.timerservice.persistence.TimeoutMethod;
+import org.jboss.as.ejb3.timerservice.persistence.TimerEntity;
+import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
+import org.jboss.as.ejb3.timerservice.task.TimerTask;
 import org.jboss.as.ejb3.timerservice.spi.ScheduleTimer;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.invocation.InterceptorContext;
@@ -41,12 +40,14 @@ import javax.ejb.ScheduleExpression;
 import javax.ejb.Timer;
 import javax.ejb.TimerConfig;
 import javax.ejb.TimerHandle;
+import javax.ejb.TimerService;
 import javax.transaction.RollbackException;
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -75,6 +76,12 @@ import java.util.concurrent.ExecutorService;
  * @version $Revision: $
  */
 public class TimerServiceImpl implements TimerService {
+
+    /**
+     * inactive timer states
+     */
+    private static final Set<TimerState> ineligibleTimerStates;
+
     /**
      * Logger
      */
@@ -120,10 +127,15 @@ public class TimerServiceImpl implements TimerService {
 
     private final EJBComponent component;
 
+    static {
+        final Set<TimerState> states = new HashSet<TimerState>();
+        states.add(TimerState.CANCELED);
+        states.add(TimerState.EXPIRED);
+        ineligibleTimerStates = Collections.unmodifiableSet(states);
+    }
 
     /**
      * Creates a {@link TimerServiceImpl}
-     *
      *
      * @param invoker            The {@link org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker} responsible for invoking the timeout method
      * @param timerPersistence   The persistent timer store
@@ -132,7 +144,7 @@ public class TimerServiceImpl implements TimerService {
      * @param component
      * @throws IllegalArgumentException If either of the passed param is null
      */
-    public TimerServiceImpl(final java.util.Timer timer, TimedObjectInvoker invoker, final TimerPersistence timerPersistence, TransactionManager transactionManager,
+    public TimerServiceImpl(final java.util.Timer timer, final TimedObjectInvoker invoker, final TimerPersistence timerPersistence, TransactionManager transactionManager,
                             ExecutorService executor, final EJBComponent component) {
         this.component = component;
         if (invoker == null) {
@@ -306,15 +318,13 @@ public class TimerServiceImpl implements TimerService {
         return this.createTimer(initialExpiration, intervalDuration, info, true);
     }
 
-    @Override
-    public org.jboss.as.ejb3.timerservice.api.Timer loadAutoTimer(ScheduleExpression schedule, Method timeoutMethod) {
+    public TimerImpl loadAutoTimer(ScheduleExpression schedule, Method timeoutMethod) {
 
         return this.createCalendarTimer(schedule, null, true, timeoutMethod);
     }
 
-    @Override
-    public org.jboss.as.ejb3.timerservice.api.Timer loadAutoTimer(ScheduleExpression schedule,
-                                                               TimerConfig timerConfig, Method timeoutMethod) {
+    public TimerImpl loadAutoTimer(ScheduleExpression schedule,
+                                   TimerConfig timerConfig, Method timeoutMethod) {
         return this.createCalendarTimer(schedule, timerConfig.getInfo(), timerConfig.isPersistent(), timeoutMethod);
     }
 
@@ -324,23 +334,27 @@ public class TimerServiceImpl implements TimerService {
     @Override
     public Collection<Timer> getTimers() throws IllegalStateException, EJBException {
         handleLifecycleCallback();
-        Set<Timer> activeTimers = new HashSet<Timer>();
+        final Set<Timer> activeTimers = new HashSet<Timer>();
         // get all active non-persistent timers for this timerservice
-        for (TimerImpl timer : this.nonPersistentTimers.values()) {
-            if (timer != null && timer.isActive()) {
+        for (final TimerImpl timer : this.nonPersistentTimers.values()) {
+            if (ineligibleTimerStates.contains(timer.getState())) {
+                continue;
+            } else if (timer.isActive()) {
                 activeTimers.add(timer);
             }
         }
         // get all active timers which are persistent, but haven't yet been
         // persisted (waiting for tx to complete)
-        for (TimerImpl timer : this.persistentWaitingOnTxCompletionTimers.values()) {
-            if (timer != null && timer.isActive()) {
+        for (final TimerImpl timer : this.persistentWaitingOnTxCompletionTimers.values()) {
+            if (ineligibleTimerStates.contains(timer.getState())) {
+                continue;
+            } else if (timer.isActive()) {
                 activeTimers.add(timer);
             }
         }
 
         // now get all active persistent timers for this timerservice
-        activeTimers.addAll(this.getActiveTimers());
+        activeTimers.addAll(this.getActivePersistentTimers());
         return activeTimers;
     }
 
@@ -397,8 +411,8 @@ public class TimerServiceImpl implements TimerService {
      * @throws IllegalArgumentException If the passed <code>schedule</code> is null
      * @throws IllegalStateException    If this method was invoked during a lifecycle callback on the EJB
      */
-    private org.jboss.as.ejb3.timerservice.api.Timer createCalendarTimer(ScheduleExpression schedule,
-                                                                      Serializable info, boolean persistent, Method timeoutMethod) {
+    private TimerImpl createCalendarTimer(ScheduleExpression schedule,
+                                          Serializable info, boolean persistent, Method timeoutMethod) {
         if (this.isLifecycleCallbackInvocation() && !this.isSingletonBeanInvocation()) {
             throw new IllegalStateException("Creation of timers is not allowed during lifecycle callback of non-singleton EJBs");
         }
@@ -453,7 +467,7 @@ public class TimerServiceImpl implements TimerService {
      *
      * @param handle The {@link javax.ejb.TimerHandle} for which the {@link javax.ejb.Timer} is being looked for
      */
-    public org.jboss.as.ejb3.timerservice.api.Timer getTimer(TimerHandle handle) {
+    public TimerImpl getTimer(TimerHandle handle) {
         TimerImpl timer = nonPersistentTimers.get(handle);
         if (timer != null) {
             return timer;
@@ -501,31 +515,38 @@ public class TimerServiceImpl implements TimerService {
      *
      * @param timer
      */
-    public void persistTimer(TimerImpl timer) {
-        // if not persistent, then do nothing
-        if (timer == null || !timer.persistent) {
+    public void persistTimer(final TimerImpl timer) {
+        if (timer == null) {
             return;
         }
-
-        // get the persistent entity from the timer
-        final TimerEntity timerEntity = timer.getPersistentState();
-        try {
-            //if timer persistence is disabled
-            if (timerPersistence == null) {
-                logger.warn("Timer persistence is not enabled, persistent timers will not survive JVM restarts");
-                return;
+        if (!timer.persistent) {
+            switch (timer.getState()) {
+                case CANCELED:
+                case EXPIRED:
+                    nonPersistentTimers.remove(timer.getHandle());
             }
-            if (timerEntity.getTimerState() == TimerState.EXPIRED ||
-                    timerEntity.getTimerState() == TimerState.CANCELED) {
-                timerPersistence.removeTimer(timerEntity);
-            } else {
-                timerPersistence.persistTimer(timerEntity);
+        } else {
+            // get the persistent entity from the timer
+            final TimerEntity timerEntity = timer.getPersistentState();
+            try {
+                persistentWaitingOnTxCompletionTimers.remove(timer.getHandle());
+                //if timer persistence is disabled
+                if (timerPersistence == null) {
+                    logger.warn("Timer persistence is not enabled, persistent timers will not survive JVM restarts");
+                    return;
+                }
+                if (timerEntity.getTimerState() == TimerState.EXPIRED ||
+                        timerEntity.getTimerState() == TimerState.CANCELED) {
+                    timerPersistence.removeTimer(timerEntity);
+                } else {
+                    timerPersistence.persistTimer(timerEntity);
+                }
+
+
+            } catch (Throwable t) {
+                this.setRollbackOnly();
+                throw new RuntimeException(t);
             }
-
-
-        } catch (Throwable t) {
-            this.setRollbackOnly();
-            throw new RuntimeException(t);
         }
     }
 
@@ -567,7 +588,7 @@ public class TimerServiceImpl implements TimerService {
      */
     public void restoreTimers(final List<ScheduleTimer> autoTimers) {
         // get the persisted timers which are considered active
-        List<TimerImpl> restorableTimers = this.getActiveTimers();
+        List<TimerImpl> restorableTimers = this.getActivePersistentTimers();
 
         //timers are removed from the list as they are loaded
         final List<ScheduleTimer> newAutoTimers = new LinkedList<ScheduleTimer>(autoTimers);
@@ -793,16 +814,14 @@ public class TimerServiceImpl implements TimerService {
 
     }
 
-    private List<TimerImpl> getActiveTimers() {
+    private List<TimerImpl> getActivePersistentTimers() {
         // we need only those timers which correspond to the
         // timed object invoker to which this timer service belongs. So
         // first get hold of the timed object id
         final String timedObjectId = this.getInvoker().getTimedObjectId();
 
         // timer states which do *not* represent an active timer
-        final Set<TimerState> ineligibleTimerStates = new HashSet<TimerState>();
-        ineligibleTimerStates.add(TimerState.CANCELED);
-        ineligibleTimerStates.add(TimerState.EXPIRED);
+
         if (timerPersistence == null) {
             //if the em is null then there are no persistent timers
             return Collections.emptyList();
@@ -811,13 +830,13 @@ public class TimerServiceImpl implements TimerService {
 
         final List<TimerEntity> persistedTimers = timerPersistence.loadActiveTimers(timedObjectId);
         final List<TimerImpl> activeTimers = new ArrayList<TimerImpl>();
-        for (TimerEntity persistedTimer : persistedTimers) {
+        for (final TimerEntity persistedTimer : persistedTimers) {
             if (ineligibleTimerStates.contains(persistedTimer.getTimerState())) {
                 continue;
             }
             TimerImpl activeTimer = null;
             if (persistedTimer.isCalendarTimer()) {
-                CalendarTimerEntity calendarTimerEntity = (CalendarTimerEntity) persistedTimer;
+                final CalendarTimerEntity calendarTimerEntity = (CalendarTimerEntity) persistedTimer;
 
                 // create a timer instance from the persisted calendar timer
                 activeTimer = new CalendarTimer(calendarTimerEntity, this);
@@ -832,7 +851,7 @@ public class TimerServiceImpl implements TimerService {
         return activeTimers;
     }
 
-    private Serializable clone(Serializable info) throws Exception {
+    private Serializable clone(final Serializable info) throws Exception {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
         objectOutputStream.writeObject(info);
@@ -844,11 +863,11 @@ public class TimerServiceImpl implements TimerService {
         return (Serializable) clonedInfo;
     }
 
-    private boolean doesTimeoutMethodMatch(TimeoutMethod timeoutMethod, String timeoutMethodName, String[] methodParams) {
+    private boolean doesTimeoutMethodMatch(final TimeoutMethod timeoutMethod, final String timeoutMethodName, final String[] methodParams) {
         if (timeoutMethod.getMethodName().equals(timeoutMethodName) == false) {
             return false;
         }
-        String[] timeoutMethodParams = timeoutMethod.getMethodParams();
+        final String[] timeoutMethodParams = timeoutMethod.getMethodParams();
         if (timeoutMethodParams == null && methodParams == null) {
             return true;
         }
@@ -973,7 +992,7 @@ public class TimerServiceImpl implements TimerService {
 
 
     private void handleLifecycleCallback() {
-        if(isLifecycleCallbackInvocation() && !this.isSingletonBeanInvocation()) {
+        if (isLifecycleCallbackInvocation() && !this.isSingletonBeanInvocation()) {
             throw new IllegalStateException("Cannot invoke timer service methods in lifecycle callback of non-singleton beans");
         }
     }

@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.timerservice.mk2;
+package org.jboss.as.ejb3.timerservice;
 
 /**
  * Timer states.
@@ -79,5 +79,6 @@ public enum TimerState {
     /**
      * State indicating that the timeout task has to be retried
      */
-    RETRY_TIMEOUT
+    RETRY_TIMEOUT,
+    ;
 }
