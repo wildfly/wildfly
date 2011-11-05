@@ -39,7 +39,7 @@ import org.jboss.metadata.appclient.spec.ApplicationClientMetaData;
 import org.jboss.metadata.javaee.spec.LifecycleCallbackMetaData;
 import org.jboss.metadata.javaee.spec.LifecycleCallbacksMetaData;
 
-import static org.jboss.as.appclient.AppClientMessages.MESSAGES;
+import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 
 /**
  * Deployment descriptor that resolves interceptor methods definined in ejb-jar.xml that could not be resolved at

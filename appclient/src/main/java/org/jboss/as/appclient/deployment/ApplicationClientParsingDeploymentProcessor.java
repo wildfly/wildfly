@@ -41,7 +41,7 @@ import org.jboss.metadata.appclient.spec.ApplicationClientMetaData;
 import org.jboss.metadata.parser.util.NoopXmlResolver;
 import org.jboss.vfs.VirtualFile;
 
-import static org.jboss.as.appclient.AppClientMessages.MESSAGES;
+import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 
 /**
  * @author Stuart Douglas

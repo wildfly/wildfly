@@ -26,7 +26,7 @@ import org.jboss.as.process.CommandLineConstants;
 
 import java.io.PrintStream;
 
-import static org.jboss.as.appclient.AppClientMessages.MESSAGES;
+import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 
 /**
  * Date: 26.10.2011

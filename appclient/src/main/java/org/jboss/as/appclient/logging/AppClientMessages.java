@@ -20,7 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.appclient;
+package org.jboss.as.appclient.logging;
+
+import java.io.File;
+import java.net.URL;
+
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.Cause;
@@ -29,11 +35,6 @@ import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jboss.logging.Param;
 import org.jboss.vfs.VirtualFile;
-
-import javax.xml.stream.Location;
-import javax.xml.stream.XMLStreamException;
-import java.io.File;
-import java.net.URL;
 
 /**
  * Date: 26.10.2011

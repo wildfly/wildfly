@@ -42,7 +42,7 @@ import org.jboss.as.server.deployment.module.TempFileProviderService;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 
-import static org.jboss.as.appclient.AppClientMessages.MESSAGES;
+import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 
 /**
  * Processor that marks a sub-deployment as an application client based on the parameters passed on the command line

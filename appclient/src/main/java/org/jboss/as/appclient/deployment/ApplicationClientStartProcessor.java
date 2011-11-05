@@ -37,7 +37,7 @@ import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.modules.Module;
 
-import static org.jboss.as.appclient.AppClientMessages.MESSAGES;
+import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 
 /**
  * Processor that starts an application client deployment

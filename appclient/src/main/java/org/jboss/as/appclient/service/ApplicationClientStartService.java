@@ -53,7 +53,7 @@ import org.xnio.IoFuture;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 
-import static org.jboss.as.appclient.AppClientLogger.ROOT_LOGGER;
+import static org.jboss.as.appclient.logging.AppClientLogger.ROOT_LOGGER;
 
 
 /**
@@ -89,48 +89,55 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
     public synchronized void start(final StartContext context) throws StartException {
         try {
             final Endpoint endpoint = Remoting.createEndpoint("endpoint", OptionMap.EMPTY);
-            endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
+            try {
+                endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
 
-            // open a connection
-            final IoFuture<Connection> futureConnection = endpoint.connect(new URI(hostUrl), OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE), new AnonymousCallbackHandler());
-            final Connection connection = IoFutureHelper.get(futureConnection, 5L, TimeUnit.SECONDS);
-
-            thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    ClassLoader oldTccl = SecurityActions.getContextClassLoader();
-                    try {
-                        try {
-                            SecurityActions.setContextClassLoader(classLoader);
-
-                            EJBClientContext ejbClientContext = EJBClientContext.create();
-                            ejbClientContext.registerConnection(connection);
-                            applicationClientDeploymentServiceInjectedValue.getValue().getDeploymentCompleteLatch().await();
-
+                // open a connection
+                final IoFuture<Connection> futureConnection = endpoint.connect(new URI(hostUrl), OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE), new AnonymousCallbackHandler());
+                final Connection connection = IoFutureHelper.get(futureConnection, 5L, TimeUnit.SECONDS);
+                try {
+                    thread = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            ClassLoader oldTccl = SecurityActions.getContextClassLoader();
                             try {
-                                NamespaceContextSelector.pushCurrentSelector(namespaceContextSelectorInjectedValue);
-                                //do static injection etc
-                                //TODO: this should be better
-                                applicationClientComponent.getValue().createInstance();
-                                mainMethod.invoke(null, new Object[]{parameters});
+                                try {
+                                    SecurityActions.setContextClassLoader(classLoader);
+
+                                    EJBClientContext ejbClientContext = EJBClientContext.create();
+                                    ejbClientContext.registerConnection(connection);
+                                    applicationClientDeploymentServiceInjectedValue.getValue().getDeploymentCompleteLatch().await();
+
+                                    try {
+                                        NamespaceContextSelector.pushCurrentSelector(namespaceContextSelectorInjectedValue);
+                                        //do static injection etc
+                                        //TODO: this should be better
+                                        applicationClientComponent.getValue().createInstance();
+                                        mainMethod.invoke(null, new Object[]{parameters});
+                                    } finally {
+                                        NamespaceContextSelector.popCurrentSelector();
+                                    }
+                                } catch (InvocationTargetException e) {
+                                    ROOT_LOGGER.caughtException(e.getTargetException(), e.getTargetException());
+                                } catch (IllegalAccessException e) {
+                                    ROOT_LOGGER.exceptionRunningAppClient(e, e.getClass().getSimpleName());
+                                } catch (InterruptedException e) {
+                                    ROOT_LOGGER.exceptionRunningAppClient(e, e.getClass().getSimpleName());
+                                } finally {
+                                    SecurityActions.setContextClassLoader(oldTccl);
+                                }
                             } finally {
-                                NamespaceContextSelector.popCurrentSelector();
+                                CurrentServiceContainer.getServiceContainer().shutdown();
                             }
-                        } catch (InvocationTargetException e) {
-                            ROOT_LOGGER.caughtException(e.getTargetException(), e.getTargetException());
-                        } catch (IllegalAccessException e) {
-                            ROOT_LOGGER.exceptionRunningAppClient(e, e.getClass().getSimpleName());
-                        } catch (InterruptedException e) {
-                            ROOT_LOGGER.exceptionRunningAppClient(e, e.getClass().getSimpleName());
-                        } finally {
-                            SecurityActions.setContextClassLoader(oldTccl);
                         }
-                    } finally {
-                        CurrentServiceContainer.getServiceContainer().shutdown();
-                    }
+                    });
+                    thread.start();
+                } finally {
+                    connection.close();
                 }
-            });
-            thread.start();
+            } finally {
+                endpoint.close();
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (URISyntaxException e) {

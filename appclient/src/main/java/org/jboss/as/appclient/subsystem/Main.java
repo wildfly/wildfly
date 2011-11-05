@@ -21,7 +21,7 @@
  */
 package org.jboss.as.appclient.subsystem;
 
-import static org.jboss.as.appclient.AppClientMessages.MESSAGES;
+import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 import static org.jboss.as.process.Main.getVersionString;
 
 import java.io.File;

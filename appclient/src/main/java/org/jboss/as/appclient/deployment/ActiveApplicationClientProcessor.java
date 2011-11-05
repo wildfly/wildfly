@@ -31,7 +31,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.jboss.as.appclient.AppClientMessages.MESSAGES;
+import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 
 /**
  * Processor that determines which application client should be started. This may be specifed on the command line,
