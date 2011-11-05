@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.jpa.hibernate;
 
 import javax.ejb.Stateful;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceContextType;
 
 import org.hibernate.Session;
 
@@ -34,7 +35,7 @@ import org.hibernate.Session;
  */
 @Stateful
 public class SFSBHibernateSession {
-    @PersistenceContext(unitName = "mypc")
+    @PersistenceContext(unitName = "mypc", type=PersistenceContextType.EXTENDED)
     Session session;
 
     public void createEmployee(String name, String address, int id) {
