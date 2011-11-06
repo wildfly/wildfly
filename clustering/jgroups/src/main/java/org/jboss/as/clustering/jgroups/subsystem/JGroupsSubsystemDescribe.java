@@ -44,7 +44,7 @@ public class JGroupsSubsystemDescribe implements OperationStepHandler, Descripti
      */
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return LocalDescriptions.getSubsystemDescribeDescription(locale);
+        return JGroupsDescriptions.getSubsystemDescribeDescription(locale);
     }
 
     @Override

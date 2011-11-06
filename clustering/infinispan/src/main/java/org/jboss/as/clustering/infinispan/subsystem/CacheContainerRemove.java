@@ -37,7 +37,7 @@ public class CacheContainerRemove extends AbstractRemoveStepHandler implements D
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return LocalDescriptions.getCacheContainerRemoveDescription(locale);
+        return InfinispanDescriptions.getCacheContainerRemoveDescription(locale);
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {

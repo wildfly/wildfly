@@ -384,7 +384,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
      */
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return LocalDescriptions.getCacheContainerAddDescription(locale);
+        return InfinispanDescriptions.getCacheContainerAddDescription(locale);
     }
 
     private void addExecutorDependency(ServiceBuilder<CacheContainer> builder, ModelNode model, String key, Injector<Executor> injector) {

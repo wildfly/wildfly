@@ -62,7 +62,7 @@ public class InfinispanSubsystemAdd extends AbstractAddStepHandler implements De
      */
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return LocalDescriptions.getSubsystemAddDescription(locale);
+        return InfinispanDescriptions.getSubsystemAddDescription(locale);
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) {

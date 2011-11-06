@@ -36,7 +36,7 @@ public class ProtocolStackRemove extends AbstractRemoveStepHandler implements De
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return LocalDescriptions.getProtocolStackRemoveDescription(locale);
+        return JGroupsDescriptions.getProtocolStackRemoveDescription(locale);
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {

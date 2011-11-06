@@ -66,7 +66,7 @@ public class JGroupsExtension implements Extension, DescriptionProvider, XMLElem
     private static final DescriptionProvider stackDescription = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            return LocalDescriptions.getProtocolStackDescription(locale);
+            return JGroupsDescriptions.getProtocolStackDescription(locale);
         }
     };
 
@@ -103,7 +103,7 @@ public class JGroupsExtension implements Extension, DescriptionProvider, XMLElem
      */
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return LocalDescriptions.getSubsystemDescription(locale);
+        return JGroupsDescriptions.getSubsystemDescription(locale);
     }
 
     /**

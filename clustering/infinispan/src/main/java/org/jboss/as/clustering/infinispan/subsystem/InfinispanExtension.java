@@ -69,7 +69,7 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
     private static final DescriptionProvider containerDescription = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            return LocalDescriptions.getCacheContainerDescription(locale);
+            return InfinispanDescriptions.getCacheContainerDescription(locale);
         }
     };
 
@@ -106,7 +106,7 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
      */
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return LocalDescriptions.getSubsystemDescription(locale);
+        return InfinispanDescriptions.getSubsystemDescription(locale);
     }
 
     /**

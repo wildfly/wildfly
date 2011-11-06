@@ -45,7 +45,7 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler, Descri
      */
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return LocalDescriptions.getSubsystemDescribeDescription(locale);
+        return InfinispanDescriptions.getSubsystemDescribeDescription(locale);
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {

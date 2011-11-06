@@ -85,7 +85,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler implements Descript
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return LocalDescriptions.getProtocolStackAddDescription(locale);
+        return JGroupsDescriptions.getProtocolStackAddDescription(locale);
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) {

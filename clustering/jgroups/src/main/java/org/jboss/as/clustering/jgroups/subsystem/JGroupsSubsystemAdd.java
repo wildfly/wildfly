@@ -63,7 +63,7 @@ public class JGroupsSubsystemAdd extends AbstractAddStepHandler implements Descr
      */
     @Override
     public ModelNode getModelDescription(final Locale locale) {
-        return LocalDescriptions.getSubsystemAddDescription(locale);
+        return JGroupsDescriptions.getSubsystemAddDescription(locale);
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) {

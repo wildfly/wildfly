@@ -32,8 +32,11 @@ import org.jboss.dmr.ModelType;
 /**
  * @author Paul Ferraro
  */
-public class LocalDescriptions {
-    private LocalDescriptions() {
+public class InfinispanDescriptions {
+
+    public static final String RESOURCE_NAME = InfinispanDescriptions.class.getPackage().getName() + ".LocalDescriptions";
+
+    private InfinispanDescriptions() {
         // Hide
     }
 
@@ -107,7 +110,7 @@ public class LocalDescriptions {
     }
 
     private static ResourceBundle getResources(Locale locale) {
-        return ResourceBundle.getBundle(LocalDescriptions.class.getName(), (locale == null) ? Locale.getDefault() : locale);
+        return ResourceBundle.getBundle(RESOURCE_NAME, (locale == null) ? Locale.getDefault() : locale);
     }
 
     private static ModelNode createDescription(ResourceBundle resources, String key) {
