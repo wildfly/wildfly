@@ -23,13 +23,9 @@
 package org.jboss.as.pojo.service;
 
 import org.jboss.as.pojo.descriptor.LifecycleConfig;
-import org.jboss.as.pojo.descriptor.ValueConfig;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.ImmediateValue;
-
-import java.lang.reflect.Method;
 
 /**
  * POJO lifecycle phase.
@@ -42,39 +38,14 @@ public abstract class LifecyclePojoPhase extends AbstractPojoPhase {
     protected abstract String defaultUp();
     protected abstract String defaultDown();
 
-    protected Joinpoint createJoinpoint(LifecycleConfig config, String defaultMethod) {
-        Method method;
-        ValueConfig[] params = null;
-        if (config == null) {
-            try {
-                method = getBeanInfo().getMethod(defaultMethod);
-            } catch (Exception t) {
-                if (log.isTraceEnabled())
-                    log.trace("Ignoring default " + defaultUp() + " invocation.", t);
-                return null;
-            }
-        } else {
-            String methodName = config.getMethodName();
-            if (methodName == null) {
-                methodName = defaultMethod;
-            }
-            ValueConfig[] parameters = config.getParameters();
-            String[] types = Configurator.getTypes(parameters);
-            method = getBeanInfo().findMethod(methodName, types);
-            params = parameters;
-        }
-        MethodJoinpoint joinpoint = new MethodJoinpoint(method);
-        joinpoint.setTarget(new ImmediateValue<Object>(getBean()));
-        joinpoint.setParameters(params);
-        return joinpoint;
+    protected void dispatchJoinpoint(LifecycleConfig config, String defaultMethod) throws Throwable {
+        BeanUtils.dispatchLifecycleJoinpoint(getBeanInfo(), getBean(), config, defaultMethod);
     }
 
     @Override
     public void start(StartContext context) throws StartException {
         try {
-            Joinpoint joinpoint = createJoinpoint(getUpConfig(), defaultUp());
-            if (joinpoint != null)
-                joinpoint.dispatch();
+            dispatchJoinpoint(getUpConfig(), defaultUp());
         } catch (Throwable t) {
             throw new StartException(t);
         }
@@ -85,9 +56,7 @@ public abstract class LifecyclePojoPhase extends AbstractPojoPhase {
     public void stop(StopContext context) {
         super.stop(context);
         try {
-            Joinpoint joinpoint = createJoinpoint(getDownConfig(), defaultDown());
-            if (joinpoint != null)
-                joinpoint.dispatch();
+            dispatchJoinpoint(getDownConfig(), defaultDown());
         } catch (Throwable t) {
             log.debug("Exception at " + defaultDown() + " phase.", t);
         }

@@ -32,6 +32,7 @@ public interface BeanFactory {
      * Create new bean.
      *
      * @return new bean
+     * @throws Throwable for any error
      */
-    Object create();
+    Object create() throws Throwable;
 }
