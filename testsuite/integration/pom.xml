@@ -391,7 +391,7 @@
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions combine.children="append">
                             <execution>
-                                <id>build-clustering.server</id>
+                                <id>build-iiop.server</id>
                                 <phase>process-test-resources</phase>
                                 <goals>
                                     <goal>run</goal>

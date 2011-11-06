@@ -32,7 +32,7 @@ import org.jboss.logging.MessageLogger;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @MessageLogger(projectCode = "JBAS")
-interface TransactionLogger extends BasicLogger {
+public interface TransactionLogger extends BasicLogger {
     /**
      * A logger with the category of the default transaction package.
      */

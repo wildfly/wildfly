@@ -26,8 +26,7 @@ import java.io.IOException;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
-import org.junit.Ignore;
+import org.jboss.as.txn.subsystem.TransactionExtension;
 
 /**
  *
@@ -43,7 +42,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     protected String getSubsystemXml() throws IOException {
         //This is just copied from standalone.xml testing more combinations would be good
         return
-            "<subsystem xmlns=\"urn:jboss:domain:transactions:1.0\" >" +
+            "<subsystem xmlns=\"urn:jboss:domain:transactions:1.1\" >" +
             "    <recovery-environment socket-binding=\"txn-recovery-environment\" status-socket-binding=\"txn-status-manager\"/>" +
             "    <core-environment>" +
             "        <process-id>" +
@@ -51,6 +50,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
             "        </process-id>" +
             "    </core-environment>" +
             "    <coordinator-environment default-timeout=\"300\"/>" +
+            "    <jts/>"+
             "</subsystem>";
     }
 

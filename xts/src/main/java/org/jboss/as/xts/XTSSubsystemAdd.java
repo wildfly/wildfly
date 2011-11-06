@@ -24,7 +24,7 @@ package org.jboss.as.xts;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.txn.TxnServices;
+import org.jboss.as.txn.service.TxnServices;
 
 import org.jboss.as.webservices.service.EndpointPublishService;
 import org.jboss.dmr.ModelNode;
@@ -38,8 +38,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.wsf.spi.publish.Context;
 
 import java.util.ArrayList;

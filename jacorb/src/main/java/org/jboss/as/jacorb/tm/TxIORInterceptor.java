@@ -36,7 +36,6 @@ import org.omg.PortableInterceptor.IORInterceptor;
  * that adds spec defined COSTransaction entries to an IOR.
  *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
- * @version $Revision: 81018 $
  */
 public class TxIORInterceptor extends LocalObject implements IORInterceptor {
     /**
@@ -55,7 +54,6 @@ public class TxIORInterceptor extends LocalObject implements IORInterceptor {
         this.codec = codec;
     }
 
-    // org.omg.PortableInterceptor.IORInterceptor operations -------------------
 
     public String name() {
         return TxIORInterceptor.class.getName();

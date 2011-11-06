@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,22 +19,32 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.jacorb.tm;
 
-import javax.transaction.Transaction;
+package org.jboss.as.txn.service;
 
-import org.jboss.iiop.tm.InboundTransactionCurrent;
-import org.omg.CORBA.LocalObject;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.tm.JBossXATerminator;
 
 /**
- * Default implementation of the InboundTransactionCurrent SPI.
+ * The XATerminator service.
  *
- * @author <a href="mailto:reverbel@ime.usp.br">Francisco Reverbel</a>
- * @version $Revision: 82920 $
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class InboundTransactionCurrentImpl extends LocalObject implements InboundTransactionCurrent {
+public final class XATerminatorService implements Service<JBossXATerminator> {
+    private volatile JBossXATerminator value;
 
-    public Transaction getCurrentTransaction() {
-        return TxServerInterceptor.getCurrentTransaction();
+    public void start(final StartContext context) throws StartException {
+        value = new com.arjuna.ats.internal.jbossatx.jta.jca.XATerminator();
+    }
+
+    public void stop(final StopContext context) {
+        value = null;
+    }
+
+    public JBossXATerminator getValue() throws IllegalStateException {
+        return TxnServices.notNull(value);
     }
 }

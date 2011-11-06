@@ -92,7 +92,7 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.deployment.Phase;
-import org.jboss.as.txn.TxnServices;
+import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.naming.ejb.EjbNamingContextSetup;

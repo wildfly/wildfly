@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2010, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -19,7 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.txn;
+
+package org.jboss.as.txn.service;
+
+import javax.transaction.TransactionManager;
 
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.msc.service.AbstractService;
@@ -29,28 +32,31 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 
-import javax.transaction.TransactionSynchronizationRegistry;
-
 /**
- * Service that exposes the TransactionSynchronizationRegistry
+ * Service responsible for getting the {@link TransactionManager}.
  *
- * @author Stuart Douglas
+ * @author Thomas.Diesler@jboss.com
+ * @since 29-Oct-2010
  */
-public class TransactionSynchronizationRegistryService extends AbstractService<TransactionSynchronizationRegistry> {
-    public static final ServiceName SERVICE_NAME = TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY;
+public class TransactionManagerService extends AbstractService<TransactionManager> {
+
+    public static final ServiceName SERVICE_NAME = TxnServices.JBOSS_TXN_TRANSACTION_MANAGER;
 
     private final InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> injectedArjunaTM = new InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService>();
 
-    public static ServiceController<TransactionSynchronizationRegistry> addService(final ServiceTarget target, ServiceVerificationHandler verificationHandler) {
-        TransactionSynchronizationRegistryService service = new TransactionSynchronizationRegistryService();
-        ServiceBuilder<TransactionSynchronizationRegistry> serviceBuilder = target.addService(SERVICE_NAME, service);
+    public static ServiceController<TransactionManager> addService(final ServiceTarget target, final ServiceVerificationHandler verificationHandler) {
+        TransactionManagerService service = new TransactionManagerService();
+        ServiceBuilder<TransactionManager> serviceBuilder = target.addService(SERVICE_NAME, service);
+        // The 'jbosgi' prefix followed by the FQN of the service interface allows the OSGi layer
+        // to find the service using context.getServiceReference(TransactionManager.class.getName())
+        serviceBuilder.addAliases(ServiceName.of("jbosgi", "xservice", TransactionManager.class.getName()));
         serviceBuilder.addDependency(ArjunaTransactionManagerService.SERVICE_NAME, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, service.injectedArjunaTM);
         serviceBuilder.addListener(verificationHandler);
         return serviceBuilder.install();
     }
 
     @Override
-    public TransactionSynchronizationRegistry getValue() throws IllegalStateException {
-        return injectedArjunaTM.getValue().getTransactionSynchronizationRegistry();
+    public TransactionManager getValue() throws IllegalStateException {
+        return injectedArjunaTM.getValue().getTransactionManager();
     }
 }

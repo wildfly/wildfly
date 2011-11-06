@@ -55,6 +55,7 @@ import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
+import org.jboss.as.txn.service.TxnServices;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
@@ -206,6 +207,9 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         builder.addDependency(CorbaNamingService.SERVICE_NAME, NamingContextExt.class, service.getCorbaNamingContext());
         builder.addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, service.getDeploymentRepository());
         builder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, service.getServiceModuleLoaderInjectedValue());
+
+        //we need the arjunta transaction manager to be up, as it performs some initialization that is required by the orb interceptors
+        builder.addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER);
         builder.install();
 
     }

@@ -5,7 +5,7 @@
 #API_TESTS="-Dapi.module"
 BENCHMARK_TESTS="-Dbenchmark.module -DnoSmoke"
 #INTEGRATION_TESTS="-Dintegration.module -Dbasic.integration.tests -Dcompat.integration.tests -Dclustering.integration.tests -Dtimerservice.integration.tests"
-INTEGRATION_TESTS="-Dintegration.module -Dbasic.integration.tests -Dclustering.integration.tests"
+INTEGRATION_TESTS="-Dintegration.module -Dbasic.integration.tests -Dclustering.integration.tests -Diiop.integration.tests"
 BASIC_TESTS="-Dintegration.module -Dbasic.integration.tests  -DnoSmoke"
 CLUSTER_TESTS="-Dintegration.module -Dclustering.integration.tests -DnoSmoke"
 SMOKE_TESTS="-Dintegration.module" # -Dsmoke.integration.tests"

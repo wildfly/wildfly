@@ -26,7 +26,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.ejb.HomeHandle;
+import javax.transaction.Status;
 import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
@@ -111,6 +113,10 @@ public class EjbHomeCorbaServant extends Servant implements InvokeHandler, Local
      */
     private final SASCurrent sasCurrent;
 
+
+    private final TransactionManager transactionManager;
+
+
     /**
      * A reference to the InboundTransactionCurrent, or null if OTS interceptors
      * are not installed.
@@ -120,13 +126,14 @@ public class EjbHomeCorbaServant extends Servant implements InvokeHandler, Local
     /**
      * Constructs an <code>EjbHomeCorbaServant></code>.
      */
-    public EjbHomeCorbaServant(final Map<String, SkeletonStrategy> methodInvokerMap, final String[] repositoryIds, final InterfaceDef interfaceDef, final ORB orb, final ComponentView componentView, final DeploymentRepository deploymentRepository) {
+    public EjbHomeCorbaServant(final Map<String, SkeletonStrategy> methodInvokerMap, final String[] repositoryIds, final InterfaceDef interfaceDef, final ORB orb, final ComponentView componentView, final DeploymentRepository deploymentRepository, final TransactionManager transactionManager) {
         this.methodInvokerMap = methodInvokerMap;
         this.repositoryIds = repositoryIds;
         this.interfaceDef = interfaceDef;
         this.orb = orb;
         this.componentView = componentView;
         this.deploymentRepository = deploymentRepository;
+        this.transactionManager = transactionManager;
         SASCurrent sasCurrent;
         try {
             sasCurrent = (SASCurrent) orb.resolve_initial_references("SASCurrent");
@@ -195,46 +202,57 @@ public class EjbHomeCorbaServant extends Servant implements InvokeHandler, Local
                 if (inboundTxCurrent != null) {
                     tx = inboundTxCurrent.getCurrentTransaction();
                 }
-                SimplePrincipal principal = null;
-                char[] password = null;
-                if (sasCurrent != null) {
-                    final byte[] username = sasCurrent.get_incoming_username();
-                    byte[] credential = sasCurrent.get_incoming_password();
-                    String name = new String(username, "UTF-8");
-                    int domainIndex = name.indexOf('@');
-                    if (domainIndex > 0)
-                        name = name.substring(0, domainIndex);
-                    if (name.length() == 0) {
-                        final byte[] incomingName = sasCurrent.get_incoming_principal_name();
-                        if (incomingName.length > 0) {
-                            name = new String(incomingName, "UTF-8");
-                            domainIndex = name.indexOf('@');
-                            if (domainIndex > 0)
-                                name = name.substring(0, domainIndex);
+                if (tx != null) {
+                    transactionManager.resume(tx);
+                }
+                try {
+                    SimplePrincipal principal = null;
+                    char[] password = null;
+                    if (sasCurrent != null) {
+                        final byte[] username = sasCurrent.get_incoming_username();
+                        byte[] credential = sasCurrent.get_incoming_password();
+                        String name = new String(username, "UTF-8");
+                        int domainIndex = name.indexOf('@');
+                        if (domainIndex > 0)
+                            name = name.substring(0, domainIndex);
+                        if (name.length() == 0) {
+                            final byte[] incomingName = sasCurrent.get_incoming_principal_name();
+                            if (incomingName.length > 0) {
+                                name = new String(incomingName, "UTF-8");
+                                domainIndex = name.indexOf('@');
+                                if (domainIndex > 0)
+                                    name = name.substring(0, domainIndex);
+                                principal = new SimplePrincipal(name);
+                                // username==password is a hack until
+                                // we have a real way to establish trust
+                                password = name.toCharArray();
+                            }
+                        } else {
                             principal = new SimplePrincipal(name);
-                            // username==password is a hack until
-                            // we have a real way to establish trust
-                            password = name.toCharArray();
+                            password = new String(credential, "UTF-8").toCharArray();
                         }
-                    } else {
-                        principal = new SimplePrincipal(name);
-                        password = new String(credential, "UTF-8").toCharArray();
+                    }
+                    final Object[] params = op.readParams((org.omg.CORBA_2_3.portable.InputStream) in);
+
+
+                    final SecurityContext sc = SecurityContextFactory.createSecurityContext("CORBA_REMOTE");
+                    sc.getUtil().createSubjectInfo(principal, password, null);
+
+                    //TODO: deal with the transaction
+                    final InterceptorContext interceptorContext = new InterceptorContext();
+                    interceptorContext.setContextData(new HashMap<String, Object>());
+                    interceptorContext.setParameters(params);
+                    interceptorContext.setMethod(op.getMethod());
+                    interceptorContext.putPrivateData(ComponentView.class, componentView);
+                    interceptorContext.putPrivateData(Component.class, componentView.getComponent());
+                    retVal = componentView.invoke(interceptorContext);
+                } finally {
+                    if (tx != null) {
+                        if (transactionManager.getStatus() != Status.STATUS_NO_TRANSACTION) {
+                            transactionManager.suspend();
+                        }
                     }
                 }
-                final Object[] params = op.readParams((org.omg.CORBA_2_3.portable.InputStream) in);
-
-
-                final SecurityContext sc = SecurityContextFactory.createSecurityContext("CORBA_REMOTE");
-                sc.getUtil().createSubjectInfo(principal, password, null);
-
-                //TODO: deal with the transaction
-                final InterceptorContext interceptorContext = new InterceptorContext();
-                interceptorContext.setContextData(new HashMap<String, Object>());
-                interceptorContext.setParameters(params);
-                interceptorContext.setMethod(op.getMethod());
-                interceptorContext.putPrivateData(ComponentView.class, componentView);
-                interceptorContext.putPrivateData(Component.class, componentView.getComponent());
-                retVal = componentView.invoke(interceptorContext);
             }
 
             //if this is a remote proxy we need to translate it into a corba object
@@ -249,7 +267,7 @@ public class EjbHomeCorbaServant extends Servant implements InvokeHandler, Local
                 logger.trace("Exception in EJBHome invocation", e);
             }
             RmiIdlUtil.rethrowIfCorbaSystemException(e);
-            out = (org.omg.CORBA_2_3.portable.OutputStream)  handler.createExceptionReply();
+            out = (org.omg.CORBA_2_3.portable.OutputStream) handler.createExceptionReply();
             op.writeException(out, e);
         }
         return out;
@@ -270,15 +288,24 @@ public class EjbHomeCorbaServant extends Servant implements InvokeHandler, Local
             throw new BAD_OPERATION(opName);
         }
 
-        //TODO: deal with the transaction
-
-        final InterceptorContext interceptorContext = new InterceptorContext();
-        interceptorContext.setContextData(new HashMap<String, Object>());
-        interceptorContext.setParameters(arguments);
-        interceptorContext.setMethod(op.getMethod());
-        interceptorContext.putPrivateData(ComponentView.class, componentView);
-        interceptorContext.putPrivateData(Component.class, componentView.getComponent());
-        return componentView.invoke(interceptorContext);
+        if (tx != null) {
+            transactionManager.resume(tx);
+        }
+        try {
+            final InterceptorContext interceptorContext = new InterceptorContext();
+            interceptorContext.setContextData(new HashMap<String, Object>());
+            interceptorContext.setParameters(arguments);
+            interceptorContext.setMethod(op.getMethod());
+            interceptorContext.putPrivateData(ComponentView.class, componentView);
+            interceptorContext.putPrivateData(Component.class, componentView.getComponent());
+            return componentView.invoke(interceptorContext);
+        } finally {
+            if (tx != null) {
+                if (transactionManager.getStatus() != Status.STATUS_NO_TRANSACTION) {
+                    transactionManager.suspend();
+                }
+            }
+        }
     }
 
 }

@@ -29,14 +29,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import com.arjuna.ats.jts.common.jtsPropertyManager;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.jacorb.naming.jndi.JBossCNCtxFactory;
 import org.jboss.as.jacorb.deployment.JacORBDependencyProcessor;
 import org.jboss.as.jacorb.deployment.JacORBMarkerProcessor;
+import org.jboss.as.jacorb.naming.jndi.JBossCNCtxFactory;
 import org.jboss.as.jacorb.service.CorbaNamingService;
 import org.jboss.as.jacorb.service.CorbaORBService;
 import org.jboss.as.jacorb.service.CorbaPOAService;
@@ -113,6 +114,9 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
                 return System.setProperty("org.jboss.com.sun.CORBA.ORBUseDynamicStub", "true");
             }
         });
+        //always propagate the transaction context
+        //TODO: need a better way to do this
+        jtsPropertyManager.getJTSEnvironmentBean().setAlwaysPropagateContext(true);
 
         //setup naming
         InitialContext.addUrlContextFactory("corbaloc", JBossCNCtxFactory.INSTANCE);
@@ -183,7 +187,6 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
                         namingService.getNamingPOAInjector()).
                 addListener(verificationHandler).
                 setInitialMode(ServiceController.Mode.ACTIVE).install());
-
     }
 
     /**

@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.txn;
+package org.jboss.as.txn.subsystem;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -38,7 +38,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * {@link ResourceDefinition} for the root resource of the transaction subsystem.
@@ -136,6 +135,11 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setXmlName(Attribute.PATH.getLocalName())
             .build();
 
+    public static final SimpleAttributeDefinition JTS = new SimpleAttributeDefinitionBuilder(CommonAttributes.JTS, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode().set(false))
+            .setFlags(AttributeAccess.Flag.RESTART_JVM)  //I think the use of statics in arjunta will require a JVM restart
+            .build();
+
     private TransactionSubsystemRootResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME),
                 TransactionExtension.getResourceDescriptionResolver(TransactionExtension.SUBSYSTEM_NAME),
@@ -161,6 +165,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         resourceRegistration.registerReadWriteAttribute(DEFAULT_TIMEOUT, null, new ReloadRequiredWriteAttributeHandler(DEFAULT_TIMEOUT));
         resourceRegistration.registerReadWriteAttribute(OBJECT_STORE_RELATIVE_TO, null, new ReloadRequiredWriteAttributeHandler(OBJECT_STORE_RELATIVE_TO));
         resourceRegistration.registerReadWriteAttribute(OBJECT_STORE_PATH, null, new ReloadRequiredWriteAttributeHandler(OBJECT_STORE_PATH));
+        resourceRegistration.registerReadWriteAttribute(JTS, null, new ReloadRequiredWriteAttributeHandler(JTS));
 
         TxStatsHandler.INSTANCE.registerMetrics(resourceRegistration);
     }

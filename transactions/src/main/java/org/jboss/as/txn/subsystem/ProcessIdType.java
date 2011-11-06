@@ -1,4 +1,4 @@
-package org.jboss.as.txn;
+package org.jboss.as.txn.subsystem;
 
 /**
  * Enums for the known com.arjuna.ats.arjuna.utils.Process implementation types

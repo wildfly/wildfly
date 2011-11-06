@@ -49,6 +49,10 @@ import org.omg.CORBA.ORB;
  */
 
 public class CorbaUtils {
+
+    private static volatile Properties orbProperties;
+
+
     /**
      * Returns the CORBA object reference associated with a Remote
      * object by using the javax.rmi.CORBA package.
@@ -164,23 +168,26 @@ public class CorbaUtils {
 
         // Extract any org.omg.CORBA properties from environment
         if (env != null) {
-            if (env instanceof Properties) {
-                // Already a Properties, just clone
-                orbProp = (Properties) env.clone();
-            } else {
-                // Get all String properties
-                Enumeration envProp;
-                orbProp = new Properties();
-                for (envProp = env.keys(); envProp.hasMoreElements(); ) {
-                    String key = (String) envProp.nextElement();
-                    Object val = env.get(key);
-                    if (val instanceof String) {
-                        orbProp.put(key, val);
-                    }
+            // Get all String properties
+            orbProp = new Properties();
+            final Enumeration envProp = env.keys();
+            while (envProp.hasMoreElements()) {
+                String key = (String) envProp.nextElement();
+                Object val = env.get(key);
+                if (val instanceof String) {
+                    orbProp.put(key, val);
+                }
+            }
+            final Enumeration mainProps = orbProperties.keys();
+            while (mainProps.hasMoreElements()) {
+                String key = (String) mainProps.nextElement();
+                Object val = orbProperties.get(key);
+                if (val instanceof String) {
+                    orbProp.put(key, val);
                 }
             }
         } else {
-            orbProp = new Properties();
+            orbProp = orbProperties;
         }
 
         if (server != null) {
@@ -272,5 +279,13 @@ public class CorbaUtils {
             throw new IllegalStateException(
                     "No method definition for javax.rmi.PortableRemoteObject.toStub(java.rmi.Remote)");
         }
+    }
+
+    public static Properties getOrbProperties() {
+        return orbProperties;
+    }
+
+    public static void setOrbProperties(final Properties orbProperties) {
+        CorbaUtils.orbProperties = orbProperties;
     }
 }

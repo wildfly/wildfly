@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.txn;
+package org.jboss.as.txn.service;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -66,13 +66,14 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
 
     private RecoveryManagerService recoveryManagerService;
     private boolean recoveryListener;
+    private final boolean jts;
 
-    ArjunaRecoveryManagerService(boolean recoveryListener) {
+    public ArjunaRecoveryManagerService(final boolean recoveryListener, final boolean jts) {
         this.recoveryListener = recoveryListener;
+        this.jts = jts;
     }
 
     public synchronized void start(StartContext context) throws StartException {
-        final ORB orb = orbInjector.getValue();
 
         // Recovery env bean
         final RecoveryEnvironmentBean recoveryEnvironmentBean = recoveryPropertyManager.getRecoveryEnvironmentBean();
@@ -92,7 +93,7 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
         expiryScanners.add(ExpiredTransactionStatusManagerScanner.class.getName());
 
 
-        if (orb == null) {
+        if (!jts) {
             recoveryExtensions.add(com.arjuna.ats.internal.jta.recovery.arjunacore.XARecoveryModule.class.getName());
             recoveryEnvironmentBean.setRecoveryModuleClassNames(recoveryExtensions);
             recoveryEnvironmentBean.setExpiryScannerClassNames(expiryScanners);
@@ -109,6 +110,7 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
 
             this.recoveryManagerService = recoveryManagerService;
         } else {
+            final ORB orb = orbInjector.getValue();
             recoveryExtensions.add(TopLevelTransactionRecoveryModule.class.getName());
             recoveryExtensions.add(ServerTransactionRecoveryModule.class.getName());
             recoveryExtensions.add(com.arjuna.ats.internal.jta.recovery.jts.XARecoveryModule.class.getName());
@@ -145,15 +147,15 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
         return recoveryManagerService;
     }
 
-    Injector<ORB> getOrbInjector() {
+    public Injector<ORB> getOrbInjector() {
         return orbInjector;
     }
 
-    Injector<SocketBinding> getRecoveryBindingInjector() {
+    public Injector<SocketBinding> getRecoveryBindingInjector() {
         return recoveryBindingInjector;
     }
 
-    Injector<SocketBinding> getStatusBindingInjector() {
+    public Injector<SocketBinding> getStatusBindingInjector() {
         return statusBindingInjector;
     }
 }

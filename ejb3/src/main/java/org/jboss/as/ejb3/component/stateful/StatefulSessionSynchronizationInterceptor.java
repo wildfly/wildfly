@@ -21,17 +21,17 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
-import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
-import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
-import org.jboss.as.ejb3.tx.OwnableReentrantLock;
-import org.jboss.invocation.InterceptorContext;
-import org.jboss.logging.Logger;
-
 import javax.ejb.ConcurrentAccessTimeoutException;
 import javax.ejb.EJBException;
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.TransactionSynchronizationRegistry;
+
+import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
+import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
+import org.jboss.as.ejb3.tx.OwnableReentrantLock;
+import org.jboss.invocation.InterceptorContext;
+import org.jboss.logging.Logger;
 
 import static org.jboss.as.ejb3.component.stateful.StatefulComponentInstanceInterceptor.getComponentInstance;
 
@@ -83,7 +83,8 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
         final StatefulSessionComponentInstance instance = getComponentInstance(context);
 
         final TransactionSynchronizationRegistry transactionSynchronizationRegistry = component.getTransactionSynchronizationRegistry();
-        lock.pushOwner(getLockOwner(transactionSynchronizationRegistry));
+        final Object lockOwner = getLockOwner(transactionSynchronizationRegistry);
+        lock.pushOwner(lockOwner);
         try {
             final AccessTimeoutDetails timeout = component.getAccessTimeout(context.getMethod());
             if (log.isTraceEnabled()) {
@@ -107,12 +108,12 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
                     if (!synchronizationRegistered) {
                         // get the key to current transaction associated with this thread
                         currentTransactionKey = transactionSynchronizationRegistry.getTransactionKey();
-                        int status = transactionSynchronizationRegistry.getTransactionStatus();
+                        final int status = transactionSynchronizationRegistry.getTransactionStatus();
                         // if this SFSB instance is already associated with a different transaction, then it's an error
                         // if the thread is currently associated with a tx, then register a tx synchronization
                         if (currentTransactionKey != null && status != Status.STATUS_COMMITTED) {
                             // register a tx synchronization for this SFSB instance
-                            final Synchronization statefulSessionSync = new StatefulSessionSynchronization(instance);
+                            final Synchronization statefulSessionSync = new StatefulSessionSynchronization(instance, lockOwner);
                             transactionSynchronizationRegistry.registerInterposedSynchronization(statefulSessionSync);
                             wasTxSyncRegistered = true;
                             if (log.isTraceEnabled()) {
@@ -183,9 +184,11 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
     private class StatefulSessionSynchronization implements Synchronization {
 
         private final StatefulSessionComponentInstance statefulSessionComponentInstance;
+        private final Object lockOwner;
 
-        StatefulSessionSynchronization(StatefulSessionComponentInstance statefulSessionComponentInstance) {
+        StatefulSessionSynchronization(StatefulSessionComponentInstance statefulSessionComponentInstance, final Object lockOwner) {
             this.statefulSessionComponentInstance = statefulSessionComponentInstance;
+            this.lockOwner = lockOwner;
         }
 
         @Override
@@ -195,9 +198,7 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
                     log.trace("Before completion callback invoked on Transaction synchronization: " + this +
                             " of stateful component instance: " + statefulSessionComponentInstance);
                 }
-                synchronized (threadLock) {
-                    statefulSessionComponentInstance.beforeCompletion();
-                }
+                statefulSessionComponentInstance.beforeCompletion();
             } catch (Throwable t) {
                 throw handleThrowableInTxSync(statefulSessionComponentInstance, t);
             }
@@ -205,25 +206,23 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
 
         @Override
         public void afterCompletion(int status) {
-            synchronized (threadLock) {
-                try {
-                    if (log.isTraceEnabled()) {
-                        log.trace("After completion callback invoked on Transaction synchronization: " + this +
-                                " of stateful component instance: " + statefulSessionComponentInstance);
-                    }
-                    statefulSessionComponentInstance.afterCompletion(status == Status.STATUS_COMMITTED);
-
-                } catch (Throwable t) {
-                    throw handleThrowableInTxSync(statefulSessionComponentInstance, t);
+            try {
+                if (log.isTraceEnabled()) {
+                    log.trace("After completion callback invoked on Transaction synchronization: " + this +
+                            " of stateful component instance: " + statefulSessionComponentInstance);
                 }
-                // tx has completed, so mark the SFSB instance as no longer in use
+                statefulSessionComponentInstance.afterCompletion(status == Status.STATUS_COMMITTED);
 
-                lock.pushOwner(getLockOwner(statefulSessionComponentInstance.getComponent().getTransactionSynchronizationRegistry()));
-                try {
-                    releaseInstance(statefulSessionComponentInstance);
-                } finally {
-                    lock.popOwner();
-                }
+            } catch (Throwable t) {
+                throw handleThrowableInTxSync(statefulSessionComponentInstance, t);
+            }
+            // tx has completed, so mark the SFSB instance as no longer in use
+
+            lock.pushOwner(lockOwner);
+            try {
+                releaseInstance(statefulSessionComponentInstance);
+            } finally {
+                lock.popOwner();
             }
         }
 

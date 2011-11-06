@@ -243,4 +243,39 @@
         </sequential>
     </macrodef>
 
+    <macrodef name="add-jts" description="Enable JTS">
+
+        <attribute name="name" default="jbossas"/>
+        <attribute name="output.dir" default="${project.build.directory}"/>
+        <attribute name="config.dir.name" default="standalone/configuration"/>
+
+        <!--
+         This macro makes use of saxon via  ${net.sf.saxon:saxon:jar}
+        -->
+
+        <sequential>
+            <echo message="Enabling JTS for config @{name}"/>
+
+            <!-- process *.xml to *.xml.mod -->
+            <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
+                  style="${basedir}/src/test/xslt/enableJTS.xsl"
+                  extension=".xml.mod"
+                  useImplicitFileset="false">
+                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                    <include name="**/standalone-ha.xml"/>
+                    <include name="**/standalone.xml"/>
+                </fileset>
+            </xslt>
+
+            <!-- move processed files back -->
+            <move todir="@{output.dir}/@{name}/@{config.dir.name}">
+               <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                   <include name="**/standalone-ha.xml.mod"/>
+                   <include name="**/standalone.xml.mod"/>
+               </fileset>
+               <mapper type="glob" from="*.mod" to="*"/>
+             </move>
+        </sequential>
+    </macrodef>
+
 </project>

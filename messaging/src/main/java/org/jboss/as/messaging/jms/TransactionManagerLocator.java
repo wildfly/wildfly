@@ -25,8 +25,7 @@ package org.jboss.as.messaging.jms;
 
 import javax.transaction.TransactionManager;
 
-import org.jboss.as.txn.TxnServices;
-import org.jboss.msc.service.Service;
+import org.jboss.as.txn.service.TxnServices;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 

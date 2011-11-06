@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.jboss.as.txn;
+package org.jboss.as.txn.service;
 
 import com.arjuna.ats.internal.arjuna.objectstore.hornetq.HornetqJournalEnvironmentBean;
 import org.jboss.msc.service.Service;
@@ -24,7 +24,7 @@ public class ArjunaObjectStoreEnvironmentService implements Service<Void> {
     private final InjectedValue<String> pathInjector = new InjectedValue<String>();
     private final boolean useHornetqJournalStore;
 
-    ArjunaObjectStoreEnvironmentService(boolean useHornetqJournalStore) {
+    public ArjunaObjectStoreEnvironmentService(boolean useHornetqJournalStore) {
         this.useHornetqJournalStore = useHornetqJournalStore;
     }
 
@@ -64,7 +64,7 @@ public class ArjunaObjectStoreEnvironmentService implements Service<Void> {
     public void stop(StopContext context) {
     }
 
-    InjectedValue<String> getPathInjector() {
+    public InjectedValue<String> getPathInjector() {
         return pathInjector;
     }
 

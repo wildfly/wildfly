@@ -22,8 +22,12 @@
 
 package org.jboss.as.jacorb.service;
 
+import java.net.InetSocketAddress;
+import java.util.Properties;
+
 import org.jboss.as.jacorb.JacORBSubsystemConstants;
 import org.jboss.as.jacorb.naming.JBossInitialContextFactory;
+import org.jboss.as.jacorb.naming.jndi.CorbaUtils;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.logging.Logger;
@@ -36,9 +40,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.omg.CORBA.ORB;
-
-import java.net.InetSocketAddress;
-import java.util.Properties;
 
 /**
  * <p>
@@ -135,6 +136,9 @@ public class CorbaORBService implements Service<ORB> {
         } catch (Exception e) {
             throw new StartException(e);
         }
+
+        CorbaUtils.setOrbProperties(properties);
+
         log.info("CORBA ORB Service Started");
     }
 
@@ -235,6 +239,7 @@ public class CorbaORBService implements Service<ORB> {
         public void run() {
             // orb.destroy blocks until the ORB has shutdown. We must signal the context when the process is complete.
             try {
+                CorbaUtils.setOrbProperties(null);
                 this.orb.destroy();
             } finally {
                 this.context.complete();

@@ -27,8 +27,8 @@ import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.jpa.transaction.TransactionUtil;
 import org.jboss.as.jpa.util.JPAServiceNames;
-import org.jboss.as.txn.TransactionManagerService;
-import org.jboss.as.txn.TransactionSynchronizationRegistryService;
+import org.jboss.as.txn.service.TransactionManagerService;
+import org.jboss.as.txn.service.TransactionSynchronizationRegistryService;
 import org.jboss.msc.inject.CastingInjector;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;

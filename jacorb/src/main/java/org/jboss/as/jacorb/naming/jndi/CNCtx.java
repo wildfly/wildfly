@@ -51,6 +51,7 @@ import javax.naming.Reference;
 import javax.naming.spi.NamingManager;
 import javax.naming.spi.ResolveResult;
 
+import org.jboss.as.jacorb.service.CorbaORBService;
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.ORB;
 import org.omg.CosNaming.NameComponent;
@@ -249,8 +250,7 @@ public class CNCtx implements javax.naming.Context {
             if (inOrb == null) {
 
                 // no ORB instance specified; create one using env and defaults
-                inOrb = CorbaUtils.getOrb(null, -1, env);
-                orbTracker = new org.jboss.as.jacorb.naming.jndi.OrbReuseTracker(inOrb);
+                inOrb = CorbaORBService.getCurrent();
             }
             setOrbAndRootContext(inOrb, ncIor);
         } else if (provUrl != null) {
@@ -280,8 +280,7 @@ public class CNCtx implements javax.naming.Context {
             if (inOrb == null) {
 
                 // No ORB instance specified; create one using env and defaults
-                inOrb = CorbaUtils.getOrb(null, -1, env);
-                orbTracker = new org.jboss.as.jacorb.naming.jndi.OrbReuseTracker(inOrb);
+                inOrb = CorbaORBService.getCurrent();
                 if (debug) {
                     System.err.println("Getting default ORB: " + inOrb + env);
                 }
@@ -339,7 +338,7 @@ public class CNCtx implements javax.naming.Context {
 
                     // Get ORB
                     ORB orb = CorbaUtils.getOrb(addr.host, addr.port, env);
-                    orbTracker = new org.jboss.as.jacorb.naming.jndi.OrbReuseTracker(orb);
+                    //orbTracker = new org.jboss.as.jacorb.naming.jndi.OrbReuseTracker(orb);
 
                     // Assign to fields
                     setOrbAndRootContext(orb, (String) null);
@@ -373,8 +372,7 @@ public class CNCtx implements javax.naming.Context {
             if (orb == null) {
 
                 // No ORB instance specified; create one using env and defaults
-                orb = CorbaUtils.getOrb(null, -1, env);
-                orbTracker = new org.jboss.as.jacorb.naming.jndi.OrbReuseTracker(orb);
+                orb = CorbaORBService.getCurrent();
             }
             setOrbAndRootContext(orb, corbaloc);
 

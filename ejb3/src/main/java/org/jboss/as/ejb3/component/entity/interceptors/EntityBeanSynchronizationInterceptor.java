@@ -70,7 +70,8 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
         }
         // we obtain a lock in this synchronization interceptor because the lock needs to be tied to the synchronization
         // so that it can released on the tx synchronization callbacks
-        lock.pushOwner(getLockOwner(transactionSynchronizationRegistry));
+        final Object lockOwner = getLockOwner(transactionSynchronizationRegistry);
+        lock.pushOwner(lockOwner);
         try {
             lock.lock();
             synchronized (lock) {
@@ -89,7 +90,7 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
                         // if the thread is currently associated with a tx, then register a tx synchronization
                         if (currentTransactionKey != null) {
                             // register a tx synchronization for this entity instance
-                            final Synchronization entitySynchronization = new EntityBeanSynchronization(instance);
+                            final Synchronization entitySynchronization = new EntityBeanSynchronization(instance, lockOwner);
                             transactionSynchronizationRegistry.registerInterposedSynchronization(entitySynchronization);
                             if (log.isTraceEnabled()) {
                                 log.trace("Registered tx synchronization: " + entitySynchronization + " for tx: " + currentTransactionKey +
@@ -146,9 +147,11 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
     private class EntityBeanSynchronization implements Synchronization {
 
         private final EntityBeanComponentInstance componentInstance;
+        private final Object lockOwner;
 
-        EntityBeanSynchronization(EntityBeanComponentInstance componentInstance) {
+        EntityBeanSynchronization(EntityBeanComponentInstance componentInstance, final Object lockOwner) {
             this.componentInstance = componentInstance;
+            this.lockOwner = lockOwner;
         }
 
         @Override
@@ -158,7 +161,7 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
                 try {
                     componentInstance.store();
                 } catch (Throwable t) {
-                    lock.pushOwner(getLockOwner(componentInstance.getComponent().getTransactionSynchronizationRegistry()));
+                    lock.pushOwner(lockOwner);
                     try {
                         handleThrowableInTxSync(componentInstance, t);
                     } finally {
@@ -172,7 +175,7 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
         public void afterCompletion(int status) {
             synchronized (threadLock) {
                 // tx has completed, so mark the SFSB instance as no longer in use
-                lock.pushOwner(getLockOwner(componentInstance.getComponent().getTransactionSynchronizationRegistry()));
+                lock.pushOwner(lockOwner);
                 try {
                     releaseInstance(componentInstance, status == Status.STATUS_COMMITTED);
                 } finally {

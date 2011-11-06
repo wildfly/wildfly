@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.txn;
+package org.jboss.as.txn.subsystem;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,13 +34,14 @@ enum Namespace {
     // must be first
     UNKNOWN(null),
 
-    TRANSACTIONS_1_0("urn:jboss:domain:transactions:1.0")
+    TRANSACTIONS_1_0("urn:jboss:domain:transactions:1.0"),
+    TRANSACTIONS_1_1("urn:jboss:domain:transactions:1.1")
     ;
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = TRANSACTIONS_1_0;
+    public static final Namespace CURRENT = TRANSACTIONS_1_1;
 
     private final String name;
 

@@ -34,7 +34,6 @@ import org.omg.PortableInterceptor.ORBInitializer;
  * installs the <code>TxIORInterceptor</code>
  *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
- * @version $Revision: 81018 $
  */
 public class TxIORInterceptorInitializer extends LocalObject implements ORBInitializer {
     /**
@@ -46,7 +45,6 @@ public class TxIORInterceptorInitializer extends LocalObject implements ORBIniti
         // do nothing
     }
 
-    // org.omg.PortableInterceptor.ORBInitializer operations -------------------
     public void pre_init(ORBInitInfo info) {
         // do nothing
     }

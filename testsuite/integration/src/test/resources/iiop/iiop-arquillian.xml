@@ -4,7 +4,7 @@
 
     <group qualifier="iiop">
 
-        <!-- The server that expsoses EJB's via IIOP -->
+        <!-- The server than invokes the exposed EJB's -->
         <container qualifier="iiop-client" default="true">
             <configuration>
                 <property name="jbossHome">target/iiop-client</property>
@@ -13,7 +13,7 @@
             </configuration>
         </container>
 
-        <!-- The server than invokes the exposed EJB's -->
+        <!-- The server that expsoses EJB's via IIOP -->
         <container qualifier="iiop-server" default="false">
             <configuration>
                 <property name="jbossHome">target/iiop-server</property>

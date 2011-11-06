@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.txn;
+package org.jboss.as.txn.service;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,7 +55,7 @@ import static org.jboss.as.txn.TransactionMessages.MESSAGES;
  * @author Thomas.Diesler@jboss.com
  * @author Scott Stark (sstark@redhat.com) (C) 2011 Red Hat Inc.
  */
-final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jbossatx.jta.TransactionManagerService> {
+public final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jbossatx.jta.TransactionManagerService> {
 
     public static final ServiceName SERVICE_NAME = TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER;
 
@@ -69,12 +69,14 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
     private boolean transactionStatusManagerEnable;
     private boolean coordinatorEnableStatistics;
     private int coordinatorDefaultTimeout;
+    private final boolean jts;
 
-    ArjunaTransactionManagerService(final boolean coordinatorEnableStatistics, final int coordinatorDefaultTimeout,
-                                    final boolean transactionStatusManagerEnable) {
+    public ArjunaTransactionManagerService(final boolean coordinatorEnableStatistics, final int coordinatorDefaultTimeout,
+                                    final boolean transactionStatusManagerEnable, final boolean jts) {
         this.coordinatorEnableStatistics = coordinatorEnableStatistics;
         this.coordinatorDefaultTimeout = coordinatorDefaultTimeout;
         this.transactionStatusManagerEnable = transactionStatusManagerEnable;
+        this.jts = jts;
     }
 
     @Override
@@ -92,14 +94,13 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
         coordinatorEnvironmentBean.setTransactionStatusManagerEnable(transactionStatusManagerEnable);
 
         // Object Store Browser bean
-        Map<String, String> objStoreBrowserTypes = new HashMap<String, String> ();
+        Map<String, String> objStoreBrowserTypes = new HashMap<String, String>();
         objStoreBrowser = new ObjStoreBrowser();
         objStoreBrowserTypes.put("StateManager/BasicAction/TwoPhaseCoordinator/AtomicAction",
                 "com.arjuna.ats.internal.jta.tools.osb.mbean.jta.JTAActionBean");
 
-        final ORB orb = orbInjector.getOptionalValue();
 
-        if (orb == null) {
+        if (!jts) {
             // No IIOP, stick with JTA mode.
             jtaEnvironmentBean.setTransactionManagerClassName(com.arjuna.ats.jbossatx.jta.TransactionManagerDelegate.class.getName());
             jtaEnvironmentBean.setUserTransactionClassName(com.arjuna.ats.internal.jta.transaction.arjunacore.UserTransactionImple.class.getName());
@@ -117,6 +118,7 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
             service.start();
             value = service;
         } else {
+            final ORB orb = orbInjector.getValue();
             // IIOP is enabled, so fire up JTS mode.
             jtaEnvironmentBean.setTransactionManagerClassName(com.arjuna.ats.jbossatx.jts.TransactionManagerDelegate.class.getName());
             jtaEnvironmentBean.setUserTransactionClassName(com.arjuna.ats.internal.jta.transaction.jts.UserTransactionImple.class.getName());
@@ -165,11 +167,11 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
         return TxnServices.notNull(value);
     }
 
-    Injector<JBossXATerminator> getXaTerminatorInjector() {
+    public Injector<JBossXATerminator> getXaTerminatorInjector() {
         return xaTerminatorInjector;
     }
 
-    Injector<ORB> getOrbInjector() {
+    public Injector<ORB> getOrbInjector() {
         return orbInjector;
     }
 

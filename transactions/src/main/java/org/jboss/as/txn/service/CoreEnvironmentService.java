@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.jboss.as.txn;
+package org.jboss.as.txn.service;
 
 import org.jboss.as.network.SocketBinding;
 import org.jboss.msc.inject.Injector;
@@ -81,10 +81,10 @@ public class CoreEnvironmentService implements Service<CoreEnvironmentBean> {
     public void stop(StopContext context) {
     }
 
-    InjectedValue<String> getPathInjector() {
+    public InjectedValue<String> getPathInjector() {
         return pathInjector;
     }
-    Injector<SocketBinding> getSocketProcessBindingInjector() {
+    public Injector<SocketBinding> getSocketProcessBindingInjector() {
         return socketProcessBindingInjector;
     }
 

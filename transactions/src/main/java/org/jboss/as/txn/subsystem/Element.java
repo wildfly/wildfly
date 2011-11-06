@@ -20,38 +20,39 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.txn;
+package org.jboss.as.txn.subsystem;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Enumeration of attributes used in the transactions subsystem.
+ * Enumeration of elements used in the transactions subsystem.
  *
  * @author John E. Bailey
  * @author Scott Stark (sstark@redhat.com) (C) 2011 Red Hat Inc.
  */
-enum Attribute {
+enum Element {
+    // must be first
     UNKNOWN(null),
-    BINDING("socket-binding"),
-    STATUS_BINDING("status-socket-binding"),
-    NODE_IDENTIFIER("node-identifier"),
-    SOCKET_PROCESS_ID_MAX_PORTS("socket-process-id-max-ports"),
-    ENABLE_STATISTICS("enable-statistics"),
-    ENABLE_TSM_STATUS("enable-tsm-status"),
-    DEFAULT_TIMEOUT("default-timeout"),
-    RECOVERY_LISTENER("recovery-listener"),
-    RELATIVE_TO("relative-to"),
-    PATH("path"),
+
+    RECOVERY_ENVIRONMENT("recovery-environment"),
+    CORE_ENVIRONMENT("core-environment"),
+    COORDINATOR_ENVIRONMENT("coordinator-environment"),
+    OBJECT_STORE("object-store"),
+    PROCESS_ID("process-id"),
+    SOCKET("socket"),
+    UUID("uuid"),
+    JTS("jts"),
     ;
+
     private final String name;
 
-    Attribute(final String name) {
+    Element(final String name) {
         this.name = name;
     }
 
     /**
-     * Get the local name of this attribute.
+     * Get the local name of this element.
      *
      * @return the local name
      */
@@ -59,23 +60,20 @@ enum Attribute {
         return name;
     }
 
-    private static final Map<String, Attribute> MAP;
+    private static final Map<String, Element> MAP;
 
     static {
-        final Map<String, Attribute> map = new HashMap<String, Attribute>();
-        for (Attribute element : values()) {
+        final Map<String, Element> map = new HashMap<String, Element>();
+        for (Element element : values()) {
             final String name = element.getLocalName();
             if (name != null) map.put(name, element);
         }
         MAP = map;
     }
 
-    public static Attribute forName(String localName) {
-        final Attribute element = MAP.get(localName);
+    public static Element forName(String localName) {
+        final Element element = MAP.get(localName);
         return element == null ? UNKNOWN : element;
     }
 
-    public String toString() {
-        return getLocalName();
-    }
 }

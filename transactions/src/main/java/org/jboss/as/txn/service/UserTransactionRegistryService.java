@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,31 +20,35 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.txn;
+package org.jboss.as.txn.service;
 
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.tm.JBossXATerminator;
+import org.jboss.tm.usertx.UserTransactionRegistry;
 
 /**
- * The XATerminator service.
+ * Service responsible for exposing a {@link UserTransactionRegistry} instance.
  *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author John Bailey
  */
-final class XATerminatorService implements Service<JBossXATerminator> {
-    private volatile JBossXATerminator value;
+public class UserTransactionRegistryService implements Service<UserTransactionRegistry> {
 
-    public void start(final StartContext context) throws StartException {
-        value = new com.arjuna.ats.internal.jbossatx.jta.jca.XATerminator();
+    public static final ServiceName SERVICE_NAME = TxnServices.JBOSS_TXN_USER_TRANSACTION_REGISTRY;
+
+    private UserTransactionRegistry userTransactionRegistry;
+
+    public synchronized void start(StartContext context) throws StartException {
+        userTransactionRegistry = new UserTransactionRegistry();
     }
 
-    public void stop(final StopContext context) {
-        value = null;
+    public synchronized void stop(StopContext context) {
+        userTransactionRegistry = null;
     }
 
-    public JBossXATerminator getValue() throws IllegalStateException {
-        return TxnServices.notNull(value);
+    public synchronized UserTransactionRegistry getValue() throws IllegalStateException, IllegalArgumentException {
+        return userTransactionRegistry;
     }
 }

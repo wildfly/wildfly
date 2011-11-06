@@ -28,7 +28,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.management.MBeanException;
+import javax.transaction.Status;
 import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
@@ -121,6 +123,11 @@ public class EjbObjectCorbaServant extends Servant implements InvokeHandler, Loc
     private final InboundTransactionCurrent inboundTxCurrent;
 
     /**
+     * The transaction manager
+     */
+    private final TransactionManager transactionManager;
+
+    /**
      * Used for serializing EJB id's
      */
     private final MarshallerFactory factory;
@@ -130,7 +137,7 @@ public class EjbObjectCorbaServant extends Servant implements InvokeHandler, Loc
      * Constructs an <code>EjbObjectCorbaServant></code>.
      */
     public EjbObjectCorbaServant(final Current poaCurrent, final Map<String, SkeletonStrategy> methodInvokerMap, final String[] repositoryIds,
-                                 final InterfaceDef interfaceDef, final ORB orb, final ComponentView componentView, final MarshallerFactory factory, final MarshallingConfiguration configuration) {
+                                 final InterfaceDef interfaceDef, final ORB orb, final ComponentView componentView, final MarshallerFactory factory, final MarshallingConfiguration configuration, final TransactionManager transactionManager) {
         this.poaCurrent = poaCurrent;
         this.methodInvokerMap = methodInvokerMap;
         this.repositoryIds = repositoryIds;
@@ -139,6 +146,7 @@ public class EjbObjectCorbaServant extends Servant implements InvokeHandler, Loc
         this.componentView = componentView;
         this.factory = factory;
         this.configuration = configuration;
+        this.transactionManager = transactionManager;
 
         SASCurrent sasCurrent;
         try {
@@ -202,58 +210,66 @@ public class EjbObjectCorbaServant extends Servant implements InvokeHandler, Loc
                 Transaction tx = null;
                 if (inboundTxCurrent != null)
                     tx = inboundTxCurrent.getCurrentTransaction();
-                SimplePrincipal principal = null;
-                char[] password = null;
-                if (sasCurrent != null) {
-                    final byte[] username = sasCurrent.get_incoming_username();
-                    final byte[] credential = sasCurrent.get_incoming_password();
-                    String name = new String(username, "UTF-8");
-                    int domainIndex = name.indexOf('@');
-                    if (domainIndex > 0)
-                        name = name.substring(0, domainIndex);
-                    if (name.length() == 0) {
-                        final byte[] incomingName = sasCurrent.get_incoming_principal_name();
-                        if (incomingName.length > 0) {
-                            name = new String(incomingName, "UTF-8");
-                            domainIndex = name.indexOf('@');
-                            if (domainIndex > 0)
-                                name = name.substring(0, domainIndex);
+                if (tx != null) {
+                    transactionManager.resume(tx);
+                }
+                try {
+                    SimplePrincipal principal = null;
+                    char[] password = null;
+                    if (sasCurrent != null) {
+                        final byte[] username = sasCurrent.get_incoming_username();
+                        final byte[] credential = sasCurrent.get_incoming_password();
+                        String name = new String(username, "UTF-8");
+                        int domainIndex = name.indexOf('@');
+                        if (domainIndex > 0)
+                            name = name.substring(0, domainIndex);
+                        if (name.length() == 0) {
+                            final byte[] incomingName = sasCurrent.get_incoming_principal_name();
+                            if (incomingName.length > 0) {
+                                name = new String(incomingName, "UTF-8");
+                                domainIndex = name.indexOf('@');
+                                if (domainIndex > 0)
+                                    name = name.substring(0, domainIndex);
+                                principal = new SimplePrincipal(name);
+                                // username==password is a hack until
+                                // we have a real way to establish trust
+                                password = name.toCharArray();
+                            }
+                        } else {
                             principal = new SimplePrincipal(name);
-                            // username==password is a hack until
-                            // we have a real way to establish trust
-                            password = name.toCharArray();
+                            password = new String(credential, "UTF-8").toCharArray();
                         }
-                    } else {
-                        principal = new SimplePrincipal(name);
-                        password = new String(credential, "UTF-8").toCharArray();
+
                     }
+                    final Object[] params = op.readParams((org.omg.CORBA_2_3.portable.InputStream) in);
 
+
+                    final SecurityContext sc = SecurityContextFactory.createSecurityContext("CORBA_REMOTE");
+                    sc.getUtil().createSubjectInfo(principal, password, null);
+
+                    final InterceptorContext interceptorContext = new InterceptorContext();
+
+                    //todo: could this be nicer
+                    if (componentView.getComponent() instanceof StatefulSessionComponent) {
+                        final SessionID sessionID = (SessionID) unmarshalIdentifier();
+                        interceptorContext.putPrivateData(SessionID.SESSION_ID_KEY, sessionID);
+                    } else if (componentView.getComponent() instanceof EntityBeanComponent) {
+                        final Object pk = unmarshalIdentifier();
+                        interceptorContext.putPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, pk);
+                    }
+                    interceptorContext.setContextData(new HashMap<String, Object>());
+                    interceptorContext.setParameters(params);
+                    interceptorContext.setMethod(op.getMethod());
+                    interceptorContext.putPrivateData(ComponentView.class, componentView);
+                    interceptorContext.putPrivateData(Component.class, componentView.getComponent());
+                    retVal = componentView.invoke(interceptorContext);
+                } finally {
+                    if (tx != null) {
+                        if (transactionManager.getStatus() != Status.STATUS_NO_TRANSACTION) {
+                            transactionManager.suspend();
+                        }
+                    }
                 }
-                final Object[] params = op.readParams((org.omg.CORBA_2_3.portable.InputStream) in);
-
-
-                final SecurityContext sc = SecurityContextFactory.createSecurityContext("CORBA_REMOTE");
-                sc.getUtil().createSubjectInfo(principal, password, null);
-
-                //TODO: deal with the transaction
-
-                final InterceptorContext interceptorContext = new InterceptorContext();
-
-                //todo: could this be nicer
-                if (componentView.getComponent() instanceof StatefulSessionComponent) {
-                    final SessionID sessionID = (SessionID) unmarshalIdentifier();
-                    interceptorContext.putPrivateData(SessionID.SESSION_ID_KEY, sessionID);
-                } else if (componentView.getComponent() instanceof EntityBeanComponent) {
-                    final Object pk = unmarshalIdentifier();
-                    interceptorContext.putPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, pk);
-                }
-                interceptorContext.setContextData(new HashMap<String, Object>());
-                interceptorContext.setParameters(params);
-                interceptorContext.setMethod(op.getMethod());
-                interceptorContext.putPrivateData(ComponentView.class, componentView);
-                interceptorContext.putPrivateData(Component.class, componentView.getComponent());
-                retVal = componentView.invoke(interceptorContext);
-
             }
             out = (org.omg.CORBA_2_3.portable.OutputStream)
                     handler.createReply();
@@ -311,24 +327,34 @@ public class EjbObjectCorbaServant extends Servant implements InvokeHandler, Loc
         if (op == null) {
             throw new BAD_OPERATION(opName);
         }
-
-        final InterceptorContext interceptorContext = new InterceptorContext();
-        //todo: could this be nicer
-        if (componentView.getComponent() instanceof StatefulSessionComponent) {
-            final SessionID sessionID = (SessionID) unmarshalIdentifier();
-            interceptorContext.putPrivateData(SessionID.SESSION_ID_KEY, sessionID);
-        } else if (componentView.getComponent() instanceof EntityBeanComponent) {
-            final Object pk = unmarshalIdentifier();
-            interceptorContext.putPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, pk);
+        if (tx != null) {
+            transactionManager.resume(tx);
         }
-        //TODO: deal with the transaction
+        try {
+            final InterceptorContext interceptorContext = new InterceptorContext();
+            //todo: could this be nicer
+            if (componentView.getComponent() instanceof StatefulSessionComponent) {
+                final SessionID sessionID = (SessionID) unmarshalIdentifier();
+                interceptorContext.putPrivateData(SessionID.SESSION_ID_KEY, sessionID);
+            } else if (componentView.getComponent() instanceof EntityBeanComponent) {
+                final Object pk = unmarshalIdentifier();
+                interceptorContext.putPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, pk);
+            }
+            //TODO: deal with the transaction
 
-        interceptorContext.setContextData(new HashMap<String, Object>());
-        interceptorContext.setParameters(arguments);
-        interceptorContext.setMethod(op.getMethod());
-        interceptorContext.putPrivateData(ComponentView.class, componentView);
-        interceptorContext.putPrivateData(Component.class, componentView.getComponent());
-        return componentView.invoke(interceptorContext);
+            interceptorContext.setContextData(new HashMap<String, Object>());
+            interceptorContext.setParameters(arguments);
+            interceptorContext.setMethod(op.getMethod());
+            interceptorContext.putPrivateData(ComponentView.class, componentView);
+            interceptorContext.putPrivateData(Component.class, componentView.getComponent());
+            return componentView.invoke(interceptorContext);
+        } finally {
+            if (tx != null) {
+                if (transactionManager.getStatus() != Status.STATUS_NO_TRANSACTION) {
+                    transactionManager.suspend();
+                }
+            }
+        }
 
     }
 

@@ -46,10 +46,11 @@ public enum ORBInitializer {
     // the transaction group encompasses the Interposition and InboundCurrent initializers.
     TRANSACTIONS("transaction",
             "com.arjuna.ats.jts.orbspecific.jacorb.interceptors.interposition.InterpositionORBInitializerImpl",
-            "com.arjuna.ats.jbossatx.jts.InboundTransactionCurrentInitializer");
+            "com.arjuna.ats.jbossatx.jts.InboundTransactionCurrentInitializer",
+            "org.jboss.as.jacorb.tm.TxIORInterceptorInitializer");
 
-    private String initializerName;
-    private String[] initializerClasses;
+    private final String initializerName;
+    private final String[] initializerClasses;
 
     /**
      * <p>
@@ -60,7 +61,7 @@ public enum ORBInitializer {
      * @param initializerName    the name that identifies the initializer group.
      * @param initializerClasses an array containing the fully-qualified name of the initializers that compose the group.
      */
-    ORBInitializer(String initializerName, String... initializerClasses) {
+    ORBInitializer(final String initializerName, final String... initializerClasses) {
         this.initializerName = initializerName;
         this.initializerClasses = initializerClasses;
     }
@@ -109,7 +110,7 @@ public enum ORBInitializer {
      * @return the {@code ORBInitializer} identified by the name. If no implementation can be found, the
      *         {@code ORBInitializer.UNKNOWN} type is returned.
      */
-    static ORBInitializer forName(String initializerName) {
+    static ORBInitializer forName(final String initializerName) {
         final ORBInitializer element = MAP.get(initializerName);
         return element == null ? UNKNOWN : element;
     }

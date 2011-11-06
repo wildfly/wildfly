@@ -34,7 +34,7 @@ import org.jboss.msc.service.StartException;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @MessageBundle(projectCode = "JBAS")
-interface TransactionMessages {
+public interface TransactionMessages {
     /**
      * The messages
      */

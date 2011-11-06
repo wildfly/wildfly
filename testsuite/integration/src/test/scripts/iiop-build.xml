@@ -13,7 +13,7 @@
            <param name="server-config" value="iiop-client"/>
            <propertyset refid="ds.properties"/>
         </antcall>
-        <add-port-offset name="iiop-client" />
+        <add-jts name="iiop-client"/>
 
         <echo message="Building config iiop-server"/>
 
@@ -23,6 +23,7 @@
            <propertyset refid="ds.properties"/>
         </antcall>
         <add-port-offset name="iiop-server" offset="100" nativePort="19999" httpPort="19990"/>
+        <add-jts name="iiop-server"/>
 
     </target>
 

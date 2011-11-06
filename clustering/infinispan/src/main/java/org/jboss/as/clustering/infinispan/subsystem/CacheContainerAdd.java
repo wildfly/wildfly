@@ -65,7 +65,7 @@ import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.as.threads.ThreadsServices;
-import org.jboss.as.txn.TxnServices;
+import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.inject.Injector;

@@ -86,7 +86,7 @@ import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.JaasConfigurationService;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.security.service.SecurityManagementService;
-import org.jboss.as.txn.TransactionManagerService;
+import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.inject.InjectionException;

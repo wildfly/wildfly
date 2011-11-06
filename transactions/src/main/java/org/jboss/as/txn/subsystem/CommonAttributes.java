@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.txn;
+package org.jboss.as.txn.subsystem;
 
 /**
  * @author Emanuel Muckenhuber
@@ -39,6 +39,8 @@ interface CommonAttributes {
     String OBJECT_STORE = "object-store";
     String OBJECT_STORE_PATH = "object-store-path";
     String OBJECT_STORE_RELATIVE_TO = "object-store-relative-to";
+
+    String JTS = "jts";
 
     /** The com.arjuna.ats.arjuna.utils.Process implementation type */
     String PROCESS_ID = "process-id";
