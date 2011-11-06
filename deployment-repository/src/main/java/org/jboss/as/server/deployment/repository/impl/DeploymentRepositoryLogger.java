@@ -23,8 +23,12 @@
 package org.jboss.as.server.deployment.repository.impl;
 
 import org.jboss.logging.BasicLogger;
+import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
+import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
+
+import static org.jboss.logging.Logger.Level.INFO;
 
 /**
  * Date: 05.11.2011
@@ -38,4 +42,14 @@ interface DeploymentRepositoryLogger extends BasicLogger {
      * A logger with the category of the pacakge name.
      */
     DeploymentRepositoryLogger ROOT_LOGGER = Logger.getMessageLogger(DeploymentRepositoryLogger.class, DeploymentRepositoryLogger.class.getPackage().getName());
+
+    /**
+     * Logs an informational message indicating the content was added at the location, represented by the {@code path}
+     * parameter.
+     *
+     * @param path the name of the path.
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 14900, value = "Content added at location %s")
+    void contentAdded(String path);
 }

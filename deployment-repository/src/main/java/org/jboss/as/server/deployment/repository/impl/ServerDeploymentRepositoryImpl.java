@@ -23,7 +23,6 @@
 package org.jboss.as.server.deployment.repository.impl;
 
 import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -39,14 +38,15 @@ import java.io.IOException;
 import java.security.AccessController;
 import java.util.concurrent.Executors;
 
+import static org.jboss.as.server.deployment.repository.impl.DeploymentRepositoryLogger.ROOT_LOGGER;
+import static org.jboss.as.server.deployment.repository.impl.DeploymentRepositoryMessages.MESSAGES;
+
 /**
  * Default implementation of {@link ServerDeploymentRepository}.
  *
  * @author Brian Stansberry
  */
 public class ServerDeploymentRepositoryImpl implements ServerDeploymentRepository, Service<ServerDeploymentRepository> {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment");
     private volatile TempFileProvider tempFileProvider;
     private final ContentRepositoryImpl contentRepository;
 
@@ -68,7 +68,7 @@ public class ServerDeploymentRepositoryImpl implements ServerDeploymentRepositor
     public Closeable mountDeploymentContent(final VirtualFile contents, VirtualFile mountPoint, boolean mountExpanded) throws IOException {
         // according to the javadoc contents can not be null
         if (contents == null)
-            throw new IllegalArgumentException("contents is null");
+            throw MESSAGES.nullVar("contents");
         if(mountExpanded) {
             return VFS.mountZipExpanded(contents, mountPoint, tempFileProvider);
         } else {
@@ -82,14 +82,14 @@ public class ServerDeploymentRepositoryImpl implements ServerDeploymentRepositor
             final JBossThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("ServerDeploymentRepository-temp-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
             tempFileProvider = TempFileProvider.create("temp", Executors.newScheduledThreadPool(2, threadFactory));
         } catch (IOException e) {
-            throw new StartException("Failed to create temp file provider");
+            throw MESSAGES.failedCreatingTempProvider();
         }
-        log.debugf("%s started", ServerDeploymentRepository.class.getSimpleName());
+        ROOT_LOGGER.debugf("%s started", ServerDeploymentRepository.class.getSimpleName());
     }
 
     @Override
     public void stop(StopContext context) {
-        log.debugf("%s stopped", ServerDeploymentRepository.class.getSimpleName());
+        ROOT_LOGGER.debugf("%s stopped", ServerDeploymentRepository.class.getSimpleName());
     }
 
 

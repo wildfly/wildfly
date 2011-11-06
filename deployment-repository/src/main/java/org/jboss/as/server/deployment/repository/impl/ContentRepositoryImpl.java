@@ -23,7 +23,6 @@
 package org.jboss.as.server.deployment.repository.impl;
 
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -44,12 +43,14 @@ import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import static org.jboss.as.server.deployment.repository.impl.DeploymentRepositoryLogger.ROOT_LOGGER;
+import static org.jboss.as.server.deployment.repository.impl.DeploymentRepositoryMessages.MESSAGES;
+
 /**
  * Default implementation of {@link org.jboss.as.server.deployment.repository.api.ContentRepository}.
  * @author John Bailey
  */
 public class ContentRepositoryImpl implements ContentRepository, Service<ContentRepository> {
-    private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment");
 
     protected static final String CONTENT = "content";
     private final File repoRoot;
@@ -64,24 +65,24 @@ public class ContentRepositoryImpl implements ContentRepository, Service<Content
 
     protected ContentRepositoryImpl(final File repoRoot) {
         if (repoRoot == null)
-            throw new IllegalArgumentException("repoRoot is null");
+            throw MESSAGES.nullVar("repoRoot");
         if (repoRoot.exists()) {
             if (!repoRoot.isDirectory()) {
-                throw new IllegalStateException("Deployment repository root " + repoRoot.getAbsolutePath() + " is not a directory");
+                throw MESSAGES.notADirectory(repoRoot.getAbsolutePath());
             }
             else if (!repoRoot.canWrite()) {
-                throw new IllegalStateException("Deployment repository root " + repoRoot.getAbsolutePath() + " is not a writable");
+                throw MESSAGES.directoryNotWritable(repoRoot.getAbsolutePath());
             }
         }
         else if (!repoRoot.mkdirs()) {
-            throw new IllegalStateException("Failed to create a directory at " + repoRoot.getAbsolutePath());
+            throw MESSAGES.cannotCreateDirectory(repoRoot.getAbsolutePath());
         }
         this.repoRoot = repoRoot;
 
         try {
             this.messageDigest = MessageDigest.getInstance("SHA-1");
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("Cannot obtain SHA-1 " + MessageDigest.class.getSimpleName(), e);
+            throw MESSAGES.cannotObtainSha1(e, MessageDigest.class.getSimpleName());
         }
     }
 
@@ -112,10 +113,10 @@ public class ContentRepositoryImpl implements ContentRepository, Service<Content
             if (!tmp.delete()) {
                 tmp.deleteOnExit();
             }
-            log.debugf("Content was already present in repository at location %s", realFile.getAbsolutePath());
+            ROOT_LOGGER.debugf("Content was already present in repository at location %s", realFile.getAbsolutePath());
         } else {
             moveTempToPermanent(tmp, realFile);
-            log.infof("Content added at location %s",realFile.getAbsolutePath());
+            ROOT_LOGGER.contentAdded(realFile.getAbsolutePath());
         }
 
         return sha1Bytes;
@@ -124,7 +125,7 @@ public class ContentRepositoryImpl implements ContentRepository, Service<Content
     @Override
     public VirtualFile getContent(byte[] hash) {
         if (hash == null)
-            throw new IllegalArgumentException("hash is null");
+            throw MESSAGES.nullVar("hash");
         return VFS.getChild(getDeploymentContentFile(hash, true).toURI());
     }
 
@@ -156,7 +157,7 @@ public class ContentRepositoryImpl implements ContentRepository, Service<Content
         }
         final File hashDir = new File(base, partB);
         if (validate && !hashDir.exists() && !hashDir.mkdirs()) {
-            throw new IllegalStateException("Cannot create directory " + hashDir.getAbsolutePath());
+            throw MESSAGES.cannotCreateDirectory(hashDir.getAbsolutePath());
         }
         return hashDir;
     }
@@ -164,12 +165,12 @@ public class ContentRepositoryImpl implements ContentRepository, Service<Content
     protected void validateDir(File dir) {
         if (!dir.exists()) {
             if (!dir.mkdirs()) {
-                throw new IllegalStateException("Cannot create directory " + dir.getAbsolutePath());
+                throw MESSAGES.cannotCreateDirectory(dir.getAbsolutePath());
             }
         } else if (!dir.isDirectory()) {
-            throw new IllegalStateException(dir.getAbsolutePath() + " is not a directory");
+            throw MESSAGES.notADirectory(dir.getAbsolutePath());
         } else if (!dir.canWrite()) {
-            throw new IllegalStateException("Cannot write to directory " + dir.getAbsolutePath());
+            throw MESSAGES.directoryNotWritable(dir.getAbsolutePath());
         }
     }
 
@@ -219,12 +220,12 @@ public class ContentRepositoryImpl implements ContentRepository, Service<Content
 
     @Override
     public void start(StartContext context) throws StartException {
-        log.debugf("%s started", ContentRepository.class.getSimpleName());
+        ROOT_LOGGER.debugf("%s started", ContentRepository.class.getSimpleName());
     }
 
     @Override
     public void stop(StopContext context) {
-        log.debugf("%s stopped", ContentRepository.class.getSimpleName());
+        ROOT_LOGGER.debugf("%s stopped", ContentRepository.class.getSimpleName());
     }
 
     @Override
