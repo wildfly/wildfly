@@ -30,6 +30,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 
+import static org.jboss.as.server.deployment.scanner.DeploymentScannerMessages.MESSAGES;
+
 /**
  * Scans a zip file to check whether the complete end of directory record is
  * present, indicating the file content (or at least the zip portion) is complete.
@@ -431,11 +433,11 @@ public class ZipCompletionScanner {
         }
 
         private static String getNonStandardMessage(final File file) {
-            return String.format("File %s cannot be scanned because it does not begin with a ZIP file format local file header signature", file.getPath());
+            return MESSAGES.invalidZipFileFormat(file.getAbsolutePath());
         }
 
         private static String getZip64Message(final File file) {
-            return String.format("File %s cannot be scanned because it uses the currently unsupported ZIP64 format", file.getPath());
+            return MESSAGES.invalidZip64FileFormat(file.getAbsolutePath());
         }
     }
 }

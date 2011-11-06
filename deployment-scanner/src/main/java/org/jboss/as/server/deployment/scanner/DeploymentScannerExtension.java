@@ -29,6 +29,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.server.deployment.scanner.DeploymentScannerLogger.ROOT_LOGGER;
 
 import java.util.Collections;
 import java.util.List;
@@ -50,7 +51,6 @@ import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -60,7 +60,6 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * @author Emanuel Muckenhuber
  */
 public class DeploymentScannerExtension implements Extension {
-    private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment.scanner");
 
     public static final String SUBSYSTEM_NAME = "deployment-scanner";
     private static final PathElement scannersPath = PathElement.pathElement("scanner");
@@ -86,7 +85,7 @@ public class DeploymentScannerExtension implements Extension {
     /** {@inheritDoc} */
     @Override
     public void initialize(ExtensionContext context) {
-        log.debug("Initializing Deployment Scanner Extension");
+        ROOT_LOGGER.debug("Initializing Deployment Scanner Extension");
 
         final SubsystemRegistration subsystem = context.registerSubsystem(CommonAttributes.DEPLOYMENT_SCANNER);
         subsystem.registerXMLElementWriter(parser);

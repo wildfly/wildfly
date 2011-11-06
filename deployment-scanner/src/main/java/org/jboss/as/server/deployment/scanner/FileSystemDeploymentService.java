@@ -39,6 +39,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.server.deployment.scanner.DeploymentScannerLogger.ROOT_LOGGER;
+import static org.jboss.as.server.deployment.scanner.DeploymentScannerMessages.MESSAGES;
 
 import java.io.Closeable;
 import java.io.File;
@@ -79,7 +81,6 @@ import org.jboss.as.server.deployment.scanner.ZipCompletionScanner.NonScannableZ
 import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
 
 /**
  * Service that monitors the filesystem for deployment content and if found
@@ -90,7 +91,6 @@ import org.jboss.logging.Logger;
 class FileSystemDeploymentService implements DeploymentScanner {
 
     private static final Pattern ARCHIVE_PATTERN = Pattern.compile("^.*\\.[SsWwJjEeRr][Aa][Rr]$");
-    private static final Logger log = Logger.getLogger("org.jboss.as.deployment");
 
     static final String DEPLOYED = ".deployed";
     static final String FAILED_DEPLOY = ".failed";
@@ -146,34 +146,36 @@ class FileSystemDeploymentService implements DeploymentScanner {
             try {
                 scan();
             } catch (Exception e) {
-                log.errorf(e, "Scan of %s threw Exception", deploymentDir.getAbsolutePath());
+                ROOT_LOGGER.scanException(e, deploymentDir.getAbsolutePath());
             }
         }
     };
 
     FileSystemDeploymentService(final String relativeTo, final File deploymentDir, final File relativeToDir, final ModelControllerClient controllerClient, final ScheduledExecutorService scheduledExecutor,
             final ServerDeploymentRepository deploymentRepository, final ContentRepository contentRepository) throws OperationFailedException {
-        assert contentRepository != null : "content repository is null";
+        if (contentRepository == null) {
+            throw MESSAGES.nullVar("contentRepository");
+        }
         if (scheduledExecutor == null) {
-            throw new IllegalStateException("null scheduled executor");
+            throw MESSAGES.nullVar("scheduledExecutor");
         }
         if (controllerClient == null) {
-            throw new IllegalStateException("null controller client");
+            throw MESSAGES.nullVar("controllerClient");
         }
         if (deploymentRepository == null) {
-            throw new IllegalStateException("null deployment repository");
+            throw MESSAGES.nullVar("deploymentRepository");
         }
         if (deploymentDir == null) {
-            throw new IllegalStateException("null deployment dir");
+            throw MESSAGES.nullVar("deploymentDir");
         }
         if (!deploymentDir.exists()) {
-            throw new IllegalArgumentException(deploymentDir.getAbsolutePath() + " does not exist");
+            throw MESSAGES.directoryDoesNotExist(deploymentDir.getAbsolutePath());
         }
         if (!deploymentDir.isDirectory()) {
-            throw new IllegalArgumentException(deploymentDir.getAbsolutePath() + " is not a directory");
+            throw MESSAGES.notADirectory(deploymentDir.getAbsolutePath());
         }
         if (!deploymentDir.canWrite()) {
-            throw new IllegalArgumentException(deploymentDir.getAbsolutePath() + " is not writable");
+            throw MESSAGES.directoryNotWritable(deploymentDir.getAbsolutePath());
         }
         this.relativeTo = relativeTo;
         this.deploymentDir = deploymentDir;
@@ -215,10 +217,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
     @Override
     public void setAutoDeployExplodedContent(boolean autoDeployExploded) {
         if (autoDeployExploded && !this.autoDeployExploded) {
-            log.warnf("Reliable deployment behaviour is not possible when auto-deployment of exploded content is enabled " +
-                    "(i.e. deployment without use of \"%s\"' marker files). Configuration of auto-deployment of exploded content " +
-                    "is not recommended in any situation where reliability is desired. Configuring the deployment " +
-                    "scanner's %s setting to \"false\" is recommended.", DO_DEPLOY, CommonAttributes.AUTO_DEPLOY_EXPLODED);
+            ROOT_LOGGER.explodedAutoDeploymentContentWarning(DO_DEPLOY, CommonAttributes.AUTO_DEPLOY_EXPLODED);
         }
         this.autoDeployExploded = autoDeployExploded;
     }
@@ -259,7 +258,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
         }
         this.scanEnabled = true;
         startScan();
-        log.infof("Started %s for directory %s", getClass().getSimpleName(), deploymentDir.getAbsolutePath());
+        ROOT_LOGGER.started(getClass().getSimpleName(), deploymentDir.getAbsolutePath());
     }
 
     /**
@@ -293,7 +292,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                     deployed.put(deploymentName, new DeploymentMarker(child.lastModified(), !deployment.isDirectory()));
                 } else {
                     if (!child.delete()) {
-                        log.warnf("Cannot removed extraneous deployment marker file %s", fileName);
+                        ROOT_LOGGER.cannotRemoveDeploymentMarker(fileName);
                     }
                     // AS7-1130 Put down a marker so we deploy on first scan
                     File skipDeploy = new File(dir, deploymentName + SKIP_DEPLOY);
@@ -319,7 +318,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
         boolean scheduleRescan = false;
         try {
             if (scanEnabled) { // confirm the scan is still wanted
-                log.tracef("Scanning directory %s for deployment content changes", deploymentDir.getAbsolutePath());
+                ROOT_LOGGER.tracef("Scanning directory %s for deployment content changes", deploymentDir.getAbsolutePath());
 
                 ScanContext scanContext = new ScanContext();
                 scanDirectory(deploymentDir, relativePath, scanContext);
@@ -329,7 +328,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 ignoredMissingDeployments.retainAll(scanContext.ignoredMissingDeployments);
                 for (String deploymentName : scanContext.ignoredMissingDeployments) {
                     if(ignoredMissingDeployments.add(deploymentName)) {
-                        log.warnf("Deployment of '%s' requested, but the deployment is not present", deploymentName);
+                        ROOT_LOGGER.deploymentNotFound(deploymentName);
                     }
                 }
 
@@ -337,7 +336,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 noticeLogged.retainAll(scanContext.nonDeployable);
                 for (String fileName : scanContext.nonDeployable) {
                     if (noticeLogged.add(fileName)) {
-                        log.infof("Found %s in deployment directory. To trigger deployment create a file called %s%s", fileName, fileName, DO_DEPLOY);
+                        ROOT_LOGGER.deploymentTriggered(fileName, DO_DEPLOY);
                     }
                 }
 
@@ -345,12 +344,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 illegalDirLogged.retainAll(scanContext.illegalDir);
                 for (String fileName : scanContext.illegalDir) {
                     if (illegalDirLogged.add(fileName)) {
-                        log.errorf("The deployment scanner found a directory named %s that was not inside a directory whose " +
-                            "name ends with .ear, .jar, .rar, .sar or .war. This is likely the result of unzipping an " +
-                            "archive directly inside the %s directory, which is a user error. " +
-                            "The %s directory will not be scanned for deployments, but it is possible that the scanner may" +
-                            "find other files from the unzipped archive and attempt to deploy them, leading to errors.",
-                            fileName, deploymentDir.getAbsolutePath(), fileName);
+                        ROOT_LOGGER.invalidExplodedDeploymentDirectory(fileName, deploymentDir.getAbsolutePath());
                     }
                 }
 
@@ -358,12 +352,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 prematureExplodedContentDeletionLogged.retainAll(scanContext.prematureExplodedDeletions);
                 for (String fileName : scanContext.prematureExplodedDeletions) {
                     if (prematureExplodedContentDeletionLogged.add(fileName)) {
-                        log.warnf("The deployment scanner found that the content for exploded deployment %s has been " +
-                                "deleted, but auto-deploy/undeploy for exploded deployments is not enabled and the %s " +
-                                "marker file for this deployment has not been removed. As a result, the deployment is " +
-                                "not being undeployed, but resources needed by the deployment may have been deleted " +
-                                "and application errors may occur. Deleting the %s marker file to trigger undeploy is recommended.",
-                                fileName, fileName + DEPLOYED, fileName + DEPLOYED);
+                        ROOT_LOGGER.explodedDeploymentContentDeleted(fileName, DEPLOYED);
                     }
                 }
 
@@ -396,8 +385,8 @@ class FileSystemDeploymentService implements DeploymentScanner {
                     for (ScannerTask task : scannerTasks) {
                         task.recordInProgress(); // puts down .isdeploying, .isundeploying
                         final ModelNode update = task.getUpdate();
-                        if (log.isDebugEnabled()) {
-                            log.debugf("Deployment scan of [%s] found update action [%s]", deploymentDir, update);
+                        if (ROOT_LOGGER.isDebugEnabled()) {
+                            ROOT_LOGGER.debugf("Deployment scan of [%s] found update action [%s]", deploymentDir, update);
                         }
                         updates.add(update);
                     }
@@ -414,15 +403,13 @@ class FileSystemDeploymentService implements DeploymentScanner {
                             futureResults.cancel(true);
                             final ModelNode failure = new ModelNode();
                             failure.get(OUTCOME).set(FAILED);
-                            failure.get(FAILURE_DESCRIPTION).set("Did not receive a response to the deployment operation within " +
-                                    "the allowed timeout period [" + deploymentTimeout + " seconds]. Check the server configuration" +
-                                    "file and the server logs to find more about the status of the deployment.");
+                            failure.get(FAILURE_DESCRIPTION).set(MESSAGES.deploymentTimeout(deploymentTimeout));
                             for (ScannerTask task : scannerTasks) {
                                 task.handleFailureResult(failure);
                             }
                             break;
                         } catch (Exception e) {
-                            log.error("File system deployment service failed", e);
+                            ROOT_LOGGER.fileSystemDeploymentFailed(e);
                             futureResults.cancel(true);
                             final ModelNode failure = new ModelNode();
                             failure.get(OUTCOME).set(FAILED);
@@ -453,7 +440,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                         scannerTasks = retryTasks;
                     }
                 }
-                log.tracef("Scan complete");
+                ROOT_LOGGER.tracef("Scan complete");
             }
         } finally {
 
@@ -616,7 +603,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
             try {
                 return ZipCompletionScanner.isCompleteZip(file);
             } catch (IOException e) {
-                log.error(String.format("Failed checking whether %s was a complete zip", file.getPath()), e);
+                ROOT_LOGGER.failedCheckingZipFile(e, file.getPath());
                 return false;
             }
         }
@@ -655,7 +642,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
     private void removeExtraneousMarker(File child, final String fileName) {
         if (!child.delete()) {
-            log.warnf("Cannot remove extraneous deployment marker file %s", fileName);
+            ROOT_LOGGER.cannotRemoveDeploymentMarker(fileName);
         }
     }
 
@@ -693,13 +680,10 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 if (now - status.timestamp > maxNoProgress) {
                     if (!status.warned) {
                         // Treat no progress for an extended period as a failed deployment
-                        String suffix = deployed.containsKey(deploymentName)
-                                            ? " A previous version of this content was deployed and remains deployed."
-                                            : "";
-                        String msg = String.format("Deployment content %s appears to be incomplete and is not progressing toward " +
-                                "completion. This content cannot be auto-deployed.%s", incompleteFile, suffix, DO_DEPLOY, SKIP_DEPLOY);
+                        String suffix = deployed.containsKey(deploymentName) ? MESSAGES.previousContentDeployed() : "";
+                        String msg = MESSAGES.deploymentContentIncomplete(incompleteFile, suffix);
                         writeFailedMarker(incompleteFile, new ModelNode().set(msg), status.timestamp);
-                        log.error(msg);
+                        ROOT_LOGGER.error(msg);
                         status.warned = true;
                         warnLogged = true;
 
@@ -712,8 +696,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 else {
                     boolean newIncomplete = incompleteDeployments.put(incompleteFile, status) == null;
                     if (newIncomplete || logAll) {
-                        log.infof("Scan found incompletely copied file content for deployment %s. Deployment changes will not be " +
-                                "processed until all content is complete.", entry.getKey().getPath());
+                        ROOT_LOGGER.incompleteContent(entry.getKey().getPath());
                     }
                     if (newIncomplete) {
                         File pending = new File(incompleteFile.getParentFile(), deploymentName + PENDING);
@@ -744,11 +727,9 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 if (nonscannableLogged.add(nonScannable) || logAll) {
                     NonScannableStatus nonScannableStatus = entry.getValue();
                     NonScannableZipException e = nonScannableStatus.exception;
-                    String msg = String.format("File %s was configured for auto-deploy but could not be safely auto-deployed. The reason the file " +
-                            "could not be auto-deployed was: %s.  To enable deployment of this file create a file called %s%s",
-                            fileName, e.getLocalizedMessage(), fileName, DO_DEPLOY);
+                    String msg = MESSAGES.unsafeAutoDeploy(e.getLocalizedMessage(), fileName, DO_DEPLOY);
                     writeFailedMarker(nonScannable, new ModelNode().set(msg), nonScannableStatus.timestamp);
-                    log.error(msg);
+                    ROOT_LOGGER.error(msg);
                     warnLogged = true;
 
                     result = ScanStatus.ABORT;
@@ -766,10 +747,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 allProblems.add(f.getName());
             }
 
-            log.warnf("Scan found content configured for auto-deploy that could not be safely auto-deployed. See details above. " +
-                    "Deployment changes will not be processed until all problematic content is either removed or whether to " +
-                    "deploy the content or not is indicated via a %s or %s marker file. Problematic deployments are %s",
-                    DO_DEPLOY, SKIP_DEPLOY, allProblems);
+            ROOT_LOGGER.unsafeAutoDeploy(DO_DEPLOY, SKIP_DEPLOY, allProblems);
         }
 
         return result;
@@ -854,7 +832,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
             fos = new FileOutputStream(marker);
             fos.write(deploymentName.getBytes());
         } catch (IOException io) {
-            log.errorf(io, "Caught exception writing deployment marker file %s", marker.getAbsolutePath());
+            ROOT_LOGGER.errorWritingDeploymentMarker(io, marker.getAbsolutePath());
         } finally {
             safeClose(fos);
         }
@@ -864,15 +842,15 @@ class FileSystemDeploymentService implements DeploymentScanner {
         final File failedMarker = new File(deploymentFile.getParent(), deploymentFile.getName() + FAILED_DEPLOY);
         final File deployMarker = new File(deploymentFile.getParent(), deploymentFile.getName() + DO_DEPLOY);
         if (deployMarker.exists() && !deployMarker.delete()) {
-            log.warnf("Unable to remove marker file %s", deployMarker);
+            ROOT_LOGGER.cannotRemoveDeploymentMarker(deployMarker);
         }
         final File deployedMarker = new File(deploymentFile.getParent(), deploymentFile.getName() + DEPLOYED);
         if (deployedMarker.exists() && !deployedMarker.delete()) {
-            log.warnf("Unable to remove marker file %s", deployedMarker);
+            ROOT_LOGGER.cannotRemoveDeploymentMarker(deployedMarker);
         }
         final File undeployedMarker = new File(deploymentFile.getParent(), deploymentFile.getName() + UNDEPLOYED);
         if (undeployedMarker.exists() && !undeployedMarker.delete()) {
-            log.warnf("Unable to remove marker file %s", undeployedMarker);
+            ROOT_LOGGER.cannotRemoveDeploymentMarker(undeployedMarker);
         }
         FileOutputStream fos = null;
         try {
@@ -880,7 +858,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
             fos = new FileOutputStream(failedMarker);
             fos.write(failureDescription.asString().getBytes());
         } catch (IOException io) {
-            log.errorf(io, "Caught exception writing deployment failed marker file %s", failedMarker.getAbsolutePath());
+            ROOT_LOGGER.errorWritingDeploymentMarker(io, failedMarker.getAbsolutePath());
         } finally {
             safeClose(fos);
         }
@@ -917,28 +895,28 @@ class FileSystemDeploymentService implements DeploymentScanner {
         protected void deletePendingMarker() {
             final File pendingMarker = new File(parent, deploymentName + PENDING);
             if (pendingMarker.exists() && !pendingMarker.delete()) {
-                log.warnf("Unable to remove marker file %s", pendingMarker);
+                ROOT_LOGGER.cannotRemoveDeploymentMarker(pendingMarker);
             }
         }
 
         protected void deleteUndeployedMarker() {
             final File undeployedMarker = new File(parent, deploymentName + UNDEPLOYED);
             if (undeployedMarker.exists() && !undeployedMarker.delete()) {
-                log.warnf("Unable to remove marker file %s", undeployedMarker);
+                ROOT_LOGGER.cannotRemoveDeploymentMarker(undeployedMarker);
             }
         }
 
         protected void deleteDeployedMarker() {
             final File deployedMarker = new File(parent, deploymentName + DEPLOYED);
             if (deployedMarker.exists() && !deployedMarker.delete()) {
-                log.warnf("Unable to remove marker file %s", deployedMarker);
+                ROOT_LOGGER.cannotRemoveDeploymentMarker(deployedMarker);
             }
         }
 
         protected void removeInProgressMarker() {
             File marker = new File(new File(parent), deploymentName + inProgressMarkerSuffix);
             if (marker.exists() && !marker.delete()) {
-                log.warnf("Cannot delete deployment progress marker file %s", marker);
+                ROOT_LOGGER.cannotDeleteDeploymentProgressMarker(marker);
             }
         }
     }
@@ -971,13 +949,13 @@ class FileSystemDeploymentService implements DeploymentScanner {
         protected void handleSuccessResult() {
             final File doDeployMarker = new File(new File(parent), deploymentFile.getName() + DO_DEPLOY);
             if (doDeployMarker.exists() && !doDeployMarker.delete()) {
-                log.errorf("Failed to delete deployment marker file %s", doDeployMarker.getAbsolutePath());
+                ROOT_LOGGER.cannotRemoveDeploymentMarker(doDeployMarker.getAbsolutePath());
             }
 
             // Remove any previous failure marker
             final File failedMarker = new File(deploymentFile.getParent(), deploymentFile.getName() + FAILED_DEPLOY);
             if (failedMarker.exists() && !failedMarker.delete()) {
-                log.warnf("Unable to remove marker file %s", failedMarker);
+                ROOT_LOGGER.cannotRemoveDeploymentMarker(failedMarker);
             }
 
             final File deployedMarker = new File(parent, deploymentFile.getName() + DEPLOYED);
@@ -1010,7 +988,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
         @Override
         protected void handleFailureResult(final ModelNode result) {
-            log.error(result.get(FAILURE_DESCRIPTION).asString());
+            ROOT_LOGGER.error(result.get(FAILURE_DESCRIPTION).asString());
 
             // Remove the in-progress marker
             removeInProgressMarker();
