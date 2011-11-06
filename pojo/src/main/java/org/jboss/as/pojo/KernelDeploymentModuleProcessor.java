@@ -22,12 +22,20 @@
 
 package org.jboss.as.pojo;
 
+import org.jboss.as.pojo.descriptor.BaseBeanFactory;
 import org.jboss.as.pojo.descriptor.KernelDeploymentXmlDescriptor;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.module.ModuleDependency;
+import org.jboss.as.server.deployment.module.ModuleSpecification;
+import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoader;
+import org.jboss.modules.filter.PathFilter;
+import org.jboss.modules.filter.PathFilters;
 
 import java.util.List;
 
@@ -55,7 +63,13 @@ public class KernelDeploymentModuleProcessor implements DeploymentUnitProcessor 
 
         for (KernelDeploymentXmlDescriptor kdxd : kdXmlDescriptors) {
             if (kdxd.getBeanFactoriesCount() > 0) {
-                // TODO
+                final ModuleSpecification moduleSpecification = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
+                final ModuleLoader moduleLoader = Module.getBootModuleLoader();
+                ModuleDependency dependency = new ModuleDependency(moduleLoader, POJO_MODULE, false, false, false);
+                PathFilter filter = PathFilters.isChildOf(BaseBeanFactory.class.getPackage().getName());
+                dependency.addImportFilter(filter, true);
+                dependency.addImportFilter(PathFilters.rejectAll(), false);
+                moduleSpecification.addSystemDependency(dependency);
                 return;
             }
         }

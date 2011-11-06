@@ -53,7 +53,7 @@ class PojoSubsystemAdd extends AbstractBoottimeAddStepHandler {
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_POJO_DEPLOYMENT, new KernelDeploymentParsingProcessor());
-                processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_POJO, new KernelDeploymentModuleProcessor());
+                processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.POST_MODULE_POJO, new KernelDeploymentModuleProcessor());
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_POJO_DEPLOYMENT, new ParsedKernelDeploymentProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
