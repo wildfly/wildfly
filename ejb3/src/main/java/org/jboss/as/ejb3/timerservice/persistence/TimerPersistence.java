@@ -35,8 +35,4 @@ public interface TimerPersistence {
     void removeTimer(TimerEntity timerEntity);
 
     List<TimerEntity> loadActiveTimers(String timedObjectId);
-
-    void start();
-
-    void stop();
 }

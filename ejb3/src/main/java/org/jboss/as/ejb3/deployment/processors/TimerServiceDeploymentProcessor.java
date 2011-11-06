@@ -21,10 +21,8 @@
  */
 package org.jboss.as.ejb3.deployment.processors;
 
+import java.util.Timer;
 import java.util.concurrent.ExecutorService;
-
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -37,20 +35,16 @@ import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
-import org.jboss.as.ejb3.timerservice.TimerServiceFactoryService;
-import org.jboss.as.ejb3.timerservice.TimerServiceService;
-import org.jboss.as.ejb3.timerservice.spi.TimerServiceFactory;
+import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
+import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
+import org.jboss.as.ejb3.timerservice.persistence.filestore.FileTimerPersistence;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.txn.TransactionManagerService;
-import org.jboss.as.txn.TransactionSynchronizationRegistryService;
 import org.jboss.logging.Logger;
-import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 
 
 /**
@@ -60,9 +54,13 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor {
 
+    public static final ServiceName TIMER_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "timer");
+
+    public static final ServiceName PATH_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "timerService", "dataPath");
+
     private static final Logger logger = Logger.getLogger(TimerServiceDeploymentProcessor.class);
 
-   private final ServiceName timerServiceThreadPool;
+    private final ServiceName timerServiceThreadPool;
 
     public TimerServiceDeploymentProcessor(final ServiceName timerServiceThreadPool) {
         this.timerServiceThreadPool = timerServiceThreadPool;
@@ -73,32 +71,27 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-        boolean timerServiceRequired = false;
 
         for (final ComponentDescription component : moduleDescription.getComponentDescriptions()) {
 
             if (component.isTimerServiceApplicable()) {
-                timerServiceRequired = true;
                 logger.debug("Installing timer service for component " + component.getComponentName());
 
                 component.getConfigurators().add(new ComponentConfigurator() {
                     @Override
                     public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
                         final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) description;
-
                         configuration.addTimeoutInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.Component.TIMEOUT_INVOCATION_CONTEXT_INTERCEPTOR);
-
                         //install the timer create service
-                        final TimerServiceService service = new TimerServiceService(ejbComponentDescription.getScheduleMethods(), module.getClassLoader());
-                        final ServiceName serviceName = component.getServiceName().append(TimerServiceService.SERVICE_NAME);
+                        final ServiceName serviceName = component.getServiceName().append(TimerServiceImpl.SERVICE_NAME);
+                        final TimerServiceImpl service = new TimerServiceImpl(ejbComponentDescription.getScheduleMethods(), serviceName);
                         final ServiceBuilder<javax.ejb.TimerService> createBuilder = context.getServiceTarget().addService(serviceName, service);
-                        createBuilder.addDependency(deploymentUnit.getServiceName().append(TimerServiceFactoryService.SERVICE_NAME), TimerServiceFactory.class, service.getTimerServiceFactoryInjectedValue());
+                        createBuilder.addDependency(TIMER_SERVICE_NAME, Timer.class, service.getTimerInjectedValue());
                         createBuilder.addDependency(component.getCreateServiceName(), EJBComponent.class, service.getEjbComponentInjectedValue());
+                        createBuilder.addDependency(timerServiceThreadPool, ExecutorService.class, service.getExecutorServiceInjectedValue());
+                        createBuilder.addDependency(FileTimerPersistence.SERVICE_NAME, TimerPersistence.class, service.getTimerPersistence());
                         createBuilder.install();
-
                         ejbComponentDescription.setTimerService(service);
-
                         //inject the timer service directly into the start service
                         configuration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
                             @Override
@@ -111,35 +104,6 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
 
             }
         }
-        if (timerServiceRequired) {
-            addTimerService(phaseContext.getServiceTarget(), deploymentUnit, module);
-        }
-    }
-
-
-    /**
-     * Adds a service that creates the entity manager factory used by the timer service, and the
-     * timer service factory service
-     *
-     * @param serviceTarget The service target to add the service to
-     */
-    private void addTimerService(final ServiceTarget serviceTarget, final DeploymentUnit deploymentUnit, final Module module) {
-
-
-        final String name;
-        if (deploymentUnit.getParent() == null) {
-            name = deploymentUnit.getName();
-        } else {
-            name = deploymentUnit.getParent().getName() + "--" + deploymentUnit.getName();
-        }
-
-        final TimerServiceFactoryService factoryService = new TimerServiceFactoryService( name, module);
-        final ServiceBuilder<TimerServiceFactory> factoryBuilder = serviceTarget.addService(deploymentUnit.getServiceName().append(TimerServiceFactoryService.SERVICE_NAME), factoryService);
-        factoryBuilder.addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class, factoryService.getTransactionManagerInjectedValue());
-        factoryBuilder.addDependency(TransactionSynchronizationRegistryService.SERVICE_NAME, TransactionSynchronizationRegistry.class, factoryService.getTransactionSynchronizationRegistryInjectedValue());
-        factoryBuilder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, TimerServiceFactoryService.PATH_SERVICE_NAME, String.class, factoryService.getPath());
-        factoryBuilder.addDependency(timerServiceThreadPool, ExecutorService.class, factoryService.getExecutorService());
-        factoryBuilder.install();
     }
 
     @Override

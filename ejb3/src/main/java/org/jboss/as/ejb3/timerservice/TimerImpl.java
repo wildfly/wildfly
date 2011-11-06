@@ -417,12 +417,15 @@ public class TimerImpl implements Timer {
      * <li>{@link TimerState#CANCELED}</li>
      * <li>{@link TimerState#EXPIRED}</li>
      * </ul>
+     *
+     * And if the corresponding timer service is still up
+     *
      * </p>
      *
      * @return
      */
     public boolean isActive() {
-        return !isCanceled() && !isExpired();
+        return timerService.isStarted() && !isCanceled() && !isExpired();
     }
 
     /**

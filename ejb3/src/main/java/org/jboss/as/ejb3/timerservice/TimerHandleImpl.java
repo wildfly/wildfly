@@ -21,12 +21,14 @@
  */
 package org.jboss.as.ejb3.timerservice;
 
-import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
-
 import javax.ejb.EJBException;
 import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.Timer;
 import javax.ejb.TimerHandle;
+
+import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
+import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -41,6 +43,11 @@ public class TimerHandleImpl implements TimerHandle {
     private String timedObjectId;
 
     /**
+     * The service name of the timer service
+     */
+    private final ServiceName serviceName;
+
+    /**
      * Each {@link TimedObjectInvoker} can have multiple timer instances.
      * This id corresponds to one such <i>instance</i>
      */
@@ -52,13 +59,6 @@ public class TimerHandleImpl implements TimerHandle {
     private transient TimerServiceImpl service;
 
     /**
-     * For serialization only
-     */
-    public TimerHandleImpl() {
-
-    }
-
-    /**
      * Creates a {@link TimerHandleImpl}
      *
      * @param id            The id of the timer instance
@@ -66,7 +66,7 @@ public class TimerHandleImpl implements TimerHandle {
      * @param service       The timer service to which this timer handle belongs to
      * @throws IllegalArgumentException If either of the passed parameters is null
      */
-    public TimerHandleImpl(String id, String timedObjectId, TimerServiceImpl service) throws IllegalArgumentException {
+    public TimerHandleImpl(final String id, final String timedObjectId, final TimerServiceImpl service) throws IllegalArgumentException {
         if (id == null) {
             throw new IllegalArgumentException("Id cannot be null");
         }
@@ -80,6 +80,7 @@ public class TimerHandleImpl implements TimerHandle {
         this.timedObjectId = timedObjectId;
         this.id = id;
         this.service = service;
+        this.serviceName = service.getServiceName();
     }
 
     /**
@@ -90,7 +91,7 @@ public class TimerHandleImpl implements TimerHandle {
     public Timer getTimer() throws IllegalStateException, EJBException {
         if (service == null) {
             // get hold of the timer service through the use of timed object id
-            service = TimerServiceRegistry.getTimerService(this.timedObjectId);
+            service = (TimerServiceImpl) CurrentServiceContainer.getServiceContainer().getRequiredService(serviceName).getValue();
             if (service == null) {
                 throw new EJBException("Timerservice with timedObjectId: " + timedObjectId + " is not registered");
             }

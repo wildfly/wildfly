@@ -23,6 +23,10 @@
 package org.jboss.as.ejb3.subsystem;
 
 import java.util.List;
+import java.util.Timer;
+
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -33,16 +37,24 @@ import org.jboss.as.ejb3.deployment.processors.AroundTimeoutAnnotationParsingPro
 import org.jboss.as.ejb3.deployment.processors.TimerServiceDeploymentProcessor;
 import org.jboss.as.ejb3.deployment.processors.annotation.TimerServiceAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.TimerMethodMergingProcessor;
-import org.jboss.as.ejb3.timerservice.TimerServiceFactoryService;
+import org.jboss.as.ejb3.timerservice.persistence.filestore.FileTimerPersistence;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
+import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.server.services.path.RelativePathService;
+import org.jboss.as.txn.TransactionManagerService;
+import org.jboss.as.txn.TransactionSynchronizationRegistryService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.modules.ModuleLoader;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 
 /**
  * Adds the timer service
@@ -90,10 +102,10 @@ public class TimerServiceAdd extends AbstractBoottimeAddStepHandler {
                 //install the ejb timer service data store path service
                 if (path != null) {
                     if (relativeTo != null) {
-                        RelativePathService.addService(TimerServiceFactoryService.PATH_SERVICE_NAME, path,false , relativeTo,
+                        RelativePathService.addService(TimerServiceDeploymentProcessor.PATH_SERVICE_NAME, path, false, relativeTo,
                                 context.getServiceTarget(), newControllers, verificationHandler);
                     } else {
-                        AbsolutePathService.addService(TimerServiceFactoryService.PATH_SERVICE_NAME, path,
+                        AbsolutePathService.addService(TimerServiceDeploymentProcessor.PATH_SERVICE_NAME, path,
                                 context.getServiceTarget(), newControllers, verificationHandler);
                     }
 
@@ -106,5 +118,36 @@ public class TimerServiceAdd extends AbstractBoottimeAddStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
+        newControllers.add(context.getServiceTarget().addService(TimerServiceDeploymentProcessor.TIMER_SERVICE_NAME, new TimerValueService())
+                .install());
+        final FileTimerPersistence fileTimerPersistence = new FileTimerPersistence(true);
+        newControllers.add(context.getServiceTarget().addService(FileTimerPersistence.SERVICE_NAME, fileTimerPersistence)
+                .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, fileTimerPersistence.getModuleLoader())
+                .addDependency(TimerServiceDeploymentProcessor.PATH_SERVICE_NAME, String.class, fileTimerPersistence.getBaseDir())
+                .addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class, fileTimerPersistence.getTransactionManager())
+                .addDependency(TransactionSynchronizationRegistryService.SERVICE_NAME, TransactionSynchronizationRegistry.class, fileTimerPersistence.getTransactionSynchronizationRegistry())
+                .install());
+
+    }
+
+    private static final class TimerValueService implements Service<Timer> {
+
+        private Timer timer;
+
+        @Override
+        public synchronized void start(final StartContext context) throws StartException {
+            timer = new Timer();
+        }
+
+        @Override
+        public synchronized void stop(final StopContext context) {
+            timer.cancel();
+            timer = null;
+        }
+
+        @Override
+        public synchronized Timer getValue() throws IllegalStateException, IllegalArgumentException {
+            return timer;
+        }
     }
 }

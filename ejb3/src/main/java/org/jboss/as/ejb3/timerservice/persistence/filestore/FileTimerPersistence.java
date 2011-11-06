@@ -53,6 +53,11 @@ import org.jboss.marshalling.OutputStreamByteOutput;
 import org.jboss.marshalling.Unmarshaller;
 import org.jboss.marshalling.river.RiverMarshallerFactory;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * File based persistent timer store.
@@ -61,15 +66,19 @@ import org.jboss.modules.ModuleLoader;
  *
  * @author Stuart Douglas
  */
-public class FileTimerPersistence implements TimerPersistence {
+public class FileTimerPersistence implements TimerPersistence, Service<FileTimerPersistence> {
 
-    private final TransactionManager transactionManager;
-    private final TransactionSynchronizationRegistry transactionSynchronizationRegistry;
-    private final File baseDir;
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "timerService", "fileTimerPersistence");
+
     private final boolean createIfNotExists;
     private static final Logger logger = Logger.getLogger(FileTimerPersistence.class);
-    private final MarshallerFactory factory;
-    private final MarshallingConfiguration configuration;
+    private MarshallerFactory factory;
+    private MarshallingConfiguration configuration;
+    private final InjectedValue<TransactionManager> transactionManager = new InjectedValue<TransactionManager>();
+    private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistry = new InjectedValue<TransactionSynchronizationRegistry>();
+    private final InjectedValue<ModuleLoader> moduleLoader = new InjectedValue<ModuleLoader>();
+    private final InjectedValue<String> baseDir = new InjectedValue<String>();
+
 
     /**
      * map of timed object id : timer id : timer
@@ -80,22 +89,20 @@ public class FileTimerPersistence implements TimerPersistence {
 
     private volatile boolean started = false;
 
-    public FileTimerPersistence(final TransactionManager transactionManager, final TransactionSynchronizationRegistry transactionSynchronizationRegistry, final File baseDir, final boolean createIfNotExists, final ModuleLoader moduleLoader) {
-        this.transactionManager = transactionManager;
-        this.transactionSynchronizationRegistry = transactionSynchronizationRegistry;
-        this.baseDir = baseDir;
+    public FileTimerPersistence(final boolean createIfNotExists) {
         this.createIfNotExists = createIfNotExists;
-        RiverMarshallerFactory factory = new RiverMarshallerFactory();
-        MarshallingConfiguration configuration = new MarshallingConfiguration();
-        configuration.setClassResolver(ModularClassResolver.getInstance(moduleLoader));
-
-        this.configuration = configuration;
-        this.factory = factory;
     }
 
     @Override
-    public synchronized void start() {
-        started = true;
+    public synchronized void start(final StartContext context) {
+
+        final RiverMarshallerFactory factory = new RiverMarshallerFactory();
+        final MarshallingConfiguration configuration = new MarshallingConfiguration();
+        configuration.setClassResolver(ModularClassResolver.getInstance(moduleLoader.getValue()));
+
+        this.configuration = configuration;
+        this.factory = factory;
+        final File baseDir = new File(this.baseDir.getValue());
         if (!baseDir.exists()) {
             if (createIfNotExists) {
                 if (!baseDir.mkdirs()) {
@@ -108,20 +115,30 @@ public class FileTimerPersistence implements TimerPersistence {
         if (!baseDir.isDirectory()) {
             throw new RuntimeException("Timer file store directory " + baseDir + " is not a directory");
         }
+        started = true;
     }
 
     @Override
-    public synchronized void stop() {
+    public void stop(final StopContext context) {
+
         timers.clear();
+        locks.clear();
+        directories.clear();
+        factory = null;
+        configuration = null;
         started = false;
     }
 
+    @Override
+    public FileTimerPersistence getValue() throws IllegalStateException, IllegalArgumentException {
+        return this;
+    }
 
     @Override
     public void persistTimer(final TimerEntity timerEntity) {
         final Lock lock = getLock(timerEntity.getTimedObjectId());
         try {
-            final int status = transactionManager.getStatus();
+            final int status = transactionManager.getValue().getStatus();
             if (status == Status.STATUS_NO_TRANSACTION ||
                     status == Status.STATUS_UNKNOWN) {
                 try {
@@ -133,7 +150,7 @@ public class FileTimerPersistence implements TimerPersistence {
                     lock.unlock();
                 }
             } else {
-                transactionSynchronizationRegistry.registerInterposedSynchronization(new PersistTransactionSynchronization(timerEntity, lock));
+                transactionSynchronizationRegistry.getValue().registerInterposedSynchronization(new PersistTransactionSynchronization(timerEntity, lock));
             }
         } catch (SystemException e) {
             throw new RuntimeException(e);
@@ -263,6 +280,7 @@ public class FileTimerPersistence implements TimerPersistence {
     private String getDirectory(String timedObjectId) {
         String dirName = directories.get(timedObjectId);
         if (dirName == null) {
+            final File baseDir = new File(this.baseDir.getValue());
             dirName = baseDir.getAbsolutePath() + File.separator + timedObjectId.replace(File.separator, "-");
             File file = new File(dirName);
             if (!file.exists()) {
@@ -334,5 +352,21 @@ public class FileTimerPersistence implements TimerPersistence {
         }
 
 
+    }
+
+    public InjectedValue<TransactionManager> getTransactionManager() {
+        return transactionManager;
+    }
+
+    public InjectedValue<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistry() {
+        return transactionSynchronizationRegistry;
+    }
+
+    public InjectedValue<ModuleLoader> getModuleLoader() {
+        return moduleLoader;
+    }
+
+    public InjectedValue<String> getBaseDir() {
+        return baseDir;
     }
 }

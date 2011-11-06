@@ -58,9 +58,9 @@ public class CalendarTimer extends TimerImpl {
      * Represents whether this is an auto-timer or a normal
      * programatically created timer
      */
-    private boolean autoTimer;
+    private final boolean autoTimer;
 
-    private Method timeoutMethod;
+    private final Method timeoutMethod;
 
     /**
      * Constructs a {@link CalendarTimer}
@@ -95,11 +95,9 @@ public class CalendarTimer extends TimerImpl {
      * @param calendarTimeout     The {@link CalendarBasedTimeout} from which this {@link CalendarTimer} is being created
      * @param info                The serializable info which will be made available through {@link javax.ejb.Timer#getInfo()}
      * @param persistent          True if this timer is persistent. False otherwise
-     * @param timeoutMethodName   If this is a non-null value, then this {@link CalendarTimer} is marked as an auto-timer.
-     *                            This <code>timeoutMethodName</code> is then considered as the name of the timeout method which has to
+     * @param timeoutMethod     If this is a non-null value, then this {@link CalendarTimer} is marked as an auto-timer.
+     *                            This <code>timeoutMethod</code> is then considered as the name of the timeout method which has to
      *                            be invoked when this timer times out.
-     * @param timeoutMethodParams The timeout method params. Can be null. This param value will only be used if the
-     *                            <code>timeoutMethodName</code> is not null
      */
     public CalendarTimer(String id, TimerServiceImpl timerService, CalendarBasedTimeout calendarTimeout,
                          Serializable info, boolean persistent, Method timeoutMethod) {
@@ -117,6 +115,9 @@ public class CalendarTimer extends TimerImpl {
         if (timeoutMethod != null) {
             this.autoTimer = true;
             this.timeoutMethod = timeoutMethod;
+        } else {
+            this.autoTimer = false;
+            this.timeoutMethod = null;
         }
     }
 
@@ -139,7 +140,9 @@ public class CalendarTimer extends TimerImpl {
             if (this.timeoutMethod == null) {
                 throw new IllegalStateException("Could not find timeout method: " + timeoutMethodInfo);
             }
-
+        } else {
+            this.autoTimer = false;
+            this.timeoutMethod = null;
         }
     }
 
