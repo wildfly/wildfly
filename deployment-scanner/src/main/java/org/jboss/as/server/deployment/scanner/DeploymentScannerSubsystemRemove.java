@@ -30,6 +30,8 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 
+import static org.jboss.as.server.deployment.scanner.DeploymentScannerMessages.MESSAGES;
+
 /**
  * Handles the addition of the deployment scanning subsystem.
  *
@@ -47,7 +49,7 @@ public class DeploymentScannerSubsystemRemove extends AbstractRemoveStepHandler 
 
     protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         if (model.hasDefined(CommonAttributes.SCANNER) && model.get(CommonAttributes.SCANNER).asInt() > 0) {
-            throw new OperationFailedException(new ModelNode().set("Cannot remove subsystem while it still has scanners configured. Remove all scanners first."));
+            throw new OperationFailedException(new ModelNode().set(MESSAGES.cannotRemoveSubsystem()));
         }
         super.performRemove(context, operation, model);
     }
