@@ -188,6 +188,9 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
     private BeanMetaDataConfig toBeanFactory(final BeanMetaDataConfig bean) {
         BeanMetaDataConfig factory = new BeanMetaDataConfig();
         factory.setBeanClass(BaseBeanFactory.class.getName());
+        ModuleConfig moduleConfig = new ModuleConfig();
+        moduleConfig.setModuleName("org.jboss.as.pojo");
+        factory.setModule(moduleConfig);
         PropertyConfig pc = new PropertyConfig();
         pc.setPropertyName("bmd");
         ValueConfig vc = new ValueConfig() {

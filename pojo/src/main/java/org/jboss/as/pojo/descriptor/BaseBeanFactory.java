@@ -23,6 +23,11 @@
 package org.jboss.as.pojo.descriptor;
 
 import org.jboss.as.pojo.api.BeanFactory;
+import org.jboss.as.pojo.service.BeanInfo;
+import org.jboss.as.pojo.service.BeanUtils;
+import org.jboss.as.pojo.service.DefaultBeanInfo;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.modules.Module;
 
 /**
  * Base bean factory.
@@ -33,8 +38,17 @@ public class BaseBeanFactory implements BeanFactory {
 
     private BeanMetaDataConfig bmd;
 
-    public Object create() {
-        return null;
+    @SuppressWarnings("unchecked")
+    public Object create() throws Throwable {
+        DeploymentReflectionIndex index = DeploymentReflectionIndex.create();
+        Module module = bmd.getModule().getInjectedModule().getValue();
+        Class<?> beanClass = module.getClassLoader().loadClass(bmd.getBeanClass());
+        BeanInfo beanInfo = new DefaultBeanInfo(index, beanClass);
+        Object result = BeanUtils.instantiateBean(bmd, beanInfo, index, module);
+        BeanUtils.configure(bmd, beanInfo, module, result, false);
+        BeanUtils.dispatchLifecycleJoinpoint(beanInfo, result, bmd.getCreate(), "create");
+        BeanUtils.dispatchLifecycleJoinpoint(beanInfo, result, bmd.getStart(), "start");
+        return result;
     }
 
     public void setBmd(BeanMetaDataConfig bmd) {

@@ -23,17 +23,9 @@
 package org.jboss.as.pojo.service;
 
 import org.jboss.as.pojo.BeanState;
-import org.jboss.as.pojo.descriptor.PropertyConfig;
-import org.jboss.as.pojo.descriptor.ValueConfig;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.ImmediateValue;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 /**
  * POJO configured phase.
@@ -52,43 +44,7 @@ public class ConfiguredPojoPhase extends AbstractPojoPhase {
     }
 
     protected void configure(boolean nullify) throws Throwable {
-        Set<PropertyConfig> properties = getBeanConfig().getProperties();
-        if (properties != null) {
-            List<PropertyConfig> used = new ArrayList<PropertyConfig>();
-            for (PropertyConfig pc : properties) {
-                try {
-                    configure(pc, nullify);
-                    used.add(pc);
-                } catch (Throwable t) {
-                    if (nullify == false) {
-                        for (PropertyConfig upc : used) {
-                            try {
-                                configure(upc, true);
-                            } catch (Throwable ignored) {
-                            }
-                        }
-                        throw new StartException(t);
-                    }
-                }
-            }
-        }
-    }
-
-    protected void configure(PropertyConfig pc, boolean nullify) throws Throwable {
-        ValueConfig value = pc.getValue();
-        Class<?> clazz = null;
-        String type = pc.getType(); // check property
-        if (type == null)
-            type = value.getType(); // check value
-        if (type != null)
-            clazz = getModule().getClassLoader().loadClass(type);
-
-        Method setter = getBeanInfo().getSetter(pc.getPropertyName(), clazz);
-        MethodJoinpoint joinpoint = new MethodJoinpoint(setter);
-        ValueConfig param = (nullify == false) ? value : null;
-        joinpoint.setParameters(new ValueConfig[]{param});
-        joinpoint.setTarget(new ImmediateValue<Object>(getBean()));
-        joinpoint.dispatch();
+        BeanUtils.configure(getBeanConfig(), getBeanInfo(), getModule(), getBean(), nullify);
     }
 
     @Override
