@@ -149,6 +149,9 @@ public final class BeanUtils {
      * @throws Throwable for any error
      */
     public static void dispatchLifecycleJoinpoint(BeanInfo beanInfo, Object bean, LifecycleConfig config, String defaultMethod) throws Throwable {
+        if (config != null && config.isIgnored())
+            return;
+
         Joinpoint joinpoint = createJoinpoint(beanInfo, bean, config, defaultMethod);
         if (joinpoint != null)
             joinpoint.dispatch();

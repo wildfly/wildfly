@@ -31,7 +31,6 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -115,6 +114,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
         KEY_ELEMENT(new QName("keyClass")),
         VALUE_ELEMENT(new QName("valueClass")),
         METHOD(new QName("method")),
+        IGNORED(new QName("ignored")),
         SIGNATURE(new QName("signature")),
         FACTORY_CLASS(new QName("factory-class")),
         FACTORY_METHOD(new QName("factory-method")),
@@ -186,26 +186,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
     }
 
     private BeanMetaDataConfig toBeanFactory(final BeanMetaDataConfig bean) {
-        BeanMetaDataConfig factory = new BeanMetaDataConfig();
-        factory.setBeanClass(BaseBeanFactory.class.getName());
-        ModuleConfig moduleConfig = new ModuleConfig();
-        moduleConfig.setModuleName("org.jboss.as.pojo");
-        factory.setModule(moduleConfig);
-        PropertyConfig pc = new PropertyConfig();
-        pc.setPropertyName("bmd");
-        ValueConfig vc = new ValueConfig() {
-            protected Object getClassValue(Class<?> type) {
-                return bean;
-            }
-
-            @Override
-            protected void addChildren(ConfigVisitor visitor, List<ConfigVisitorNode> nodes) {
-                nodes.add(bean);
-            }
-        };
-        pc.setValue(vc);
-        factory.setProperties(Collections.singleton(pc));
-        return factory;
+        return new BeanFactoryMetaDataConfig(bean);
     }
 
     private BeanMetaDataConfig parseBean(final XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -585,6 +566,9 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
             switch (attribute) {
                 case METHOD:
                     lifecycleConfig.setMethodName(attributeValue);
+                    break;
+                case IGNORED:
+                    lifecycleConfig.setIgnored(Boolean.parseBoolean(attributeValue));
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);

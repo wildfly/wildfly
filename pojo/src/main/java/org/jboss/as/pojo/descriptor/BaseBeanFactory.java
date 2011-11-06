@@ -40,9 +40,9 @@ public class BaseBeanFactory implements BeanFactory {
 
     @SuppressWarnings("unchecked")
     public Object create() throws Throwable {
-        DeploymentReflectionIndex index = DeploymentReflectionIndex.create();
         Module module = bmd.getModule().getInjectedModule().getValue();
         Class<?> beanClass = module.getClassLoader().loadClass(bmd.getBeanClass());
+        DeploymentReflectionIndex index = DeploymentReflectionIndex.create();
         BeanInfo beanInfo = new DefaultBeanInfo(index, beanClass);
         Object result = BeanUtils.instantiateBean(bmd, beanInfo, index, module);
         BeanUtils.configure(bmd, beanInfo, module, result, false);
