@@ -27,6 +27,7 @@ import java.util.Set;
 
 import javax.ejb.Stateful;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceContextType;
 
 import org.hibernate.Session;
 import org.jboss.as.test.integration.jpa.hibernate.entity.Company;
@@ -43,7 +44,7 @@ import org.jboss.as.test.integration.jpa.hibernate.entity.Ticket;
 @Stateful
 public class EntityTest {
 
-    @PersistenceContext(unitName = "entity_pc")
+    @PersistenceContext(unitName = "entity_pc", type = PersistenceContextType.EXTENDED)
     private Session session;
 
     public Customer oneToManyCreate() throws Exception {
