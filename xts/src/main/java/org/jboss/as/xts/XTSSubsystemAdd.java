@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.Map;
 
 
-
 /**
  * Adds the transaction management subsystem.
  *
@@ -187,11 +186,13 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 }
 
                 // add an XTS service which depends on all the WS endpoints
+
                 final XTSManagerService xtsService = new XTSManagerService(coordinatorURL);
 
                 // this service needs to depend on the transaction recovery service
                 // because it can only initialise XTS recovery once the transaction recovery
                 // service has initialised the orb layer
+
                 ServiceBuilder<?> xtsServiceBuilder = target.addService(XTSServices.JBOSS_XTS_MAIN, xtsService);
                 xtsServiceBuilder
                         .addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER);
