@@ -27,6 +27,8 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.txn.service.TxnServices;
 
 import org.jboss.as.webservices.service.EndpointPublishService;
+import org.jboss.as.webservices.service.ServerConfigService;
+import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jbossts.XTSService;
 import org.jboss.logging.Logger;
@@ -38,6 +40,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.publish.Context;
 
 import java.util.ArrayList;
@@ -193,6 +196,10 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 ServiceBuilder<?> xtsServiceBuilder = target.addService(XTSServices.JBOSS_XTS_MAIN, xtsService);
                 xtsServiceBuilder
                         .addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER);
+
+                // this service needs to depend on JBossWS Config Service to be notified of the JBoss WS config (bind address, port etc)
+                xtsServiceBuilder.addDependency(WSServices.CONFIG_SERVICE, ServerConfig.class, xtsService.getWSServerConfig());
+
                 // the service also needs to depend on the endpoint services
                 for (ServiceController<Context> controller : controllers) {
                     xtsServiceBuilder.addDependency(controller.getName());
