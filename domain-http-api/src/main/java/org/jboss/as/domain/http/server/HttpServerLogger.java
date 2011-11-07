@@ -23,8 +23,13 @@
 package org.jboss.as.domain.http.server;
 
 import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Cause;
+import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
+import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
+
+import static org.jboss.logging.Logger.Level.ERROR;
 
 /**
  * Date: 05.11.2011
@@ -35,12 +40,25 @@ import org.jboss.logging.MessageLogger;
 public interface HttpServerLogger extends BasicLogger {
 
     /**
-     * A logger with a category of the package name.
-     */
-    HttpServerLogger ROOT_LOGGER = Logger.getMessageLogger(HttpServerLogger.class, HttpServerLogger.class.getPackage().getName());
-
-    /**
      * A logger with a category of {@code org.jboss.as.domain.http.api}.
      */
-    HttpServerLogger HTTP_API_LOGGER = Logger.getMessageLogger(HttpServerLogger.class, "org.jboss.as.domain.http.api");
+    HttpServerLogger ROOT_LOGGER = Logger.getMessageLogger(HttpServerLogger.class, "org.jboss.as.domain.http.api");
+
+    /**
+     * Logs an error message indicating an unexpected error was found executing a model request.
+     *
+     * @param cause the cause of the error.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 15100, value = "Unexpected error executing model request")
+    void modelRequestError(@Cause Throwable cause);
+
+    /**
+     * Logs an error message indicating an unexpected error was found executing a deployment upload request.
+     *
+     * @param cause the cause of the error.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 15101, value = "Unexpected error executing deployment upload request")
+    void uploadError(@Cause Throwable cause);
 }
