@@ -26,7 +26,10 @@ import java.io.IOException;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
 import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -50,7 +53,9 @@ public class TransactionIIOPInvocationTestCase {
     @TargetsContainer("iiop-server")
     public static Archive<?> deployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "server.jar");
-        jar.addClasses(IIOPTransactionalBMTBean.class, IIOPTransactionalHome.class, IIOPTransactionalRemote.class);
+        jar.addClasses(IIOPTransactionalStatelessBean.class, IIOPTransactionalHome.class,
+                IIOPTransactionalRemote.class, IIOPTransactionalStatefulHome.class,
+                IIOPTransactionalStatefulRemote.class, IIOPTransactionalStatefulBean.class);
         return jar;
     }
 
@@ -58,7 +63,9 @@ public class TransactionIIOPInvocationTestCase {
     @TargetsContainer("iiop-client")
     public static Archive<?> clientDeployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "client.jar");
-        jar.addClasses(ClientEjb.class, IIOPTransactionalHome.class, IIOPTransactionalRemote.class, TransactionIIOPInvocationTestCase.class);
+        jar.addClasses(ClientEjb.class, IIOPTransactionalHome.class,
+                IIOPTransactionalRemote.class, TransactionIIOPInvocationTestCase.class
+                , IIOPTransactionalStatefulHome.class, IIOPTransactionalStatefulRemote.class);
         return jar;
     }
 
@@ -69,5 +76,31 @@ public class TransactionIIOPInvocationTestCase {
         final ClientEjb ejb = (ClientEjb) context.lookup("java:module/" + ClientEjb.class.getSimpleName());
         ejb.basicTransactionPropagationTest();
 
+    }
+
+    @Test
+    @OperateOnDeployment("client")
+    public void testSameTransactionEachCall() throws IOException, NamingException, NotSupportedException, SystemException {
+        final InitialContext context = new InitialContext();
+        final ClientEjb ejb = (ClientEjb) context.lookup("java:module/" + ClientEjb.class.getSimpleName());
+        ejb.testSameTransactionEachCall();
+    }
+
+
+    @Test
+    @OperateOnDeployment("client")
+    public void testSynchronizationSuceeded() throws IOException, NamingException, NotSupportedException, SystemException, RollbackException, HeuristicMixedException, HeuristicRollbackException {
+        final InitialContext context = new InitialContext();
+        final ClientEjb ejb = (ClientEjb) context.lookup("java:module/" + ClientEjb.class.getSimpleName());
+        ejb.testSynchronization(true);
+    }
+
+
+    @Test
+    @OperateOnDeployment("client")
+    public void testSynchronizationFailed() throws IOException, NamingException, NotSupportedException, SystemException, RollbackException, HeuristicMixedException, HeuristicRollbackException {
+        final InitialContext context = new InitialContext();
+        final ClientEjb ejb = (ClientEjb) context.lookup("java:module/" + ClientEjb.class.getSimpleName());
+        ejb.testSynchronization(false);
     }
 }

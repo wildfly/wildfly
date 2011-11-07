@@ -13,7 +13,7 @@ import javax.transaction.UserTransaction;
  */
 @RemoteHome(IIOPTransactionalHome.class)
 @Stateless
-public class IIOPTransactionalBMTBean {
+public class IIOPTransactionalStatelessBean {
 
     @Resource
     private UserTransaction userTransaction;

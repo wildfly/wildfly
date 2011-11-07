@@ -150,7 +150,6 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
         } catch (Exception e) {
             throw MESSAGES.objectStoreStartFailure(e);
         }
-        // todo: JNDI bindings
 
     }
 

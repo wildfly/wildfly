@@ -496,7 +496,7 @@
                         <executions combine.children="append">
                             <execution>
                                 <id>build-basic-integration.server</id>
-                                <phase>none</phase>
+                                <phase>process-test-resources</phase>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
