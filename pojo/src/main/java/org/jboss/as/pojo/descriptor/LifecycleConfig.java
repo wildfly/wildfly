@@ -40,6 +40,7 @@ public class LifecycleConfig extends AbstractConfigVisitorNode implements Serial
 
     private String methodName;
     private ValueConfig[] parameters;
+    private boolean ignored;
 
     @Override
     protected void addChildren(ConfigVisitor visitor, List<ConfigVisitorNode> nodes) {
@@ -72,5 +73,13 @@ public class LifecycleConfig extends AbstractConfigVisitorNode implements Serial
 
     public void setParameters(ValueConfig[] parameters) {
         this.parameters = parameters;
+    }
+
+    public boolean isIgnored() {
+        return ignored;
+    }
+
+    public void setIgnored(boolean ignored) {
+        this.ignored = ignored;
     }
 }

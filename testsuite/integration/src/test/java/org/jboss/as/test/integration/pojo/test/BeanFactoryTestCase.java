@@ -35,19 +35,18 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 @RunWith(Arquillian.class)
-public class SimpleBeansTestCase {
-    @Deployment(name = "simple-beans")
-    public static JavaArchive getSimpleBeansJar() {
-        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "simple-beans.jar");
+public class BeanFactoryTestCase {
+    @Deployment(name = "bean-factory")
+    public static JavaArchive getBeanFactoryJar() {
+        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "bean-factory.jar");
         archive.addPackage(TFactory.class.getPackage());
-        archive.addAsManifestResource("pojo/simple-jboss-beans.xml", "simple-jboss-beans.xml");
-        archive.addAsManifestResource("pojo/legacy-jboss-beans.xml", "legacy-jboss-beans.xml");
+        archive.addAsManifestResource("pojo/bf-jboss-beans.xml", "bf-jboss-beans.xml");
         return archive;
     }
 
     @Test
-    @OperateOnDeployment("simple-beans")
-    public void testSimpleBeans() throws Exception {
+    @OperateOnDeployment("bean-factory")
+    public void testTypeBeans() throws Exception {
         // TODO -- try to get beans?
     }
 }

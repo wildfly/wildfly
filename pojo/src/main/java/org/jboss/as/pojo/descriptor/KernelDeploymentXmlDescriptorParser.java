@@ -27,7 +27,6 @@ import org.jboss.as.pojo.ParseResult;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
-import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import java.util.ArrayList;
@@ -51,91 +50,93 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
     public static final String NAMESPACE = "urn:jboss:pojo:7.0";
 
     private enum Element {
-        BEAN(new QName(NAMESPACE, "bean")),
-        CLASSLOADER(new QName(NAMESPACE, "classloader")),
-        CONSTRUCTOR(new QName(NAMESPACE, "constructor")),
-        FACTORY(new QName(NAMESPACE, "factory")),
-        PROPERTY(new QName(NAMESPACE, "property")),
-        VALUE(new QName(NAMESPACE, "value")),
-        INJECT(new QName(NAMESPACE, "inject")),
-        VALUE_FACTORY(new QName(NAMESPACE, "value-factory")),
-        PARAMETER(new QName(NAMESPACE, "parameter")),
-        DEPENDS(new QName(NAMESPACE, "depends")),
-        ALIAS(new QName(NAMESPACE, "alias")),
-        ANNOTATION(new QName(NAMESPACE, "annotation")),
-        CREATE(new QName(NAMESPACE, "create")),
-        START(new QName(NAMESPACE, "start")),
-        STOP(new QName(NAMESPACE, "stop")),
-        DESTROY(new QName(NAMESPACE, "destroy")),
-        INSTALL(new QName(NAMESPACE, "install")),
-        UNINSTALL(new QName(NAMESPACE, "uninstall")),
-        INCALLBACK(new QName(NAMESPACE, "incallback")),
-        UNCALLBACK(new QName(NAMESPACE, "uncallback")),
-        LIST(new QName(NAMESPACE, "list")),
-        SET(new QName(NAMESPACE, "set")),
-        MAP(new QName(NAMESPACE, "map")),
-        ENTRY(new QName(NAMESPACE, "entry")),
-        KEY(new QName(NAMESPACE, "key")),
+        BEAN("bean"),
+        BEAN_FACTORY("bean-factory"),
+        CLASSLOADER("classloader"),
+        CONSTRUCTOR("constructor"),
+        FACTORY("factory"),
+        PROPERTY("property"),
+        VALUE("value"),
+        INJECT("inject"),
+        VALUE_FACTORY("value-factory"),
+        PARAMETER("parameter"),
+        DEPENDS("depends"),
+        ALIAS("alias"),
+        ANNOTATION("annotation"),
+        CREATE("create"),
+        START("start"),
+        STOP("stop"),
+        DESTROY("destroy"),
+        INSTALL("install"),
+        UNINSTALL("uninstall"),
+        INCALLBACK("incallback"),
+        UNCALLBACK("uncallback"),
+        LIST("list"),
+        SET("set"),
+        MAP("map"),
+        ENTRY("entry"),
+        KEY("key"),
         UNKNOWN(null);
 
-        private final QName qName;
+        private final String localPart;
 
-        private static final Map<QName, Element> QNAME_MAP = new HashMap<QName, Element>();
+        private static final Map<String, Element> QNAME_MAP = new HashMap<String, Element>();
 
         static {
             for (Element element : Element.values()) {
-                QNAME_MAP.put(element.qName, element);
+                QNAME_MAP.put(element.localPart, element);
             }
         }
 
-        private Element(final QName qName) {
-            this.qName = qName;
+        private Element(final String localPart) {
+            this.localPart = localPart;
         }
 
-        static Element of(QName qName) {
-            final Element element = QNAME_MAP.get(qName);
+        static Element of(String localPart) {
+            final Element element = QNAME_MAP.get(localPart);
             return element == null ? UNKNOWN : element;
         }
     }
 
     private enum Attribute {
-        MODE(new QName("mode")),
-        NAME(new QName("name")),
-        TYPE(new QName("type")),
-        VALUE(new QName("value")),
-        TRIM(new QName("trim")),
-        REPLACE(new QName("replace")),
-        BEAN(new QName("bean")),
-        SERVICE(new QName("service")),
-        PROPERTY(new QName("property")),
-        CLASS(new QName("class")),
-        ELEMENT(new QName("elementClass")),
-        KEY_ELEMENT(new QName("keyClass")),
-        VALUE_ELEMENT(new QName("valueClass")),
-        METHOD(new QName("method")),
-        SIGNATURE(new QName("signature")),
-        FACTORY_CLASS(new QName("factory-class")),
-        FACTORY_METHOD(new QName("factory-method")),
-        STATE(new QName("state")),
-        TARGET_STATE(new QName("targetState")),
+        MODE("mode"),
+        NAME("name"),
+        TYPE("type"),
+        VALUE("value"),
+        TRIM("trim"),
+        REPLACE("replace"),
+        BEAN("bean"),
+        SERVICE("service"),
+        PROPERTY("property"),
+        CLASS("class"),
+        ELEMENT("elementClass"),
+        KEY_ELEMENT("keyClass"),
+        VALUE_ELEMENT("valueClass"),
+        METHOD("method"),
+        IGNORED("ignored"),
+        SIGNATURE("signature"),
+        FACTORY_CLASS("factory-class"),
+        FACTORY_METHOD("factory-method"),
+        STATE("state"),
+        TARGET_STATE("targetState"),
         UNKNOWN(null);
 
-        private final QName qName;
+        private final String localPart;
 
-        private static final Map<QName, Attribute> QNAME_MAP = new HashMap<QName, Attribute>();
+        private static final Map<String, Attribute> QNAME_MAP = new HashMap<String, Attribute>();
 
         static {
             for (Attribute attribute : Attribute.values()) {
-                QNAME_MAP.put(attribute.qName, attribute);
+                QNAME_MAP.put(attribute.localPart, attribute);
             }
         }
 
-        private Attribute(final QName qName) {
-            this.qName = qName;
+        private Attribute(final String localPart) {
+            this.localPart = localPart;
         }
 
-        static Attribute of(QName qName) {
-            final Attribute attribute = QNAME_MAP.get(qName);
+        static Attribute of(String localPart) {
+            final Attribute attribute = QNAME_MAP.get(localPart);
             return attribute == null ? UNKNOWN : attribute;
         }
     }
@@ -149,7 +150,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
 
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
-            final QName attributeName = reader.getAttributeName(i);
+            final String attributeName = reader.getAttributeLocalName(i);
             final Attribute attribute = Attribute.of(attributeName);
             final String attributeValue = reader.getAttributeValue(i);
             switch (attribute) {
@@ -166,9 +167,14 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                 case END_ELEMENT:
                     return;
                 case START_ELEMENT:
-                    switch (Element.of(reader.getName())) {
+                    switch (Element.of(reader.getLocalName())) {
                         case BEAN:
                             beansConfigs.add(parseBean(reader));
+                            break;
+                        case BEAN_FACTORY:
+                            BeanMetaDataConfig bean = parseBean(reader);
+                            beansConfigs.add(toBeanFactory(bean));
+                            kernelDeploymentXmlDescriptor.incrementBeanFactoryCount();
                             break;
                         case UNKNOWN:
                             throw unexpectedElement(reader);
@@ -178,13 +184,17 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
         }
     }
 
+    private BeanMetaDataConfig toBeanFactory(final BeanMetaDataConfig bean) {
+        return new BeanFactoryMetaDataConfig(bean);
+    }
+
     private BeanMetaDataConfig parseBean(final XMLExtendedStreamReader reader) throws XMLStreamException {
         BeanMetaDataConfig beanConfig = new BeanMetaDataConfig();
 
         final int count = reader.getAttributeCount();
         final Set<Attribute> required = EnumSet.of(Attribute.NAME);
         for (int i = 0; i < count; i++) {
-            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            final Attribute attribute = Attribute.of(reader.getAttributeLocalName(i));
             required.remove(attribute);
             final String attributeValue = reader.getAttributeValue(i);
 
@@ -213,7 +223,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                 case END_ELEMENT:
                     return beanConfig;
                 case START_ELEMENT:
-                    switch (Element.of(reader.getName())) {
+                    switch (Element.of(reader.getLocalName())) {
                         case ALIAS:
                             Set<String> aliases = beanConfig.getAliases();
                             if (aliases == null) {
@@ -308,7 +318,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
         final ConstructorConfig ctorConfig = new ConstructorConfig();
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
-            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            final Attribute attribute = Attribute.of(reader.getAttributeLocalName(i));
             final String attributeValue = reader.getAttributeValue(i);
 
             switch (attribute) {
@@ -329,7 +339,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     ctorConfig.setParameters(parameters.toArray(new ValueConfig[parameters.size()]));
                     return ctorConfig;
                 case START_ELEMENT:
-                    switch (Element.of(reader.getName())) {
+                    switch (Element.of(reader.getLocalName())) {
                         case FACTORY:
                             ctorConfig.setFactory(parseFactory(reader));
                             break;
@@ -351,7 +361,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
         final int count = reader.getAttributeCount();
         final Set<Attribute> required = EnumSet.of(Attribute.NAME);
         for (int i = 0; i < count; i++) {
-            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            final Attribute attribute = Attribute.of(reader.getAttributeLocalName(i));
             required.remove(attribute);
             final String attributeValue = reader.getAttributeValue(i);
 
@@ -374,7 +384,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
         final Set<Attribute> required = EnumSet.of(Attribute.NAME);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
-            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            final Attribute attribute = Attribute.of(reader.getAttributeLocalName(i));
             required.remove(attribute);
             final String attributeValue = reader.getAttributeValue(i);
 
@@ -398,7 +408,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                 case END_ELEMENT:
                     return property;
                 case START_ELEMENT:
-                    switch (Element.of(reader.getName())) {
+                    switch (Element.of(reader.getLocalName())) {
                         case VALUE:
                             property.setValue(parseValue(reader));
                             break;
@@ -430,7 +440,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
         final Set<Attribute> required = EnumSet.of(Attribute.METHOD);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
-            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            final Attribute attribute = Attribute.of(reader.getAttributeLocalName(i));
             required.remove(attribute);
             final String attributeValue = reader.getAttributeValue(i);
 
@@ -462,7 +472,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     installConfig.setParameters(parameters.toArray(new ValueConfig[parameters.size()]));
                     return installConfig;
                 case START_ELEMENT:
-                    switch (Element.of(reader.getName())) {
+                    switch (Element.of(reader.getLocalName())) {
                         case PARAMETER:
                             ValueConfig p = parseParameter(reader);
                             p.setIndex(parameters.size());
@@ -481,7 +491,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
         final Set<Attribute> required = EnumSet.of(Attribute.METHOD);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
-            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            final Attribute attribute = Attribute.of(reader.getAttributeLocalName(i));
             required.remove(attribute);
             final String attributeValue = reader.getAttributeValue(i);
 
@@ -518,7 +528,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
         final DependsConfig dependsConfig = new DependsConfig();
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
-            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            final Attribute attribute = Attribute.of(reader.getAttributeLocalName(i));
             final String attributeValue = reader.getAttributeValue(i);
 
             switch (attribute) {
@@ -549,12 +559,15 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
         lifecycleConfig.setMethodName(defaultMethodName); // set default
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
-            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            final Attribute attribute = Attribute.of(reader.getAttributeLocalName(i));
             final String attributeValue = reader.getAttributeValue(i);
 
             switch (attribute) {
                 case METHOD:
                     lifecycleConfig.setMethodName(attributeValue);
+                    break;
+                case IGNORED:
+                    lifecycleConfig.setIgnored(Boolean.parseBoolean(attributeValue));
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -568,7 +581,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     lifecycleConfig.setParameters(parameters.toArray(new ValueConfig[parameters.size()]));
                     return lifecycleConfig;
                 case START_ELEMENT:
-                    switch (Element.of(reader.getName())) {
+                    switch (Element.of(reader.getLocalName())) {
                         case PARAMETER:
                             ValueConfig p = parseParameter(reader);
                             p.setIndex(parameters.size());
@@ -587,7 +600,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
         String type = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
-            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            final Attribute attribute = Attribute.of(reader.getAttributeLocalName(i));
             final String attributeValue = reader.getAttributeValue(i);
 
             switch (attribute) {
@@ -608,7 +621,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                         valueConfig.setType(type);
                     return valueConfig;
                 case START_ELEMENT:
-                    switch (Element.of(reader.getName())) {
+                    switch (Element.of(reader.getLocalName())) {
                         case VALUE:
                             valueConfig = parseValue(reader);
                             break;
@@ -639,7 +652,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
         final InjectedValueConfig injectedValueConfig = new InjectedValueConfig();
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
-            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            final Attribute attribute = Attribute.of(reader.getAttributeLocalName(i));
             final String attributeValue = reader.getAttributeValue(i);
 
             switch (attribute) {
@@ -673,7 +686,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
         final Set<Attribute> required = EnumSet.of(Attribute.BEAN);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
-            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            final Attribute attribute = Attribute.of(reader.getAttributeLocalName(i));
             required.remove(attribute);
             final String attributeValue = reader.getAttributeValue(i);
 
@@ -711,7 +724,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
     private ValueConfig parseCollection(final XMLExtendedStreamReader reader, CollectionConfig config) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
-            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            final Attribute attribute = Attribute.of(reader.getAttributeLocalName(i));
             final String attributeValue = reader.getAttributeValue(i);
 
             switch (attribute) {
@@ -730,7 +743,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                 case END_ELEMENT:
                     return config;
                 case START_ELEMENT:
-                    switch (Element.of(reader.getName())) {
+                    switch (Element.of(reader.getLocalName())) {
                         case VALUE:
                             config.addValue(parseValue(reader));
                             break;
@@ -761,7 +774,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
         MapConfig mapConfig = new MapConfig();
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
-            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            final Attribute attribute = Attribute.of(reader.getAttributeLocalName(i));
             final String attributeValue = reader.getAttributeValue(i);
 
             switch (attribute) {
@@ -783,7 +796,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                 case END_ELEMENT:
                     return mapConfig;
                 case START_ELEMENT:
-                    switch (Element.of(reader.getName())) {
+                    switch (Element.of(reader.getLocalName())) {
                         case ENTRY:
                             ValueConfig[] entry = parseEntry(reader);
                             mapConfig.put(entry[0], entry[1]);
@@ -803,7 +816,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                 case END_ELEMENT:
                     return entry;
                 case START_ELEMENT:
-                    switch (Element.of(reader.getName())) {
+                    switch (Element.of(reader.getLocalName())) {
                         case KEY:
                             entry[0] = parseValueValue(reader);
                             break;
@@ -827,7 +840,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                         throw new IllegalArgumentException("Null value: " + reader.getLocation());
                     return value;
                 case START_ELEMENT:
-                    switch (Element.of(reader.getName())) {
+                    switch (Element.of(reader.getLocalName())) {
                         case VALUE:
                             value = parseValue(reader);
                             break;
@@ -865,7 +878,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
         final Set<Attribute> required = EnumSet.of(Attribute.BEAN, Attribute.METHOD);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
-            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            final Attribute attribute = Attribute.of(reader.getAttributeLocalName(i));
             required.remove(attribute);
             final String attributeValue = reader.getAttributeValue(i);
 
@@ -894,7 +907,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     valueFactoryConfig.setParameters(parameters.toArray(new ValueConfig[parameters.size()]));
                     return valueFactoryConfig;
                 case START_ELEMENT:
-                    switch (Element.of(reader.getName())) {
+                    switch (Element.of(reader.getLocalName())) {
                         case PARAMETER:
                             ValueConfig p = parseParameter(reader);
                             p.setIndex(parameters.size());
@@ -912,7 +925,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
         final StringValueConfig valueConfig = new StringValueConfig();
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
-            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            final Attribute attribute = Attribute.of(reader.getAttributeLocalName(i));
             final String attributeValue = reader.getAttributeValue(i);
 
             switch (attribute) {

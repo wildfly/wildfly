@@ -22,47 +22,26 @@
 
 package org.jboss.as.pojo.descriptor;
 
-import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.AttachmentList;
+import org.jboss.as.pojo.ParseResult;
+import org.jboss.logging.Logger;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
-import java.io.Serializable;
-import java.util.List;
+import javax.xml.stream.XMLStreamException;
 
 /**
- * The object representation of a legacy "jboss-beans.xml" descriptor file.
+ * Parse legacy (1.0 and 2.0 schema) Microcontainer jboss-beans.xml.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class KernelDeploymentXmlDescriptor implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class LegacyKernelDeploymentXmlDescriptorParser extends KernelDeploymentXmlDescriptorParser {
+    private static final Logger log = Logger.getLogger(LegacyKernelDeploymentXmlDescriptorParser.class);
 
-    public static final AttachmentKey<AttachmentList<KernelDeploymentXmlDescriptor>> ATTACHMENT_KEY = AttachmentKey.createList(KernelDeploymentXmlDescriptor.class);
+    public static final String MC_NAMESPACE_1_0 = "urn:jboss:bean-deployer:1.0";
+    public static final String MC_NAMESPACE_2_0 = "urn:jboss:bean-deployer:2.0";
 
-    private List<BeanMetaDataConfig> beans;
-    private ModeConfig mode;
-    private int beanFactoriesCount;
-
-    public List<BeanMetaDataConfig> getBeans() {
-        return beans;
-    }
-
-    public void setBeans(List<BeanMetaDataConfig> beans) {
-        this.beans = beans;
-    }
-
-    public ModeConfig getMode() {
-        return mode;
-    }
-
-    public void setMode(ModeConfig mode) {
-        this.mode = mode;
-    }
-
-    public int getBeanFactoriesCount() {
-        return beanFactoriesCount;
-    }
-
-    public void incrementBeanFactoryCount() {
-        beanFactoriesCount++;
+    @Override
+    public void readElement(XMLExtendedStreamReader reader, ParseResult<KernelDeploymentXmlDescriptor> value) throws XMLStreamException {
+        log.info("Found legacy bean/pojo namespace: " + reader.getNamespaceURI() + " - might be missing some xml features (potential exceptions).");
+        super.readElement(reader, value);
     }
 }

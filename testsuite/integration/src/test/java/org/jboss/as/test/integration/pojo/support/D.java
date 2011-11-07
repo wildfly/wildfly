@@ -20,34 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.pojo.test;
+package org.jboss.as.test.integration.pojo.support;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.pojo.support.TFactory;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.jboss.as.pojo.api.BeanFactory;
+
+import java.lang.reflect.Method;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-@RunWith(Arquillian.class)
-public class SimpleBeansTestCase {
-    @Deployment(name = "simple-beans")
-    public static JavaArchive getSimpleBeansJar() {
-        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "simple-beans.jar");
-        archive.addPackage(TFactory.class.getPackage());
-        archive.addAsManifestResource("pojo/simple-jboss-beans.xml", "simple-jboss-beans.xml");
-        archive.addAsManifestResource("pojo/legacy-jboss-beans.xml", "legacy-jboss-beans.xml");
-        return archive;
+public class D {
+
+    public void create(Object bf) throws Throwable {
+        Method create = bf.getClass().getMethod("create");
+        B b = (B) create.invoke(bf);
+        System.out.println("b = " + b);
     }
 
-    @Test
-    @OperateOnDeployment("simple-beans")
-    public void testSimpleBeans() throws Exception {
-        // TODO -- try to get beans?
+    public void start(Object bf) throws Throwable {
+        BeanFactory tbf = (BeanFactory) bf;
+        B b = (B) tbf.create();
+        System.out.println("b = " + b);
     }
+
 }

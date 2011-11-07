@@ -23,15 +23,8 @@
 package org.jboss.as.pojo.service;
 
 import org.jboss.as.pojo.BeanState;
-import org.jboss.as.pojo.descriptor.ConstructorConfig;
-import org.jboss.as.pojo.descriptor.FactoryConfig;
-import org.jboss.as.pojo.descriptor.ValueConfig;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
-import org.jboss.msc.value.ImmediateValue;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 
 /**
  * POJO instantiated phase.
@@ -58,51 +51,9 @@ public class InstantiatedPojoPhase extends AbstractPojoPhase {
     public void start(StartContext context) throws StartException {
         try {
             BeanInfo beanInfo = getBeanInfo();
-            Joinpoint instantiateJoinpoint = null;
-            ValueConfig[] parameters = new ValueConfig[0];
-            String[] types = Configurator.NO_PARAMS_TYPES;
-            ConstructorConfig ctorConfig = getBeanConfig().getConstructor();
-            if (ctorConfig != null) {
-                parameters = ctorConfig.getParameters();
-                types = Configurator.getTypes(parameters);
-
-                String factoryClass = ctorConfig.getFactoryClass();
-                FactoryConfig factory = ctorConfig.getFactory();
-                if (factoryClass != null || factory != null) {
-                    String factoryMethod = ctorConfig.getFactoryMethod();
-                    if (factoryMethod == null)
-                        throw new StartException("Missing factory method in ctor configuration: " + getBeanConfig());
-
-                    if (factoryClass != null) {
-                        // static factory
-                        Class<?> factoryClazz = Class.forName(factoryClass, false, getModule().getClassLoader());
-                        Method method = Configurator.findMethod(getIndex(), factoryClazz, factoryMethod, types, true, true, true);
-                        MethodJoinpoint mj = new MethodJoinpoint(method);
-                        mj.setTarget(new ImmediateValue<Object>(null)); // null, since this is static call
-                        mj.setParameters(parameters);
-                        instantiateJoinpoint = mj;
-                    } else if (factory != null) {
-                        ReflectionJoinpoint rj = new ReflectionJoinpoint(factory.getBeanInfo(), factoryMethod, types);
-                        // null type is ok, as this should be plain injection
-                        rj.setTarget(new ImmediateValue<Object>(factory.getValue(null)));
-                        rj.setParameters(parameters);
-                        instantiateJoinpoint = rj;
-                    }
-                }
-            }
-            // plain bean's ctor
-            if (instantiateJoinpoint == null) {
-                if (beanInfo == null)
-                    throw new StartException("Missing bean info, set bean's class attribute: " + getBeanConfig());
-
-                Constructor ctor = (types.length == 0) ? beanInfo.getConstructor() : beanInfo.findConstructor(types);
-                ConstructorJoinpoint constructorJoinpoint = new ConstructorJoinpoint(ctor);
-                constructorJoinpoint.setParameters(parameters);
-                instantiateJoinpoint = constructorJoinpoint;
-            }
-
-            setBean(instantiateJoinpoint.dispatch());
+            setBean(BeanUtils.instantiateBean(getBeanConfig(), beanInfo, getIndex(), getModule()));
             if (beanInfo == null) {
+                //noinspection unchecked
                 beanInfo = new DefaultBeanInfo(getIndex(), getBean().getClass());
                 setBeanInfo(beanInfo);
                 // set so describe service has its value

@@ -22,8 +22,6 @@
 
 package org.jboss.as.pojo;
 
-import java.util.List;
-
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -32,6 +30,8 @@ import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+
+import java.util.List;
 
 /**
  * Pojo substem add.
@@ -53,6 +53,7 @@ class PojoSubsystemAdd extends AbstractBoottimeAddStepHandler {
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_POJO_DEPLOYMENT, new KernelDeploymentParsingProcessor());
+                processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.POST_MODULE_POJO, new KernelDeploymentModuleProcessor());
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_POJO_DEPLOYMENT, new ParsedKernelDeploymentProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
