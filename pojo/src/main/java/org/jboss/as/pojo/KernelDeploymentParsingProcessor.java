@@ -58,7 +58,10 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
     private final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
 
     public KernelDeploymentParsingProcessor() {
-        xmlMapper.registerRootElement(new QName(KernelDeploymentXmlDescriptorParser.NAMESPACE, "deployment"), new KernelDeploymentXmlDescriptorParser());
+        final KernelDeploymentXmlDescriptorParser parser = new KernelDeploymentXmlDescriptorParser();
+        xmlMapper.registerRootElement(new QName(KernelDeploymentXmlDescriptorParser.NAMESPACE, "deployment"), parser);
+        xmlMapper.registerRootElement(new QName(KernelDeploymentXmlDescriptorParser.MC_NAMESPACE_1_0, "deployment"), parser);
+        xmlMapper.registerRootElement(new QName(KernelDeploymentXmlDescriptorParser.MC_NAMESPACE_2_0, "deployment"), parser);
     }
 
     /**

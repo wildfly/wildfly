@@ -41,6 +41,7 @@ public class SimpleBeansTestCase {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "simple-beans.jar");
         archive.addPackage(TFactory.class.getPackage());
         archive.addAsManifestResource("pojo/simple-jboss-beans.xml", "simple-jboss-beans.xml");
+        archive.addAsManifestResource("pojo/legacy-jboss-beans.xml", "legacy-jboss-beans.xml");
         return archive;
     }
 
