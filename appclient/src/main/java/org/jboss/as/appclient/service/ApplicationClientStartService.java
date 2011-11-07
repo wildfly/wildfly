@@ -87,24 +87,28 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
 
     @Override
     public synchronized void start(final StartContext context) throws StartException {
-        try {
-            final Endpoint endpoint = Remoting.createEndpoint("endpoint", OptionMap.EMPTY);
-            try {
-                endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
 
-                // open a connection
-                final IoFuture<Connection> futureConnection = endpoint.connect(new URI(hostUrl), OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE), new AnonymousCallbackHandler());
-                final Connection connection = IoFutureHelper.get(futureConnection, 5L, TimeUnit.SECONDS);
+        thread = new Thread(new Runnable() {
+
+
+            @Override
+            public void run() {
                 try {
-                    thread = new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            ClassLoader oldTccl = SecurityActions.getContextClassLoader();
+                    final Endpoint endpoint = Remoting.createEndpoint("endpoint", OptionMap.EMPTY);
+                    endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
+
+                    // open a connection
+                    final IoFuture<Connection> futureConnection = endpoint.connect(new URI(hostUrl), OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE), new AnonymousCallbackHandler());
+                    final Connection connection = IoFutureHelper.get(futureConnection, 5L, TimeUnit.SECONDS);
+                    try {
+                        try {
+
+                            final ClassLoader oldTccl = SecurityActions.getContextClassLoader();
                             try {
                                 try {
                                     SecurityActions.setContextClassLoader(classLoader);
 
-                                    EJBClientContext ejbClientContext = EJBClientContext.create();
+                                    final EJBClientContext ejbClientContext = EJBClientContext.create();
                                     ejbClientContext.registerConnection(connection);
                                     applicationClientDeploymentServiceInjectedValue.getValue().getDeploymentCompleteLatch().await();
 
@@ -129,20 +133,21 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                             } finally {
                                 CurrentServiceContainer.getServiceContainer().shutdown();
                             }
+                        } finally {
+                            connection.close();
                         }
-                    });
-                    thread.start();
-                } finally {
-                    connection.close();
+                    } finally {
+                        endpoint.close();
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                } catch (URISyntaxException e) {
+                    throw new RuntimeException(e);
                 }
-            } finally {
-                endpoint.close();
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
+        });
+        thread.start();
+
     }
 
     @Override
