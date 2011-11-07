@@ -33,14 +33,14 @@ import org.jboss.wsf.spi.metadata.j2ee.EJBSecurityMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.PublishLocationAdapter;
 import org.jboss.wsf.spi.metadata.j2ee.SLSBMetaData;
 import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
-import org.jboss.wsf.spi.metadata.webservices.PortComponentMetaData;
-import org.jboss.wsf.spi.metadata.webservices.WebserviceDescriptionMetaData;
+import org.jboss.wsf.spi.metadata.webservices.JBossPortComponentMetaData;
+import org.jboss.wsf.spi.metadata.webservices.JBossWebserviceDescriptionMetaData;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 abstract class AbstractMetaDataBuilderEJB {
-    /** Logger. */
+
     protected final Logger log = Logger.getLogger(this.getClass());
 
     /**
@@ -105,18 +105,16 @@ abstract class AbstractMetaDataBuilderEJB {
        ejbArchiveMD.setConfigFile(configFile);
 
        // set wsdl location resolver
-       final WebserviceDescriptionMetaData[] wsDescriptionsMD = webservicesMD.getWebserviceDescriptions();
+       final JBossWebserviceDescriptionMetaData[] wsDescriptionsMD = webservicesMD.getWebserviceDescriptions();
        final PublishLocationAdapter resolver = new PublishLocationAdapterImpl(wsDescriptionsMD);
        ejbArchiveMD.setPublishLocationAdapter(resolver);
     }
 
-    protected PortComponentMetaData getPortComponent(final String ejbName, final JBossWebservicesMetaData jbossWebservicesMD) {
+    protected JBossPortComponentMetaData getPortComponent(final String ejbName, final JBossWebservicesMetaData jbossWebservicesMD) {
         if (jbossWebservicesMD == null) return null;
 
-        PortComponentMetaData portComponentMD = null;
-        for (final WebserviceDescriptionMetaData webserviceDescriptionMD : jbossWebservicesMD.getWebserviceDescriptions()) {
-            portComponentMD = webserviceDescriptionMD.getPortComponentByEjbLinkName(ejbName);
-            if (portComponentMD != null) return portComponentMD;
+        for (final JBossPortComponentMetaData jbossPortComponentMD : jbossWebservicesMD.getPortComponents()) {
+            if (ejbName.equals(jbossPortComponentMD.getEjbName())) return jbossPortComponentMD;
         }
 
         return null;
@@ -137,7 +135,7 @@ abstract class AbstractMetaDataBuilderEJB {
         wsEjbMD.setEjbName(jbossEjbMD.getName());
         wsEjbMD.setEjbClass(jbossEjbMD.getClassName());
 
-        final PortComponentMetaData portComponentMD = getPortComponent(jbossEjbMD.getName(), jbossWebservicesMD);
+        final JBossPortComponentMetaData portComponentMD = getPortComponent(jbossEjbMD.getName(), jbossWebservicesMD);
         if (portComponentMD != null) {
             // set port component meta data
             wsEjbMD.setPortComponentName(portComponentMD.getPortComponentName());
