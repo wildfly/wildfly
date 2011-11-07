@@ -1,5 +1,6 @@
 package org.jboss.as.jaxr.extension;
 
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -20,7 +21,7 @@ import java.util.List;
  * @author Thomas.Diesler@jboss.com
  * @since 26-Oct-2011
  */
-class JAXRSubsystemAdd extends AbstractBoottimeAddStepHandler {
+class JAXRSubsystemAdd extends AbstractAddStepHandler {
 
     static final JAXRSubsystemAdd INSTANCE = new JAXRSubsystemAdd();
 
@@ -33,7 +34,7 @@ class JAXRSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     @Override
-    public void performBoottime(final OperationContext context, final ModelNode operation, ModelNode model,
+    public void performRuntime(final OperationContext context, final ModelNode operation, ModelNode model,
             final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers)
             throws OperationFailedException {
 
@@ -43,8 +44,8 @@ class JAXRSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 // [TODO] AS7-2278 JAXR configuration through the domain model
                 JAXRConfiguration config = JAXRConfiguration.INSTANCE;
                 ServiceTarget serviceTarget = context.getServiceTarget();
-                newControllers.add(JAXRBootstrapService.addService(serviceTarget, config));
-                newControllers.add(JUDDIContextService.addService(serviceTarget, config));
+                newControllers.add(JAXRBootstrapService.addService(serviceTarget, config, verificationHandler));
+                newControllers.add(JUDDIContextService.addService(serviceTarget, config, verificationHandler));
                 context.completeStep();
             }
         }, OperationContext.Stage.RUNTIME);
