@@ -110,7 +110,13 @@ class JvmOptionsBuilderFactory {
                 command.add("-javaagent:" + jvmElement.getJavaagent());
             }
             if (jvmElement.isDebugEnabled() != null && jvmElement.isDebugEnabled() && jvmElement.getDebugOptions() != null) {
-                command.add(jvmElement.getDebugOptions());
+                String debugOptions = jvmElement.getDebugOptions();
+                if(debugOptions != null) {
+                    if(! debugOptions.startsWith("-X")) {
+                        debugOptions = "-X" + debugOptions;
+                    }
+                    command.add(debugOptions);
+                }
             }
             List<String> options = jvmElement.getJvmOptions().getOptions();
             if (options.size() > 0) {
