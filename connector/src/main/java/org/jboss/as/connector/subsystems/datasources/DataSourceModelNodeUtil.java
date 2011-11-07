@@ -146,9 +146,7 @@ class DataSourceModelNodeUtil {
 
         final String username = getStringIfSetOrGetDefault(dataSourceNode, USERNAME, null);
 
-        //TODO This will be cleaned up once it uses attribute definitions
-        final String pwd = getStringIfSetOrGetDefault(dataSourceNode, PASSWORD, null);
-        final String password = pwd == null ? null : operationContext.resolveExpressions(new ModelNode().set(pwd)).asString();
+        final String password = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, PASSWORD, null);
         final String securityDomain = getStringIfSetOrGetDefault(dataSourceNode, SECURITY_DOMAIN, null);
 
         final Extension reauthPlugin = extractExtension(dataSourceNode, REAUTHPLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
@@ -235,9 +233,7 @@ class DataSourceModelNodeUtil {
                 isSameRmOverride, interleaving, padXid, wrapXaDataSource, noTxSeparatePool);
 
         final String username = getStringIfSetOrGetDefault(dataSourceNode, USERNAME, null);
-        //TODO This will be cleaned up once it uses attribute definitions
-        final String pwd = getStringIfSetOrGetDefault(dataSourceNode, PASSWORD, null);
-        final String password = pwd == null ? null : operationContext.resolveExpressions(new ModelNode().set(pwd)).asString();
+        final String password = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, PASSWORD, null);
         final String securityDomain = getStringIfSetOrGetDefault(dataSourceNode, SECURITY_DOMAIN, null);
 
         final Extension reauthPlugin = extractExtension(dataSourceNode, REAUTHPLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
@@ -281,9 +277,7 @@ class DataSourceModelNodeUtil {
                 validConnectionChecker, checkValidConnectionSql, validateOnMatch, staleConnectionChecker, exceptionSorter);
 
         final String recoveryUsername = getStringIfSetOrGetDefault(dataSourceNode, RECOVERY_USERNAME, null);
-        //TODO This will be cleaned up once it uses attribute definitions
-        final String rpwd = getStringIfSetOrGetDefault(dataSourceNode, RECOVERY_PASSWORD, null);
-        final String recoveryPassword = rpwd == null ? null : operationContext.resolveExpressions(new ModelNode().set(rpwd)).asString();
+        final String recoveryPassword = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, RECOVERY_PASSWORD, null);
         final String recoverySecurityDomain = getStringIfSetOrGetDefault(dataSourceNode, RECOVERY_SECURITY_DOMAIN, null);
 
         final Credential credential = new CredentialImpl(recoveryUsername, recoveryPassword, recoverySecurityDomain);
@@ -359,6 +353,14 @@ class DataSourceModelNodeUtil {
             final boolean defaultValue) {
         if (dataSourceNode.hasDefined(key.getName())) {
             return dataSourceNode.get(key.getName()).asBoolean();
+        } else {
+            return defaultValue;
+        }
+    }
+
+    private static String getResolvedStringIfSetOrGetDefault(final OperationContext context, final ModelNode dataSourceNode, final SimpleAttributeDefinition key, final String defaultValue) {
+        if (dataSourceNode.hasDefined(key.getName())) {
+            return context.resolveExpressions(dataSourceNode.get(key.getName())).asString();
         } else {
             return defaultValue;
         }

@@ -164,7 +164,7 @@ public class RaOperationUtil {
                 useFastFail);
         final String recoveryUsername = getStringIfSetOrGetDefault(operation, RECOVERY_USERNAME.getName(), null);
         //TODO This will be cleaned up once it uses attribute definitions
-        String recoveryPassword = context.resolveExpressions(new ModelNode().set(getStringIfSetOrGetDefault(operation, RECOVERY_PASSWORD.getName(), null))).asString();
+        String recoveryPassword = getResolvedStringIfSetOrGetDefault(context, operation, RECOVERY_PASSWORD.getName(), null);
         final String recoverySecurityDomain = getStringIfSetOrGetDefault(operation, RECOVERY_SECURITY_DOMAIN.getName(), null);
 
         final Credential credential = new CredentialImpl(recoveryUsername, recoveryPassword, recoverySecurityDomain);
@@ -220,6 +220,14 @@ public class RaOperationUtil {
     private static String getStringIfSetOrGetDefault(ModelNode dataSourceNode, String key, String defaultValue) {
         if (dataSourceNode.hasDefined(key)) {
             return dataSourceNode.get(key).asString();
+        } else {
+            return defaultValue;
+        }
+    }
+
+    private static String getResolvedStringIfSetOrGetDefault(final OperationContext context, final ModelNode dataSourceNode, final String key, final String defaultValue) {
+        if (dataSourceNode.hasDefined(key)) {
+            return context.resolveExpressions(dataSourceNode.get(key)).asString();
         } else {
             return defaultValue;
         }
