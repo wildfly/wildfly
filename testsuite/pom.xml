@@ -189,6 +189,35 @@
         </pluginManagement>
 
         <plugins>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-help-plugin</artifactId>
+                <version>2.1.1</version>
+                <inherited>false</inherited>
+                <executions>
+                    <execution><id>help.active-profiles</id>
+                        <phase>initialize</phase>
+                        <goals><goal>active-profiles</goal></goals>
+                        <configuration><output>target/help.active-profiles.txt</output></configuration>
+                    </execution>
+                    <execution><id>help.effective-pom</id>
+                        <phase>initialize</phase>
+                        <goals><goal>effective-pom</goal></goals>
+                        <configuration><output>target/help.effective-pom.txt</output></configuration>
+                    </execution>
+                    <execution><id>help.effective-settings</id>
+                        <phase>initialize</phase>
+                        <goals><goal>effective-settings</goal></goals>
+                        <configuration><output>target/help.effective-settings.txt</output></configuration>
+                    </execution>
+                    <execution><id>help.system</id>
+                        <phase>initialize</phase>
+                        <goals><goal>system</goal></goals>
+                        <configuration><output>target/help.system.txt</output></configuration>
+                    </execution>
+                </executions>
+            </plugin>
 
             <!--
             Big complex hack just to get @Resource(lookup="foo")
