@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BAS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_ATTRIBUTE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER_DN;
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
@@ -82,7 +83,7 @@ public class UserLdapCallbackHandler implements Service<UserLdapCallbackHandler>
             advancedFilter = userLdap.require(ADVANCED_FILTER).asString();
             usernameAttribute = null;
         } else {
-            throw new IllegalArgumentException("One of '" + USERNAME_ATTRIBUTE + "' or '" + ADVANCED_FILTER + "' required.");
+            throw MESSAGES.oneOfRequired(USERNAME_ATTRIBUTE, ADVANCED_FILTER);
         }
 
         if (userLdap.has(RECURSIVE)) {
@@ -159,10 +160,10 @@ public class UserLdapCallbackHandler implements Service<UserLdapCallbackHandler>
         }
 
         if (username == null || username.length() == 0) {
-            throw new IOException("No username provided.");
+            throw MESSAGES.noUsername();
         }
         if (verifyPasswordCallback == null) {
-            throw new IOException("No password to verify.");
+            throw MESSAGES.noPassword();
         }
 
         InitialDirContext searchContext = null;
@@ -186,7 +187,7 @@ public class UserLdapCallbackHandler implements Service<UserLdapCallbackHandler>
 
             searchEnumeration = searchContext.search(baseDn, filter, filterArguments, searchControls);
             if (searchEnumeration.hasMore() == false) {
-                throw new IOException("User '" + username + "' not found in directory.");
+                throw MESSAGES.userNotFoundInDirectory(username);
             }
 
             String distinguishedUserDN = null;
@@ -203,7 +204,7 @@ public class UserLdapCallbackHandler implements Service<UserLdapCallbackHandler>
                 if (result.isRelative() == true)
                     distinguishedUserDN = result.getName() + ("".equals(baseDn) ? "" : "," + baseDn);
                 else
-                    throw new NamingException("Can't follow referal for authentication: " + result.getName());
+                    throw MESSAGES.nameNotFound(result.getName());
             }
 
             // 3 - Connect as user once their DN is identified
@@ -213,7 +214,7 @@ public class UserLdapCallbackHandler implements Service<UserLdapCallbackHandler>
             }
 
         } catch (Exception e) {
-            throw new IOException("Unable to perform verification", e);
+            throw MESSAGES.cannotPerformVerification(e);
         } finally {
             safeClose(searchEnumeration);
             safeClose(searchContext);

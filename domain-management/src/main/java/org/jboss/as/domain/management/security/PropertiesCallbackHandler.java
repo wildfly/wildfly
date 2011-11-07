@@ -24,6 +24,8 @@ package org.jboss.as.domain.management.security;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLAIN_TEXT;
+import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.NameCallback;
@@ -38,8 +40,6 @@ import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-
-import org.jboss.logging.Logger;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
@@ -56,7 +56,6 @@ import org.jboss.sasl.callback.DigestHashCallback;
  */
 public class PropertiesCallbackHandler implements Service<DomainCallbackHandler>, DomainCallbackHandler {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.domain-management");
     public static final String SERVICE_SUFFIX = "properties";
 
     // Technically this CallbackHandler could also support the VerifyCallback callback, however at the moment
@@ -100,7 +99,7 @@ public class PropertiesCallbackHandler implements Service<DomainCallbackHandler>
         try {
             getUsersProperties();
         } catch (IOException ioe) {
-            throw new StartException("Unable to load properties", ioe);
+            throw MESSAGES.unableToLoadProperties(ioe);
         }
     }
 
@@ -119,7 +118,7 @@ public class PropertiesCallbackHandler implements Service<DomainCallbackHandler>
                 long fileLastModified = propertiesFile.lastModified();
                 boolean loadReallyRequired = userProperties == null || fileUpdated != fileLastModified;
                 if (loadReallyRequired) {
-                    log.debugf("Reloading properties file '%s%", propertiesFile.getAbsolutePath());
+                    ROOT_LOGGER.debugf("Reloading properties file '%s%", propertiesFile.getAbsolutePath());
                     Properties props = new Properties();
                     InputStream is = new FileInputStream(propertiesFile);
                     try {
@@ -142,7 +141,7 @@ public class PropertiesCallbackHandler implements Service<DomainCallbackHandler>
     private void checkWeakPasswords(final Properties properties) {
         final String admin = "admin";
         if (properties.contains(admin) && admin.equals(properties.get(admin))) {
-            log.warn("Properties file defined with default user and password, this will be easy to guess.");
+            ROOT_LOGGER.userAndPasswordWarning();
         }
     }
 
@@ -199,7 +198,7 @@ public class PropertiesCallbackHandler implements Service<DomainCallbackHandler>
             } else if (current instanceof RealmCallback) {
                 String realm = ((RealmCallback) current).getDefaultText();
                 if (this.realm.equals(realm) == false) {
-                    throw new IllegalStateException("Invalid Realm '" + realm + "' expected '" + this.realm + "'");
+                    throw MESSAGES.invalidRealm(realm, this.realm);
                 }
             } else {
                 throw new UnsupportedCallbackException(current);

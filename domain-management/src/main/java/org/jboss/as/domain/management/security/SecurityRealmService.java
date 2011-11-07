@@ -29,13 +29,15 @@ import java.io.IOException;
 
 import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 /**
  * The service representing the security realm, this service will be injected into any management interfaces
@@ -46,7 +48,6 @@ import org.jboss.msc.value.InjectedValue;
 public class SecurityRealmService implements Service<SecurityRealmService>, SecurityRealm {
 
     public static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("server", "controller", "management", "security_realm");
-    private static final Logger log = Logger.getLogger("org.jboss.as.domain-management");
 
     private final InjectedValue<DomainCallbackHandler> callbackHandler = new InjectedValue<DomainCallbackHandler>();
     private final InjectedValue<SSLIdentityService> sslIdentity = new InjectedValue<SSLIdentityService>();
@@ -59,11 +60,11 @@ public class SecurityRealmService implements Service<SecurityRealmService>, Secu
     }
 
     public void start(StartContext context) throws StartException {
-        log.infof("Starting '%s' Security Realm Service", name);
+        ROOT_LOGGER.debugf("Starting '%s' Security Realm Service", name);
     }
 
     public void stop(StopContext context) {
-        log.infof("Stopping '%s' Security Realm Service", name);
+        ROOT_LOGGER.debugf("Stopping '%s' Security Realm Service", name);
     }
 
     public SecurityRealmService getValue() throws IllegalStateException, IllegalArgumentException {
@@ -100,8 +101,7 @@ public class SecurityRealmService implements Service<SecurityRealmService>, Secu
                 }
 
                 public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-                    // TODO - Should be a real error with code.
-                    throw new IllegalStateException("No authentication mechanism defined in security realm.");
+                    throw MESSAGES.noAuthenticationDefined();
                 }
             };
         }

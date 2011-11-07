@@ -46,6 +46,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.KEY
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PASSWORD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 /**
  * Service to handle managing the SSL Identity of a security realm.
@@ -99,19 +100,19 @@ public class SSLIdentityService implements Service<SSLIdentityService> {
 
             this.sslContext = sslContext;
         } catch (NoSuchAlgorithmException nsae) {
-            throw new StartException("Unable to start service", nsae);
+            throw MESSAGES.unableToStart(nsae);
         } catch (KeyManagementException kme) {
-            throw new StartException("Unable to start service", kme);
+            throw MESSAGES.unableToStart(kme);
         } catch (KeyStoreException kse) {
-            throw new StartException("Unable to start service", kse);
+            throw MESSAGES.unableToStart(kse);
         } catch (FileNotFoundException fnfe) {
-            throw new StartException("Unable to start service", fnfe);
+            throw MESSAGES.unableToStart(fnfe);
         } catch (CertificateException e) {
-            throw new StartException("Unable to start service", e);
+            throw MESSAGES.unableToStart(e);
         } catch (IOException e) {
-            throw new StartException("Unable to start service", e);
+            throw MESSAGES.unableToStart(e);
         } catch (UnrecoverableKeyException e) {
-            throw new StartException("Unable to start service", e);
+            throw MESSAGES.unableToStart(e);
         }
     }
 
