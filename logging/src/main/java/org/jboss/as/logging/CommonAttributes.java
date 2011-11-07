@@ -86,8 +86,7 @@ interface CommonAttributes {
             build();
 
     SimpleAttributeDefinition LEVEL = new SimpleAttributeDefinitionBuilder("level", ModelType.STRING, true).
-            setDefaultValue(new ModelNode().set(Level.INFO.getName())).
-            setValidator(new LogLevelValidator(false)).
+            setValidator(new LogLevelValidator(true)).
             build();
 
     String LEVEL_RANGE = "level-range";
