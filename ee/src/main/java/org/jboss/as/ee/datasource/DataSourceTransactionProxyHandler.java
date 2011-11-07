@@ -21,36 +21,35 @@
  */
 package org.jboss.as.ee.datasource;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
 
 /**
  * Proxy handler that automatically enlists XA resources returned from a datasource.
- *
+ * <p/>
  * If getConnection() is called and the datasource is an XA datasource then getXAConnection() is called
  * instead and the resource is enlised in the transaction
  *
  * @author Stuart Douglas
  */
-public class DataSourceTransactionProxyHandler implements InvocationHandler, Synchronization {
+public class DataSourceTransactionProxyHandler implements InvocationHandler {
 
     private final TransactionManager transactionManager;
     private final TransactionSynchronizationRegistry synchronizationRegistry;
 
     private final Object delegate;
 
-    private final ThreadLocal<Boolean> synchronizationRegistered = new ThreadLocal<Boolean>() {
-        @Override
-        protected Boolean initialValue() {
-            return false;
-        }
-    };
+    private final Set<Object> registeredTransactions = Collections.synchronizedSet(new HashSet<Object>());
 
     public DataSourceTransactionProxyHandler(final Object delegate, final TransactionManager transactionManager, final TransactionSynchronizationRegistry synchronizationRegistry) {
         this.transactionManager = transactionManager;
@@ -63,11 +62,12 @@ public class DataSourceTransactionProxyHandler implements InvocationHandler, Syn
         if (method.getName().equals("getConnection") && method.getParameterTypes().length == 0 && delegate instanceof XADataSource) {
             final XADataSource xa = (XADataSource) delegate;
             final XAConnection xacon = xa.getXAConnection();
-            if (!synchronizationRegistered.get()) {
+            final Object transactionKey = synchronizationRegistry.getTransactionKey();
+            if (!registeredTransactions.contains(transactionKey)) {
                 if (transactionManager.getTransaction() != null && transactionActive(transactionManager.getTransaction().getStatus())) {
                     transactionManager.getTransaction().enlistResource(xacon.getXAResource());
-                    synchronizationRegistry.registerInterposedSynchronization(this);
-                    synchronizationRegistered.set(true);
+                    synchronizationRegistry.registerInterposedSynchronization(new Sync(transactionKey));
+                    registeredTransactions.add(transactionKey);
                 }
             }
             return xacon.getConnection();
@@ -87,13 +87,22 @@ public class DataSourceTransactionProxyHandler implements InvocationHandler, Syn
         return false;
     }
 
+    private class Sync implements Synchronization {
 
-    @Override
-    public void beforeCompletion() {
-    }
+        private final Object key;
 
-    @Override
-    public void afterCompletion(final int status) {
-        synchronizationRegistered.remove();
+        public Sync(final Object key) {
+            this.key = key;
+        }
+
+        @Override
+        public void beforeCompletion() {
+
+        }
+
+        @Override
+        public void afterCompletion(final int status) {
+            registeredTransactions.remove(key);
+        }
     }
 }

@@ -136,8 +136,8 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
                     logger.warn("Transactional datasource " + className + " will not be enlisted in the transaction as the transaction subsystem is not available");
                 } else {
                     try {
-                        TransactionSynchronizationRegistry transactionSynchronizationRegistry = (TransactionSynchronizationRegistry) syncController.getValue();
-                        TransactionManager transactionManager = (TransactionManager) managerController.getValue();
+                        final TransactionSynchronizationRegistry transactionSynchronizationRegistry = (TransactionSynchronizationRegistry) syncController.getValue();
+                        final TransactionManager transactionManager = (TransactionManager) managerController.getValue();
                         final ProxyConfiguration proxyConfiguration = new ProxyConfiguration()
                                 .setClassLoader(module.getClassLoader())
                                 .setSuperClass(clazz)
