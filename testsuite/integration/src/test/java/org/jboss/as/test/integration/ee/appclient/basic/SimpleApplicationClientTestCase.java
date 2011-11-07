@@ -21,40 +21,23 @@
  */
 package org.jboss.as.test.integration.ee.appclient.basic;
 
-import java.net.URI;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.ee.appclient.util.AppClientWrapper;
-import org.jboss.as.test.integration.ejb.remote.common.EJBRemoteManagementUtil;
 import org.jboss.ejb.client.EJBClient;
-import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.EJBClientTransactionContext;
 import org.jboss.ejb.client.StatelessEJBLocator;
-import org.jboss.ejb.client.remoting.IoFutureHelper;
-import org.jboss.remoting3.Connection;
-import org.jboss.remoting3.Endpoint;
-import org.jboss.remoting3.Remoting;
-import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.xnio.IoFuture;
-import org.xnio.OptionMap;
-import org.xnio.Options;
 
 import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 import static org.junit.Assert.assertEquals;
@@ -69,12 +52,6 @@ import static org.junit.Assert.assertTrue;
 @RunAsClient
 public class SimpleApplicationClientTestCase {
 
-
-    private static Connection connection;
-
-    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
-
-    private EJBClientContext ejbClientContext;
 
     private static Archive archive;
 
@@ -120,47 +97,16 @@ public class SimpleApplicationClientTestCase {
     }
 
     /**
-     * Create and setup the remoting connection
-     *
-     * @throws Exception
-     */
-    @BeforeClass
-    public static void beforeTestClass() throws Exception {
-        final Endpoint endpoint = Remoting.createEndpoint("ejb-remote-client-endpoint", OptionMap.EMPTY);
-        endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
-
-
-        // open a connection
-        final int ejbRemotingPort = EJBRemoteManagementUtil.getEJBRemoteConnectorPort("localhost", 9999, getCallbackHandler());
-        final IoFuture<Connection> futureConnection = endpoint.connect(new URI("remote://localhost:" + ejbRemotingPort), OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE), getCallbackHandler());
-        connection = IoFutureHelper.get(futureConnection, 5, TimeUnit.SECONDS);
-    }
-
-    @AfterClass
-    public static void afterTestClass() throws Exception {
-        executor.shutdown();
-    }
-
-    /**
      * Create and setup the EJB client context backed by the remoting receiver
      *
      * @throws Exception
      */
     @Before
     public void beforeTest() throws Exception {
-        this.ejbClientContext = EJBClientContext.create();
-        this.ejbClientContext.registerConnection(connection);
         final EJBClientTransactionContext localUserTxContext = EJBClientTransactionContext.createLocal();
         // set the tx context
         EJBClientTransactionContext.setGlobalContext(localUserTxContext);
 
-    }
-
-    @After
-    public void afterTest() throws Exception {
-        if (this.ejbClientContext != null) {
-            EJBClientContext.suspendCurrent();
-        }
     }
 
     /**

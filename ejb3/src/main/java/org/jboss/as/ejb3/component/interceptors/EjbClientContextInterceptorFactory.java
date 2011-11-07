@@ -40,17 +40,19 @@ public class EjbClientContextInterceptorFactory implements InterceptorFactory {
         interceptor = new Interceptor() {
             @Override
             public Object processInvocation(final InterceptorContext context) throws Exception {
-                final EJBClientContext oldContext = EJBClientContext.getAndSetCurrent(clientContext);
-                try {
-                    return context.proceed();
-                } finally {
-                    if (oldContext == null) {
-                        EJBClientContext.suspendCurrent();
-                    } else {
-                        EJBClientContext.getAndSetCurrent(oldContext);
-                    }
-                }
+                return context.proceed();
             }
+//                final EJBClientContext oldContext = EJBClientContext.getAndSetCurrent(clientContext);
+//                try {
+//                    return context.proceed();
+//                } finally {
+//                    if (oldContext == null) {
+//                        EJBClientContext.suspendCurrent();
+//                    } else {
+//                        EJBClientContext.getAndSetCurrent(oldContext);
+//                    }
+//                }
+//            }
         };
     }
 

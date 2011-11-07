@@ -22,50 +22,31 @@
 
 package org.jboss.as.test.integration.ejb.remote.entity.bmp;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+import static org.junit.Assert.fail;
 
-import java.net.URI;
-import java.rmi.NoSuchObjectException;
-import java.rmi.RemoteException;
-import java.util.Collection;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import javax.ejb.EJBMetaData;
 import javax.ejb.Handle;
 import javax.ejb.HomeHandle;
 import javax.ejb.RemoveException;
+import java.rmi.NoSuchObjectException;
+import java.rmi.RemoteException;
+import java.util.Collection;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.ejb.remote.common.EJBRemoteManagementUtil;
 import org.jboss.ejb.client.EJBClient;
-import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.EJBHomeLocator;
 import org.jboss.ejb.client.EntityEJBLocator;
 import org.jboss.ejb.client.StatelessEJBLocator;
-import org.jboss.ejb.client.remoting.IoFutureHelper;
 import org.jboss.logging.Logger;
-import org.jboss.remoting3.Connection;
-import org.jboss.remoting3.Endpoint;
-import org.jboss.remoting3.Remoting;
-import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import static org.junit.Assert.fail;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.xnio.IoFuture;
-import org.xnio.OptionMap;
-import org.xnio.Options;
 
 /**
  * Tests bean managed persistence
@@ -79,10 +60,6 @@ public class BMPRemoteEntityBeanTestCase {
     private static final String APP_NAME = "ejb-remote-test";
     private static final String MODULE_NAME = "ejb";
 
-    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
-    private static Connection connection;
-    private EJBClientContext ejbClientContext;
-
     @Deployment
     public static Archive<?> deploy() {
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, APP_NAME + ".ear");
@@ -93,52 +70,13 @@ public class BMPRemoteEntityBeanTestCase {
         return ear;
     }
 
-    /**
-     * Create and setup the remoting connection
-     *
-     * @throws Exception
-     */
-    @BeforeClass
-    public static void beforeTestClass() throws Exception {
-        final Endpoint endpoint = Remoting.createEndpoint("endpoint", OptionMap.EMPTY);
-        endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
-
-        // open a connection
-        final int ejbRemotingPort = EJBRemoteManagementUtil.getEJBRemoteConnectorPort("localhost", 9999, getCallbackHandler());
-        final IoFuture<Connection> futureConnection = endpoint.connect(new URI("remote://localhost:" + ejbRemotingPort), OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE), getCallbackHandler());
-        connection = IoFutureHelper.get(futureConnection, 5, TimeUnit.SECONDS);
-    }
-
-    @AfterClass
-    public static void afterTestClass() throws Exception {
-        executor.shutdown();
-    }
-
-    /**
-     * Create and setup the EJB client context backed by the remoting receiver
-     *
-     * @throws Exception
-     */
-    @Before
-    public void beforeTest() throws Exception {
-        this.ejbClientContext = EJBClientContext.create();
-        this.ejbClientContext.registerConnection(connection);
-    }
-
-    @After
-    public void afterTest() throws Exception {
-        if (this.ejbClientContext != null) {
-            EJBClientContext.suspendCurrent();
-        }
-    }
-
     @Test
     public void testSimpleCreate() throws Exception {
         final DataStore dataStore = getDataStore();
         dataStore.clear();
         final BMPHome home = getHome();
         final BMPInterface ejbInstance = home.createWithValue("Hello");
-        logger.info(((EntityEJBLocator)EJBClient.getLocatorFor(ejbInstance)).getPrimaryKey());
+        logger.info(((EntityEJBLocator) EJBClient.getLocatorFor(ejbInstance)).getPrimaryKey());
         final Integer pk = (Integer) ejbInstance.getPrimaryKey();
         Assert.assertEquals("Hello", dataStore.get(pk));
     }

@@ -16,6 +16,8 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.metadata.ear.spec.Ear6xMetaData;
+import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -42,7 +44,13 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
         if (eeModuleDescription == null) {
             return;
         }
-        final DeploymentModuleIdentifier identifier = new DeploymentModuleIdentifier(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getDistinctName());
+        // Note, we do not use the EEModuleDescription.getApplicationName() because that API returns the
+        // module name if the top level unit isn't a .ear, which is not what we want. We really want a
+        // .ear name as application name (that's the semantic in EJB spec).
+        String applicationName = this.getApplicationName(deploymentUnit);
+        // if it's not a .ear deployment then set app name to empty string
+        applicationName = applicationName == null ? "" : applicationName;
+        final DeploymentModuleIdentifier identifier = new DeploymentModuleIdentifier(applicationName, eeModuleDescription.getModuleName(), eeModuleDescription.getDistinctName());
 
         final Collection<ComponentDescription> componentDescriptions = eeModuleDescription.getComponentDescriptions();
         final Map<String, EjbDeploymentInformation> deploymentInformationMap = new HashMap<String, EjbDeploymentInformation>();
@@ -85,5 +93,45 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
     @Override
     public void undeploy(DeploymentUnit deploymentUnit) {
 
+    }
+
+    /**
+     * Returns the application name for the passed deployment. If the passed deployment isn't an .ear or doesn't belong
+     * to a .ear, then this method returns null. Else it returns the application-name set in the application.xml of the .ear
+     * or if that's not set, will return the .ear deployment unit name (stripped off the .ear suffix).
+     *
+     * @param deploymentUnit The deployment unit
+     */
+    private String getApplicationName(DeploymentUnit deploymentUnit) {
+        final DeploymentUnit parentDU = deploymentUnit.getParent();
+        if (parentDU == null) {
+            final EarMetaData earMetaData = deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.EAR_METADATA);
+            if (earMetaData != null && earMetaData instanceof Ear6xMetaData) {
+                final String overriddenAppName = ((Ear6xMetaData) earMetaData).getApplicationName();
+                if (overriddenAppName == null) {
+                    return this.getEarName(deploymentUnit);
+                }
+                return overriddenAppName;
+            } else {
+                return this.getEarName(deploymentUnit);
+            }
+        }
+        // traverse to top level DU
+        return this.getApplicationName(parentDU);
+    }
+
+    /**
+     * Returns the name (stripped off the .ear suffix) of the passed <code>deploymentUnit</code>.
+     * Returns null if the passed <code>deploymentUnit</code>'s name doesn't end with .ear suffix.
+     *
+     * @param deploymentUnit Deployment unit
+     * @return
+     */
+    private String getEarName(final DeploymentUnit deploymentUnit) {
+        final String duName = deploymentUnit.getName();
+        if (duName.endsWith(".ear")) {
+            return duName.substring(0, duName.length() - ".ear".length());
+        }
+        return null;
     }
 }

@@ -85,6 +85,7 @@ import org.jboss.as.ejb3.iiop.POARegistry;
 import org.jboss.as.ejb3.deployment.processors.security.JaccEjbDeploymentProcessor;
 import org.jboss.as.ejb3.remote.EjbClientContextService;
 import org.jboss.as.ejb3.remote.LocalEjbReceiver;
+import org.jboss.as.ejb3.remote.TCCLBasedEJBClientContextSelector;
 import org.jboss.as.jacorb.service.CorbaPOAService;
 import org.jboss.as.naming.InitialContext;
 import org.jboss.as.security.service.SimpleSecurityManager;
@@ -262,10 +263,17 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private void addRemoteInvocationServices(final OperationContext context, final List<ServiceController<?>> newControllers, final boolean appclient) {
 
+        // Add the tccl based client context selector
+        final TCCLBasedEJBClientContextSelector tcclBasedClientContextSelector = new TCCLBasedEJBClientContextSelector();
+        context.getServiceTarget().addService(tcclBasedClientContextSelector.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME,
+                tcclBasedClientContextSelector).install();
+
         //add the default EjbClientContext
         //TODO: This should be managed
         final EjbClientContextService clientContextService = new EjbClientContextService();
-        final ServiceBuilder<EJBClientContext> clientBuilder = context.getServiceTarget().addService(EjbClientContextService.DEFAULT_SERVICE_NAME, clientContextService);
+        final ServiceBuilder<EJBClientContext> clientContextServiceBuilder = context.getServiceTarget().addService(EjbClientContextService.DEFAULT_SERVICE_NAME,
+                clientContextService).addDependency(TCCLBasedEJBClientContextSelector.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME,
+                TCCLBasedEJBClientContextSelector.class, clientContextService.getTCCLBasedEJBClientContextSelectorInjector());
 
         if (!appclient) {
             // get the node name
@@ -282,10 +290,10 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                     .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, byReferenceLocalEjbReceiver.getDeploymentRepository())
                     .install());
 
-            clientContextService.addReceiver(clientBuilder, LocalEjbReceiver.BY_VALUE_SERVICE_NAME);
+            clientContextService.addReceiver(clientContextServiceBuilder, LocalEjbReceiver.BY_VALUE_SERVICE_NAME);
         }
 
-        newControllers.add(clientBuilder.install());
+        newControllers.add(clientContextServiceBuilder.install());
     }
 
 }
