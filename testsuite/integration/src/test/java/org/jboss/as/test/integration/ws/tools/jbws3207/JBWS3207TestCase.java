@@ -31,6 +31,8 @@ import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
 
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.ws.tools.jbws3207.service.EndpointImpl;
 import org.jboss.as.webservices.deployer.RemoteDeployer;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -41,12 +43,14 @@ import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.deployer.Deployer;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * [JBWS-3207] JBossWS remote deployer support.
  *
  * @author <a href="ropalka@redhat.com">Richard Opalka</a>
  */
+@RunWith(Arquillian.class)
 public class JBWS3207TestCase {
 
     @Test
