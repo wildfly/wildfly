@@ -20,17 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.domain;
+package org.jboss.as.test.integration.domain.suites;
 
 import org.jboss.as.arquillian.container.domain.managed.DomainLifecycleUtil;
-import org.jboss.as.arquillian.container.domain.managed.JBossAsManagedConfiguration;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import org.jboss.as.test.integration.domain.DomainTestSupport;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -63,15 +62,18 @@ public class ManagementReadsTestCase {
 
     @BeforeClass
     public static void setupDomain() throws Exception {
-        testSupport = new DomainTestSupport(ManagementReadsTestCase.class.getSimpleName(), "domain-configs/domain-standard.xml", "host-configs/host-master.xml", "host-configs/host-slave.xml");
-        testSupport.start();
+        testSupport = DomainTestSuite.createSupport(ManagementReadsTestCase.class.getSimpleName());
+
         domainMasterLifecycleUtil = testSupport.getDomainMasterLifecycleUtil();
         domainSlaveLifecycleUtil = testSupport.getDomainSlaveLifecycleUtil();
     }
 
     @AfterClass
     public static void tearDownDomain() throws Exception {
-        testSupport.stop();
+        DomainTestSuite.stopSupport();
+        testSupport = null;
+        domainMasterLifecycleUtil = null;
+        domainSlaveLifecycleUtil = null;
     }
 
     @Test
@@ -287,7 +289,7 @@ public class ManagementReadsTestCase {
 
         ModelNode response = domainClient.execute(request);
         validateResponse(response);
-        // TODO make some more assertions about result content
+        // TODO make getDeploymentManager();some more assertions about result content
 
         address.setEmptyList();
         address.add(HOST, "slave");
