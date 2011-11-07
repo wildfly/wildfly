@@ -981,7 +981,14 @@
         <module-def name="org.picketbox">
             <maven-resource group="org.picketbox" artifact="picketbox"/>
             <maven-resource group="org.picketbox" artifact="picketbox-infinispan"/>
-        	<maven-resource group="org.picketbox" artifact="picketbox-commons"/>
+            <maven-resource group="org.picketbox" artifact="picketbox-commons"/>
+        </module-def>
+
+        <module-def name="org.picketlink">
+            <maven-resource group="org.picketlink" artifact="picketlink-fed"/>
+            <maven-resource group="org.picketlink" artifact="picketlink-bindings"/>
+            <maven-resource group="org.picketlink" artifact="picketlink-bindings-jboss"/>
+            <maven-resource group="org.picketlink" artifact="picketlink-trust-jbossws"/>
         </module-def>
 
         <module-def name="org.slf4j.jcl-over-slf4j">

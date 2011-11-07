@@ -1490,6 +1490,26 @@
         </dependency>
 
         <dependency>
+            <groupId>org.picketlink</groupId>
+            <artifactId>picketlink-fed</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.picketlink</groupId>
+            <artifactId>picketlink-bindings</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.picketlink</groupId>
+            <artifactId>picketlink-bindings-jboss</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.picketlink</groupId>
+            <artifactId>picketlink-trust-jbossws</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.projectodd.stilts</groupId>
             <artifactId>stilts-stomplet-server-bundle</artifactId>
         </dependency>
