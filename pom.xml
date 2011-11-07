@@ -82,6 +82,7 @@
         <version.commons-cli>1.2</version.commons-cli>
         <version.commons-codec>1.4</version.commons-codec>
         <version.commons-collections>3.2.1</version.commons-collections>
+        <version.commons-httpclient>3.1</version.commons-httpclient>
         <version.commons-io>2.1</version.commons-io>
         <version.commons-configuration>1.6</version.commons-configuration>
         <version.commons-lang>2.6</version.commons-lang>
@@ -244,6 +245,8 @@
         <version.org.jgroups>3.0.9.Final</version.org.jgroups>
         <version.org.mockito>1.8.5</version.org.mockito>
         <version.org.picketbox>4.0.9.Final</version.org.picketbox>
+        <version.org.picketlink>1.0.4.final</version.org.picketlink>
+        <version.org.openid4java>0.9.5</version.org.openid4java>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
         <version.org.picketlink>2.1.1.Final</version.org.picketlink>
         <version.org.powermock>1.4.11</version.org.powermock>
@@ -388,7 +391,7 @@
                                             <exclude>com.google.gwt.inject:gin</exclude>
                                             <exclude>com.google.inject:guice</exclude>
                                             <exclude>com.gwtplatform:gwtp-all</exclude>
-                                            <exclude>commons-httpclient:commons-httpclient</exclude>
+                                            <!--<exclude>commons-httpclient:commons-httpclient</exclude> needed for openid4java -->
                                             <exclude>commons-logging:commons-logging</exclude>
                                             <exclude>commons-logging:commons-logging-api</exclude>
                                             <exclude>concurrent:concurrent</exclude>
@@ -1296,6 +1299,18 @@
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
                 <version>${version.commons-io}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-httpclient</groupId>
+                <artifactId>commons-httpclient</artifactId>
+                <version>${version.commons-httpclient}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -5704,6 +5719,24 @@
             </dependency>
 
             <dependency>
+                <groupId>org.openid4java</groupId>
+                <artifactId>openid4java-consumer</artifactId>
+                <version>${version.org.openid4java}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.openid4java</groupId>
+                <artifactId>openid4java-nodeps</artifactId>
+                <version>${version.org.openid4java}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.enterprise</artifactId>
                 <version>${version.osgi}</version>
@@ -5773,6 +5806,35 @@
                 <groupId>org.powermock</groupId>
                 <artifactId>powermock-api-mockito</artifactId>
                 <version>${version.org.powermock}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-fed-api</artifactId>
+                <version>${version.org.picketlink}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.picketlink</groupId>
+                        <artifactId>picketlink-xmlsec-model</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache</groupId>
+                        <artifactId>xmlsec</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.openid4java</groupId>
+                        <artifactId>openid4java</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>sun-jaxb</groupId>
+                        <artifactId>jaxb-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>sun-jaxws</groupId>
+                        <artifactId>jaxws-api</artifactId>
+                    </exclusion>
+                </exclusions>
+>>>>>>> Add picketlink-fed & openid4java modules
             </dependency>
 
             <dependency>

@@ -1197,6 +1197,12 @@
 
         <module-def name="org.omg.api" />
 
+        <module-def name="org.openid4java">
+            <maven-resource group="org.openid4java" artifact="openid4java-consumer"/>
+            <maven-resource group="org.openid4java" artifact="openid4java-nodeps"/>
+            <maven-resource group="commons-httpclient" artifact="commons-httpclient"/>
+        </module-def>
+
         <module-def name="org.osgi.core">
             <maven-resource group="org.osgi" artifact="org.osgi.core"/>
         </module-def>
@@ -1214,6 +1220,12 @@
 
         <module-def name="org.python.jython.standalone">
             <maven-resource group="org.python" artifact="jython-standalone"/>
+        </module-def>
+
+        <module-def name="org.picketlink.fed">
+            <maven-resource group="org.picketlink" artifact="picketlink-fed-api"/>
+            <maven-resource group="org.picketlink" artifact="picketlink-fed-core"/>
+            <maven-resource group="org.picketlink" artifact="picketlink-fed-model"/>
         </module-def>
 
         <module-def name="org.slf4j.jcl-over-slf4j">
