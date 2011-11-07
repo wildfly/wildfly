@@ -35,6 +35,7 @@ import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.interceptors.EjbClientContextInterceptorFactory;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
+import org.jboss.as.ejb3.remote.TCCLBasedEJBClientContextSelector;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -42,6 +43,8 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.modules.Module;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * Processor that sets up the current EE client context, and adds EJB interceptors to set if up when an
@@ -57,44 +60,52 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+        if (module == null) {
+            return;
+        }
         final EJBClientContext context = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT);
-
+        final ServiceController<TCCLBasedEJBClientContextSelector> tcclEJBClientContextSelectorServiceController = (ServiceController<TCCLBasedEJBClientContextSelector>) phaseContext.getServiceRegistry().getService(TCCLBasedEJBClientContextSelector.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME);
+        if (tcclEJBClientContextSelectorServiceController != null) {
+            final TCCLBasedEJBClientContextSelector tcclBasedEJBClientContextSelector = tcclEJBClientContextSelectorServiceController.getValue();
+            tcclBasedEJBClientContextSelector.registerEJBClientContext(context, module.getClassLoader());
+        }
         final EjbClientContextSetupAction setupAction = new EjbClientContextSetupAction(context);
 
         deploymentUnit.addToAttachmentList(Attachments.SETUP_ACTIONS, setupAction);
         deploymentUnit.addToAttachmentList(org.jboss.as.ee.component.Attachments.EE_SETUP_ACTIONS, setupAction);
 
-        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-
-        if (moduleDescription != null) {
-            final EjbClientContextInterceptorFactory factory = new EjbClientContextInterceptorFactory(context);
-            for (ComponentDescription component : moduleDescription.getComponentDescriptions()) {
-                //add an interceptor to setup the client context to every EJB remote view
-                //local view invocations should already have this set
-                if (component instanceof EJBComponentDescription) {
-                    for (ViewDescription view : component.getViews()) {
-                        view.getConfigurators().add(new ViewConfigurator() {
-                            @Override
-                            public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                                configuration.addViewInterceptor(factory, InterceptorOrder.View.EJB_CLIENT_CONTEXT);
-                            }
-                        });
-                    }
-                    if(component instanceof StatefulComponentDescription) {
-                        //SFSB's can be created and destroyed via remote calls
-                        //we need to setup the correct client context
-                        component.getConfigurators().add(new ComponentConfigurator() {
-                            @Override
-                            public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                                configuration.addPostConstructInterceptor(factory, InterceptorOrder.ComponentPostConstruct.EJB_CLIENT_CONTEXT_INTERCEPTOR);
-                                configuration.addPreDestroyInterceptor(factory, InterceptorOrder.ComponentPreDestroy.EJB_CLIENT_CONTEXT_INTERCEPTOR);
-                            }
-                        });
-                    }
-                }
-
-            }
-        }
+//        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+//
+//        if (moduleDescription != null) {
+//            final EjbClientContextInterceptorFactory factory = new EjbClientContextInterceptorFactory(context);
+//            for (ComponentDescription component : moduleDescription.getComponentDescriptions()) {
+//                //add an interceptor to setup the client context to every EJB remote view
+//                //local view invocations should already have this set
+//                if (component instanceof EJBComponentDescription) {
+//                    for (ViewDescription view : component.getViews()) {
+//                        view.getConfigurators().add(new ViewConfigurator() {
+//                            @Override
+//                            public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+//                                configuration.addViewInterceptor(factory, InterceptorOrder.View.EJB_CLIENT_CONTEXT);
+//                            }
+//                        });
+//                    }
+//                    if(component instanceof StatefulComponentDescription) {
+//                        //SFSB's can be created and destroyed via remote calls
+//                        //we need to setup the correct client context
+//                        component.getConfigurators().add(new ComponentConfigurator() {
+//                            @Override
+//                            public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+//                                configuration.addPostConstructInterceptor(factory, InterceptorOrder.ComponentPostConstruct.EJB_CLIENT_CONTEXT_INTERCEPTOR);
+//                                configuration.addPreDestroyInterceptor(factory, InterceptorOrder.ComponentPreDestroy.EJB_CLIENT_CONTEXT_INTERCEPTOR);
+//                            }
+//                        });
+//                    }
+//                }
+//
+//            }
+//        }
     }
 
     @Override
@@ -111,12 +122,12 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
 
         @Override
         public void setup(final Map<String, Object> properties) {
-            EJBClientContext.restoreCurrent(context);
+//            EJBClientContext.restoreCurrent(context);
         }
 
         @Override
         public void teardown(final Map<String, Object> properties) {
-            EJBClientContext.suspendCurrent();
+//            EJBClientContext.suspendCurrent();
         }
 
         @Override

@@ -41,12 +41,12 @@ public class ArquillianSetupAction implements SetupAction {
 
     @Override
     public void setup(final Map<String, Object> properties) {
-        EJBClientContext.restoreCurrent(context);
+        //EJBClientContext.restoreCurrent(context);
     }
 
     @Override
     public void teardown(final Map<String, Object> properties) {
-        EJBClientContext.suspendCurrent();
+        //EJBClientContext.suspendCurrent();
     }
 
     @Override

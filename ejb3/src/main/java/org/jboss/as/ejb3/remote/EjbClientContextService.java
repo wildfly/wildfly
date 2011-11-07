@@ -21,8 +21,10 @@
  */
 package org.jboss.as.ejb3.remote;
 
+import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.EJBReceiver;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -56,24 +58,32 @@ public class EjbClientContextService implements Service<EJBClientContext> {
      */
     private final List<InjectedValue<EJBReceiver>> ejbReceivers = new ArrayList<InjectedValue<EJBReceiver>>();
 
+    private final InjectedValue<TCCLBasedEJBClientContextSelector> tcclEJBClientContextSelector = new InjectedValue<TCCLBasedEJBClientContextSelector>();
+
     /**
      * The client context
      */
     private volatile EJBClientContext context;
 
+    private ContextSelector<EJBClientContext> previousSelector;
+
     @Override
     public synchronized void start(final StartContext context) throws StartException {
         final EJBClientContext clientContext = EJBClientContext.create();
-        EJBClientContext.suspendCurrent(); //TODO: we should probably change the way that create works
         for (final InjectedValue<EJBReceiver> receiver : ejbReceivers) {
             clientContext.registerEJBReceiver(receiver.getValue());
         }
         this.context = clientContext;
+        // setup the client context selector
+        previousSelector = EJBClientContext.getAndSetCurrent(this.tcclEJBClientContextSelector.getValue());
     }
 
     @Override
     public synchronized void stop(final StopContext context) {
         this.context = null;
+        if (this.previousSelector != null) {
+            EJBClientContext.setSelector(this.previousSelector);
+        }
     }
 
     @Override
@@ -89,5 +99,9 @@ public class EjbClientContextService implements Service<EJBClientContext> {
 
     public void addReceiver(final InjectedValue<EJBReceiver> value) {
         ejbReceivers.add(value);
+    }
+
+    public Injector<TCCLBasedEJBClientContextSelector> getTCCLBasedEJBClientContextSelectorInjector() {
+        return this.tcclEJBClientContextSelector;
     }
 }
