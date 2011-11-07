@@ -664,8 +664,8 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     private File getOriginalStandaloneXml(String profile) {
-        File f = new File(".").getAbsoluteFile();
-        f = f.getParentFile().getParentFile().getParentFile();
+				File f = new File( System.getProperty("jbossas.project.dir", "../../..") );
+        f = f.getAbsoluteFile();
         Assert.assertTrue(f.exists());
         f = new File(f, "build");
         Assert.assertTrue("Not found: " + f.getPath(), f.exists());
@@ -687,8 +687,8 @@ public class ParseAndMarshalModelsTestCase {
     private File getDomainConfigDir() {
         //Get the standalone.xml from the build/src directory, since the one in the
         //built server could have changed during running of tests
-        File f = new File(".").getAbsoluteFile();
-        f = f.getParentFile().getParentFile().getParentFile();
+				File f = new File( System.getProperty("jbossas.project.dir", "../../..") );
+        f = f.getAbsoluteFile();
         Assert.assertTrue(f.exists());
         f = new File(f, "build");
         Assert.assertTrue("Not found: " + f.getPath(), f.exists());

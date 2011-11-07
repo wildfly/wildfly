@@ -80,8 +80,11 @@ public class AddMySqlDataSourceOperationsUnitTestCase {
 
     @Deployment(testable = false)
     public static Archive<?> getDeployment() {
-        Archive<?> archive = ShrinkWrap.createFromZipFile(JavaArchive.class, new File(
-                "src/test/resources/mysql-connector-java-5.1.15.jar"));
+				File jdbcJar = new File( System.getProperty("jbossas.ts.integ.dir", "."),
+                                 "src/test/resources/mysql-connector-java-5.1.15.jar");
+        if( ! jdbcJar.exists() )
+            throw new IllegalStateException("Can't find " + jdbcJar + " using ${jbossas.ts.dir} == " + System.getProperty("jbossas.ts.dir") );
+        Archive<?> archive = ShrinkWrap.createFromZipFile(JavaArchive.class, jdbcJar);
         Node node = archive.get("META-INF");
         return archive;
         // ShrinkWrapUtils.createJavaArchive("mysql-connector-java-5.1.15.jar").getResources("mysql-connector-java-5.1.15.jar");
