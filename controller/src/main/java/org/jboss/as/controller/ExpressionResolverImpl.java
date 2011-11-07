@@ -50,14 +50,17 @@ public class ExpressionResolverImpl implements ExpressionResolver {
             resolvePluggableExpression(resolved);
         } else if (resolved.getType() == ModelType.OBJECT) {
             for (Property prop : resolved.asPropertyList()) {
-                resolveExpressionsRecursively(prop.getValue());
+                resolved.get(prop.getName()).set(resolveExpressionsRecursively(prop.getValue()));
             }
         } else if (resolved.getType() == ModelType.LIST) {
+            ModelNode list = new ModelNode();
             for (ModelNode current : resolved.asList()) {
-                resolveExpressionsRecursively(current);
+                list.add(resolveExpressionsRecursively(current));
             }
+            resolved = list;
         } else if (resolved.getType() == ModelType.PROPERTY) {
-            resolveExpressionsRecursively(resolved.asProperty().getValue());
+            resolved.set(resolved.asProperty().getName(), resolveExpressionsRecursively(resolved.asProperty().getValue()));
+
         }
         return resolved;
     }
