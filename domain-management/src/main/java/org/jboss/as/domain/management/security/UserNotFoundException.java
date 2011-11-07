@@ -23,6 +23,8 @@ package org.jboss.as.domain.management.security;
 
 import java.io.IOException;
 
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+
 /**
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
@@ -36,7 +38,7 @@ public class UserNotFoundException extends IOException {
 
     @Override
     public String getMessage() {
-        return "User '" + username + "' not found.";
+        return MESSAGES.userNotFound(username);
     }
 
 }

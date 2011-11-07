@@ -23,8 +23,12 @@
 package org.jboss.as.domain.management;
 
 import org.jboss.logging.BasicLogger;
+import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
+import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
+
+import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * Date: 05.11.2011
@@ -38,4 +42,11 @@ public interface DomainManagementLogger extends BasicLogger {
      * A logger with a category of the package name.
      */
     DomainManagementLogger ROOT_LOGGER = Logger.getMessageLogger(DomainManagementLogger.class, DomainManagementLogger.class.getPackage().getName());
+
+    /**
+     * Logs a warning message indicating the user and password were found in the properties file.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 15200, value = "Properties file defined with default user and password, this will be easy to guess.")
+    void userAndPasswordWarning();
 }
