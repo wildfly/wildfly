@@ -38,6 +38,8 @@ import static org.jboss.as.domain.http.server.Constants.POST;
 import static org.jboss.as.domain.http.server.Constants.TEXT_HTML;
 import static org.jboss.as.domain.http.server.Constants.US_ASCII;
 import static org.jboss.as.domain.http.server.Constants.UTF_8;
+import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -68,7 +70,6 @@ import org.jboss.com.sun.net.httpserver.HttpContext;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpServer;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.sasl.callback.DigestHashCallback;
 
 /**
@@ -83,8 +84,6 @@ class DomainApiHandler implements ManagementHttpHandler {
 
     private static Pattern MULTIPART_FD_BOUNDARY =  Pattern.compile("^multipart/form-data.*;\\s*boundary=(.*)$");
     private static Pattern DISPOSITION_FILE =  Pattern.compile("^form-data.*filename=\"?([^\"]*)?\"?.*$");
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.domain.http.api");
 
     /**
      * Represents all possible management operations that can be executed using HTTP GET
@@ -152,7 +151,7 @@ class DomainApiHandler implements ManagementHttpHandler {
             drain(http.getRequestBody());
         } catch (Throwable t) {
             // TODO Consider draining input stream
-            log.error("Unexpected error executing deployment upload request", t);
+            ROOT_LOGGER.uploadError(t);
             http.sendResponseHeaders(INTERNAL_SERVER_ERROR, -1);
 
             return;
@@ -190,7 +189,7 @@ class DomainApiHandler implements ManagementHttpHandler {
         try {
             dmr = isGet ? convertGetRequest(request) : convertPostRequest(http.getRequestBody(), encode);
         } catch (IllegalArgumentException iae) {
-            log.debugf("Unable to construct ModelNode '%s'", iae.getMessage());
+            ROOT_LOGGER.debugf("Unable to construct ModelNode '%s'", iae.getMessage());
             http.sendResponseHeaders(INTERNAL_SERVER_ERROR, -1);
 
             return;
@@ -199,7 +198,7 @@ class DomainApiHandler implements ManagementHttpHandler {
         try {
             response = modelController.execute(new OperationBuilder(dmr).build());
         } catch (Throwable t) {
-            log.error("Unexpected error executing model request", t);
+            ROOT_LOGGER.modelRequestError(t);
             http.sendResponseHeaders(INTERNAL_SERVER_ERROR, -1);
 
             return;
@@ -274,11 +273,11 @@ class DomainApiHandler implements ManagementHttpHandler {
     private SeekResult seekToDeployment(final HttpExchange http) throws IOException {
         final String type = http.getRequestHeaders().getFirst(CONTENT_TYPE);
         if (type == null)
-            throw new IllegalArgumentException("No content type provided");
+            throw MESSAGES.invalidContentType();
 
         Matcher matcher = MULTIPART_FD_BOUNDARY.matcher(type);
         if (!matcher.matches())
-            throw new IllegalArgumentException("Invalid content type provided: " + type);
+            throw MESSAGES.invalidContentType(type);
 
         final String boundary = "--" + matcher.group(1);
 
@@ -312,7 +311,7 @@ class DomainApiHandler implements ManagementHttpHandler {
             while (stream.read(ignore) != -1) {}
         }
 
-        throw new IllegalArgumentException("Request did not contain a deployment");
+        throw MESSAGES.invalidDeployment();
     }
 
     private void drain(InputStream stream) {
@@ -348,7 +347,7 @@ class DomainApiHandler implements ManagementHttpHandler {
                     operation = GetOperation.valueOf(value.toUpperCase().replace('-', '_'));
                     value = operation.realOperation();
                 } catch (Exception e) {
-                    throw new IllegalArgumentException("Invalid operation '" + value + "'", e);
+                    throw MESSAGES.invalidOperation(e, value);
                 }
             }
 

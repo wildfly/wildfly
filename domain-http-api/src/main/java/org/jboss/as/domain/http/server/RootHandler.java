@@ -34,7 +34,6 @@ import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.com.sun.net.httpserver.Headers;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpServer;
-import org.jboss.logging.Logger;
 
 /**
  * A simple handler on the root context to redirect to the console handler.
@@ -42,8 +41,6 @@ import org.jboss.logging.Logger;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class RootHandler implements ManagementHttpHandler {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.domain.http.api");
 
     public static final String ROOT_CONTEXT = "/";
 

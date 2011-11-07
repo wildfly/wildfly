@@ -30,15 +30,15 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.jboss.as.domain.management.security.DomainCallbackHandler;
-import org.jboss.logging.Logger;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
+
+import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class BasicAuthenticator extends org.jboss.com.sun.net.httpserver.BasicAuthenticator {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.domain.http.api");
 
     private final CallbackHandler callbackHandler;
 
@@ -64,10 +64,10 @@ public class BasicAuthenticator extends org.jboss.com.sun.net.httpserver.BasicAu
         try {
             callbackHandler.handle(callbacks);
         } catch (IOException e) {
-            log.debug("Callback handle failed.", e);
+            ROOT_LOGGER.debug("Callback handle failed.", e);
             return false;
         } catch (UnsupportedCallbackException e) {
-            throw new IllegalStateException("Callback rejected by handler.", e);
+            throw MESSAGES.callbackRejected(e);
         }
 
         if (verifyPasswordCallback) {

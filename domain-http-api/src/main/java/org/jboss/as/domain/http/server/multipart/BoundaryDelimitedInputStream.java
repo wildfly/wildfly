@@ -24,7 +24,8 @@ package org.jboss.as.domain.http.server.multipart;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import org.jboss.logging.Logger;
+
+import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 
 /**
  * <code>BoundaryDelimitedInputStream</code> encapsulates a stream that is separated into different sections by a common
@@ -36,8 +37,6 @@ import org.jboss.logging.Logger;
  */
 public final class BoundaryDelimitedInputStream extends FilterInputStream {
     private static final int BOUNDARY_NOT_FOUND = SimpleBoyerMoore.PATTERN_NOT_FOUND;
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.domain.http.api");
 
     private byte[] boundary;
 
@@ -293,6 +292,6 @@ public final class BoundaryDelimitedInputStream extends FilterInputStream {
 
     public void printLeftOvers() {
         if (leftOvers != null)
-            log.debugf("LEFT = %s", new String(leftOvers, leftOverPosition, leftOvers.length - leftOverPosition));
+            ROOT_LOGGER.debugf("LEFT = %s", new String(leftOvers, leftOverPosition, leftOvers.length - leftOverPosition));
     }
 }
