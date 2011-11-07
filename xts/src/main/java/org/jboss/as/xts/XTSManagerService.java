@@ -29,6 +29,8 @@ import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.service.StartException;
+import org.jboss.msc.value.InjectedValue;
+import org.jboss.wsf.spi.management.ServerConfig;
 
 /**
  * Main XTS service
@@ -36,11 +38,13 @@ import org.jboss.msc.service.StartException;
  * @author <a href="mailto:adinn@redhat.com">Andrew Dinn</a>
  */
 public class XTSManagerService extends AbstractService<XTSService> {
-    private final String coordinatorURL;
-    private volatile org.jboss.jbossts.XTSService xtsService;
 
-    public XTSManagerService(String coordinatorURL) {
-        this.coordinatorURL = coordinatorURL;
+    private String coordinatorUrl;
+    private volatile org.jboss.jbossts.XTSService xtsService;
+    private InjectedValue<ServerConfig> wsServerConfig = new InjectedValue<ServerConfig>();
+
+    public XTSManagerService(String coordinatorUrl) {
+        this.coordinatorUrl = coordinatorUrl;
         this.xtsService = null;
     }
 
@@ -55,10 +59,23 @@ public class XTSManagerService extends AbstractService<XTSService> {
         final ClassLoader loader = XTSService.class.getClassLoader();
         SecurityActions.setContextLoader(loader);
         try {
-            if (coordinatorURL !=null ) {
-                WSCEnvironmentBean wscEnVBean = XTSPropertyManager.getWSCEnvironmentBean();
-                wscEnVBean.setCoordinatorURL11(coordinatorURL);
+            ServerConfig serverConfigValue =  wsServerConfig.getValue();
+            WSCEnvironmentBean wscEnVBean = XTSPropertyManager.getWSCEnvironmentBean();
+
+            if (coordinatorUrl !=null ) {
+                wscEnVBean.setCoordinatorURL11(coordinatorUrl);
             }
+            else {
+                //Defaults to insecure (http) on this server's bind address.
+                String defaultCoordinatorUrl = "http://" + serverConfigValue.getWebServiceHost() + ":" +
+                        serverConfigValue.getWebServicePort() + "/" + wscEnVBean.getCoordinatorPath11();
+                wscEnVBean.setCoordinatorURL11(defaultCoordinatorUrl);
+            }
+
+            wscEnVBean.setBindAddress11(serverConfigValue.getWebServiceHost());
+            wscEnVBean.setBindPort11(serverConfigValue.getWebServicePort());
+            wscEnVBean.setBindPortSecure11(serverConfigValue.getWebServiceSecurePort());
+
             XTSService service = new XTSService();
             try {
                 service.start();
@@ -79,5 +96,9 @@ public class XTSManagerService extends AbstractService<XTSService> {
                 // ignore?
             }
         }
+    }
+
+    public InjectedValue<ServerConfig> getWSServerConfig() {
+        return wsServerConfig;
     }
 }
