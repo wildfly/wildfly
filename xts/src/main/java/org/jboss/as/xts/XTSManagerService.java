@@ -38,13 +38,12 @@ import org.jboss.wsf.spi.management.ServerConfig;
  * @author <a href="mailto:adinn@redhat.com">Andrew Dinn</a>
  */
 public class XTSManagerService extends AbstractService<XTSService> {
-
-    private String coordinatorUrl;
+    private final String coordinatorURL;
     private volatile org.jboss.jbossts.XTSService xtsService;
     private InjectedValue<ServerConfig> wsServerConfig = new InjectedValue<ServerConfig>();
 
-    public XTSManagerService(String coordinatorUrl) {
-        this.coordinatorUrl = coordinatorUrl;
+    public XTSManagerService(String coordinatorURL) {
+        this.coordinatorURL = coordinatorURL;
         this.xtsService = null;
     }
 
@@ -62,8 +61,8 @@ public class XTSManagerService extends AbstractService<XTSService> {
             ServerConfig serverConfigValue =  wsServerConfig.getValue();
             WSCEnvironmentBean wscEnVBean = XTSPropertyManager.getWSCEnvironmentBean();
 
-            if (coordinatorUrl !=null ) {
-                wscEnVBean.setCoordinatorURL11(coordinatorUrl);
+            if (coordinatorURL !=null ) {
+                wscEnVBean.setCoordinatorURL11(coordinatorURL);
             }
             else {
                 //Defaults to insecure (http) on this server's bind address.
