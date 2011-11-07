@@ -48,8 +48,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
  */
 public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<ParseResult<KernelDeploymentXmlDescriptor>>, XMLStreamConstants {
     public static final String NAMESPACE = "urn:jboss:pojo:7.0";
-    public static final String MC_NAMESPACE_1_0 = "urn:jboss:bean-deployer:1.0";
-    public static final String MC_NAMESPACE_2_0 = "urn:jboss:bean-deployer:2.0";
 
     private enum Element {
         BEAN("bean"),
