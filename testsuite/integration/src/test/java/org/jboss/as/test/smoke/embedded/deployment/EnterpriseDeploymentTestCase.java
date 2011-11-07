@@ -21,37 +21,6 @@
  */
 package org.jboss.as.test.smoke.embedded.deployment;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
-import static org.junit.Assert.assertNull;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.jar.JarOutputStream;
-
-import javax.enterprise.deploy.shared.ModuleType;
-import javax.enterprise.deploy.shared.StateType;
-import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
-import javax.enterprise.deploy.spi.DeploymentManager;
-import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.TargetModuleID;
-import javax.enterprise.deploy.spi.factories.DeploymentFactory;
-import javax.enterprise.deploy.spi.status.DeploymentStatus;
-import javax.enterprise.deploy.spi.status.ProgressEvent;
-import javax.enterprise.deploy.spi.status.ProgressListener;
-import javax.enterprise.deploy.spi.status.ProgressObject;
-
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.ee.deployment.spi.DeploymentManagerImpl;
@@ -69,6 +38,36 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import javax.enterprise.deploy.shared.ModuleType;
+import javax.enterprise.deploy.shared.StateType;
+import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
+import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.enterprise.deploy.spi.Target;
+import javax.enterprise.deploy.spi.TargetModuleID;
+import javax.enterprise.deploy.spi.factories.DeploymentFactory;
+import javax.enterprise.deploy.spi.status.DeploymentStatus;
+import javax.enterprise.deploy.spi.status.ProgressEvent;
+import javax.enterprise.deploy.spi.status.ProgressListener;
+import javax.enterprise.deploy.spi.status.ProgressObject;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.jar.JarOutputStream;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.fail;
+import static org.junit.Assert.assertNull;
+
 /**
  * Deployment API JSR-88 tests
  *
@@ -78,6 +77,7 @@ import org.junit.runner.RunWith;
 @RunAsClient
 @RunWith(Arquillian.class)
 public class EnterpriseDeploymentTestCase {
+    private static final long TIMEOUT = 10000;
 
     private static final String WAR_JBOSS_FILE = "WEB-INF/jboss-web.xml";
     private static final String JAR_JBOSS_FILE = "META-INF/jboss.xml";
@@ -204,11 +204,11 @@ public class EnterpriseDeploymentTestCase {
         // Deploy the test archive
         InputStream inputStream = archive.as(ZipExporter.class).exportAsInputStream();
         ProgressObject progress = manager.distribute(targets, inputStream, deploymentPlan);
-        StateType state = awaitCompletion(progress, 5000);
+        StateType state = awaitCompletion(progress, TIMEOUT);
 
         if (state == StateType.COMPLETED) {
             progress = manager.start(progress.getResultTargetModuleIDs());
-            awaitCompletion(progress, 5000);
+            awaitCompletion(progress, TIMEOUT);
         }
 
         return progress;
@@ -220,19 +220,15 @@ public class EnterpriseDeploymentTestCase {
         assertEquals(1, targets.length);
 
         ProgressObject progress = manager.stop(resultTargetModuleIDs);
-        awaitCompletion(progress, 5000);
+        awaitCompletion(progress, TIMEOUT);
 
         progress = manager.undeploy(resultTargetModuleIDs);
-        awaitCompletion(progress, 5000);
+        awaitCompletion(progress, TIMEOUT);
 
         return progress;
     }
 
     private StateType awaitCompletion(ProgressObject progress, long timeout) throws InterruptedException {
-        DeploymentStatus status = progress.getDeploymentStatus();
-        if (status.isCompleted())
-            return null;
-
         final CountDownLatch latch = new CountDownLatch(1);
         progress.addProgressListener(new ProgressListener() {
             public void handleProgressEvent(ProgressEvent event) {
@@ -242,6 +238,10 @@ public class EnterpriseDeploymentTestCase {
                 }
             }
         });
+
+        final DeploymentStatus status = progress.getDeploymentStatus();
+        if (status.isCompleted())
+            return status.getState();
 
         if (latch.await(timeout, TimeUnit.MILLISECONDS) == false)
             throw new IllegalStateException("Deployment timeout: " + progress);
