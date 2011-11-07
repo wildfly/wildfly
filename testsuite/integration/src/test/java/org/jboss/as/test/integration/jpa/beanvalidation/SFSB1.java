@@ -34,7 +34,7 @@ import javax.persistence.PersistenceContext;
 @Stateful
 public class SFSB1 {
     @PersistenceContext(unitName = "mypc")
-        EntityManager em;
+    EntityManager em;
 
     public void createEmployee(String name, String address, int id) {
         Employee emp = new Employee();
@@ -42,6 +42,7 @@ public class SFSB1 {
         emp.setAddress(address);
         emp.setName(name);
         em.persist(emp);
+        em.flush();
     }
 
     public Employee getEmployee(int id) {
