@@ -174,6 +174,11 @@ public class DomainTestSupport {
     private final DomainLifecycleUtil domainMasterLifecycleUtil;
     private final DomainLifecycleUtil domainSlaveLifecycleUtil;
 
+
+    public DomainTestSupport(final String testClass, final Configuration configuration) throws Exception {
+        this(testClass, configuration.getDomainConfig(), configuration.getMasterConfig(), configuration.getSlaveConfigs());
+    }
+
     public DomainTestSupport(final String testClass, final String domainConfig, final String masterConfig, final String slaveConfig) throws Exception {
         this.domainConfig = domainConfig;
         this.masterConfig = masterConfig;
@@ -215,4 +220,36 @@ public class DomainTestSupport {
             domainMasterLifecycleUtil.stop();
         }
     }
+
+    public static class Configuration {
+
+        private String domainConfig;
+        private String masterConfig;
+        private String slaveConfig;
+
+        protected Configuration(final String domainConfig, final String masterConfig, final String slaveConfig) {
+            this.domainConfig = domainConfig;
+            this.masterConfig = masterConfig;
+            this.slaveConfig = slaveConfig;
+        }
+
+        public String getDomainConfig() {
+            return domainConfig;
+        }
+
+        public String getMasterConfig() {
+            return masterConfig;
+        }
+
+        public String getSlaveConfigs() {
+            return slaveConfig;
+        }
+
+        public static Configuration create(final String domainConfig, final String masterConfig, final String slaveConfig) {
+            return new Configuration(domainConfig, masterConfig, slaveConfig);
+        }
+
+    }
+
+
 }
