@@ -42,6 +42,7 @@ import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 
 import javax.naming.CompositeName;
+import javax.naming.NamingException;
 import javax.sql.DataSource;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -100,7 +101,7 @@ public final class JAXRBootstrapService extends AbstractService<Void> {
             while (datasource == null && timeout > 0) {
                 try {
                     datasource = (DataSource) namingStore.lookup(new CompositeName(lookup.substring(5)));
-                } catch (IllegalStateException ex) {
+                } catch (Exception ex) {
                     Thread.sleep(200);
                     timeout -= 200;
                 }
