@@ -21,13 +21,13 @@
  */
 package org.jboss.as.ejb3.timerservice.task;
 
+import java.util.Date;
+
 import org.jboss.as.ejb3.timerservice.TimerImpl;
 import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
 import org.jboss.as.ejb3.timerservice.TimerState;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.logging.Logger;
-
-import java.util.Date;
 
 /**
  * A timer task which will be invoked at appropriate intervals based on a {@link javax.ejb.Timer}
@@ -129,6 +129,8 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
             }
         } finally {
             this.postTimeoutProcessing();
+            //if it has expired we need to persist it
+            this.timerService.persistTimer(this.timer);
         }
     }
 

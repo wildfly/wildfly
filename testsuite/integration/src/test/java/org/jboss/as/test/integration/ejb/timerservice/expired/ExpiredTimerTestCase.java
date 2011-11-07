@@ -26,6 +26,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.ejb.EJB;
+import javax.ejb.NoMoreTimeoutsException;
 import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.TimerConfig;
 
@@ -47,7 +48,7 @@ public class ExpiredTimerTestCase {
 
     private static final Logger logger = Logger.getLogger(ExpiredTimerTestCase.class);
 
-    @EJB (mappedName = "java:module/SingletonBean")
+    @EJB(mappedName = "java:module/SingletonBean")
     private SingletonBean bean;
 
     @Deployment
@@ -59,18 +60,32 @@ public class ExpiredTimerTestCase {
 
     @Test
     public void testInvocationOnExpiredTimer() throws Exception {
-        final long twoSecondsFromNow = 2000;
         final CountDownLatch timeoutNotifier = new CountDownLatch(1);
-        this.bean.createSingleActionTimer(twoSecondsFromNow, new TimerConfig(null, false), timeoutNotifier);
+        this.bean.createSingleActionTimer(300, new TimerConfig(null, false), timeoutNotifier);
         // wait for the timeout to be invoked
         final boolean timeoutInvoked = timeoutNotifier.await(5, TimeUnit.SECONDS);
         Assert.assertTrue("Timeout method was not invoked (within 5 seconds)", timeoutInvoked);
-        try {
-            this.bean.invokeOnExpiredTimer();
-            Assert.fail("Expected to fail on invoking on an expired timer");
-        } catch (NoSuchObjectLocalException nsole) {
-            // expected
-            logger.info("Got the expected exception " + nsole);
+
+        //as we can't be exactly sure when the timeout method is finished
+        //we invoke in a loop, can check the exception type.
+        int count = 0;
+        boolean passed = false;
+        while (count < 20 && !passed) {
+            try {
+                this.bean.invokeOnExpiredTimer();
+                Assert.fail("Expected to fail on invoking on an expired timer");
+            } catch (NoSuchObjectLocalException nsole) {
+                // expected
+                logger.info("Got the expected exception " + nsole);
+                passed = true;
+            } catch (NoMoreTimeoutsException e) {
+                //this will be thrown if the timer is still active
+                Thread.sleep(100);
+                count++;
+            }
+        }
+        if(!passed) {
+            Assert.fail("Got NoMoreTimeoutsException rather than  NoSuchObjectLocalException");
         }
     }
 }

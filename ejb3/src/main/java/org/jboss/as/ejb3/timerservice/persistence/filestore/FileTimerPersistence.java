@@ -342,7 +342,7 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
             try {
                 lock.lock();
                 if (status == Status.STATUS_COMMITTED) {
-                    Map<String, TimerEntity> map = getTimers(timer.getTimedObjectId());
+                    final Map<String, TimerEntity> map = getTimers(timer.getTimedObjectId());
                     map.put(timer.getId(), timer);
                     writeFile(timer);
                 }

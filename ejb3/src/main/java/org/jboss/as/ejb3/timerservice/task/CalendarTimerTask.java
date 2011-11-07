@@ -21,15 +21,15 @@
  */
 package org.jboss.as.ejb3.timerservice.task;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
 import org.jboss.as.ejb3.timerservice.CalendarTimer;
 import org.jboss.as.ejb3.timerservice.TimerState;
 import org.jboss.as.ejb3.timerservice.spi.MultiTimeoutMethodTimedObjectInvoker;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.logging.Logger;
-
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 
 /**
  * CalendarTimerTask
@@ -64,7 +64,7 @@ public class CalendarTimerTask extends TimerTask<CalendarTimer> {
         if (calendarTimer.isAutoTimer()) {
             TimedObjectInvoker invoker = this.timerService.getInvoker();
             if (!(invoker instanceof MultiTimeoutMethodTimedObjectInvoker)) {
-                String msg = "Cannot invoke timeout method because timer: " + calendarTimer
+                final String msg = "Cannot invoke timeout method because timer: " + calendarTimer
                         + " is an auto timer, but invoker is not of type" + MultiTimeoutMethodTimedObjectInvoker.class;
                 logger.error(msg);
                 throw new RuntimeException(msg);
@@ -96,8 +96,8 @@ public class CalendarTimerTask extends TimerTask<CalendarTimer> {
 
     @Override
     protected void postTimeoutProcessing() {
-        CalendarTimer calendarTimer = this.getTimer();
-        TimerState timerState = calendarTimer.getState();
+        final CalendarTimer calendarTimer = this.getTimer();
+        final TimerState timerState = calendarTimer.getState();
         if (timerState == TimerState.IN_TIMEOUT || timerState == TimerState.RETRY_TIMEOUT) {
             if (calendarTimer.getNextExpiration() == null) {
                 calendarTimer.expireTimer();
