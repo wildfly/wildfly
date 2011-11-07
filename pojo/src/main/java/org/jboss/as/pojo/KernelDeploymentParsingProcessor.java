@@ -24,6 +24,7 @@ package org.jboss.as.pojo;
 
 import org.jboss.as.pojo.descriptor.KernelDeploymentXmlDescriptor;
 import org.jboss.as.pojo.descriptor.KernelDeploymentXmlDescriptorParser;
+import org.jboss.as.pojo.descriptor.LegacyKernelDeploymentXmlDescriptorParser;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -60,8 +61,10 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
     public KernelDeploymentParsingProcessor() {
         final KernelDeploymentXmlDescriptorParser parser = new KernelDeploymentXmlDescriptorParser();
         xmlMapper.registerRootElement(new QName(KernelDeploymentXmlDescriptorParser.NAMESPACE, "deployment"), parser);
-        xmlMapper.registerRootElement(new QName(KernelDeploymentXmlDescriptorParser.MC_NAMESPACE_1_0, "deployment"), parser);
-        xmlMapper.registerRootElement(new QName(KernelDeploymentXmlDescriptorParser.MC_NAMESPACE_2_0, "deployment"), parser);
+        // old MC parser -- just a warning / info atm
+        final LegacyKernelDeploymentXmlDescriptorParser legacy = new LegacyKernelDeploymentXmlDescriptorParser();
+        xmlMapper.registerRootElement(new QName(LegacyKernelDeploymentXmlDescriptorParser.MC_NAMESPACE_1_0, "deployment"), legacy);
+        xmlMapper.registerRootElement(new QName(LegacyKernelDeploymentXmlDescriptorParser.MC_NAMESPACE_2_0, "deployment"), legacy);
     }
 
     /**
