@@ -24,55 +24,36 @@ package org.jboss.as.cli.parsing.operation;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
-import org.jboss.as.cli.parsing.EnterStateCharacterHandler;
+import org.jboss.as.cli.parsing.DefaultStateWithEndCharacter;
 import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
 import org.jboss.as.cli.parsing.ParsingContext;
-
+import org.jboss.as.cli.parsing.QuotesState;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class PropertyListState extends DefaultParsingState {
+public class HeaderValueState extends DefaultParsingState {
 
-    public static final PropertyListState INSTANCE = new PropertyListState();
-    public static final String ID = "PROP_LIST";
+    public static final HeaderValueState INSTANCE = new HeaderValueState();
+    public static final String ID = "HEADER_VALUE";
 
-    PropertyListState() {
-        this(PropertyState.INSTANCE);
-    }
-
-    PropertyListState(PropertyState propState) {
-        this('(', ',', propState, ')');
-    }
-
-    public PropertyListState(char listStart, char propSeparator, char... listEnd) {
-        this(listStart, propSeparator, new PropertyState(propSeparator, listEnd), listEnd);
-    }
-
-    PropertyListState(final char listStart, char propSeparator, final PropertyState propState, final char... listEnd) {
+    HeaderValueState() {
         super(ID);
-        for(int i = 0; i < listEnd.length; ++i) {
-            putHandler(listEnd[i], GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
-        }
+        putHandler(';', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        putHandler('}', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        enterState('"', QuotesState.QUOTES_INCLUDED);
+        enterState('[', new DefaultStateWithEndCharacter("BRACKETS", ']', true, true, enterStateHandlers));
+        enterState('(', new DefaultStateWithEndCharacter("PARENTHESIS", ')', true, true, enterStateHandlers));
+        enterState('{', new DefaultStateWithEndCharacter("BRACES", '}', true, true, enterStateHandlers));
         setEnterHandler(new CharacterHandler(){
             @Override
             public void handle(ParsingContext ctx) throws CommandFormatException {
-                if(ctx.getCharacter() != listStart) {
-                    ctx.enterState(propState);
+                if(ctx.getCharacter() != '=') {
+                    ctx.getCallbackHandler().character(ctx);
                 }
             }});
-        setDefaultHandler(new EnterStateCharacterHandler(propState));
-        putHandler(propSeparator, GlobalCharacterHandlers.NOOP_CHARACTER_HANDLER);
-        setReturnHandler(new CharacterHandler(){
-            @Override
-            public void handle(ParsingContext ctx) throws CommandFormatException {
-                if(ctx.isEndOfContent()) {
-                    return;
-                }
-                getHandler(ctx.getCharacter()).handle(ctx);
-            }});
-        //this.setEndContentHandler(new ErrorCharacterHandler("')' is missing"));
-        setIgnoreWhitespaces(true);
+        setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
+        setReturnHandler(GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
     }
 }

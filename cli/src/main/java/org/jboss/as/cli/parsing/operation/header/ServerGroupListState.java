@@ -19,13 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.parsing.operation;
+package org.jboss.as.cli.parsing.operation.header;
 
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
 import org.jboss.as.cli.parsing.EnterStateCharacterHandler;
-import org.jboss.as.cli.parsing.OutputTargetState;
+import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
 import org.jboss.as.cli.parsing.ParsingContext;
 
 
@@ -33,35 +33,34 @@ import org.jboss.as.cli.parsing.ParsingContext;
  *
  * @author Alexey Loubyansky
  */
-public class OperationRequestState extends DefaultParsingState {
+public class ServerGroupListState extends DefaultParsingState {
 
-    public static final String ID = "OP_REQ";
-    public static final OperationRequestState INSTANCE = new OperationRequestState();
+    public static final ServerGroupListState INSTANCE = new ServerGroupListState();
+    public static final String ID = "SG_LIST";
 
-    public OperationRequestState() {
-        this(NodeState.INSTANCE, AddressOperationSeparatorState.INSTANCE, PropertyListState.INSTANCE, HeaderListState.INSTANCE, OutputTargetState.INSTANCE);
+    ServerGroupListState() {
+        this(ServerGroupState.INSTANCE, ServerGroupSeparatorState.INSTANCE, ConcurrentSignState.INSTANCE);
     }
 
-    public OperationRequestState(final NodeState nodeState, final AddressOperationSeparatorState addrOpSep, final PropertyListState propList,
-            final HeaderListState headerList, final OutputTargetState outRedirect) {
+    ServerGroupListState(ServerGroupState sg, ServerGroupSeparatorState gs, ConcurrentSignState cs) {
         super(ID);
-        setDefaultHandler(new EnterStateCharacterHandler(nodeState));
-        enterState(':', addrOpSep);
-        enterState('(', propList);
-        enterState('{', headerList);
-        enterState(OutputTargetState.OUTPUT_REDIRECT_CHAR, outRedirect);
+        this.setIgnoreWhitespaces(true);
+        setDefaultHandler(new EnterStateCharacterHandler(sg));
+        putHandler('^', new EnterStateCharacterHandler(cs));
+        putHandler(',', new EnterStateCharacterHandler(gs));
+        putHandler('}', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        putHandler(';', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         setReturnHandler(new CharacterHandler(){
             @Override
-            public void handle(ParsingContext ctx)
-                    throws CommandFormatException {
+            public void handle(ParsingContext ctx) throws CommandFormatException {
                 if(ctx.isEndOfContent()) {
                     return;
                 }
-                CharacterHandler handler = enterStateHandlers.getHandler(ctx.getCharacter());
-                if(handler != null) {
-                    handler.handle(ctx);
+                if(Character.isWhitespace(ctx.getCharacter())) {
+                    ctx.leaveState();
+                } else {
+                    getHandler(ctx.getCharacter()).handle(ctx);
                 }
             }});
-        setIgnoreWhitespaces(true);
     }
 }

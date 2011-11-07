@@ -25,7 +25,7 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
 import org.jboss.as.cli.parsing.EnterStateCharacterHandler;
-import org.jboss.as.cli.parsing.OutputTargetState;
+import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
 import org.jboss.as.cli.parsing.ParsingContext;
 
 
@@ -33,35 +33,35 @@ import org.jboss.as.cli.parsing.ParsingContext;
  *
  * @author Alexey Loubyansky
  */
-public class OperationRequestState extends DefaultParsingState {
+public class HeaderState extends DefaultParsingState {
 
-    public static final String ID = "OP_REQ";
-    public static final OperationRequestState INSTANCE = new OperationRequestState();
+    public static final HeaderState INSTANCE = new HeaderState();
+    public static final String ID = "HEADER";
 
-    public OperationRequestState() {
-        this(NodeState.INSTANCE, AddressOperationSeparatorState.INSTANCE, PropertyListState.INSTANCE, HeaderListState.INSTANCE, OutputTargetState.INSTANCE);
+    HeaderState() {
+        this(HeaderNameState.INSTANCE, HeaderValueState.INSTANCE);
     }
 
-    public OperationRequestState(final NodeState nodeState, final AddressOperationSeparatorState addrOpSep, final PropertyListState propList,
-            final HeaderListState headerList, final OutputTargetState outRedirect) {
+    HeaderState(HeaderNameState headerName, final HeaderValueState headerValue) {
         super(ID);
-        setDefaultHandler(new EnterStateCharacterHandler(nodeState));
-        enterState(':', addrOpSep);
-        enterState('(', propList);
-        enterState('{', headerList);
-        enterState(OutputTargetState.OUTPUT_REDIRECT_CHAR, outRedirect);
+        this.setIgnoreWhitespaces(true);
+        setEnterHandler(new EnterStateCharacterHandler(headerName));
+        putHandler(';', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        putHandler('}', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        putHandler('=', new EnterStateCharacterHandler(headerValue));
+        setDefaultHandler(new EnterStateCharacterHandler(headerValue));
         setReturnHandler(new CharacterHandler(){
             @Override
-            public void handle(ParsingContext ctx)
-                    throws CommandFormatException {
+            public void handle(ParsingContext ctx) throws CommandFormatException {
                 if(ctx.isEndOfContent()) {
                     return;
                 }
-                CharacterHandler handler = enterStateHandlers.getHandler(ctx.getCharacter());
-                if(handler != null) {
-                    handler.handle(ctx);
+                final char ch = ctx.getCharacter();
+                if(ch == '=') {
+                    ctx.enterState(headerValue);
+                } else if (!Character.isWhitespace(ch)) {
+                    ctx.leaveState();
                 }
             }});
-        setIgnoreWhitespaces(true);
     }
 }

@@ -23,8 +23,6 @@ package org.jboss.as.cli.parsing;
 
 
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.CommandLineFormat;
-import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.CommandLineParser;
 import org.jboss.as.cli.parsing.command.ArgumentListState;
 import org.jboss.as.cli.parsing.command.ArgumentState;
@@ -32,6 +30,10 @@ import org.jboss.as.cli.parsing.command.ArgumentValueState;
 import org.jboss.as.cli.parsing.command.CommandFormat;
 import org.jboss.as.cli.parsing.command.CommandNameState;
 import org.jboss.as.cli.parsing.command.CommandState;
+import org.jboss.as.cli.parsing.operation.HeaderListState;
+import org.jboss.as.cli.parsing.operation.HeaderNameState;
+import org.jboss.as.cli.parsing.operation.HeaderState;
+import org.jboss.as.cli.parsing.operation.HeaderValueState;
 import org.jboss.as.cli.parsing.operation.NodeState;
 import org.jboss.as.cli.parsing.operation.OperationFormat;
 import org.jboss.as.cli.parsing.operation.OperationRequestState;
@@ -77,11 +79,19 @@ public class ParserUtil {
             int bufferStartIndex = 0;
             boolean inValue;
 
+            String delegateStateId;
+            ParsingStateCallbackHandler delegate;
+
             @Override
-            public void enteredState(ParsingContext ctx)
-                    throws OperationFormatException {
+            public void enteredState(ParsingContext ctx) throws CommandFormatException {
+
                 final String id = ctx.getState().getId();
-                //System.out.println("entered " + id + " '" + ctx.getCharacter() + "'");
+                //System.out.println("entered " + id + " " + ctx.getCharacter());
+
+                if(delegate != null) {
+                    delegate.enteredState(ctx);
+                    return;
+                }
 
                 if(!inValue) {
                     bufferStartIndex = ctx.getLocation();
@@ -105,15 +115,23 @@ public class ParserUtil {
                     handler.setFormat(CommandFormat.INSTANCE);
                 } else if(id.equals(OperationRequestState.ID)) {
                     handler.setFormat(OperationFormat.INSTANCE);
+                } else if (HeaderListState.ID.equals(id)) {
+                    handler.headerListStart(ctx.getLocation());
+                } else if (HeaderValueState.ID.equals(id)) {
+                    inValue = true;
                 }
             }
 
             @Override
-            public void leavingState(ParsingContext ctx)
-                    throws CommandFormatException {
+            public void leavingState(ParsingContext ctx) throws CommandFormatException {
 
                 final String id = ctx.getState().getId();
                 //System.out.println("leaving " + id + " " + ctx.getCharacter());
+
+                if(delegateStateId != null && !id.equals(delegateStateId)) {
+                    delegate.leavingState(ctx);
+                    return;
+                }
 
                 if (id.equals(PropertyListState.ID)) {
                     if (!ctx.isEndOfContent()) {
@@ -201,6 +219,31 @@ public class ParserUtil {
                     }
                     buffer.setLength(0);
                     inValue = false;
+                } else if (HeaderListState.ID.equals(id)) {
+                    if (ctx.getCharacter() == '}') {
+                        handler.headerListEnd(ctx.getLocation());
+                    }
+                } else if (HeaderNameState.ID.equals(id)) {
+                    final String headerName = buffer.toString().trim();
+                    if(!headerName.isEmpty()) {
+                        this.name = headerName;
+                        delegate = handler.headerName(bufferStartIndex, headerName);
+                        if(delegate != null) {
+                            delegateStateId = HeaderState.ID;
+                        }
+                    }
+                    buffer.setLength(0);
+                } else if (HeaderValueState.ID.equals(id)) {
+                    handler.header(name, buffer.toString().trim(), bufferStartIndex);
+                    buffer.setLength(0);
+//                    if(!ctx.isEndOfContent()) {
+//                        handler.propertySeparator(ctx.getLocation());
+//                    }
+                    inValue = false;
+                } else if (HeaderState.ID.equals(id)) {
+                    this.name = null;
+                    delegate = null;
+                    delegateStateId = null;
                 } else if (OutputTargetState.ID.equals(id)) {
                     handler.outputTarget(bufferStartIndex, buffer.toString().trim());
                     buffer.setLength(0);
@@ -208,128 +251,14 @@ public class ParserUtil {
             }
 
             @Override
-            public void character(ParsingContext ctx) throws OperationFormatException {
+            public void character(ParsingContext ctx) throws CommandFormatException {
+                if(delegate != null) {
+                    delegate.character(ctx);
+                    return;
+                }
                 //System.out.println(ctx.getState().getId() + " '" + ctx.getCharacter() + "'");
                 buffer.append(ctx.getCharacter());
             }
         };
-    }
-
-    public static void main(String[] args) throws Exception {
-
-        //final String line = "cmd ../../../../my\\ dir/ > ../../../../my\\ dir/cli.log";
-        //final String line = "/a=b/../c=d/.type/e:op(p1=v1,p2=v2)";
-        //final String line = "cmd --p1=v1 --p2=v2 --p3 v3";
-        final String line = "s";
-        System.out.println(line);
-        ParserUtil.parse(line,
-                new CommandLineParser.CallbackHandler(){
-                    @Override
-                    public void property(String name, String value, int separator) {
-                        StringBuilder buf = new StringBuilder();
-                        if(name == null) {
-                            buf.append('\'').append(value).append('\'');
-                        } else if(value == null) {
-                            buf.append('\'').append(name).append('\'');
-                        } else {
-                            buf.append('\'').append(name).append("'='").append(value).append('\'');
-                        }
-                        System.out.println(buf.toString());
-                    }
-
-                    @Override
-                    public void operationName(int index, String name) throws CommandFormatException {
-                        System.out.println("command: '" + name + "'");
-                    }
-
-                    @Override
-                    public void outputTarget(int index, String outputTarget) throws CommandFormatException {
-                        System.out.println("output: '" + outputTarget + "'");
-                    }
-
-                    @Override
-                    public void start(String operationString) {
-                        // TODO Auto-generated method stub
-                    }
-
-                    @Override
-                    public void rootNode(int index) {
-                        System.out.println("rootNode " + index);
-                    }
-
-                    @Override
-                    public void parentNode(int index) {
-                        System.out.println("parentNode");
-                    }
-
-                    @Override
-                    public void nodeType(int index) {
-                        System.out.println("nodeType");
-                    }
-
-                    @Override
-                    public void nodeType(int index, String nodeType)
-                            throws OperationFormatException {
-                        System.out.println("nodeType: '" + nodeType + "'");
-                    }
-
-                    @Override
-                    public void nodeTypeNameSeparator(int index) {
-                        // TODO Auto-generated method stub
-                    }
-
-                    @Override
-                    public void nodeName(int index, String nodeName)
-                            throws OperationFormatException {
-                        System.out.println("nodeName: '" + nodeName + "'");
-                    }
-
-                    @Override
-                    public void nodeSeparator(int index) {
-                        // TODO Auto-generated method stub
-                    }
-
-                    @Override
-                    public void addressOperationSeparator(int index) {
-                        // TODO Auto-generated method stub
-                    }
-
-                    @Override
-                    public void propertyListStart(int index) {
-                        // TODO Auto-generated method stub
-                    }
-
-                    @Override
-                    public void propertyName(int index, String propertyName)
-                            throws OperationFormatException {
-                        // TODO Auto-generated method stub
-                        System.out.println("propertyName: " + propertyName);
-                    }
-
-                    @Override
-                    public void propertyNameValueSeparator(int index) {
-                        // TODO Auto-generated method stub
-                    }
-
-                    @Override
-                    public void propertySeparator(int index) {
-                        // TODO Auto-generated method stub
-                    }
-
-                    @Override
-                    public void propertyListEnd(int index) {
-                        // TODO Auto-generated method stub
-                    }
-
-                    @Override
-                    public void nodeTypeOrName(int index, String typeOrName)
-                            throws OperationFormatException {
-                        // TODO Auto-generated method stub
-                    }
-
-                    @Override
-                    public void setFormat(CommandLineFormat format) {
-                        // TODO Auto-generated method stub
-                    }});
     }
 }

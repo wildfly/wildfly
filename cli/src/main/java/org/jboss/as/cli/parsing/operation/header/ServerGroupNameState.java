@@ -19,28 +19,30 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.parsing.operation;
+package org.jboss.as.cli.parsing.operation.header;
 
 import org.jboss.as.cli.parsing.DefaultParsingState;
 import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
-import org.jboss.as.cli.parsing.OutputTargetState;
 
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public final class OperationNameState extends DefaultParsingState {
+public class ServerGroupNameState extends DefaultParsingState {
 
-    public static final String ID = "OP_NAME";
-    public static final OperationNameState INSTANCE = new OperationNameState();
+    public static final ServerGroupNameState INSTANCE = new ServerGroupNameState();
+    public static final String ID = "SG_NAME";
 
-    public OperationNameState() {
+    ServerGroupNameState() {
         super(ID);
         setEnterHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
         setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
         putHandler('(', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
-        putHandler('{', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
-        putHandler(OutputTargetState.OUTPUT_REDIRECT_CHAR, GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        putHandler(',', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        putHandler('^', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        putHandler('}', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        putHandler(';', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        putHandler(' ', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
     }
 }

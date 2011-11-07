@@ -34,7 +34,6 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandHandler;
 import org.jboss.as.cli.OperationCommand;
 import org.jboss.as.cli.Util;
-import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
@@ -99,7 +98,7 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
     }
 
     @Override
-    public ModelNode buildRequest(CommandContext ctx) throws OperationFormatException {
+    public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {
         return ((DefaultCallbackHandler)ctx.getParsedCommandLine()).toOperationRequest();
     }
 
@@ -175,7 +174,9 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
                 continue;
             }
             if(!definedProps.contains(prop)) {
-                throw new CommandFormatException("'" + prop + "' is not found among the supported properties: " + definedProps);
+                if(!Util.OPERATION_HEADERS.equals(prop)) {
+                    throw new CommandFormatException("'" + prop + "' is not found among the supported properties: " + definedProps);
+                }
             }
         }
     }

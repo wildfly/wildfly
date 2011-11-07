@@ -19,28 +19,40 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.parsing.operation;
+package org.jboss.as.cli.parsing.operation.header;
 
+import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
-import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
-import org.jboss.as.cli.parsing.OutputTargetState;
+import org.jboss.as.cli.parsing.EnterStateCharacterHandler;
+import org.jboss.as.cli.parsing.ParsingContext;
+import org.jboss.as.cli.parsing.operation.PropertyListState;
 
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public final class OperationNameState extends DefaultParsingState {
+public class RolloutPlanState extends DefaultParsingState {
 
-    public static final String ID = "OP_NAME";
-    public static final OperationNameState INSTANCE = new OperationNameState();
+    public static final RolloutPlanState INSTANCE = new RolloutPlanState();
+    public static final String ID = "ROLLOUT_PLAN_HEADER";
 
-    public OperationNameState() {
+    RolloutPlanState() {
+        this(new PropertyListState(' ', ' ', ';', '}'));
+    }
+
+    RolloutPlanState(PropertyListState props) {
         super(ID);
-        setEnterHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
-        setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
-        putHandler('(', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
-        putHandler('{', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
-        putHandler(OutputTargetState.OUTPUT_REDIRECT_CHAR, GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        this.setIgnoreWhitespaces(true);
+        setEnterHandler(new EnterStateCharacterHandler(props));
+        setReturnHandler(new CharacterHandler(){
+            @Override
+            public void handle(ParsingContext ctx) throws CommandFormatException {
+                if(ctx.isEndOfContent()) {
+                    return;
+                }
+                ctx.leaveState();
+            }});
     }
 }
