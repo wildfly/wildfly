@@ -3,10 +3,6 @@
 
 <module xmlns="urn:jboss:module:1.0" name="org.picketlink">
   <resources>
-    <resource-root path="picketlink-fed-2.0.1.final.jar"/>
-    <resource-root path="picketlink-bindings-2.0.1.final.jar"/>
-    <resource-root path="picketlink-bindings-jboss-2.0.1.final.jar"/>
-    <resource-root path="picketlink-trust-jbossws-2.0.1.final.jar"/>
     <!-- Insert resources here -->
   </resources>
 
