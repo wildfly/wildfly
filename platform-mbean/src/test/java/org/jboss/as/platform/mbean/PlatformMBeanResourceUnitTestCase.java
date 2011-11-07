@@ -53,6 +53,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -119,7 +120,7 @@ public class PlatformMBeanResourceUnitTestCase {
             baseTypeCount++;
         }
         if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
-            baseTypeCount += 2;
+            baseTypeCount += 1;
         }
         final ModelNode childTypes = result.get(CHILDREN, TYPE, MODEL_DESCRIPTION);
         Assert.assertEquals(baseTypeCount, childTypes.asPropertyList().size());
@@ -300,6 +301,7 @@ public class PlatformMBeanResourceUnitTestCase {
         // TODO validate values
     }
 
+    @Ignore("[AS7-2185]")
     @Test
     public void testPlatformLoggingMXBean() throws IOException {
         if (PlatformMBeanUtil.JVM_MAJOR_VERSION < 7) {

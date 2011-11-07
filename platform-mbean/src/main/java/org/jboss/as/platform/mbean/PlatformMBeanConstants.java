@@ -330,7 +330,7 @@ public class PlatformMBeanConstants {
         if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
             List<String> list = new ArrayList<String>(JDK6);
             list.add(BUFFER_POOL);
-            list.add(LOGGING);
+            // list.add(LOGGING); AS7-2185
             BASE_TYPES = Collections.unmodifiableList(list);
         } else {
             BASE_TYPES = JDK6;
