@@ -505,6 +505,7 @@
                                         <!-- Build the UDP server configs in target. -->
                                         <ant antfile="${basedir}/src/test/scripts/basic-integration-build.xml">
                                             <target name="build-basic-integration"/>
+                                            <target name="build-basic-integration-jts"/>
                                         </ant>
                                     </target>
                                 </configuration>
