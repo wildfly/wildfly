@@ -22,7 +22,7 @@
 package org.jboss.as.webservices.metadata;
 
 import org.jboss.wsf.spi.metadata.j2ee.PublishLocationAdapter;
-import org.jboss.wsf.spi.metadata.webservices.WebserviceDescriptionMetaData;
+import org.jboss.wsf.spi.metadata.webservices.JBossWebserviceDescriptionMetaData;
 
 /**
  * Publish location adapter implementation.
@@ -31,27 +31,16 @@ import org.jboss.wsf.spi.metadata.webservices.WebserviceDescriptionMetaData;
  * @author <a href="mailto:tdiesler@redhat.com">Thomas Diesler</a>
  */
 final class PublishLocationAdapterImpl implements PublishLocationAdapter {
-    /** Webservice descriptions meta data. */
-    private final WebserviceDescriptionMetaData[] wsDescriptionsMD;
 
-    /**
-     * Constructor.
-     *
-     * @param wsDescriptionsMD webservice descriptions meta data
-     */
-    PublishLocationAdapterImpl(final WebserviceDescriptionMetaData[] wsDescriptionsMD) {
+    private final JBossWebserviceDescriptionMetaData[] wsDescriptionsMD;
+
+    PublishLocationAdapterImpl(final JBossWebserviceDescriptionMetaData[] wsDescriptionsMD) {
         this.wsDescriptionsMD = wsDescriptionsMD;
     }
 
-    /**
-     * @see org.jboss.wsf.spi.metadata.j2ee.PublishLocationAdapter#getWsdlPublishLocationByName(String)
-     *
-     * @param endpointName endpoint name
-     * @return publish location
-     */
     public String getWsdlPublishLocationByName(final String endpointName) {
         if (wsDescriptionsMD != null) {
-            for (final WebserviceDescriptionMetaData wsDescriptionMD : wsDescriptionsMD) {
+            for (final JBossWebserviceDescriptionMetaData wsDescriptionMD : wsDescriptionsMD) {
                 if (endpointName.equals(wsDescriptionMD.getWebserviceDescriptionName()))
                     return wsDescriptionMD.getWsdlPublishLocation();
             }
@@ -59,4 +48,5 @@ final class PublishLocationAdapterImpl implements PublishLocationAdapter {
 
         return null;
     }
+
 }
