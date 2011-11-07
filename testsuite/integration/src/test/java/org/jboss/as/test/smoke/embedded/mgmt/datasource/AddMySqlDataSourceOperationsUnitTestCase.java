@@ -22,12 +22,6 @@
 
 package org.jboss.as.test.smoke.embedded.mgmt.datasource;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-
 import java.io.File;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -45,7 +39,6 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.stream.StreamSource;
 
 import junit.framework.Assert;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -54,17 +47,24 @@ import org.jboss.as.connector.subsystems.datasources.Namespace;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.protocol.StreamUtils;
-import org.jboss.staxmapper.XMLExtendedStreamWriterFactory;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.Node;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import org.jboss.staxmapper.XMLExtendedStreamWriterFactory;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 /**
  * Datasource operation unit test.
@@ -73,6 +73,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("AS7-2515")
 public class AddMySqlDataSourceOperationsUnitTestCase {
 
     private ModelControllerClient client;
