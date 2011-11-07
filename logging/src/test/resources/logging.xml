@@ -30,7 +30,6 @@
 
     <periodic-rotating-file-handler name="FILE">
         <encoding value="UTF-8" />
-        <level name="INFO"/>
         <formatter>
             <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
         </formatter>
