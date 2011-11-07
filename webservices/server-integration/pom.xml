@@ -44,10 +44,10 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                <showDeprecation>true</showDeprecation>
-                <compilerArguments>
-                    <endorseddirs>${project.build.directory}/endorsed</endorseddirs>
-                </compilerArguments>
+                    <showDeprecation>true</showDeprecation>
+                    <!-- Seems like a hacky way to pass multiple arguments, but it's the only way it worked. -->
+                    <fork>true</fork>
+                    <compilerArgument>-Djava.endorsed.dirs=${project.build.directory}/endorsed" "-AgeneratedTranslationFilesPath=${project.build.directory}/generated-translation-files</compilerArgument>
                 </configuration>
             </plugin>
 
@@ -124,6 +124,20 @@
        <artifactId>jbossws-api</artifactId>
     </dependency>
 
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-processor</artifactId>
+            <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
+                  projects that depend on this project.-->
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+
     <dependency>
        <groupId>org.jboss.ws</groupId>
        <artifactId>jbossws-common</artifactId>
@@ -144,6 +158,6 @@
         <artifactId>jboss-as-subsystem-test</artifactId>
         <scope>test</scope>
     </dependency>
-  
+
  </dependencies>
 </project>

@@ -23,6 +23,7 @@
 package org.jboss.as.server.deployment.scanner;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.server.deployment.scanner.DeploymentScannerMessages.MESSAGES;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -53,7 +54,7 @@ abstract class AbstractWriteAttributeHandler extends org.jboss.as.controller.Abs
         final ServiceController<?> controller = context.getServiceRegistry(false).getService(DeploymentScannerService.getServiceName(name));
         DeploymentScanner scanner = null;
         if (controller == null) {
-            throw new OperationFailedException(new ModelNode().set("scanner not configured"));
+            throw new OperationFailedException(new ModelNode().set(MESSAGES.scannerNotConfigured()));
         } else {
             scanner = (DeploymentScanner) controller.getValue();
             updateScanner(scanner, newValue);

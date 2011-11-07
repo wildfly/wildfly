@@ -24,6 +24,7 @@ package org.jboss.as.domain.management.security;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PASSWORD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.NameCallback;
@@ -110,7 +111,7 @@ public class UserDomainCallbackHandler implements Service<UserDomainCallbackHand
                 String realm = ((RealmCallback) current).getDefaultText();
                 if (this.realm.equals(realm) == false) {
                     // TODO - Check if this needs a real error or of just an unexpected internal error.
-                    throw new IllegalStateException("Invalid Realm '" + realm + "' expected '" + this.realm + "'");
+                    throw MESSAGES.invalidRealm(realm, this.realm);
                 }
             } else {
                 throw new UnsupportedCallbackException(current);

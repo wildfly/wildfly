@@ -38,6 +38,20 @@
 
     <name>JBoss Application Server: Web Subsystem</name>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <compilerArgument>
+                        -AgeneratedTranslationFilesPath=${project.build.directory}/generated-translation-files
+                    </compilerArgument>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>org.jboss.spec.javax.faces</groupId>
@@ -79,7 +93,7 @@
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-ee</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-security</artifactId>
@@ -116,6 +130,20 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-processor</artifactId>
+            <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
+                  projects that depend on this project.-->
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.web</groupId>
             <artifactId>jasper-jdt</artifactId>
         </dependency>
@@ -124,7 +152,7 @@
             <groupId>org.jboss.web</groupId>
             <artifactId>jbossweb</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-clustering-web-infinispan</artifactId>
@@ -146,7 +174,7 @@
             <scope>test</scope>
          </dependency>
     </dependencies>
-    
+
     <profiles>
         <profile>
             <id>default</id>

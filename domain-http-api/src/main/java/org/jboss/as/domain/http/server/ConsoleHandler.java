@@ -48,6 +48,7 @@ import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.jboss.as.domain.http.server.Constants.*;
+import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
 
 /**
  * @author Heiko Braun
@@ -189,7 +190,7 @@ public class ConsoleHandler implements ManagementHttpHandler {
                     resourceStream.close();
                     handle = new ResourceHandle(bout.toByteArray());
                 } catch (IOException e) {
-                    throw new RuntimeException("Failed to read "+resource, e);
+                    throw MESSAGES.failedReadingResource(e, resource);
                 }
 
                  buffer.put(resource, handle);
@@ -247,7 +248,7 @@ public class ConsoleHandler implements ManagementHttpHandler {
     }
 
     private String resolveContentType(String resource) {
-        assert resource.indexOf(".")!=-1 : "Invalid resource";
+        assert resource.indexOf(".")!=-1 : MESSAGES.invalidResource();
 
         String contentType = null;
         for(String suffix : contentTypeMapping.keySet()) {

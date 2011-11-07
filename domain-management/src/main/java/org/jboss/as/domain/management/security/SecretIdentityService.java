@@ -38,6 +38,8 @@ import javax.security.sasl.RealmCallback;
 import javax.security.sasl.RealmChoiceCallback;
 import java.io.IOException;
 
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+
 
 /**
  * A simple identity service for an identity represented by a single secret or password.
@@ -90,7 +92,7 @@ public class SecretIdentityService implements Service<CallbackHandlerFactory> {
                     String defaultText = rcb.getDefaultText();
                     rcb.setText(defaultText); // For now just use the realm suggested.
                 } else if (current instanceof RealmChoiceCallback) {
-                    throw new UnsupportedCallbackException(current, "Realm choice not currently supported.");
+                    throw MESSAGES.realmNotSupported(current);
                 } else if (current instanceof NameCallback) {
                     NameCallback ncb = (NameCallback) current;
                     ncb.setName(userName);

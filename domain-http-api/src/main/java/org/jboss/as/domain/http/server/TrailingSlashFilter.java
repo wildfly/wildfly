@@ -23,6 +23,7 @@ package org.jboss.as.domain.http.server;
 
 import static org.jboss.as.domain.http.server.Constants.LOCATION;
 import static org.jboss.as.domain.http.server.Constants.MOVED_PERMENANTLY;
+import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
 
 import java.io.IOException;
 import java.net.URI;
@@ -63,7 +64,7 @@ class TrailingSlashFilter extends Filter {
      */
     @Override
     public String description() {
-        return "Ensure all requests to the context have a trailing slash.";
+        return MESSAGES.trailingSlashFilterDescription();
     }
 
 }

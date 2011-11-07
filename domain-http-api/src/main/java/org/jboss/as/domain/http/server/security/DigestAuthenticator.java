@@ -26,6 +26,8 @@ import static org.jboss.as.domain.http.server.Constants.AUTHORIZATION_HEADER;
 import static org.jboss.as.domain.http.server.Constants.UNAUTHORIZED;
 import static org.jboss.as.domain.http.server.Constants.VIA;
 import static org.jboss.as.domain.http.server.Constants.WWW_AUTHENTICATE_HEADER;
+import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -44,7 +46,6 @@ import org.jboss.com.sun.net.httpserver.Authenticator;
 import org.jboss.com.sun.net.httpserver.Headers;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpPrincipal;
-import org.jboss.logging.Logger;
 import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.util.HexConverter;
 
@@ -54,8 +55,6 @@ import org.jboss.sasl.util.HexConverter;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class DigestAuthenticator extends Authenticator {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.domain.http.api");
 
     private final NonceFactory nonceFactory = new NonceFactory();
 
@@ -99,7 +98,7 @@ public class DigestAuthenticator extends Authenticator {
 
         String authorizationHeader = requestHeaders.getFirst(AUTHORIZATION_HEADER);
         if (authorizationHeader.startsWith(CHALLENGE + " ") == false) {
-            throw new RuntimeException("Invalid 'Authorization' header.");
+            throw MESSAGES.invalidAuthorizationHeader();
         }
         String challenge = authorizationHeader.substring(CHALLENGE.length() + 1);
         Map<String, String> challengeParameters = parseDigestChallenge(challenge);
@@ -151,14 +150,14 @@ public class DigestAuthenticator extends Authenticator {
         try {
             callbackHandler.handle(callbacks);
         } catch (UserNotFoundException e) {
-            if (log.isDebugEnabled()) {
-                log.debug(e.getMessage());
+            if (ROOT_LOGGER.isDebugEnabled()) {
+                ROOT_LOGGER.debug(e.getMessage());
             }
             return null;
         } catch (IOException e) {
-            throw new IllegalStateException("CallbackHander not suitable for Digest authentication.");
+            throw MESSAGES.invalidCallbackHandler();
         } catch (UnsupportedCallbackException e) {
-            throw new IllegalStateException("CallbackHander not suitable for Digest authentication.");
+            throw MESSAGES.invalidCallbackHandler();
         }
 
         // TODO - Verify that a password was set (Depending on if multiple CallbackHandlers are supported)
@@ -204,7 +203,7 @@ public class DigestAuthenticator extends Authenticator {
             }
 
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("Unable to perform digest validation as MD5 is unavailable.", e);
+            throw MESSAGES.md5Unavailable(e);
         }
 
         return null;
@@ -305,14 +304,14 @@ public class DigestAuthenticator extends Authenticator {
                 // Check not dropping any random chars.
                 String dropping = message.substring(pos, nextQuote).trim();
                 if ("".equals(dropping) == false) {
-                    throw new IllegalArgumentException("Unexpected characters being dropped from header '" + dropping + "' for " + response.key);
+                    throw MESSAGES.unexpectedHeaderChar(dropping, response.key);
                 }
                 pos = nextQuote;
                 int endQuote = -1;
                 while (endQuote < 0) {
                     nextQuote = message.indexOf(QUOTE, nextQuote + 1);
                     if (nextQuote < 0) {
-                        throw new IllegalArgumentException("Unable to find closing quote for " + response.key);
+                        throw MESSAGES.missingClosingQuote(response.key);
                     }
                     if (message.charAt(nextQuote - 1) != ESCAPE) {
                         endQuote = nextQuote;
