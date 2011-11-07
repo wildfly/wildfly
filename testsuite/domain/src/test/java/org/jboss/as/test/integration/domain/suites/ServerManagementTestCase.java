@@ -23,8 +23,10 @@
 package org.jboss.as.test.integration.domain.suites;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 
 import org.jboss.as.arquillian.container.domain.managed.DomainLifecycleUtil;
@@ -32,6 +34,7 @@ import org.jboss.as.controller.client.helpers.domain.DomainClient;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
@@ -55,6 +58,7 @@ public class ServerManagementTestCase {
     private static DomainLifecycleUtil domainSlaveLifecycleUtil;
 
     private static final ModelNode slave = new ModelNode();
+    private static final ModelNode mainOne = new ModelNode();
     private static final ModelNode newServerConfigAddress = new ModelNode();
     private static final ModelNode newRunningServerAddress = new ModelNode();
 
@@ -67,6 +71,9 @@ public class ServerManagementTestCase {
         // (host=slave),(server=new-server)
         newRunningServerAddress.add("host", "slave");
         newRunningServerAddress.add("server", "new-server");
+        // (host=master),(server-config=main-one)
+        mainOne.add("host", "master");
+        mainOne.add("server-config", "main-one");
     }
 
     @BeforeClass
@@ -83,6 +90,28 @@ public class ServerManagementTestCase {
         testSupport = null;
         domainMasterLifecycleUtil = null;
         domainSlaveLifecycleUtil = null;
+    }
+
+    @Test
+    public void testRemoveStartedServer() throws Exception {
+        final DomainClient client = domainMasterLifecycleUtil.getDomainClient();
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
+        operation.get(OP_ADDR).set(mainOne);
+        operation.get(NAME).set("status");
+
+        final ModelNode status = validateResponse(client.execute(operation));
+        Assert.assertEquals("STARTED", status.asString());
+
+        final ModelNode remove = new ModelNode();
+        remove.get(OP).set(REMOVE);
+        remove.get(OP_ADDR).set(mainOne);
+
+        final ModelNode result = client.execute(remove);
+        // Removing a started server should fail
+        Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
+
     }
 
     @Test
