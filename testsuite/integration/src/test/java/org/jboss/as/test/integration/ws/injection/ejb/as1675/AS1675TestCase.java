@@ -30,6 +30,7 @@ import javax.xml.ws.Service;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.ws.injection.ejb.as1675.shared.BeanIface;
 import org.jboss.as.test.integration.ws.injection.ejb.as1675.shared.BeanImpl;
 import org.jboss.shrinkwrap.api.Archive;
@@ -51,6 +52,9 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class AS1675TestCase {
+
+    @ArquillianResource
+    URL baseUrl;
 
     @Deployment
     public static Archive<?> deployment() {
@@ -79,7 +83,7 @@ public class AS1675TestCase {
     @Test
     public void testEjb3EndpointInjection() throws Exception {
         QName serviceName = new QName("http://jbossws.org/as1675", "EJB3Service");
-        URL wsdlURL = new URL("http://localhost:8080/as1675/EJB3Service?wsdl");
+        URL wsdlURL = new URL(baseUrl + "/as1675/EJB3Service?wsdl");
 
         Service service = Service.create(wsdlURL, serviceName);
         EndpointIface proxy = (EndpointIface) service.getPort(EndpointIface.class);

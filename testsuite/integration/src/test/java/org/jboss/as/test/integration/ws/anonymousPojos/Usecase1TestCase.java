@@ -29,7 +29,9 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
@@ -42,7 +44,11 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 @RunWith(Arquillian.class)
+@RunAsClient
 public class Usecase1TestCase {
+
+    @ArquillianResource
+    URL baseUrl;
 
     private static final Logger log = Logger.getLogger(Usecase1TestCase.class.getName());
 
@@ -59,7 +65,7 @@ public class Usecase1TestCase {
     @Test
     public void testAnonymousEndpoint() throws Exception {
         final QName serviceName = new QName("org.jboss.as.test.integration.ws.anonymousPojos", "AnonymousPOJOService");
-        final URL wsdlURL = new URL("http://localhost:8080/anonymous-pojo-usecase1/AnonymousPOJOService?wsdl");
+        final URL wsdlURL = new URL(baseUrl, "/anonymous-pojo-usecase1/AnonymousPOJOService?wsdl");
         final Service service = Service.create(wsdlURL, serviceName);
         final POJOIface port = service.getPort(POJOIface.class);
         final String result = port.echo("hello");
@@ -69,7 +75,7 @@ public class Usecase1TestCase {
     @Test
     public void testDeclaredEndpoint() throws Exception {
         final QName serviceName = new QName("org.jboss.as.test.integration.ws.anonymousPojos", "POJOImplService");
-        final URL wsdlURL = new URL("http://localhost:8080/anonymous-pojo-usecase1/POJOService?wsdl");
+        final URL wsdlURL = new URL(baseUrl, "/anonymous-pojo-usecase1/POJOService?wsdl");
         final Service service = Service.create(wsdlURL, serviceName);
         final POJOIface port = service.getPort(POJOIface.class);
         final String result = port.echo("hello");

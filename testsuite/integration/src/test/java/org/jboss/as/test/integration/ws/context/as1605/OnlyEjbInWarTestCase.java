@@ -28,7 +28,9 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -44,7 +46,11 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 @RunWith(Arquillian.class)
+@RunAsClient
 public class OnlyEjbInWarTestCase {
+
+    @ArquillianResource
+    URL baseUrl;
 
     @Deployment
     public static WebArchive createDeployment() {
@@ -64,7 +70,7 @@ public class OnlyEjbInWarTestCase {
     @Test
     public void testEJB3Endpoint() throws Exception {
         final QName serviceName = new QName("org.jboss.as.test.integration.ws.context.as1605", "EJB3EndpointService");
-        final URL wsdlURL = new URL("http://localhost:8080/as1605-customized/EJB3Endpoint?wsdl");
+        final URL wsdlURL = new URL(baseUrl, "/as1605-customized/EJB3Endpoint?wsdl");
         final Service service = Service.create(wsdlURL, serviceName);
         final EndpointIface port = service.getPort(EndpointIface.class);
         final String result = port.echo("hello");
