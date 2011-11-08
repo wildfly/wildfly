@@ -69,7 +69,6 @@ import javax.xml.namespace.QName;
 
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.AbstractControllerService;
@@ -98,10 +97,7 @@ import org.jboss.as.controller.operations.common.SystemPropertyValueWriteAttribu
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.common.XmlMarshallingHandler;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
-import org.jboss.as.controller.parsing.DomainXml;
-import org.jboss.as.controller.parsing.HostXml;
 import org.jboss.as.controller.parsing.Namespace;
-import org.jboss.as.controller.parsing.StandaloneXml;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.persistence.XmlConfigurationPersister;
@@ -120,8 +116,11 @@ import org.jboss.as.host.controller.operations.IsMasterHandler;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.host.controller.operations.NativeManagementAddHandler;
 import org.jboss.as.host.controller.operations.ServerAddHandler;
+import org.jboss.as.host.controller.parsing.DomainXml;
+import org.jboss.as.host.controller.parsing.HostXml;
 import org.jboss.as.server.ServerControllerModelUtil;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.as.server.parsing.StandaloneXml;
 import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;

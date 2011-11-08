@@ -26,8 +26,8 @@ import java.util.concurrent.ExecutorService;
 
 import javax.xml.namespace.QName;
 
-import org.jboss.as.controller.parsing.DomainXml;
-import org.jboss.as.controller.parsing.HostXml;
+import org.jboss.as.host.controller.parsing.DomainXml;
+import org.jboss.as.host.controller.parsing.HostXml;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.persistence.BackupXmlConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationFile;

@@ -34,7 +34,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.parsing.StandaloneXml;
+import org.jboss.as.server.parsing.StandaloneXml;
 import org.jboss.as.controller.persistence.AbstractConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
