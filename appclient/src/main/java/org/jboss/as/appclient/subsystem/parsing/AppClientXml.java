@@ -526,5 +526,4 @@ public class AppClientXml extends CommonXml {
         }
         writer.writeEndElement();
     }
-
 }

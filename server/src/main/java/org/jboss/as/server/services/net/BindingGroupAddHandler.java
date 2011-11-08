@@ -75,7 +75,7 @@ public class BindingGroupAddHandler extends AbstractSocketBindingGroupAddHandler
         final ServiceTarget serviceTarget = context.getServiceTarget();
         newControllers.add(serviceTarget.addService(SocketBindingManager.SOCKET_BINDING_MANAGER, service)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(defaultInterface), NetworkInterfaceBinding.class, service.getDefaultInterfaceBinding())
+                .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(defaultInterface), NetworkInterfaceBinding.class, service.getDefaultInterfaceBindingInjector())
                 .addListener(verificationHandler)
                 .install());
 

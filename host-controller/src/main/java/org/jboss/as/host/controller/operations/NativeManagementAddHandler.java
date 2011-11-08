@@ -22,21 +22,32 @@
 
 package org.jboss.as.host.controller.operations;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
-
-import java.util.Locale;
+import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.ManagementDescription;
+import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFactoryService;
+import org.jboss.as.domain.controller.LocalHostControllerInfo;
+import org.jboss.as.domain.management.security.SecurityRealmService;
+import org.jboss.as.host.controller.DomainModelControllerService;
+import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandlerFactoryService;
+import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
+import org.jboss.as.remoting.management.ManagementRemotingServices;
+import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author Emanuel Muckenhuber
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class NativeManagementAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
+public class NativeManagementAddHandler extends AbstractAddStepHandler {
 
     public static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
 
@@ -46,30 +57,62 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler implement
         this.hostControllerInfo = hostControllerInfo;
     }
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        // TODO - We really need to get this inline with the HTTP interface when in a managed domain.
-        final String interfaceName = operation.require(ModelDescriptionConstants.INTERFACE).asString();
-        final int port = operation.require(ModelDescriptionConstants.PORT).asInt();
-        final String securityRealm = operation.hasDefined(SECURITY_REALM) ? operation.require(SECURITY_REALM).asString() : null;
-
-        model.get(ModelDescriptionConstants.INTERFACE).set(interfaceName);
-        model.get(ModelDescriptionConstants.PORT).set(port);
-        if (securityRealm != null) {
-            model.get(SECURITY_REALM).set(securityRealm);
+        for (AttributeDefinition attr : NativeManagementResourceDefinition.ATTRIBUTE_DEFINITIONS) {
+            attr.validateAndSet(operation, model);
         }
-
-        hostControllerInfo.setNativeManagementInterface(interfaceName);
-        hostControllerInfo.setNativeManagementPort(port);
-        hostControllerInfo.setNativeManagementSecurityRealm(securityRealm);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return ManagementDescription.getAddNativeManagementDescription(locale);
+    protected boolean requiresRuntime(OperationContext context) {
+        return true;
+    }
+
+    @Override
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
+                                  final ServiceVerificationHandler verificationHandler,
+                                  final List<ServiceController<?>> newControllers) throws OperationFailedException {
+
+        populateHostControllerInfo(hostControllerInfo, context, model);
+
+        if (!context.isBooting()) {
+            installNativeManagementServices(context.getServiceTarget(), hostControllerInfo, verificationHandler, newControllers);
+        }
+        // else DomainModelControllerService does the service install
+    }
+
+    static void populateHostControllerInfo(LocalHostControllerInfoImpl hostControllerInfo, OperationContext context, ModelNode model) throws OperationFailedException {
+        hostControllerInfo.setNativeManagementInterface(NativeManagementResourceDefinition.INTERFACE.resolveModelAttribute(context, model).asString());
+        final ModelNode portNode = NativeManagementResourceDefinition.NATIVE_PORT.resolveModelAttribute(context, model);
+        hostControllerInfo.setNativeManagementPort(portNode.isDefined() ? portNode.asInt() : -1);
+        final ModelNode realmNode = NativeManagementResourceDefinition.SECURITY_REALM.resolveModelAttribute(context, model);
+        hostControllerInfo.setNativeManagementSecurityRealm(realmNode.isDefined() ? realmNode.asString() : null);
+    }
+
+    public static void installNativeManagementServices(final ServiceTarget serviceTarget, final LocalHostControllerInfo hostControllerInfo,
+                                                       final ServiceVerificationHandler verificationHandler,
+                                                       final List<ServiceController<?>> newControllers) {
+        ServiceName realmSvcName = null;
+        String nativeSecurityRealm = hostControllerInfo.getNativeManagementSecurityRealm();
+        if (nativeSecurityRealm != null) {
+            realmSvcName = SecurityRealmService.BASE_SERVICE_NAME.append(nativeSecurityRealm);
+        }
+
+        final ServiceName nativeManagementInterfaceBinding =
+                NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(hostControllerInfo.getNativeManagementInterface());
+
+        ManagementRemotingServices.installDomainConnectorServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
+                nativeManagementInterfaceBinding, hostControllerInfo.getNativeManagementPort(), realmSvcName, null, null);
+
+        ManagementRemotingServices.installManagementChannelOpenListenerService(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
+                ManagementRemotingServices.SERVER_CHANNEL,
+                ServerToHostOperationHandlerFactoryService.SERVICE_NAME, verificationHandler, newControllers);
+
+        ManagementRemotingServices.installManagementChannelServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
+                new ModelControllerClientOperationHandlerFactoryService(),
+                DomainModelControllerService.SERVICE_NAME, ManagementRemotingServices.MANAGEMENT_CHANNEL, verificationHandler, newControllers);
+
     }
 
 }

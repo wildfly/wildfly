@@ -134,6 +134,7 @@ public class ModelDescriptionConstants {
     public static final String NAMES = "names";
     public static final String NAMESPACE = "namespace";
     public static final String NAMESPACES = "namespaces";
+    public static final String NATIVE = "native";
     public static final String NATIVE_INTERFACE = "native-interface";
     public static final String NATIVE_REMOTING_INTERFACE = "native-remoting-interface";
     public static final String NETWORK = "network";
@@ -205,6 +206,7 @@ public class ModelDescriptionConstants {
     public static final String SEARCH_DN = "search-dn";
     public static final String SECRET = "secret";
     public static final String SECURE_PORT = "secure-port";
+    public static final String SECURE_SOCKET_BINDING = "secure-socket-binding";
     public static final String SECURITY_REALM = "security-realm";
     public static final String SECURITY_REALMS = "security-realms";
     public static final String SERVER = "server";

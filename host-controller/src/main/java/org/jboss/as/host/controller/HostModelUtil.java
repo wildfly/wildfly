@@ -25,15 +25,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CPU
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTBOUND_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRIORITY;
@@ -95,15 +92,11 @@ import org.jboss.as.host.controller.operations.HostShutdownHandler;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceAddHandler;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceRemoveHandler;
 import org.jboss.as.host.controller.operations.HostXmlMarshallingHandler;
-import org.jboss.as.host.controller.operations.HttpManagementAddHandler;
-import org.jboss.as.host.controller.operations.HttpManagementAttributeHandlers;
 import org.jboss.as.host.controller.operations.IsMasterHandler;
 import org.jboss.as.host.controller.operations.LocalDomainControllerAddHandler;
 import org.jboss.as.host.controller.operations.LocalDomainControllerRemoveHandler;
 import org.jboss.as.host.controller.operations.LocalHostAddHandler;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
-import org.jboss.as.host.controller.operations.NativeManagementAddHandler;
-import org.jboss.as.host.controller.operations.NativeManagementAttributeHandlers;
 import org.jboss.as.host.controller.operations.RemoteDomainControllerAddHandler;
 import org.jboss.as.host.controller.operations.RemoteDomainControllerRemoveHandler;
 import org.jboss.as.host.controller.operations.ServerAddHandler;
@@ -113,6 +106,8 @@ import org.jboss.as.host.controller.operations.ServerStartHandler;
 import org.jboss.as.host.controller.operations.ServerStatusHandler;
 import org.jboss.as.host.controller.operations.ServerStopHandler;
 import org.jboss.as.host.controller.operations.StartServersHandler;
+import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
+import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
 import org.jboss.as.platform.mbean.PlatformMBeanResourceRegistrar;
 import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceRemoveHandler;
@@ -206,18 +201,8 @@ public class HostModelUtil {
         ManagementResourceRegistration connection = management.registerSubModel(PathElement.pathElement(OUTBOUND_CONNECTION), CommonProviders.MANAGEMENT_OUTBOUND_CONNECTION_PROVIDER);
         connection.registerOperationHandler(ConnectionAddHandler.OPERATION_NAME, ConnectionAddHandler.INSTANCE, ConnectionAddHandler.INSTANCE, false);
         // Management API protocols
-        ManagementResourceRegistration managementNative = management.registerSubModel(PathElement.pathElement(MANAGEMENT_INTERFACE, NATIVE_INTERFACE), CommonProviders.NATIVE_MANAGEMENT_PROVIDER);
-        NativeManagementAddHandler nmah = new NativeManagementAddHandler(hostControllerInfo);
-        managementNative.registerOperationHandler(NativeManagementAddHandler.OPERATION_NAME, nmah, nmah, false);
-        managementNative.registerReadWriteAttribute(SECURITY_REALM, null, new NativeManagementAttributeHandlers.NativeManagementAttributeHandler(hostControllerInfo), Storage.CONFIGURATION);
-
-        ManagementResourceRegistration managementHttp = management.registerSubModel(PathElement.pathElement(MANAGEMENT_INTERFACE, HTTP_INTERFACE), CommonProviders.HTTP_MANAGEMENT_PROVIDER);
-        HttpManagementAddHandler httpAddHandler = HttpManagementAddHandler.getInstance(hostControllerInfo);
-        managementHttp.registerOperationHandler(HttpManagementAddHandler.OPERATION_NAME, httpAddHandler, httpAddHandler, false);
-        managementHttp.registerReadWriteAttribute(SECURITY_REALM, null, new HttpManagementAttributeHandlers.HttpManagementAttributeHandler(hostControllerInfo, environment), Storage.CONFIGURATION);
-
-        // hostRegistration.registerReadWriteAttribute(ModelDescriptionConstants.MANAGEMENT_INTERFACE, GlobalOperationHandlers.READ_ATTRIBUTE, ManagementSocketAddHandler.INSTANCE);
-        //hostRegistration.registerOperationHandler(ManagementSocketRemoveHandler.OPERATION_NAME, ManagementSocketRemoveHandler.INSTANCE, ManagementSocketRemoveHandler.INSTANCE, false);
+        management.registerSubModel(new NativeManagementResourceDefinition(hostControllerInfo));
+        management.registerSubModel(new HttpManagementResourceDefinition(hostControllerInfo, environment));
 
         // Other core services
         // TODO get a DumpServicesHandler that works on the domain

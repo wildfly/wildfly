@@ -260,7 +260,7 @@ public abstract class AttributeDefinition {
     public boolean isAllowed(final ModelNode operationObject) {
         if(alternatives != null) {
             for(final String alternative : alternatives) {
-                if(operationObject.has(alternative)) {
+                if(operationObject.hasDefined(alternative)) {
                     return false;
                 }
             }
@@ -276,7 +276,7 @@ public abstract class AttributeDefinition {
     public boolean hasAlternative(final ModelNode operationObject) {
         if(alternatives != null) {
             for(final String alternative : alternatives) {
-                if(operationObject.has(alternative)) {
+                if(operationObject.hasDefined(alternative)) {
                     return true;
                 }
             }

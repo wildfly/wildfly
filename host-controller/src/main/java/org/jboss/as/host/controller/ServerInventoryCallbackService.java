@@ -36,7 +36,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class ServerInventoryCallbackService implements Service<CallbackHandler> {
 
-    static final ServiceName SERVICE_NAME = NewServerInventoryService.SERVICE_NAME.append("callback");
+    static final ServiceName SERVICE_NAME = ServerInventoryService.SERVICE_NAME.append("callback");
 
     private final InjectedValue<ServerInventory> serverInventoryInjectedValue = new InjectedValue<ServerInventory>();
 

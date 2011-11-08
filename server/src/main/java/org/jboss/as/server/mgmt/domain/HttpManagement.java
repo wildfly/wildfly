@@ -29,8 +29,12 @@ import org.jboss.as.network.NetworkInterfaceBinding;
  */
 public interface HttpManagement {
 
-    int getPort();
-    int getSecurePort();
-    NetworkInterfaceBinding getNetworkInterfaceBinding();
+    int getHttpPort();
+
+    NetworkInterfaceBinding getHttpNetworkInterfaceBinding();
+
+    int getHttpsPort();
+
+    NetworkInterfaceBinding getHttpsNetworkInterfaceBinding();
 
 }

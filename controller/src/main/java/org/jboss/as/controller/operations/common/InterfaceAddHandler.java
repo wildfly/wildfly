@@ -78,12 +78,8 @@ public class InterfaceAddHandler extends AbstractAddStepHandler implements Descr
         model.get(ModelDescriptionConstants.NAME).set(address.getLastElement().getValue());
 
         for(final AttributeDefinition definition : ATTRIBUTES) {
-            if(specified) {
+            if(specified || operation.hasDefined(definition.getName())) {
                 validateAndSet(definition, operation, model);
-            } else {
-                if(operation.hasDefined(definition.getName())) {
-                    validateAndSet(definition, operation, model);
-                }
             }
         }
     }

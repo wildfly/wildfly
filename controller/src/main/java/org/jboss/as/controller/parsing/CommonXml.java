@@ -50,7 +50,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_THREADS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -499,20 +498,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                             throw unexpectedElement(reader);
                         }
 
-                        switch (expectedNs) {
-                            case DOMAIN_1_0: {
-                                parseManagementInterfaces_1_0(reader, managementAddress, expectedNs, list);
-                                break;
-                            }
-                            // We use default here so we do not need to update the switch for every subsequent schema update
-                            // that does not affect this element - if subsequently updated a 'case' should be added for each
-                            // schema version that uses this format of the element and the update should then be selected using
-                            // default:
-                            default: {
-                                parseManagementInterfaces_1_1(reader, managementAddress, expectedNs, list);
-                                break;
-                            }
-                        }
+                        parseManagementInterfaces(reader, managementAddress, expectedNs, list);
 
                     } else {
                         ROOT_LOGGER.warn(ParseUtils.getWarningMessage(MESSAGES.elementNotSupported(element.getLocalName(), "domain.xml"), reader.getLocation()));
@@ -524,6 +510,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 }
             }
         }
+    }
+
+    protected void parseManagementInterfaces(XMLExtendedStreamReader reader, ModelNode address, Namespace expectedNs, List<ModelNode> list) throws XMLStreamException {
+        // subclasses that support management interfaces must override and implement
+        throw new UnsupportedOperationException();
     }
 
     protected void parseConnections(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list)
@@ -1165,52 +1156,6 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
-    protected void parseManagementInterfaces_1_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
-            final List<ModelNode> list) throws XMLStreamException {
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            requireNamespace(reader, expectedNs);
-            final Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case NATIVE_INTERFACE: {
-                    parseNativeManagementInterface(reader, address, list);
-                    break;
-                }
-                case HTTP_INTERFACE: {
-                    parseHttpManagementInterface(reader, address, list);
-                    break;
-                }
-                default: {
-                    throw unexpectedElement(reader);
-                }
-            }
-        }
-    }
-
-    protected void parseManagementInterfaces_1_1(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
-                                                 final List<ModelNode> list) throws XMLStreamException {
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            requireNamespace(reader, expectedNs);
-            final Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case NATIVE_INTERFACE: {
-                    parseNativeManagementInterface(reader, address, list);
-                    break;
-                }
-                case HTTP_INTERFACE: {
-                    parseHttpManagementInterface(reader, address, list);
-                    break;
-                }
-                case NATIVE_REMOTING_INTERFACE: {
-                    parseNativeRemotingManagementInterface_1_1(reader, address, list);
-                    break;
-                }
-                default: {
-                    throw unexpectedElement(reader);
-                }
-            }
-        }
-    }
-
     protected void parsePath(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list,
             final boolean requirePath, final Set<String> defined) throws XMLStreamException {
         String name = null;
@@ -1343,8 +1288,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         return properties;
     }
 
-    protected void parseHttpManagementInterface(final XMLExtendedStreamReader reader, final ModelNode address,
-            final List<ModelNode> list) throws XMLStreamException {
+    protected void parseHttpManagementInterface1_0(final XMLExtendedStreamReader reader, final ModelNode address,
+                                                   final List<ModelNode> list) throws XMLStreamException {
         // Handle attributes
         String interfaceName = null;
         int port = -1;
@@ -1394,6 +1339,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 }
             }
         }
+
+        requireNoContent(reader);
+
         if (interfaceName == null) {
             throw missingRequired(reader, Collections.singleton(Attribute.INTERFACE.getLocalName()));
         }
@@ -1416,28 +1364,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         mgmtSocket.get(OP_ADDR).set(operationAddress);
 
         list.add(mgmtSocket);
-
-        reader.discardRemainder();
     }
 
-    protected void parseNativeRemotingManagementInterface_1_1(final XMLExtendedStreamReader reader, final ModelNode address,
-            final List<ModelNode> list) throws XMLStreamException {
-
-        requireNoAttributes(reader);
-        //requireNoContent(reader);
-
-        final ModelNode connector = new ModelNode();
-        connector.get(OP).set(ADD);
-        ModelNode operationAddress = address.clone();
-        operationAddress.add(MANAGEMENT_INTERFACE, NATIVE_REMOTING_INTERFACE);
-        connector.get(OP_ADDR).set(operationAddress);
-        list.add(connector);
-
-        reader.discardRemainder();
-    }
-
-    private void parseNativeManagementInterface(final XMLExtendedStreamReader reader, final ModelNode address,
-            final List<ModelNode> list) throws XMLStreamException {
+    protected void parseNativeManagementInterface1_0(final XMLExtendedStreamReader reader, final ModelNode address,
+                                                   final List<ModelNode> list) throws XMLStreamException {
         // Handle attributes
         String interfaceName = null;
         int port = 0;
@@ -1462,6 +1392,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         }
                         break;
                     }
+                    case SECURE_PORT:
+                        // ignore -- this was a bug in the xsd
+                        break;
                     case SECURITY_REALM: {
                         securityRealm = value;
                         break;
@@ -1471,6 +1404,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 }
             }
         }
+
+        requireNoContent(reader);
+
         if (interfaceName == null) {
             throw missingRequired(reader, Collections.singleton(Attribute.INTERFACE.getLocalName()));
         }
@@ -1486,8 +1422,6 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         operationAddress.add(MANAGEMENT_INTERFACE, NATIVE_INTERFACE);
         mgmtSocket.get(OP_ADDR).set(operationAddress);
         list.add(mgmtSocket);
-
-        reader.discardRemainder();
     }
 
     protected void parseJvm(final XMLExtendedStreamReader reader, final ModelNode parentAddress, final Namespace expectedNs, final List<ModelNode> updates,
@@ -3098,11 +3032,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             }
 
             if (managementInterfaces.hasDefined(NATIVE_INTERFACE)) {
-                writeManagementProtocol(Element.NATIVE_INTERFACE, writer, managementInterfaces.get(NATIVE_INTERFACE));
+                writeNativeManagementProtocol(writer, managementInterfaces.get(NATIVE_INTERFACE));
             }
 
             if (managementInterfaces.hasDefined(HTTP_INTERFACE)) {
-                writeManagementProtocol(Element.HTTP_INTERFACE, writer, managementInterfaces.get(HTTP_INTERFACE));
+                writeHttpManagementProtocol(writer, managementInterfaces.get(HTTP_INTERFACE));
             }
 
             writer.writeEndElement();
@@ -3111,24 +3045,14 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         writer.writeEndElement();
     }
 
-    private void writeManagementProtocol(final Element type, final XMLExtendedStreamWriter writer, final ModelNode protocol)
-            throws XMLStreamException {
-        String iface = protocol.get(INTERFACE).asString();
-        writer.writeStartElement(type.getLocalName());
-        writeAttribute(writer, Attribute.INTERFACE, iface);
-        if (protocol.has(PORT)) {
-            writeAttribute(writer, Attribute.PORT, protocol.get(PORT).asString());
-        }
-        if (protocol.has(SECURE_PORT)) {
-            writeAttribute(writer, Attribute.SECURE_PORT, protocol.get(SECURE_PORT).asString());
-        }
-        if (protocol.hasDefined(MAX_THREADS)) {
-            writeAttribute(writer, Attribute.MAX_THREADS, protocol.get(MAX_THREADS).asString());
-        }
-        if (protocol.hasDefined(SECURITY_REALM)) {
-            writeAttribute(writer, Attribute.SECURITY_REALM, protocol.get(SECURITY_REALM).asString());
-        }
-        writer.writeEndElement();
+    protected void writeNativeManagementProtocol(XMLExtendedStreamWriter writer, ModelNode protocol) throws XMLStreamException {
+        // subclasses that support management interfaces must override
+        throw new UnsupportedOperationException();
+    }
+
+    protected void writeHttpManagementProtocol(XMLExtendedStreamWriter writer, ModelNode protocol) throws XMLStreamException {
+        // subclasses that support management interfaces must override
+        throw new UnsupportedOperationException();
     }
 
     protected static void writeContentItem(final XMLExtendedStreamWriter writer, final ModelNode contentItem)

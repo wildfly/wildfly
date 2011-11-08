@@ -99,7 +99,9 @@ public abstract class AbstractChannelOpenListenerService<T> implements Service<V
             registration.close();
         }
         synchronized (channels) {
-            for (T channel : channels) {
+            // Copy off the set to avoid ConcurrentModificationException
+            final Set<T> copy = new HashSet<T>(channels);
+            for (T channel : copy) {
                 closeChannelOnShutdown(channel);
             }
         }

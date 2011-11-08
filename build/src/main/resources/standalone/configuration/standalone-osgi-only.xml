@@ -38,8 +38,12 @@
             </security-realm>
         </security-realms>
         <management-interfaces>
-            <native-interface interface="management" port="9999" security-realm="ManagementRealm"/>
-            <http-interface interface="management" port="9990" security-realm="ManagementRealm"/>
+            <native-interface security-realm="ManagementRealm">
+                <socket-binding native="management-native"/>
+            </native-interface>
+            <http-interface security-realm="ManagementRealm">
+                <socket-binding http="management-http"/>
+            </http-interface>
         </management-interfaces>
     </management>
 
@@ -103,6 +107,8 @@
         <socket-binding name="https" port="8443"/>
         <socket-binding name="jmx-connector-registry" interface="management" port="1090"/>
         <socket-binding name="jmx-connector-server" interface="management" port="1091"/>
+        <socket-binding name="management-native" interface="management" port="9999"/>
+        <socket-binding name="management-http" interface="management" port="9990"/>
         <socket-binding name="osgi-http" interface="management" port="8090"/>
         <socket-binding name="remoting" port="4447"/>
         <socket-binding name="txn-recovery-environment" port="4712"/>

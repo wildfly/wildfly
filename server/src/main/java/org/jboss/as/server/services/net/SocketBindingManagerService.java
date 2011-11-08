@@ -69,7 +69,12 @@ public class SocketBindingManagerService extends SocketBindingManagerImpl implem
         return defaultInterfaceBinding.getValue().getAddress();
     }
 
-    public InjectedValue<NetworkInterfaceBinding> getDefaultInterfaceBinding() {
+    @Override
+    public NetworkInterfaceBinding getDefaultInterfaceBinding() {
+        return defaultInterfaceBinding.getValue();
+    }
+
+    public InjectedValue<NetworkInterfaceBinding> getDefaultInterfaceBindingInjector() {
         return defaultInterfaceBinding;
     }
 

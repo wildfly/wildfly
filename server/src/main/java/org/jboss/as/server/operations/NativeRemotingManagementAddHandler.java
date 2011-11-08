@@ -74,7 +74,7 @@ public class NativeRemotingManagementAddHandler extends AbstractAddStepHandler i
      * {@inheritDoc}
      */
     public ModelNode getModelDescription(Locale locale) {
-        return ManagementDescription.getAddNativeManagementDescription(locale);
+        return ManagementDescription.getAddNativeRemotingManagementDescription(locale);
     }
 
 }

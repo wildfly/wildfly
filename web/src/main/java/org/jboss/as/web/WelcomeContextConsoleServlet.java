@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -50,6 +51,7 @@ public class WelcomeContextConsoleServlet extends HttpServlet {
     private final int consolePort;
     private final int consoleSecurePort;
     private final NetworkInterfaceBinding consoleNetworkInterface;
+    private final NetworkInterfaceBinding secureConsoleNetworkInterface;
 
     private final String noconsole = "noconsole.html";
     private final String noredirect = "noredirect.html";
@@ -61,9 +63,10 @@ public class WelcomeContextConsoleServlet extends HttpServlet {
      */
     WelcomeContextConsoleServlet(HttpManagement httpManagement) {
         if (httpManagement != null) {
-            consolePort = httpManagement.getPort();
-            consoleSecurePort = httpManagement.getSecurePort();
-            consoleNetworkInterface = httpManagement.getNetworkInterfaceBinding();
+            consolePort = httpManagement.getHttpPort();
+            consoleSecurePort = httpManagement.getHttpsPort();
+            consoleNetworkInterface = httpManagement.getHttpNetworkInterfaceBinding();
+            secureConsoleNetworkInterface = httpManagement.getHttpsNetworkInterfaceBinding();
             // If there is no port there is no console.
             hasConsole = consolePort > -1 || consoleSecurePort > -1;
         } else {
@@ -71,6 +74,7 @@ public class WelcomeContextConsoleServlet extends HttpServlet {
             consolePort = -1;
             consoleSecurePort = -1;
             consoleNetworkInterface = null;
+            secureConsoleNetworkInterface = null;
         }
     }
 
@@ -89,10 +93,10 @@ public class WelcomeContextConsoleServlet extends HttpServlet {
             InetAddress inboundAddress = InetAddress.getByName(req.getLocalAddr());
             // First check that the address used to contact the JBoss Web connector is accessible over the network interfaces
             // assigned for the HttpManagementService
-            if (isAccessible(inboundAddress)) {
-                boolean secureRedirect = secureRedirect(req.isSecure());
+            boolean secureRedirect = secureRedirect(req.isSecure());
+            if (isAccessible(inboundAddress, secureRedirect)) {
+
                 String host = req.getServerName();
-                StringBuilder targetBuilder = new StringBuilder();
                 if (secureRedirect) {
                     target = assembleURL(HTTPS, host, consoleSecurePort, SECURE_DEFAULT_PORT, CONSOLE_PATH);
                 } else {
@@ -135,8 +139,9 @@ public class WelcomeContextConsoleServlet extends HttpServlet {
         }
     }
 
-    private boolean isAccessible(final InetAddress inboundAddress) {
-        Collection<NetworkInterface> nics = consoleNetworkInterface.getNetworkInterfaces();
+    private boolean isAccessible(final InetAddress inboundAddress, final boolean secure) {
+        final NetworkInterfaceBinding interfaceBinding = secure ? secureConsoleNetworkInterface : consoleNetworkInterface;
+        Collection<NetworkInterface> nics = interfaceBinding.getNetworkInterfaces();
 
         for (NetworkInterface current : nics) {
             boolean matched = matches(current, inboundAddress);

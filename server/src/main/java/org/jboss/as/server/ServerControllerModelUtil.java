@@ -24,13 +24,11 @@ package org.jboss.as.server;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_REMOTING_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTBOUND_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
@@ -103,12 +101,10 @@ import org.jboss.as.server.deployment.DeploymentUploadBytesHandler;
 import org.jboss.as.server.deployment.DeploymentUploadStreamAttachmentHandler;
 import org.jboss.as.server.deployment.DeploymentUploadURLHandler;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
+import org.jboss.as.server.mgmt.NativeManagementResourceDefinition;
 import org.jboss.as.server.operations.DumpServicesHandler;
-import org.jboss.as.server.operations.HttpManagementAddHandler;
-import org.jboss.as.server.operations.HttpManagementAttributeHandlers;
 import org.jboss.as.server.operations.LaunchTypeHandler;
-import org.jboss.as.server.operations.NativeManagementAddHandler;
-import org.jboss.as.server.operations.NativeManagementAttributeHandlers;
 import org.jboss.as.server.operations.NativeRemotingManagementAddHandler;
 import org.jboss.as.server.operations.ProcessTypeHandler;
 import org.jboss.as.server.operations.RootResourceHack;
@@ -239,17 +235,12 @@ public class ServerControllerModelUtil {
         connection.registerOperationHandler(ConnectionAddHandler.OPERATION_NAME, ConnectionAddHandler.INSTANCE, ConnectionAddHandler.INSTANCE, false);
 
         // Management Interface protocols
-        ManagementResourceRegistration managementNative = management.registerSubModel(PathElement.pathElement(MANAGEMENT_INTERFACE, NATIVE_INTERFACE), CommonProviders.NATIVE_MANAGEMENT_PROVIDER);
-        managementNative.registerOperationHandler(NativeManagementAddHandler.OPERATION_NAME, NativeManagementAddHandler.INSTANCE, NativeManagementAddHandler.INSTANCE, false);
-        managementNative.registerReadWriteAttribute(SECURITY_REALM, null, NativeManagementAttributeHandlers.INSTANCE, Storage.CONFIGURATION);
+        management.registerSubModel(NativeManagementResourceDefinition.INSTANCE);
 
         ManagementResourceRegistration managementNativeRemoting = management.registerSubModel(PathElement.pathElement(MANAGEMENT_INTERFACE, NATIVE_REMOTING_INTERFACE), CommonProviders.NATIVE_REMOTING_MANAGEMENT_PROVIDER);
         managementNativeRemoting.registerOperationHandler(NativeRemotingManagementAddHandler.OPERATION_NAME, NativeRemotingManagementAddHandler.INSTANCE, NativeRemotingManagementAddHandler.INSTANCE, false);
 
-        ManagementResourceRegistration managementHttp = management.registerSubModel(PathElement.pathElement(MANAGEMENT_INTERFACE, HTTP_INTERFACE), CommonProviders.HTTP_MANAGEMENT_PROVIDER);
-        managementHttp.registerOperationHandler(HttpManagementAddHandler.OPERATION_NAME, HttpManagementAddHandler.INSTANCE, HttpManagementAddHandler.INSTANCE, false);
-        managementHttp.registerReadWriteAttribute(SECURITY_REALM, null, HttpManagementAttributeHandlers.INSTANCE, Storage.CONFIGURATION);
-        // root.registerReadWriteAttribute(ModelDescriptionConstants.MANAGEMENT_INTERFACE, GlobalOperationHandlers.READ_ATTRIBUTE, ManagementSocketAddHandler.INSTANCE);
+        management.registerSubModel(HttpManagementResourceDefinition.INSTANCE);
 
         // Other core services
         ManagementResourceRegistration serviceContainer = root.registerSubModel(PathElement.pathElement(CORE_SERVICE, SERVICE_CONTAINER), CommonProviders.SERVICE_CONTAINER_PROVIDER);

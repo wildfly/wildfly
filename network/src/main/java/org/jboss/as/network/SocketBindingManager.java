@@ -106,6 +106,13 @@ public interface SocketBindingManager {
     InetAddress getDefaultInterfaceAddress();
 
     /**
+     * Return the {@link NetworkInterfaceBinding} for the default interface.
+     *
+     * @return the network interface binding
+     */
+    NetworkInterfaceBinding getDefaultInterfaceBinding();
+
+    /**
      * Get the server port offset.
      * TODO move to somewhere else...
      *

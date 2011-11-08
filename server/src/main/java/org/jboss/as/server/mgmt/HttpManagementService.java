@@ -30,7 +30,11 @@ import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.domain.http.server.ManagementHttpServer;
 import org.jboss.as.domain.management.security.SecurityRealmService;
+import org.jboss.as.network.ManagedBinding;
+import org.jboss.as.network.ManagedBindingRegistry;
 import org.jboss.as.network.NetworkInterfaceBinding;
+import org.jboss.as.network.SocketBinding;
+import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -49,26 +53,62 @@ public class HttpManagementService implements Service<HttpManagement> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("serverManagement", "controller", "management", "http");
 
     private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
+    private final InjectedValue<SocketBinding> injectedSocketBindingValue = new InjectedValue<SocketBinding>();
+    private final InjectedValue<SocketBinding> injectedSecureSocketBindingValue = new InjectedValue<SocketBinding>();
     private final InjectedValue<NetworkInterfaceBinding> interfaceBindingValue = new InjectedValue<NetworkInterfaceBinding>();
+    private final InjectedValue<SocketBindingManager> injectedSocketBindingManager = new InjectedValue<SocketBindingManager>();
     private final InjectedValue<Integer> portValue = new InjectedValue<Integer>();
     private final InjectedValue<Integer> securePortValue = new InjectedValue<Integer>();
     private final InjectedValue<ExecutorService> executorServiceValue = new InjectedValue<ExecutorService>();
     private final InjectedValue<String> tempDirValue = new InjectedValue<String>();
     private final InjectedValue<SecurityRealmService> securityRealmServiceValue = new InjectedValue<SecurityRealmService>();
     private ManagementHttpServer serverManagement;
-    private ModelControllerClient modelControllerClient;
+    private SocketBindingManager socketBindingManager;
+    private boolean useUnmanagedBindings = false;
+    private ManagedBinding basicManagedBinding;
+    private ManagedBinding secureManagedBinding;
 
     private HttpManagement httpManagement = new HttpManagement() {
-        public int getPort() {
-            return portValue.getOptionalValue();
+        public InetSocketAddress getHttpSocketAddress(){
+            return basicManagedBinding == null ? null : basicManagedBinding.getBindAddress();
         }
 
-        public int getSecurePort() {
-            return securePortValue.getOptionalValue();
+        public InetSocketAddress getHttpsSocketAddress() {
+            return secureManagedBinding == null ? null : secureManagedBinding.getBindAddress();
         }
 
-        public NetworkInterfaceBinding getNetworkInterfaceBinding() {
-            return interfaceBindingValue.getValue();
+        @Override
+        public int getHttpPort() {
+            return basicManagedBinding == null ? -1 : basicManagedBinding.getBindAddress().getPort();
+        }
+
+        @Override
+        public NetworkInterfaceBinding getHttpNetworkInterfaceBinding() {
+            NetworkInterfaceBinding binding = interfaceBindingValue.getOptionalValue();
+            if (binding == null) {
+                SocketBinding socketBinding = injectedSocketBindingValue.getOptionalValue();
+                if (socketBinding != null) {
+                    binding = socketBinding.getNetworkInterfaceBinding();
+                }
+            }
+            return binding;
+        }
+
+        @Override
+        public int getHttpsPort() {
+            return secureManagedBinding == null ? -1 : secureManagedBinding.getBindAddress().getPort();
+        }
+
+        @Override
+        public NetworkInterfaceBinding getHttpsNetworkInterfaceBinding() {
+            NetworkInterfaceBinding binding = interfaceBindingValue.getOptionalValue();
+            if (binding == null) {
+                SocketBinding socketBinding = injectedSecureSocketBindingValue.getOptionalValue();
+                if (socketBinding != null) {
+                    binding = socketBinding.getNetworkInterfaceBinding();
+                }
+            }
+            return binding;
         }
     };
 
@@ -81,30 +121,69 @@ public class HttpManagementService implements Service<HttpManagement> {
     public synchronized void start(StartContext context) throws StartException {
         final ModelController modelController = modelControllerValue.getValue();
         final ExecutorService executorService = executorServiceValue.getValue();
-        final NetworkInterfaceBinding interfaceBinding = interfaceBindingValue.getValue();
-        modelControllerClient = modelController.createClient(executorService);
-
-        final int port = portValue.getOptionalValue();
-        InetSocketAddress bindAddress = null;
-        if (port > 0) {
-            bindAddress = new InetSocketAddress(interfaceBinding.getAddress(), port);
-        }
-        final int securePort = securePortValue.getOptionalValue();
-        InetSocketAddress secureBindAddress = null;
-        if (securePort > 0) {
-            secureBindAddress = new InetSocketAddress(interfaceBinding.getAddress(), securePort);
-        }
+        final ModelControllerClient modelControllerClient = modelController.createClient(executorService);
+        socketBindingManager = injectedSocketBindingManager.getOptionalValue();
 
         final SecurityRealmService securityRealmService = securityRealmServiceValue.getOptionalValue();
+
+        InetSocketAddress bindAddress = null;
+        InetSocketAddress secureBindAddress = null;
+
+        SocketBinding basicBinding = injectedSocketBindingValue.getOptionalValue();
+        SocketBinding secureBinding = injectedSecureSocketBindingValue.getOptionalValue();
+        final NetworkInterfaceBinding interfaceBinding = interfaceBindingValue.getOptionalValue();
+        if (interfaceBinding != null) {
+            useUnmanagedBindings = true;
+            final int port = portValue.getOptionalValue();
+            if (port > 0) {
+                bindAddress = new InetSocketAddress(interfaceBinding.getAddress(), port);
+            }
+            final int securePort = securePortValue.getOptionalValue();
+            if (securePort > 0) {
+                secureBindAddress = new InetSocketAddress(interfaceBinding.getAddress(), securePort);
+            }
+        } else {
+            if (basicBinding != null) {
+                bindAddress = basicBinding.getSocketAddress();
+            }
+            if (secureBinding != null) {
+                secureBindAddress = secureBinding.getSocketAddress();
+            }
+        }
 
         try {
             serverManagement = ManagementHttpServer.create(bindAddress, secureBindAddress, 50, modelControllerClient, executorService, securityRealmService);
             serverManagement.start();
+
+            // Register the now-created sockets with the SBM
+            if (socketBindingManager != null) {
+                if (useUnmanagedBindings) {
+                    SocketBindingManager.UnnamedBindingRegistry registry = socketBindingManager.getUnnamedRegistry();
+                    if (bindAddress != null) {
+                        basicManagedBinding = ManagedBinding.Factory.createSimpleManagedBinding("management-http", bindAddress, null);
+                        registry.registerBinding(basicManagedBinding);
+                    }
+                    if (secureBindAddress != null) {
+                        secureManagedBinding = ManagedBinding.Factory.createSimpleManagedBinding("management-https", secureBindAddress, null);
+                        registry.registerBinding(secureManagedBinding);
+                    }
+                } else {
+                    SocketBindingManager.NamedManagedBindingRegistry registry = socketBindingManager.getNamedRegistry();
+                    if (basicBinding != null) {
+                        basicManagedBinding = ManagedBinding.Factory.createSimpleManagedBinding(basicBinding);
+                        registry.registerBinding(basicManagedBinding);
+                    }
+                    if (secureBinding != null) {
+                        secureManagedBinding = ManagedBinding.Factory.createSimpleManagedBinding(secureBinding);
+                        registry.registerBinding(secureManagedBinding);
+                    }
+                }
+            }
         } catch (BindException e) {
             final StringBuilder sb = new StringBuilder().append(e.getMessage());
-            if (port > 0)
+            if (bindAddress != null)
                 sb.append(" ").append(bindAddress);
-            if (securePort > 0)
+            if (secureBindAddress != null)
                 sb.append(" ").append(secureBindAddress);
             throw new StartException(sb.toString(), e);
         } catch (Exception e) {
@@ -119,7 +198,26 @@ public class HttpManagementService implements Service<HttpManagement> {
      */
     public synchronized void stop(StopContext context) {
         if (serverManagement != null) {
-            serverManagement.stop();
+            try {
+                serverManagement.stop();
+            } finally {
+                serverManagement = null;
+
+                // Unregister sockets from the SBM
+                if (socketBindingManager != null) {
+                    ManagedBindingRegistry registry = useUnmanagedBindings ? socketBindingManager.getUnnamedRegistry() : socketBindingManager.getNamedRegistry();
+                    if (basicManagedBinding != null) {
+                        registry.unregisterBinding(basicManagedBinding);
+                        basicManagedBinding = null;
+                    }
+                    if (secureManagedBinding != null) {
+                        registry.unregisterBinding(secureManagedBinding);
+                        secureManagedBinding = null;
+                    }
+                    socketBindingManager = null;
+                    useUnmanagedBindings = false;
+                }
+            }
         }
     }
 
@@ -137,6 +235,18 @@ public class HttpManagementService implements Service<HttpManagement> {
      */
     public Injector<NetworkInterfaceBinding> getInterfaceInjector() {
         return interfaceBindingValue;
+    }
+
+    public Injector<SocketBindingManager> getSocketBindingManagerInjector() {
+        return injectedSocketBindingManager;
+    }
+
+    public Injector<SocketBinding> getSocketBindingInjector() {
+        return injectedSocketBindingValue;
+    }
+
+    public Injector<SocketBinding> getSecureSocketBindingInjector() {
+        return injectedSecureSocketBindingValue;
     }
 
     /**

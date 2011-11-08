@@ -22,114 +22,205 @@
 
 package org.jboss.as.server.operations;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURE_PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
+import static org.jboss.as.server.mgmt.HttpManagementResourceDefinition.HTTPS_PORT;
+import static org.jboss.as.server.mgmt.HttpManagementResourceDefinition.HTTP_PORT;
+import static org.jboss.as.server.mgmt.HttpManagementResourceDefinition.INTERFACE;
+import static org.jboss.as.server.mgmt.HttpManagementResourceDefinition.SECURE_SOCKET_BINDING;
+import static org.jboss.as.server.mgmt.HttpManagementResourceDefinition.SECURITY_REALM;
+import static org.jboss.as.server.mgmt.HttpManagementResourceDefinition.SOCKET_BINDING;
 
 import java.security.AccessController;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.Executors;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.ManagementDescription;
 import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.network.NetworkInterfaceBinding;
+import org.jboss.as.network.SocketBinding;
+import org.jboss.as.network.SocketBindingManager;
+import org.jboss.as.network.SocketBindingManagerImpl;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.Services;
+import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
 import org.jboss.as.server.mgmt.HttpManagementService;
+import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.threads.JBossThreadFactory;
 
 /**
- * A handler that activates the HTTP management API.
+ * A handler that activates the HTTP management API on a Server.
  *
  * @author Jason T. Greene
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class HttpManagementAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
+public class HttpManagementAddHandler extends AbstractAddStepHandler {
 
     public static final HttpManagementAddHandler INSTANCE = new HttpManagementAddHandler();
     public static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
-        model.get(INTERFACE).set(operation.require(INTERFACE).asString());
-        if (operation.hasDefined(PORT)) {
-            model.get(ModelDescriptionConstants.PORT).set(operation.require(PORT).asInt());
-        }
-        if (operation.hasDefined(SECURE_PORT)) {
-            model.get(ModelDescriptionConstants.SECURE_PORT).set(operation.require(SECURE_PORT).asInt());
-        }
-        if (operation.hasDefined(SECURITY_REALM)) {
-            model.get(ModelDescriptionConstants.SECURITY_REALM).set(operation.get(SECURITY_REALM).asString());
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+
+        for (AttributeDefinition definition : HttpManagementResourceDefinition.ATTRIBUTE_DEFINITIONS) {
+            validateAndSet(definition, operation, model);
         }
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        final String interfaceName = operation.require(ModelDescriptionConstants.INTERFACE).asString();
-        final int port = getIntValue(operation, ModelDescriptionConstants.PORT);
-        final int securePort = getIntValue(operation, ModelDescriptionConstants.SECURE_PORT);
-        final String securityRealm = operation.hasDefined(SECURITY_REALM) ? operation.get(SECURITY_REALM).asString() : null;
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
+                                  final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers)
+            throws OperationFailedException {
+        installHttpManagementConnector(context, model, context.getServiceTarget(), verificationHandler, newControllers);
+    }
 
-        final ServiceTarget serviceTarget = context.getServiceTarget();
+    // TODO move this kind of logic into AttributeDefinition itself
+    private static void validateAndSet(final AttributeDefinition definition, final ModelNode operation, final ModelNode subModel) throws OperationFailedException {
+        final String attributeName = definition.getName();
+        final boolean has = operation.has(attributeName);
+        if(! has && definition.isRequired(operation)) {
+            throw new OperationFailedException(new ModelNode().set(attributeName + " is required"));
+        }
+        if(has) {
+            if(! definition.isAllowed(operation)) {
+                throw new OperationFailedException(new ModelNode().set(attributeName + " is invalid"));
+            }
+            definition.validateAndSet(operation, subModel);
+        } else {
+            // create the undefined node
+            subModel.get(definition.getName());
+        }
+    }
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("creating http management service using network interface (").append(interfaceName).append(")");
-        if (port > -1) {
-            sb.append(" port (").append(port).append(")");
+    // TODO move this kind of logic into AttributeDefinition itself
+    private static ModelNode validateResolvedModel(final AttributeDefinition definition, final OperationContext context,
+                                                   final ModelNode subModel) throws OperationFailedException {
+        final String attributeName = definition.getName();
+        final boolean has = subModel.has(attributeName);
+        if(! has && definition.isRequired(subModel)) {
+            throw new OperationFailedException(new ModelNode().set(String.format("%s is required", attributeName)));
         }
-        if (securePort > -1) {
-            sb.append(" securePort (").append(securePort).append(")");
+        ModelNode result;
+        if(has) {
+            if(! definition.isAllowed(subModel)) {
+                if (subModel.hasDefined(attributeName)) {
+                    throw new OperationFailedException(new ModelNode().set(String.format("%s is not allowed when [%s] are present", attributeName, definition.getAlternatives())));
+                } else {
+                    // create the undefined node
+                    result = new ModelNode();
+                }
+            } else {
+                result = definition.resolveModelAttribute(context, subModel);
+            }
+        } else {
+            // create the undefined node
+            result = new ModelNode();
         }
-        Logger.getLogger("org.jboss.as").info(sb.toString());
+
+        return result;
+    }
+
+    static void installHttpManagementConnector(final OperationContext context, final ModelNode model, final ServiceTarget serviceTarget,
+                                               final ServiceVerificationHandler verificationHandler,
+                                               final List<ServiceController<?>> newControllers) throws OperationFailedException {
+
+        ServiceName socketBindingServiceName = null;
+        ServiceName secureSocketBindingServiceName = null;
+        ServiceName interfaceSvcName = null;
+        int port = -1;
+        int securePort = -1;
+
+        final ModelNode interfaceModelNode = validateResolvedModel(INTERFACE, context, model);
+        if (interfaceModelNode.isDefined()) {
+            // Legacy config
+            String interfaceName = interfaceModelNode.asString();
+            interfaceSvcName = NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName);
+            final ModelNode portNode = HTTP_PORT.resolveModelAttribute(context, model);
+            port = portNode.isDefined() ? portNode.asInt() : -1;
+            final ModelNode securePortNode = HTTPS_PORT.resolveModelAttribute(context, model);
+            securePort = securePortNode.isDefined() ? securePortNode.asInt() : -1;
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("Creating http management service using network interface (").append(interfaceName).append(")");
+            if (port > -1) {
+                sb.append(" port (").append(port).append(")");
+            }
+            if (securePort > -1) {
+                sb.append(" securePort (").append(securePort).append(")");
+            }
+            Logger.getLogger("org.jboss.as").info(sb.toString());
+        } else {
+            // Socket-binding reference based config
+            final ModelNode socketBindingNode = SOCKET_BINDING.resolveModelAttribute(context, model);
+            if (socketBindingNode.isDefined()) {
+                final String bindingName = socketBindingNode.asString();
+                socketBindingServiceName = SocketBinding.JBOSS_BINDING_NAME.append(bindingName);
+            }
+            final ModelNode secureSocketBindingNode = SECURE_SOCKET_BINDING.resolveModelAttribute(context, model);
+            if (secureSocketBindingNode.isDefined()) {
+                final String bindingName = secureSocketBindingNode.asString();
+                secureSocketBindingServiceName = SocketBinding.JBOSS_BINDING_NAME.append(bindingName);
+            }
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("Creating http management service using ");
+            if (socketBindingServiceName != null) {
+                sb.append(" socket-binding (").append(socketBindingServiceName.getSimpleName()).append(")");
+            }
+            if (secureSocketBindingServiceName != null) {
+                sb.append(" secure-socket-binding (").append(secureSocketBindingServiceName.getSimpleName()).append(")");
+            }
+            Logger.getLogger("org.jboss.as").info(sb.toString());
+        }
+
+        ServiceName realmSvcName = null;
+        final ModelNode realmNode = SECURITY_REALM.resolveModelAttribute(context, model);
+        if (realmNode.isDefined()) {
+            realmSvcName = SecurityRealmService.BASE_SERVICE_NAME.append(realmNode.asString());
+        } else {
+            Logger.getLogger("org.jboss.as").warn("No security realm has been defined for the http management service; all access will be unrestricted.");
+        }
 
         final HttpManagementService service = new HttpManagementService();
-        ServiceBuilder builder = serviceTarget.addService(HttpManagementService.SERVICE_NAME, service)
-                .addDependency(
-                        NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName),
-                        NetworkInterfaceBinding.class, service.getInterfaceInjector())
+        ServiceBuilder<HttpManagement> builder = serviceTarget.addService(HttpManagementService.SERVICE_NAME, service)
                 .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, service.getModelControllerInjector())
                 .addDependency(AbstractPathService.pathNameOf(ServerEnvironment.SERVER_TEMP_DIR), String.class, service.getTempDirInjector())
-                .addInjection(service.getPortInjector(), port)
-                .addInjection(service.getSecurePortInjector(), securePort)
+                .addDependency(SocketBindingManagerImpl.SOCKET_BINDING_MANAGER, SocketBindingManager.class, service.getSocketBindingManagerInjector())
                 .addInjection(service.getExecutorServiceInjector(), Executors.newCachedThreadPool(new JBossThreadFactory(new ThreadGroup("HttpManagementService-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext())));
 
-        if (securityRealm != null) {
-            builder.addDependency(SecurityRealmService.BASE_SERVICE_NAME.append(securityRealm), SecurityRealmService.class, service.getSecurityRealmInjector());
+        if (interfaceSvcName != null) {
+            builder.addDependency(interfaceSvcName, NetworkInterfaceBinding.class, service.getInterfaceInjector())
+                .addInjection(service.getPortInjector(), port)
+                .addInjection(service.getSecurePortInjector(), securePort);
         } else {
-            Logger.getLogger("org.jboss.as").warn("No security realm defined for http management service, all access will be unrestricted.");
+            if (socketBindingServiceName != null) {
+                builder.addDependency(socketBindingServiceName, SocketBinding.class, service.getSocketBindingInjector());
+            }
+            if (secureSocketBindingServiceName != null) {
+                builder.addDependency(secureSocketBindingServiceName, SocketBinding.class, service.getSecureSocketBindingInjector());
+            }
         }
 
-        newControllers.add(builder.addListener(verificationHandler)
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install());
-
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return ManagementDescription.getAddHttpManagementDescription(locale);
-    }
-
-    private int getIntValue(ModelNode source, String name) {
-        if (source.hasDefined(name)) {
-            return source.require(name).asInt();
+        if (realmSvcName != null) {
+            builder.addDependency(realmSvcName, SecurityRealmService.class, service.getSecurityRealmInjector());
         }
-        return -1;
+
+        if (verificationHandler != null) {
+            builder.addListener(verificationHandler);
+        }
+        ServiceController<?> controller = builder.install();
+        if (newControllers != null) {
+            newControllers.add(controller);
+        }
     }
 }
