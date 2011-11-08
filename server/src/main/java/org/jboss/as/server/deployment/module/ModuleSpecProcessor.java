@@ -22,6 +22,12 @@
 
 package org.jboss.as.server.deployment.module;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -44,12 +50,6 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Processor responsible for creating the module spec service for this deployment. Once the module spec service is created the
@@ -84,12 +84,12 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         if (mainRoot == null) {
             return;
         }
-        List<ResourceRoot> resourceRoots = new ArrayList<ResourceRoot>();
+        final List<ResourceRoot> resourceRoots = new ArrayList<ResourceRoot>();
         // Add internal resource roots
         if (ModuleRootMarker.isModuleRoot(mainRoot)) {
             resourceRoots.add(mainRoot);
         }
-        for (ResourceRoot additionalRoot : additionalRoots) {
+        for (final ResourceRoot additionalRoot : additionalRoots) {
             if (ModuleRootMarker.isModuleRoot(additionalRoot) && !SubDeploymentMarker.isSubDeployment(additionalRoot)) {
                 resourceRoots.add(additionalRoot);
             }
@@ -107,11 +107,11 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         processTransitiveDependencies(moduleSpecification, phaseContext);
 
         // create the module servce and set it to attach to the deployment in the next phase
-        ServiceName moduleServiceName = createModuleService(phaseContext, deploymentUnit, resourceRoots, moduleSpecification,
+        final ServiceName moduleServiceName = createModuleService(phaseContext, deploymentUnit, resourceRoots, moduleSpecification,
                 moduleIdentifier);
         phaseContext.addDeploymentDependency(moduleServiceName, Attachments.MODULE);
 
-        for (DeploymentUnit subDeployment : deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS)) {
+        for (final DeploymentUnit subDeployment : deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS)) {
             ModuleIdentifier moduleId = subDeployment.getAttachment(Attachments.MODULE_IDENTIFIER);
             if (moduleId != null) {
                 phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, ServiceModuleLoader.moduleSpecServiceName(moduleId));
@@ -126,10 +126,24 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
 
             processTransitiveDependencies(module, phaseContext);
 
+            addSystemDependencies(moduleSpecification, module);
+
             ServiceName additionalModuleServiceName = createModuleService(phaseContext, deploymentUnit, module
                     .getResourceRoots(), module, module.getModuleIdentifier());
             phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, additionalModuleServiceName);
         }
+    }
+
+    /**
+     * Gives any additional modules the same system dependencies as the primary module.
+     *
+     * This makes sure they can access all API classes etc.
+     *
+     * @param moduleSpecification The primary module spec
+     * @param module The additional module
+     */
+    private void addSystemDependencies(final ModuleSpecification moduleSpecification, final AdditionalModuleSpecification module) {
+            module.addSystemDependencies(moduleSpecification.getSystemDependencies());
     }
 
     /**
