@@ -51,7 +51,6 @@ class LoggerAdd extends AbstractAddStepHandler {
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         LEVEL.validateAndSet(operation, model);
-        CATEGORY.validateAndSet(operation, model);
         HANDLERS.validateAndSet(operation, model);
         USE_PARENT_HANDLERS.validateAndSet(operation, model);
     }
