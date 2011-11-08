@@ -30,6 +30,7 @@
         <extension module="org.jboss.as.ejb3"/>
         <extension module="org.jboss.as.jacorb"/>
         <extension module="org.jboss.as.jaxrs"/>
+        <extension module="org.jboss.as.jdr"/>
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.jpa"/>
         <extension module="org.jboss.as.logging"/>
@@ -191,6 +192,7 @@
                 </long-running-threads>
             </default-workmanager>
         </subsystem>
+        <subsystem xmlns="urn:jboss:domain:jdr:1.0"/>
         <subsystem xmlns="urn:jboss:domain:jmx:1.1" show-model="true">
             <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server" />
         </subsystem>

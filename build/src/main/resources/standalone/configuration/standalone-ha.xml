@@ -31,6 +31,7 @@
         <extension module="org.jboss.as.ejb3"/>
         <extension module="org.jboss.as.jacorb"/>
         <extension module="org.jboss.as.jaxrs"/>
+        <extension module="org.jboss.as.jdr"/>
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.jpa"/>
         <extension module="org.jboss.as.logging"/>
@@ -227,6 +228,7 @@
                 </long-running-threads>
             </default-workmanager>
         </subsystem>
+        <subsystem xmlns="urn:jboss:domain:jdr:1.0"/>
         <subsystem xmlns="urn:jboss:domain:jgroups:1.0" default-stack="udp">
             <stack name="udp">
                 <transport type="UDP" socket-binding="jgroups-udp" diagnostics-socket-binding="jgroups-diagnostics"/>

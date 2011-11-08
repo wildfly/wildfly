@@ -31,6 +31,7 @@
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.ejb3"/>
         <extension module="org.jboss.as.jaxrs"/>
+        <extension module="org.jboss.as.jdr"/>
         <extension module="org.jboss.as.messaging"/>
         <extension module="org.jboss.as.modcluster"/>
         <extension module="org.jboss.as.naming"/>
@@ -159,6 +160,7 @@
                 <coordinator-environment default-timeout="300"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:remoting:1.0"/>
+            <subsystem xmlns="urn:jboss:domain:jdr:1.0"/>
             <subsystem xmlns="urn:jboss:domain:jmx:1.0">
                  <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server" />
             </subsystem>
