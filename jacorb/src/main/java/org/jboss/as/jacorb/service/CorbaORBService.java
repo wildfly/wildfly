@@ -118,6 +118,8 @@ public class CorbaORBService implements Service<ORB> {
             try {
                 SecurityActions.setThreadContextClassLoader(SecurityActions.getClassLoader(this.getClass()));
                 this.orb = ORB.init(new String[0], properties);
+                // initialize the ORBSingleton.
+                ORB.init();
             } finally {
                 // restore the thread context classloader.
                 SecurityActions.setThreadContextClassLoader(loader);
