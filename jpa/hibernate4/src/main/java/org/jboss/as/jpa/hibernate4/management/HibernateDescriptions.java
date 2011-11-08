@@ -223,6 +223,10 @@ public class HibernateDescriptions {
         return getDescriptionOnlyOperation(locale, HibernateDescriptionConstants.CLEAR_STATISTICS, HibernateDescriptionConstants.OPERATION_PREFIX);
     }
 
+    public static ModelNode evictall(final Locale locale) {
+        return getDescriptionOnlyOperation(locale, HibernateDescriptionConstants.EVICTALL_2LC, HibernateDescriptionConstants.OPERATION_PREFIX);
+    }
+
     public static ModelNode summary(Locale locale) {
         return getDescriptionOnlyOperation(locale, HibernateDescriptionConstants.SUMMARY_STATISTICS, HibernateDescriptionConstants.OPERATION_PREFIX);
     }

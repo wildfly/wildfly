@@ -3,7 +3,6 @@
  */
 package org.jboss.as.jpa.hibernate4.management;
 
-import org.hibernate.stat.Statistics;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -37,7 +36,7 @@ public class StatisticsEnabledWriteHandler implements OperationStepHandler {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-                    Statistics stats = null;
+                    ManagementLookup stats = null;
                     boolean oldSetting = false;
                     {
                         final ModelNode value = operation.get(ModelDescriptionConstants.VALUE).resolve();
@@ -47,15 +46,15 @@ public class StatisticsEnabledWriteHandler implements OperationStepHandler {
 
                         final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
                         final String puName = address.getLastElement().getValue();
-                        stats = ManagementUtility.getStatistics(persistenceUnitRegistry, puName);
+                        stats = ManagementLookup.create(persistenceUnitRegistry, puName);
                         if (stats != null) {
-                            oldSetting = stats.isStatisticsEnabled();
-                            stats.setStatisticsEnabled(setting);
+                            oldSetting = stats.getStatistics().isStatisticsEnabled();
+                            stats.getStatistics().setStatisticsEnabled(setting);
                         }
                     }
 
                     if (context.completeStep() != OperationContext.ResultAction.KEEP && stats != null) {
-                        stats.setStatisticsEnabled(oldSetting);
+                        stats.getStatistics().setStatisticsEnabled(oldSetting);
                     }
                 }
             }, OperationContext.Stage.RUNTIME);

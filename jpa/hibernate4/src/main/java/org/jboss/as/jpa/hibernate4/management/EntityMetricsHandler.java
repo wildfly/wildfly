@@ -23,7 +23,6 @@
 package org.jboss.as.jpa.hibernate4.management;
 
 import org.hibernate.stat.EntityStatistics;
-import org.hibernate.stat.Statistics;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -60,8 +59,8 @@ public abstract class EntityMetricsHandler extends AbstractRuntimeOnlyHandler {
         final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
         final String puResourceName = address.getElement(address.size() - 2).getValue();
         final String entityName = address.getLastElement().getValue();
-        Statistics stats = ManagementUtility.getStatistics(persistenceUnitRegistry, puResourceName);
-        return stats == null ? null : stats.getEntityStatistics(entityName);
+        ManagementLookup stats = ManagementLookup.create(persistenceUnitRegistry, puResourceName);
+        return stats == null ? null : stats.getStatistics().getEntityStatistics(entityName);
     }
 
 

@@ -33,6 +33,7 @@ public class HibernateDescriptionConstants {
 
     public static final String ENTITYCACHE = "entity-cache";
     public static final String CLEAR_STATISTICS = "clear";
+    public static final String EVICTALL_2LC = "evictall";
     public static final String CLOSE_STATEMENT_COUNT = "hibernate.statistics.close-statement-count";
     public static final String COLLECTION = "collection";
     public static final String COLLECTION_STATISTICS = "hibernate.statistics.collection";
