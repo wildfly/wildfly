@@ -78,6 +78,10 @@ public class MemoryPoolMXBeanReadResourceHandler implements OperationStepHandler
                 // just leave it undefined
             }
         }
+        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
+            final ModelNode store = result.get(PlatformMBeanConstants.OBJECT_NAME);
+            MemoryPoolMXBeanAttributeHandler.storeResult(PlatformMBeanConstants.OBJECT_NAME, store, memoryPoolMXBean, memPoolName);
+        }
 
         context.completeStep();
     }
