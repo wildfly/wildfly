@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2006, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.jaxr.service;
 
 import org.jboss.msc.service.ServiceName;
@@ -47,12 +46,8 @@ public class JAXRConfiguration {
     private boolean dropOnStart=true;
     // Datasource to Database
     private String dataSourceUrl= JAXR_DEFAULT_DATASOURCE_BINDING;
-    // Alias to the registry
-    private String registryOperator="RegistryOperator";
-    // Should I bind a Context to which JaxrConnectionFactory bound
-    private boolean bindJaxr=true;
     // Context to which JAXR ConnectionFactory to bind to
-    private String namingContext = JAXR_DEFAULT_CONNECTION_FACTORY_BINDING;
+    private String connectionFactoryUrl = JAXR_DEFAULT_CONNECTION_FACTORY_BINDING;
 
     public static JAXRConfiguration INSTANCE = new JAXRConfiguration();
 
@@ -72,19 +67,31 @@ public class JAXRConfiguration {
         return dataSourceUrl;
     }
 
-    String getRegistryOperator() {
-        return registryOperator;
-    }
-
-    boolean isBindJaxr() {
-        return bindJaxr;
-    }
-
-    String getNamingContext() {
-        return namingContext;
+    String getConnectionFactoryUrl() {
+        return connectionFactoryUrl;
     }
 
     boolean isCreateOnStart() {
         return createOnStart;
+    }
+
+    public void setConnectionFactoryUrl(String connectionFactoryUrl) {
+        this.connectionFactoryUrl = connectionFactoryUrl;
+    }
+
+    public void setCreateOnStart(boolean createOnStart) {
+        this.createOnStart = createOnStart;
+    }
+
+    public void setDataSourceUrl(String dataSourceUrl) {
+        this.dataSourceUrl = dataSourceUrl;
+    }
+
+    public void setDropOnStart(boolean dropOnStart) {
+        this.dropOnStart = dropOnStart;
+    }
+
+    public void setDropOnStop(boolean dropOnStop) {
+        this.dropOnStop = dropOnStop;
     }
 }

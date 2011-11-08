@@ -5,19 +5,6 @@
             attributeFormDefault="unqualified"
             version="1.0">
 
-    <!-- The subsystem root element -->
-    <xs:element name="subsystem" type="subsystemType"/>
-
-    <xs:complexType name="subsystemType">
-        <xs:annotation>
-            <xs:documentation>
-            <![CDATA[
-                The configuration of the JAXR subsystem.
-            ]]>
-            </xs:documentation>
-        </xs:annotation>
-    </xs:complexType>
-
     <!--
     Whether we want to run the db initialization scripts
     Should all tables be created on Start
@@ -40,4 +27,39 @@
     <attribute name="DropDB">false</attribute>
     -->
 
+    <!-- The subsystem root element -->
+    <xs:element name="subsystem" type="subsystemType"/>
+
+    <xs:complexType name="subsystemType">
+        <xs:annotation>
+            <xs:documentation>
+            <![CDATA[
+                The configuration of the JAXR subsystem.
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
+          <xs:all >
+            <xs:element name="datasource" type="datasourceType" minOccurs="1" maxOccurs="1">
+              <xs:annotation>
+                <xs:documentation>
+                  <![CDATA[[
+                    Specifies the datasource for the registry
+                   ]]>
+                </xs:documentation>
+              </xs:annotation>
+            </xs:element>
+          </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="datasourceType" mixed="false">
+        <xs:attribute name="jndi-name" type="xs:token" use="required">
+          <xs:annotation>
+            <xs:documentation>
+              <![CDATA[[
+                Specifies the JNDI name for the datasource
+               ]]>
+            </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
 </xs:schema>
