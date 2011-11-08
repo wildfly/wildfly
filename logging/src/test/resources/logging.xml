@@ -46,7 +46,7 @@
         </formatter>
         <level name="DEBUG" />
         <max-backup-index value="1024" />
-        <rotate-size value="64" />
+        <rotate-size value="64m" />
     </size-rotating-file-handler>
 
     <file-handler name="simpleFile">

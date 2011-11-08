@@ -147,11 +147,23 @@ interface LoggingMessages {
     String invalidOverflowAction(String overflowAction);
 
     /**
-     * A message indicating the target name value is invalid.
+     * A message indicating the size is invalid.
+     *
+     * @param size the size.
      *
      * @return the message.
      */
-    @Message(id = 11530, value = "Invalid value for target name. Valid names include: %s")
+    @Message(id = 11530, value = "Invalid size %s")
+    String invalidSize(String size);
+
+    /**
+     * A message indicating the target name value is invalid.
+     *
+     * @param targets a collection of valid target names.
+     *
+     * @return the message.
+     */
+    @Message(id = 11531, value = "Invalid value for target name. Valid names include: %s")
     String invalidTargetName(EnumSet<Target> targets);
 
     /**
@@ -163,7 +175,7 @@ interface LoggingMessages {
      *
      * @return a {@link StartException} for the error.
      */
-    @Message(id = 11531, value = "'%s' is not a valid %s.")
+    @Message(id = 11532, value = "'%s' is not a valid %s.")
     StartException invalidType(String className, Class<?> type);
 
     /**
@@ -171,18 +183,8 @@ interface LoggingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11532, value = "Missing required nested filter element")
+    @Message(id = 11533, value = "Missing required nested filter element")
     String missingRequiredNestedFilterElement();
-
-    /**
-     * A message indicating the variable, represented by the {@code varName} parameter, is {@code null}.
-     *
-     * @param varName the variable name.
-     *
-     * @return the message.
-     */
-    @Message(id = 11533, value = "%s is null.")
-    String nullVar(String varName);
 
     /**
      * Creates an exception indicating the service has not yet been started.

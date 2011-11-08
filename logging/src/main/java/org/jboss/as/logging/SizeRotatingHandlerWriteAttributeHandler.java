@@ -47,7 +47,7 @@ public class SizeRotatingHandlerWriteAttributeHandler extends LogHandlerWriteAtt
         if (MAX_BACKUP_INDEX.getName().equals(attributeName)) {
             handler.setMaxBackupIndex(resolvedValue.asInt());
         } else if (ROTATE_SIZE.getName().equals(attributeName)) {
-            handler.setRotateSize(LoggingSubsystemParser.parseSize(resolvedValue.asString()));
+            handler.setRotateSize(SizeValidator.parseSize(resolvedValue.asString()));
         }
         return false;
     }
@@ -57,7 +57,7 @@ public class SizeRotatingHandlerWriteAttributeHandler extends LogHandlerWriteAtt
         if (MAX_BACKUP_INDEX.getName().equals(attributeName)) {
             handler.setMaxBackupIndex(valueToRestore.asInt());
         } else if (ROTATE_SIZE.getName().equals(attributeName)) {
-            handler.setRotateSize(LoggingSubsystemParser.parseSize(valueToRestore.asString()));
+            handler.setRotateSize(SizeValidator.parseSize(valueToRestore.asString()));
         }
     }
 }

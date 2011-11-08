@@ -742,43 +742,6 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         list.add(node);
     }
 
-    private static final Pattern SIZE_PATTERN = Pattern.compile("(\\d+)([kKmMgGbBtT])?");
-
-    public static long parseSize(final String value) {
-        final Matcher matcher = SIZE_PATTERN.matcher(value);
-        if (!matcher.matches()) {
-            throw new IllegalArgumentException();
-        }
-        long qty = Long.parseLong(matcher.group(1), 10);
-        final String chr = matcher.group(2);
-        if (chr != null) {
-            switch (chr.charAt(0)) {
-                case 'b':
-                case 'B':
-                    break;
-                case 'k':
-                case 'K':
-                    qty <<= 10L;
-                    break;
-                case 'm':
-                case 'M':
-                    qty <<= 20L;
-                    break;
-                case 'g':
-                case 'G':
-                    qty <<= 30L;
-                    break;
-                case 't':
-                case 'T':
-                    qty <<= 40L;
-                    break;
-                default:
-                    throw new IllegalStateException();
-            }
-        }
-        return qty;
-    }
-
     private static void parseFileElement(final ModelNode node, final XMLExtendedStreamReader reader) throws XMLStreamException {
         final EnumSet<Attribute> required = EnumSet.of(Attribute.PATH);
         final int count = reader.getAttributeCount();
