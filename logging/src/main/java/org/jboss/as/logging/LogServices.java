@@ -62,7 +62,9 @@ public final class LogServices {
     }
 
     public static ServiceName loggerHandlerName(final String loggerName, final String handlerName) {
-        return loggerName.length() == 0 ? ROOT_LOGGER_HANDLER.append(handlerName) : LOGGER_HANDLER.append(loggerName, handlerName);
+        return CommonAttributes.ROOT_LOGGER_NAME.equals(loggerName) ?
+                ROOT_LOGGER_HANDLER.append(CommonAttributes.ROOT_LOGGER_NAME, handlerName) :
+                LOGGER_HANDLER.append(loggerName, handlerName);
     }
 
     public static ServiceName handlerName(final String name) {
@@ -80,9 +82,13 @@ public final class LogServices {
             final String handlerName = handler.asString();
             final LoggerHandlerService service = new LoggerHandlerService(loggerName);
             final Injector<Handler> injector = service.getHandlerInjector();
-            controllers.add(serviceTarget.addService(LogServices.loggerHandlerName(loggerName, handlerName), service)
-                    .addDependency(LogServices.loggerName(loggerName))
-                    .addDependency(LogServices.handlerName(handlerName), Handler.class, injector)
+            final ServiceName serviceName = LogServices.loggerHandlerName(loggerName, handlerName);
+            final ServiceName dep1 = LogServices.loggerName(loggerName);
+            final ServiceName dep2 = LogServices.handlerName(handlerName);
+            LoggingLogger.ROOT_LOGGER.debugf("Installing: %s - %s - %s", serviceName, dep1, dep2);
+            controllers.add(serviceTarget.addService(serviceName, service)
+                    .addDependency(dep1)
+                    .addDependency(dep2, Handler.class, injector)
                     .addListener(verificationHandler)
                     .install());
         }

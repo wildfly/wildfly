@@ -45,11 +45,6 @@ public class RootLoggerUnassignHandler extends LoggerUnassignHandler {
     static final RootLoggerUnassignHandler INSTANCE = new RootLoggerUnassignHandler();
 
     @Override
-    protected ModelNode getParent(final ModelNode model) {
-        return model.get(ROOT_LOGGER);
-    }
-
-    @Override
     protected String getLoggerName(ModelNode operation) {
         return ROOT_LOGGER_NAME;
     }
