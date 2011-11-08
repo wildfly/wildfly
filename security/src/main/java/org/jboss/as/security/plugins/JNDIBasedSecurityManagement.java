@@ -92,7 +92,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
                 auditMgrMap.put(securityDomain, am);
             }
         } catch (Exception e) {
-            log.trace("Exception getting AuditManager for domain=" + securityDomain, e);
+            log.tracef("Exception getting AuditManager for domain=" + securityDomain, e);
         }
         return am;
     }
@@ -107,7 +107,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
                 authMgrMap.put(securityDomain, am);
             }
         } catch (Exception e) {
-            log.trace("Exception getting AuthenticationManager for domain=" + securityDomain, e);
+            log.tracef("Exception getting AuthenticationManager for domain=" + securityDomain, e);
         }
         return am;
     }
@@ -122,7 +122,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
                 authzMgrMap.put(securityDomain, am);
             }
         } catch (Exception e) {
-            log.trace("Exception getting AuthorizationManager for domain=", e);
+            log.tracef("Exception getting AuthorizationManager for domain=", e);
         }
         return am;
     }
@@ -137,7 +137,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
                 idmMgrMap.put(securityDomain, itm);
             }
         } catch (Exception e) {
-            log.trace("Exception getting IdentityTrustManager for domain=" + securityDomain, e);
+            log.tracef("Exception getting IdentityTrustManager for domain=" + securityDomain, e);
         }
         return itm;
     }
@@ -152,7 +152,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
                 mappingMgrMap.put(securityDomain, mm);
             }
         } catch (Exception e) {
-            log.trace("Exception getting MappingManager for domain=" + securityDomain, e);
+            log.tracef("Exception getting MappingManager for domain=" + securityDomain, e);
         }
         return mm;
     }
@@ -167,7 +167,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
                 jsseMap.put(securityDomain, jsse);
             }
         } catch (Exception e) {
-            log.trace("Exception getting JSSESecurityDomain for domain=" + securityDomain, e);
+            log.tracef("Exception getting JSSESecurityDomain for domain=" + securityDomain, e);
         }
         return jsse;
     }
@@ -258,7 +258,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
             else
                 result = ctx.lookup(SecurityConstants.JAAS_CONTEXT_ROOT + contextName);
         } catch (Exception e) {
-            log.trace("Look up of JNDI for " + contextName + " failed with " + e.getLocalizedMessage());
+            log.tracef("Look up of JNDI for " + contextName + " failed with " + e.getLocalizedMessage());
             return null;
         }
         return result;
@@ -273,7 +273,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
      * @throws Exception if an error occurs during creation
      */
     public SecurityDomainContext createSecurityDomainContext(String securityDomain, Object cacheFactory) throws Exception {
-        log.debug("Creating SDC for domain=" + securityDomain);
+        log.debugf("Creating SDC for domain=" + securityDomain);
         AuthenticationManager am = createAuthenticationManager(securityDomain);
         // create authentication cache
         if (cacheFactory instanceof EmbeddedCacheManager) {
@@ -424,8 +424,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
             Object[] deepCopyArgs = { Boolean.TRUE };
             m.invoke(authenticationManager, deepCopyArgs);
         } catch (Exception e) {
-            if (log.isTraceEnabled())
-                log.trace("Optional setDeepCopySubjectMode failed: " + e.getLocalizedMessage());
+            log.tracef("Optional setDeepCopySubjectMode failed: " + e.getLocalizedMessage());
         }
     }
 
