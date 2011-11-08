@@ -37,7 +37,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
 @WebServlet(urlPatterns={"/SecuredServlet"})
-@DeclareRoles("user")
+@DeclareRoles({"user"})
 @ServletSecurity(@HttpConstraint(rolesAllowed={"user"}))
 public class SecuredServlet extends HttpServlet {
 
