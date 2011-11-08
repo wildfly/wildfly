@@ -126,7 +126,7 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
         final ModelNode operation = createDescribeOperation();
         final ModelNode result = servicesB.executeOperation(operation);
         Assert.assertTrue("the subsystem describe operation has to generate a list of operations to recreate the subsystem",
-                result.hasDefined(ModelDescriptionConstants.RESULT));
+                !result.hasDefined(ModelDescriptionConstants.FAILURE_DESCRIPTION));
         final List<ModelNode> operations = result.get(ModelDescriptionConstants.RESULT).asList();
         servicesB.shutdown();
 
