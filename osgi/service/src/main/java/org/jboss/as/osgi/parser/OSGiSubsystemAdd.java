@@ -104,9 +104,9 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
         context.completeStep();
     }
 
-    protected void populateModel(final ModelNode operation, final ModelNode subModel) {
+    protected void populateModel(final ModelNode operation, final ModelNode model) {
         if (operation.has(ModelConstants.ACTIVATION)) {
-            subModel.get(ModelConstants.ACTIVATION).set(operation.get(ModelConstants.ACTIVATION));
+            model.get(ModelConstants.ACTIVATION).set(operation.get(ModelConstants.ACTIVATION));
         }
     }
 

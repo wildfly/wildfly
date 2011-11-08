@@ -42,7 +42,6 @@ import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 
 import javax.naming.CompositeName;
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -68,9 +67,8 @@ public final class JAXRBootstrapService extends AbstractService<Void> {
     // [TODO] AS7-2277 JAXR subsystem i18n
     private final Logger log = Logger.getLogger(JAXRBootstrapService.class);
 
-    private final JAXRConfiguration config;
-
     private final InjectedValue<NamingStore> injectedJavaContext = new InjectedValue<NamingStore>();
+    private final JAXRConfiguration config;
     private DataSource datasource;
 
     public static ServiceController<?> addService(final ServiceTarget target, final JAXRConfiguration config, final ServiceListener<Object>... listeners) {
@@ -93,7 +91,7 @@ public final class JAXRBootstrapService extends AbstractService<Void> {
 
             NamingStore namingStore = injectedJavaContext.getValue();
             String lookup = config.getDataSourceUrl();
-            if (lookup.startsWith("java:") == false)
+            if (lookup == null || lookup.startsWith("java:") == false)
                 throw new IllegalStateException("Datasource lookup expected in java context: %s" + lookup);
 
             // [TODO] AS7-2302 Potential race condition on DataSource lookup
@@ -109,7 +107,7 @@ public final class JAXRBootstrapService extends AbstractService<Void> {
             if (datasource == null)
                 throw new IllegalStateException("Cannot obtain data source: " + lookup);
 
-            if (config.isBindJaxr()) {
+            if (config.getConnectionFactoryUrl() != null) {
                 bindJAXRConnectionFactory(context);
             }
             if (config.isDropOnStart()) {
@@ -225,9 +223,9 @@ public final class JAXRBootstrapService extends AbstractService<Void> {
 
 
     private void bindJAXRConnectionFactory(StartContext context) {
-        log.infof("Binding JAXR ConnectionFactory: %s", config.getNamingContext());
+        log.infof("Binding JAXR ConnectionFactory: %s", config.getConnectionFactoryUrl());
         try {
-            String jndiName = config.getNamingContext();
+            String jndiName = config.getConnectionFactoryUrl();
             ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
             BinderService binderService = new BinderService(bindInfo.getBindName());
             ImmediateValue value = new ImmediateValue(new ConnectionFactoryImpl());
@@ -243,7 +241,7 @@ public final class JAXRBootstrapService extends AbstractService<Void> {
     private void unBindJAXRConnectionFactory(StopContext context) {
         log.debugf("Unbind JAXR ConnectionFactory");
         try {
-            String jndiName = config.getNamingContext();
+            String jndiName = config.getConnectionFactoryUrl();
             ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
             ServiceContainer serviceContainer = context.getController().getServiceContainer();
             ServiceController<?> service = serviceContainer.getService(bindInfo.getBinderServiceName());

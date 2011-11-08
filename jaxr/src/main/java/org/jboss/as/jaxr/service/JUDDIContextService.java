@@ -61,10 +61,14 @@ import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.servlet.http.HttpServlet;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Hashtable;
+import java.util.Properties;
 
 /**
  * A service starting a welcome web context driven by simple static content.
@@ -95,6 +99,7 @@ public final class JUDDIContextService implements Service<Context> {
     private JUDDIContextService(final JAXRConfiguration config) {
         context = new StandardContext() {
             private DirContext resources;
+
             // [TODO] AS7-2499 Remove DirContext hack to load juddi.properties
             public DirContext getResources() {
                 if (resources == null) {
@@ -222,14 +227,34 @@ public final class JUDDIContextService implements Service<Context> {
         @Override
         // [TODO] AS7-2499 Remove DirContext hack to load juddi.properties
         public Object lookup(String name) throws NamingException {
+            NamingException namingExeption;
             try {
                 return super.lookup(name);
-            } catch (NamingException namingExeption) {
-                InputStream stream = getClass().getClassLoader().getResourceAsStream(name);
-                if (stream == null)
-                    throw namingExeption;
-                return new Resource(stream);
+            } catch (NamingException ex) {
+                namingExeption = ex;
             }
+
+            InputStream stream = getClass().getClassLoader().getResourceAsStream(name);
+            if (stream == null)
+                throw namingExeption;
+
+            // Add the juddi.dataSource from the domain model
+            if (name.equals("/WEB-INF/juddi.properties")) {
+                try {
+                    Properties props = new Properties();
+                    props.load(stream);
+                    JAXRConfiguration config = JAXRConfiguration.INSTANCE;
+                    props.setProperty("juddi.dataSource", config.getDataSourceUrl());
+                    ByteArrayOutputStream out = new ByteArrayOutputStream();
+                    props.store(out, "jUDDI Registry Properties");
+                    stream = new ByteArrayInputStream(out.toByteArray());
+                } catch (IOException ex) {
+                    NamingException namingException = new NamingException("Cannot append jUDDI datasource");
+                    namingException.initCause(ex);
+                    throw namingException;
+                }
+            }
+            return new Resource(stream);
         }
     }
 }
