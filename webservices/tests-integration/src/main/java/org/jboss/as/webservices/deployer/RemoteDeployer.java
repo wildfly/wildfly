@@ -86,7 +86,7 @@ public final class RemoteDeployer implements Deployer {
 
     public RemoteDeployer() throws IOException {
         callbackHandler = getCallbackHandler();
-        deploymentManager = ServerDeploymentManager.Factory.create(address, PORT); //TODO!! add cbh par
+        deploymentManager = ServerDeploymentManager.Factory.create(address, PORT, callbackHandler);
     }
 
     @Override

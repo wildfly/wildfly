@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.ws.tools.jbws3207;
 
+import static org.jboss.as.arquillian.container.Authentication.PASSWORD;
+import static org.jboss.as.arquillian.container.Authentication.USERNAME;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
 import static org.junit.Assert.assertTrue;
 
@@ -42,6 +44,8 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.deployer.Deployer;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -52,6 +56,18 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class JBWS3207TestCase {
+
+    @BeforeClass
+    public static void setProperties() {
+        System.setProperty("jbossws.deployer.authentication.username", USERNAME);
+        System.setProperty("jbossws.deployer.authentication.password", PASSWORD);
+    }
+
+    @AfterClass
+    public static void clearProperties() {
+        System.clearProperty("jbossws.deployer.authentication.username");
+        System.clearProperty("jbossws.deployer.authentication.password");
+    }
 
     @Test
     public void testRemoteDeployer() throws Exception {
