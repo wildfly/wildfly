@@ -63,6 +63,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -99,6 +100,7 @@ public class AddMySqlDataSourceOperationsUnitTestCase {
     }
 
     @Test
+		@Ignore("AS7-2515")
     public void testAddDsAndTestConnection() throws Exception {
 
         final ModelNode address = new ModelNode();
