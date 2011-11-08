@@ -29,7 +29,6 @@ import javax.servlet.http.HttpServletRequest;
  * Provides utility static methods for the web security integration
  *
  * @author <a href="mailto:Anil.Saldhana@jboss.org">Anil Saldhana</a>
- * @since Aug 22, 2006
  */
 public class WebUtil {
     /**
@@ -44,7 +43,7 @@ public class WebUtil {
         sb.append(":cookies=").append(httpRequest.getCookies()).append(":headers=");
         // Append Header information
         Enumeration<?> en = httpRequest.getHeaderNames();
-        for (; en.hasMoreElements();) {
+        while (en.hasMoreElements()) {
             String headerName = (String) en.nextElement();
             sb.append(headerName).append("=");
             // Ensure HTTP Basic Password is not logged
@@ -55,7 +54,7 @@ public class WebUtil {
         // Append Request parameter information
         sb.append("[parameters=");
         Enumeration<?> enparam = httpRequest.getParameterNames();
-        for (; enparam.hasMoreElements();) {
+        while (enparam.hasMoreElements()) {
             String paramName = (String) enparam.nextElement();
             String[] paramValues = httpRequest.getParameterValues(paramName);
             int len = paramValues != null ? paramValues.length : 0;
@@ -66,7 +65,7 @@ public class WebUtil {
         sb.append("][attributes=");
         // Append Request attribute information
         Enumeration<?> enu = httpRequest.getAttributeNames();
-        for (; enu.hasMoreElements();) {
+        while (enu.hasMoreElements()) {
             String attrName = (String) enu.nextElement();
             sb.append(attrName).append("=");
             sb.append(httpRequest.getAttribute(attrName)).append(",");
