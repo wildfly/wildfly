@@ -144,7 +144,7 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
     public void testHttpsConnector() throws Exception {
         
                
-        FileUtils.copyURLToFile(ConnectorTestCase.class.getResource("/management/api/test.keystore"), keyStoreFile);        
+        FileUtils.copyURLToFile(ConnectorTestCase.class.getResource("test.keystore"), keyStoreFile);        
         
         addConnector(Connector.HTTPS);
 
