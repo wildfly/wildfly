@@ -92,15 +92,17 @@ public class JdrReportService implements JdrReportCollector, Service<JdrReportCo
         return interpreter.collect();
     }
 
-    public void start(StartContext context) throws StartException {
+    public synchronized void start(StartContext context) throws StartException {
         final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("JdrReportCollector-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
-        final ExecutorService executorService = Executors.newCachedThreadPool(threadFactory);
+        executorService = Executors.newCachedThreadPool(threadFactory);
         serverEnvironment = serverEnvironmentValue.getValue();
         controllerClient = modelControllerValue.getValue().createClient(executorService);
     }
 
-    public void stop(StopContext context) {
-        executorService.shutdownNow();
+    public synchronized void stop(StopContext context) {
+        if (executorService != null) {
+            executorService.shutdownNow();
+        }
     }
 
     public JdrReportService getValue() throws IllegalStateException, IllegalArgumentException {
