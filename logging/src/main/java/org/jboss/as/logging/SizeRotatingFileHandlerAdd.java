@@ -79,14 +79,8 @@ class SizeRotatingFileHandlerAdd extends FlushingHandlerAddProperties<SizeRotati
         }
 
         final ModelNode rotateSizeNode = ROTATE_SIZE.resolveModelAttribute(context, model);
-        long rotateSize = ROTATE_SIZE.getDefaultValue().asLong();
         if (rotateSizeNode.isDefined()) {
-            try {
-                rotateSize = LoggingSubsystemParser.parseSize(rotateSizeNode.asString());
-            } catch (Throwable t) {
-                throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
-            }
+            service.setRotateSize(SizeValidator.parseSize(rotateSizeNode.asString()));
         }
-        service.setRotateSize(rotateSize);
     }
 }

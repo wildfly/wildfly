@@ -158,9 +158,9 @@ interface CommonAttributes {
 
     String ROOT_LOGGER_NAME = "ROOT";
 
-    SimpleAttributeDefinition ROTATE_SIZE = new SimpleAttributeDefinitionBuilder("rotate-size", ModelType.LONG).
-            setDefaultValue(new ModelNode().set((2L * 1024L * 1024L))).
-            setValidator(new LongRangeValidator(1L)).
+    SimpleAttributeDefinition ROTATE_SIZE = new SimpleAttributeDefinitionBuilder("rotate-size", ModelType.STRING).
+            setDefaultValue(new ModelNode().set("2m")).
+            setValidator(new SizeValidator()).
             build();
 
     String SIZE_ROTATING_FILE_HANDLER = "size-rotating-file-handler";

@@ -52,13 +52,7 @@ public class SizeRotatingHandlerUpdateProperties extends FlushingHandlerUpdatePr
 
         final ModelNode rotateSizeNode = ROTATE_SIZE.resolveModelAttribute(context, operation);
         if (rotateSizeNode.isDefined()) {
-            long rotateSize;
-            try {
-                rotateSize = LoggingSubsystemParser.parseSize(rotateSizeNode.asString());
-            } catch (Throwable t) {
-                throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
-            }
-            handler.setRotateSize(rotateSize);
+            handler.setRotateSize(SizeValidator.parseSize(rotateSizeNode.asString()));
         }
     }
 }
