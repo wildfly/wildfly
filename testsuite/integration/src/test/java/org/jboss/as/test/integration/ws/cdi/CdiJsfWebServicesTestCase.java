@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.ws.cdi;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -29,6 +30,7 @@ import java.util.concurrent.TimeoutException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -50,6 +52,9 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class CdiJsfWebServicesTestCase {
 
+    @ArquillianResource
+    URL baseUrl;
+
     public static final String ARCHIVE_NAME = "testCdiJsfWebServices";
 
     @Deployment
@@ -66,7 +71,8 @@ public class CdiJsfWebServicesTestCase {
 
     @Test
     public void testWebServicesDoNotBreakCDI() throws IOException, ExecutionException, TimeoutException {
-        Assert.assertEquals("<html><body>" + MyBean.MESSAGE + "</body></html>", HttpRequest.get("http://localhost:8080/" + ARCHIVE_NAME + "/index.jsf", 20, TimeUnit.SECONDS));
+        URL webRoot = new URL(baseUrl, "/");
+        Assert.assertEquals("<html><body>" + MyBean.MESSAGE + "</body></html>", HttpRequest.get(webRoot.toString() + ARCHIVE_NAME + "/index.jsf", 20, TimeUnit.SECONDS));
     }
 
 

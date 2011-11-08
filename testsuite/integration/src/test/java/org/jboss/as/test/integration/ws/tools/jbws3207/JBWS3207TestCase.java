@@ -84,7 +84,8 @@ public class JBWS3207TestCase {
         URLConnection conn = null;
         InputStream in = null;
         try {
-            URL url = new URL("http://localhost:8080/jbws3207/?wsdl");
+            String node0 = System.getProperty("node0", "not-defined");
+            URL url = new URL("http://" + node0 + ":8080/jbws3207/?wsdl");
             System.out.println("Reading response from " + url + ":");
             conn = url.openConnection();
             conn.setDoInput(true);
@@ -111,7 +112,8 @@ public class JBWS3207TestCase {
                 + "      <arg0>Foo</arg0>"
                 + "    </arc:echoString>" + "  </soapenv:Body>" + "</soapenv:Envelope>";
         try {
-            URL url = new URL("http://localhost:8080/jbws3207");
+            String node0 = System.getProperty("node0", "not-defined");
+            URL url = new URL("http://" + node0 + ":8080/jbws3207");
             System.out.println("Reading response from " + url + ":");
             conn = url.openConnection();
             conn.setDoInput(true);
