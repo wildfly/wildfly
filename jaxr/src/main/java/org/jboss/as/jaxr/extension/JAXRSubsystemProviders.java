@@ -54,7 +54,7 @@ class JAXRSubsystemProviders {
             subsystem.get(DESCRIPTION).set("The JAXR subsystem");
             subsystem.get(HEAD_COMMENT_ALLOWED).set(true);
             subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
-            subsystem.get(NAMESPACE).set(Namespace.CURRENT.toString());
+            subsystem.get(NAMESPACE).set(Namespace.CURRENT.getUriString());
 
             subsystem.get(ATTRIBUTES, ModelConstants.JNDI_NAME, ModelDescriptionConstants.DESCRIPTION).set("The datasource JNDI-NAME");
             subsystem.get(ATTRIBUTES, ModelConstants.JNDI_NAME, ModelDescriptionConstants.REQUIRED).set(true);
