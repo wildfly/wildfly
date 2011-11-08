@@ -37,6 +37,7 @@
     <version>7.1.0.Alpha2-SNAPSHOT</version>
 
     <name>JBoss Application Server: Remoting Subsystem Test</name>
+    <description>This is not in the remoting subsystem as it introduces circular dependencies</description>
 
     <properties>
         <test.level>INFO</test.level>

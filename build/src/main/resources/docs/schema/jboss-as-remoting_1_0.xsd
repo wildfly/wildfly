@@ -158,7 +158,7 @@
         <xs:attribute name="value" type="xs:boolean" use="required"/>
     </xs:complexType>
 
-    <xs:simpleType name="name-listType">
+    <xs:complexType name="name-listType">
         <xs:annotation>
             <xs:documentation>
             <![CDATA[
@@ -167,7 +167,7 @@
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="value" type="name-list" use="required"/>
-    </xs:simpleType>   
+    </xs:complexType>   
 
     <xs:simpleType name="name-list">
         <xs:annotation>
