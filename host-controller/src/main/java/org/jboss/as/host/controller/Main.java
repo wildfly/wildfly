@@ -33,6 +33,7 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.security.cert.TrustAnchor;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -110,26 +111,32 @@ public final class Main {
     }
 
     private HostControllerBootstrap boot(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr, final byte[] authCode) {
-        HostControllerBootstrap hc = null;
         try {
-            HostControllerEnvironment config = determineEnvironment(args, stdin, stdout, stderr);
+            final HostControllerEnvironment config = determineEnvironment(args, stdin, stdout, stderr);
             if (config == null) {
                 abort(null);
                 return null;
             } else {
-                hc = new HostControllerBootstrap(config, authCode);
-                hc.start();
+                try {
+                    final HostControllerBootstrap hc = new HostControllerBootstrap(config, authCode);
+                    hc.start();
+                    return hc;
+                } catch(Throwable t) {
+                    abort(t);
+                    return null;
+                }
             }
         } catch (Throwable t) {
-            t.printStackTrace(stderr);
-            abort(t);
+            abort(t, ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
             return null;
         }
-        return hc;
     }
 
     private void abort(Throwable t) {
-        int exitCode = 1;
+        abort(t, 1);
+    }
+
+    private void abort(Throwable t, int exitCode) {
         try {
             if (t != null) {
                 t.printStackTrace();
