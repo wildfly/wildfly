@@ -358,12 +358,12 @@
             <maven-resource group="org.apache.santuario" artifact="xmlsec"/>
         </module-def>
 
-        <module-def name="org.apache.scout">
-            <maven-resource group="apache-scout" artifact="scout"/>
-        </module-def>
-
         <module-def name="org.apache.velocity">
             <maven-resource group="org.apache.velocity" artifact="velocity" />
+        </module-def>
+
+        <module-def name="org.apache.ws.scout">
+            <maven-resource group="org.apache.ws.scout" artifact="scout"/>
         </module-def>
 
         <module-def name="org.apache.xalan">

@@ -74,7 +74,7 @@
             <artifactId>juddi</artifactId>
         </dependency>
         <dependency>
-            <groupId>apache-scout</groupId>
+            <groupId>org.apache.ws.scout</groupId>
             <artifactId>scout</artifactId>
         </dependency>
         <!-- Test Dependencies -->
