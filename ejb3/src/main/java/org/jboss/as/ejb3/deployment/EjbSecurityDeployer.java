@@ -20,49 +20,35 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.security.deployment;
+package org.jboss.as.ejb3.deployment;
 
+import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.EEModuleConfiguration;
+import org.jboss.as.ejb3.security.EjbJaccService;
+import org.jboss.as.security.deployment.AbstractSecurityDeployer;
 import org.jboss.as.security.service.JaccService;
 import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.DeploymentUnit;
 
 /**
- * A helper class for security deployment processors
+ * Handles ejb jar deployments
  *
- * @author Marcus Moyses
- * @author Anil Saldhana
+ * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  */
-public abstract class AbstractSecurityDeployer<T> {
+public class EjbSecurityDeployer extends AbstractSecurityDeployer<EEModuleConfiguration> {
 
-    public JaccService<T> deploy(DeploymentUnit deploymentUnit) {
-        T metaData = deploymentUnit.getAttachment(getMetaDataType());
-        String contextId = deploymentUnit.getName();
-        Boolean standalone = Boolean.FALSE;
-        // check if it is top level
-        if (deploymentUnit.getParent() == null) {
-            standalone = Boolean.TRUE;
-        }
-        return createService(contextId, metaData, standalone);
-    }
-
-    public void undeploy(DeploymentUnit deploymentUnit) {
-
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected AttachmentKey<EEModuleConfiguration> getMetaDataType() {
+        return Attachments.EE_MODULE_CONFIGURATION;
     }
 
     /**
-     * Creates the appropriate service for metaData T
-     * @param contextId
-     * @param metaData
-     * @param standalone
-     * @return
+     * {@inheritDoc}
      */
-    protected abstract JaccService<T> createService(String contextId, T metaData, Boolean standalone);
-
-    /**
-     * Return the type of metadata
-     *
-     * @return
-     */
-    protected abstract AttachmentKey<T> getMetaDataType();
-
+    @Override
+    protected JaccService<EEModuleConfiguration> createService(String contextId, EEModuleConfiguration metaData, Boolean standalone) {
+        return new EjbJaccService(contextId, metaData, standalone);
+    }
 }

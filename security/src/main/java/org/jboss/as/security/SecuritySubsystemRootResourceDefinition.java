@@ -22,12 +22,9 @@
 package org.jboss.as.security;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.security.auth.login.Configuration;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -49,7 +46,6 @@ import org.jboss.as.security.deployment.SecurityDependencyProcessor;
 import org.jboss.as.security.service.JaasConfigurationService;
 import org.jboss.as.security.service.SecurityBootstrapService;
 import org.jboss.as.security.service.SecurityManagementService;
-import org.jboss.as.security.service.SecurityVaultService;
 import org.jboss.as.security.service.SimpleSecurityManagerService;
 import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.as.server.AbstractDeploymentChainStep;

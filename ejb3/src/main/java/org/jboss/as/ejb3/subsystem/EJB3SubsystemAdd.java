@@ -82,6 +82,7 @@ import org.jboss.as.ejb3.deployment.processors.merging.StatefulTimeoutMergingPro
 import org.jboss.as.ejb3.deployment.processors.merging.TransactionAttributeMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.TransactionManagementMergingProcessor;
 import org.jboss.as.ejb3.iiop.POARegistry;
+import org.jboss.as.ejb3.deployment.processors.security.JaccEjbDeploymentProcessor;
 import org.jboss.as.ejb3.remote.EjbClientContextService;
 import org.jboss.as.ejb3.remote.LocalEjbReceiver;
 import org.jboss.as.jacorb.service.CorbaPOAService;
@@ -99,7 +100,6 @@ import org.jboss.ejb.client.naming.ejb.EjbNamingContextSetup;
 import org.jboss.ejb.client.naming.ejb.ejbURLContextFactory;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -120,8 +120,6 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_BE
 class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final EJB3SubsystemAdd INSTANCE = new EJB3SubsystemAdd();
-
-    private static final Logger logger = Logger.getLogger(EJB3SubsystemAdd.class);
 
     private EJB3SubsystemAdd() {
         //
@@ -165,6 +163,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_ORB_BIND, new ORBJndiBindingProcessor());
 
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_RESOLVE_EJB_INJECTIONS, new EjbInjectionResolutionProcessor());
+                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EJB_JACC_PROCESSING, new JaccEjbDeploymentProcessor());
 
                 processorTarget.addDeploymentProcessor(Phase.CLEANUP, Phase.CLEANUP_EJB, new EjbCleanUpProcessor());
 

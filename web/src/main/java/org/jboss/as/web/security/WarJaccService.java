@@ -85,7 +85,7 @@ public class WarJaccService extends JaccService<WarMetaData> {
             throw new IllegalStateException("Catalina Context is null while creating JACC permissions");
         }
         HashMap<String, PatternInfo> patternMap = qualifyURLPatterns(context);
-        log.debug("Qualified url patterns: " + patternMap);
+        log.debugf("Qualified url patterns: " + patternMap);
 
         SecurityConstraint[] constraints = context.findConstraints();
         for (int i = 0; i < constraints.length; i++) {
@@ -151,8 +151,8 @@ public class WarJaccService extends JaccService<WarMetaData> {
         // Create the permissions
         for (PatternInfo info : patternMap.values()) {
             String qurl = info.getQualifiedPattern();
-            if (info.isOverriden == true) {
-                log.debug("Dropping overriden pattern: " + info);
+            if (info.isOverriden) {
+                log.debugf("Dropping overriden pattern: " + info);
                 continue;
             }
 

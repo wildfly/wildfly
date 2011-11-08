@@ -33,6 +33,7 @@
         <module name="javax.interceptor.api"/>
         <module name="javax.jms.api"/>
         <module name="javax.persistence.api" />
+        <module name="javax.security.jacc.api"/>
         <!-- For message inflow -->
         <module name="javax.resource.api"/>
         <module name="javax.rmi.api"/>
@@ -76,5 +77,6 @@
         <module name="org.picketbox"/>
 
         <module name="org.omg.api"/>
+        <module name="org.picketbox"/>
     </dependencies>
 </module>

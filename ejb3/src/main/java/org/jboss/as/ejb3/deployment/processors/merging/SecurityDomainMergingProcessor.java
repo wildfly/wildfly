@@ -21,15 +21,22 @@
  */
 package org.jboss.as.ejb3.deployment.processors.merging;
 
+import java.util.List;
+
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.metadata.ClassAnnotationInformation;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
+import org.jboss.as.ejb3.security.metadata.EJBBoundSecurityMetaData;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.ejb3.annotation.SecurityDomain;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.ejb.jboss.ejb3.JBossAssemblyDescriptorMetaData;
+import org.jboss.metadata.ejb.jboss.ejb3.JBossEjb31MetaData;
+import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 
 /**
  * @author Stuart Douglas
@@ -63,6 +70,32 @@ public class SecurityDomainMergingProcessor extends AbstractMergingProcessor<EJB
 
     @Override
     protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final EJBComponentDescription description) throws DeploymentUnitProcessingException {
-
+        String securityDomain = null;
+        String globalSecurityDomain = null;
+        EjbJarMetaData ejbJarMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
+        if (ejbJarMetaData instanceof JBossEjb31MetaData) {
+            JBossEjb31MetaData jbossMetaData = JBossEjb31MetaData.class.cast(ejbJarMetaData);
+            JBossAssemblyDescriptorMetaData assemblyMetadata = jbossMetaData.getAssemblyDescriptor();
+            if(assemblyMetadata != null){
+                List<EJBBoundSecurityMetaData> securityMetaDatas = assemblyMetadata.getAny(EJBBoundSecurityMetaData.class);
+                if (securityMetaDatas != null) {
+                    for (EJBBoundSecurityMetaData securityMetaData : securityMetaDatas) {
+                        if (securityMetaData.getEjbName().equals(description.getComponentName())) {
+                            securityDomain = securityMetaData.getSecurityDomain();
+                            break;
+                        }
+                        // check global security domain
+                        if (securityMetaData.getEjbName().equals("*")) {
+                            globalSecurityDomain = securityMetaData.getSecurityDomain();
+                            continue;
+                        }
+                    }
+                }
+            }
+        }
+        if (securityDomain != null)
+            description.setSecurityDomain(securityDomain);
+        else if (globalSecurityDomain != null)
+            description.setSecurityDomain(globalSecurityDomain);
     }
 }
