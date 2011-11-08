@@ -11,7 +11,7 @@ public class AppClientMain {
     private static AppClientSingletonRemote appClientSingletonRemote;
 
     public static void main(final String[] params) {
-        appClientSingletonRemote.makeAppClientCall();
+        appClientSingletonRemote.makeAppClientCall(params[0]);
     }
 
 }

@@ -8,7 +8,9 @@ import javax.ejb.Remote;
 @Remote
 public interface AppClientSingletonRemote {
 
-    public void makeAppClientCall();
+    public void reset();
 
-    public boolean awaitAppClientCall();
+    public void makeAppClientCall(final String value);
+
+    public String awaitAppClientCall();
 }

@@ -40,7 +40,7 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
  */
 public class AppClientWrapper implements Runnable {
 
-    private static String appClientCommand = null;
+    private String appClientCommand = null;
 
     private static final String outThreadHame = "APPCLIENT-out";
     private static final String errThreadHame = "APPCLIENT-err";

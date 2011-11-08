@@ -36,7 +36,10 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.metadata.appclient.jboss.JBossClientMetaData;
+import org.jboss.metadata.appclient.parser.jboss.JBossClientMetaDataParser;
 import org.jboss.metadata.appclient.parser.spec.ApplicationClientMetaDataParser;
+import org.jboss.metadata.appclient.spec.AppClientEnvironmentRefsGroupMetaData;
 import org.jboss.metadata.appclient.spec.ApplicationClientMetaData;
 import org.jboss.metadata.parser.util.NoopXmlResolver;
 import org.jboss.vfs.VirtualFile;
@@ -49,29 +52,75 @@ import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 public class ApplicationClientParsingDeploymentProcessor implements DeploymentUnitProcessor {
 
     private static final String APP_XML = "META-INF/application-client.xml";
+    private static final String JBOSS_CLIENT_XML = "META-INF/jboss-client.xml";
 
     @Override
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (!DeploymentTypeMarker.isType(DeploymentType.APPLICATION_CLIENT, deploymentUnit)) {
             return;
         }
+        final ApplicationClientMetaData appClientMD = parseAppClient(deploymentUnit);
+        final JBossClientMetaData jbossClientMD = parseJBossClient(deploymentUnit);
+        final JBossClientMetaData merged;
+        if (appClientMD == null && jbossClientMD == null) {
+            return;
+        } else if (appClientMD == null) {
+            merged = jbossClientMD;
+        } else {
+            merged = new JBossClientMetaData();
+            merged.setEnvironmentRefsGroupMetaData(new AppClientEnvironmentRefsGroupMetaData());
+            merged.merge(jbossClientMD, appClientMD);
+        }
+        deploymentUnit.putAttachment(AppClientAttachments.APPLICATION_CLIENT_META_DATA, merged);
+        final DeploymentDescriptorEnvironment environment = new DeploymentDescriptorEnvironment("java:module/env/", merged.getEnvironmentRefsGroupMetaData());
+        deploymentUnit.putAttachment(org.jboss.as.ee.component.Attachments.MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT, environment);
+    }
+
+    @Override
+    public void undeploy(DeploymentUnit context) {
+
+    }
+
+    private ApplicationClientMetaData parseAppClient(DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
         final VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         final VirtualFile appXml = deploymentRoot.getChild(APP_XML);
         if (appXml.exists()) {
             InputStream is = null;
             try {
                 is = appXml.openStream();
-                final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-                inputFactory.setXMLResolver(NoopXmlResolver.create());
-                XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
-                ApplicationClientMetaData data = new ApplicationClientMetaDataParser().parse(xmlReader);
-                deploymentUnit.putAttachment(AppClientAttachments.APPLICATION_CLIENT_META_DATA, data);
-                DeploymentDescriptorEnvironment environment = new DeploymentDescriptorEnvironment("java:module/env/",data.getEnvironmentRefsGroupMetaData() );
-                deploymentUnit.putAttachment(org.jboss.as.ee.component.Attachments.MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT, environment);
-
+                ApplicationClientMetaData data = new ApplicationClientMetaDataParser().parse(getXMLStreamReader(is));
+                return data;
             } catch (XMLStreamException e) {
                 throw MESSAGES.failedToParseXml(appXml, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber());
+            } catch (IOException e) {
+                throw new DeploymentUnitProcessingException("Failed to parse " + appXml, e);
+            } finally {
+                try {
+                    if (is != null) {
+                        is.close();
+                    }
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
+        } else {
+            return null;
+        }
+    }
+
+    private JBossClientMetaData parseJBossClient(DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
+        final VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+        final VirtualFile appXml = deploymentRoot.getChild(JBOSS_CLIENT_XML);
+        if (appXml.exists()) {
+            InputStream is = null;
+            try {
+                is = appXml.openStream();
+                JBossClientMetaData data = new JBossClientMetaDataParser().parse(getXMLStreamReader(is));
+                return data;
+            } catch (XMLStreamException e) {
+                throw MESSAGES.failedToParseXml(appXml, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber());
+
             } catch (IOException e) {
                 throw MESSAGES.failedToParseXml(e, appXml);
             } finally {
@@ -83,10 +132,15 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
                     // Ignore
                 }
             }
+        } else {
+            return null;
         }
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
+    private XMLStreamReader getXMLStreamReader(InputStream is) throws XMLStreamException {
+        final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+        inputFactory.setXMLResolver(NoopXmlResolver.create());
+        XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
+        return xmlReader;
     }
 }

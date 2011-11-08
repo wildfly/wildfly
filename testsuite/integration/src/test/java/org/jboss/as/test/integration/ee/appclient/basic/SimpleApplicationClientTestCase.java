@@ -50,11 +50,15 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.xnio.IoFuture;
 import org.xnio.OptionMap;
 import org.xnio.Options;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests that an application client can launch and conntect to a remote EJB
@@ -91,10 +95,26 @@ public class SimpleApplicationClientTestCase {
         ejb.addClasses(SimpleApplicationClientTestCase.class, AppClientStateSingleton.class);
         ear.addAsModule(ejb);
 
-        final JavaArchive appClient = ShrinkWrap.create(JavaArchive.class, "client.jar");
+
+        final JavaArchive appClient = ShrinkWrap.create(JavaArchive.class, "client-annotation.jar");
         appClient.addClasses(AppClientMain.class);
         appClient.addAsManifestResource(new StringAsset("Main-Class: " + AppClientMain.class.getName() + "\n"), "MANIFEST.MF");
         ear.addAsModule(appClient);
+
+
+        final JavaArchive clientDD = ShrinkWrap.create(JavaArchive.class, "client-dd.jar");
+        clientDD.addClasses(DescriptorClientMain.class);
+        clientDD.addAsManifestResource(new StringAsset("Main-Class: " + DescriptorClientMain.class.getName() + "\n"), "MANIFEST.MF");
+        clientDD.addAsManifestResource(SimpleApplicationClientTestCase.class.getPackage(), "application-client.xml", "application-client.xml");
+        ear.addAsModule(clientDD);
+
+        final JavaArchive clientOverride = ShrinkWrap.create(JavaArchive.class, "client-override.jar");
+        clientOverride.addClasses(DescriptorClientMain.class);
+        clientOverride.addAsManifestResource(new StringAsset("Main-Class: " + DescriptorClientMain.class.getName() + "\n"), "MANIFEST.MF");
+        clientOverride.addAsManifestResource(SimpleApplicationClientTestCase.class.getPackage(), "application-client.xml", "application-client.xml");
+        clientOverride.addAsManifestResource(SimpleApplicationClientTestCase.class.getPackage(), "jboss-client.xml", "jboss-client.xml");
+        ear.addAsModule(clientOverride);
+
         archive = ear;
         return ear;
     }
@@ -143,14 +163,57 @@ public class SimpleApplicationClientTestCase {
         }
     }
 
+    /**
+     * Tests a simple app client that calls an ejb with its command line parameters
+     */
     @Test
     public void simpleAppClientTest() throws Exception {
-        final AppClientWrapper wrapper = new AppClientWrapper(archive, "client.jar", "");
+        final StatelessEJBLocator<AppClientSingletonRemote> locator = new StatelessEJBLocator(AppClientSingletonRemote.class, APP_NAME, MODULE_NAME, AppClientStateSingleton.class.getSimpleName(), "");
+        final AppClientSingletonRemote remote = EJBClient.createProxy(locator);
+        remote.reset();
+        final AppClientWrapper wrapper = new AppClientWrapper(archive, "client-annotation.jar", "cmdLineParam");
         try {
-            final StatelessEJBLocator<AppClientSingletonRemote> locator = new StatelessEJBLocator(AppClientSingletonRemote.class, APP_NAME, MODULE_NAME, AppClientStateSingleton.class.getSimpleName(), "");
-            final AppClientSingletonRemote remote = EJBClient.createProxy(locator);
-            boolean callMade = remote.awaitAppClientCall();
-            org.junit.Assert.assertTrue("App client call failed. App client output: " + wrapper.readAllUnformated(1000), callMade);
+            final String result = remote.awaitAppClientCall();
+            assertTrue("App client call failed. App client output: " + wrapper.readAllUnformated(1000), result != null);
+            assertEquals("cmdLineParam", result);
+        } finally {
+            wrapper.quit();
+        }
+    }
+
+    /**
+     * Tests an app client with a deployment descriptor, that injects an env-entry and an EJB.
+     * @throws Exception
+     */
+    @Test
+    public void descriptorBasedAppClientTest() throws Exception {
+        final StatelessEJBLocator<AppClientSingletonRemote> locator = new StatelessEJBLocator(AppClientSingletonRemote.class, APP_NAME, MODULE_NAME, AppClientStateSingleton.class.getSimpleName(), "");
+        final AppClientSingletonRemote remote = EJBClient.createProxy(locator);
+        remote.reset();
+        final AppClientWrapper wrapper = new AppClientWrapper(archive, "client-dd.jar", "");
+        try {
+            final String result = remote.awaitAppClientCall();
+            assertTrue("App client call failed. App client output: " + wrapper.readAllUnformated(1000), result != null);
+            assertEquals("EnvEntry", result);
+        } finally {
+            wrapper.quit();
+        }
+    }
+    /**
+     * Tests an app client with a deployment descriptor, that injects an env-entry and an EJB.
+     * @throws Exception
+     */
+    @Test
+    @Ignore("This needs jboss-client.xml parsing")
+    public void testAppClientJBossDescriptor() throws Exception {
+        final StatelessEJBLocator<AppClientSingletonRemote> locator = new StatelessEJBLocator(AppClientSingletonRemote.class, APP_NAME, MODULE_NAME, AppClientStateSingleton.class.getSimpleName(), "");
+        final AppClientSingletonRemote remote = EJBClient.createProxy(locator);
+        remote.reset();
+        final AppClientWrapper wrapper = new AppClientWrapper(archive, "client-override.jar", "");
+        try {
+            final String result = remote.awaitAppClientCall();
+            assertTrue("App client call failed. App client output: " + wrapper.readAllUnformated(1000), result != null);
+            assertEquals("OverridenEnvEntry", result);
         } finally {
             wrapper.quit();
         }
