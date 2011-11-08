@@ -40,7 +40,7 @@ public enum Element {
     NO_ACTIVE("no-active"),
     NO_ANONYMOUS("no-anonymous"),
     NO_DICTIONARY("no-dictionary"),
-    NO_PLAINTEXT("no-plaintext"),
+    NO_PLAIN_TEXT("no-plain-text"),
     PASS_CREDENTIALS("pass-credentials"),
     POLICY("policy"),
     PROPERTIES("properties"),

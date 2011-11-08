@@ -24,12 +24,9 @@ package org.jboss.as.remoting;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -38,7 +35,7 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  */
-public class ConnectorRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
+public class ConnectorRemove extends AbstractRemoveStepHandler /*implements DescriptionProvider*/ {
 
     static final ConnectorRemove INSTANCE = new ConnectorRemove();
 
@@ -52,9 +49,8 @@ public class ConnectorRemove extends AbstractRemoveStepHandler implements Descri
         // TODO:  RE-ADD SERVICES
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return RemotingSubsystemProviders.CONNECTOR_REMOVE.getModelDescription(locale);
-    }
-
+//    public ModelNode getModelDescription(Locale locale) {
+//        return RemotingSubsystemProviders.CONNECTOR_REMOVE.getModelDescription(locale);
+//    }
+//
 }
