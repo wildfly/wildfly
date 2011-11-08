@@ -22,9 +22,14 @@
 
 package org.jboss.as.test.integration.domain.suites;
 
+import org.jboss.as.controller.client.ModelControllerClient;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 
 import org.jboss.as.arquillian.container.domain.managed.DomainLifecycleUtil;
@@ -32,6 +37,8 @@ import org.jboss.as.controller.client.helpers.domain.DomainClient;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
@@ -40,10 +47,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import org.jboss.as.test.integration.domain.DomainTestSupport;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.IOException;
 
 /**
  * @author Emanuel Muckenhuber
@@ -55,6 +65,7 @@ public class ServerManagementTestCase {
     private static DomainLifecycleUtil domainSlaveLifecycleUtil;
 
     private static final ModelNode slave = new ModelNode();
+    private static final ModelNode mainOne = new ModelNode();
     private static final ModelNode newServerConfigAddress = new ModelNode();
     private static final ModelNode newRunningServerAddress = new ModelNode();
 
@@ -67,6 +78,9 @@ public class ServerManagementTestCase {
         // (host=slave),(server=new-server)
         newRunningServerAddress.add("host", "slave");
         newRunningServerAddress.add("server", "new-server");
+        // (host=master),(server-config=main-one)
+        mainOne.add("host", "master");
+        mainOne.add("server-config", "main-one");
     }
 
     @BeforeClass
@@ -86,6 +100,28 @@ public class ServerManagementTestCase {
     }
 
     @Test
+    public void testRemoveStartedServer() throws Exception {
+        final DomainClient client = domainMasterLifecycleUtil.getDomainClient();
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
+        operation.get(OP_ADDR).set(mainOne);
+        operation.get(NAME).set("status");
+
+        final ModelNode status = validateResponse(client.execute(operation));
+        Assert.assertEquals("STARTED", status.asString());
+
+        final ModelNode remove = new ModelNode();
+        remove.get(OP).set(REMOVE);
+        remove.get(OP_ADDR).set(mainOne);
+
+        final ModelNode result = client.execute(remove);
+        // Removing a started server should fail
+        Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
+
+    }
+
+    @Test
     public void testAddAndRemoveServer() throws Exception {
         final DomainClient client = domainSlaveLifecycleUtil.getDomainClient();
 
@@ -94,22 +130,37 @@ public class ServerManagementTestCase {
         addServer.get(OP_ADDR).set(newServerConfigAddress);
         addServer.get(GROUP).set("main-server-group");
         addServer.get(SOCKET_BINDING_GROUP).set("standard-sockets");
-        addServer.get(SOCKET_BINDING_PORT_OFFSET).set(550);
+        addServer.get(SOCKET_BINDING_PORT_OFFSET).set(650);
+        addServer.get(AUTO_START).set(false);
+
+        Assert.assertFalse(exists(client, newServerConfigAddress));
+        Assert.assertFalse(exists(client, newRunningServerAddress));
 
         ModelNode result = client.execute(addServer);
         validateResponse(result);
+
+        Assert.assertTrue(exists(client, newServerConfigAddress));
+        Assert.assertFalse(exists(client, newRunningServerAddress));
 
         final ModelNode startServer = new ModelNode();
         startServer.get(OP).set(START);
         startServer.get(OP_ADDR).set(newServerConfigAddress);
         result = client.execute(startServer);
         validateResponse(result);
+        waitUntilState(client, newServerConfigAddress, "STARTED");
+
+        Assert.assertTrue(exists(client, newServerConfigAddress));
+        Assert.assertTrue(exists(client, newRunningServerAddress));
 
         final ModelNode stopServer = new ModelNode();
         stopServer.get(OP).set("stop");
         stopServer.get(OP_ADDR).set(newServerConfigAddress);
         result = client.execute(stopServer);
         validateResponse(result);
+        waitUntilState(client, newServerConfigAddress, "STOPPED");
+
+        Assert.assertTrue(exists(client, newServerConfigAddress));
+        Assert.assertFalse(exists(client, newRunningServerAddress));
 
         final ModelNode removeServer = new ModelNode();
         removeServer.get(OP).set(REMOVE);
@@ -117,9 +168,17 @@ public class ServerManagementTestCase {
 
         result = client.execute(removeServer);
         validateResponse(result);
+
+        Assert.assertFalse(exists(client, newServerConfigAddress));
+        Assert.assertFalse(exists(client, newRunningServerAddress));
     }
 
-    public static ModelNode validateResponse(ModelNode response) {
+    static ModelNode executeForResult(final ModelControllerClient client, final ModelNode operation) throws IOException {
+        final ModelNode result = client.execute(operation);
+        return validateResponse(result);
+    }
+
+    static ModelNode validateResponse(ModelNode response) {
 
         if(! SUCCESS.equals(response.get(OUTCOME).asString())) {
             System.out.println("Failed response:");
@@ -129,6 +188,47 @@ public class ServerManagementTestCase {
 
         Assert.assertTrue("result exists", response.has(RESULT));
         return response.get(RESULT);
+    }
+
+    static boolean exists(final ModelControllerClient client, final ModelNode address) throws IOException {
+        final ModelNode parentAddress = new ModelNode();
+        final int size = address.asInt();
+        for(int i = 0; i < size - 1; i++) {
+            final Property property = address.get(i).asProperty();
+            parentAddress.add(property.getName(), property.getValue());
+        }
+        final Property last = address.get(size -1).asProperty();
+
+        final ModelNode childrenNamesOp = new ModelNode();
+        childrenNamesOp.get(OP).set(READ_CHILDREN_NAMES_OPERATION);
+        childrenNamesOp.get(OP_ADDR).set(parentAddress);
+        childrenNamesOp.get(CHILD_TYPE).set(last.getName());
+
+        final ModelNode result = executeForResult(client, childrenNamesOp);
+        if(result.asList().contains(last.getValue())) {
+            return true;
+        }
+        return false;
+    }
+
+    static void waitUntilState(final ModelControllerClient client, final ModelNode serverAddress, final String state) throws IOException {
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
+        operation.get(OP_ADDR).set(serverAddress);
+        operation.get(NAME).set("status");
+
+        for(int i = 0; i < 10; i++) {
+            try {
+                Thread.sleep(500);
+            } catch(InterruptedException e) {
+                return;
+            }
+            final ModelNode status = client.execute(operation);
+            if(state.equals(status.asString())) {
+                return;
+            }
+        }
     }
 
 }
