@@ -33,66 +33,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.web.Constants.ACCESS_LOG;
-import static org.jboss.as.web.Constants.ALIAS;
-import static org.jboss.as.web.Constants.CA_CERTIFICATE_FILE;
-import static org.jboss.as.web.Constants.CA_REVOCATION_URL;
-import static org.jboss.as.web.Constants.CERTIFICATE_FILE;
-import static org.jboss.as.web.Constants.CERTIFICATE_KEY_FILE;
-import static org.jboss.as.web.Constants.CIPHER_SUITE;
-import static org.jboss.as.web.Constants.CONDITION;
-import static org.jboss.as.web.Constants.CONNECTOR;
-import static org.jboss.as.web.Constants.CONTAINER;
-import static org.jboss.as.web.Constants.CONTAINER_CONFIG;
-import static org.jboss.as.web.Constants.DEFAULT_WEB_MODULE;
-import static org.jboss.as.web.Constants.DIRECTORY;
-import static org.jboss.as.web.Constants.DISABLED;
-import static org.jboss.as.web.Constants.ENABLED;
-import static org.jboss.as.web.Constants.ENABLE_LOOKUPS;
-import static org.jboss.as.web.Constants.ENABLE_WELCOME_ROOT;
-import static org.jboss.as.web.Constants.EXECUTOR;
-import static org.jboss.as.web.Constants.EXTENDED;
-import static org.jboss.as.web.Constants.FILE_ENCONDING;
-import static org.jboss.as.web.Constants.FLAGS;
-import static org.jboss.as.web.Constants.JSP_CONFIGURATION;
-import static org.jboss.as.web.Constants.KEY_ALIAS;
-import static org.jboss.as.web.Constants.LISTINGS;
-import static org.jboss.as.web.Constants.MAX_CONNECTIONS;
-import static org.jboss.as.web.Constants.MAX_DEPTH;
-import static org.jboss.as.web.Constants.MAX_POST_SIZE;
-import static org.jboss.as.web.Constants.MAX_SAVE_POST_SIZE;
-import static org.jboss.as.web.Constants.MIME_MAPPING;
-import static org.jboss.as.web.Constants.NAME;
-import static org.jboss.as.web.Constants.PASSWORD;
-import static org.jboss.as.web.Constants.PATH;
-import static org.jboss.as.web.Constants.PATTERN;
-import static org.jboss.as.web.Constants.PREFIX;
-import static org.jboss.as.web.Constants.PROTOCOL;
-import static org.jboss.as.web.Constants.PROXY_NAME;
-import static org.jboss.as.web.Constants.PROXY_PORT;
-import static org.jboss.as.web.Constants.READ_ONLY;
-import static org.jboss.as.web.Constants.REDIRECT_PORT;
-import static org.jboss.as.web.Constants.RELATIVE_TO;
-import static org.jboss.as.web.Constants.RESOLVE_HOSTS;
-import static org.jboss.as.web.Constants.REWRITE;
-import static org.jboss.as.web.Constants.ROTATE;
-import static org.jboss.as.web.Constants.SCHEME;
-import static org.jboss.as.web.Constants.SECRET;
-import static org.jboss.as.web.Constants.SECURE;
-import static org.jboss.as.web.Constants.SENDFILE;
-import static org.jboss.as.web.Constants.SESSION_CACHE_SIZE;
-import static org.jboss.as.web.Constants.SESSION_TIMEOUT;
-import static org.jboss.as.web.Constants.SOCKET_BINDING;
-import static org.jboss.as.web.Constants.SSL;
-import static org.jboss.as.web.Constants.SSO;
-import static org.jboss.as.web.Constants.STATIC_RESOURCES;
-import static org.jboss.as.web.Constants.SUBSTITUTION;
-import static org.jboss.as.web.Constants.TEST;
-import static org.jboss.as.web.Constants.VERIFY_CLIENT;
-import static org.jboss.as.web.Constants.VERIFY_DEPTH;
-import static org.jboss.as.web.Constants.VIRTUAL_SERVER;
-import static org.jboss.as.web.Constants.WEBDAV;
-import static org.jboss.as.web.Constants.WELCOME_FILE;
+import static org.jboss.as.web.Constants.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -171,6 +112,9 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     writeAttribute(writer, Attribute.CA_REVOCATION_URL.getLocalName(), sslConfig);
                     writeAttribute(writer, Attribute.SESSION_CACHE_SIZE.getLocalName(), sslConfig);
                     writeAttribute(writer, Attribute.SESSION_TIMEOUT.getLocalName(), sslConfig);
+                    writeAttribute(writer, Attribute.CA_CERTIFICATE_PASSWORD.getLocalName(), sslConfig);
+                    writeAttribute(writer, Attribute.TRUSTSTORE_TYPE.getLocalName(), sslConfig);
+                    writeAttribute(writer, Attribute.KEYSTORE_TYPE.getLocalName(), sslConfig);
                     writer.writeEndElement();
                 }
                 if (config.hasDefined(VIRTUAL_SERVER)) {
@@ -977,6 +921,15 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 break;
             case SESSION_TIMEOUT:
                 ssl.get(SESSION_TIMEOUT).set(value);
+                break;
+            case CA_CERTIFICATE_PASSWORD:
+                ssl.get(CA_CERTIFICATE_PASSWORD).set(value);
+                break;
+            case KEYSTORE_TYPE:
+                ssl.get(KEYSTORE_TYPE).set(value);
+                break;
+            case TRUSTSTORE_TYPE:
+                ssl.get(TRUSTSTORE_TYPE).set(value);
                 break;
            default:
                 throw unexpectedAttribute(reader, i);
