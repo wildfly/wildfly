@@ -379,6 +379,14 @@ public interface OperationContext {
      */
     Resource getRootResource();
 
+     /**
+     * Get a read-only reference of the entire management model BEFORE any changes were made by this context.
+     * The structure of the returned model may depend on the context type (domain vs. server).
+     *
+     * @return the read-only original resource
+     */
+    Resource getOriginalRootResource();
+
     /**
      * Determine whether the model has thus far been affected by this operation.
      *
@@ -414,6 +422,40 @@ public interface OperationContext {
      * @param message the message
      */
     void report(MessageSeverity severity, String message);
+
+
+    /**
+     * Marks a resource to indicate that it's backing service(s) will be restarted.
+     * This is to ensure that a restart only occurs once, even if there are multiple updates.
+     * When true is returned the caller has "aquired" the mark and should proceed with the
+     * restart, when false, the caller should take no additional action.
+     *
+     * The passed owner is compared by instance when a call to {@link #revertReloadRequired()}.
+     * This is to ensure that only the "owner" will be successful in reverting the mark.
+     *
+     * @param resource the resource that will be restarted
+     * @param owner the instance representing ownership of the mark
+     * @return true if the mark was required and the service should be restarted,
+     *         false if no action should be taken.
+     */
+    boolean markResourceRestarted(PathAddress resource, Object owner);
+
+
+    /**
+     * Removes the restarted marking on the specified resource, provided the passed owner is the one
+     * originally used to obtain the mark. The purpose of this method is to facilitate rollback processing.
+     * Only the "owner" of the mark should be the one to revert the service to a previous state (once again
+     * restarting it).When true is returned, the caller must take the required corrective
+     * action by restarting the resource, when false is returned the caller should take no additional action.
+     *
+     * The passed owner is compared by instance to the one provided in {@link #markResourceRestarted(PathAddress, Object)}
+     *
+     * @param resource the resource being reverted
+     * @param owner the owner of the mark for the resource
+     * @return true if the caller owns the mark and the service should be restored by restarting
+     *         false if no action should be taken.
+     */
+    boolean revertResourceRestarted(PathAddress resource, Object owner);
 
     /**
      * The stage at which a step should apply.

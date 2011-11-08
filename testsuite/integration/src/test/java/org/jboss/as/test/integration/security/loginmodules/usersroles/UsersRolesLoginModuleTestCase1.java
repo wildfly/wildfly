@@ -171,30 +171,39 @@ public class UsersRolesLoginModuleTestCase1 extends AbstractUsersRolesLoginModul
 
    }
 
-   protected static void createSecurityDomains(final ModelControllerClient client) throws Exception {
-      List<ModelNode> updates = new ArrayList<ModelNode>();
-      ModelNode op = new ModelNode();
-      op.get(OP).set(ADD);
-      op.get(OP_ADDR).add(SUBSYSTEM, "security");
+    protected static void createSecurityDomains(final ModelControllerClient client) throws Exception {
+        List<ModelNode> updates = new ArrayList<ModelNode>();
+        ModelNode op = new ModelNode();
 
-      op.get(OP_ADDR).add(SECURITY_DOMAIN, "users-roles-login-module");
-      ModelNode loginModule = op.get(Constants.AUTHENTICATION).add();
-      loginModule.get(ModelDescriptionConstants.CODE).set(UsersRolesLoginModule.class.getName());
-      loginModule.get(FLAG).set("required");
+        String securityDomain =  "users-roles-login-module";
+        op.get(OP).set(ADD);
+        op.get(OP_ADDR).add(SUBSYSTEM, "security");
+        op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
+        updates.add(op);
 
-      ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        op = new ModelNode();
+        op.get(OP).set(ADD);
+        op.get(OP_ADDR).add(SUBSYSTEM, "security");
+        op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
+        op.get(OP_ADDR).add(Constants.AUTHENTICATION, Constants.CLASSIC);
 
-      URL usersProp = tccl.getResource("users-roles-login-module.war/users.properties");
-      URL rolesProp = tccl.getResource("users-roles-login-module.war/roles.properties");
-      ModelNode moduleOptions = loginModule.get("module-options");
-      moduleOptions.get("usersProperties").set(usersProp.getFile());
-      moduleOptions.get("rolesProperties").set(rolesProp.getFile());
-      moduleOptions.get("unauthenticatedIdentity").set(ANNONYMOUS_USER_NAME);
+        ModelNode loginModule = op.get(Constants.LOGIN_MODULES).add();
+        loginModule.get(ModelDescriptionConstants.CODE).set(UsersRolesLoginModule.class.getName());
+        loginModule.get(FLAG).set("required");
+        op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
 
-      updates.add(op);
-      applyUpdates(updates, client);
+        URL usersProp = tccl.getResource("users-roles-login-module.war/users.properties");
+        URL rolesProp = tccl.getResource("users-roles-login-module.war/roles.properties");
+        ModelNode moduleOptions = loginModule.get("module-options");
+        moduleOptions.get("usersProperties").set(usersProp.getFile());
+        moduleOptions.get("rolesProperties").set(rolesProp.getFile());
+        moduleOptions.get("unauthenticatedIdentity").set(ANNONYMOUS_USER_NAME);
 
-   }
+        updates.add(op);
+        applyUpdates(updates, client);
+
+    }
 
 
 

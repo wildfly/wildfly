@@ -64,10 +64,6 @@ public class SecurityBootstrapService implements Service<Void> {
     public SecurityBootstrapService() {
     }
 
-    public void setSecurityProperties(Properties securityProperty) {
-        this.securityProperty = securityProperty;
-    }
-
     /** {@inheritDoc} */
     @Override
     public void start(StartContext context) throws StartException {
@@ -113,15 +109,6 @@ public class SecurityBootstrapService implements Service<Void> {
             CallbackHandlerPolicyContextHandler chandler = new CallbackHandlerPolicyContextHandler();
             PolicyContext.registerHandler(SecurityConstants.CALLBACK_HANDLER_KEY, chandler, true);
 
-            // Handle the Security Properties
-            if (securityProperty != null) {
-                Enumeration<Object> keys = securityProperty.keys();
-                while (keys.hasMoreElements()) {
-                    String key = (String) keys.nextElement();
-                    String value = securityProperty.getProperty(key);
-                    SecurityActions.setSecurityProperty(key, value);
-                }
-            }
         } catch (Exception e) {
             throw new StartException(e);
         }

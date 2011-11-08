@@ -25,8 +25,4 @@
                   keystore-password="changeit"/> 
 		</security-domain>
 	</security-domains>
-	<security-properties>
-	  <property name="a" value="b" />
-	  <property name="c" value="d" />
-	</security-properties>
 </subsystem>

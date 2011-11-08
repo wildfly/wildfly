@@ -23,6 +23,7 @@ package org.jboss.as.test.integration.security.loginmodules.usersroles;
 
 import org.apache.http.HttpResponse;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.security.Constants;
 import org.jboss.as.test.integration.security.loginmodules.common.Utils;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
@@ -44,10 +45,8 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.util.*;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.security.Constants.CODE;
 import static org.jboss.as.security.Constants.FLAG;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
@@ -143,24 +142,43 @@ public class UsersRolesLoginModuleTestCase8 extends AbstractSecuredUsersRolesLog
       List<ModelNode> updates = new ArrayList<ModelNode>();
 
       ModelNode op1 = new ModelNode();
-      op1.get(OP).set(ADD);
-      op1.get(OP_ADDR).add(SUBSYSTEM, "security");
 
-      op1.get(OP_ADDR).add(SECURITY_DOMAIN, "prepare-login-module");
-      ModelNode loginModule2 = op1.get(Constants.AUTHENTICATION).add();
-      loginModule2.get(CODE).set(UsersRolesLoginModule.class.getName());
-      loginModule2.get(FLAG).set("optional");
+        op1.get(OP).set(ADD);
+        op1.get(OP_ADDR).add(SUBSYSTEM, "security");
+        op1.get(OP_ADDR).add(SECURITY_DOMAIN, "prepare-login-module");
+        updates.add(op1);
+
+        op1 = new ModelNode();
+        op1.get(OP).set(ADD);
+        op1.get(OP_ADDR).add(SUBSYSTEM, "security");
+        op1.get(OP_ADDR).add(SECURITY_DOMAIN, "prepare-login-module");
+        op1.get(OP_ADDR).add(Constants.AUTHENTICATION, Constants.CLASSIC);
+
+        ModelNode loginModule = op1.get(Constants.LOGIN_MODULES).add();
+        loginModule.get(ModelDescriptionConstants.CODE).set(UsersRolesLoginModule.class.getName());
+        loginModule.get(FLAG).set("optional");
+        op1.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
 
       updates.add(op1);
 
-      ModelNode op2 = new ModelNode();
-      op2.get(OP).set(ADD);
-      op2.get(OP_ADDR).add(SUBSYSTEM, "security");
 
-      op2.get(OP_ADDR).add(SECURITY_DOMAIN, "users-roles-login-module");
-      ModelNode loginModule = op2.get(Constants.AUTHENTICATION).add();
-      loginModule.get(CODE).set(UsersRolesLoginModule.class.getName());
-      loginModule.get(FLAG).set("required");
+      String securityDomain =  "users-roles-login-module";
+      ModelNode op2 = new ModelNode();
+        op2.get(OP).set(ADD);
+        op2.get(OP_ADDR).add(SUBSYSTEM, "security");
+        op2.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
+        updates.add(op2);
+
+        op2 = new ModelNode();
+        op2.get(OP).set(ADD);
+        op2.get(OP_ADDR).add(SUBSYSTEM, "security");
+        op2.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
+        op2.get(OP_ADDR).add(Constants.AUTHENTICATION, Constants.CLASSIC);
+
+        loginModule = op2.get(Constants.LOGIN_MODULES).add();
+        loginModule.get(ModelDescriptionConstants.CODE).set(UsersRolesLoginModule.class.getName());
+        loginModule.get(FLAG).set("required");
+        op2.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
 
       URL usersProp = Utils.getResource("users-roles-login-module.war/users.properties");
       URL rolesProp = Utils.getResource("users-roles-login-module.war/roles.properties");

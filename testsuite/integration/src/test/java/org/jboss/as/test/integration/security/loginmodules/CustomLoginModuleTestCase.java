@@ -22,13 +22,7 @@
 
 package org.jboss.as.test.integration.security.loginmodules;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.jboss.as.security.Constants.AUTHENTICATION;
 import static org.jboss.as.security.Constants.CODE;
 import static org.jboss.as.security.Constants.FLAG;
@@ -60,6 +54,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
 import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
+import org.jboss.as.security.Constants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -217,14 +212,27 @@ public class CustomLoginModuleTestCase {
     public static void createSecurityDomains(final ModelControllerClient client) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
         ModelNode op = new ModelNode();
-        op.get(OP).set(ADD);
-        op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(SECURITY_DOMAIN, "custom-login-module");
-        ModelNode loginModule = op.get(AUTHENTICATION).add();
+        String securityDomain = "custom-login-module";
+
+        op.get(OP).set(COMPOSITE);
+        op.get(OP_ADDR).setEmptyList();
+        ModelNode add1 = op.get(STEPS).add();
+
+        add1.get(OP).set(ADD);
+        add1.get(OP_ADDR).add(SUBSYSTEM, "security");
+        add1.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
+
+        ModelNode add2 =  op.get(STEPS).add();
+        add2.get(OP).set(ADD);
+        add2.get(OP_ADDR).add(SUBSYSTEM, "security");
+        add2.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
+        add2.get(OP_ADDR).add(AUTHENTICATION, Constants.CLASSIC);
+
+        ModelNode loginModule = add2.get(Constants.LOGIN_MODULES).add();
         loginModule.get(CODE).set(CustomTestLoginModule.class.getName());
         loginModule.get(FLAG).set("required");
-        updates.add(op);
 
+        updates.add(op);
         applyUpdates(updates, client);
     }
 
