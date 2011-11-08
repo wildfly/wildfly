@@ -35,7 +35,7 @@ import org.jboss.dmr.ModelNode;
 public class ProcessTypeHandler implements OperationStepHandler {
 
     public static final ProcessTypeHandler MASTER = new ProcessTypeHandler(true);
-    public static final ProcessTypeHandler SLAVE = new ProcessTypeHandler(true);
+    public static final ProcessTypeHandler SLAVE = new ProcessTypeHandler(false);
 
     public static final String DOMAIN_CONTROLLER_TYPE = "Domain Controller";
     public static final String HOST_CONTROLLER_TYPE = "Host Controller";

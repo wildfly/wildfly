@@ -102,7 +102,10 @@ import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymen
 import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentReplaceHandler;
 import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentUndeployHandler;
 import org.jboss.as.domain.controller.resource.SocketBindingResourceDefinition;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.controller.descriptions.ServerDescriptionConstants;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.as.server.operations.LaunchTypeHandler;
 import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingResourceDefinition;
 import org.jboss.as.server.services.net.RemoteDestinationOutboundSocketBindingResourceDefinition;
 import org.jboss.dmr.ModelNode;
@@ -122,17 +125,7 @@ public class DomainModelUtil {
      * @param rootModel - the model to be updated.
      */
     public static void updateCoreModel(final ModelNode rootModel) {
-        rootModel.get(NAMESPACES).setEmptyList();
-        rootModel.get(SCHEMA_LOCATIONS).setEmptyList();
-        rootModel.get(EXTENSION);
-        rootModel.get(PATH);
-        rootModel.get(SYSTEM_PROPERTY);
-        rootModel.get(PROFILE);
-        rootModel.get(INTERFACE);
-        rootModel.get(SOCKET_BINDING_GROUP);
-        rootModel.get(DEPLOYMENT);
-        rootModel.get(SERVER_GROUP);
-        rootModel.get(HOST);
+        //
     }
 
     public static ExtensionContext initializeMasterDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
@@ -177,6 +170,7 @@ public class DomainModelUtil {
         root.registerOperationHandler(SnapshotTakeHandler.OPERATION_NAME, snapshotTake, snapshotTake, false);
 
         root.registerReadOnlyAttribute(PROCESS_TYPE, isMaster ? ProcessTypeHandler.MASTER : ProcessTypeHandler.SLAVE, Storage.RUNTIME);
+        root.registerReadOnlyAttribute(ServerDescriptionConstants.LAUNCH_TYPE, new LaunchTypeHandler(ServerEnvironment.LaunchType.DOMAIN), Storage.RUNTIME);
 
         root.registerOperationHandler(GlobalOperationHandlers.VALIDATE_ADDRESS_OPERATION_NAME, GlobalOperationHandlers.VALIDATE_ADDRESS, CommonProviders.VALIDATE_ADDRESS_PROVIDER, true);
 
