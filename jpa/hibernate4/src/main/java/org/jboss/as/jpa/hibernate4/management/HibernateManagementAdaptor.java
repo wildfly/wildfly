@@ -50,7 +50,7 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
 
     private static final String PROVIDER_LABEL = "hibernate-persistence-unit";
     public static final String OPERATION_CLEAR = "clear";
-    public static final String OPERATION_EVICTALL = "evictall";
+    public static final String OPERATION_EVICTALL = "evict-all";
     public static final String OPERATION_SUMMARY = "summary";
     public static final String OPERATION_STATISTICS_ENABLED = "enabled";
     public static final String OPERATION_ENTITY_DELETE_COUNT = "entity-delete-count";
