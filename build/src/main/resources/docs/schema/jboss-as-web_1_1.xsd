@@ -332,7 +332,7 @@
     <xs:attribute name="key-alias" default="jboss"/>
     <xs:attribute name="password">
       <xs:annotation>
-        <xs:documentation>Password for both trustore and keystore</xs:documentation>
+        <xs:documentation>Password for both keystore</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="certificate-key-file" default="${user.home}/.keystore">
@@ -382,6 +382,27 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="ca-certificate-password">
+      <xs:annotation>
+        <xs:documentation>
+          Password of trust store for JSE
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+      <xs:attribute name="keystore-type" type="JSEStoreType">
+      <xs:annotation>
+        <xs:documentation>
+          Type of keystore type for JSE value can be pkcs12 or jks
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+      <xs:attribute name="truststore-type" type="JSEStoreType">
+      <xs:annotation>
+        <xs:documentation>
+          Type of keystore type for JSE value can be pkcs12 or jks
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="session-cache-size" default="0"/>
     <xs:attribute name="session-timeout" default="86400"/>
   </xs:complexType>
@@ -393,6 +414,13 @@
         <xs:enumeration value="TLSv1"/>
         <xs:enumeration value="SSLv2+SSLv3"/>
         <xs:enumeration value="ALL"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+   <xs:simpleType name="JSEStoreType">
+    <xs:restriction base="xs:token">
+        <xs:enumeration value="JKS"/>
+        <xs:enumeration value="PKCS12"/>
     </xs:restriction>
   </xs:simpleType>
   
