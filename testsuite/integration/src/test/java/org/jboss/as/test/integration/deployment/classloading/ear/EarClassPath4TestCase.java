@@ -29,20 +29,18 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class EarClassPath4TestCase {
 
     @Deployment
     public static Archive<?> deploy() {
 
-        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
+        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "cptest.ear");
 
-        WebArchive war = ShrinkWrap.create(WebArchive.class);
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "web.war");
         war.addAsResource(new StringAsset("Class-Path: ejb-jar.jar other-jar.jar \n"),"META-INF/MANIFEST.MF");
         war.addClasses(EarClassPath4TestCase.class);
 

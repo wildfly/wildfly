@@ -205,8 +205,8 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
     }
 
     public static void addService(final ServiceTarget serviceTarget, final Bootstrap.Configuration configuration) {
-        Service<ServiceModuleLoader> service = new ServiceModuleLoader(configuration.getModuleLoader());
-        ServiceBuilder<?> serviceBuilder = serviceTarget.addService(Services.JBOSS_SERVICE_MODULE_LOADER, service);
+        final Service<ServiceModuleLoader> service = new ServiceModuleLoader(configuration.getModuleLoader());
+        final ServiceBuilder<?> serviceBuilder = serviceTarget.addService(Services.JBOSS_SERVICE_MODULE_LOADER, service);
         serviceBuilder.install();
     }
 
