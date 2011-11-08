@@ -38,11 +38,6 @@ public class RootLoggerAssignHandler extends LoggerAssignHandler {
     static final RootLoggerAssignHandler INSTANCE = new RootLoggerAssignHandler();
 
     @Override
-    protected ModelNode getParent(final ModelNode model) {
-        return model.get(ROOT_LOGGER);
-    }
-
-    @Override
     protected String getLoggerName(ModelNode operation) {
         return ROOT_LOGGER_NAME;
     }

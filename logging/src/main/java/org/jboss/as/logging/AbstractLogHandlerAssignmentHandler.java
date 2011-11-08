@@ -51,11 +51,10 @@ public abstract class AbstractLogHandlerAssignmentHandler extends AbstractModelU
      */
     protected void updateHandlersForAssign(final AttributeDefinition handlerAttribute, final ModelNode operation, final ModelNode model) throws OperationFailedException {
         final String handlerName = getHandlerName(operation);
-        final ModelNode parent = getParent(model);
-        if (handlerExists(handlerName, handlerAttribute, parent)) {
+        if (handlerExists(handlerName, handlerAttribute, model)) {
             throw createFailureMessage(MESSAGES.handlerAlreadyDefined(handlerName));
         }
-        parent.get(handlerAttribute.getName()).add(handlerName);
+        model.get(handlerAttribute.getName()).add(handlerName);
         // getParent(model).get(handlerAttribute.getName()).set(getAssignedHandlers(model).add(handlerName));
         // applyNewHandlers(handlerAttribute.getName(), model, getAssignedHandlers(model).add(handlerName));
     }
@@ -73,10 +72,9 @@ public abstract class AbstractLogHandlerAssignmentHandler extends AbstractModelU
      */
     protected void updateHandlersForUnassign(final AttributeDefinition handlerAttribute, final ModelNode operation, final ModelNode model) throws OperationFailedException {
         final String handlerName = getHandlerName(operation);
-        final ModelNode parent = getParent(model);
-        if (handlerExists(handlerName, handlerAttribute, parent)) {
+        if (handlerExists(handlerName, handlerAttribute, model)) {
             // Get the current subhandlers
-            final ModelNode currentSubhandlers = handlerAttribute.validateOperation(parent);
+            final ModelNode currentSubhandlers = handlerAttribute.resolveModelAttribute(context, model);
             // Create new list of subhandlers without the handler being removed
             final List<ModelNode> newSubhandlers = new ArrayList<ModelNode>();
             for (ModelNode node : currentSubhandlers.asList()) {
@@ -85,7 +83,7 @@ public abstract class AbstractLogHandlerAssignmentHandler extends AbstractModelU
                 }
                 newSubhandlers.add(node);
             }
-            parent.get(handlerAttribute.getName()).set(newSubhandlers);
+            model.get(handlerAttribute.getName()).set(newSubhandlers);
             //applyNewHandlers(handlerAttribute.getName(), model, newSubhandlers);
         } else {
             // Subhandler not found
@@ -127,17 +125,6 @@ public abstract class AbstractLogHandlerAssignmentHandler extends AbstractModelU
             }
         }
         return false;
-    }
-
-    /**
-     * Returns the parent node, which by default is the model passed in.
-     *
-     * @param model the model to lookup the parent in.
-     *
-     * @return the parent node.
-     */
-    protected ModelNode getParent(final ModelNode model) {
-        return model;
     }
 
     /**
