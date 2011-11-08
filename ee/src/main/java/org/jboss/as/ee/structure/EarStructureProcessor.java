@@ -62,12 +62,14 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
     private static final String JAR_EXTENSION = ".jar";
     private static final String WAR_EXTENSION = ".war";
     private static final String SAR_EXTENSION = ".sar";
+    private static final String RAR_EXTENSION = ".rar";
     private static final List<String> CHILD_ARCHIVE_EXTENSIONS = new ArrayList<String>();
 
     static {
         CHILD_ARCHIVE_EXTENSIONS.add(JAR_EXTENSION);
         CHILD_ARCHIVE_EXTENSIONS.add(WAR_EXTENSION);
         CHILD_ARCHIVE_EXTENSIONS.add(SAR_EXTENSION);
+        CHILD_ARCHIVE_EXTENSIONS.add(RAR_EXTENSION);
     }
 
     private static final SuffixMatchFilter CHILD_ARCHIVE_FILTER = new SuffixMatchFilter(CHILD_ARCHIVE_EXTENSIONS, new VisitorAttributes() {
@@ -162,7 +164,8 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
             if (earMetaData == null) {
                 for (final VirtualFile child : childArchives) {
                     final boolean isWarFile = child.getName().toLowerCase(Locale.ENGLISH).endsWith(WAR_EXTENSION);
-                    this.createResourceRoot(deploymentUnit, child, isWarFile, isWarFile);
+                    final boolean isRarFile = child.getName().toLowerCase(Locale.ENGLISH).endsWith(RAR_EXTENSION);
+                    this.createResourceRoot(deploymentUnit, child, isWarFile || isRarFile, isWarFile);
                 }
             } else {
                 Set<VirtualFile> subDeploymentFiles = new HashSet<VirtualFile>();
