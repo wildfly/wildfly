@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.xts;
+package org.jboss.as.test.xts;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.zip.ZipFile;
 
 import static org.junit.Assert.assertTrue;
+
 
 /**
  * XTS interop tests.
@@ -64,7 +65,6 @@ public class XTSInteropTestCase extends XTSTestBase {
     public static Archive<?> deploymentInterop11() throws Exception {
         Archive<?> archive = ShrinkWrap.create(ZipImporter.class, ARCHIVE_INTEROP11)
                 .importFrom(new ZipFile("target/jbossxts-tests/" + ARCHIVE_INTEROP11)).as(WebArchive.class);
-//        archive.as(ZipExporter.class).exportTo(new File("/tmp/deployment.zip"), true);
         return archive;
     }
 
@@ -75,26 +75,40 @@ public class XTSInteropTestCase extends XTSTestBase {
         return archive;
     }
 
+
     @Test
     public void testSC007() throws Throwable {
         String outfile = getOutfileName("sc007");
-        boolean res = doInteropTests("/sc007/ParticipantService", "sc007", "allTests", outfile);
-        assertTrue("The sc007 tests failed, for more info see " + outfile, res);
+        try {
+            boolean res = doInteropTests("/sc007/ParticipantService", "sc007", "allTests", outfile);
+            assertTrue("The sc007 tests failed, for more info see " + outfile, res);
+        } catch (Throwable e) {
+            throw new Throwable("The sc007 tests failed with '" + e.getMessage() + "', for more info see " + outfile, e);
+        }
     }
 
     @Test
     public void testInterop11AT() throws Throwable {
         String outfile = getOutfileName("interop11-AT");
-        boolean res = doInteropTests("/interop11/ATParticipantService", "interop11", "allATTests", outfile);
-        assertTrue("The interop11-AT tests failed, for more info see " + outfile, res);
+        try {
+            boolean res = doInteropTests("/interop11/ATParticipantService", "interop11", "allATTests", outfile);
+            assertTrue("The interop11-AT tests failed, for more info see " + outfile, res);
+        } catch (Throwable e) {
+            throw new Throwable("The interop11-AT tests failed with '" + e.getMessage() + "', for more info see " + outfile, e);
+        }
     }
 
     @Test
     public void testInterop11BA() throws Throwable {
         String outfile = getOutfileName("interop11-BA");
-        boolean res = doInteropTests("/interop11/BAParticipantService", "interop11", "allBATests", outfile);
-        assertTrue("The interop11-BA tests failed, for more info see " + outfile, res);
+        try {
+            boolean res = doInteropTests("/interop11/BAParticipantService", "interop11", "allBATests", outfile);
+            assertTrue("The interop11-BA tests failed, for more info see " + outfile, res);
+        } catch (Throwable e) {
+            throw new Throwable("The interop11-BA tests failed with '" + e.getMessage() + "', for more info see " + outfile, e);
+        }
     }
+
 
     private boolean doInteropTests(String serviceURI, String baseContext, String testName, String outfile) throws Throwable {
         List<NameValuePair> params = new ArrayList<NameValuePair>(5);

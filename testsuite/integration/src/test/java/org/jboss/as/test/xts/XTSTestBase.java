@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.xts;
+package org.jboss.as.test.xts;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ResponseHandler;
@@ -106,7 +106,7 @@ public abstract class XTSTestBase {
             log.error("====================  EXCEPTION  =====================");
             log.error("======================================================");
             log.error(e);
-            result = false;
+            throw e;
         } finally {
             httpclient.getConnectionManager().shutdown();
         }

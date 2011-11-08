@@ -19,30 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.xts;
+package org.jboss.as.test.xts;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.importer.ZipImporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.zip.ZipFile;
 
 import static org.junit.Assert.assertTrue;
+
 
 /**
  * XTS Unit tests.
@@ -83,8 +76,6 @@ public class XTSUnitTestCase extends XTSTestBase {
         return archive;
     }
 
-/*  FIXME: JBTM-900 affected deployments
-
     @Deployment(name = "wsc", testable = false)
     public static Archive<?> deploymentWSC() throws Exception {
         Archive<?> archive = ShrinkWrap.create(ZipImporter.class, ARCHIVE_WSC)
@@ -96,7 +87,6 @@ public class XTSUnitTestCase extends XTSTestBase {
     public static Archive<?> deploymentWST() throws Exception {
         Archive<?> archive = ShrinkWrap.create(ZipImporter.class, ARCHIVE_WST)
                 .importFrom(new ZipFile("target/jbossxts-tests/" + ARCHIVE_WST)).as(EnterpriseArchive.class);
-        archive.as(ZipExporter.class).exportTo(new File("/tmp/wst.zip"), true);
         return archive;
     }
 
@@ -106,45 +96,63 @@ public class XTSUnitTestCase extends XTSTestBase {
                 .importFrom(new ZipFile("target/jbossxts-tests/" + ARCHIVE_WSTX)).as(EnterpriseArchive.class);
         return archive;
     }
-*/
+
 
     @Test
     public void testWSAS() throws Throwable {
         String outfile = getOutfileName("wsas");
-        boolean res = callTests("/wsas-tests/index.xml", outfile);
-        assertTrue("The wsas tests failed, for more info see " + outfile, res);
+        try {
+            boolean res = callTests("/wsas-tests/index.xml", outfile);
+            assertTrue("The wsas tests failed, for more info see " + outfile, res);
+        } catch (Throwable e) {
+            throw new Throwable("The wsas tests failed with '" + e.getMessage() + "', for more info see " + outfile, e);
+        }
     }
 
     @Test
     public void testWSCF() throws Throwable {
         String outfile = getOutfileName("wscf");
-        boolean res = callTests("/wscf11-tests/index.xml", outfile);
-        assertTrue("The wscf tests failed, for more info see " + outfile, res);
+        try {
+            boolean res = callTests("/wscf11-tests/index.xml", outfile);
+            assertTrue("The wscf tests failed, for more info see " + outfile, res);
+        } catch (Throwable e) {
+            throw new Throwable("The wscf tests failed with '" + e.getMessage() + "', for more info see " + outfile, e);
+        }
     }
 
     @Test
-    @Ignore
     public void testWSC() throws Throwable {
         String outfile = getOutfileName("wsc");
-        boolean res = callTests("/ws-c11-tests/index.xml", outfile);
-        assertTrue("The wsc tests failed, for more info see " + outfile, res);
+        try {
+            boolean res = callTests("/ws-c11-tests/index.xml", outfile);
+            assertTrue("The wsc tests failed, for more info see " + outfile, res);
+        } catch (Throwable e) {
+            throw new Throwable("The wsc tests failed with '" + e.getMessage() + "', for more info see " + outfile, e);
+        }
     }
 
     @Test
-    @Ignore
     public void testWST() throws Throwable {
         String outfile = getOutfileName("wst");
-        boolean res = callTests("/ws-t11-tests/index.xml", outfile);
-        assertTrue("The wst tests failed, for more info see " + outfile, res);
+        try {
+            boolean res = callTests("/ws-t11-tests/index.xml", outfile);
+            assertTrue("The wst tests failed, for more info see " + outfile, res);
+        } catch (Throwable e) {
+            throw new Throwable("The wst tests failed with '" + e.getMessage() + "', for more info see " + outfile, e);
+        }
     }
 
     @Test
-    @Ignore
     public void testWSTX() throws Throwable {
         String outfile = getOutfileName("wstx");
-        boolean res = callTests("/wstx11-tests/index.xml", outfile);
-        assertTrue("The wstx tests failed, for more info see " + outfile, res);
+        try {
+            boolean res = callTests("/wstx11-tests/index.xml", outfile);
+            assertTrue("The wstx tests failed, for more info see " + outfile, res);
+        } catch (Throwable e) {
+            throw new Throwable("The wstx tests failed with '" + e.getMessage() + "', for more info see " + outfile, e);
+        }
     }
+
 
     private boolean callTests(String serviceURI, String outfile) throws Throwable {
         return callTestServlet(BASE_URL + serviceURI, null, outfile);
