@@ -46,6 +46,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.stream.StreamSource;
+import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.InetAddress;
@@ -77,6 +78,12 @@ public class DataSourceOperationsUnitTestCase {
 
     private ModelControllerClient client;
 
+    private ModelNode execute(final ModelNode operation) throws IOException {
+        final ModelNode result = getModelControllerClient().execute(operation);
+        Assert.assertEquals(operation + "\n" + result, SUCCESS, result.get(OUTCOME).asString());
+        return result;
+    }
+
     @Deployment
     public static Archive<?> getDeployment() {
         return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
@@ -88,6 +95,13 @@ public class DataSourceOperationsUnitTestCase {
             client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
         }
         return client;
+    }
+
+    private void remove(final ModelNode address) throws IOException {
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("remove");
+        operation.get(OP_ADDR).set(address);
+        execute(operation);
     }
 
     @After
@@ -118,15 +132,13 @@ public class DataSourceOperationsUnitTestCase {
         operation.get("user-name").set("sa");
         operation.get("password").set("sa");
 
-        final ModelNode result = getModelControllerClient().execute(operation);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        execute(operation);
 
         final ModelNode operation2 = new ModelNode();
         operation2.get(OP).set("enable");
         operation2.get(OP_ADDR).set(address);
 
-        final ModelNode result2 = getModelControllerClient().execute(operation2);
-        Assert.assertEquals(SUCCESS, result2.get(OUTCOME).asString());
+        execute(operation2);
 
 
         testConnection("MyNewDs", getModelControllerClient());
@@ -143,7 +155,7 @@ public class DataSourceOperationsUnitTestCase {
         compensatingOperation.get(OP).set("remove");
         compensatingOperation.get(OP_ADDR).set(address);
 
-        getModelControllerClient().execute(compensatingOperation);
+        execute(compensatingOperation);
     }
 
     /**
@@ -173,15 +185,13 @@ public class DataSourceOperationsUnitTestCase {
         operation.get("user-name").set("sa");
         operation.get("password").set("sa");
 
-        final ModelNode result = getModelControllerClient().execute(operation);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        execute(operation);
 
         final ModelNode operation2 = new ModelNode();
         operation2.get(OP).set("enable");
         operation2.get(OP_ADDR).set(address);
 
-        final ModelNode result2 = getModelControllerClient().execute(operation2);
-        Assert.assertEquals(SUCCESS, result2.get(OUTCOME).asString());
+        execute(operation2);
 
         testConnection("MyNewDs", getModelControllerClient());
 
@@ -197,7 +207,7 @@ public class DataSourceOperationsUnitTestCase {
         compensatingOperation.get(OP).set("remove");
         compensatingOperation.get(OP_ADDR).set(address);
 
-        getModelControllerClient().execute(compensatingOperation);
+        execute(compensatingOperation);
     }
 
     @Test
@@ -223,8 +233,7 @@ public class DataSourceOperationsUnitTestCase {
         operation.get("user-name").set("sa");
         operation.get("password").set("sa");
 
-        final ModelNode result = getModelControllerClient().execute(operation);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        execute(operation);
 
 
         final ModelNode connectionPropertyAddress = address.clone();
@@ -239,15 +248,13 @@ public class DataSourceOperationsUnitTestCase {
         connectionPropertyOperation.get("value").set("MyValue");
 
 
-        final ModelNode connectionPropertyResult = getModelControllerClient().execute(connectionPropertyOperation);
-        Assert.assertEquals(SUCCESS, connectionPropertyResult.get(OUTCOME).asString());
+        execute(connectionPropertyOperation);
 
         final ModelNode operation2 = new ModelNode();
         operation2.get(OP).set("enable");
         operation2.get(OP_ADDR).set(address);
 
-        final ModelNode result2 = getModelControllerClient().execute(operation2);
-        Assert.assertEquals(SUCCESS, result2.get(OUTCOME).asString());
+        execute(operation2);
 
         List<ModelNode> newList = marshalAndReparseDsResources("data-source");
 
@@ -257,12 +264,14 @@ public class DataSourceOperationsUnitTestCase {
         Assert.assertFalse(parseChildren.isEmpty());
         Assert.assertEquals("java:jboss/datasources/MyNewDs", parseChildren.get("jndi-name").asString());
 
+        remove(connectionPropertyAddress);
+
         //TODO: verify connection-properties
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set("remove");
         compensatingOperation.get(OP_ADDR).set(address);
 
-        getModelControllerClient().execute(compensatingOperation);
+        execute(compensatingOperation);
     }
 
     @Test
@@ -292,10 +301,9 @@ public class DataSourceOperationsUnitTestCase {
         compensatingOperation.get(OP_ADDR).set(address);
         // do twice, test for AS7-720
         for (int i = 1; i <= 2; i++) {
-            final ModelNode result = getModelControllerClient().execute(operation);
-            Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+            execute(operation);
 
-            getModelControllerClient().execute(compensatingOperation);
+            execute(compensatingOperation);
         }
     }
 
@@ -333,10 +341,8 @@ public class DataSourceOperationsUnitTestCase {
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set("remove");
         compensatingOperation.get(OP_ADDR).set(address);
-        final ModelNode result = getModelControllerClient().execute(operation);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        final ModelNode compensatinResult = getModelControllerClient().execute(compensatingOperation);
-        Assert.assertEquals(SUCCESS, compensatinResult.get(OUTCOME).asString());
+        execute(operation);
+        execute(compensatingOperation);
 
     }
 
@@ -368,8 +374,7 @@ public class DataSourceOperationsUnitTestCase {
         compensatingOperation.get(OP).set("remove");
         compensatingOperation.get(OP_ADDR).set(address);
 
-        final ModelNode result = getModelControllerClient().execute(operation);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        execute(operation);
 
         final ModelNode xaDatasourcePropertiesAddress = address.clone();
         xaDatasourcePropertiesAddress.add("xa-datasource-properties", "URL");
@@ -379,27 +384,21 @@ public class DataSourceOperationsUnitTestCase {
         xaDatasourcePropertyOperation.get(OP_ADDR).set(xaDatasourcePropertiesAddress);
         xaDatasourcePropertyOperation.get("value").set("jdbc:h2:mem:test");
 
-        final ModelNode connectionPropertyResult = getModelControllerClient().execute(xaDatasourcePropertyOperation);
-        Assert.assertEquals(SUCCESS, connectionPropertyResult.get(OUTCOME).asString());
+        execute(xaDatasourcePropertyOperation);
 
 
         final ModelNode operation2 = new ModelNode();
         operation2.get(OP).set("enable");
         operation2.get(OP_ADDR).set(address);
 
-        final ModelNode result2 = getModelControllerClient().execute(operation2);
-        Assert.assertEquals(SUCCESS, result2.get(OUTCOME).asString());
+        execute(operation2);
 
 
         testConnectionXA(dsName, getModelControllerClient());
 
-        final ModelNode propertyCompensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set("remove");
-        compensatingOperation.get(OP_ADDR).set(xaDatasourcePropertiesAddress);
-        getModelControllerClient().execute(propertyCompensatingOperation);
+        remove(xaDatasourcePropertiesAddress);
 
-        final ModelNode compensatinResult = getModelControllerClient().execute(compensatingOperation);
-        Assert.assertEquals(SUCCESS, compensatinResult.get(OUTCOME).asString());
+        execute(compensatingOperation);
 
     }
 
@@ -436,8 +435,7 @@ public class DataSourceOperationsUnitTestCase {
         compensatingOperation.get(OP).set("remove");
         compensatingOperation.get(OP_ADDR).set(address);
 
-        final ModelNode result = getModelControllerClient().execute(operation);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        execute(operation);
 
         final ModelNode xaDatasourcePropertiesAddress = address.clone();
         xaDatasourcePropertiesAddress.add("xa-datasource-properties", "URL");
@@ -447,15 +445,13 @@ public class DataSourceOperationsUnitTestCase {
         xaDatasourcePropertyOperation.get(OP_ADDR).set(xaDatasourcePropertiesAddress);
         xaDatasourcePropertyOperation.get("value").set("jdbc:h2:mem:test");
 
-        final ModelNode connectionPropertyResult = getModelControllerClient().execute(xaDatasourcePropertyOperation);
-        Assert.assertEquals(SUCCESS, connectionPropertyResult.get(OUTCOME).asString());
+        execute(xaDatasourcePropertyOperation);
 
         final ModelNode operation2 = new ModelNode();
         operation2.get(OP).set("enable");
         operation2.get(OP_ADDR).set(address);
 
-        final ModelNode result2 = getModelControllerClient().execute(operation2);
-        Assert.assertEquals(SUCCESS, result2.get(OUTCOME).asString());
+        execute(operation2);
 
         List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source");
 
@@ -465,13 +461,8 @@ public class DataSourceOperationsUnitTestCase {
         Assert.assertFalse(parseChildren.isEmpty());
         Assert.assertEquals("java:jboss/datasources/XaJndiDsName", parseChildren.get("jndi-name").asString());
 
-        final ModelNode propertyCompensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set("remove");
-        compensatingOperation.get(OP_ADDR).set(xaDatasourcePropertiesAddress);
-        getModelControllerClient().execute(propertyCompensatingOperation);
-
-        final ModelNode compensatinResult = getModelControllerClient().execute(compensatingOperation);
-        Assert.assertEquals(SUCCESS, compensatinResult.get(OUTCOME).asString());
+        remove(xaDatasourcePropertiesAddress);
+        execute(compensatingOperation);
 
         // remove from xml too
         marshalAndReparseDsResources("xa-data-source");
@@ -519,8 +510,7 @@ public class DataSourceOperationsUnitTestCase {
         disableOperation.get(OP).set("disable");
         disableOperation.get(OP_ADDR).set(address);
 
-        final ModelNode result = getModelControllerClient().execute(operation);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        execute(operation);
 
         final ModelNode xaDatasourcePropertiesAddress = address.clone();
         xaDatasourcePropertiesAddress.add("xa-datasource-properties", "URL");
@@ -530,30 +520,24 @@ public class DataSourceOperationsUnitTestCase {
         xaDatasourcePropertyOperation.get(OP_ADDR).set(xaDatasourcePropertiesAddress);
         xaDatasourcePropertyOperation.get("value").set("jdbc:h2:mem:test");
 
-        final ModelNode connectionPropertyResult = getModelControllerClient().execute(xaDatasourcePropertyOperation);
-        Assert.assertEquals(SUCCESS, connectionPropertyResult.get(OUTCOME).asString());
+        execute(xaDatasourcePropertyOperation);
 
         final ModelNode operation2 = new ModelNode();
         operation2.get(OP).set("enable");
         operation2.get(OP_ADDR).set(address);
 
-        final ModelNode result2 = getModelControllerClient().execute(operation2);
-        Assert.assertEquals(SUCCESS, result2.get(OUTCOME).asString());
+        execute(operation2);
 
         testConnectionXA(dsName, getModelControllerClient());
 
-        getModelControllerClient().execute(disableOperation);
-        getModelControllerClient().execute(enableOperation);
+        execute(disableOperation);
+        execute(enableOperation);
 
         testConnectionXA(dsName, getModelControllerClient());
 
-        final ModelNode propertyCompensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set("remove");
-        compensatingOperation.get(OP_ADDR).set(xaDatasourcePropertiesAddress);
-        getModelControllerClient().execute(propertyCompensatingOperation);
+        remove(xaDatasourcePropertiesAddress);
 
-        final ModelNode compensatinResult = getModelControllerClient().execute(compensatingOperation);
-        Assert.assertEquals(SUCCESS, compensatinResult.get(OUTCOME).asString());
+        execute(compensatingOperation);
 
     }
 
@@ -568,8 +552,7 @@ public class DataSourceOperationsUnitTestCase {
         operation.get(OP).set("installed-drivers-list");
         operation.get(OP_ADDR).set(address);
 
-        final ModelNode result = getModelControllerClient().execute(operation);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        final ModelNode result = execute(operation);
 
         final ModelNode result2 = result.get(RESULT).get(0);
         Assert.assertTrue(result2 != null);
@@ -604,8 +587,7 @@ public class DataSourceOperationsUnitTestCase {
         operation.get("user-name").set("sa");
         operation.get("password").set("sa");
 
-        final ModelNode result = getModelControllerClient().execute(operation);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        execute(operation);
 
         final ModelNode xaDatasourcePropertiesAddress = address.clone();
         xaDatasourcePropertiesAddress.add("xa-datasource-properties", "URL");
@@ -615,16 +597,14 @@ public class DataSourceOperationsUnitTestCase {
         xaDatasourcePropertyOperation.get(OP_ADDR).set(xaDatasourcePropertiesAddress);
         xaDatasourcePropertyOperation.get("value").set("jdbc:h2:mem:test");
 
-        final ModelNode connectionPropertyResult = getModelControllerClient().execute(xaDatasourcePropertyOperation);
-        Assert.assertEquals(SUCCESS, connectionPropertyResult.get(OUTCOME).asString());
+        execute(xaDatasourcePropertyOperation);
 
 
         final ModelNode operation2 = new ModelNode();
         operation2.get(OP).set("enable");
         operation2.get(OP_ADDR).set(address);
 
-        final ModelNode result2 = getModelControllerClient().execute(operation2);
-        Assert.assertEquals(SUCCESS, result2.get(OUTCOME).asString());
+        execute(operation2);
 
 
 
@@ -636,11 +616,13 @@ public class DataSourceOperationsUnitTestCase {
         Assert.assertFalse(parseChildren.isEmpty());
         Assert.assertEquals("java:jboss/xa-datasources/" + xaDs, parseChildren.get("jndi-name").asString());
 
+        remove(xaDatasourcePropertiesAddress);
+
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set("remove");
         compensatingOperation.get(OP_ADDR).set(address);
 
-        getModelControllerClient().execute(compensatingOperation);
+        execute(compensatingOperation);
     }
 
     public List<ModelNode> marshalAndReparseDsResources(final String childType) throws Exception {
@@ -655,9 +637,8 @@ public class DataSourceOperationsUnitTestCase {
         operation.get(RECURSIVE).set(true);
         operation.get(OP_ADDR).set(address);
 
-        final ModelNode result = getModelControllerClient().execute(operation);
+        final ModelNode result = execute(operation);
         Assert.assertTrue(result.hasDefined(RESULT));
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         final Map<String, ModelNode> children = getChildren(result.get(RESULT));
         for (final Entry<String, ModelNode> child : children.entrySet()) {
             Assert.assertTrue(child.getKey() != null);
