@@ -100,6 +100,7 @@ public class AddMySqlDataSourceOperationsUnitTestCase {
     }
 
     @Test
+		@Ignore("AS7-2515")
     public void testAddDsAndTestConnection() throws Exception {
 
         final ModelNode address = new ModelNode();
