@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application-client version="6"
+                    xmlns="http://java.sun.com/xml/ns/javaee"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/application-client_6.xsd">
+    <env-entry>
+        <env-entry-name>stringValue</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>EnvEntry</env-entry-value>
+        <injection-target>
+            <injection-target-class>org.jboss.as.test.integration.ee.appclient.basic.DescriptorClientMain</injection-target-class>
+            <injection-target-name>envEntry</injection-target-name>
+        </injection-target>
+    </env-entry>
+    <ejb-ref>
+        <ejb-ref-name>AppClientStateSingleton</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <remote>org.jboss.as.test.integration.ee.appclient.basic.AppClientSingletonRemote</remote>
+        <injection-target>
+            <injection-target-class>org.jboss.as.test.integration.ee.appclient.basic.DescriptorClientMain</injection-target-class>
+            <injection-target-name>appClientSingletonRemote</injection-target-name>
+        </injection-target>
+    </ejb-ref>
+</application-client>

@@ -34,6 +34,7 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.CurrentServiceContainer;
@@ -76,6 +77,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
     final String hostUrl;
 
     private Thread thread;
+    private ComponentInstance instance;
 
     public ApplicationClientStartService(final Method mainMethod, final String[] parameters, final String hostUrl, final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue, final ClassLoader classLoader) {
         this.mainMethod = mainMethod;
@@ -116,7 +118,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                                         NamespaceContextSelector.pushCurrentSelector(namespaceContextSelectorInjectedValue);
                                         //do static injection etc
                                         //TODO: this should be better
-                                        applicationClientComponent.getValue().createInstance();
+                                        instance = applicationClientComponent.getValue().createInstance();
                                         mainMethod.invoke(null, new Object[]{parameters});
                                     } finally {
                                         NamespaceContextSelector.popCurrentSelector();
@@ -154,6 +156,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
     public synchronized void stop(final StopContext context) {
         thread.interrupt();
         thread = null;
+        instance.destroy();
     }
 
     @Override
