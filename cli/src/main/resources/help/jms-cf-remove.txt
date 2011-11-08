@@ -1,8 +1,12 @@
-Synopsis:	remove-jms-cf [--profile=profile_name] name
+SYNOPSIS
 
-Description:	removes a JMS connection factory
+	remove-jms-cf [--profile=profile_name] name
 
-Arguments:
+DESCRIPTION
+
+	removes a JMS connection factory
+
+ARGUMENTS
 
 	profile		- is allowed and required only in the domain mode, specifies the profile
 				from which the JMS resource should be deleted. 

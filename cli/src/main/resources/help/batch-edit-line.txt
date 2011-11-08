@@ -1,9 +1,13 @@
-Synopsis:    edit-batch-line line_number edited_line
+SYNOPSIS
 
-Description:    replaces existing command line from the currently active batch
-                with the specified line number with the new one.
+    edit-batch-line line_number edited_line
 
-Arguments:
+DESCRIPTION
+
+    Replaces existing command line from the currently active batch
+    with the specified line number with the new one.
+
+ARGUMENTS
 
  line_number    - the line number of the existing command line in the batch.
                   Line numbers start with 1. So, the value of the argument must be

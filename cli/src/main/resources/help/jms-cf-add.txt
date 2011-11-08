@@ -1,8 +1,12 @@
-Synopsis:	add-jms-cf [--profile=profile_name] --name=cf_name [arguments below]
+SYNOPSIS
 
-Description:	creates a JMS connection factory
+	add-jms-cf [--profile=profile_name] --name=cf_name [arguments below]
 
-Arguments:
+DESCRIPTION
+
+	creates a JMS connection factory
+
+ARGUMENTS
 
 	profile		- is allowed and required only in the domain mode, specifies the profile
 				in which the JMS resource should be created. 

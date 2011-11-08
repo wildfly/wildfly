@@ -34,24 +34,25 @@ import org.junit.runner.RunWith;
 import static org.junit.Assert.*;
 
 /**
+ * TODO add/remove/modify-data-source commands are deprecated and shouldn't be used
  *
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
 @RunWith(Arquillian.class)
 @RunAsClient
 public class DataSourceTestCase extends AbstractCliTestBase {
-       
+
     private static final String[][] DS_PROPS = new String[][] {
         {"idle-timeout-minutes", "5"}
-    };    
-    
+    };
+
     @Deployment
     public static Archive<?> getDeployment() {
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
         ja.addClass(DataSourceTestCase.class);
         return ja;
-    }    
-    
+    }
+
     @Test
     public void testDataSource() throws Exception {
         testAddDataSource();
@@ -67,18 +68,18 @@ public class DataSourceTestCase extends AbstractCliTestBase {
         testRemoveXaDataSource();
          */
     }
-    
+
     private void testAddDataSource() throws Exception {
-        
+
         // add data source
         cli.sendLine("add-data-source --jndi-name=java:jboss/datasources/TestDS --driver-name=h2 --pool-name=TestDS --connection-url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
-        
+
         // check the data source is listed
         cli.sendLine("cd /subsystem=datasources/data-source");
         cli.sendLine("ls");
         String ls = cli.readAllUnformated(WAIT_TIMEOUT);
         assertTrue(ls.contains("java:jboss/datasources/TestDS"));
-        
+
         // check that it is available through JNDI
         // TODO implement when @ArquillianResource InitialContext is done
 
@@ -88,15 +89,15 @@ public class DataSourceTestCase extends AbstractCliTestBase {
 
         // remove data source
         cli.sendLine("remove-data-source --name=java:jboss/datasources/TestDS");
-        
+
         //check the data source is not listed
         cli.sendLine("cd /subsystem=datasources/data-source");
         cli.sendLine("ls");
         String ls = cli.readAllUnformated(WAIT_TIMEOUT);
         assertFalse(ls.contains("java:jboss/datasources/TestDS"));
-        
+
     }
-    
+
     private void testModifyDataSource() throws Exception {
         StringBuilder cmd = new StringBuilder("modify-data-source --jndi-name=java:jboss/datasources/TestDS");
         for (String[] props : DS_PROPS) {
@@ -106,43 +107,43 @@ public class DataSourceTestCase extends AbstractCliTestBase {
             cmd.append(props[1]);
         }
         cli.sendLine(cmd.toString());
-        
+
         // check that datasource was modified
-        cli.sendLine("/subsystem=datasources/data-source=java\\:jboss\\/datasources\\/TestDS:read-resource(recursive=true)");       
+        cli.sendLine("/subsystem=datasources/data-source=java\\:jboss\\/datasources\\/TestDS:read-resource(recursive=true)");
         CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT);
         assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof Map);
         Map dsProps = (Map) result.getResult();
         for (String[] props : DS_PROPS) assertTrue(dsProps.get(props[0]).equals(props[1]));
-        
+
     }
 
     private void testAddXaDataSource() throws Exception {
-        
+
         // add data source
         cli.sendLine("add-data-source --jndi-name=java:jboss/datasources/TestDS --driver-name=h2 --pool-name=TestDS --connection-url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
-        
+
         //check the data source is listed
         cli.sendLine("cd /subsystem=datasources/data-source");
         cli.sendLine("ls");
         String ls = cli.readAllUnformated(WAIT_TIMEOUT);
         assertTrue(ls.contains("java:jboss/datasources/TestDS"));
-        
+
     }
 
     private void testRemoveXaDataSource() throws Exception {
 
         // remove data source
         cli.sendLine("remove-data-source --name=java:jboss/datasources/TestDS");
-        
+
         //check the data source is not listed
         cli.sendLine("cd /subsystem=datasources/data-source");
         cli.sendLine("ls");
         String ls = cli.readAllUnformated(WAIT_TIMEOUT);
         assertFalse(ls.contains("java:jboss/datasources/TestDS"));
-        
+
     }
-    
+
     private void testModifyXaDataSource() throws Exception {
         StringBuilder cmd = new StringBuilder("modify-data-source --jndi-name=java:jboss/datasources/TestDS");
         for (String[] props : DS_PROPS) {
@@ -152,15 +153,15 @@ public class DataSourceTestCase extends AbstractCliTestBase {
             cmd.append(props[1]);
         }
         cli.sendLine(cmd.toString());
-        
+
         // check that datasource was modified
-        cli.sendLine("/subsystem=datasources/data-source=java\\:jboss\\/datasources\\/TestDS:read-resource(recursive=true)");       
+        cli.sendLine("/subsystem=datasources/data-source=java\\:jboss\\/datasources\\/TestDS:read-resource(recursive=true)");
         CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT);
         assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof Map);
         Map dsProps = (Map) result.getResult();
         for (String[] props : DS_PROPS) assertTrue(dsProps.get(props[0]).equals(props[1]));
-        
+
     }
-    
+
 }

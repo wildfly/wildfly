@@ -1,10 +1,14 @@
-Synopsis:    deploy (file_path [--name=deployment_name] [--runtime_name=deployment_runtime_name] [--force] | --name=deployment_name) [--server-groups=group_name (,group_name)* | --all-server-groups]
+SYNOPSIS
 
-Description:    deploys the application designated by the file_path or enables an already existing
-                but disabled in the repository deployment designated by the name argument.
-                If executed w/o arguments, will list all the existing deployments.
+    deploy (file_path [--name=deployment_name] [--runtime_name=deployment_runtime_name] [--force] | --name=deployment_name) [--server-groups=group_name (,group_name)* | --all-server-groups]
 
-Arguments:
+DESCRIPTION
+
+    Deploys the application designated by the file_path or enables an already existing
+    but disabled in the repository deployment designated by the name argument.
+    If executed w/o arguments, will list all the existing deployments.
+
+ARGUMENTS
 
  file_path           - the path to the application to deploy. Required in case the deployment
                        doesn't exist in the repository.

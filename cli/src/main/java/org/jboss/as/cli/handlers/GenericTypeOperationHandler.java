@@ -670,7 +670,8 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         }
         buf.append("<command> ").append(name.getFullName()).append("=<value> (--<parameter>=<value>)*");
 
-        buf.append("\n\nThe command is used to manage resources of type " + this.nodeType + ".");
+        buf.append("\n\nDESCRIPTION\n\n");
+        buf.append("The command is used to manage resources of type " + this.nodeType + ".");
 
         buf.append("\n\nRESOURCE DESCRIPTION\n\n");
         if(result != null) {

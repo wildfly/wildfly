@@ -28,12 +28,13 @@ import org.junit.runner.RunWith;
 import static org.junit.Assert.*;
 
 /**
+ * TODO add/remove-jms-topic/queue/cf commands are deprecated and shouldn't be used.
  *
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
-@RunWith(Arquillian.class)    
+@RunWith(Arquillian.class)
 public class JmsTestCase extends AbstractCliTestBase {
-    
+
     @Test
     public void testAddRemoveJmsQueue() throws Exception {
         testAddJmsQueue();
@@ -45,64 +46,64 @@ public class JmsTestCase extends AbstractCliTestBase {
         testAddJmsTopic();
         testRemoveJmsTopic();
     }
-    
+
     private void testAddJmsQueue() throws Exception {
-        
+
         // check the queue is not registered
         cli.sendLine("cd /subsystem=messaging/hornetq-server=default/jms-queue");
-        cli.sendLine("ls");        
+        cli.sendLine("ls");
         String ls = cli.readAllUnformated(WAIT_TIMEOUT);
-        assertFalse(ls.contains("testJmsQueue"));              
-        
+        assertFalse(ls.contains("testJmsQueue"));
+
         // create queue
         cli.sendLine("add-jms-queue --name=testJmsQueue");
-        
+
         // check it is listed
         cli.sendLine("cd /subsystem=messaging/hornetq-server=default/jms-queue");
-        cli.sendLine("ls");        
+        cli.sendLine("ls");
         ls = cli.readAllUnformated(WAIT_TIMEOUT);
-        assertTrue(ls.contains("testJmsQueue"));              
+        assertTrue(ls.contains("testJmsQueue"));
     }
 
     private void testRemoveJmsQueue() throws Exception {
-        
+
         // create queue
         cli.sendLine("remove-jms-queue --name=testJmsQueue");
-        
+
         // check it is listed
         cli.sendLine("cd /subsystem=messaging/hornetq-server=default/jms-queue");
-        cli.sendLine("ls");        
+        cli.sendLine("ls");
         String ls = cli.readAllUnformated(WAIT_TIMEOUT);
-        assertFalse(ls.contains("testJmsQueue"));              
-    }    
-    
+        assertFalse(ls.contains("testJmsQueue"));
+    }
+
     private void testAddJmsTopic() throws Exception {
-        
+
         // check the queue is not registered
         cli.sendLine("cd /subsystem=messaging/hornetq-server=default/jms-topic");
-        cli.sendLine("ls");        
+        cli.sendLine("ls");
         String ls = cli.readAllUnformated(WAIT_TIMEOUT);
-        assertFalse(ls.contains("testJmsTopic"));              
-        
+        assertFalse(ls.contains("testJmsTopic"));
+
         // create queue
         cli.sendLine("add-jms-topic --name=testJmsTopic");
-        
+
         // check it is listed
         cli.sendLine("cd /subsystem=messaging/hornetq-server=default/jms-topic");
-        cli.sendLine("ls");        
+        cli.sendLine("ls");
         ls = cli.readAllUnformated(WAIT_TIMEOUT);
-        assertTrue(ls.contains("testJmsTopic"));              
+        assertTrue(ls.contains("testJmsTopic"));
     }
 
     private void testRemoveJmsTopic() throws Exception {
-        
+
         // create queue
         cli.sendLine("remove-jms-topic --name=testJmsTopic");
-        
+
         // check it is listed
         cli.sendLine("cd /subsystem=messaging/hornetq-server=default/jms-topic");
-        cli.sendLine("ls");        
+        cli.sendLine("ls");
         String ls = cli.readAllUnformated(WAIT_TIMEOUT);
-        assertFalse(ls.contains("testJmsTopic"));              
-    }       
+        assertFalse(ls.contains("testJmsTopic"));
+    }
 }
