@@ -382,6 +382,10 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
 
 
     private Statistics getStatistics() {
-        return ManagementUtility.getStatistics(persistenceUnitRegistry, puName);
+        ManagementLookup stats = ManagementLookup.create(persistenceUnitRegistry, puName);
+        if (stats != null) {
+            return stats.getStatistics();
+        }
+        return null;
     }
 }
