@@ -27,14 +27,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COR
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CPU_AFFINITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTBOUND_CONNECTION;
@@ -112,13 +109,13 @@ import org.jboss.as.domain.management.operations.ConnectionAddHandler;
 import org.jboss.as.domain.management.operations.SecurityRealmAddHandler;
 import org.jboss.as.host.controller.descriptions.HostDescriptionProviders;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceAddHandler;
-import org.jboss.as.host.controller.operations.HttpManagementAddHandler;
 import org.jboss.as.host.controller.operations.IsMasterHandler;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
-import org.jboss.as.host.controller.operations.NativeManagementAddHandler;
 import org.jboss.as.host.controller.operations.ServerAddHandler;
 import org.jboss.as.host.controller.parsing.DomainXml;
 import org.jboss.as.host.controller.parsing.HostXml;
+import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
+import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
 import org.jboss.as.server.ServerControllerModelUtil;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.as.server.parsing.StandaloneXml;
@@ -143,13 +140,17 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
+ * Tests the ability to parse the config files we ship or have shipped in the past, as well as the ability
+ * to marshal them back to xml in a manner such that reparsing them produces a consistent in-memory configuration model.
+ *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 @RunWith(Arquillian.class)
 public class ParseAndMarshalModelsTestCase {
-		
-		private static final String JBOSSAS_PROJECT_DIR = System.getProperty("jbossas.project.dir"); // TODO: Remove default when props start working!
+
+    private static final String JBOSSAS_PROJECT_DIR = System.getProperty("jbossas.project.dir"); // TODO: Remove default when props start working!
 
     @Deployment
     public static Archive<?> getDeployment() {
@@ -175,31 +176,104 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testStandaloneXml() throws Exception {
-        standaloneXmlTest( false);
+        standaloneXmlTest(getOriginalStandaloneXml("standalone.xml"));
     }
 
     @Test
     public void testStandaloneHAXml() throws Exception {
-        standaloneXmlTest(true);
+        standaloneXmlTest(getOriginalStandaloneXml("standalone-ha.xml"));
     }
 
-    private void standaloneXmlTest(boolean ha) throws Exception {
-
-        String profile = ha ? "standalone-ha.xml" : "standalone.xml";
-        standaloneXmlTest(profile);
+    @Test
+    public void testStandaloneOSGiOnlyXml() throws Exception {
+        standaloneXmlTest(getOriginalStandaloneXml("standalone-osgi-only.xml"));
     }
 
-    private void standaloneXmlTest(String profile) throws Exception {
+    @Test
+    public void testStandaloneXtsXml() throws Exception {
+        standaloneXmlTest(getOriginalStandaloneXml("standalone-xts.xml"));
+    }
+
+    @Test
+    public void test700StandaloneXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-0.xml"));
+    }
+
+    @Test
+    public void test701StandaloneXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-1.xml"));
+    }
+
+    @Test
+    public void test702StandaloneXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-2.xml"));
+    }
+
+    @Test
+    public void test700StandaloneHAXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-0-ha.xml"));
+    }
+
+    @Test
+    public void test701StandaloneHAXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-1-ha.xml"));
+    }
+
+    @Test
+    public void test702StandaloneHAXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-2-ha.xml"));
+    }
+
+    @Test
+    public void test700StandalonePreviewXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-0-preview.xml"));
+    }
+
+    @Test
+    public void test701StandalonePreviewXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-1-preview.xml"));
+    }
+
+    @Test
+    public void test702StandalonePreviewXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-2-preview.xml"));
+    }
+
+    @Test
+    public void test700StandalonePreviewHAXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-0-preview.xml"));
+    }
+
+    @Test
+    public void test701StandalonePreviewHAXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-1-preview-ha.xml"));
+    }
+
+    @Test
+    public void test702StandalonePreviewHAXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-2-preview-ha.xml"));
+    }
+
+    @Test
+    public void test701StandaloneXtsXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-1-xts.xml"));
+    }
+
+    @Test
+    public void test702StandaloneXtsXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-2-xts.xml"));
+    }
+
+    private void standaloneXmlTest(File original) throws Exception {
 
         File file = new File("target/standalone-copy.xml");
         if (file.exists()) {
             file.delete();
         }
-        copyFile(getOriginalStandaloneXml(profile), file);
+        copyFile(original, file);
         ModelNode originalModel = loadServerModel(file);
         ModelNode reparsedModel = loadServerModel(file);
 
-        fixupDs(originalModel);
         fixupOSGiStandalone(originalModel, reparsedModel);
 
         compare(originalModel, reparsedModel);
@@ -207,11 +281,30 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testHostXml() throws Exception {
+        hostXmlTest(getOriginalHostXml("host.xml"));
+    }
+
+    @Test
+    public void test700HostXml() throws Exception {
+        hostXmlTest(getLegacyConfigFile("host", "7-0-0.xml"));
+    }
+
+    @Test
+    public void test701HostXml() throws Exception {
+        hostXmlTest(getLegacyConfigFile("host", "7-0-1.xml"));
+    }
+
+    @Test
+    public void test702HostXml() throws Exception {
+        hostXmlTest(getLegacyConfigFile("host", "7-0-2.xml"));
+    }
+
+    private void hostXmlTest(final File original) throws Exception {
         File file = new File("target/host-copy.xml");
         if (file.exists()) {
             file.delete();
         }
-        copyFile(getOriginalHostXml(), file);
+        copyFile(original, file);
         ModelNode originalModel = loadHostModel(file);
         ModelNode reparsedModel = loadHostModel(file);
 
@@ -220,68 +313,77 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testDomainXml() throws Exception {
-        domainXmlTest();
+        domainXmlTest(getOriginalDomainXml("domain.xml"));
+    }
+
+    @Test
+    public void testDomainOSGiOnlyXml() throws Exception {
+        domainXmlTest(getOriginalDomainXml("domain-osgi-only.xml"));
+    }
+
+    @Test
+    public void test700DomainXml() throws Exception {
+        domainXmlTest(getLegacyConfigFile("domain", "7-0-0.xml"));
+    }
+
+    @Test
+    public void test701DomainXml() throws Exception {
+        domainXmlTest(getLegacyConfigFile("domain", "7-0-1.xml"));
+    }
+
+    @Test
+    public void test702DomainXml() throws Exception {
+        domainXmlTest(getLegacyConfigFile("domain", "7-0-2.xml"));
+    }
+
+    @Test
+    public void test700DomainPreviewXml() throws Exception {
+        domainXmlTest(getLegacyConfigFile("domain", "7-0-0-preview.xml"));
+    }
+
+    @Test
+    public void test701DomainPreviewXml() throws Exception {
+        domainXmlTest(getLegacyConfigFile("domain", "7-0-1-preview.xml"));
+    }
+
+    @Test
+    public void test702DomainPreviewXml() throws Exception {
+        domainXmlTest(getLegacyConfigFile("domain", "7-0-2-preview.xml"));
     }
 
 
-    private void domainXmlTest() throws Exception {
+    private void domainXmlTest(File original) throws Exception {
         File file = new File("target/domain-copy.xml");
         if (file.exists()) {
             file.delete();
         }
-        copyFile(getOriginalDomainXml(), file);
+        copyFile(original, file);
         ModelNode originalModel = loadDomainModel(file);
         ModelNode reparsedModel = loadDomainModel(file);
 
-        fixupDsDomain(originalModel);
         fixupOSGiDomain(originalModel, reparsedModel);
         compare(originalModel, reparsedModel);
     }
 
-    //TODO look into why we get a "set-tx-query-timeout"=>false in the model
-    // BES 2011/03/04 reason for this is empty <timeout></timeout> element
-    // results in the item in the model due to behavior of IJ's DsParser,
-    // but when we marshal we realize there is no need to write the empty
-    // <timeout></timeout> element. So reparse doesn't add the element.
-    // Solution is to remove the empty element.
-    private void fixupDs(ModelNode node) {
-//        if (node.get("subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").isDefined()) {
-//            node.get("subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").remove("set-tx-query-timeout");
-//            //marshall/unmarshall without real server startup leave enabled to false
-//            node.get("subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").get("enabled").set(false);
-//        }
-    }
-
-     private void fixupDsDomain(ModelNode node) {
-//        if (node.get("profile", "default","subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").isDefined()) {
-//            //marshall/unmarshall without real server startup leave enabled to false
-//            node.get("profile", "default","subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").get("enabled").set(false);
-//        }
-//        if (node.get("profile", "ha","subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").isDefined()) {
-//            //marshall/unmarshall without real server startup leave enabled to false
-//            node.get("profile", "ha","subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").get("enabled").set(false);
-//        }
-    }
-
     private void fixupOSGiStandalone(ModelNode node1, ModelNode node2) {
         //These multiline properties get extra indentation when marshalled. Put them on one line to compare properly
-        node1.get("subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").set(convertToSingleLine(node1.get("subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").asString()));
-        node2.get("subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").set(convertToSingleLine(node2.get("subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").asString()));
-        node1.get("subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node1.get("subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").asString()));
-        node2.get("subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node2.get("subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").asString()));
+        node1.get("subsystem", "osgi", "property", "org.jboss.osgi.system.modules").set(convertToSingleLine(node1.get("subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").asString()));
+        node2.get("subsystem", "osgi", "property", "org.jboss.osgi.system.modules").set(convertToSingleLine(node2.get("subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").asString()));
+        node1.get("subsystem", "osgi", "property", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node1.get("subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").asString()));
+        node2.get("subsystem", "osgi", "property", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node2.get("subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").asString()));
     }
 
     private void fixupOSGiDomain(ModelNode node1, ModelNode node2) {
         //These multiline properties get extra indentation when marshalled. Put them on one line to compare properly
-        node1.get("profile", "default", "subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").set(convertToSingleLine(node1.get("profile", "default", "subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").asString()));
-        node2.get("profile", "default", "subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").set(convertToSingleLine(node2.get("profile", "default", "subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").asString()));
-        node1.get("profile", "default", "subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node1.get("profile", "default", "subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").asString()));
-        node2.get("profile", "default", "subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node2.get("profile", "default", "subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").asString()));
+        node1.get("profile", "default", "subsystem", "osgi", "property", "org.jboss.osgi.system.modules").set(convertToSingleLine(node1.get("profile", "default", "subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").asString()));
+        node2.get("profile", "default", "subsystem", "osgi", "property", "org.jboss.osgi.system.modules").set(convertToSingleLine(node2.get("profile", "default", "subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").asString()));
+        node1.get("profile", "default", "subsystem", "osgi", "property", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node1.get("profile", "default", "subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").asString()));
+        node2.get("profile", "default", "subsystem", "osgi", "property", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node2.get("profile", "default", "subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").asString()));
 
-        node1.get("profile", "ha", "subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").set(convertToSingleLine(node1.get("profile", "ha", "subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").asString()));
-        node2.get("profile", "ha", "subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").set(convertToSingleLine(node2.get("profile", "ha", "subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").asString()));
-        node1.get("profile", "ha", "subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node1.get("profile", "ha", "subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").asString()));
-        node2.get("profile", "ha", "subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node2.get("profile", "ha", "subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").asString()));
+        node1.get("profile", "ha", "subsystem", "osgi", "property", "org.jboss.osgi.system.modules").set(convertToSingleLine(node1.get("profile", "ha", "subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").asString()));
+        node2.get("profile", "ha", "subsystem", "osgi", "property", "org.jboss.osgi.system.modules").set(convertToSingleLine(node2.get("profile", "ha", "subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").asString()));
+        node1.get("profile", "ha", "subsystem", "osgi", "property", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node1.get("profile", "ha", "subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").asString()));
+        node2.get("profile", "ha", "subsystem", "osgi", "property", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node2.get("profile", "ha", "subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").asString()));
     }
 
     private String convertToSingleLine(String value) {
@@ -343,10 +445,15 @@ public class ParseAndMarshalModelsTestCase {
         }
     }
 
-    private ModelNode loadServerModel(File file) throws Exception {
+    private ModelNode loadServerModel(final File file) throws Exception {
         final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
         final StandaloneXml parser = new StandaloneXml(Module.getBootModuleLoader(), null);
         final XmlConfigurationPersister persister = new XmlConfigurationPersister(file, rootElement, parser, parser);
+        for (Namespace namespace : Namespace.values()) {
+            if (namespace != Namespace.CURRENT) {
+                persister.registerAdditionalRootElement(new QName(namespace.getUriString(), "server"), parser);
+            }
+        }
         final List<ModelNode> ops = persister.load();
 
         final ModelNode model = new ModelNode();
@@ -372,6 +479,11 @@ public class ParseAndMarshalModelsTestCase {
         final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "host");
         final HostXml parser = new HostXml(Module.getBootModuleLoader(), null);
         final XmlConfigurationPersister persister = new XmlConfigurationPersister(file, rootElement, parser, parser);
+        for (Namespace namespace : Namespace.values()) {
+            if (namespace != Namespace.CURRENT) {
+                persister.registerAdditionalRootElement(new QName(namespace.getUriString(), "host"), parser);
+            }
+        }
         final List<ModelNode> ops = persister.load();
 
         final ModelNode model = new ModelNode();
@@ -411,13 +523,8 @@ public class ParseAndMarshalModelsTestCase {
                 ManagementResourceRegistration connection = management.registerSubModel(PathElement.pathElement(OUTBOUND_CONNECTION), CommonProviders.MANAGEMENT_OUTBOUND_CONNECTION_PROVIDER);
                 connection.registerOperationHandler(ConnectionAddHandler.OPERATION_NAME, ConnectionAddHandler.INSTANCE, ConnectionAddHandler.INSTANCE, false);
                 // Management API protocols
-                ManagementResourceRegistration managementNative = management.registerSubModel(PathElement.pathElement(MANAGEMENT_INTERFACE, NATIVE_INTERFACE), CommonProviders.NATIVE_MANAGEMENT_PROVIDER);
-                NativeManagementAddHandler nmah = new NativeManagementAddHandler(hostControllerInfo);
-                managementNative.registerOperationHandler(NativeManagementAddHandler.OPERATION_NAME, nmah, nmah, false);
-
-                ManagementResourceRegistration managementHttp = management.registerSubModel(PathElement.pathElement(MANAGEMENT_INTERFACE, HTTP_INTERFACE), CommonProviders.HTTP_MANAGEMENT_PROVIDER);
-                HttpManagementAddHandler httpAddHandler = HttpManagementAddHandler.getInstance(hostControllerInfo);
-                managementHttp.registerOperationHandler(HttpManagementAddHandler.OPERATION_NAME, httpAddHandler, httpAddHandler, false);
+                management.registerSubModel(new NativeManagementResourceDefinition(hostControllerInfo));
+                management.registerSubModel(new HttpManagementResourceDefinition(hostControllerInfo, null));
 
                 //Extensions
                 ManagementResourceRegistration extensions = hostRegistration.registerSubModel(PathElement.pathElement(EXTENSION), CommonProviders.EXTENSION_PROVIDER);
@@ -486,6 +593,11 @@ public class ParseAndMarshalModelsTestCase {
         final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "domain");
         final DomainXml parser = new DomainXml(Module.getBootModuleLoader(), null);
         final XmlConfigurationPersister persister = new XmlConfigurationPersister(file, rootElement, parser, parser);
+        for (Namespace namespace : Namespace.values()) {
+            if (namespace != Namespace.CURRENT) {
+                persister.registerAdditionalRootElement(new QName(namespace.getUriString(), "domain"), parser);
+            }
+        }
         final List<ModelNode> ops = persister.load();
 
 
@@ -590,22 +702,42 @@ public class ParseAndMarshalModelsTestCase {
         return f;
     }
 
-    private File getOriginalHostXml() {
+    private File getOriginalHostXml(final String profile) {
         //Get the standalone.xml from the build/src directory, since the one in the
         //built server could have changed during running of tests
         File f = getDomainConfigDir();
-        f = new File(f, "host.xml");
+        f = new File(f, profile);
         Assert.assertTrue("Not found: " + f.getPath(), f.exists());
         return f;
     }
 
-    private File getOriginalDomainXml() {
+    private File getOriginalDomainXml(final String profile) {
         //Get the standalone.xml from the build/src directory, since the one in the
         //built server could have changed during running of tests
         File f = getDomainConfigDir();
-        f = new File(f, "domain.xml");
+        f = new File(f, profile);
         Assert.assertTrue("Not found: " + f.getPath(), f.exists());
         return f;
+    }
+
+    private File getLegacyConfigFile(String type, final String profile) {
+        File f = new File(".").getAbsoluteFile();
+        f = f.getParentFile();
+        Assert.assertTrue(f.exists());
+        f = new File(f, "src");
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        f = new File(f, "test");
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        f = new File(f, "resources");
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        f = new File(f, "legacy-configs");
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        f = new File(f, type);
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        f = new File(f, profile);
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        return f;
+
     }
 
     private void copyFile(final File src, final File dest) throws Exception {

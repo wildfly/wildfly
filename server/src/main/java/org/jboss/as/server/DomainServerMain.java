@@ -36,6 +36,7 @@ import java.util.concurrent.CountDownLatch;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.process.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
+import org.jboss.as.remoting.EndpointService;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.mgmt.domain.HostControllerConnectionService;
@@ -192,7 +193,8 @@ public final class DomainServerMain {
         if (!managementSubsystemEndpoint) {
             endpointName = ManagementRemotingServices.MANAGEMENT_ENDPOINT;
             if (!isReconnect) {
-                ManagementRemotingServices.installManagementRemotingEndpoint(serviceTarget, SecurityActions.getSystemProperty(ServerEnvironment.NODE_NAME));
+                ManagementRemotingServices.installRemotingEndpoint(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
+                        SecurityActions.getSystemProperty(ServerEnvironment.NODE_NAME), EndpointService.EndpointType.MANAGEMENT, null, null);
             }
         } else {
             endpointName = RemotingServices.SUBSYSTEM_ENDPOINT;

@@ -81,6 +81,15 @@ public final class SocketBinding {
     }
 
     /**
+     * Return the {@link NetworkInterfaceBinding} for the default interface.
+     *
+     * @return the network interface binding
+     */
+    public NetworkInterfaceBinding getNetworkInterfaceBinding() {
+        return networkInterface != null ? networkInterface : socketBindings.getDefaultInterfaceBinding();
+    }
+
+    /**
      * Get the socket binding manager.
      *
      * @return the socket binding manger

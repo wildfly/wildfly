@@ -32,7 +32,7 @@
     </xsl:template>
 
     <!-- change the native interface management port -->
-    <xsl:template match="//d:management/d:management-interfaces/d:native-interface[@interface='management']">
+    <xsl:template match="//d:management/d:management-interfaces/d:native-interface/d:socket[@interface='management']">
         <xsl:copy>
             <xsl:attribute name="port">
                 <xsl:value-of select="$nativeInterfaceManagementPort"/>
@@ -44,7 +44,7 @@
     </xsl:template>
 
     <!-- change the HTTP interface management port -->
-    <xsl:template match="//d:management/d:management-interfaces/d:http-interface[@interface='management']">
+    <xsl:template match="//d:management/d:management-interfaces/d:http-interface/d:socket[@interface='management']">
         <xsl:copy>
             <xsl:attribute name="port">
                 <xsl:value-of select="$httpInterfaceManagementPort"/>

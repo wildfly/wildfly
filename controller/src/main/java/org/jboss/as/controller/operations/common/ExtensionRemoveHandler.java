@@ -57,7 +57,6 @@ public class ExtensionRemoveHandler extends AbstractRemoveStepHandler implements
 
     @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        super.recoverServices(context, operation, model);
         context.revertReloadRequired();
     }
 }

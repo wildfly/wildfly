@@ -23,12 +23,11 @@
 package org.jboss.as.controller;
 
 import java.util.Arrays;
-import java.util.EnumSet;
+import java.util.Set;
 
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -68,6 +67,21 @@ public class SimpleAttributeDefinitionBuilder {
         this.type = type;
         this.allowNull = allowNull;
         this.xmlName = name;
+    }
+
+    public SimpleAttributeDefinitionBuilder(final SimpleAttributeDefinition basis) {
+        this.name = basis.getName();
+        this.type = basis.getType();
+        this.xmlName = basis.getXmlName();
+        this.allowNull = basis.isAllowNull();
+        this.allowExpression = basis.isAllowExpression();
+        this.defaultValue = basis.getDefaultValue();
+        this.measurementUnit = basis.getMeasurementUnit();
+        this.alternatives = basis.getAlternatives();
+        this.requires = basis.getRequires();
+        this.validator = basis.getValidator();
+        Set<AttributeAccess.Flag> basisFlags = basis.getFlags();
+        this.flags = basisFlags.toArray(new AttributeAccess.Flag[basisFlags.size()]);
     }
 
     public SimpleAttributeDefinition build() {

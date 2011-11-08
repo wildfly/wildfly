@@ -276,6 +276,31 @@ public abstract class SocketBindingManagerImpl implements SocketBindingManager {
         }
     }
 
+    static class WrappedManagedBinding implements ManagedBinding {
+        private final ManagedBinding wrapped;
+        private final ManagedBindingRegistry registry;
+        public WrappedManagedBinding(final ManagedBinding wrapped, final ManagedBindingRegistry registry) {
+            this.wrapped = wrapped;
+            this.registry = registry;
+        }
+        @Override
+        public String getSocketBindingName() {
+            return wrapped.getSocketBindingName();
+        }
+        @Override
+        public InetSocketAddress getBindAddress() {
+            return wrapped.getBindAddress();
+        }
+        @Override
+        public void close() throws IOException {
+            try {
+                wrapped.close();
+            } finally {
+                registry.unregisterBinding(this);
+            }
+        }
+    }
+
     static class WrappedManagedSocket implements ManagedBinding {
         private final String name;
         private final Socket socket;
@@ -358,7 +383,7 @@ public abstract class SocketBindingManagerImpl implements SocketBindingManager {
             if(name == null) {
                 throw new IllegalStateException();
             }
-            bindings.put(name, binding);
+            bindings.put(name, new WrappedManagedBinding(binding, this));
         }
 
         /** {@inheritDoc} */
@@ -445,7 +470,7 @@ public abstract class SocketBindingManagerImpl implements SocketBindingManager {
             if(address == null) {
                 throw new IllegalStateException();
             }
-            bindings.put(address, binding);
+            bindings.put(address, new WrappedManagedBinding(binding, this));
         }
 
         /** {@inheritDoc} */

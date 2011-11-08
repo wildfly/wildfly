@@ -22,7 +22,7 @@
 
 <host xmlns="urn:jboss:domain:1.1"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="urn:jboss:domain:1.1 jboss_7_1.xsd"
+      xsi:schemaLocation="urn:jboss:domain:1.1 jboss-as-config_1_1.xsd"
       name="slave">
 
     <paths>
@@ -41,8 +41,12 @@
             </security-realm>
         </security-realms>
         <management-interfaces>
-            <native-interface interface="public" port="19999" security-realm="ManagementRealm"/>
-            <http-interface interface="public" port="19990" security-realm="ManagementRealm"/>
+            <native-interface security-realm="ManagementRealm">
+                <socket interface="public" port="19999"/>
+            </native-interface>
+            <http-interface security-realm="ManagementRealm">
+                <socket interface="public" port="19990"/>
+            </http-interface>
         </management-interfaces>
     </management>
 

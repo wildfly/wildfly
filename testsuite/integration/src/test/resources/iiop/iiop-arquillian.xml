@@ -19,7 +19,7 @@
                 <property name="jbossHome">${basedir}/target/iiop-server</property>
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/iiop-server</property>
                 <property name="serverConfig">${server.config:standalone.xml}</property>
-                <property name="managementPort">19999</property>
+                <property name="managementPort">10099</property>
             </configuration>
         </container>
     </group>

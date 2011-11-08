@@ -24,6 +24,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REP
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.server.deployment.DeploymentRemoveHandler;
 import org.jboss.as.server.operations.ServerReloadHandler;
@@ -37,6 +39,10 @@ import org.jboss.dmr.ModelNode;
 public class ServerDescriptions {
 
     private static final String RESOURCE_NAME = ServerDescriptions.class.getPackage().getName() + ".LocalDescriptions";
+
+    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
+        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, ServerDescriptions.class.getClassLoader(), true, true);
+    }
 
     private ServerDescriptions() {
     }

@@ -34,7 +34,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import java.io.IOException;
-import java.security.AccessController;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,7 +41,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 
 import javax.security.auth.callback.CallbackHandler;
 
@@ -62,7 +60,6 @@ import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFactoryService;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainModelUtil;
@@ -71,25 +68,23 @@ import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
 import org.jboss.as.domain.controller.operations.coordination.PrepareStepHandler;
-import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.host.controller.RemoteDomainConnectionService.RemoteFileRepository;
 import org.jboss.as.host.controller.mgmt.MasterDomainControllerOperationHandlerService;
 import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandlerFactoryService;
+import org.jboss.as.host.controller.operations.HttpManagementAddHandler;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
+import org.jboss.as.host.controller.operations.NativeManagementAddHandler;
 import org.jboss.as.host.controller.operations.StartServersHandler;
-import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.process.ExitCodes;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
+import org.jboss.as.remoting.EndpointService;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.RuntimeExpressionResolver;
-import org.jboss.as.server.mgmt.HttpManagementService;
-import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.as.server.services.security.RuntimeVaultReader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -99,7 +94,6 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
-import org.jboss.threads.JBossThreadFactory;
 
 /**
  * Creates the service that acts as the {@link org.jboss.as.controller.ModelController} for a host.
@@ -271,20 +265,17 @@ public class DomainModelControllerService extends AbstractControllerService impl
     @Override
     protected void boot(final BootContext context) throws ConfigurationPersistenceException {
 
-        //TODO make configurable so subsystem endpoint can be used
-        final ServiceName endpointName = ManagementRemotingServices.MANAGEMENT_ENDPOINT;
-
         final ServiceTarget serviceTarget = context.getServiceTarget();
         try {
             super.boot(hostControllerConfigurationPersister.load()); // This parses the host.xml and invokes all ops
 
             //Install the server inventory
-            NetworkInterfaceBinding nativeManagementInterfaceBinding = getNativeManagementNetworkInterfaceBinding();
-            Future<ServerInventory> inventoryFuture = NewServerInventoryService.install(serviceTarget, this, environment,
-                    nativeManagementInterfaceBinding, hostControllerInfo.getNativeManagementPort());
+            Future<ServerInventory> inventoryFuture = ServerInventoryService.install(serviceTarget, this, environment,
+                    hostControllerInfo.getNativeManagementInterface(), hostControllerInfo.getNativeManagementPort());
 
             //Install the core remoting endpoint and listener
-            ManagementRemotingServices.installManagementRemotingEndpoint(serviceTarget, hostControllerInfo.getLocalHostName());
+            ManagementRemotingServices.installRemotingEndpoint(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
+                    hostControllerInfo.getLocalHostName(), EndpointService.EndpointType.MANAGEMENT, null, null);
 
             if (!hostControllerInfo.isMasterDomainController()) {
                 serverInventory = getFuture(inventoryFuture);
@@ -313,27 +304,20 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 ConfigurationPersister domainPersister = hostControllerConfigurationPersister.getDomainPersister();
                 super.boot(domainPersister.load());
 
-                ManagementRemotingServices.installManagementChannelServices(serviceTarget, endpointName, new MasterDomainControllerOperationHandlerService(this, this),
+                ManagementRemotingServices.installManagementChannelServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
+                        new MasterDomainControllerOperationHandlerService(this, this),
                         DomainModelControllerService.SERVICE_NAME, ManagementRemotingServices.DOMAIN_CHANNEL, null, null);
                 serverInventory = getFuture(inventoryFuture);
             }
 
-            // TODO look into adding some of these services in the handlers, but ON-DEMAND. Then here just add some
-            // simple service that demands them
-            ServiceName realmSvcName = null;
-            String nativeSecurityRealm = hostControllerInfo.getNativeManagementSecurityRealm();
-            if (nativeSecurityRealm != null) {
-                realmSvcName = SecurityRealmService.BASE_SERVICE_NAME.append(nativeSecurityRealm);
-            }
-            ManagementRemotingServices.installDomainConnectorServices(serviceTarget, endpointName, nativeManagementInterfaceBinding, hostControllerInfo.getNativeManagementPort(), realmSvcName, null, null);
-            ServerToHostOperationHandlerFactoryService.install(serviceTarget, NewServerInventoryService.SERVICE_NAME);
-            ManagementRemotingServices.installManagementChannelOpenListenerService(serviceTarget, endpointName, ManagementRemotingServices.SERVER_CHANNEL,
-                    ServerToHostOperationHandlerFactoryService.SERVICE_NAME, null, null);
-            ManagementRemotingServices.installManagementChannelServices(serviceTarget, endpointName, new ModelControllerClientOperationHandlerFactoryService(),
-                    DomainModelControllerService.SERVICE_NAME, ManagementRemotingServices.MANAGEMENT_CHANNEL, null, null);
+            // TODO look into adding some of these services in the handlers, but ON-DEMAND.
+            // Then here just add some simple service that demands them
+            NativeManagementAddHandler.installNativeManagementServices(serviceTarget, hostControllerInfo, null, null);
+
+            ServerToHostOperationHandlerFactoryService.install(serviceTarget, ServerInventoryService.SERVICE_NAME);
 
             if (hostControllerInfo.getHttpManagementInterface() != null) {
-                installHttpManagementServices(serviceTarget);
+                HttpManagementAddHandler.installHttpManagementServices(serviceTarget, hostControllerInfo, environment, null);
             }
 
             startServers();
@@ -341,58 +325,6 @@ public class DomainModelControllerService extends AbstractControllerService impl
             // TODO when to call hostControllerConfigurationPersister.successful boot? Look into this for standalone as well; may be broken now
         } finally {
             finishBoot();
-        }
-    }
-
-    private void installHttpManagementServices(final ServiceTarget serviceTarget) {
-
-        String interfaceName = hostControllerInfo.getHttpManagementInterface();
-        int port = hostControllerInfo.getHttpManagementPort();
-        int securePort = hostControllerInfo.getHttpManagementSecurePort();
-        String securityRealm = hostControllerInfo.getHttpManagementSecurityRealm();
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("creating http management service using network interface (").append(interfaceName).append(")");
-        if (port > -1) {
-            sb.append(" port (").append(port).append(")");
-        }
-        if (securePort > -1) {
-            sb.append(" securePort (").append(securePort).append(")");
-        }
-        Logger.getLogger("org.jboss.as").info(sb.toString());
-
-        final ThreadFactory httpMgmtThreads = new JBossThreadFactory(new ThreadGroup("HttpManagementService-threads"),
-                Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
-        final HttpManagementService service = new HttpManagementService();
-        ServiceBuilder builder = serviceTarget.addService(HttpManagementService.SERVICE_NAME, service)
-                .addDependency(
-                        NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName),
-                        NetworkInterfaceBinding.class, service.getInterfaceInjector())
-                .addDependency(SERVICE_NAME, ModelController.class, service.getModelControllerInjector())
-                .addInjection(service.getTempDirInjector(), environment.getDomainTempDir().getAbsolutePath())
-                .addInjection(service.getPortInjector(), port)
-                .addInjection(service.getSecurePortInjector(), securePort)
-                .addInjection(service.getExecutorServiceInjector(), Executors.newCachedThreadPool(httpMgmtThreads));
-
-        if (securityRealm != null) {
-            builder.addDependency(SecurityRealmService.BASE_SERVICE_NAME.append(securityRealm), SecurityRealmService.class, service.getSecurityRealmInjector());
-        } else {
-            Logger.getLogger("org.jboss.as").warn("No security realm defined for http management service, all access will be unrestricted.");
-        }
-        builder.setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
-
-    }
-
-    private NetworkInterfaceBinding getNativeManagementNetworkInterfaceBinding() {
-        try {
-            return hostControllerInfo.getNetworkInterfaceBinding(hostControllerInfo.getNativeManagementInterface());
-        } catch (RuntimeException e) {
-            // TODO this is a critical failure; we need to handle it more cleanly
-            throw e;
-        } catch (Exception e) {
-            // TODO this is a critical failure; we need to handle it more cleanly
-            throw new RuntimeException(e);
         }
     }
 

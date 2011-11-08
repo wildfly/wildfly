@@ -60,8 +60,12 @@
             </security-realm>
         </security-realms>
         <management-interfaces>
-            <native-interface interface="management" port="9999" security-realm="ManagementRealm"/>
-            <http-interface interface="management" port="9990" security-realm="ManagementRealm"/>
+            <native-interface security-realm="ManagementRealm">
+                <socket-binding native="management-native"/>
+            </native-interface>
+            <http-interface security-realm="ManagementRealm">
+                <socket-binding http="management-http"/>
+            </http-interface>
         </management-interfaces>
     </management>
 
@@ -430,6 +434,8 @@
         <socket-binding name="jacorb-ssl" port="3529"/>
         <socket-binding name="jmx-connector-registry" interface="management" port="1090"/>
         <socket-binding name="jmx-connector-server" interface="management" port="1091"/>
+        <socket-binding name="management-native" interface="management" port="9999"/>
+        <socket-binding name="management-http" interface="management" port="9990"/>
         <socket-binding name="messaging" port="5445"/>
         <socket-binding name="messaging-throughput" port="5455"/>
         <socket-binding name="osgi-http" interface="management" port="8090"/>

@@ -54,5 +54,55 @@ public interface ManagedBinding extends Closeable {
      */
     void close() throws IOException;
 
+    final class Factory {
+        public static ManagedBinding createSimpleManagedBinding(final String name, final InetSocketAddress socketAddress, final Closeable closeable) {
+            if (socketAddress == null) {
+                throw new IllegalArgumentException("socketAddress is null");
+            }
+            return new ManagedBinding() {
+
+                @Override
+                public String getSocketBindingName() {
+                    return name;
+                }
+
+                @Override
+                public InetSocketAddress getBindAddress() {
+                    return socketAddress;
+                }
+
+                @Override
+                public void close() throws IOException {
+                    if (closeable != null) {
+                        closeable.close();
+                    }
+                }
+            };
+        }
+
+        public static ManagedBinding createSimpleManagedBinding(final SocketBinding socketBinding) {
+            if (socketBinding == null) {
+                throw new IllegalArgumentException("socketBinding is null");
+            }
+            return new ManagedBinding() {
+
+                @Override
+                public String getSocketBindingName() {
+                    return socketBinding.getName();
+                }
+
+                @Override
+                public InetSocketAddress getBindAddress() {
+                    return socketBinding.getSocketAddress();
+                }
+
+                @Override
+                public void close() throws IOException {
+                    // no-op
+                }
+            };
+        }
+    }
+
 }
 

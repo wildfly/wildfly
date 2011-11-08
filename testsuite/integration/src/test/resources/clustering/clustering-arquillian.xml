@@ -25,7 +25,7 @@
                 <property name="jbossHome">${basedir}/target/clustering-udp-1</property>
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/clustering-udp-1 -Djboss.port.offset=100</property>
                 <property name="serverConfig">${server.config:standalone-ha.xml}</property>
-                <property name="managementPort">19999</property>
+                <property name="managementPort">10099</property>
             </configuration>
         </container>
     </group>

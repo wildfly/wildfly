@@ -22,16 +22,32 @@
 
 package org.jboss.as.host.controller.operations;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
-
-import java.util.Locale;
+import java.security.AccessController;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.ManagementDescription;
+import org.jboss.as.domain.controller.LocalHostControllerInfo;
+import org.jboss.as.domain.management.security.SecurityRealmService;
+import org.jboss.as.host.controller.DomainModelControllerService;
 import org.jboss.as.host.controller.HostControllerEnvironment;
+import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
+import org.jboss.as.network.NetworkInterfaceBinding;
+import org.jboss.as.server.mgmt.HttpManagementService;
+import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.threads.JBossThreadFactory;
 
 /**
  * A handler that activates the HTTP management API.
@@ -39,55 +55,104 @@ import org.jboss.dmr.ModelNode;
  * @author Jason T. Greene
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class HttpManagementAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
+public class HttpManagementAddHandler extends AbstractAddStepHandler {
 
     public static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
 
     private final LocalHostControllerInfoImpl hostControllerInfo;
+    private final HostControllerEnvironment environment;
 
-    private HttpManagementAddHandler(final LocalHostControllerInfoImpl hostControllerInfo) {
+    public HttpManagementAddHandler(final LocalHostControllerInfoImpl hostControllerInfo, final HostControllerEnvironment environment) {
         this.hostControllerInfo = hostControllerInfo;
+        this.environment = environment;
     }
 
-    public static HttpManagementAddHandler getInstance(final LocalHostControllerInfoImpl hostControllerInfo) {
-        return new HttpManagementAddHandler(hostControllerInfo);
+    @Override
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+
+        for (AttributeDefinition attr : HttpManagementResourceDefinition.ATTRIBUTE_DEFINITIONS) {
+            attr.validateAndSet(operation, model);
+        }
     }
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
-        final String interfaceName = operation.require(ModelDescriptionConstants.INTERFACE).asString();
-        final int port = getIntValue(operation, ModelDescriptionConstants.PORT);
-        final int securePort = getIntValue(operation, ModelDescriptionConstants.SECURE_PORT);
-        final String securityRealm = operation.hasDefined(SECURITY_REALM) ? operation.get(SECURITY_REALM).asString() : null;
+    @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return true;
+    }
 
-        model.get(ModelDescriptionConstants.INTERFACE).set(interfaceName);
+    @Override
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+
+        populateHostControllerInfo(hostControllerInfo, context, model);
+
+        if (!context.isBooting()) {
+            installHttpManagementServices(context.getServiceTarget(), hostControllerInfo, environment, verificationHandler);
+        }
+        // else DomainModelControllerService does the service install
+    }
+
+    @Override
+    protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model, List<ServiceController<?>> controllers) {
+        HttpManagementRemoveHandler.clearHostControllerInfo(hostControllerInfo);
+
+        if (!context.isBooting()) {
+            HttpManagementRemoveHandler.removeHttpManagementService(context);
+        }
+    }
+
+    static void populateHostControllerInfo(final LocalHostControllerInfoImpl hostControllerInfo, final OperationContext context, final ModelNode model) throws OperationFailedException {
+        hostControllerInfo.setHttpManagementInterface(HttpManagementResourceDefinition.INTERFACE.resolveModelAttribute(context, model).asString());
+        final ModelNode portNode = HttpManagementResourceDefinition.HTTP_PORT.resolveModelAttribute(context, model);
+        hostControllerInfo.setHttpManagementPort(portNode.isDefined() ? portNode.asInt() : -1);
+        final ModelNode securePortNode = HttpManagementResourceDefinition.HTTPS_PORT.resolveModelAttribute(context, model);
+        hostControllerInfo.setHttpManagementSecurePort(securePortNode.isDefined() ? securePortNode.asInt() : -1);
+        final ModelNode realmNode = HttpManagementResourceDefinition.SECURITY_REALM.resolveModelAttribute(context, model);
+        hostControllerInfo.setHttpManagementSecurityRealm(realmNode.isDefined() ? realmNode.asString() : null);
+    }
+
+    public static void installHttpManagementServices(final ServiceTarget serviceTarget, final LocalHostControllerInfo hostControllerInfo,
+                                               final HostControllerEnvironment environment,
+                                               final ServiceVerificationHandler verificationHandler) {
+
+        String interfaceName = hostControllerInfo.getHttpManagementInterface();
+        int port = hostControllerInfo.getHttpManagementPort();
+        int securePort = hostControllerInfo.getHttpManagementSecurePort();
+        String securityRealm = hostControllerInfo.getHttpManagementSecurityRealm();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("creating http management service using network interface (").append(interfaceName).append(")");
         if (port > -1) {
-            model.get(ModelDescriptionConstants.PORT).set(port);
+            sb.append(" port (").append(port).append(")");
         }
         if (securePort > -1) {
-            model.get(ModelDescriptionConstants.SECURE_PORT).set(securePort);
+            sb.append(" securePort (").append(securePort).append(")");
         }
+        Logger.getLogger("org.jboss.as").info(sb.toString());
+
+        final ThreadFactory httpMgmtThreads = new JBossThreadFactory(new ThreadGroup("HttpManagementService-threads"),
+                Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
+        final HttpManagementService service = new HttpManagementService();
+        ServiceBuilder builder = serviceTarget.addService(HttpManagementService.SERVICE_NAME, service)
+                .addDependency(
+                        NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName),
+                        NetworkInterfaceBinding.class, service.getInterfaceInjector())
+                .addDependency(DomainModelControllerService.SERVICE_NAME, ModelController.class, service.getModelControllerInjector())
+                .addInjection(service.getTempDirInjector(), environment.getDomainTempDir().getAbsolutePath())
+                .addInjection(service.getPortInjector(), port)
+                .addInjection(service.getSecurePortInjector(), securePort)
+                .addInjection(service.getExecutorServiceInjector(), Executors.newCachedThreadPool(httpMgmtThreads));
+
         if (securityRealm != null) {
-            model.get(ModelDescriptionConstants.SECURITY_REALM).set(securityRealm);
+            builder.addDependency(SecurityRealmService.BASE_SERVICE_NAME.append(securityRealm), SecurityRealmService.class, service.getSecurityRealmInjector());
+        } else {
+            Logger.getLogger("org.jboss.as").warn("No security realm defined for http management service, all access will be unrestricted.");
+        }
+        if (verificationHandler != null) {
+            builder.addListener(verificationHandler);
         }
 
-        hostControllerInfo.setHttpManagementInterface(interfaceName);
-        hostControllerInfo.setHttpManagementPort(port);
-        hostControllerInfo.setHttpManagementSecurePort(securePort);
-        hostControllerInfo.setHttpManagementSecurityRealm(securityRealm);
-    }
+        builder.setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return ManagementDescription.getAddHttpManagementDescription(locale);
-    }
-
-    private int getIntValue(ModelNode source, String name) {
-        if (source.has(name)) {
-            return source.require(name).asInt();
-        }
-        return -1;
     }
 }
