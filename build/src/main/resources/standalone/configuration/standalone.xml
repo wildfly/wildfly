@@ -30,6 +30,7 @@
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.ejb3"/>
         <extension module="org.jboss.as.jacorb"/>
+        <extension module="org.jboss.as.jaxr"/>
         <extension module="org.jboss.as.jaxrs"/>
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.jpa"/>
@@ -184,6 +185,9 @@
             </cache-container>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jacorb:1.1"/>
+        <subsystem xmlns="urn:jboss:domain:jaxr:1.0">
+            <datasource jndi-name="java:jboss/datasources/ExampleDS"/>
+        </subsystem>
         <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
         <subsystem xmlns="urn:jboss:domain:jca:1.0">
             <archive-validation enabled="false"/>

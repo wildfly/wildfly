@@ -1,0 +1,186 @@
+
+/* table for list views */
+.table_list {
+}
+
+/* table for detail views */
+.table_form {
+}
+
+.pageHeader {
+   font-size: 14pt;
+   font-weight: BOLD;
+   color: #ffffff;
+   border-bottom-width:1px;
+   border-bottom-style:solid;
+   border-color:#000066;
+   margin-bottom:15px;
+   padding-left:15px;
+   padding-top:5px;
+   padding-bottom:5px;
+   background-color: #aaaadd;
+   max-width: 900px;
+}
+
+.pageSection {
+ padding-left:15px;
+ margin-bottom: 5px;
+ max-width: 900px;
+}
+
+.metrics
+{	 
+   font-size: 6pt;
+   background-color: #dddddd;
+   width: 100%;
+}
+
+/* table row header */
+.list_tr_head {
+   font-family: Verdana, sans-serif;
+   font-size: 8pt;
+   font-weight: 600;
+   text-align: center;
+   background-color: #aaaadd;
+}
+
+/* table row list view */
+.list_tr {
+   font-family: Verdana, sans-serif;
+   font-size: 8pt;
+   color: #000066;
+   vertical-align: top;
+   background-color: #ffffff;
+}
+
+/* table row list view odd lines */
+.list_tr_even {
+   font-family: Verdana, sans-serif;
+   font-size: 8pt;
+   color: #000066;
+   vertical-align: top;
+   background-color: #ffffff;
+}
+
+/* table row list view even lines */
+.list_tr_odd {
+   font-family: Verdana, sans-serif;
+   font-size: 8pt;
+   color: #000066;
+   vertical-align: top;
+   background-color: #dddddd;
+}
+
+/* form label */
+.form_label {
+   font-family: Verdana, sans-serif;
+   font-weight: 500;
+   font-size: 8pt;
+   color: #000066;
+   vertical-align: top;
+   background-color: #dddddd;
+   padding-top: 2px;
+   padding-bottom: 2px;
+}
+
+/* form value */
+.form_value {
+   font-family: Verdana, sans-serif;
+   font-size: 8pt;
+   color: #000066;
+   vertical-align: baseline;
+}
+
+/* tiny writing */
+.tiny {
+   font-family: Verdana, sans-serif;
+   font-size: 8pt;
+   color: #666666;
+}
+
+/* required input fields */
+.inputmust {
+   background-color: #dddddd;
+}
+
+/* error message */
+.error {
+   font-family: Courier New;
+   color: #990000;
+}
+
+/* error message */
+.error_trace {
+   font-family: Courier New;
+}
+
+/* active tree node */
+.tree_active_label {
+   font-weight: bold;
+}
+
+body {
+   font-family: Verdana,, sans-serif;
+   font-size: 8pt;
+   color: #000066;
+   background-color: #ffffff;
+}
+
+/* title style */
+h1 {
+   font-family: Verdana, sans-serif;
+   font-size: 14pt;
+   font-weight: 600;
+   color: #000066;
+}
+
+h2 {
+   font-family: Verdana, sans-serif;
+   font-size: 12pt;
+   font-weight: 600;
+   color: #000066;
+}
+
+h3 {
+   font-family: Verdana, sans-serif;
+   font-size: 10pt;
+   font-weight: 600;
+   color: #000066;
+}
+
+h4 {
+   font-family: Verdana, sans-serif;
+   font-size: 10pt;
+   font-weight: 500;
+   color: #000066;
+}
+
+/* table desk */
+td {
+   font-family: Verdana, sans-serif;
+   font-size: 8pt;
+   padding-left: 5px;
+   padding-right: 5px;
+}
+
+input, textarea, select, option {
+   font-family: Verdana, sans-serif;
+   font-size: 8pt;
+   color: #000066;
+}
+
+a {
+   font-family: Verdana, sans-serif;
+   color: #0000dd;
+   text-decoration: none;
+}
+
+a:hover{
+   font-family: Verdana, sans-serif;
+   color: #cc0000;
+   text-decoration: none;
+}
+
+pre {
+    background:#dddddd
+}

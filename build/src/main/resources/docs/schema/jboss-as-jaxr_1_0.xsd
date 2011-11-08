@@ -1,0 +1,65 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="urn:jboss:domain:jaxr:1.0"
+            xmlns="urn:jboss:domain:jaxr:1.0"
+            elementFormDefault="qualified"
+            attributeFormDefault="unqualified"
+            version="1.0">
+
+    <!--
+    Whether we want to run the db initialization scripts
+    Should all tables be created on Start
+    <attribute name="CreateOnStart">false</attribute>
+    Should all tables be dropped on Stop
+    <attribute name="DropOnStop">false</attribute>
+    Should all tables be dropped on Start
+    <attribute name="DropOnStart">false</attribute>
+    Datasource to Database
+    <attribute name="DataSourceUrl">java:/DefaultDS</attribute>
+    Alias to the registry
+    <attribute name="RegistryOperator">RegistryOperator</attribute>
+    Should I bind a Context to which JaxrConnectionFactory bound
+    <attribute name="ShouldBindJaxr">true</attribute>
+    Context to which JaxrConnectionFactory to bind to.
+    If you have remote clients, please bind it to the global
+    namespace(default behavior). To just cater to clients running
+    on the same VM as JBoss, change to java:/JAXR
+    <attribute name="BindJaxr">JAXR</attribute>
+    <attribute name="DropDB">false</attribute>
+    -->
+
+    <!-- The subsystem root element -->
+    <xs:element name="subsystem" type="subsystemType"/>
+
+    <xs:complexType name="subsystemType">
+        <xs:annotation>
+            <xs:documentation>
+            <![CDATA[
+                The configuration of the JAXR subsystem.
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
+          <xs:all >
+            <xs:element name="datasource" type="datasourceType" minOccurs="1" maxOccurs="1">
+              <xs:annotation>
+                <xs:documentation>
+                  <![CDATA[[
+                    Specifies the datasource for the registry
+                   ]]>
+                </xs:documentation>
+              </xs:annotation>
+            </xs:element>
+          </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="datasourceType" mixed="false">
+        <xs:attribute name="jndi-name" type="xs:token" use="required">
+          <xs:annotation>
+            <xs:documentation>
+              <![CDATA[[
+                Specifies the JNDI name for the datasource
+               ]]>
+            </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+</xs:schema>
