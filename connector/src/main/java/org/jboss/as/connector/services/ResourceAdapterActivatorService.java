@@ -135,6 +135,8 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
         public CommonDeployment doDeploy() throws Throwable {
 
             this.setConfiguration(getConfig().getValue());
+            //never validate bean for services activated in this way (JMS)
+            this.getConfiguration().setBeanValidation(false);
 
             this.start();
 
