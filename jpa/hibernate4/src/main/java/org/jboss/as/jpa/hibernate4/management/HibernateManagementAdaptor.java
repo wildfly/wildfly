@@ -24,7 +24,8 @@ package org.jboss.as.jpa.hibernate4.management;
 
 import java.util.Locale;
 
-import org.hibernate.stat.Statistics;
+import javax.persistence.Cache;
+
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -49,6 +50,7 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
 
     private static final String PROVIDER_LABEL = "hibernate-persistence-unit";
     public static final String OPERATION_CLEAR = "clear";
+    public static final String OPERATION_EVICTALL = "evictall";
     public static final String OPERATION_SUMMARY = "summary";
     public static final String OPERATION_STATISTICS_ENABLED = "enabled";
     public static final String OPERATION_ENTITY_DELETE_COUNT = "entity-delete-count";
@@ -136,11 +138,32 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
 
         OperationStepHandler clearHandler = new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                stats.clear();
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                stats.getStatistics().clear();
             }
         };
         jpaHibernateRegistration.registerOperationHandler(OPERATION_CLEAR, clearHandler, clear);
+
+        /**
+         * evict all second level cache entries
+         */
+        DescriptionProvider evictAll = new DescriptionProvider() {
+            @Override
+            public ModelNode getModelDescription(Locale locale) {
+                return HibernateDescriptions.evictall(locale);
+            }
+        };
+
+        OperationStepHandler evictAllHandler = new AbstractMetricsHandler() {
+            @Override
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                Cache secondLevelCache = stats.getEntityManagerFactory().getCache();
+                if (secondLevelCache != null) {
+                    secondLevelCache.evictAll();
+                }
+            }
+        };
+        jpaHibernateRegistration.registerOperationHandler(OPERATION_EVICTALL, evictAllHandler, evictAll);
 
         /**
          * log statistics at INFO level
@@ -154,8 +177,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
 
         OperationStepHandler summaryHandler = new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                stats.logSummary();
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                stats.getStatistics().logSummary();
             }
         };
         jpaHibernateRegistration.registerOperationHandler(OPERATION_SUMMARY, summaryHandler, summary);
@@ -169,8 +192,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
          */
         jpaHibernateRegistration.registerMetric(OPERATION_ENTITY_DELETE_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                response.set(stats.getEntityDeleteCount());
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                response.set(stats.getStatistics().getEntityDeleteCount());
             }
         });
 
@@ -180,8 +203,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
          */
         jpaHibernateRegistration.registerMetric(OPERATION_ENTITY_INSERT_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                response.set(stats.getEntityInsertCount());
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                response.set(stats.getStatistics().getEntityInsertCount());
             }
         });
 
@@ -192,8 +215,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
          */
         jpaHibernateRegistration.registerMetric(OPERATION_ENTITY_LOAD_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                response.set(stats.getEntityLoadCount());
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                response.set(stats.getStatistics().getEntityLoadCount());
             }
         });
 
@@ -203,8 +226,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
          */
         jpaHibernateRegistration.registerMetric(OPERATION_ENTITY_FETCH_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                response.set(stats.getEntityFetchCount());
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                response.set(stats.getStatistics().getEntityFetchCount());
             }
         });
 
@@ -215,8 +238,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
          */
         jpaHibernateRegistration.registerMetric(OPERATION_ENTITY_UPDATE_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                response.set(stats.getEntityUpdateCount());
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                response.set(stats.getStatistics().getEntityUpdateCount());
             }
         });
 
@@ -226,8 +249,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
          */
         jpaHibernateRegistration.registerMetric(OPERATION_QUERY_EXECUTION_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                response.set(stats.getQueryExecutionCount());
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                response.set(stats.getStatistics().getQueryExecutionCount());
             }
         });
 
@@ -236,8 +259,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
          */
         jpaHibernateRegistration.registerMetric(OPERATION_QUERY_EXECUTION_MAX_TIME, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                response.set(stats.getQueryExecutionMaxTime());
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                response.set(stats.getStatistics().getQueryExecutionMaxTime());
             }
         });
 
@@ -246,8 +269,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
          */
         jpaHibernateRegistration.registerMetric(OPERATION_QUERY_EXECUTION_MAX_TIME_QUERY_STRING, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                String sql = stats.getQueryExecutionMaxTimeQueryString();
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                String sql = stats.getStatistics().getQueryExecutionMaxTimeQueryString();
                 if (sql != null) {
                     response.set(sql);
                 } else {
@@ -261,8 +284,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
          */
         jpaHibernateRegistration.registerMetric(OPERATION_QUERY_CACHE_HIT_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                response.set(stats.getQueryCacheHitCount());
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                response.set(stats.getStatistics().getQueryCacheHitCount());
             }
         });
 
@@ -271,8 +294,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
          */
         jpaHibernateRegistration.registerMetric(OPERATION_QUERY_CACHE_MISS_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                response.set(stats.getQueryCacheMissCount());
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                response.set(stats.getStatistics().getQueryCacheMissCount());
             }
         });
 
@@ -281,8 +304,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
          */
         jpaHibernateRegistration.registerMetric(OPERATION_QUERY_CACHE_PUT_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                response.set(stats.getQueryCachePutCount());
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                response.set(stats.getStatistics().getQueryCachePutCount());
             }
         });
 
@@ -291,8 +314,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
          */
         jpaHibernateRegistration.registerMetric(OPERATION_FLUSH_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                response.set(stats.getFlushCount());
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                response.set(stats.getStatistics().getFlushCount());
             }
         });
 
@@ -303,8 +326,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
          */
         jpaHibernateRegistration.registerMetric(OPERATION_CONNECT_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                response.set(stats.getConnectCount());
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                response.set(stats.getStatistics().getConnectCount());
             }
         });
 
@@ -313,8 +336,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
          */
         jpaHibernateRegistration.registerMetric(OPERATION_SECOND_LEVEL_CACHE_HIT_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                response.set(stats.getSecondLevelCacheHitCount());
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                response.set(stats.getStatistics().getSecondLevelCacheHitCount());
             }
         });
 
@@ -323,8 +346,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
          */
         jpaHibernateRegistration.registerMetric(OPERATION_SECOND_LEVEL_CACHE_MISS_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                response.set(stats.getSecondLevelCacheMissCount());
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                response.set(stats.getStatistics().getSecondLevelCacheMissCount());
             }
         });
 
@@ -333,8 +356,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
          */
         jpaHibernateRegistration.registerMetric(OPERATION_SECOND_LEVEL_CACHE_PUT_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                response.set(stats.getSecondLevelCachePutCount());
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                response.set(stats.getStatistics().getSecondLevelCachePutCount());
             }
         });
 
@@ -343,8 +366,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
          */
         jpaHibernateRegistration.registerMetric(OPERATION_SESSION_CLOSE_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                response.set(stats.getSessionCloseCount());
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                response.set(stats.getStatistics().getSessionCloseCount());
             }
         });
 
@@ -353,8 +376,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
          */
         jpaHibernateRegistration.registerMetric(OPERATION_SESSION_OPEN_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                response.set(stats.getSessionOpenCount());
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                response.set(stats.getStatistics().getSessionOpenCount());
             }
         });
 
@@ -363,8 +386,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
          */
         jpaHibernateRegistration.registerMetric(OPERATION_COLLECTION_LOAD_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                response.set(stats.getCollectionLoadCount());
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                response.set(stats.getStatistics().getCollectionLoadCount());
             }
         });
 
@@ -373,8 +396,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
          */
         jpaHibernateRegistration.registerMetric(OPERATION_COLLECTION_FETCH_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                response.set(stats.getCollectionFetchCount());
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                response.set(stats.getStatistics().getCollectionFetchCount());
             }
         });
 
@@ -383,8 +406,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
          */
         jpaHibernateRegistration.registerMetric(OPERATION_COLLECTION_UPDATE_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                response.set(stats.getCollectionUpdateCount());
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                response.set(stats.getStatistics().getCollectionUpdateCount());
             }
         });
 
@@ -395,8 +418,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
         //even on inverse="true"
         jpaHibernateRegistration.registerMetric(OPERATION_COLLECTION_REMOVE_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                response.set(stats.getCollectionRemoveCount());
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                response.set(stats.getStatistics().getCollectionRemoveCount());
             }
         });
 
@@ -405,8 +428,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
          */
         jpaHibernateRegistration.registerMetric(OPERATION_COLLECTION_RECREATED_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                response.set(stats.getCollectionRecreateCount());
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                response.set(stats.getStatistics().getCollectionRecreateCount());
             }
         });
 
@@ -415,8 +438,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
          */
         jpaHibernateRegistration.registerMetric(OPERATION_SUCCESSFUL_TRANSACTION_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                response.set(stats.getSuccessfulTransactionCount());
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                response.set(stats.getStatistics().getSuccessfulTransactionCount());
             }
         });
 
@@ -425,8 +448,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
          */
         jpaHibernateRegistration.registerMetric(OPERATION_COMPLETED_TRANSACTION_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                response.set(stats.getTransactionCount());
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                response.set(stats.getStatistics().getTransactionCount());
             }
         });
 
@@ -435,8 +458,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
          */
         jpaHibernateRegistration.registerMetric(OPERATION_PREPARED_STATEMENT_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                response.set(stats.getPrepareStatementCount());
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                response.set(stats.getStatistics().getPrepareStatementCount());
             }
         });
 
@@ -445,8 +468,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
          */
         jpaHibernateRegistration.registerMetric(OPERATION_CLOSE_STATEMENT_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                response.set(stats.getCloseStatementCount());
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                response.set(stats.getStatistics().getCloseStatementCount());
             }
         });
 
@@ -456,8 +479,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
          */
         jpaHibernateRegistration.registerMetric(OPERATION_OPTIMISTIC_FAILURE_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                response.set(stats.getOptimisticFailureCount());
+            void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                response.set(stats.getStatistics().getOptimisticFailureCount());
             }
         });
 
@@ -468,8 +491,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
         jpaHibernateRegistration.registerReadWriteAttribute(OPERATION_STATISTICS_ENABLED,
             new AbstractMetricsHandler() {  // readHandler
                 @Override
-                void handle(final ModelNode response, final String name, Statistics stats, OperationContext context) {
-                    response.set(stats.isStatisticsEnabled());
+                void handle(final ModelNode response, final String name, ManagementLookup stats, OperationContext context) {
+                    response.set(stats.getStatistics().isStatisticsEnabled());
                 }
             },
             new StatisticsEnabledWriteHandler(persistenceUnitRegistry),
@@ -486,14 +509,14 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
 
     abstract class AbstractMetricsHandler extends AbstractRuntimeOnlyHandler {
 
-        abstract void handle(ModelNode response, String name, Statistics stats, OperationContext context);
+        abstract void handle(ModelNode response, String name, ManagementLookup stats, OperationContext context);
 
         @Override
         protected void executeRuntimeStep(final OperationContext context, final ModelNode operation) throws
             OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
             final String puResourceName = address.getLastElement().getValue();
-            Statistics stats = ManagementUtility.getStatistics(persistenceUnitRegistry, puResourceName);
+            ManagementLookup stats = ManagementLookup.create(persistenceUnitRegistry, puResourceName);
             if (stats != null) {
                 handle(context.getResult(), address.getLastElement().getValue(), stats, context);
             }

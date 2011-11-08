@@ -23,7 +23,6 @@
 package org.jboss.as.jpa.hibernate4.management;
 
 import org.hibernate.stat.QueryStatistics;
-import org.hibernate.stat.Statistics;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -58,13 +57,13 @@ public abstract class QueryMetricsHandler extends AbstractRuntimeOnlyHandler {
         final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
         final String puResourceName = address.getElement(address.size() - 2).getValue();
         final String displayQueryName = address.getLastElement().getValue();
-        Statistics stats = ManagementUtility.getStatistics(persistenceUnitRegistry, puResourceName);
+        ManagementLookup stats = ManagementLookup.create(persistenceUnitRegistry, puResourceName);
         if (stats != null) {
-            String[] originalQueryNames = stats.getQueries();
+            String[] originalQueryNames = stats.getStatistics().getQueries();
             if (originalQueryNames != null) {
                 for (String originalQueryName : originalQueryNames) {
                     if (QueryName.queryName(originalQueryName).getDisplayName().equals(displayQueryName)) {
-                        QueryStatistics statistics = stats.getQueryStatistics(originalQueryName);
+                        QueryStatistics statistics = stats.getStatistics().getQueryStatistics(originalQueryName);
                         handle(statistics, context, operation.require(ModelDescriptionConstants.NAME).asString(), originalQueryName);
                         break;
                     }

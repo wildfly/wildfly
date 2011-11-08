@@ -31,13 +31,21 @@ import org.jboss.as.jpa.spi.PersistenceUnitService;
 import org.jboss.as.jpa.spi.PersistenceUnitServiceRegistry;
 
 /**
- * Utility class for management stuff
+ * For obtaining Hibernate management statistics, entity manager factory
  *
  * @author Scott Marlow
  */
-public class ManagementUtility {
+public class ManagementLookup {
 
-    public static Statistics getStatistics(PersistenceUnitServiceRegistry registry, String persistenceUnitName) {
+    private final Statistics stats;
+    private final EntityManagerFactory entityManagerFactory;
+
+    public ManagementLookup(final Statistics stats, EntityManagerFactory entityManagerFactory) {
+        this.stats = stats;
+        this.entityManagerFactory = entityManagerFactory;
+    }
+
+    public static ManagementLookup create(PersistenceUnitServiceRegistry registry, String persistenceUnitName) {
 
         Statistics stats = null;
         PersistenceUnitService persistenceUnitService = registry.getPersistenceUnitService(persistenceUnitName);
@@ -48,8 +56,17 @@ public class ManagementUtility {
             SessionFactory sessionFactory = entityManagerFactoryImpl.getSessionFactory();
             if (sessionFactory != null) {
                 stats = sessionFactory.getStatistics();
+                return new ManagementLookup(stats, entityManagerFactory);
             }
         }
+        return null;
+    }
+
+    public Statistics getStatistics() {
         return stats;
+    }
+
+    public EntityManagerFactory getEntityManagerFactory() {
+        return entityManagerFactory;
     }
 }
