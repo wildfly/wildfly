@@ -23,6 +23,7 @@
 package org.jboss.as.connector.bootstrap;
 
 import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.jca.core.api.bootstrap.CloneableBootstrapContext;
 import org.jboss.jca.core.api.workmanager.WorkManager;
 import org.jboss.msc.inject.Injector;
@@ -40,9 +41,13 @@ import static org.jboss.as.connector.ConnectorLogger.ROOT_LOGGER;
  * A DefaultBootStrapContextService Service
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
-public final class DefaultBootStrapContextService implements Service<CloneableBootstrapContext> {
+public final class BootStrapContextService implements Service<CloneableBootstrapContext> {
 
     private final CloneableBootstrapContext value;
+
+    private final String name;
+
+    private final boolean usingDefaultWm;
 
     private final InjectedValue<WorkManager> workManagerValue = new InjectedValue<WorkManager>();
 
@@ -50,15 +55,20 @@ public final class DefaultBootStrapContextService implements Service<CloneableBo
 
     private final InjectedValue<JBossXATerminator> xaTerminator = new InjectedValue<JBossXATerminator>();
 
+    private final InjectedValue<JcaSubsystemConfiguration> jcaConfig = new InjectedValue<JcaSubsystemConfiguration>();
+
+
     public Value<WorkManager> getWorkManagerValue() {
         return workManagerValue;
     }
 
     /** create an instance **/
-    public DefaultBootStrapContextService(CloneableBootstrapContext value) {
+    public BootStrapContextService(CloneableBootstrapContext value, String name, boolean usingDefaultWm) {
         super();
         ROOT_LOGGER.debugf("Building DefaultBootstrapContext");
         this.value = value;
+        this.name = name;
+        this.usingDefaultWm = usingDefaultWm;
 
     }
 
@@ -72,6 +82,10 @@ public final class DefaultBootStrapContextService implements Service<CloneableBo
         this.value.setWorkManager(workManagerValue.getValue());
         this.value.setTransactionSynchronizationRegistry(txManager.getValue().getTransactionSynchronizationRegistry());
         this.value.setXATerminator(xaTerminator.getValue());
+        jcaConfig.getValue().getBootstrapContexts().put(name, value);
+        if(usingDefaultWm) {
+            jcaConfig.getValue().setDefaultBootstrapContext(value);
+        }
         ROOT_LOGGER.debugf("Starting JCA DefaultBootstrapContext");
     }
 
@@ -90,6 +104,10 @@ public final class DefaultBootStrapContextService implements Service<CloneableBo
 
     public Injector<WorkManager> getWorkManagerValueInjector() {
         return workManagerValue;
+    }
+
+    public Injector<JcaSubsystemConfiguration> getJcaConfigInjector() {
+        return jcaConfig;
     }
 
 }
