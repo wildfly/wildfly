@@ -44,9 +44,9 @@ public class BasicOpsTestCase {
         assertTrue("Wrong CLI welcome message:" + line, line.indexOf("You are disconnected") >= 0);
 
         cli.sendLine("connect");
-
+        cli.sendLine("version", false);
         line = cli.readLine(5000);
-        assertTrue("Connect failed:" + line, line.indexOf("Connected to standalone") >= 0);
+        assertTrue("Connect failed:" + line, line.indexOf("[standalone@") >= 0);
 
         cli.quit();
 

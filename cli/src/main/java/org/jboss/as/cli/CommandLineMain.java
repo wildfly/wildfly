@@ -362,7 +362,7 @@ public class CommandLineMain {
         SecurityActions.addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
-                cmdCtx.disconnectController(!connect);
+                cmdCtx.disconnectController();
             }
         }));
 
@@ -376,7 +376,7 @@ public class CommandLineMain {
         }
 
         if(connect) {
-            cmdCtx.connectController(null, -1, false);
+            cmdCtx.connectController(null, -1);
         }
 
         try {
@@ -389,7 +389,7 @@ public class CommandLineMain {
             if (!cmdCtx.terminate) {
                 cmdCtx.terminateSession();
             }
-            cmdCtx.disconnectController(!connect);
+            cmdCtx.disconnectController();
         }
     }
 
@@ -399,7 +399,7 @@ public class CommandLineMain {
         SecurityActions.addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
-                cmdCtx.disconnectController(!connect);
+                cmdCtx.disconnectController();
             }
         }));
 
@@ -413,7 +413,7 @@ public class CommandLineMain {
         }
 
         if(connect) {
-            cmdCtx.connectController(null, -1, false);
+            cmdCtx.connectController(null, -1);
         }
 
         BufferedReader reader = null;
@@ -432,7 +432,7 @@ public class CommandLineMain {
             if (!cmdCtx.terminate) {
                 cmdCtx.terminateSession();
             }
-            cmdCtx.disconnectController(!connect);
+            cmdCtx.disconnectController();
         }
     }
 
@@ -769,8 +769,8 @@ public class CommandLineMain {
             return operationCandidatesProvider;
         }
 
-        private void connectController(String host, int port, boolean loggingEnabled) {
-
+        @Override
+        public void connectController(String host, int port) {
             if(host == null) {
                 host = defaultControllerHost;
             }
@@ -793,12 +793,12 @@ public class CommandLineMain {
                 List<String> nodeTypes = Util.getNodeTypes(newClient, new DefaultOperationRequestAddress());
                 if (!nodeTypes.isEmpty()) {
                     domainMode = nodeTypes.contains("server-group");
-                    printLine("Connected to "
-                            + (domainMode ? "domain controller at " : "standalone controller at ")
-                            + host + ":" + port);
+//                    printLine("Connected to "
+//                            + (domainMode ? "domain controller at " : "standalone controller at ")
+//                            + host + ":" + port);
                 } else {
                     printLine("The controller is not available at " + host + ":" + port);
-                    disconnectController(false);
+                    disconnectController();
                 }
             } catch (UnknownHostException e) {
                 printLine("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
@@ -806,27 +806,18 @@ public class CommandLineMain {
         }
 
         @Override
-        public void connectController(String host, int port) {
-            connectController(host, port, true);
-        }
-
-        private void disconnectController(boolean loggingEnabled) {
+        public void disconnectController() {
             if(this.client != null) {
                 StreamUtils.safeClose(client);
-                if(loggingEnabled) {
-                    printLine("Closed connection to " + this.controllerHost + ':' + this.controllerPort);
-                }
+//                if(loggingEnabled) {
+//                    printLine("Closed connection to " + this.controllerHost + ':' + this.controllerPort);
+//                }
                 client = null;
                 this.controllerHost = null;
                 this.controllerPort = -1;
                 domainMode = false;
             }
             promptConnectPart = null;
-        }
-
-        @Override
-        public void disconnectController() {
-            disconnectController(true);
         }
 
         @Override
