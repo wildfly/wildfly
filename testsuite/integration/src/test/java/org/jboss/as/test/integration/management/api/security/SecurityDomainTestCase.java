@@ -69,6 +69,8 @@ public class SecurityDomainTestCase extends AbstractMgmtTestBase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "SecurityDomainTestCase.war");
         war.addClass(SecuredServlet.class);
         war.addAsWebInfResource(new StringAsset("<jboss-web><security-domain>test</security-domain></jboss-web>"), "jboss-web.xml");
+        war.addAsWebInfResource(new StringAsset(
+                "<web-app version=\"2.5\"><login-config><auth-method>BASIC</auth-method></login-config></web-app>"), "web.xml");
         return war;
     }
 
@@ -84,9 +86,6 @@ public class SecurityDomainTestCase extends AbstractMgmtTestBase {
         ModelNode loginModule = new ModelNode();
         loginModule.get("code").set("Simple");
         loginModule.get("flag").set("required");
-        //ModelNode moduleOptions = new ModelNode();
-        //moduleOptions.add("testUser", "testPassword");
-        //loginModule.get("module-options").set(moduleOptions);
 
         // add security domain
         ModelNode op = createOpNode("subsystem=security/security-domain=test", "add");
@@ -101,7 +100,7 @@ public class SecurityDomainTestCase extends AbstractMgmtTestBase {
         try {
             String response = HttpRequest.get(url.toString() + "/SecurityDomainTestCase/SecuredServlet", 10, TimeUnit.SECONDS);
         } catch (Exception e) {
-            assertTrue(e.toString().contains("Status 403"));
+            assertTrue(e.toString().contains("Status 401"));
             failed = true;
         }
         assertTrue(failed);
@@ -121,5 +120,15 @@ public class SecurityDomainTestCase extends AbstractMgmtTestBase {
         // remove security domain
         op = createOpNode("subsystem=security/security-domain=test", "remove");
         executeOperation(op);
+        
+        // check that the security domain is removed
+        failed = false;
+        try {
+            deployer.deploy("secured-servlet");        
+        } catch (Exception e) {
+            failed = true;
+        }
+        assertTrue(failed);
+        
     }
 }
