@@ -24,12 +24,16 @@ package org.jboss.as.test.integration.ws.ejb;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.net.URL;
 
 /**
  * EJB 3.1 FR 3.2.4 Stateless session beans and Singleton session beans may have web service clients.
@@ -37,7 +41,11 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 @RunWith(Arquillian.class)
+@RunAsClient
 public class EJBWebServicesTestCase {
+
+    @ArquillianResource
+    URL baseUrl;
 
     @Deployment
     public static JavaArchive deployment() {
@@ -55,14 +63,16 @@ public class EJBWebServicesTestCase {
                 + "    </test:setState>"
                 + "  </soapenv:Body>"
                 + "</soapenv:Envelope>";
-        String result = HttpRequest.post("http://localhost:8080/ejbws-example/SingletonEndpoint", message, 10, SECONDS);
+        URL webRoot = new URL(baseUrl, "/");
+        String result = HttpRequest.post(webRoot.toString() + "ejbws-example/SingletonEndpoint", message, 10, SECONDS);
         // TODO: check something
         System.out.println(result);
     }
 
     @Test
     public void testSingletonWSDL() throws Exception {
-        final String wsdl = HttpRequest.get("http://localhost:8080/ejbws-example/SingletonEndpoint?wsdl", 10, SECONDS);
+        URL webRoot = new URL(baseUrl, "/");
+        final String wsdl = HttpRequest.get(webRoot.toString() + "ejbws-example/SingletonEndpoint?wsdl", 10, SECONDS);
         // TODO: check something
         System.out.println(wsdl);
     }

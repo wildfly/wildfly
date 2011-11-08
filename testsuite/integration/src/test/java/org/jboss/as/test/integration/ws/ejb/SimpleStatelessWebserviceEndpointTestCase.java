@@ -29,7 +29,9 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
@@ -42,7 +44,11 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 @RunWith(Arquillian.class)
+@RunAsClient
 public class SimpleStatelessWebserviceEndpointTestCase {
+
+    @ArquillianResource
+    URL baseUrl;
 
     private static final Logger log = Logger.getLogger(SimpleStatelessWebserviceEndpointTestCase.class.getName());
 
@@ -57,7 +63,7 @@ public class SimpleStatelessWebserviceEndpointTestCase {
     @Test
     public void testSimpleStatelessWebserviceEndpoint() throws Exception {
         final QName serviceName = new QName("org.jboss.as.test.integration.ws.ejb", "SimpleService");
-        final URL wsdlURL = new URL("http://localhost:8080/stateless-ws-endpoint-example/SimpleService/SimpleStatelessWebserviceEndpointImpl?wsdl");
+        final URL wsdlURL = new URL(baseUrl, "/stateless-ws-endpoint-example/SimpleService/SimpleStatelessWebserviceEndpointImpl?wsdl");
         final Service service = Service.create(wsdlURL, serviceName);
         final SimpleStatelessWebserviceEndpointIface port = service.getPort(SimpleStatelessWebserviceEndpointIface.class);
         final String result = port.echo("hello");
