@@ -1,5 +1,13 @@
-Synopsis:    run-batch
+SYNOPSIS
 
-Description:    runs the currently active batch. The command must be invoked while
-                in the batch mode. Executed batch will be discarded and the CLI
-                will exit the batch mode.
+    run-batch
+
+DESCRIPTION
+
+    Runs the currently active batch. The command must be invoked while
+    in the batch mode. Executed batch will be discarded and the CLI
+    will exit the batch mode.
+
+ARGUMENTS
+
+    n/a

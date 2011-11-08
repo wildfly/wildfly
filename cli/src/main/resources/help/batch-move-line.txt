@@ -1,9 +1,13 @@
-Synopsis:    move-batch-line current_line_number new_line_number
+SYNOPSIS
 
-Description:    moves existing line from the specified position to the new position
-                shifting the lines between the specified positions.
+    move-batch-line current_line_number new_line_number
+
+DESCRIPTION
+
+    Moves existing line from the specified position to the new position
+    shifting the lines between the specified positions.
 				
-Arguments:
+ARGUMENTS
 
  current_line_number    - the line number of the existing command line in the batch that
                           should be moved. Line numbers start with 1.

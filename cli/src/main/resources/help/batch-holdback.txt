@@ -1,10 +1,14 @@
-Synopsis:    holdback-batch [holdback_name]
+SYNOPSIS
 
-Description:    saves the currently active batch and exits the batch mode
-                w/o executing the batch. The held back batch can later be
-                re-activated by invoking batch commands.
+    holdback-batch [holdback_name]
 
-Arguments:
+DESCRIPTION
+
+    Saves the currently active batch and exits the batch mode
+    w/o executing the batch. The held back batch can later be
+    re-activated by invoking batch commands.
+
+ARGUMENTS
 
  holdback_name    - optional, the name under which to store the batch.
                     If the name isn't provided, the batch will be saved unnamed.

@@ -1,8 +1,12 @@
-Synopsis:    ls [node_path] [-l]
+SYNOPSIS
 
-Description: lists the contents of a node path.
+    ls [node_path] [-l]
 
-Arguments:
+DESCRIPTION
+
+    Lists the contents of a node path.
+
+ARGUMENTS
 
  node-path    - optional, the node path the contents of which should be printed.
                 If not specified, the contents of the current node path (indicated in the prompt) will be printed.

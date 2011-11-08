@@ -1,8 +1,12 @@
-Synopsis:   connect [host][:port]
+SYNOPSIS
 
-Description:   connects to the controller on the specified host and port.
+   connect [host][:port]
 
-Arguments:
+DESCRIPTION
+
+   connects to the controller on the specified host and port.
+
+ARGUMENTS
 
  host - optional, default value is localhost;
  port - optional, default value is 9999.
