@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-jar version="3.0" xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd">
+
+    <enterprise-beans>
+        <session>
+
+            <ejb-name>EJB3Bean</ejb-name>
+            <ejb-class>org.jboss.as.test.integration.ws.injection.ejb.basic.webservice.EJB3Bean</ejb-class>
+
+            <env-entry>
+                <env-entry-name>boolean1</env-entry-name>
+                <env-entry-type>java.lang.Boolean</env-entry-type>
+                <env-entry-value>true</env-entry-value>
+            </env-entry>
+
+        </session>
+
+    </enterprise-beans>
+
+</ejb-jar>
+
