@@ -77,7 +77,7 @@ public class ChannelServer implements Closeable {
         //the endpoint name.
         provider.addUser("bob", configuration.getEndpointName(), "pass".toCharArray());
         System.out.println(configuration.getBindAddress());
-        AcceptingChannel<? extends ConnectedStreamChannel> streamServer = networkServerProvider.createServer(configuration.getBindAddress(), OptionMap.create(Options.SASL_MECHANISMS, Sequence.of("CRAM-MD5")), provider);
+        AcceptingChannel<? extends ConnectedStreamChannel> streamServer = networkServerProvider.createServer(configuration.getBindAddress(), OptionMap.create(Options.SASL_MECHANISMS, Sequence.of("CRAM-MD5")), provider, null);
 
         return new ChannelServer(endpoint, registration, streamServer);
     }
