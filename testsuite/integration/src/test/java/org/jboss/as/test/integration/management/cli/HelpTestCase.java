@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.management.cli;
 
 import org.jboss.arquillian.junit.Arquillian;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -77,37 +76,31 @@ public class HelpTestCase extends AbstractCliTestBase {
 
     @Test
     public void testDeprecatedAddJmsQueueHelp() throws Exception {
-        // this command is deprecated and should not be used
         testCmdHelp("add-jms-queue");
     }
 
     @Test
     public void testDeprecatedRemoveJmsQueueHelp() throws Exception {
-        // this command is deprecated and should not be used
         testCmdHelp("remove-jms-queue");
     }
 
     @Test
     public void testDeprecatedAddJmsTopicHelp() throws Exception {
-        // this command is deprecated and should not be used
         testCmdHelp("add-jms-topic");
     }
 
     @Test
     public void testDeprecatedRemoveJmsTopicHelp() throws Exception {
-        // this command is deprecated and should not be used
         testCmdHelp("remove-jms-topic");
     }
 
     @Test
     public void testDeprecatedAddJmsCfHelp() throws Exception {
-        // this command is deprecated and should not be used
         testCmdHelp("add-jms-cf");
     }
 
     @Test
     public void testDeprecatedRemoveJmsCfHelp() throws Exception {
-        // this command is deprecated and should not be used
         testCmdHelp("remove-jms-cf");
     }
 
