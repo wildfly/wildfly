@@ -226,6 +226,32 @@ class WebConnectorService implements Service<Connector> {
                             Method m = connector.getProtocolHandler().getClass().getMethod("setAttribute", String.class, Object.class);
                             m.invoke(connector.getProtocolHandler(), "sessionCacheTimeout", ssl.get(Constants.SESSION_TIMEOUT).asString());
                         }
+                        /* possible attributes that apply to ssl socket factory
+                            keystoreType -> PKCS12
+                            keystore -> path/to/keystore.p12
+                            keypass -> key password
+                            truststorePass -> trustPassword
+                            truststoreFile -> path/to/truststore.jks
+                            truststoreType -> JKS
+                         */
+                        if (ssl.hasDefined(Constants.CA_CERTIFICATE_FILE)) {
+                            Method m = connector.getProtocolHandler().getClass().getMethod("setAttribute", String.class, Object.class);
+                            m.invoke(connector.getProtocolHandler(), "truststoreFile", ssl.get(Constants.CA_CERTIFICATE_FILE).asString());
+
+                        }
+                        if (ssl.hasDefined(Constants.CA_CERTIFICATE_PASSWORD)) {
+                            Method m = connector.getProtocolHandler().getClass().getMethod("setAttribute", String.class, Object.class);
+                            m.invoke(connector.getProtocolHandler(), "truststorePass",ssl.get(Constants.CA_CERTIFICATE_PASSWORD).asString());
+                        }
+                        if (ssl.hasDefined(Constants.TRUSTSTORE_TYPE)) {
+                            Method m = connector.getProtocolHandler().getClass().getMethod("setAttribute", String.class, Object.class);
+                            m.invoke(connector.getProtocolHandler(), "truststoreType",ssl.get(Constants.TRUSTSTORE_TYPE).asString());
+                        }
+                        if (ssl.hasDefined(Constants.KEYSTORE_TYPE)) {
+                            Method m = connector.getProtocolHandler().getClass().getMethod("setKeytype", String.class);
+                            m.invoke(connector.getProtocolHandler(), ssl.get(Constants.KEYSTORE_TYPE).asString());
+                        }
+
                     } catch (NoSuchMethodException e) {
                         throw new StartException(e);
                     }
