@@ -124,7 +124,7 @@ public class RunAsMergingProcessor extends AbstractMergingProcessor<EJBComponent
                 // get extra roles from role-mapping
                 List<SecurityRoleMetaData> list = jbossMetaData.getAssemblyDescriptor().getAny(SecurityRoleMetaData.class);
                 SecurityRolesMetaData securityRoles = new SecurityRolesMetaData();
-                if (securityRoles != null) {
+                if (list != null) {
                     for (SecurityRoleMetaData securityRoleMetaData : list) {
                         securityRoles.add(securityRoleMetaData);
                     }

@@ -81,11 +81,8 @@ import org.jboss.as.ejb3.deployment.processors.merging.StartupMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.StatefulTimeoutMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.TransactionAttributeMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.TransactionManagementMergingProcessor;
-<<<<<<< HEAD
 import org.jboss.as.ejb3.iiop.POARegistry;
-=======
 import org.jboss.as.ejb3.deployment.processors.security.JaccEjbDeploymentProcessor;
->>>>>>> 9ae9a18... ejb jacc
 import org.jboss.as.ejb3.remote.EjbClientContextService;
 import org.jboss.as.ejb3.remote.LocalEjbReceiver;
 import org.jboss.as.jacorb.service.CorbaPOAService;
