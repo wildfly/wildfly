@@ -39,7 +39,16 @@ public final class WebComponentDescription extends ComponentDescription {
     }
 
 
-    private boolean isIntercepted() {
+    public boolean isIntercepted() {
         return false;
+    }
+
+    /**
+     * Web components are optional. If they are actually required we leave it up to the web subsystem to error out.
+     * @return <code>true</code>
+     */
+    @Override
+    public boolean isOptional() {
+        return true;
     }
 }

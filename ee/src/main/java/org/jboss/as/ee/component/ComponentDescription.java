@@ -22,8 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
-
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -71,6 +69,8 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.ConstructedValue;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
+
+import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
 /**
  * A description of a generic Java EE component.  The description is pre-classloading so it references everything by name.
@@ -514,8 +514,16 @@ public class ComponentDescription {
         return configurators;
     }
 
-    private boolean isIntercepted() {
+    public boolean isIntercepted() {
         return true;
+    }
+
+    /**
+     *
+     * @return <code>true</code> if errors should be ignored when installing this component
+     */
+    public boolean isOptional() {
+        return false;
     }
 
     private static InterceptorFactory weaved(final Collection<InterceptorFactory> interceptorFactories) {
@@ -926,20 +934,20 @@ public class ComponentDescription {
 
         /**
          * Sets up all resource injections for a class. This takes into account injections that have been specified in the module and component deployment descriptors
-         *
+         * <p/>
          * Note that this does not take superclasses into consideration, only injections on the current class
          *
-         *
-         * @param clazz The class to perform injection for
-         * @param classDescription The class description, may be null
+         * @param clazz             The class to perform injection for
+         * @param classDescription  The class description, may be null
          * @param moduleDescription The module description
-         * @param description The component description
-         * @param configuration The component configuration
-         * @param context The phase context
-         * @param injectors The list of injectors for the current component
-         * @param instanceKey The key that identifies the instance to inject in the interceptor context
-         * @param uninjectors The list of uninjections for the current component
+         * @param description       The component description
+         * @param configuration     The component configuration
+         * @param context           The phase context
+         * @param injectors         The list of injectors for the current component
+         * @param instanceKey       The key that identifies the instance to inject in the interceptor context
+         * @param uninjectors       The list of uninjections for the current component
          * @throws DeploymentUnitProcessingException
+         *
          */
         private void mergeInjectionsForClass(final Class<?> clazz, final EEModuleClassDescription classDescription, final EEModuleDescription moduleDescription, final ComponentDescription description, final ComponentConfiguration configuration, final DeploymentPhaseContext context, final Deque<InterceptorFactory> injectors, final Object instanceKey, final Deque<InterceptorFactory> uninjectors) throws DeploymentUnitProcessingException {
             final Map<InjectionTarget, ResourceInjectionConfiguration> mergedInjections = new HashMap<InjectionTarget, ResourceInjectionConfiguration>();

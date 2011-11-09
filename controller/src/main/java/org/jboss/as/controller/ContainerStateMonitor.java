@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -253,9 +254,9 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
             msg.append(MESSAGES.serviceStatusReportDependencies());
             for (Map.Entry<ServiceName, MissingDependencyInfo> entry : changeReport.getMissingServices().entrySet()) {
                 if (!entry.getValue().isUnavailable()) {
-                    msg.append(MESSAGES.serviceStatusReportMissing(entry.getKey()));
+                    msg.append(MESSAGES.serviceStatusReportMissing(entry.getKey(), createDependentsString(entry.getValue().getDependents())));
                 } else {
-                    msg.append(MESSAGES.serviceStatusReportUnavailable(entry.getKey()));
+                    msg.append(MESSAGES.serviceStatusReportUnavailable(entry.getKey(), createDependentsString(entry.getValue().getDependents())));
                 }
             }
         }
@@ -303,6 +304,25 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
 
         public Map<ServiceName, Boolean> getNoLongerMissingServices() {
             return noLongerMissingServices;
+        }
+    }
+
+    private static String createDependentsString(final Set<ServiceName> serviceNames) {
+        if(serviceNames.size() <= 4) {
+            return serviceNames.toString();
+        } else {
+            final StringBuilder ret = new StringBuilder("[");
+            int count = 0;
+            Iterator<ServiceName> it = serviceNames.iterator();
+            while (count < 4) {
+                final ServiceName val = it.next();
+                ret.append(val);
+                ret.append(", ");
+                ++count;
+            }
+            ret.append(MESSAGES.andNMore(serviceNames.size() - 3));
+            ret.append(" ]");
+            return ret.toString();
         }
     }
 

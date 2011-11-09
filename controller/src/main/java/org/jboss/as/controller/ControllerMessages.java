@@ -22,6 +22,16 @@
 
 package org.jboss.as.controller;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Set;
+import java.util.concurrent.CancellationException;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
@@ -37,14 +47,6 @@ import org.jboss.logging.Param;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.Location;
-import javax.xml.stream.XMLStreamException;
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.concurrent.CancellationException;
 
 /**
  * Date: 02.11.2011
@@ -1713,8 +1715,8 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message("      %s (missing)%n")
-    String serviceStatusReportMissing(ServiceName serviceName);
+    @Message("      %s (missing) dependents: %s %n")
+    String serviceStatusReportMissing(ServiceName serviceName, String dependents);
 
     /**
      * A message for the service status report for unavailable dependencies.
@@ -1723,8 +1725,8 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message("      %s (unavailable)%n")
-    String serviceStatusReportUnavailable(ServiceName serviceName);
+    @Message("      %s (unavailable) dependents: %s %n")
+    String serviceStatusReportUnavailable(ServiceName serviceName, String dependents);
 
     /**
      * A message for the service status report indicating new corrected service.
@@ -1980,4 +1982,14 @@ public interface ControllerMessages {
      */
     @Message(id = 14798, value = "Validation failed for %s")
     String validationFailed(String name);
+
+    /**
+     * A message indicating that there are more services than would be practical to display
+     *
+     * @param number the number of services that were not displayed
+     *
+     * @return the message.
+     */
+    @Message(id = 14799, value = "... and %s more")
+    String andNMore(int number);
 }

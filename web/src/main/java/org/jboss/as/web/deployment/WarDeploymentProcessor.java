@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.security.jacc.PolicyConfiguration;
 import javax.servlet.ServletContext;
@@ -119,7 +120,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
     protected void processDeployment(final String hostName, final WarMetaData warMetaData, final DeploymentUnit deploymentUnit,
-            final ServiceTarget serviceTarget) throws DeploymentUnitProcessingException {
+                                     final ServiceTarget serviceTarget) throws DeploymentUnitProcessingException {
         final VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (module == null) {
@@ -167,11 +168,23 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
 
         final WebInjectionContainer injectionContainer = new WebInjectionContainer(module.getClassLoader());
 
-        final Map<String, ComponentInstantiator> components = deploymentUnit
-                .getAttachment(WebAttachments.WEB_COMPONENT_INSTANTIATORS);
+        //see AS7-2077
+        //basically we want to ignore components that have failed for whatever reason
+        //if they are important they will be picked up when the web deployment actually starts
+        final Map<String, ComponentInstantiator> components = deploymentUnit.getAttachment(WebAttachments.WEB_COMPONENT_INSTANTIATORS);
         if (components != null) {
+            final Set<ServiceName> failed = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.FAILED_COMPONENTS);
             for (Map.Entry<String, ComponentInstantiator> entry : components.entrySet()) {
-                injectionContainer.addInstantiator(entry.getKey(), entry.getValue());
+                boolean skip = false;
+                for (final ServiceName serviceName : entry.getValue().getServiceNames()) {
+                    if (failed.contains(serviceName)) {
+                        skip = true;
+                        break;
+                    }
+                }
+                if (!skip) {
+                    injectionContainer.addInstantiator(entry.getKey(), entry.getValue());
+                }
             }
         }
         webContext.setInstanceManager(injectionContainer);

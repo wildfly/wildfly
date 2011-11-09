@@ -22,7 +22,10 @@
 
 package org.jboss.as.ee.component.deployers;
 
-import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -37,6 +40,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Deployment processor responsible for creating a {@link org.jboss.as.ee.component.EEModuleConfiguration} from a {@link org.jboss.as.ee.component.EEModuleDescription} and
@@ -60,25 +64,36 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
             return;
         }
 
+        final Set<ServiceName> failed = new HashSet<ServiceName>();
+
         final EEModuleConfiguration moduleConfiguration = new EEModuleConfiguration(moduleDescription);
         deploymentUnit.putAttachment(Attachments.EE_MODULE_CONFIGURATION, moduleConfiguration);
 
-        final Collection<ComponentDescription> componentDescriptions = moduleDescription.getComponentDescriptions();
-        if (componentDescriptions != null) {
-            for (ComponentDescription componentDescription : componentDescriptions) {
+        final Iterator<ComponentDescription> iterator = moduleDescription.getComponentDescriptions().iterator();
+            while (iterator.hasNext()) {
+                final ComponentDescription componentDescription = iterator.next();
                 logger.debug("Configuring component class: " + componentDescription.getComponentClassName() + " named " + componentDescription.getComponentName());
                 final ComponentConfiguration componentConfiguration;
                 try {
                     componentConfiguration = componentDescription.createConfiguration(classIndex.classIndex(componentDescription.getComponentClassName()));
-                } catch (ClassNotFoundException e) {
-                    throw new DeploymentUnitProcessingException("Could not load component class " + componentDescription.getComponentClassName(), e);
+                    for (final ComponentConfigurator componentConfigurator : componentDescription.getConfigurators()) {
+                        componentConfigurator.configure(phaseContext, componentDescription, componentConfiguration);
+                    }
+                    moduleConfiguration.addComponentConfiguration(componentConfiguration);
+                } catch (Exception e) {
+                    if (componentDescription.isOptional()) {
+                        logger.warnf(e, "Not installing optional component %s due to exception", componentDescription.getComponentName());
+                        failed.add(componentDescription.getStartServiceName());
+                        failed.add(componentDescription.getCreateServiceName());
+                        failed.add(componentDescription.getServiceName());
+                        iterator.remove();
+                    } else {
+                        throw new DeploymentUnitProcessingException("Could not load component class " + componentDescription.getComponentClassName(), e);
+                    }
                 }
-                for (ComponentConfigurator componentConfigurator : componentDescription.getConfigurators()) {
-                    componentConfigurator.configure(phaseContext, componentDescription, componentConfiguration);
-                }
-                moduleConfiguration.addComponentConfiguration(componentConfiguration);
             }
-        }
+
+        deploymentUnit.putAttachment(Attachments.FAILED_COMPONENTS, Collections.synchronizedSet(failed));
 
     }
 

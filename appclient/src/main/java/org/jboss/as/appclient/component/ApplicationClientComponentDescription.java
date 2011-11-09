@@ -47,7 +47,7 @@ public final class ApplicationClientComponentDescription extends ComponentDescri
     }
 
 
-    private boolean isIntercepted() {
+    public boolean isIntercepted() {
         return false;
     }
 

@@ -22,9 +22,12 @@
 
 package org.jboss.as.ee.component;
 
+import java.util.Set;
+
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.SetupAction;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author John Bailey
@@ -41,6 +44,10 @@ public class Attachments {
 
     public static final AttachmentKey<DeploymentDescriptorEnvironment> MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT = AttachmentKey.create(DeploymentDescriptorEnvironment.class);
 
+    /**
+     * Components that failed during install. This will allow some optional components to be ignored.
+     */
+    public static final AttachmentKey<Set<ServiceName>> FAILED_COMPONENTS = AttachmentKey.create(Set.class);
 
     /**
      * A list of actions that should be performed for every EE thread.

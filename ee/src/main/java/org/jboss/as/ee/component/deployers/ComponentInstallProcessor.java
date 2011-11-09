@@ -87,7 +87,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         final ServiceName bindingDependencyService = JndiNamingDependencyProcessor.serviceName(deploymentUnit);
 
         // Iterate through each component, installing it into the container
-        for (ComponentConfiguration configuration : moduleDescription.getComponentConfigurations()) {
+        for (final ComponentConfiguration configuration : moduleDescription.getComponentConfigurations()) {
             try {
                 logger.tracef("Installing component %s", configuration.getComponentClass().getName());
                 deployComponent(phaseContext, configuration, dependencies, bindingDependencyService);
