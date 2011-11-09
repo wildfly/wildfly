@@ -118,7 +118,7 @@ public interface JAXRConstants {
     enum Element {
         // must be first
         UNKNOWN(null),
-        CONNECTION("connection"),
+        CONNECTIONFACTORY("connectionFactory"),
         DATASOURCE("datasource"),
         FLAGS("flags"),
         ;
