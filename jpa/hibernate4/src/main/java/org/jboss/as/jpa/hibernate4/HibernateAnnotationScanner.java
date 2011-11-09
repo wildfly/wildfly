@@ -142,6 +142,8 @@ public class HibernateAnnotationScanner implements Scanner {
             DotName annotation = DotName.createSimple(annClass.getName());
             List<AnnotationInstance> classesWithAnnotation = index.getAnnotations(annotation);
             for (AnnotationInstance annotationInstance : classesWithAnnotation) {
+                // verify that the annotation target is actually a class, since some frameworks
+                // may generate bytecode with annotations placed on methods (see AS7-2559)
                 if (annotationInstance.target() instanceof ClassInfo) {
                     String className = annotationInstance.target().toString();
                     try {
