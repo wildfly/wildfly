@@ -46,10 +46,9 @@ public class ConsoleHandlerUpdateProperties extends FlushingHandlerUpdatePropert
     @Override
     protected void updateRuntime(OperationContext context, final ModelNode operation, final ConsoleHandler handler) throws OperationFailedException {
         super.updateRuntime(context, operation, handler);
-        switch (Target.fromString(TARGET.resolveModelAttribute(context, operation).asString().toUpperCase(Locale.US))) {
+        switch (Target.fromString(TargetValidator.properCase(TARGET.resolveModelAttribute(context, operation).asString()))) {
             case SYSTEM_ERR: {
                 handler.setTarget(ConsoleHandler.Target.SYSTEM_ERR);
-                ConsoleHandler.class.cast(handler).setTarget(ConsoleHandler.Target.SYSTEM_ERR);
                 break;
             }
             case SYSTEM_OUT: {

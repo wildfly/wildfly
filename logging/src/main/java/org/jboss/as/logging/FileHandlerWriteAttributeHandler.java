@@ -22,6 +22,7 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.as.logging.CommonAttributes.APPEND;
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
 
 import org.jboss.as.controller.OperationContext;
@@ -34,28 +35,6 @@ import org.jboss.logmanager.handlers.FileHandler;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class FileHandlerWriteAttributeHandler extends LogHandlerWriteAttributeHandler<FileHandler> {
+public class FileHandlerWriteAttributeHandler extends AbstractFileHandlerWriteAttributeHandler<FileHandler> {
     static final FileHandlerWriteAttributeHandler INSTANCE = new FileHandlerWriteAttributeHandler();
-
-    private FileHandlerWriteAttributeHandler() {
-        super(AUTOFLUSH);
-        // TODO (jrp) consider implementing FILE as well
-    }
-
-    @Override
-    protected boolean doApplyUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final FileHandler handler) throws OperationFailedException {
-        if (AUTOFLUSH.getName().equals(attributeName)) {
-            handler.setAutoFlush(resolvedValue.asBoolean());
-        }
-        // TODO (jrp) consider implementing FILE as well
-        return false;
-    }
-
-    @Override
-    protected void doRevertUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final FileHandler handler) throws OperationFailedException {
-        if (AUTOFLUSH.getName().equals(attributeName)) {
-            handler.setAutoFlush(valueToRestore.asBoolean());
-        }
-        // TODO (jrp) consider implementing FILE as well
-    }
 }

@@ -77,6 +77,7 @@ public class LoggingExtension implements Extension {
         rootLogger.registerOperationHandler(RootLoggerLevelChange.OPERATION_NAME, RootLoggerLevelChange.INSTANCE, LoggingSubsystemProviders.ROOT_LOGGER_CHANGE_LEVEL, false);
         rootLogger.registerOperationHandler(RootLoggerAssignHandler.OPERATION_NAME, RootLoggerAssignHandler.INSTANCE, LoggingSubsystemProviders.ROOT_LOGGER_ASSIGN_HANDLER, false);
         rootLogger.registerOperationHandler(RootLoggerUnassignHandler.OPERATION_NAME, RootLoggerUnassignHandler.INSTANCE, LoggingSubsystemProviders.ROOT_LOGGER_UNASSIGN_HANDLER, false);
+        addWriteAttributes(rootLogger,  RootLoggerWriteAttributeHandler.INSTANCE);
 
         // loggers
         final ManagementResourceRegistration loggers = registration.registerSubModel(loggersPath, LoggingSubsystemProviders.LOGGER);
@@ -159,13 +160,13 @@ public class LoggingExtension implements Extension {
         context.setSubsystemXmlMapping(Namespace.LOGGING_1_1.getUriString(), LoggingSubsystemParser.INSTANCE);
     }
 
-    private void addWriteAttributes(final ManagementResourceRegistration handler, final LogHandlerWriteAttributeHandler<?> stepHandler) {
+    private void addWriteAttributes(final ManagementResourceRegistration handler, final AbstractLogHandlerWriteAttributeHandler<?> stepHandler) {
         for (AttributeDefinition attr : stepHandler.getAttributes()) {
             handler.registerReadWriteAttribute(attr, null, stepHandler);
         }
     }
 
-    private void addWriteAttributes(final ManagementResourceRegistration handler, final LoggerWriteAttributeHandler stepHandler) {
+    private void addWriteAttributes(final ManagementResourceRegistration handler, final AbstractLoggerWriteAttributeHandler stepHandler) {
         for (AttributeDefinition attr : stepHandler.getAttributes()) {
             handler.registerReadWriteAttribute(attr, null, stepHandler);
         }

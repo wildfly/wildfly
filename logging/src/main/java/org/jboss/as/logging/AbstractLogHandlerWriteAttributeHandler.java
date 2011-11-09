@@ -29,14 +29,6 @@ import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
-import java.io.UnsupportedEncodingException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -46,15 +38,35 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 
+import java.io.UnsupportedEncodingException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+
 /**
  * Date: 12.10.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public abstract class LogHandlerWriteAttributeHandler<T extends Handler> extends AbstractWriteAttributeHandler<T> {
+abstract class AbstractLogHandlerWriteAttributeHandler<T extends Handler> extends AbstractWriteAttributeHandler<T> {
     private final Map<String, AttributeDefinition> attributes;
 
-    LogHandlerWriteAttributeHandler(final AttributeDefinition... attributes) {
+    AbstractLogHandlerWriteAttributeHandler(final AttributeDefinition... attributes) {
+        this.attributes = new HashMap<String, AttributeDefinition>();
+        this.attributes.put(LEVEL.getName(), LEVEL);
+        this.attributes.put(FILTER.getName(), FILTER);
+        this.attributes.put(FORMATTER.getName(), FORMATTER);
+        this.attributes.put(ENCODING.getName(), ENCODING);
+        for (AttributeDefinition attr : attributes) {
+            this.attributes.put(attr.getName(), attr);
+        }
+    }
+
+    AbstractLogHandlerWriteAttributeHandler(final Collection<AttributeDefinition> attributes) {
         this.attributes = new HashMap<String, AttributeDefinition>();
         this.attributes.put(LEVEL.getName(), LEVEL);
         this.attributes.put(FILTER.getName(), FILTER);
@@ -70,18 +82,20 @@ public abstract class LogHandlerWriteAttributeHandler<T extends Handler> extends
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
+        @SuppressWarnings("unchecked")
         final ServiceController<Handler> controller = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(name));
         if (controller == null) {
             return false;
         }
         // Attempt to cast handler
+        @SuppressWarnings("unchecked")
         final T handler = (T) controller.getValue();
         if (LEVEL.getName().equals(attributeName)) {
-            handler.setLevel(Level.parse(resolvedValue.asString()));
+            handler.setLevel(Level.parse(resolvedValue.asString().toUpperCase(Locale.US)));
         } else if (FILTER.getName().equals(attributeName)) {
             // TODO (jrp) implement filter
         } else if (FORMATTER.getName().equals(attributeName)) {
-            AbstractFormatterSpec.fromModelNode(resolvedValue).apply(handler);
+            AbstractFormatterSpec.fromModelNode(context, resolvedValue).apply(handler);
         } else if (ENCODING.getName().equals(attributeName)) {
             try {
                 handler.setEncoding(resolvedValue.asString());
@@ -89,18 +103,18 @@ public abstract class LogHandlerWriteAttributeHandler<T extends Handler> extends
                 throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToSetHandlerEncoding()));
             }
         }
-        return doApplyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue, handler);
+        return doApplyUpdateToRuntime(operation, attributeName, resolvedValue, currentValue, handler);
     }
 
     @Override
     protected final void revertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final T handler) throws OperationFailedException {
         if (handler != null) {
             if (LEVEL.getName().equals(attributeName)) {
-                handler.setLevel(Level.parse(valueToRestore.asString()));
+                handler.setLevel(Level.parse(valueToRestore.asString().toUpperCase(Locale.US)));
             } else if (FILTER.getName().equals(attributeName)) {
                 // TODO (jrp) implement filter
             } else if (FORMATTER.getName().equals(attributeName)) {
-                AbstractFormatterSpec.fromModelNode(valueToRestore).apply(handler);
+                AbstractFormatterSpec.fromModelNode(context, valueToRestore).apply(handler);
             } else if (ENCODING.getName().equals(attributeName)) {
                 try {
                     handler.setEncoding(valueToRestore.asString());
@@ -108,13 +122,13 @@ public abstract class LogHandlerWriteAttributeHandler<T extends Handler> extends
                     throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToSetHandlerEncoding()));
                 }
             }
-            doRevertUpdateToRuntime(context, operation, attributeName, valueToRestore, valueToRevert, handler);
+            doRevertUpdateToRuntime(operation, attributeName, valueToRestore, valueToRevert, handler);
         }
     }
 
     /**
      * Applies additional runtime attributes for the handler.
-     * @param context TODO
+     *
      * @param operation     the operation
      * @param attributeName the name of the attribute being modified
      * @param resolvedValue the new value for the attribute, after {@link ModelNode#resolve()} has been called on it
@@ -125,11 +139,11 @@ public abstract class LogHandlerWriteAttributeHandler<T extends Handler> extends
      *
      * @throws OperationFailedException if the operation fails.
      */
-    protected abstract boolean doApplyUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final T handler) throws OperationFailedException;
+    protected abstract boolean doApplyUpdateToRuntime(ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, T handler) throws OperationFailedException;
 
     /**
      * Reverts updates to the handler.
-     * @param context TODO
+     *
      * @param operation      the operation
      * @param attributeName  the name of the attribute being modified
      * @param valueToRestore the previous value for the attribute, before this operation was executed
@@ -138,7 +152,7 @@ public abstract class LogHandlerWriteAttributeHandler<T extends Handler> extends
      *
      * @throws OperationFailedException if the operation fails.
      */
-    protected abstract void doRevertUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final T handler) throws OperationFailedException;
+    protected abstract void doRevertUpdateToRuntime(ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, T handler) throws OperationFailedException;
 
     @Override
     protected final void validateResolvedValue(final String name, final ModelNode value) throws OperationFailedException {
