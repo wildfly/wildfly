@@ -25,14 +25,19 @@ package org.jboss.as.domain.http.server;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.domain.http.server.Constants.ACCEPT;
-import static org.jboss.as.domain.http.server.Constants.ACCESS_CONTROL_ALLOW_ORIGIN;
 import static org.jboss.as.domain.http.server.Constants.APPLICATION_DMR_ENCODED;
 import static org.jboss.as.domain.http.server.Constants.APPLICATION_JSON;
 import static org.jboss.as.domain.http.server.Constants.CONTENT_DISPOSITION;
 import static org.jboss.as.domain.http.server.Constants.CONTENT_TYPE;
+import static org.jboss.as.domain.http.server.Constants.FORBIDDEN;
 import static org.jboss.as.domain.http.server.Constants.GET;
+import static org.jboss.as.domain.http.server.Constants.HOST;
+import static org.jboss.as.domain.http.server.Constants.HTTP;
+import static org.jboss.as.domain.http.server.Constants.HTTPS;
 import static org.jboss.as.domain.http.server.Constants.INTERNAL_SERVER_ERROR;
 import static org.jboss.as.domain.http.server.Constants.METHOD_NOT_ALLOWED;
+import static org.jboss.as.domain.http.server.Constants.OPTIONS;
+import static org.jboss.as.domain.http.server.Constants.ORIGIN;
 import static org.jboss.as.domain.http.server.Constants.OK;
 import static org.jboss.as.domain.http.server.Constants.POST;
 import static org.jboss.as.domain.http.server.Constants.TEXT_HTML;
@@ -76,6 +81,7 @@ import org.jboss.sasl.callback.DigestHashCallback;
  * An embedded web server that provides a JSON over HTTP API to the domain management model.
  *
  * @author Jason T. Greene
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 class DomainApiHandler implements ManagementHttpHandler {
 
@@ -89,12 +95,15 @@ class DomainApiHandler implements ManagementHttpHandler {
      * Represents all possible management operations that can be executed using HTTP GET
      */
     enum GetOperation {
+        /*
+         *  It is essential that the GET requests exposed over the HTTP interface are for read only
+         *  operations that do not modify the domain model or update anything server side.
+         */
         RESOURCE("read-resource"),
         ATTRIBUTE("read-attribute"),
         RESOURCE_DESCRIPTION("read-resource-description"),
         SNAPSHOTS("list-snapshots"),
-        OPERATION_DESCRIPTION(
-                "read-operation-description"),
+        OPERATION_DESCRIPTION("read-operation-description"),
         OPERATION_NAMES("read-operation-names");
 
         private String realOperation;
@@ -115,17 +124,81 @@ class DomainApiHandler implements ManagementHttpHandler {
     }
 
     public void handle(HttpExchange http) throws IOException {
-        final URI request = http.getRequestURI();
-        final String requestMethod = http.getRequestMethod();
+        /**
+         *  Request Verification - before the request is handled a set of checks are performed for
+         *  CSRF and XSS
+         */
 
         /*
-         * Detect the file upload request. If it is not present, submit the incoming request to the normal handler.
+         * Completely disallow OPTIONS - if the browser suspects this is a cross site request just reject it.
          */
-        if (POST.equals(requestMethod) && UPLOAD_REQUEST.equals(request.getPath())) {
-            processUploadRequest(http);
-        } else {
-            processRequest(http);
+        final String requestMethod = http.getRequestMethod();
+        if (OPTIONS.equals(requestMethod)) {
+            drain(http);
+            http.sendResponseHeaders(METHOD_NOT_ALLOWED, -1);
+
+            return;
         }
+
+        /*
+         *  Origin check, if it is set the Origin header should match the Host otherwise reject the request.
+         *
+         *  This check is for cross site scripted GET and POST requests.
+         */
+        final Headers headers = http.getRequestHeaders();
+        final URI request = http.getRequestURI();
+        if (headers.containsKey(ORIGIN)) {
+            String origin = headers.getFirst(ORIGIN);
+            String host = headers.getFirst(HOST);
+            String protocol = http.getHttpContext().getServer() instanceof HttpServer ? HTTP : HTTPS;
+            String allowedOrigin = protocol + "://" + host;
+
+            // This will reject multi-origin Origin headers due to the exact match.
+            if (origin.equals(allowedOrigin) == false) {
+                drain(http);
+                http.sendResponseHeaders(FORBIDDEN, -1);
+
+                return;
+            }
+        }
+
+        /*
+         *  Cross Site Request Forgery makes use of a specially constructed form to pass in what appears to be
+         *  a valid operation request - except for upload requests any inbound requests where the Content-Type
+         *  is not application/json or application/dmr-encoded will be rejected.
+         */
+
+        final boolean uploadRequest = UPLOAD_REQUEST.equals(request.getPath());
+        if (POST.equals(requestMethod)) {
+            if (uploadRequest) {
+                // This type of request doesn't need the content type check.
+                processUploadRequest(http);
+
+                return;
+            }
+
+            String contentType = extractContentType(headers.getFirst(CONTENT_TYPE));
+            if (!(APPLICATION_JSON.equals(contentType) || APPLICATION_DMR_ENCODED.equals(contentType))) {
+                drain(http);
+                http.sendResponseHeaders(FORBIDDEN, -1);
+
+                return;
+            }
+
+
+        }
+
+        processRequest(http);
+    }
+
+    private void drain(HttpExchange exchange) throws IOException {
+        exchange.getRequestBody().close();
+    }
+
+    private String extractContentType(final String fullContentType) {
+        int pos = fullContentType.indexOf(';');
+
+        return pos < 0 ? fullContentType : fullContentType.substring(0, pos).trim();
     }
 
     /**
@@ -178,7 +251,7 @@ class DomainApiHandler implements ManagementHttpHandler {
             return;
         }
 
-        ModelNode dmr = null;
+        ModelNode dmr;
         ModelNode response;
         int status = OK;
 
@@ -233,7 +306,6 @@ class DomainApiHandler implements ManagementHttpHandler {
             boolean encode, String contentType) throws IOException {
         final Headers responseHeaders = http.getResponseHeaders();
         responseHeaders.add(CONTENT_TYPE, contentType);
-        responseHeaders.add(ACCESS_CONTROL_ALLOW_ORIGIN, "*");
         http.sendResponseHeaders(status, 0);
 
         final OutputStream out = http.getResponseBody();

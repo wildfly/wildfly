@@ -110,6 +110,7 @@ public class HttpDeploymentUploadUnitTestCase {
             connection.setDoInput(true);
             connection.setDoOutput(true);
             connection.setRequestMethod(POST_REQUEST_METHOD);
+            connection.setRequestProperty("Content-Type", "application/json");
             os = new BufferedOutputStream(connection.getOutputStream());
 
             writeAddRequest(os, hash);
