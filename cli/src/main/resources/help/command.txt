@@ -1,8 +1,11 @@
-Synopsis:   command [add --node-type=node_path_to_the_type [--property-id=identifying_property] --command-name=name_for_the_command |
-                     remove --command_name=command_to_remove |
-                     list]
+SYNOPSIS
 
-Description:    Allows to add new, remove and list existing generic type commands.
+   command [add --node-type=node_path_to_the_type [--property-id=identifying_property] --command-name=name_for_the_command |
+            remove --command_name=command_to_remove |
+            list]
+
+DESCRIPTION
+                Allows to add new, remove and list existing generic type commands.
                 A generic type command is a command that is assigned to a specific node type
                 and which allows to perform any operation available for an instance of that type
                 and/or modify any of the properties exposed by the type on any existing instance of that type.
@@ -44,7 +47,7 @@ Description:    Allows to add new, remove and list existing generic type command
                 data-source flush-all-connection-in-pool --help     # will describe the specific operation, in this case flush-all-connection-in-pool
 
 
-Arguments:
+ARGUMENTS
 
  add            - adds a new generic type command. The following arguments are used to add a new command:
                     --node-type     - (required) specifies the node path which ends on a type,

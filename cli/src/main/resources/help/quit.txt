@@ -1,6 +1,12 @@
-Synopsis:   quit
-            exit
+SYNOPSIS
 
-Description: terminates the command line session.
+   quit
+   exit
 
-Arguments: n/a.
+DESCRIPTION
+
+   Terminates the command line session.
+
+ARGUMENTS
+
+   n/a.

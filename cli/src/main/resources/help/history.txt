@@ -1,10 +1,14 @@
-Synopsis:       history [--disable|--enable|--clear]
+SYNOPSIS
 
-Description:    manipulates the command (and operation request) history expansion.
-                Without arguments prints the in-memory history of commands and operations
-                previously executed and a status whether the history expansion is enabled or disabled.
+       history [--disable|--enable|--clear]
 
-Arguments:
+DESCRIPTION
+
+    Manipulates the command (and operation request) history expansion.
+    Without arguments prints the in-memory history of commands and operations
+    previously executed and a status whether the history expansion is enabled or disabled.
+
+ARGUMENTS
 
  --disable    - will disable history expansion (but will not clear the previously recorded history);
  --enable     - will re-enable history expansion (starting from the last recorded command before

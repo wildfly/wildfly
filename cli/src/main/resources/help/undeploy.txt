@@ -1,10 +1,14 @@
-Synopsis:    undeploy name [--server-groups=group_name (,group_name)* | --all-relevant-server-groups] [--keep-content]
+SYNOPSIS
 
-Description:    undeploys the deployment with the given name and, depending on the arguments, removes
-                its content from the repository.
-                If the deployment name isn't specified, prints the list of all the existing deployments.
+    undeploy name [--server-groups=group_name (,group_name)* | --all-relevant-server-groups] [--keep-content]
 
-Arguments:
+DESCRIPTION
+
+    Undeploys the deployment with the given name and, depending on the arguments, removes
+    its content from the repository.
+    If the deployment name isn't specified, prints the list of all the existing deployments.
+
+ARGUMENTS
 
  name                   - the name of the deployment to undeploy.
 

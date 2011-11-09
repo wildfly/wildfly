@@ -1,14 +1,18 @@
-Synopsis:   cn [node_path]
-            cd [node_path]
+SYNOPSIS
 
-Description:    changes the current node path to the argument.
-                The current node path is used as the address for operation requests that
-                don't contains the address part. If an operation request does include the address,
-                the included address is considered relative to the current node path.
-                The current node path may end on a node-type. In that case, to execute an operation
-                specifying a node-name would be sufficient (e.g. logging:read-resource).
+   cn [node_path]
+   cd [node_path]
 
-Arguments:
+DESCRIPTION
+
+    Changes the current node path to the argument.
+    The current node path is used as the address for operation requests that
+    don't contains the address part. If an operation request does include the address,
+    the included address is considered relative to the current node path.
+    The current node path may end on a node-type. In that case, to execute an operation
+    specifying a node-name would be sufficient (e.g. logging:read-resource).
+
+ARGUMENTS
 
  node_path      - the new value for the current node path following the format
                   [node-type [=node-name (,node-type[=node-name])*]].

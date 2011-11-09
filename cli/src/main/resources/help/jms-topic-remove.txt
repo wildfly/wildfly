@@ -1,8 +1,12 @@
-Synopsis:	remove-jms-topic [--profile=profile_name] name
+SYNOPSIS
 
-Description:	removes a JMS topic
+	remove-jms-topic [--profile=profile_name] name
 
-Arguments:
+DESCRIPTION
+
+	removes a JMS topic
+
+ARGUMENTS
 
 	profile		- is allowed and required only in the domain mode, specifies the profile
 				from which the JMS resource should be deleted. 

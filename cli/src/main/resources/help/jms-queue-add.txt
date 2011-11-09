@@ -1,8 +1,12 @@
-Synopsis:	add-jms-queue [--profile=profile_name] --name=queue_name [--entries=entry(,entry)*] [--selector=selector_name] [--durable=(true|false)]
+SYNOPSIS
 
-Description:	creates a JMS queue
+	add-jms-queue [--profile=profile_name] --name=queue_name [--entries=entry(,entry)*] [--selector=selector_name] [--durable=(true|false)]
 
-Arguments:
+DESCRIPTION
+
+	creates a JMS queue
+
+ARGUMENTS
 
 	profile		- is allowed and required only in the domain mode, specifies the profile
 				in which the JMS resource should be created. 

@@ -86,8 +86,9 @@ public class CLIWrapper implements Runnable {
         line = readLine(5000);
 
         assertTrue("Check we are disconnected:" + line, line.indexOf("disconnected") >= 0);
+        sendLine("version", false);
         line = readLine(5000);
-        assertTrue("Connect failed:" + line, line.indexOf("Connected to standalone") >= 0);
+        assertTrue("Connect failed:" + line, line.indexOf("[standalone@") >= 0);
 
     }
 

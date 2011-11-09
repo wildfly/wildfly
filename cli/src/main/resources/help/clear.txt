@@ -1,6 +1,12 @@
-Synopsis:   clear
-            cls
+SYNOPSIS
 
-Description:   clears the screen.
+   clear
+   cls
 
-Arguments: n/a.
+DESCRIPTION
+
+   clears the screen.
+
+ARGUMENTS
+
+   n/a.

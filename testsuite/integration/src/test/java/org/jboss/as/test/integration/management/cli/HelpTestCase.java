@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.management.cli;
 
 import org.jboss.arquillian.junit.Arquillian;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -35,7 +34,7 @@ import static org.junit.Assert.*;
 public class HelpTestCase extends AbstractCliTestBase {
 
     private static final String[] COMMANDS = {
-        "connect", "deploy", "undeploy", "cn" // TODO AS7-2438, "jms-queue", "jms-topic", "connection-factory", "data-source", "xa-data-source"
+        "cn", "connect", "deploy", "help", "history", "ls", "pwn", "quit", "undeploy", "version"
     };
 
     @Test
@@ -60,19 +59,16 @@ public class HelpTestCase extends AbstractCliTestBase {
         testCmdHelp("deploy");
     }
 
-    @Ignore("AS7-2438")
     @Test
     public void testJmsQueueHelp() throws Exception {
         testCmdHelp("jms-queue");
     }
 
-    @Ignore("AS7-2438")
     @Test
     public void testJmsTopicHelp() throws Exception {
         testCmdHelp("jms-topic");
     }
 
-    @Ignore("AS7-2438")
     @Test
     public void testJmsConnectionFactoryHelp() throws Exception {
         testCmdHelp("connection-factory");
@@ -108,13 +104,11 @@ public class HelpTestCase extends AbstractCliTestBase {
         testCmdHelp("remove-jms-cf");
     }
 
-    @Ignore("AS7-2438")
     @Test
     public void testDataSourceHelp() throws Exception {
         testCmdHelp("data-source");
     }
 
-    @Ignore("AS7-2438")
     @Test
     public void testXaDataSourceHelp() throws Exception {
         testCmdHelp("xa-data-source");
@@ -128,9 +122,9 @@ public class HelpTestCase extends AbstractCliTestBase {
     private void testCmdHelp(String cmd) throws Exception {
         cli.sendLine(cmd + " --help");
         String help = cli.readAllUnformated(WAIT_TIMEOUT);
-        assertTrue("Command " + cmd + " help does not have synopsis section.", help.contains("Synopsis:"));
-        assertTrue("Command " + cmd + " help does not have description section.", help.contains("Description:"));
-        assertTrue("Command " + cmd + " help does not have arguments section.", help.contains("Arguments:"));
+        assertTrue("Command " + cmd + " help does not have synopsis section.", help.contains("SYNOPSIS"));
+        assertTrue("Command " + cmd + " help does not have description section.", help.contains("DESCRIPTION"));
+        assertTrue("Command " + cmd + " help does not have arguments section.", help.contains("ARGUMENTS"));
 
     }
 
