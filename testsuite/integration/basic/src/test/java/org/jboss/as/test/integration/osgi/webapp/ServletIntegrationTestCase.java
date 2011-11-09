@@ -35,6 +35,7 @@ import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.HttpTestSupport;
 import org.jboss.as.test.integration.osgi.OSGiTestSupport;
 import org.jboss.as.test.integration.osgi.xservice.api.Echo;
 import org.jboss.as.test.integration.osgi.xservice.bundle.TargetBundleActivator;
@@ -124,6 +125,6 @@ public class ServletIntegrationTestCase {
 
     private String getHttpResponse(String message) throws IOException {
         String reqPath = "/web-osgi-client/servlet?msg=" + message;
-        return OSGiTestSupport.getHttpResponse("localhost", 8080, reqPath, 2000);
+        return HttpTestSupport.getHttpResponse("localhost", 8080, reqPath, 2000);
     }
 }

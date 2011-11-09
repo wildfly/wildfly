@@ -34,7 +34,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.integration.osgi.OSGiTestSupport;
+import org.jboss.as.test.HttpTestSupport;
 import org.jboss.as.test.integration.osgi.webapp.bundle.EndpointFilter;
 import org.jboss.as.test.integration.osgi.webapp.bundle.EndpointServlet;
 import org.jboss.osgi.testing.ManifestBuilder;
@@ -102,6 +102,6 @@ public class AS1900TestCase {
     }
 
     private String getHttpResponse(String reqPath, int timeout) throws IOException {
-        return OSGiTestSupport.getHttpResponse("localhost", 8080, reqPath, timeout);
+        return HttpTestSupport.getHttpResponse("localhost", 8080, reqPath, timeout);
     }
 }

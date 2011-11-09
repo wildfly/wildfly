@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2006, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,22 +19,30 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.jaxr.extension;
 
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.dmr.ModelNode;
+
+import java.util.Locale;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 
 /**
- * An enumeration of the supported JAXR subsystem namespaces.
+ * Handler responsible for adding the ConnectionFactory JNDI name to the model
  *
  * @author Thomas.Diesler@jboss.com
  * @since 07-Nov-2011
  */
-public interface ModelConstants {
+class JAXRConnectionAttributeHandler extends AbstractAttributeHandler {
 
-    String CONNECTION = "connection";
-    String DATASOURCE = "datasource";
-    String DROPONSTART = "dropOnStart";
-    String CREATEONSTART = "createOnStart";
-    String DROPONSTOP = "dropOnStop";
+    static final JAXRConnectionAttributeHandler INSTANCE = new JAXRConnectionAttributeHandler();
 
+    // Hide ctor
+    private JAXRConnectionAttributeHandler() {
+        super(ModelConstants.CONNECTION);
+    }
 }

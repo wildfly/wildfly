@@ -88,41 +88,4 @@ public final class OSGiTestSupport {
         return bundles[0];
     }
 
-    /**
-     * Execute a HTTP request against with a given timeout.
-     */
-    public static String getHttpResponse(String host, int port, String reqPath, int timeout) throws IOException
-    {
-       int fraction = 200;
-
-       String line = null;
-       IOException lastException = null;
-       while (line == null && 0 < (timeout -= fraction))
-       {
-          try
-          {
-             URL url = new URL("http://" + host + ":" + port + reqPath);
-             BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
-             line = br.readLine();
-             br.close();
-          }
-          catch (IOException ex)
-          {
-             lastException = ex;
-             try
-             {
-                Thread.sleep(fraction);
-             }
-             catch (InterruptedException ie)
-             {
-                // ignore
-             }
-          }
-       }
-
-       if (line == null && lastException != null)
-          throw lastException;
-
-       return line;
-    }
 }

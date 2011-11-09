@@ -75,6 +75,9 @@ public interface JAXRConstants {
     enum Attribute {
         UNKNOWN(null),
         JNDI_NAME("jndi-name"),
+        DROPONSTART("dropOnStart"),
+        CREATEONSTART("createOnStart"),
+        DROPONSTOP("dropOnStop")
         ;
         private final String name;
 
@@ -115,7 +118,9 @@ public interface JAXRConstants {
     enum Element {
         // must be first
         UNKNOWN(null),
+        CONNECTION("connection"),
         DATASOURCE("datasource"),
+        FLAGS("flags"),
         ;
 
         private final String name;
