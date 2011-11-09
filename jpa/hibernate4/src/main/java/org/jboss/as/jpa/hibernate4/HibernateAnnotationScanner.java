@@ -142,14 +142,18 @@ public class HibernateAnnotationScanner implements Scanner {
             DotName annotation = DotName.createSimple(annClass.getName());
             List<AnnotationInstance> classesWithAnnotation = index.getAnnotations(annotation);
             for (AnnotationInstance annotationInstance : classesWithAnnotation) {
-                String className = annotationInstance.target().toString();
-                try {
-                    JPA_LOGGER.tracef("getClassesInJar found class %s with annotation %s", className, annClass.getName());
-                    result.add(pu.getClassLoader().loadClass(className));
-                    // TODO:  fix temp classloader (get CFNE on entity class)
-                    //result.add(pu.getNewTempClassLoader().loadClass(className));
-                } catch (ClassNotFoundException e) {
-                    throw MESSAGES.cannotLoadEntityClass(e, className);
+                // verify that the annotation target is actually a class, since some frameworks
+                // may generate bytecode with annotations placed on methods (see AS7-2559)
+                if (annotationInstance.target() instanceof ClassInfo) {
+                    String className = annotationInstance.target().toString();
+                    try {
+                        JPA_LOGGER.tracef("getClassesInJar found class %s with annotation %s", className, annClass.getName());
+                        result.add(pu.getClassLoader().loadClass(className));
+                        // TODO:  fix temp classloader (get CFNE on entity class)
+                        //result.add(pu.getNewTempClassLoader().loadClass(className));
+                    } catch (ClassNotFoundException e) {
+                        throw MESSAGES.cannotLoadEntityClass(e, className);
+                    }
                 }
             }
         }
