@@ -48,26 +48,45 @@ public class JAXRSubsystemWriter implements XMLStreamConstants, XMLElementWriter
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
         ModelNode node = context.getModelNode();
-        if (has(node, ModelConstants.JNDI_NAME)) {
+        if (has(node, ModelConstants.CONNECTION)) {
+            writer.writeStartElement(Element.CONNECTION.getLocalName());
+            writeAttribute(writer, Attribute.JNDI_NAME, node.get(ModelConstants.CONNECTION));
+            writer.writeEndElement();
+        }
+        if (has(node, ModelConstants.DATASOURCE)) {
             writer.writeStartElement(Element.DATASOURCE.getLocalName());
-            writeAttribute(writer, Attribute.JNDI_NAME, node.get(ModelConstants.JNDI_NAME));
+            writeAttribute(writer, Attribute.JNDI_NAME, node.get(ModelConstants.DATASOURCE));
+            writer.writeEndElement();
+        }
+        boolean flagsPresent =  false;
+        if (has(node, ModelConstants.DROPONSTART, ModelConstants.CREATEONSTART, ModelConstants.DROPONSTOP)) {
+            writer.writeStartElement(Element.FLAGS.getLocalName());
+            flagsPresent = true;
+        }
+        if (has(node, ModelConstants.DROPONSTART)) {
+            writeAttribute(writer, Attribute.DROPONSTART, node.get(ModelConstants.DROPONSTART));
+        }
+        if (has(node, ModelConstants.CREATEONSTART)) {
+            writeAttribute(writer, Attribute.CREATEONSTART, node.get(ModelConstants.CREATEONSTART));
+        }
+        if (has(node, ModelConstants.DROPONSTOP)) {
+            writeAttribute(writer, Attribute.DROPONSTOP, node.get(ModelConstants.DROPONSTOP));
+        }
+        if (flagsPresent) {
             writer.writeEndElement();
         }
         writer.writeEndElement();
     }
 
-    private boolean has(ModelNode node, String name) {
-        if (node.has(name) && node.get(name).isDefined()) {
-            ModelNode n = node.get(name);
-            switch (n.getType()) {
-                case LIST:
-                case OBJECT:
-                    return n.asList().size() > 0;
-                default:
-                    return true;
+    private boolean has(ModelNode node, String... names) {
+        boolean found = false;
+        for (String name : names) {
+            if (node.has(name) && node.get(name).isDefined()) {
+                found = true;
+                break;
             }
         }
-        return false;
+        return found;
     }
 
     private void writeAttribute(final XMLExtendedStreamWriter writer, final Attribute attr, final ModelNode value) throws XMLStreamException {

@@ -38,6 +38,7 @@ import java.util.EnumSet;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 
 /**
@@ -62,7 +63,11 @@ public class JAXRSubsystemExtension implements Extension {
         SubsystemRegistration subsystem = context.registerSubsystem(JAXRConstants.SUBSYSTEM_NAME);
         ManagementResourceRegistration registration = subsystem.registerSubsystemModel(JAXRSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, JAXRSubsystemAdd.INSTANCE, JAXRSubsystemAdd.DESCRIPTION, false);
-        registration.registerReadWriteAttribute(ModelConstants.JNDI_NAME, null, JAXRDatasourceAttributeHandler.INSTANCE, EnumSet.of(AttributeAccess.Flag.STORAGE_CONFIGURATION, AttributeAccess.Flag.RESTART_ALL_SERVICES));
+        registration.registerReadWriteAttribute(ModelConstants.CONNECTION, null, JAXRConnectionAttributeHandler.INSTANCE, EnumSet.of(AttributeAccess.Flag.STORAGE_CONFIGURATION, AttributeAccess.Flag.RESTART_ALL_SERVICES));
+        registration.registerReadWriteAttribute(ModelConstants.DATASOURCE, null, JAXRDatasourceAttributeHandler.INSTANCE, EnumSet.of(AttributeAccess.Flag.STORAGE_CONFIGURATION, AttributeAccess.Flag.RESTART_ALL_SERVICES));
+        registration.registerReadWriteAttribute(ModelConstants.DROPONSTART, null, JAXRDropOnStartAttributeHandler.INSTANCE, EnumSet.of(AttributeAccess.Flag.STORAGE_CONFIGURATION, AttributeAccess.Flag.RESTART_ALL_SERVICES));
+        registration.registerReadWriteAttribute(ModelConstants.CREATEONSTART, null, JAXRCreateOnStartAttributeHandler.INSTANCE, EnumSet.of(AttributeAccess.Flag.STORAGE_CONFIGURATION, AttributeAccess.Flag.RESTART_ALL_SERVICES));
+        registration.registerReadWriteAttribute(ModelConstants.DROPONSTOP, null, JAXRDropOnStopAttributeHandler.INSTANCE, EnumSet.of(AttributeAccess.Flag.STORAGE_CONFIGURATION, AttributeAccess.Flag.RESTART_ALL_SERVICES));
         registration.registerOperationHandler(DESCRIBE, SubsystemDescribeHandler.INSTANCE, SubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         subsystem.registerXMLElementWriter(JAXRSubsystemWriter.INSTANCE);
     }

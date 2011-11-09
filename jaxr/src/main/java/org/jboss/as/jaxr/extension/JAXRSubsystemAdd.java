@@ -41,7 +41,6 @@ import java.util.Locale;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
@@ -68,11 +67,31 @@ class JAXRSubsystemAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        if (operation.has(ModelConstants.JNDI_NAME)) {
-            ModelNode jndiName = operation.get(ModelConstants.JNDI_NAME);
-            model.get(ModelConstants.JNDI_NAME).set(jndiName);
-            JAXRConfiguration config = JAXRConfiguration.INSTANCE;
-            config.setDataSourceUrl(jndiName.asString());
+        JAXRConfiguration config = JAXRConfiguration.INSTANCE;
+        if (operation.has(ModelConstants.CONNECTION)) {
+            ModelNode node = operation.get(ModelConstants.CONNECTION);
+            model.get(ModelConstants.CONNECTION).set(node);
+            config.setConnectionFactoryBinding(node.asString());
+        }
+        if (operation.has(ModelConstants.DATASOURCE)) {
+            ModelNode node = operation.get(ModelConstants.DATASOURCE);
+            model.get(ModelConstants.DATASOURCE).set(node);
+            config.setDataSourceBinding(node.asString());
+        }
+        if (operation.has(ModelConstants.DROPONSTART)) {
+            ModelNode node = operation.get(ModelConstants.DROPONSTART);
+            model.get(ModelConstants.DROPONSTART).set(node);
+            config.setDropOnStart(node.asBoolean());
+        }
+        if (operation.has(ModelConstants.CREATEONSTART)) {
+            ModelNode node = operation.get(ModelConstants.CREATEONSTART);
+            model.get(ModelConstants.CREATEONSTART).set(node);
+            config.setDropOnStart(node.asBoolean());
+        }
+        if (operation.has(ModelConstants.DROPONSTOP)) {
+            ModelNode node = operation.get(ModelConstants.DROPONSTOP);
+            model.get(ModelConstants.DROPONSTOP).set(node);
+            config.setDropOnStart(node.asBoolean());
         }
     }
 
@@ -81,7 +100,6 @@ class JAXRSubsystemAdd extends AbstractAddStepHandler {
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                // [TODO] AS7-2278 JAXR configuration through the domain model
                 JAXRConfiguration config = JAXRConfiguration.INSTANCE;
                 ServiceTarget serviceTarget = context.getServiceTarget();
                 newControllers.add(JAXRBootstrapService.addService(serviceTarget, config, verifyHandler));
@@ -99,8 +117,21 @@ class JAXRSubsystemAdd extends AbstractAddStepHandler {
             final ModelNode node = new ModelNode();
             node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.ADD);
             node.get(ModelDescriptionConstants.DESCRIPTION).set("Adds the JAXR subsystem");
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.JNDI_NAME, ModelDescriptionConstants.DESCRIPTION).set("The JNDI name for the datasource");
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.JNDI_NAME, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.CONNECTION, ModelDescriptionConstants.DESCRIPTION).set("The JNDI name for the ConnectionFactory");
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.CONNECTION, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.CONNECTION, ModelDescriptionConstants.REQUIRED).set(false);
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.DATASOURCE, ModelDescriptionConstants.DESCRIPTION).set("The JNDI name for the DataSource");
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.DATASOURCE, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.DATASOURCE, ModelDescriptionConstants.REQUIRED).set(false);
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.DROPONSTART, ModelDescriptionConstants.DESCRIPTION).set("Should tables be dropped on Start");
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.DROPONSTART, ModelDescriptionConstants.TYPE).set(ModelType.BOOLEAN);
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.DROPONSTART, ModelDescriptionConstants.REQUIRED).set(false);
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.CREATEONSTART, ModelDescriptionConstants.DESCRIPTION).set("Should tables be dropped on Start");
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.CREATEONSTART, ModelDescriptionConstants.TYPE).set(ModelType.BOOLEAN);
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.CREATEONSTART, ModelDescriptionConstants.REQUIRED).set(false);
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.DROPONSTOP, ModelDescriptionConstants.DESCRIPTION).set("Should tables be dropped on Start");
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.DROPONSTOP, ModelDescriptionConstants.TYPE).set(ModelType.BOOLEAN);
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.DROPONSTOP, ModelDescriptionConstants.REQUIRED).set(false);
             node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
             return node;
         }

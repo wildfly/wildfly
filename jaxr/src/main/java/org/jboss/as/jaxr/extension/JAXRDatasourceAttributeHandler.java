@@ -32,31 +32,17 @@ import java.util.Locale;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 
 /**
- * Handler responsible for adding a datasource resource to the model
+ * Handler responsible for adding the DataSource JNDI name to the model
  *
  * @author Thomas.Diesler@jboss.com
  * @since 07-Nov-2011
  */
-class JAXRDatasourceAttributeHandler extends AbstractAddStepHandler {
+class JAXRDatasourceAttributeHandler extends AbstractAttributeHandler {
 
     static final JAXRDatasourceAttributeHandler INSTANCE = new JAXRDatasourceAttributeHandler();
 
     // Hide ctor
     private JAXRDatasourceAttributeHandler() {
+        super(ModelConstants.DATASOURCE);
     }
-
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        ModelNode jndiName = operation.get(ModelConstants.DATASOURCE);
-        model.get(ModelConstants.DATASOURCE).set(jndiName);
-    }
-
-    static DescriptionProvider DESCRIPTION = new DescriptionProvider() {
-        public ModelNode getModelDescription(Locale locale) {
-            final ModelNode subsystem = new ModelNode();
-            subsystem.get(ModelDescriptionConstants.DESCRIPTION).set("Adds the datasource used by the JAXR subsystem");
-            subsystem.get(ModelDescriptionConstants.OPERATION_NAME).set(ADD);
-            return subsystem;
-        }
-    };
 }

@@ -26,8 +26,6 @@ import org.jboss.msc.service.ServiceName;
 /**
  * The configuration of the JAXR subsystem.
  *
- * [TODO] AS7-2278 JAXR configuration through the domain model
- *
  * @author Thomas.Diesler@jboss.com
  * @since 26-Oct-2011
  */
@@ -39,15 +37,15 @@ public class JAXRConfiguration {
     public static final String JAXR_DEFAULT_DATASOURCE_BINDING = "java:jboss/datasources/ExampleDS";
 
     // Should all tables be created on Start
-    private boolean createOnStart=true;
+    private boolean createOnStart=false;
     // Should all tables be dropped on Stop
     private boolean dropOnStop=false;
     // Should all tables be dropped on Start
-    private boolean dropOnStart=true;
+    private boolean dropOnStart=false;
     // Datasource to Database
-    private String dataSourceUrl= JAXR_DEFAULT_DATASOURCE_BINDING;
+    private String dataSourceBinding = JAXR_DEFAULT_DATASOURCE_BINDING;
     // Context to which JAXR ConnectionFactory to bind to
-    private String connectionFactoryUrl = JAXR_DEFAULT_CONNECTION_FACTORY_BINDING;
+    private String connectionFactoryBinding = JAXR_DEFAULT_CONNECTION_FACTORY_BINDING;
 
     public static JAXRConfiguration INSTANCE = new JAXRConfiguration();
 
@@ -63,28 +61,28 @@ public class JAXRConfiguration {
         return dropOnStart;
     }
 
-    String getDataSourceUrl() {
-        return dataSourceUrl;
-    }
-
-    String getConnectionFactoryUrl() {
-        return connectionFactoryUrl;
-    }
-
     boolean isCreateOnStart() {
         return createOnStart;
     }
 
-    public void setConnectionFactoryUrl(String connectionFactoryUrl) {
-        this.connectionFactoryUrl = connectionFactoryUrl;
+    String getDataSourceBinding() {
+        return dataSourceBinding;
+    }
+
+    String getConnectionFactoryBinding() {
+        return connectionFactoryBinding;
+    }
+
+    public void setConnectionFactoryBinding(String connectionFactoryBinding) {
+        this.connectionFactoryBinding = connectionFactoryBinding;
+    }
+
+    public void setDataSourceBinding(String dataSourceBinding) {
+        this.dataSourceBinding = dataSourceBinding;
     }
 
     public void setCreateOnStart(boolean createOnStart) {
         this.createOnStart = createOnStart;
-    }
-
-    public void setDataSourceUrl(String dataSourceUrl) {
-        this.dataSourceUrl = dataSourceUrl;
     }
 
     public void setDropOnStart(boolean dropOnStart) {
