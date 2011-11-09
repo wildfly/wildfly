@@ -31,10 +31,10 @@ package org.jboss.as.jaxr.extension;
  */
 public interface ModelConstants {
 
-    String CONNECTION = "connection";
+    String CONNECTIONFACTORY = "connection-factory";
     String DATASOURCE = "datasource";
-    String DROPONSTART = "dropOnStart";
-    String CREATEONSTART = "createOnStart";
-    String DROPONSTOP = "dropOnStop";
+    String DROPONSTART = "drop-on-start";
+    String CREATEONSTART = "create-on-start";
+    String DROPONSTOP = "drop-on-stop";
 
 }

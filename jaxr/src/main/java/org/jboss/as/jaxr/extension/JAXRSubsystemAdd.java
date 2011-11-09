@@ -68,9 +68,9 @@ class JAXRSubsystemAdd extends AbstractAddStepHandler {
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         JAXRConfiguration config = JAXRConfiguration.INSTANCE;
-        if (operation.has(ModelConstants.CONNECTION)) {
-            ModelNode node = operation.get(ModelConstants.CONNECTION);
-            model.get(ModelConstants.CONNECTION).set(node);
+        if (operation.has(ModelConstants.CONNECTIONFACTORY)) {
+            ModelNode node = operation.get(ModelConstants.CONNECTIONFACTORY);
+            model.get(ModelConstants.CONNECTIONFACTORY).set(node);
             config.setConnectionFactoryBinding(node.asString());
         }
         if (operation.has(ModelConstants.DATASOURCE)) {
@@ -86,12 +86,12 @@ class JAXRSubsystemAdd extends AbstractAddStepHandler {
         if (operation.has(ModelConstants.CREATEONSTART)) {
             ModelNode node = operation.get(ModelConstants.CREATEONSTART);
             model.get(ModelConstants.CREATEONSTART).set(node);
-            config.setDropOnStart(node.asBoolean());
+            config.setCreateOnStart(node.asBoolean());
         }
         if (operation.has(ModelConstants.DROPONSTOP)) {
             ModelNode node = operation.get(ModelConstants.DROPONSTOP);
             model.get(ModelConstants.DROPONSTOP).set(node);
-            config.setDropOnStart(node.asBoolean());
+            config.setDropOnStop(node.asBoolean());
         }
     }
 
@@ -117,9 +117,9 @@ class JAXRSubsystemAdd extends AbstractAddStepHandler {
             final ModelNode node = new ModelNode();
             node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.ADD);
             node.get(ModelDescriptionConstants.DESCRIPTION).set("Adds the JAXR subsystem");
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.CONNECTION, ModelDescriptionConstants.DESCRIPTION).set("The JNDI name for the ConnectionFactory");
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.CONNECTION, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.CONNECTION, ModelDescriptionConstants.REQUIRED).set(false);
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.CONNECTIONFACTORY, ModelDescriptionConstants.DESCRIPTION).set("The JNDI name for the ConnectionFactory");
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.CONNECTIONFACTORY, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.CONNECTIONFACTORY, ModelDescriptionConstants.REQUIRED).set(false);
             node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.DATASOURCE, ModelDescriptionConstants.DESCRIPTION).set("The JNDI name for the DataSource");
             node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.DATASOURCE, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
             node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.DATASOURCE, ModelDescriptionConstants.REQUIRED).set(false);

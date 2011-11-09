@@ -22,16 +22,13 @@
 package org.jboss.as.jaxr.extension;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.jaxr.extension.JAXRConstants.Namespace;
 
 import java.util.Locale;
-import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -56,11 +53,11 @@ class JAXRSubsystemProviders {
             subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
             subsystem.get(NAMESPACE).set(Namespace.CURRENT.getUriString());
 
-            subsystem.get(ATTRIBUTES, ModelConstants.CONNECTION, ModelDescriptionConstants.DESCRIPTION).set("The JNDI name for the ConnectionFactory");
-            subsystem.get(ATTRIBUTES, ModelConstants.CONNECTION, ModelDescriptionConstants.REQUIRED).set(false);
-            subsystem.get(ATTRIBUTES, ModelConstants.CONNECTION, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-            subsystem.get(ATTRIBUTES, ModelConstants.CONNECTION, ModelDescriptionConstants.ACCESS_TYPE).set(AttributeAccess.AccessType.READ_WRITE.toString());
-            subsystem.get(ATTRIBUTES, ModelConstants.CONNECTION, ModelDescriptionConstants.RESTART_REQUIRED).set(AttributeAccess.Flag.RESTART_ALL_SERVICES.toString());
+            subsystem.get(ATTRIBUTES, ModelConstants.CONNECTIONFACTORY, ModelDescriptionConstants.DESCRIPTION).set("The JNDI name for the ConnectionFactory");
+            subsystem.get(ATTRIBUTES, ModelConstants.CONNECTIONFACTORY, ModelDescriptionConstants.REQUIRED).set(false);
+            subsystem.get(ATTRIBUTES, ModelConstants.CONNECTIONFACTORY, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
+            subsystem.get(ATTRIBUTES, ModelConstants.CONNECTIONFACTORY, ModelDescriptionConstants.ACCESS_TYPE).set(AttributeAccess.AccessType.READ_WRITE.toString());
+            subsystem.get(ATTRIBUTES, ModelConstants.CONNECTIONFACTORY, ModelDescriptionConstants.RESTART_REQUIRED).set(AttributeAccess.Flag.RESTART_ALL_SERVICES.toString());
 
             subsystem.get(ATTRIBUTES, ModelConstants.DATASOURCE, ModelDescriptionConstants.DESCRIPTION).set("The JNDI name for the DataSource");
             subsystem.get(ATTRIBUTES, ModelConstants.DATASOURCE, ModelDescriptionConstants.REQUIRED).set(false);
