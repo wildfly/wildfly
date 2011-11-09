@@ -21,6 +21,13 @@
  */
 package org.jboss.as.web.deployment;
 
+import java.io.IOException;
+import java.io.InputStream;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -32,12 +39,6 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.metadata.parser.servlet.WebMetaDataParser;
 import org.jboss.metadata.parser.util.NoopXmlResolver;
 import org.jboss.vfs.VirtualFile;
-
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * @author Jean-Frederic Clere
@@ -53,8 +54,15 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
             return; // Skip non web deployments
         }
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        final VirtualFile webXml = deploymentRoot.getRoot().getChild(WEB_XML);
-        WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
+        final VirtualFile alternateDescriptor = deploymentRoot.getAttachment(org.jboss.as.ee.structure.Attachments.ALTERNATE_WEB_DEPLOYMENT_DESCRIPTOR);
+        // Locate the descriptor
+        final VirtualFile webXml;
+        if (alternateDescriptor != null) {
+            webXml = alternateDescriptor;
+        } else {
+            webXml = deploymentRoot.getRoot().getChild(WEB_XML);
+        }
+        final WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         assert warMetaData != null;
         if (webXml.exists()) {
             InputStream is = null;
@@ -62,12 +70,12 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
                 is = webXml.openStream();
                 final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
                 inputFactory.setXMLResolver(NoopXmlResolver.create());
-                XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
+                final XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
 
                 warMetaData.setWebMetaData(WebMetaDataParser.parse(xmlReader));
 
             } catch (XMLStreamException e) {
-                throw new DeploymentUnitProcessingException("Failed to parse " + webXml + " at [" + e.getLocation().getLineNumber() + "," +  e.getLocation().getColumnNumber() + "]");
+                throw new DeploymentUnitProcessingException("Failed to parse " + webXml + " at [" + e.getLocation().getLineNumber() + "," + e.getLocation().getColumnNumber() + "]");
             } catch (IOException e) {
                 throw new DeploymentUnitProcessingException("Failed to parse " + webXml, e);
             } finally {

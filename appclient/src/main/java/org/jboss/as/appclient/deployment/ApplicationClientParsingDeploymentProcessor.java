@@ -36,6 +36,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.metadata.appclient.jboss.JBossClientMetaData;
 import org.jboss.metadata.appclient.parser.jboss.JBossClientMetaDataParser;
 import org.jboss.metadata.appclient.parser.spec.ApplicationClientMetaDataParser;
@@ -83,18 +84,25 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
     }
 
     private ApplicationClientMetaData parseAppClient(DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
-        final VirtualFile appXml = deploymentRoot.getChild(APP_XML);
-        if (appXml.exists()) {
+        final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final VirtualFile alternateDescriptor = deploymentRoot.getAttachment(org.jboss.as.ee.structure.Attachments.ALTERNATE_CLIENT_DEPLOYMENT_DESCRIPTOR);
+        // Locate the descriptor
+        final VirtualFile descriptor;
+        if (alternateDescriptor != null) {
+            descriptor = alternateDescriptor;
+        } else {
+            descriptor = deploymentRoot.getRoot().getChild(APP_XML);
+        }
+        if (descriptor.exists()) {
             InputStream is = null;
             try {
-                is = appXml.openStream();
+                is = descriptor.openStream();
                 ApplicationClientMetaData data = new ApplicationClientMetaDataParser().parse(getXMLStreamReader(is));
                 return data;
             } catch (XMLStreamException e) {
-                throw MESSAGES.failedToParseXml(appXml, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber());
+                throw MESSAGES.failedToParseXml(descriptor, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber());
             } catch (IOException e) {
-                throw new DeploymentUnitProcessingException("Failed to parse " + appXml, e);
+                throw new DeploymentUnitProcessingException("Failed to parse " + descriptor, e);
             } finally {
                 try {
                     if (is != null) {

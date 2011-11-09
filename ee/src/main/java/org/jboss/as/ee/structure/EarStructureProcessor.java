@@ -22,6 +22,14 @@
 
 package org.jboss.as.ee.structure;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -42,14 +50,6 @@ import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VisitorAttributes;
 import org.jboss.vfs.util.SuffixMatchFilter;
-
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 
 /**
  * Deployment processor responsible for detecting EAR deployments and putting setting up the basic structure.
@@ -82,18 +82,18 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
     private static final String DEFAULT_LIB_DIR = "lib";
 
 
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (!DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             return;
         }
 
-        final ResourceRoot resourceRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT);
-        final VirtualFile virtualFile = resourceRoot.getRoot();
+        final ResourceRoot deploymentRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final VirtualFile virtualFile = deploymentRoot.getRoot();
 
         //  Make sure we don't index or add this as a module root
-        resourceRoot.putAttachment(Attachments.INDEX_RESOURCE_ROOT, false);
-        ModuleRootMarker.mark(resourceRoot, false);
+        deploymentRoot.putAttachment(Attachments.INDEX_RESOURCE_ROOT, false);
+        ModuleRootMarker.mark(deploymentRoot, false);
 
         String libDirName = DEFAULT_LIB_DIR;
 
@@ -168,21 +168,45 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                     this.createResourceRoot(deploymentUnit, child, isWarFile || isRarFile, isWarFile);
                 }
             } else {
-                Set<VirtualFile> subDeploymentFiles = new HashSet<VirtualFile>();
+                final Set<VirtualFile> subDeploymentFiles = new HashSet<VirtualFile>();
                 // otherwise read from application.xml
-                for (ModuleMetaData module : earMetaData.getModules()) {
+                for (final ModuleMetaData module : earMetaData.getModules()) {
 
-                    VirtualFile moduleFile = virtualFile.getChild(module.getFileName());
+                    final VirtualFile moduleFile = virtualFile.getChild(module.getFileName());
                     if (!moduleFile.exists()) {
                         throw new DeploymentUnitProcessingException("Unable to process modules in application.xml for EAR ["
                                 + virtualFile + "], module file " + module.getFileName() + " not found");
                     }
+
+
                     // maintain this in a collection of subdeployment virtual files, to be used later
                     subDeploymentFiles.add(moduleFile);
 
-                    boolean explodeDuringMount = module.getType() == ModuleType.Web;
+                    final boolean explodeDuringMount = module.getType() == ModuleType.Web;
                     final ResourceRoot childResource = this.createResourceRoot(deploymentUnit, moduleFile, true, explodeDuringMount);
                     childResource.putAttachment(org.jboss.as.ee.structure.Attachments.MODULE_META_DATA, module);
+
+                    final String alternativeDD = module.getAlternativeDD();
+                    if (alternativeDD != null && alternativeDD.trim().length() > 0) {
+                        final VirtualFile alternateDeploymentDescriptor = deploymentRoot.getRoot().getChild(alternativeDD);
+                        if (!alternateDeploymentDescriptor.exists()) {
+                            throw new DeploymentUnitProcessingException("Could not find alternate deployment descriptor " + alternateDeploymentDescriptor + " specified for " + moduleFile);
+                        }
+                        switch (module.getType()) {
+                            case Client:
+                                childResource.putAttachment(org.jboss.as.ee.structure.Attachments.ALTERNATE_CLIENT_DEPLOYMENT_DESCRIPTOR, alternateDeploymentDescriptor);
+                                break;
+                            case Connector:
+                                childResource.putAttachment(org.jboss.as.ee.structure.Attachments.ALTERNATE_CONNECTOR_DEPLOYMENT_DESCRIPTOR, alternateDeploymentDescriptor);
+                                break;
+                            case Ejb:
+                                childResource.putAttachment(org.jboss.as.ee.structure.Attachments.ALTERNATE_EJB_DEPLOYMENT_DESCRIPTOR, alternateDeploymentDescriptor);
+                                break;
+                            case Web:
+                                childResource.putAttachment(org.jboss.as.ee.structure.Attachments.ALTERNATE_WEB_DEPLOYMENT_DESCRIPTOR, alternateDeploymentDescriptor);
+                                break;
+                        }
+                    }
                 }
                 // now check the rest of the archive for any other jar/sar files
                 for (final VirtualFile child : childArchives) {

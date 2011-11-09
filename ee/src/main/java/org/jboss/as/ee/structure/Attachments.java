@@ -26,6 +26,7 @@ import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.metadata.ear.spec.ModuleMetaData;
+import org.jboss.vfs.VirtualFile;
 
 /**
  * EE related attachments.
@@ -40,6 +41,14 @@ public final class Attachments {
     public static final AttachmentKey<JBossAppMetaData> JBOSS_APP_METADATA = AttachmentKey.create(JBossAppMetaData.class);
 
     public static final AttachmentKey<ModuleMetaData> MODULE_META_DATA = AttachmentKey.create(ModuleMetaData.class);
+
+    /**
+     * The alternate deployment descriptor location
+     */
+    public static final AttachmentKey<VirtualFile> ALTERNATE_CLIENT_DEPLOYMENT_DESCRIPTOR = AttachmentKey.create(VirtualFile.class);
+    public static final AttachmentKey<VirtualFile> ALTERNATE_WEB_DEPLOYMENT_DESCRIPTOR = AttachmentKey.create(VirtualFile.class);
+    public static final AttachmentKey<VirtualFile> ALTERNATE_EJB_DEPLOYMENT_DESCRIPTOR = AttachmentKey.create(VirtualFile.class);
+    public static final AttachmentKey<VirtualFile> ALTERNATE_CONNECTOR_DEPLOYMENT_DESCRIPTOR = AttachmentKey.create(VirtualFile.class);
 
     /**
      * A Marker that identifies the a type of deployment

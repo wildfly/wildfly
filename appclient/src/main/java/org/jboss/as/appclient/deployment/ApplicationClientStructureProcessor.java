@@ -62,12 +62,12 @@ public class ApplicationClientStructureProcessor implements DeploymentUnitProces
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (deploymentUnit.getName().toLowerCase(Locale.ENGLISH).endsWith(".ear")) {
             final Map<VirtualFile, ResourceRoot> existing = new HashMap<VirtualFile, ResourceRoot>();
-            for (ResourceRoot additional : deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS)) {
+            for (final ResourceRoot additional : deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS)) {
                 existing.put(additional.getRoot(), additional);
             }
 
             final ResourceRoot root = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-            VirtualFile appClientRoot = root.getRoot().getChild(deployment);
+            final VirtualFile appClientRoot = root.getRoot().getChild(deployment);
             if (appClientRoot.exists()) {
                 if (existing.containsKey(appClientRoot)) {
                     final ResourceRoot existingRoot = existing.get(appClientRoot);

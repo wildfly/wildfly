@@ -33,6 +33,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jca.common.api.metadata.ra.Connector;
 import org.jboss.jca.common.metadata.ra.RaParser;
 import org.jboss.vfs.VFSUtils;
@@ -44,6 +45,7 @@ import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
  * DeploymentUnitProcessor responsible for parsing a standard jca xml descriptor
  * and attaching the corresponding metadata. It take care also to register this
  * metadata into IronJacamar's MetadataRepository
+ *
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
 public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
@@ -57,23 +59,32 @@ public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
     /**
      * Process a deployment for standard ra deployment files. Will parse the xml
      * file and attach an configuration discovered during processing.
+     *
      * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
+     *
      */
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+        final ResourceRoot deploymentRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT);
 
-        if (deploymentRoot == null || !deploymentRoot.exists())
+        final VirtualFile file = deploymentRoot.getRoot();
+        if (file == null || !file.exists())
             return;
 
-        final String deploymentRootName = deploymentRoot.getLowerCaseName();
+        final String deploymentRootName = file.getLowerCaseName();
         if (!deploymentRootName.endsWith(".rar")) {
             return;
         }
 
-        VirtualFile serviceXmlFile = deploymentRoot.getChild("/META-INF/ra.xml");
-
+        final VirtualFile alternateDescriptor = deploymentRoot.getAttachment(org.jboss.as.ee.structure.Attachments.ALTERNATE_CONNECTOR_DEPLOYMENT_DESCRIPTOR);
+        // Locate the descriptor
+        final VirtualFile serviceXmlFile;
+        if (alternateDescriptor != null) {
+            serviceXmlFile = alternateDescriptor;
+        } else {
+            serviceXmlFile = file.getChild("/META-INF/ra.xml");
+        }
         InputStream xmlStream = null;
         Connector result = null;
         try {
@@ -84,14 +95,14 @@ public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
                 if (result == null)
                     throw MESSAGES.failedToParseServiceXml(serviceXmlFile);
             }
-            File root = deploymentRoot.getPhysicalFile();
+            File root = file.getPhysicalFile();
             URL url = root.toURI().toURL();
             String deploymentName = deploymentRootName.substring(0, deploymentRootName.indexOf(".rar"));
             ConnectorXmlDescriptor xmlDescriptor = new ConnectorXmlDescriptor(result, root, url, deploymentName);
             phaseContext.getDeploymentUnit().putAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
 
         } catch (Exception e) {
-                    throw MESSAGES.failedToParseServiceXml(e, serviceXmlFile);
+            throw MESSAGES.failedToParseServiceXml(e, serviceXmlFile);
         } finally {
             VFSUtils.safeClose(xmlStream);
         }

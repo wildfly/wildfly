@@ -162,9 +162,12 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
                     } else if (subDeploymentModules.containsKey(topLevelClassPathFile)) {
                         //if not found try resolving the class path entry from the deployment root
                         target.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, subDeploymentModules.get(topLevelClassPathFile));
+                    } else if(classPathFile.exists() && classPathFile.isDirectory()) {
+
+                    } else if(topLevelClassPathFile.exists() && topLevelClassPathFile.isDirectory()) {
+
                     } else {
-                        log.warn("Class Path entry " + item + " in "
-                                + resourceRoot.getRoot() + "  does not point to a valid jar for a Class-Path reference.");
+                        log.warn("Class Path entry " + item + " in " + resourceRoot.getRoot() + "  does not point to a valid jar for a Class-Path reference.");
                     }
                 } else if (item.startsWith("/")) {
                     ModuleIdentifier moduleIdentifier = externalModuleService.addExternalModule(item);
