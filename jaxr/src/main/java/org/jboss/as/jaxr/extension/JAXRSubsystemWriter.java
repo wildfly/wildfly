@@ -48,9 +48,9 @@ public class JAXRSubsystemWriter implements XMLStreamConstants, XMLElementWriter
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
         ModelNode node = context.getModelNode();
-        if (has(node, ModelConstants.CONNECTION)) {
-            writer.writeStartElement(Element.CONNECTION.getLocalName());
-            writeAttribute(writer, Attribute.JNDI_NAME, node.get(ModelConstants.CONNECTION));
+        if (has(node, ModelConstants.CONNECTIONFACTORY)) {
+            writer.writeStartElement(Element.CONNECTIONFACTORY.getLocalName());
+            writeAttribute(writer, Attribute.JNDI_NAME, node.get(ModelConstants.CONNECTIONFACTORY));
             writer.writeEndElement();
         }
         if (has(node, ModelConstants.DATASOURCE)) {

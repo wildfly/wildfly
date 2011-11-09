@@ -64,8 +64,8 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
                 case JAXR_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
-                        case CONNECTION: {
-                            parseBinding(reader, result, ModelConstants.CONNECTION);
+                        case CONNECTIONFACTORY: {
+                            parseBinding(reader, result, ModelConstants.CONNECTIONFACTORY);
                             break;
                         }
                         case DATASOURCE: {

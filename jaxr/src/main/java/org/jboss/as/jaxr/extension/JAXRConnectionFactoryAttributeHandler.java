@@ -21,28 +21,18 @@
  */
 package org.jboss.as.jaxr.extension;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.dmr.ModelNode;
-
-import java.util.Locale;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-
 /**
  * Handler responsible for adding the ConnectionFactory JNDI name to the model
  *
  * @author Thomas.Diesler@jboss.com
  * @since 07-Nov-2011
  */
-class JAXRConnectionAttributeHandler extends AbstractAttributeHandler {
+class JAXRConnectionFactoryAttributeHandler extends AbstractAttributeHandler {
 
-    static final JAXRConnectionAttributeHandler INSTANCE = new JAXRConnectionAttributeHandler();
+    static final JAXRConnectionFactoryAttributeHandler INSTANCE = new JAXRConnectionFactoryAttributeHandler();
 
     // Hide ctor
-    private JAXRConnectionAttributeHandler() {
-        super(ModelConstants.CONNECTION);
+    private JAXRConnectionFactoryAttributeHandler() {
+        super(ModelConstants.CONNECTIONFACTORY);
     }
 }

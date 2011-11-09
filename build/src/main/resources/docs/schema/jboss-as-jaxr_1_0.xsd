@@ -17,13 +17,13 @@
             </xs:documentation>
         </xs:annotation>
         <xs:all>
-            <xs:element name="datasource" type="connectionType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="connectionFactory" type="connectionFactoryType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="datasource" type="datasourceType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="flags" type="flagsType" minOccurs="0" maxOccurs="1"/>
         </xs:all>
     </xs:complexType>
 
-    <xs:complexType name="connectionType" mixed="false">
+    <xs:complexType name="connectionFactoryType" mixed="false">
         <xs:attribute name="jndi-name" type="xs:token" use="required">
             <xs:annotation>
                 <xs:documentation>
