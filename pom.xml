@@ -292,6 +292,7 @@
         <module>process-controller</module>
         <module>protocol</module>
         <module>remoting</module>
+        <module>remoting-test</module>
         <module>sar</module>
         <module>security</module>
         <module>server</module>

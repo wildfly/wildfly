@@ -26,10 +26,10 @@ import java.io.IOException;
 import java.util.List;
 
 import junit.framework.Assert;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
@@ -71,11 +71,11 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
     /**
      * Validate the marshalled xml.
      *
-     * @param orignal the original subsystem xml
+     * @param original the original subsystem xml
      * @param marshalled the marshalled subsystem xml
      * @throws Exception
      */
-    protected void validateXml(final String orignal, final String marshalled) throws Exception {
+    protected void validateXml(final String original, final String marshalled) throws Exception {
         // TODO check if the marshalled xml can be validated against the schema
     }
 
@@ -126,7 +126,7 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
         final ModelNode operation = createDescribeOperation();
         final ModelNode result = servicesB.executeOperation(operation);
         Assert.assertTrue("the subsystem describe operation has to generate a list of operations to recreate the subsystem",
-                result.hasDefined(ModelDescriptionConstants.RESULT));
+                !result.hasDefined(ModelDescriptionConstants.FAILURE_DESCRIPTION));
         final List<ModelNode> operations = result.get(ModelDescriptionConstants.RESULT).asList();
         servicesB.shutdown();
 
@@ -154,5 +154,4 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
             }
         };
     }
-
 }

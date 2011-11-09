@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,45 +22,34 @@
 
 package org.jboss.as.remoting;
 
-import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
-
 import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.xnio.OptionMap;
-
 /**
- * Add operation handler for the remoting subsystem.
+ * Add a connector to a remoting container.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
+ * @author Kabir Khan
  */
-class RemotingSubsystemAdd extends AbstractAddStepHandler {
+public class SaslAdd extends AbstractAddStepHandler {
 
-    static final RemotingSubsystemAdd INSTANCE = new RemotingSubsystemAdd();
+    static final SaslAdd INSTANCE = new SaslAdd();
 
-    private RemotingSubsystemAdd() {
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException{
+        SaslResource.INCLUDE_MECHANISMS_ATTRIBUTE.validateAndSet(operation, model);
+        SaslResource.QOP_ATTRIBUTE.validateAndSet(operation, model);
+        SaslResource.STRENGTH_ATTRIBUTE.validateAndSet(operation, model);
+        SaslResource.REUSE_SESSION_ATTRIBUTE.validateAndSet(operation, model);
+        SaslResource.SERVER_AUTH_ATTRIBUTE.validateAndSet(operation, model);
     }
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
-        // initialize the connectors
-        model.get(CONNECTOR);
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        // create endpoint
-        final EndpointService endpointService = new EndpointService(RemotingExtension.NODE_NAME, EndpointService.EndpointType.SUBSYSTEM);
-        // todo configure option map
-        endpointService.setOptionMap(OptionMap.EMPTY);
-
-        newControllers.add(context
-                .getServiceTarget()
-                .addService(RemotingServices.SUBSYSTEM_ENDPOINT, endpointService)
-                .addListener(verificationHandler)
-                .install());
-    }
 }

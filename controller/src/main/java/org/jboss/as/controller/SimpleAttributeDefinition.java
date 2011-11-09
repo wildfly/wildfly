@@ -251,5 +251,4 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
             writer.writeEndElement();
         }
     }
-
 }

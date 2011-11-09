@@ -22,33 +22,24 @@
 
 package org.jboss.as.remoting;
 
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.dmr.ModelNode;
+
 /**
- * @author Emanuel Muckenhuber
+ * Removes the remoting subsystem
+ *
+ * @author Kabir Khan
  */
-interface CommonAttributes {
+public class RemotingSubsystemRemove extends AbstractRemoveStepHandler {
 
-    String AUTHENTICATION_PROVIDER = "authentication-provider";
-    String CONNECTOR = "connector";
-    String FORWARD_SECRECY = "forward-secrecy";
-    String INCLUDE_MECHANISMS = "include-mechanisms";
-    String NO_ACTIVE = "no-active";
-    String NO_ANONYMOUS = "no-anonymous";
-    String NO_DICTIONARY = "no-dictionary";
-    String NO_PLAIN_TEXT = "no-plain-text";
-    String PASS_CREDENTIALS = "pass-credentials";
-    String POLICY = "policy";
-    String PROPERTIES = "properties";
-    String PROPERTY = "property";
-    String QOP = "qop";
-    String REUSE_SESSION= "reuse-session";
-    String SASL = "sasl";
-    String SASL_POLICY = "sasl-policy";
-    String SECURITY = "security";
-    String SERVER_AUTH = "server-auth";
-    String SOCKET_BINDING = "socket-binding";
-    String STRENGTH = "strength";
-    String SUBSYSTEM = "subsystem";
-    String THREAD_POOL = "thread-pool";
-    String VALUE = "value";
+    static final RemotingSubsystemRemove INSTANCE = new RemotingSubsystemRemove();
 
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
+        context.removeService(RemotingServices.SUBSYSTEM_ENDPOINT);
+    }
+
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
+        // TODO:  RE-ADD SERVICES
+    }
 }
