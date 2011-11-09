@@ -23,7 +23,6 @@
 package org.jboss.as.controller.descriptions.common;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
@@ -77,14 +76,15 @@ public final class JVMDescriptions {
         node.get(ATTRIBUTES, JVM_TYPE, TYPE).set(ModelType.STRING);
         node.get(ATTRIBUTES, JVM_TYPE, DESCRIPTION).set(bundle.getString("jvm.type"));
 
-        node.get(CHILDREN, JVM_HEAP, TYPE).set(ModelType.OBJECT);
-        node.get(CHILDREN, JVM_HEAP, DESCRIPTION).set(bundle.getString("jvm.heap"));
-        node.get(CHILDREN, JVM_HEAP, ATTRIBUTES, SIZE).set(ModelType.STRING);
-        node.get(CHILDREN, JVM_HEAP, ATTRIBUTES, MAX_SIZE).set(ModelType.STRING);
-        node.get(CHILDREN, JVM_PERMGEN, TYPE).set(ModelType.OBJECT);
-        node.get(CHILDREN, JVM_PERMGEN, DESCRIPTION).set(bundle.getString("jvm.permgen"));
-        node.get(CHILDREN, JVM_PERMGEN, ATTRIBUTES, SIZE).set(ModelType.STRING);
-        node.get(CHILDREN, JVM_PERMGEN, ATTRIBUTES, MAX_SIZE).set(ModelType.STRING);
+        node.get(ATTRIBUTES, JVM_HEAP, TYPE).set(ModelType.STRING);
+        node.get(ATTRIBUTES, JVM_HEAP, DESCRIPTION).set(bundle.getString("jvm.heap"));
+        node.get(ATTRIBUTES, JVM_MAX_HEAP, TYPE).set(ModelType.STRING);
+        node.get(ATTRIBUTES, JVM_MAX_HEAP, DESCRIPTION).set(bundle.getString("jvm.heap.max"));
+
+        node.get(ATTRIBUTES, JVM_PERMGEN, TYPE).set(ModelType.STRING);
+        node.get(ATTRIBUTES, JVM_PERMGEN, DESCRIPTION).set(bundle.getString("jvm.permgen"));
+        node.get(ATTRIBUTES, JVM_MAX_PERMGEN, TYPE).set(ModelType.STRING);
+        node.get(ATTRIBUTES, JVM_MAX_PERMGEN, DESCRIPTION).set(bundle.getString("jvm.permgen.max"));
 
         return node;
     }
@@ -138,16 +138,18 @@ public final class JVMDescriptions {
         node.get(REQUEST_PROPERTIES, JVM_TYPE, TYPE).set(ModelType.STRING);
         node.get(REQUEST_PROPERTIES, JVM_TYPE, DESCRIPTION).set(bundle.getString("jvm.type"));
         node.get(REQUEST_PROPERTIES, JVM_TYPE, REQUIRED).set(false);
-        node.get(REQUEST_PROPERTIES, JVM_HEAP, TYPE).set(ModelType.OBJECT);
+        node.get(REQUEST_PROPERTIES, JVM_HEAP, TYPE).set(ModelType.STRING);
         node.get(REQUEST_PROPERTIES, JVM_HEAP, DESCRIPTION).set(bundle.getString("jvm.heap"));
-        node.get(REQUEST_PROPERTIES, JVM_HEAP, ATTRIBUTES, SIZE).set(ModelType.STRING);
-        node.get(REQUEST_PROPERTIES, JVM_HEAP, ATTRIBUTES, MAX_SIZE).set(ModelType.STRING);
         node.get(REQUEST_PROPERTIES, JVM_HEAP, REQUIRED).set(false);
-        node.get(REQUEST_PROPERTIES, JVM_PERMGEN, TYPE).set(ModelType.OBJECT);
+        node.get(REQUEST_PROPERTIES, JVM_MAX_HEAP, TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, JVM_MAX_HEAP, DESCRIPTION).set(bundle.getString("jvm.heap.max"));
+        node.get(REQUEST_PROPERTIES, JVM_MAX_HEAP, REQUIRED).set(false);
+        node.get(REQUEST_PROPERTIES, JVM_PERMGEN, TYPE).set(ModelType.STRING);
         node.get(REQUEST_PROPERTIES, JVM_PERMGEN, DESCRIPTION).set(bundle.getString("jvm.permgen"));
-        node.get(REQUEST_PROPERTIES, JVM_PERMGEN, ATTRIBUTES, SIZE).set(ModelType.STRING);
-        node.get(REQUEST_PROPERTIES, JVM_PERMGEN, ATTRIBUTES, MAX_SIZE).set(ModelType.STRING);
         node.get(REQUEST_PROPERTIES, JVM_PERMGEN, REQUIRED).set(false);
+        node.get(REQUEST_PROPERTIES, JVM_MAX_PERMGEN, TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, JVM_MAX_PERMGEN, DESCRIPTION).set(bundle.getString("jvm.permgen.max"));
+        node.get(REQUEST_PROPERTIES, JVM_MAX_PERMGEN, REQUIRED).set(false);
 
         node.get(REPLY_PROPERTIES).setEmptyObject();
         return node;
