@@ -54,6 +54,7 @@ public class RootLoggerLevelChange extends AbstractModelUpdateHandler {
     @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
+        @SuppressWarnings("unchecked")
         final ServiceController<Logger> controller = (ServiceController<Logger>) serviceRegistry.getService(LogServices.ROOT_LOGGER);
         final ModelNode level = LEVEL.resolveModelAttribute(context, model.get(ROOT_LOGGER));
         if (controller != null && level.isDefined()) {

@@ -47,7 +47,7 @@ abstract class AbstractFileHandlerWriteAttributeHandler<T extends FileHandler> e
     }
 
     @Override
-    protected boolean applyUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final T handler) throws OperationFailedException {
+    protected boolean doApplyUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final T handler) throws OperationFailedException {
         if (APPEND.getName().equals(attributeName)) {
             handler.setAppend(resolvedValue.asBoolean());
             return true;
@@ -59,7 +59,7 @@ abstract class AbstractFileHandlerWriteAttributeHandler<T extends FileHandler> e
     }
 
     @Override
-    protected void revertUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final T handler) throws OperationFailedException {
+    protected void doRevertUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final T handler) throws OperationFailedException {
         if (APPEND.getName().equals(attributeName)) {
             handler.setAppend(valueToRestore.asBoolean());
         } else if (AUTOFLUSH.getName().equals(attributeName)) {

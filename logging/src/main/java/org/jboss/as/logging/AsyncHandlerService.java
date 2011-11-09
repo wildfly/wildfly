@@ -138,15 +138,19 @@ public final class AsyncHandlerService implements FlushingHandlerService {
     public synchronized void addHandlers(final List<InjectedValue<Handler>> list) {
         subhandlers.addAll(list);
         final AsyncHandler handler = value;
-        for (InjectedValue<Handler> injectedHandler : list) {
-            handler.addHandler(injectedHandler.getValue());
+        if (handler != null) {
+            for (InjectedValue<Handler> injectedHandler : list) {
+                handler.addHandler(injectedHandler.getValue());
+            }
         }
     }
 
     public synchronized void addHandler(final InjectedValue<Handler> injectedHandler) {
         subhandlers.add(injectedHandler);
         final AsyncHandler handler = value;
-        handler.addHandler(injectedHandler.getValue());
+        if (handler != null) {
+            handler.addHandler(injectedHandler.getValue());
+        }
     }
 
     public synchronized void removeHandler(final Handler subHandler) {

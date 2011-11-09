@@ -59,6 +59,7 @@ public class LoggerLevelChange extends AbstractModelUpdateHandler {
         final String name = address.getLastElement().getValue();
         final ModelNode level = LEVEL.resolveModelAttribute(context, model);
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
+        @SuppressWarnings("unchecked")
         final ServiceController<Logger> controller = (ServiceController<Logger>) serviceRegistry.getService(LogServices.loggerName(name));
         if (controller != null && level.isDefined()) {
             controller.getValue().setLevel(Level.parse(level.asString()));

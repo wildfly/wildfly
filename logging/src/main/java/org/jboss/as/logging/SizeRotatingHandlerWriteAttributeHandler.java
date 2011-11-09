@@ -43,7 +43,8 @@ public class SizeRotatingHandlerWriteAttributeHandler extends AbstractFileHandle
     }
 
     @Override
-    protected boolean doApplyUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final SizeRotatingFileHandler handler) throws OperationFailedException {
+    protected boolean doApplyUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final SizeRotatingFileHandler handler) throws OperationFailedException {
+        boolean result = super.doApplyUpdateToRuntime(operation, attributeName, resolvedValue, currentValue, handler);
         if (MAX_BACKUP_INDEX.getName().equals(attributeName)) {
             handler.setMaxBackupIndex(resolvedValue.asInt());
             result = false;
@@ -55,7 +56,8 @@ public class SizeRotatingHandlerWriteAttributeHandler extends AbstractFileHandle
     }
 
     @Override
-    protected void doRevertUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final SizeRotatingFileHandler handler) throws OperationFailedException {
+    protected void doRevertUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final SizeRotatingFileHandler handler) throws OperationFailedException {
+        super.doRevertUpdateToRuntime(operation, attributeName, valueToRestore, valueToRevert, handler);
         if (MAX_BACKUP_INDEX.getName().equals(attributeName)) {
             handler.setMaxBackupIndex(valueToRestore.asInt());
         } else if (ROTATE_SIZE.getName().equals(attributeName)) {

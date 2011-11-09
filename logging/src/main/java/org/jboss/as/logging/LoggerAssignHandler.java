@@ -74,6 +74,7 @@ public class LoggerAssignHandler extends AbstractLogHandlerAssignmentHandler {
 
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
         ServiceController<?> loggerHandlerController = serviceRegistry.getService(LogServices.loggerHandlerName(loggerName, handlerName));
+        @SuppressWarnings("unchecked")
         final ServiceController<Handler> handlerController = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(handlerName));
 
         if (loggerHandlerController != null) {

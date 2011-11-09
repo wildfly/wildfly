@@ -53,6 +53,7 @@ class LoggerWriteAttributeHandler extends AbstractLoggerWriteAttributeHandler {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
+        @SuppressWarnings("unchecked")
         final ServiceController<Logger> controller = (ServiceController<Logger>) serviceRegistry.getService(LogServices.handlerName(name));
         if (controller == null) {
             return false;

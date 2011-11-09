@@ -57,8 +57,8 @@ class RootLoggerAdd extends AbstractAddStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(LoggingExtension.rootLoggerPath);
         final String name = address.getLastElement().getValue();
-        final ModelNode level = LEVEL.validateResolvedOperation(model);
-        final ModelNode handlers = HANDLERS.validateResolvedOperation(model);
+        final ModelNode level = LEVEL.resolveModelAttribute(context, model);
+        final ModelNode handlers = HANDLERS.resolveModelAttribute(context, model);
         final ServiceTarget target = context.getServiceTarget();
         try {
 

@@ -29,7 +29,6 @@ import org.jboss.dmr.ModelNode;
 import java.util.logging.Handler;
 
 import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
-import static org.jboss.as.logging.LogHandlerPropertiesConfigurator.setProperties;
 
 /**
  * Date: 15.08.2011
@@ -46,7 +45,7 @@ public class CustomHandlerUpdateProperties extends HandlerUpdateProperties<Handl
     @Override
     protected void updateRuntime(OperationContext context, final ModelNode operation, final Handler handler) throws OperationFailedException {
         if (operation.hasDefined(PROPERTIES)) {
-            setProperties(handler, operation.get(PROPERTIES).asPropertyList());
+            LogHandlerPropertiesConfigurator.setProperties(handler, operation.get(PROPERTIES).asPropertyList());
         }
     }
 }

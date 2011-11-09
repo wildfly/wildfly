@@ -25,9 +25,6 @@ package org.jboss.as.logging;
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
 import static org.jboss.as.logging.CommonAttributes.TARGET;
 
-import java.util.Locale;
-
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.handlers.ConsoleHandler;
@@ -45,12 +42,11 @@ public class ConsoleHandlerWriteAttributeHandler extends AbstractLogHandlerWrite
     }
 
     @Override
-    protected boolean doApplyUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final ConsoleHandler handler) throws OperationFailedException {
+    protected boolean doApplyUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final ConsoleHandler handler) throws OperationFailedException {
         if (TARGET.getName().equals(attributeName)) {
             switch (Target.fromString(TargetValidator.properCase(resolvedValue.asString()))) {
                 case SYSTEM_ERR: {
                     handler.setTarget(ConsoleHandler.Target.SYSTEM_ERR);
-                    ConsoleHandler.class.cast(handler).setTarget(ConsoleHandler.Target.SYSTEM_ERR);
                     break;
                 }
                 case SYSTEM_OUT: {
@@ -65,12 +61,11 @@ public class ConsoleHandlerWriteAttributeHandler extends AbstractLogHandlerWrite
     }
 
     @Override
-    protected void doRevertUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final ConsoleHandler handler) throws OperationFailedException {
+    protected void doRevertUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final ConsoleHandler handler) throws OperationFailedException {
         if (TARGET.getName().equals(attributeName)) {
-            switch (Target.fromString(TargetValidator.properCase(valueToRestore.asString()))) {
+            switch (Target.fromString(TargetValidator.properCase(TargetValidator.properCase(valueToRestore.asString())))) {
                 case SYSTEM_ERR: {
                     handler.setTarget(ConsoleHandler.Target.SYSTEM_ERR);
-                    ConsoleHandler.class.cast(handler).setTarget(ConsoleHandler.Target.SYSTEM_ERR);
                     break;
                 }
                 case SYSTEM_OUT: {

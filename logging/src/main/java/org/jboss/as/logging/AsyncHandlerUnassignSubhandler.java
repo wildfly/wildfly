@@ -60,7 +60,9 @@ public class AsyncHandlerUnassignSubhandler extends AbstractLogHandlerAssignment
         String handlerNameToUnassign = NAME.resolveModelAttribute(context, model).asString();
 
         ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
+        @SuppressWarnings("unchecked")
         ServiceController<Handler> asyncHandlerController = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(asyncHandlerName));
+        @SuppressWarnings("unchecked")
         ServiceController<Handler> handlerToUnassignController = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(handlerNameToUnassign));
 
         AsyncHandlerService service = (AsyncHandlerService) asyncHandlerController.getService();

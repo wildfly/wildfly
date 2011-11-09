@@ -55,8 +55,6 @@ public abstract class AbstractLogHandlerAssignmentHandler extends AbstractModelU
             throw createFailureMessage(MESSAGES.handlerAlreadyDefined(handlerName));
         }
         model.get(handlerAttribute.getName()).add(handlerName);
-        // getParent(model).get(handlerAttribute.getName()).set(getAssignedHandlers(model).add(handlerName));
-        // applyNewHandlers(handlerAttribute.getName(), model, getAssignedHandlers(model).add(handlerName));
     }
 
     /**
@@ -74,7 +72,7 @@ public abstract class AbstractLogHandlerAssignmentHandler extends AbstractModelU
         final String handlerName = getHandlerName(operation);
         if (handlerExists(handlerName, handlerAttribute, model)) {
             // Get the current subhandlers
-            final ModelNode currentSubhandlers = handlerAttribute.resolveModelAttribute(context, model);
+            final ModelNode currentSubhandlers = model.get(handlerAttribute.getName());
             // Create new list of subhandlers without the handler being removed
             final List<ModelNode> newSubhandlers = new ArrayList<ModelNode>();
             for (ModelNode node : currentSubhandlers.asList()) {
@@ -84,7 +82,6 @@ public abstract class AbstractLogHandlerAssignmentHandler extends AbstractModelU
                 newSubhandlers.add(node);
             }
             model.get(handlerAttribute.getName()).set(newSubhandlers);
-            //applyNewHandlers(handlerAttribute.getName(), model, newSubhandlers);
         } else {
             // Subhandler not found
             throw createFailureMessage(MESSAGES.cannotUnassignHandler(handlerName));
