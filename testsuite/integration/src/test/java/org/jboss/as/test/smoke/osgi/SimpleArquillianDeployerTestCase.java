@@ -14,20 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.test.embedded.osgi;
-
-import static org.junit.Assert.assertNotNull;
-
-import java.io.InputStream;
-
-import javax.inject.Inject;
+package org.jboss.as.test.smoke.osgi;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.embedded.osgi.bundle.SimpleActivator;
-import org.jboss.as.test.embedded.osgi.bundle.SimpleService;
+import org.jboss.as.test.smoke.osgi.bundle.SimpleActivator;
+import org.jboss.as.test.smoke.osgi.bundle.SimpleService;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.osgi.testing.OSGiTestHelper;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -39,6 +33,11 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.packageadmin.PackageAdmin;
+
+import javax.inject.Inject;
+import java.io.InputStream;
+
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Test the arquillian callback to a client provided archive and its deployment through the deployer API.
