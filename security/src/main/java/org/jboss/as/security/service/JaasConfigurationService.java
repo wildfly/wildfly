@@ -52,8 +52,7 @@ public class JaasConfigurationService implements Service<Configuration> {
     /** {@inheritDoc} */
     @Override
     public void start(StartContext context) throws StartException {
-        if (log.isDebugEnabled())
-            log.debug("Starting JaasConfigurationService");
+        log.debugf("Starting JaasConfigurationService");
 
         // set new configuration
         Configuration.setConfiguration(configuration);

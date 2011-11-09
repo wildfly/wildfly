@@ -100,7 +100,7 @@ public class RunAsTestCase extends SecurityTest {
         try {
             String[] response = entryBean.doubleWhoAmI();
             assertEquals("user1", response[0]);
-            assertEquals("run-as-principal", response[1]);
+            assertEquals("anonymous", response[1]); //Unless a run-as-principal configuration has been done, you cannot expect a principal
         } finally {
             lc.logout();
         }

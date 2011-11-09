@@ -21,14 +21,16 @@
  */
 package org.jboss.as.ejb3.security;
 
+import static java.security.AccessController.doPrivileged;
+
+import java.security.PrivilegedAction;
+import java.util.Set;
+
+import javax.ejb.EJBAccessException;
+
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-
-import javax.ejb.EJBAccessException;
-import java.security.PrivilegedAction;
-
-import static java.security.AccessController.doPrivileged;
 
 /**
  * Establish the security context.
@@ -39,12 +41,12 @@ public class SecurityContextInterceptor implements Interceptor {
     private final PrivilegedAction<Void> pushAction;
     private final PrivilegedAction<Void> popAction;
 
-    public SecurityContextInterceptor(final SimpleSecurityManager securityManager, final String securityDomain, final String runAs, final String runAsPrincipal) {
+    public SecurityContextInterceptor(final SimpleSecurityManager securityManager, final String securityDomain, final String runAs, final String runAsPrincipal, final Set<String> extraRoles) {
         this.pushAction = new PrivilegedAction<Void>() {
             @Override
             public Void run() {
                 try {
-                    securityManager.push(securityDomain, runAs, runAsPrincipal);
+                    securityManager.push(securityDomain, runAs, runAsPrincipal, extraRoles);
                 } catch (SecurityException e) {
                     throw new EJBAccessException(e.getMessage());
                 }

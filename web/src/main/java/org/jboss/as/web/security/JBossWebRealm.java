@@ -37,6 +37,7 @@ import java.util.Set;
 
 import javax.security.auth.Subject;
 import javax.security.jacc.PolicyContext;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.Context;
@@ -80,8 +81,8 @@ import org.jboss.security.mapping.MappingType;
 /**
  * A {@code RealmBase} implementation
  *
- * @author Anil.Saldhana@redhat.com
- * @since Jan 14, 2011
+ * @author Scott.Stark@jboss.org
+ * @author <a href="mailto:Anil.Saldhana@jboss.org">Anil Saldhana</a>
  */
 public class JBossWebRealm extends RealmBase {
 
@@ -110,15 +111,6 @@ public class JBossWebRealm extends RealmBase {
     protected MappingManager mappingManager = null;
 
     /**
-     * Set the {@code AuditManager}
-     *
-     * @param auditManager
-     */
-    public void setAuditManager(AuditManager auditManager) {
-        this.auditManager = auditManager;
-    }
-
-    /**
      * The converter from X509 certificate chain to Principal
      */
     protected CertificatePrincipal certMapping = new SubjectDNMapping();
@@ -144,12 +136,26 @@ public class JBossWebRealm extends RealmBase {
     protected boolean useJBossAuthorization = false;
 
     /**
+     * Is Audit disabled?
+     */
+    protected boolean disableAudit = false;
+
+    /**
      * Set the {@code AuthenticationManager}
      *
      * @param authenticationManager
      */
     public void setAuthenticationManager(AuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
+    }
+
+    /**
+     * Set the {@code AuditManager}
+     *
+     * @param auditManager
+     */
+    public void setAuditManager(AuditManager auditManager) {
+        this.auditManager = auditManager;
     }
 
     /**
@@ -180,6 +186,7 @@ public class JBossWebRealm extends RealmBase {
         metaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY).getMergedJBossWebMetaData();
         principalVersusRolesMap = metaData.getSecurityRoles().getPrincipalVersusRolesMap();
         useJBossAuthorization = metaData.isUseJBossAuthorization();
+        disableAudit = metaData.isDisableAudit();
     }
 
     /**
@@ -203,57 +210,62 @@ public class JBossWebRealm extends RealmBase {
 
         Principal userPrincipal = getPrincipal(username);
         Subject subject = new Subject();
-        boolean isValid = authenticationManager.isValid(userPrincipal, credentials, subject);
-        if (isValid) {
-            if (log.isTraceEnabled()) {
-                log.trace("User: " + userPrincipal + " is authenticated");
-            }
-            SecurityContext sc = SecurityActions.getSecurityContext();
-            if (sc == null)
-                throw new IllegalStateException("No SecurityContext found!");
-            userPrincipal = getPrincipal(subject);
-            sc.getUtil().createSubjectInfo(userPrincipal, credentials, subject);
-            SecurityContextCallbackHandler scb = new SecurityContextCallbackHandler(sc);
-            if (mappingManager != null) {
-                // if there are mapping modules let them handle the role mapping
-                MappingContext<RoleGroup> mc = mappingManager.getMappingContext(MappingType.ROLE.name());
-                if (mc != null && mc.hasModules()) {
-                    SecurityRolesAssociation.setSecurityRoles(principalVersusRolesMap);
+        try {
+            boolean isValid = authenticationManager.isValid(userPrincipal, credentials, subject);
+            if (isValid) {
+                log.tracef("User: " + userPrincipal + " is authenticated");
+                SecurityContext sc = SecurityActions.getSecurityContext();
+                if (sc == null)
+                    throw new IllegalStateException("No SecurityContext found!");
+                userPrincipal = getPrincipal(subject);
+                sc.getUtil().createSubjectInfo(userPrincipal, credentials, subject);
+                SecurityContextCallbackHandler scb = new SecurityContextCallbackHandler(sc);
+                if (mappingManager != null) {
+                    // if there are mapping modules let them handle the role mapping
+                    MappingContext<RoleGroup> mc = mappingManager.getMappingContext(MappingType.ROLE.name());
+                    if (mc != null && mc.hasModules()) {
+                        SecurityRolesAssociation.setSecurityRoles(principalVersusRolesMap);
+                    }
                 }
-            }
-            RoleGroup roles = authorizationManager.getSubjectRoles(subject, scb);
-            List<Role> rolesAsList = roles.getRoles();
-            List<String> rolesAsStringList = new ArrayList<String>();
-            for (Role role : rolesAsList) {
-                rolesAsStringList.add(role.getRoleName());
-            }
-            if (mappingManager != null) {
-                // if there are no mapping modules handle role mapping here
-                MappingContext<RoleGroup> mc = mappingManager.getMappingContext(MappingType.ROLE.name());
-                if (mc == null || !mc.hasModules()) {
+                RoleGroup roles = authorizationManager.getSubjectRoles(subject, scb);
+                List<Role> rolesAsList = roles.getRoles();
+                List<String> rolesAsStringList = new ArrayList<String>();
+                for (Role role : rolesAsList) {
+                    rolesAsStringList.add(role.getRoleName());
+                }
+                if (mappingManager != null) {
+                    // if there are no mapping modules handle role mapping here
+                    MappingContext<RoleGroup> mc = mappingManager.getMappingContext(MappingType.ROLE.name());
+                    if (mc == null || !mc.hasModules()) {
+                        rolesAsStringList = mapUserRoles(rolesAsStringList);
+                    }
+                } else
+                    // if mapping manager is not set, handle role mapping here too
                     rolesAsStringList = mapUserRoles(rolesAsStringList);
+                if (authenticationManager instanceof CacheableManager) {
+                    @SuppressWarnings("unchecked")
+                    CacheableManager<?, Principal> cm = (CacheableManager<?, Principal>) authenticationManager;
+                    userPrincipal = new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList,
+                            userPrincipal, null, credentials, cm, subject);
+                    successAudit(userPrincipal, null);
+                    return userPrincipal;
+                } else {
+                    userPrincipal = new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList,
+                            userPrincipal, null, credentials, null, subject);
+                    successAudit(userPrincipal, null);
+                    return userPrincipal;
                 }
-            } else
-                // if mapping manager is not set, handle role mapping here too
-                rolesAsStringList = mapUserRoles(rolesAsStringList);
-            if (authenticationManager instanceof CacheableManager) {
-                @SuppressWarnings("unchecked")
-                CacheableManager<?, Principal> cm = (CacheableManager<?, Principal>) authenticationManager;
-                userPrincipal = new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList,
-                        userPrincipal, null, credentials, cm, subject);
-                successAudit(userPrincipal);
-                return userPrincipal;
-            } else {
-                userPrincipal = new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList,
-                        userPrincipal, null, credentials, null, subject);
-                successAudit(userPrincipal);
-                return userPrincipal;
             }
+        } catch (Exception e) {
+            userPrincipal = null;
+            exceptionAudit(userPrincipal, null, e);
         }
 
         userPrincipal = super.authenticate(username, credentials);
         if (userPrincipal != null) {
-            successAudit(userPrincipal);
+            successAudit(userPrincipal, null);
+        } else {
+            failureAudit(userPrincipal, null);
         }
         return userPrincipal;
     }
@@ -273,9 +285,7 @@ public class JBossWebRealm extends RealmBase {
             Subject subject = new Subject();
             boolean isValid = authenticationManager.isValid(userPrincipal, certs, subject);
             if (isValid) {
-                if (log.isTraceEnabled()) {
-                    log.trace("User: " + userPrincipal + " is authenticated");
-                }
+                log.tracef("User: " + userPrincipal + " is authenticated");
                 SecurityContext sc = SecurityActions.getSecurityContext();
                 if (sc == null)
                     throw new IllegalStateException("No SecurityContext found!");
@@ -313,17 +323,16 @@ public class JBossWebRealm extends RealmBase {
                     userPrincipal = new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList,
                             userPrincipal, null, certs, null, subject);
             } else {
-                if (log.isTraceEnabled()) {
-                    log.trace("User: " + userPrincipal + " is NOT authenticated");
-                }
+                log.tracef("User: " + userPrincipal + " is NOT authenticated");
                 userPrincipal = null;
             }
         } catch (Exception e) {
-            log.error("Error during authenticate(X509Certificate[])");
+            log.errorf("Error during authenticate(X509Certificate[])");
+            exceptionAudit(userPrincipal, null, e);
         }
 
         if (userPrincipal != null) {
-            successAudit(userPrincipal);
+            successAudit(userPrincipal, null);
         }
 
         return userPrincipal;
@@ -356,9 +365,7 @@ public class JBossWebRealm extends RealmBase {
             Subject subject = new Subject();
             boolean isValid = authenticationManager.isValid(userPrincipal, clientDigest, subject);
             if (isValid) {
-                if (log.isTraceEnabled()) {
-                    log.trace("User: " + userPrincipal + " is authenticated");
-                }
+                log.tracef("User: " + userPrincipal + " is authenticated");
                 userPrincipal = getPrincipal(subject);
                 sc.getUtil().createSubjectInfo(userPrincipal, clientDigest, subject);
                 SecurityContextCallbackHandler scb = new SecurityContextCallbackHandler(sc);
@@ -393,17 +400,17 @@ public class JBossWebRealm extends RealmBase {
                     userPrincipal = new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList,
                             userPrincipal, null, clientDigest, null, subject);
             } else {
-                if (log.isTraceEnabled()) {
-                    log.trace("User: " + userPrincipal + " is NOT authenticated");
-                }
+                log.tracef("User: " + userPrincipal + " is NOT authenticated");
                 userPrincipal = null;
             }
         } catch (Exception e) {
-            log.error("Error during authenticate(String,String,String,String,String,String,String,String)");
+            log.errorf("Error during authenticate(String,String,String,String,String,String,String,String)");
         }
 
         if (userPrincipal != null) {
-            successAudit(userPrincipal);
+            successAudit(userPrincipal, null);
+        } else {
+            failureAudit(userPrincipal, null);
         }
 
         return userPrincipal;
@@ -476,18 +483,6 @@ public class JBossWebRealm extends RealmBase {
         return callerPrincipal == null ? principal : callerPrincipal;
     }
 
-    private void successAudit(Principal userPrincipal) {
-        if (userPrincipal != null) {
-            if (auditManager != null) {
-                AuditEvent auditEvent = new AuditEvent(AuditLevel.SUCCESS);
-                Map<String, Object> ctxMap = new HashMap<String, Object>();
-                ctxMap.put("principal", userPrincipal);
-                auditEvent.setContextMap(ctxMap);
-                auditManager.audit(auditEvent);
-            }
-        }
-    }
-
     @Override
     public boolean hasResourcePermission(Request request, Response response, SecurityConstraint[] constraints, Context context)
             throws IOException {
@@ -508,7 +503,7 @@ public class JBossWebRealm extends RealmBase {
             try {
                 helper = SecurityHelperFactory.getWebAuthorizationHelper(sc);
             } catch (Exception e) {
-                log.error("Exception in obtaining helper", e);
+                log.errorf("Exception in obtaining helper", e);
                 return false;
             }
 
@@ -516,11 +511,21 @@ public class JBossWebRealm extends RealmBase {
                     requestURI(request), getPrincipalRoles(request));
         }
         boolean finalDecision = baseDecision && authzDecision;
-        if (log.isTraceEnabled())
-            log.trace("hasResourcePermission:RealmBase says:" + baseDecision + "::Authz framework says:" + authzDecision
-                    + ":final=" + finalDecision);
+        log.tracef("hasResourcePermission:RealmBase says:" + baseDecision + "::Authz framework says:" + authzDecision
+                + ":final=" + finalDecision);
         if (!finalDecision) {
+            if (!disableAudit) {
+                Map<String, Object> entries = new HashMap<String, Object>();
+                entries.put("Step", "hasResourcePermission");
+                failureAudit(request.getUserPrincipal(), entries);
+            }
             response.sendError(HttpServletResponse.SC_FORBIDDEN, sm.getString("realmBase.forbidden"));
+        } else {
+            if (!disableAudit) {
+                Map<String, Object> entries = new HashMap<String, Object>();
+                entries.put("Step", "hasResourcePermission");
+                successAudit(request.getUserPrincipal(), entries);
+            }
         }
         return finalDecision;
     }
@@ -558,7 +563,7 @@ public class JBossWebRealm extends RealmBase {
             try {
                 helper = SecurityHelperFactory.getWebAuthorizationHelper(sc);
             } catch (Exception e) {
-                log.error("Error obtaining helper", e);
+                log.errorf("Error obtaining helper", e);
             }
             Subject callerSubject = sc.getUtil().getSubject();
             if (callerSubject == null) {
@@ -571,9 +576,21 @@ public class JBossWebRealm extends RealmBase {
                     PolicyContext.getContextID(), callerSubject, getPrincipalRoles(request));
         }
         boolean finalDecision = baseDecision && authzDecision;
-        if (log.isTraceEnabled())
-            log.trace("hasRole:RealmBase says:" + baseDecision + "::Authz framework says:" + authzDecision + ":final="
-                    + finalDecision);
+        log.tracef("hasRole:RealmBase says:" + baseDecision + "::Authz framework says:" + authzDecision + ":final="
+                + finalDecision);
+        if (finalDecision) {
+            if (!disableAudit) {
+                Map<String, Object> entries = new HashMap<String, Object>();
+                entries.put("Step", "hasRole");
+                successAudit(principal, entries);
+            }
+        } else {
+            if (!disableAudit) {
+                Map<String, Object> entries = new HashMap<String, Object>();
+                entries.put("Step", "hasRole");
+                failureAudit(principal, entries);
+            }
+        }
 
         return finalDecision;
     }
@@ -593,7 +610,7 @@ public class JBossWebRealm extends RealmBase {
             try {
                 helper = SecurityHelperFactory.getWebAuthorizationHelper(sc);
             } catch (Exception e) {
-                log.error("Error obtaining helper", e);
+                log.errorf("Error obtaining helper", e);
             }
 
             Subject callerSubject = sc.getUtil().getSubject();
@@ -644,6 +661,12 @@ public class JBossWebRealm extends RealmBase {
         return userRoles;
     }
 
+    /**
+     * Get the roles that is stored in the authenticated {@link GenericPrincipal}
+     *
+     * @param request
+     * @return
+     */
     protected List<String> getPrincipalRoles(Request request) {
         List<String> roles = null;
         Principal principal = request.getPrincipal();
@@ -687,12 +710,83 @@ public class JBossWebRealm extends RealmBase {
     private String getServletName(Wrapper servlet) {
         // For jsp, the mapping will be (*.jsp, *.jspx)
         String[] mappings = servlet.findMappings();
-        if (log.isTraceEnabled())
-            log.trace("[getServletName:servletmappings=" + mappings + ":servlet.getName()=" + servlet.getName() + "]");
+        log.tracef("[getServletName:servletmappings=" + mappings + ":servlet.getName()=" + servlet.getName() + "]");
         if ("jsp".equals(servlet.getName()) && (mappings != null && mappings[0].indexOf("*.jsp") > -1))
             return "";
         else
             return servlet.getName();
     }
 
+    /**
+     * Get the original http request using the JACC mandated api
+     *
+     * @return
+     */
+    private HttpServletRequest getServletRequest() {
+        try {
+            return (HttpServletRequest) PolicyContext.getContext(SecurityConstants.WEB_REQUEST_KEY);
+        } catch (Exception e) {
+            log.tracef("Exception in getting servlet request:", e);
+        }
+        return null;
+    }
+
+    // Audit Methods
+    private void successAudit(Principal userPrincipal, Map<String, Object> entries) {
+        if (userPrincipal != null && !disableAudit) {
+            if (auditManager != null) {
+                AuditEvent auditEvent = new AuditEvent(AuditLevel.SUCCESS);
+                Map<String, Object> ctxMap = new HashMap<String, Object>();
+                ctxMap.put("principal", userPrincipal);
+                HttpServletRequest hsr = getServletRequest();
+                if (hsr != null) {
+                    ctxMap.put("request", WebUtil.deriveUsefulInfo(hsr));
+                }
+                ctxMap.put("Source", getClass().getCanonicalName());
+                if (entries != null) {
+                    ctxMap.putAll(entries);
+                }
+                auditEvent.setContextMap(ctxMap);
+                auditManager.audit(auditEvent);
+            }
+        }
+    }
+
+    private void failureAudit(Principal userPrincipal, Map<String, Object> entries) {
+        if (auditManager != null && !disableAudit) {
+            AuditEvent auditEvent = new AuditEvent(AuditLevel.FAILURE);
+            Map<String, Object> ctxMap = new HashMap<String, Object>();
+            ctxMap.put("principal", userPrincipal);
+            HttpServletRequest hsr = getServletRequest();
+            if (hsr != null) {
+                ctxMap.put("request", WebUtil.deriveUsefulInfo(hsr));
+            }
+            ctxMap.put("Source", getClass().getCanonicalName());
+            if (entries != null) {
+                ctxMap.putAll(entries);
+            }
+            auditEvent.setContextMap(ctxMap);
+            auditManager.audit(auditEvent);
+        }
+    }
+
+    private void exceptionAudit(Principal userPrincipal, Map<String, Object> entries, Exception e) {
+        if (auditManager != null && !disableAudit) {
+            AuditEvent auditEvent = new AuditEvent(AuditLevel.ERROR);
+            Map<String, Object> ctxMap = new HashMap<String, Object>();
+            ctxMap.put("principal", userPrincipal);
+            ctxMap.putAll(entries);
+            HttpServletRequest hsr = getServletRequest();
+            if (hsr != null) {
+                ctxMap.put("request", WebUtil.deriveUsefulInfo(hsr));
+            }
+            ctxMap.put("source", getClass().getCanonicalName());
+            if (entries != null) {
+                ctxMap.putAll(entries);
+            }
+            auditEvent.setContextMap(ctxMap);
+            auditEvent.setUnderlyingException(e);
+            auditManager.audit(auditEvent);
+        }
+    }
 }

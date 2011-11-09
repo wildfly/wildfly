@@ -106,7 +106,7 @@ public class AuthorizationInterceptor implements Interceptor {
             if (!allowedRoles.isEmpty()) {
                 // call the security API to do authorization check
                 final SimpleSecurityManager securityManager = ejbComponent.getSecurityManager();
-                if (!securityManager.isCallerInRole(allowedRoles.toArray(new String[allowedRoles.size()]))) {
+                if (!securityManager.isCallerInRole(ejbComponent.getSecurityMetaData().getSecurityRoles(), allowedRoles.toArray(new String[allowedRoles.size()]))) {
                     throw new EJBAccessException("Invocation on method: " + invokedMethod + " of bean: " +
                             ejbComponent.getComponentName() + " is not allowed");
                 }

@@ -22,11 +22,11 @@
 
 package org.jboss.as.ejb3;
 
+import java.lang.reflect.Method;
+
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
-
-import java.lang.reflect.Method;
 
 /**
  * Identifier for a method on a EJB and is classloader agnostic.
@@ -71,6 +71,10 @@ public class EJBMethodIdentifier {
         int result = methodIdentifier.hashCode();
         result = 31 * result + methodDeclaringClass.hashCode();
         return result;
+    }
+
+    public MethodIdentifier getMethodIdentifier() {
+        return methodIdentifier;
     }
 
     @Override
