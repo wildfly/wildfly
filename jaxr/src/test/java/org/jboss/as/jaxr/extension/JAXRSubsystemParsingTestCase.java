@@ -49,7 +49,7 @@ public class JAXRSubsystemParsingTestCase extends AbstractSubsystemTest {
 
     public static final String SUBSYSTEM_XML =
             "<subsystem xmlns='" + Namespace.CURRENT.getUriString() + "'>" +
-              "<connection jndi-name='java:ConnectionFactory'/>" +
+              "<connectionFactory jndi-name='java:ConnectionFactory'/>" +
               "<datasource jndi-name='java:DataSource'/>" +
               "<flags dropOnStart='true' createOnStart='true' dropOnStop='true'/>" +
             "</subsystem>";
