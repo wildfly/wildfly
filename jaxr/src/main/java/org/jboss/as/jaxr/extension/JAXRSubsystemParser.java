@@ -55,14 +55,25 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
         address.add(SUBSYSTEM, JAXRConstants.SUBSYSTEM_NAME);
         address.protect();
 
+        final ModelNode result = new ModelNode();
+        result.get(OP).set(ADD);
+        result.get(OP_ADDR).set(address);
+
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case JAXR_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
+                        case CONNECTION: {
+                            parseBinding(reader, result, ModelConstants.CONNECTION);
+                            break;
+                        }
                         case DATASOURCE: {
-                            ModelNode result = parseDatasource(reader, address);
-                            operations.add(result);
+                            parseBinding(reader, result, ModelConstants.DATASOURCE);
+                            break;
+                        }
+                        case FLAGS: {
+                            parseFlags(reader, result);
                             break;
                         }
                         default:
@@ -71,13 +82,11 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
                 }
             }
         }
+
+        operations.add(result);
     }
 
-    private ModelNode parseDatasource(XMLExtendedStreamReader reader, ModelNode address) throws XMLStreamException {
-
-        final ModelNode result = new ModelNode();
-        result.get(OP).set(ADD);
-        result.get(OP_ADDR).set(address);
+    private void parseBinding(XMLExtendedStreamReader reader, ModelNode result, String modelAttribute) throws XMLStreamException {
 
         // Handle attributes
         String jndiName = null;
@@ -101,7 +110,35 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
 
         requireNoContent(reader);
 
-        result.get(ModelConstants.JNDI_NAME).set(jndiName);
-        return result;
+        result.get(modelAttribute).set(jndiName);
+    }
+
+    private void parseFlags(XMLExtendedStreamReader reader, ModelNode result) throws XMLStreamException {
+
+        // Handle attributes
+        int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String attrValue = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case DROPONSTART: {
+                    result.get(ModelConstants.DROPONSTART).set(attrValue);
+                    break;
+                }
+                case CREATEONSTART: {
+                    result.get(ModelConstants.CREATEONSTART).set(attrValue);
+                    break;
+                }
+                case DROPONSTOP: {
+                    result.get(ModelConstants.DROPONSTOP).set(attrValue);
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+
+        requireNoContent(reader);
     }
 }

@@ -21,15 +21,18 @@
  */
 package org.jboss.as.test.integration.jaxr;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.HttpTestSupport;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.jboss.as.jaxr.service.JAXRConfiguration;
+import org.jboss.logging.Logger;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.registry.ConnectionFactory;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * Tests the JAXR connection factory bound to JNDI
@@ -37,23 +40,23 @@ import org.junit.runner.RunWith;
  * @author Thomas.Diesler@jboss.com
  * @since 26-Oct-2011
  */
-@RunAsClient
-@RunWith(Arquillian.class)
-public class JaxrConnectionFactoryBindingTestCase
+public class JaxrServlet extends HttpServlet
 {
-    @Deployment(testable = false)
-    public static WebArchive deployment() {
-        WebArchive archive = ShrinkWrap.create(WebArchive.class, "jaxr-connection-test.war");
-        archive.addClasses(JaxrServlet.class);
-        archive.addAsWebInfResource("jaxr/webA.xml", "web.xml");
-        archive.addAsWebInfResource("jaxr/jboss-webA.xml", "jboss-web.xml");
-        return archive;
-    }
+    static Logger log = Logger.getLogger(JaxrServlet.class);
 
-    @Test
-    public void testJNDIBinding() throws Exception
-    {
-        String response = HttpTestSupport.getHttpResponse("localhost", 8080, "/jaxr-connection-test");
-        Assert.assertEquals("org.apache.ws.scout.registry.ConnectionFactoryImpl", response);
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+        PrintWriter writer = res.getWriter();
+        try {
+            String lookup = "java:comp/env/eis/JAXR";
+            InitialContext context = new InitialContext();
+            ConnectionFactory factory = (ConnectionFactory) context.lookup(lookup);
+            log.infof("ConnectionFactory at '%s' => %s", lookup, factory);
+            writer.println(factory.getClass().getName());
+        } catch (NamingException ex) {
+            ex.printStackTrace(writer);
+        } finally {
+            writer.close();
+        }
     }
 }

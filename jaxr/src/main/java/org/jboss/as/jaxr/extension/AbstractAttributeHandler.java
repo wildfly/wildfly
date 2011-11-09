@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2006, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,22 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.jaxr.extension;
 
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
 
 /**
- * An enumeration of the supported JAXR subsystem namespaces.
+ * Handler responsible for adding JAXR attributes to the model
  *
  * @author Thomas.Diesler@jboss.com
  * @since 07-Nov-2011
  */
-public interface ModelConstants {
+abstract class AbstractAttributeHandler extends AbstractAddStepHandler {
 
-    String CONNECTION = "connection";
-    String DATASOURCE = "datasource";
-    String DROPONSTART = "dropOnStart";
-    String CREATEONSTART = "createOnStart";
-    String DROPONSTOP = "dropOnStop";
+    private final String modelAttribute;
 
+    AbstractAttributeHandler(String modelAttribute) {
+        this.modelAttribute = modelAttribute;
+    }
+
+    @Override
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        ModelNode attrNode = operation.get(modelAttribute);
+        model.get(modelAttribute).set(attrNode);
+    }
 }
