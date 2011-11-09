@@ -22,23 +22,31 @@
 package org.jboss.as.webservices.deployer;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.security.Constants.AUTHENTICATION;
+import static org.jboss.as.security.Constants.CLASSIC;
 import static org.jboss.as.security.Constants.CODE;
 import static org.jboss.as.security.Constants.FLAG;
+import static org.jboss.as.security.Constants.LOGIN_MODULES;
 import static org.jboss.as.security.Constants.MODULE_OPTIONS;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentAction;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
@@ -114,44 +122,62 @@ public final class RemoteDeployer implements Deployer {
 
     @Override
     public void addSecurityDomain(String name, Map<String, String> authenticationOptions) throws Exception {
-        ModelControllerClient client = ModelControllerClient.Factory.create(address, PORT);
-        ModelNode result = createSecurityDomain(client, name, authenticationOptions);
-        checkResult(result);
-    }
+        final ModelControllerClient client = ModelControllerClient.Factory.create(address, PORT);
+        final List<ModelNode> updates = new ArrayList<ModelNode>();
 
-    @Override
-    public void removeSecurityDomain(String name) throws Exception {
-        ModelControllerClient client = ModelControllerClient.Factory.create(address, PORT);
-        ModelNode result = removeSecurityDomain(client, name);
-        checkResult(result);
-    }
-
-    private static ModelNode createSecurityDomain(ModelControllerClient client, String name, Map<String, String> authenticationOptions) throws IOException {
         ModelNode op = new ModelNode();
         op.get(OP).set(ADD);
         op.get(OP_ADDR).add(SUBSYSTEM, "security");
         op.get(OP_ADDR).add(SECURITY_DOMAIN, name);
-        ModelNode loginModule = op.get(AUTHENTICATION).add();
+        updates.add(op);
+
+        op = new ModelNode();
+        op.get(OP).set(ADD);
+        op.get(OP_ADDR).add(SUBSYSTEM, "security");
+        op.get(OP_ADDR).add(SECURITY_DOMAIN, name);
+        op.get(OP_ADDR).add(AUTHENTICATION, CLASSIC);
+
+        final ModelNode loginModule = op.get(LOGIN_MODULES).add();
         loginModule.get(CODE).set("UsersRoles");
         loginModule.get(FLAG).set("required");
-        ModelNode moduleOptions = loginModule.get(MODULE_OPTIONS);
+        op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+        updates.add(op);
+
+        final ModelNode moduleOptions = loginModule.get(MODULE_OPTIONS);
         if (authenticationOptions != null) {
-            for (String k : authenticationOptions.keySet()) {
+            for (final String k : authenticationOptions.keySet()) {
                 moduleOptions.add(k, authenticationOptions.get(k));
             }
         }
-        return client.execute(op);
+
+        applyUpdates(updates, client);
     }
 
-    private static ModelNode removeSecurityDomain(ModelControllerClient client, String name) throws IOException {
-        ModelNode op = new ModelNode();
+    @Override
+    public void removeSecurityDomain(String name) throws Exception {
+        final ModelControllerClient client = ModelControllerClient.Factory.create(address, PORT);
+        final ModelNode op = new ModelNode();
         op.get(OP).set(REMOVE);
         op.get(OP_ADDR).add(SUBSYSTEM, "security");
         op.get(OP_ADDR).add(SECURITY_DOMAIN, name);
-        return client.execute(op);
+        // Don't rollback when the AS detects the war needs the module
+        op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+
+        applyUpdate(op, client);
     }
 
-    private static void checkResult(ModelNode result) throws Exception {
+    private static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws Exception {
+        for (final ModelNode update : updates) {
+            applyUpdate(update, client);
+        }
+    }
+
+    private static void applyUpdate(final ModelNode update, final ModelControllerClient client) throws Exception {
+        final ModelNode result = client.execute(new OperationBuilder(update).build());
+        checkResult(result);
+    }
+
+    private static void checkResult(final ModelNode result) throws Exception {
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
             if (result.hasDefined("result")) {
                 LOGGER.info(result.get("result"));
@@ -162,4 +188,5 @@ public final class RemoteDeployer implements Deployer {
             throw new Exception("Operation not successful; outcome = " + result.get("outcome"));
         }
     }
+
 }
