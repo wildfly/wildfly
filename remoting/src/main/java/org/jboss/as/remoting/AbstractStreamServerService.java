@@ -87,7 +87,7 @@ public abstract class AbstractStreamServerService implements Service<AcceptingCh
             NetworkServerProvider networkServerProvider = endpointValue.getValue().getConnectionProviderInterface("remote", NetworkServerProvider.class);
             ServerAuthenticationProvider sap = authenticationProviderValue.getValue();
             OptionMap options = optionMapInjectedValue.getValue();
-            streamServer = networkServerProvider.createServer(getSocketAddress(), options, sap);
+            streamServer = networkServerProvider.createServer(getSocketAddress(), options, sap, null);
             log.infof("Listening on %s", getSocketAddress());
 
         } catch (BindException e) {
