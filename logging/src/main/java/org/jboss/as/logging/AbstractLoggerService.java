@@ -40,7 +40,11 @@ public abstract class AbstractLoggerService implements Service<Logger> {
     private Logger logger;
 
     protected AbstractLoggerService(final String name) {
-        this.name = name;
+        if (CommonAttributes.ROOT_LOGGER_NAME.equals(name)) {
+            this.name = "";
+        } else {
+            this.name = name;
+        }
     }
 
     protected final String getName() {

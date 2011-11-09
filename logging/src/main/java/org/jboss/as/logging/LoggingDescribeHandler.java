@@ -57,6 +57,7 @@ import static org.jboss.as.logging.CommonAttributes.PERIODIC_ROTATING_FILE_HANDL
 import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
 import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
 import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
+import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER_NAME;
 import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
 import static org.jboss.as.logging.CommonAttributes.SIZE_ROTATING_FILE_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
@@ -79,10 +80,11 @@ public class LoggingDescribeHandler implements OperationStepHandler, Description
         final ModelNode result = context.getResult();
         result.add(LoggingExtension.NewLoggingSubsystemAdd.createOperation(rootAddress.toModelNode()));
         if (model.hasDefined(ROOT_LOGGER)) {
-            ModelNode add = Util.getEmptyOperation(RootLoggerAdd.OPERATION_NAME, rootAddress.toModelNode());
-            copy(LEVEL, model.get(ROOT_LOGGER), add);
-            copy(FILTER, model.get(ROOT_LOGGER), add);
-            copy(HANDLERS, model.get(ROOT_LOGGER), add);
+            final ModelNode add = Util.getEmptyOperation(RootLoggerAdd.OPERATION_NAME, rootAddress.append(LoggingExtension.rootLoggerPath).toModelNode());
+            final ModelNode rootLogger = model.get(ROOT_LOGGER, ROOT_LOGGER_NAME);
+            copy(LEVEL, rootLogger, add);
+            copy(FILTER, rootLogger, add);
+            copy(HANDLERS, rootLogger, add);
             result.add(add);
         }
         if (model.hasDefined(LOGGER)) {

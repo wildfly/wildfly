@@ -45,6 +45,7 @@ interface CommonAttributes {
 
     SimpleAttributeDefinition APPEND = new SimpleAttributeDefinitionBuilder("append", ModelType.BOOLEAN, true).
             setDefaultValue(new ModelNode().set(true)).
+            setFlags(AttributeAccess.Flag.RESTART_JVM).
             build();
 
     String ASYNC_HANDLER = "async-handler";
@@ -86,8 +87,7 @@ interface CommonAttributes {
             build();
 
     SimpleAttributeDefinition LEVEL = new SimpleAttributeDefinitionBuilder("level", ModelType.STRING, true).
-            setDefaultValue(new ModelNode().set(Level.INFO.getName())).
-            setValidator(new LogLevelValidator(false)).
+            setValidator(new LogLevelValidator(true)).
             build();
 
     String LEVEL_RANGE = "level-range";
@@ -157,9 +157,11 @@ interface CommonAttributes {
 
     String ROOT_LOGGER = "root-logger";
 
-    SimpleAttributeDefinition ROTATE_SIZE = new SimpleAttributeDefinitionBuilder("rotate-size", ModelType.LONG).
-            setDefaultValue(new ModelNode().set((2L * 1024L * 1024L))).
-            setValidator(new LongRangeValidator(1L)).
+    String ROOT_LOGGER_NAME = "ROOT";
+
+    SimpleAttributeDefinition ROTATE_SIZE = new SimpleAttributeDefinitionBuilder("rotate-size", ModelType.STRING).
+            setDefaultValue(new ModelNode().set("2m")).
+            setValidator(new SizeValidator()).
             build();
 
     String SIZE_ROTATING_FILE_HANDLER = "size-rotating-file-handler";

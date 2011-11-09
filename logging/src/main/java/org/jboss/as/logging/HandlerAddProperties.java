@@ -26,7 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
-import static org.jboss.as.logging.CommonAttributes.NAME;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,7 +61,6 @@ public abstract class HandlerAddProperties<T extends HandlerService> extends Abs
         this.attributes = new HashSet<String>(attributes);
         this.attributes.addAll(attributes);
         this.attributeDefinitions = new ArrayList<AttributeDefinition>();
-        this.attributeDefinitions.add(NAME);
         this.attributeDefinitions.add(ENCODING);
         this.attributeDefinitions.add(FORMATTER);
         this.attributeDefinitions.add(LEVEL);

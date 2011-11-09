@@ -42,7 +42,7 @@ final class RootLoggerService extends AbstractLoggerService {
     private Handler[] saved;
 
     protected RootLoggerService() {
-        super("");
+        super(CommonAttributes.ROOT_LOGGER_NAME);
     }
 
     protected synchronized void start(final StartContext context, final Logger logger) throws StartException {

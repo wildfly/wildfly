@@ -32,6 +32,7 @@ import java.util.Collection;
 
 import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
+import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER_NAME;
 
 
 /**
@@ -44,12 +45,7 @@ public class RootLoggerUnassignHandler extends LoggerUnassignHandler {
     static final RootLoggerUnassignHandler INSTANCE = new RootLoggerUnassignHandler();
 
     @Override
-    protected ModelNode getParent(final ModelNode model) {
-        return model.get(ROOT_LOGGER);
-    }
-
-    @Override
     protected String getLoggerName(ModelNode operation) {
-        return "";
+        return ROOT_LOGGER_NAME;
     }
 }

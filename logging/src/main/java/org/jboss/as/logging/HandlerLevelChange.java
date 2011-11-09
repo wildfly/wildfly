@@ -58,6 +58,7 @@ public class HandlerLevelChange extends AbstractModelUpdateHandler {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
+        @SuppressWarnings("unchecked")
         final ServiceController<Handler> controller = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(name));
         final ModelNode level = LEVEL.resolveModelAttribute(context, model);
         if (controller != null && level.isDefined()) {

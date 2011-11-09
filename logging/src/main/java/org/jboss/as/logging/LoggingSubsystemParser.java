@@ -78,6 +78,7 @@ import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
 import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
 import static org.jboss.as.logging.CommonAttributes.RELATIVE_TO;
 import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
+import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER_NAME;
 import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
 import static org.jboss.as.logging.CommonAttributes.SIZE_ROTATING_FILE_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
@@ -318,7 +319,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
 
         final ModelNode node = new ModelNode();
         node.get(OP).set(RootLoggerAdd.OPERATION_NAME);
-        node.get(OP_ADDR).set(address);
+        node.get(OP_ADDR).set(address).add(ROOT_LOGGER, ROOT_LOGGER_NAME);
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Location location = reader.getLocation();
@@ -411,7 +412,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                 case TARGET: {
                     final String target = readStringAttributeElement(reader, "name");
                     if (!(target.equals("System.out") || target.equals("System.err"))) {
-                        throw new XMLStreamException(MESSAGES.invalidTargetName(), reader.getLocation());
+                        throw new XMLStreamException(MESSAGES.invalidTargetName(EnumSet.allOf(Target.class)), reader.getLocation());
                     }
                     TARGET.parseAndSetParameter(target, node, location);
                     break;
@@ -741,43 +742,6 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         list.add(node);
     }
 
-    private static final Pattern SIZE_PATTERN = Pattern.compile("(\\d+)([kKmMgGbBtT])?");
-
-    public static long parseSize(final String value) {
-        final Matcher matcher = SIZE_PATTERN.matcher(value);
-        if (!matcher.matches()) {
-            throw new IllegalArgumentException();
-        }
-        long qty = Long.parseLong(matcher.group(1), 10);
-        final String chr = matcher.group(2);
-        if (chr != null) {
-            switch (chr.charAt(0)) {
-                case 'b':
-                case 'B':
-                    break;
-                case 'k':
-                case 'K':
-                    qty <<= 10L;
-                    break;
-                case 'm':
-                case 'M':
-                    qty <<= 20L;
-                    break;
-                case 'g':
-                case 'G':
-                    qty <<= 30L;
-                    break;
-                case 't':
-                case 'T':
-                    qty <<= 40L;
-                    break;
-                default:
-                    throw new IllegalStateException();
-            }
-        }
-        return qty;
-    }
-
     private static void parseFileElement(final ModelNode node, final XMLExtendedStreamReader reader) throws XMLStreamException {
         final EnumSet<Attribute> required = EnumSet.of(Attribute.PATH);
         final int count = reader.getAttributeCount();
@@ -1009,7 +973,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             }
         }
         if (node.hasDefined(ROOT_LOGGER)) {
-            writeRootLogger(writer, node.get(ROOT_LOGGER));
+            writeRootLogger(writer, node.get(ROOT_LOGGER, ROOT_LOGGER_NAME));
         }
         writer.writeEndElement();
     }

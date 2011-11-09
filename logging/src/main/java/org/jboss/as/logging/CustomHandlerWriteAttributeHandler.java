@@ -33,7 +33,7 @@ import java.util.logging.Handler;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class CustomHandlerWriteAttributeHandler extends LogHandlerWriteAttributeHandler<Handler> {
+public class CustomHandlerWriteAttributeHandler extends AbstractLogHandlerWriteAttributeHandler<Handler> {
     static final CustomHandlerWriteAttributeHandler INSTANCE = new CustomHandlerWriteAttributeHandler();
 
     private CustomHandlerWriteAttributeHandler() {
@@ -41,13 +41,13 @@ public class CustomHandlerWriteAttributeHandler extends LogHandlerWriteAttribute
     }
 
     @Override
-    protected boolean doApplyUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final Handler handler) throws OperationFailedException {
+    protected boolean doApplyUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final Handler handler) throws OperationFailedException {
         // TODO (jrp) see if we can implement a write-attribute(property)
         return false;
     }
 
     @Override
-    protected void doRevertUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final Handler handler) throws OperationFailedException {
+    protected void doRevertUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final Handler handler) throws OperationFailedException {
         //TODO (jrp) - return proper value
     }
 }

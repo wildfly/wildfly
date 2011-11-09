@@ -51,6 +51,7 @@ public class AsyncHandlerAssignSubhandler extends AbstractLogHandlerAssignmentHa
 
     @Override
     protected void updateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        NAME.validateAndSet(operation, model);
         updateHandlersForAssign(SUBHANDLERS, operation, model);
     }
 
@@ -62,7 +63,9 @@ public class AsyncHandlerAssignSubhandler extends AbstractLogHandlerAssignmentHa
         String handlerNameToAssign = NAME.resolveModelAttribute(context, model).asString();
 
         ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
+        @SuppressWarnings("unchecked")
         ServiceController<Handler> asyncHandlerController = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(asyncHandlerName));
+        @SuppressWarnings("unchecked")
         ServiceController<Handler> handlerToAssignController = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(handlerNameToAssign));
 
         if (handlerToAssignController == null) {

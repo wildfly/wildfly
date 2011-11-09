@@ -28,16 +28,6 @@ import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Handler;
-
 import org.jboss.as.controller.AbstractModelUpdateHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -47,6 +37,16 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
+
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Handler;
 
 /**
  * Parent operation responsible for updating the common attributes of logging handlers.
@@ -94,8 +94,10 @@ public abstract class HandlerUpdateProperties<T extends Handler> extends Abstrac
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
+        @SuppressWarnings("unchecked")
         final ServiceController<Handler> controller = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(name));
         if (controller != null) {
+            @SuppressWarnings("unchecked")
             final T handler = (T) controller.getValue();
             final ModelNode level = LEVEL.resolveModelAttribute(context, model);
             final ModelNode formatter = FORMATTER.resolveModelAttribute(context, model);

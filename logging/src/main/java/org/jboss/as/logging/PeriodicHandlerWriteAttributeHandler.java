@@ -35,29 +35,32 @@ import org.jboss.logmanager.handlers.PeriodicRotatingFileHandler;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class PeriodicHandlerWriteAttributeHandler extends LogHandlerWriteAttributeHandler<PeriodicRotatingFileHandler> {
+public class PeriodicHandlerWriteAttributeHandler extends AbstractFileHandlerWriteAttributeHandler<PeriodicRotatingFileHandler> {
     static final PeriodicHandlerWriteAttributeHandler INSTANCE = new PeriodicHandlerWriteAttributeHandler();
 
     private PeriodicHandlerWriteAttributeHandler() {
-        super(APPEND, SUFFIX);
+        super(SUFFIX);
     }
 
     @Override
-    protected boolean doApplyUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final PeriodicRotatingFileHandler handler) throws OperationFailedException {
+    protected boolean doApplyUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final PeriodicRotatingFileHandler handler) throws OperationFailedException {
+        boolean result = super.doApplyUpdateToRuntime(operation, attributeName, resolvedValue, currentValue, handler);
         if (APPEND.getName().equals(attributeName)) {
-            handler.setAppend(APPEND.resolveModelAttribute(context, operation).asBoolean());
+            handler.setAppend(resolvedValue.asBoolean());
         } else if (SUFFIX.getName().equals(attributeName)) {
-            handler.setSuffix(SUFFIX.resolveModelAttribute(context, operation).asString());
+            handler.setSuffix(resolvedValue.asString());
+            result = false;
         }
-        return false;
+        return result;
     }
 
     @Override
-    protected void doRevertUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final PeriodicRotatingFileHandler handler) throws OperationFailedException {
+    protected void doRevertUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final PeriodicRotatingFileHandler handler) throws OperationFailedException {
+        super.doRevertUpdateToRuntime(operation, attributeName, valueToRestore, valueToRevert, handler);
         if (APPEND.getName().equals(attributeName)) {
-            handler.setAppend(APPEND.resolveModelAttribute(context, valueToRestore).asBoolean());
+            handler.setAppend(valueToRestore.asBoolean());
         } else if (SUFFIX.getName().equals(attributeName)) {
-            handler.setSuffix(SUFFIX.resolveModelAttribute(context, valueToRestore).asString());
+            handler.setSuffix(valueToRestore.asString());
         }
     }
 }
