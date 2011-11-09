@@ -166,9 +166,6 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelMarshallingContext> {
 
-    // TODO perhaps have this provided by subclasses via an abstract method
-    protected static final Logger log = Logger.getLogger("org.jboss.as.controller");
-
     /** The restricted path names. */
     protected static final Set<String> RESTRICTED_PATHS;
 
