@@ -19,8 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.controller.parsing;
+package org.jboss.as.server.parsing;
 
+import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.Test;

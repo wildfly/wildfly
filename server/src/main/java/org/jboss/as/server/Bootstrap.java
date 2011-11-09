@@ -25,13 +25,11 @@ package org.jboss.as.server;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-import javax.security.auth.login.Configuration;
 import javax.xml.namespace.QName;
 
 import org.jboss.as.controller.parsing.Namespace;
-import org.jboss.as.controller.parsing.StandaloneXml;
+import org.jboss.as.server.parsing.StandaloneXml;
 import org.jboss.as.controller.persistence.BackupXmlConfigurationPersister;
-import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.modules.Module;

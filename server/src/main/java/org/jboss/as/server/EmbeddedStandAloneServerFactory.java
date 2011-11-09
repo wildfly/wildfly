@@ -51,7 +51,7 @@ import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
 import org.jboss.as.controller.parsing.Namespace;
-import org.jboss.as.controller.parsing.StandaloneXml;
+import org.jboss.as.server.parsing.StandaloneXml;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.persistence.TransientConfigurationPersister;
 import org.jboss.as.embedded.ServerStartException;

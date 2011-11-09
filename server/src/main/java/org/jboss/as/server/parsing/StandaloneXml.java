@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller.parsing;
+package org.jboss.as.server.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
@@ -63,6 +63,11 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.parsing.Attribute;
+import org.jboss.as.controller.parsing.CommonXml;
+import org.jboss.as.controller.parsing.Element;
+import org.jboss.as.controller.parsing.Namespace;
+import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
