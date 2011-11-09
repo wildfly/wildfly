@@ -32,6 +32,7 @@ import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
@@ -89,7 +90,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
 
         // Make sure the lock has been taken
         context.getResourceRegistrationForUpdate();
-        context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
+        final Resource rootResource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
         context.acquireControllerLock();
 
         final Map<String, List<ParsedBootOp>> runtimeOpsBySubsystem = new LinkedHashMap<String, List<ParsedBootOp>>();
@@ -126,6 +127,20 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                 for (ParsedBootOp loggingOp : loggingOps) {
                     context.addStep(loggingOp.response, loggingOp.operation, loggingOp.handler, OperationContext.Stage.RUNTIME);
                 }
+            }
+
+            // AS7-2561
+            // The parallel execution will have added the subsystems to their parent resource in random order.
+            // We need to restore the order that came in the XML.
+            final Map<String, Resource> subsystemResources = new LinkedHashMap<String, Resource>();
+            for (String subsystemName : opsBySubsystem.keySet()) {
+                final Resource resource = rootResource.removeChild(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, subsystemName));
+                if (resource != null) {
+                    subsystemResources.put(subsystemName, resource);
+                }
+            }
+            for (Map.Entry<String, Resource> entry : subsystemResources.entrySet()) {
+                rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, entry.getKey()), entry.getValue());
             }
 
             // Add step to execute all the runtime ops recorded by the other subsystem tasks
