@@ -32,14 +32,17 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
  * A {@code DeploymentUnitProcessor} for JACC policies.
  *
- * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
+ * @author Marcus Moyses
+ * @author Anil Saldhana
  */
 public class JaccEjbDeploymentProcessor implements DeploymentUnitProcessor {
 
@@ -50,14 +53,13 @@ public class JaccEjbDeploymentProcessor implements DeploymentUnitProcessor {
         deployer = new EjbSecurityDeployer();
         JaccService<?> service = deployer.deploy(deploymentUnit);
         if (service != null) {
-            String name = deploymentUnit.getName();
+            final DeploymentUnit parentDU = deploymentUnit.getParent();
             // EJBs maybe included directly in war deployment
-            final ServiceName jaccServiceName = JaccService.SERVICE_NAME.append(name).append("ejb");
+            ServiceName jaccServiceName = getJaccServiceName(deploymentUnit);
             final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
             ServiceBuilder<?> builder = serviceTarget.addService(jaccServiceName, service);
-            if (deploymentUnit.getParent() != null) {
+            if (parentDU != null) {
                 // add dependency to parent policy
-                final DeploymentUnit parentDU = deploymentUnit.getParent();
                 builder.addDependency(JaccService.SERVICE_NAME.append(parentDU.getName()), PolicyConfiguration.class,
                         service.getParentPolicyInjector());
             }
@@ -66,10 +68,31 @@ public class JaccEjbDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
     @Override
-    public void undeploy(DeploymentUnit context) {
+    public void undeploy(DeploymentUnit deploymentUnit) {
         AbstractSecurityDeployer<?> deployer = null;
         deployer = new EjbSecurityDeployer();
-        deployer.undeploy(context);
+        deployer.undeploy(deploymentUnit);
+
+        // EJBs maybe included directly in war deployment
+        ServiceName jaccServiceName = getJaccServiceName(deploymentUnit);
+        ServiceRegistry registry = deploymentUnit.getServiceRegistry();
+        if(registry != null){
+            ServiceController<?> serviceController = registry.getService(jaccServiceName);
+            if (serviceController != null) {
+                serviceController.setMode(ServiceController.Mode.REMOVE);
+            }
+        }
     }
 
+    private ServiceName getJaccServiceName(DeploymentUnit deploymentUnit){
+        String name = deploymentUnit.getName();
+        final DeploymentUnit parentDU = deploymentUnit.getParent();
+        // EJBs maybe included directly in war deployment
+        ServiceName jaccServiceName = JaccService.SERVICE_NAME.append(name).append("ejb");
+        //Qualify the service name properly with parent DU
+        if(parentDU != null) {
+            jaccServiceName = jaccServiceName.append(parentDU.getName());
+        }
+        return jaccServiceName;
+    }
 }

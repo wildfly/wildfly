@@ -29,7 +29,8 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 /**
  * A helper class for security deployment processors
  *
- * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
+ * @author Marcus Moyses
+ * @author Anil Saldhana
  */
 public abstract class AbstractSecurityDeployer<T> {
 
