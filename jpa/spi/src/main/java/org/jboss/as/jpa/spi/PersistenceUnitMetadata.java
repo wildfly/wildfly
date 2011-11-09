@@ -26,6 +26,7 @@ import org.jboss.jandex.Index;
 
 import javax.persistence.SharedCacheMode;
 import javax.persistence.ValidationMode;
+import javax.persistence.spi.ClassTransformer;
 import javax.persistence.spi.PersistenceUnitInfo;
 import javax.persistence.spi.PersistenceUnitTransactionType;
 import javax.sql.DataSource;
@@ -91,4 +92,6 @@ public interface PersistenceUnitMetadata extends PersistenceUnitInfo {
     void setTempClassLoaderFactory(TempClassLoaderFactory tempClassLoaderFactory);
 
     void setSharedCacheMode(SharedCacheMode sharedCacheMode);
+
+    List<ClassTransformer> getTransformers();
 }

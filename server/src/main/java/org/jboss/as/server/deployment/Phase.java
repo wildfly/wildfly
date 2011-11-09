@@ -341,6 +341,7 @@ public enum Phase {
     public static final int POST_MODULE_ENV_ENTRY                       = 0x1400;
     public static final int POST_MODULE_EJB_REF                         = 0x1500;
     public static final int POST_MODULE_PERSISTENCE_REF                 = 0x1600;
+    public static final int POST_MODULE_PERSISTENCE_CLASS_FILE_TRANSFORMER = 0x1620;
     public static final int POST_MODULE_DATASOURCE_REF                  = 0x1700;
     public static final int POST_MODULE_WS_REF_DESCRIPTOR               = 0x1800;
     public static final int POST_MODULE_WS_REF_ANNOTATION               = 0x1801;
