@@ -80,7 +80,7 @@ public class BridgeRemove extends AbstractRemoveStepHandler implements Descripti
         if (hqService != null && hqService.getState() == ServiceController.State.UP) {
 
             final String name = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
-            final BridgeConfiguration bridgeConfiguration = BridgeAdd.createBridgeConfiguration(name, model);
+            final BridgeConfiguration bridgeConfiguration = BridgeAdd.createBridgeConfiguration(context, name, model);
             HornetQServer server = HornetQServer.class.cast(hqService.getValue());
             BridgeAdd.createBridge(name, bridgeConfiguration, server.getHornetQServerControl());
         }

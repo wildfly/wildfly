@@ -1,5 +1,7 @@
 package org.jboss.as.mail.extension;
 
+import java.util.List;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -15,8 +17,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-
-import java.util.List;
 
 /**
  * @author Tomaz Cerar
@@ -82,7 +82,7 @@ public class MailSessionAdd extends AbstractAddStepHandler {
         final String jndiName = Util.getJndiName(operation);
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
-        MailSessionService service = createMailSessionService(operation);
+        MailSessionService service = createMailSessionService(context, operation);
         final ServiceName serviceName = SERVICE_NAME_BASE.append(jndiName);
         final ServiceBuilder<?> mailSessionBuilder = serviceTarget.addService(serviceName, service);
 
@@ -121,8 +121,8 @@ public class MailSessionAdd extends AbstractAddStepHandler {
 
     }
 
-    protected MailSessionService createMailSessionService(final ModelNode operation) throws OperationFailedException {
-        final MailSessionConfig config = Util.from(operation);
+    protected MailSessionService createMailSessionService(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+        final MailSessionConfig config = Util.from(context, operation);
         return new MailSessionService(config);
     }
 }

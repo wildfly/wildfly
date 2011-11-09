@@ -36,6 +36,7 @@ import static org.jboss.as.messaging.CommonAttributes.CLIENT_FAILURE_CHECK_PERIO
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
 import static org.jboss.as.messaging.CommonAttributes.COMPRESS_LARGE_MESSAGES;
 import static org.jboss.as.messaging.CommonAttributes.CONFIRMATION_WINDOW_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY_RECONNECT_ATTEMPTS;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_THREAD_POOL_MAX_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_TTL;
@@ -53,7 +54,6 @@ import static org.jboss.as.messaging.CommonAttributes.MIN_LARGE_MESSAGE_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.PRE_ACK;
 import static org.jboss.as.messaging.CommonAttributes.PRODUCER_MAX_RATE;
 import static org.jboss.as.messaging.CommonAttributes.PRODUCER_WINDOW_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY_RECONNECT_ATTEMPTS;
 import static org.jboss.as.messaging.CommonAttributes.RETRY_INTERVAL;
 import static org.jboss.as.messaging.CommonAttributes.RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_BATCH_SIZE;
@@ -101,7 +101,7 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         final String name = address.getLastElement().getValue();
         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
 
-        final ConnectionFactoryConfiguration configuration = createConfiguration(name, operation);
+        final ConnectionFactoryConfiguration configuration = createConfiguration(context, name, operation);
         final ConnectionFactoryService service = new ConnectionFactoryService(configuration);
         final ServiceName serviceName = JMSServices.getConnectionFactoryBaseServiceName(hqServiceName).append(name);
         newControllers.add(context.getServiceTarget().addService(serviceName, service)
@@ -111,24 +111,24 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
                 .install());
     }
 
-    static ConnectionFactoryConfiguration createConfiguration(final String name, final ModelNode operation) throws OperationFailedException {
+    static ConnectionFactoryConfiguration createConfiguration(final OperationContext context, final String name, final ModelNode operation) throws OperationFailedException {
         final ConnectionFactoryConfiguration config = new ConnectionFactoryConfigurationImpl(name, HornetQClient.DEFAULT_HA, JndiEntriesAttribute.getJndiBindings(operation));
 
-        config.setHA(HA.validateResolvedOperation(operation).asBoolean());  // TODO this is not in the xsd
-        config.setAutoGroup(AUTO_GROUP.validateResolvedOperation(operation).asBoolean());
-        config.setBlockOnAcknowledge(BLOCK_ON_ACK.validateResolvedOperation(operation).asBoolean());
-        config.setBlockOnDurableSend(BLOCK_ON_DURABLE_SEND.validateResolvedOperation(operation).asBoolean());
-        config.setBlockOnNonDurableSend(BLOCK_ON_NON_DURABLE_SEND.validateResolvedOperation(operation).asBoolean());
-        config.setCacheLargeMessagesClient(CACHE_LARGE_MESSAGE_CLIENT.validateResolvedOperation(operation).asBoolean());
-        config.setCallTimeout(CALL_TIMEOUT.validateResolvedOperation(operation).asLong());
-        config.setClientFailureCheckPeriod(CLIENT_FAILURE_CHECK_PERIOD.validateResolvedOperation(operation).asInt());
-        final ModelNode clientId = CLIENT_ID.validateResolvedOperation(operation);
+        config.setHA(HA.resolveModelAttribute(context, operation).asBoolean());  // TODO this is not in the xsd
+        config.setAutoGroup(AUTO_GROUP.resolveModelAttribute(context, operation).asBoolean());
+        config.setBlockOnAcknowledge(BLOCK_ON_ACK.resolveModelAttribute(context, operation).asBoolean());
+        config.setBlockOnDurableSend(BLOCK_ON_DURABLE_SEND.resolveModelAttribute(context, operation).asBoolean());
+        config.setBlockOnNonDurableSend(BLOCK_ON_NON_DURABLE_SEND.resolveModelAttribute(context, operation).asBoolean());
+        config.setCacheLargeMessagesClient(CACHE_LARGE_MESSAGE_CLIENT.resolveModelAttribute(context, operation).asBoolean());
+        config.setCallTimeout(CALL_TIMEOUT.resolveModelAttribute(context, operation).asLong());
+        config.setClientFailureCheckPeriod(CLIENT_FAILURE_CHECK_PERIOD.resolveModelAttribute(context, operation).asInt());
+        final ModelNode clientId = CLIENT_ID.resolveModelAttribute(context, operation);
         if (clientId.isDefined()) {
             config.setClientID(clientId.asString());
         }
-        config.setCompressLargeMessages(COMPRESS_LARGE_MESSAGES.validateResolvedOperation(operation).asBoolean());
-        config.setConfirmationWindowSize(CONFIRMATION_WINDOW_SIZE.validateResolvedOperation(operation).asInt());
-        config.setConnectionTTL(CONNECTION_TTL.validateResolvedOperation(operation).asLong());
+        config.setCompressLargeMessages(COMPRESS_LARGE_MESSAGES.resolveModelAttribute(context, operation).asBoolean());
+        config.setConfirmationWindowSize(CONFIRMATION_WINDOW_SIZE.resolveModelAttribute(context, operation).asInt());
+        config.setConnectionTTL(CONNECTION_TTL.resolveModelAttribute(context, operation).asLong());
         if (operation.hasDefined(CONNECTOR)) {
             ModelNode connectorRefs = operation.get(CONNECTOR);
             List<String> connectorNames = new ArrayList<String>();
@@ -140,39 +140,39 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         }
         //config.setConnectorConfigs(connectorConfigs)
         // config.setConnectorNames(connectors);
-        config.setConsumerMaxRate(CONSUMER_MAX_RATE.validateResolvedOperation(operation).asInt());
-        config.setConsumerWindowSize(CONSUMER_WINDOW_SIZE.validateResolvedOperation(operation).asInt());
-        final ModelNode discoveryGroupName = DISCOVERY_GROUP_NAME.validateResolvedOperation(operation);
+        config.setConsumerMaxRate(CONSUMER_MAX_RATE.resolveModelAttribute(context, operation).asInt());
+        config.setConsumerWindowSize(CONSUMER_WINDOW_SIZE.resolveModelAttribute(context, operation).asInt());
+        final ModelNode discoveryGroupName = DISCOVERY_GROUP_NAME.resolveModelAttribute(context, operation);
         if (discoveryGroupName.isDefined()) {
             config.setDiscoveryGroupName(discoveryGroupName.asString());
         }
 
-        config.setDupsOKBatchSize(DUPS_OK_BATCH_SIZE.validateResolvedOperation(operation).asInt());
-        config.setFailoverOnInitialConnection(FAILOVER_ON_INITIAL_CONNECTION.validateResolvedOperation(operation).asBoolean());
+        config.setDupsOKBatchSize(DUPS_OK_BATCH_SIZE.resolveModelAttribute(context, operation).asInt());
+        config.setFailoverOnInitialConnection(FAILOVER_ON_INITIAL_CONNECTION.resolveModelAttribute(context, operation).asBoolean());
 
-        final ModelNode groupId = GROUP_ID.validateResolvedOperation(operation);
+        final ModelNode groupId = GROUP_ID.resolveModelAttribute(context, operation);
         if(groupId.isDefined()) {
             config.setGroupID(groupId.asString());
         }
 
-        final ModelNode lbcn = LOAD_BALANCING_CLASS_NAME.validateResolvedOperation(operation);
+        final ModelNode lbcn = LOAD_BALANCING_CLASS_NAME.resolveModelAttribute(context, operation);
         if(lbcn.isDefined()) {
             config.setLoadBalancingPolicyClassName(lbcn.asString());
         }
 
-        config.setMaxRetryInterval(MAX_RETRY_INTERVAL.validateResolvedOperation(operation).asLong());
-        config.setMinLargeMessageSize(MIN_LARGE_MESSAGE_SIZE.validateResolvedOperation(operation).asInt());
-        config.setPreAcknowledge(PRE_ACK.validateResolvedOperation(operation).asBoolean());
-        config.setProducerMaxRate(PRODUCER_MAX_RATE.validateResolvedOperation(operation).asInt());
-        config.setProducerWindowSize(PRODUCER_WINDOW_SIZE.validateResolvedOperation(operation).asInt());
-        config.setReconnectAttempts(CONNECTION_FACTORY_RECONNECT_ATTEMPTS.validateResolvedOperation(operation).asInt());
-        config.setRetryInterval(RETRY_INTERVAL.validateResolvedOperation(operation).asLong());
-        config.setRetryIntervalMultiplier(RETRY_INTERVAL_MULTIPLIER.validateResolvedOperation(operation).asDouble());
-        config.setScheduledThreadPoolMaxSize(CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE.validateResolvedOperation(operation).asInt());
-        config.setThreadPoolMaxSize(CONNECTION_THREAD_POOL_MAX_SIZE.validateResolvedOperation(operation).asInt());
-        config.setTransactionBatchSize(TRANSACTION_BATCH_SIZE.validateResolvedOperation(operation).asInt());
-        config.setUseGlobalPools(USE_GLOBAL_POOLS.validateResolvedOperation(operation).asBoolean());
-        config.setLoadBalancingPolicyClassName(LOAD_BALANCING_CLASS_NAME.validateResolvedOperation(operation).asString());
+        config.setMaxRetryInterval(MAX_RETRY_INTERVAL.resolveModelAttribute(context, operation).asLong());
+        config.setMinLargeMessageSize(MIN_LARGE_MESSAGE_SIZE.resolveModelAttribute(context, operation).asInt());
+        config.setPreAcknowledge(PRE_ACK.resolveModelAttribute(context, operation).asBoolean());
+        config.setProducerMaxRate(PRODUCER_MAX_RATE.resolveModelAttribute(context, operation).asInt());
+        config.setProducerWindowSize(PRODUCER_WINDOW_SIZE.resolveModelAttribute(context, operation).asInt());
+        config.setReconnectAttempts(CONNECTION_FACTORY_RECONNECT_ATTEMPTS.resolveModelAttribute(context, operation).asInt());
+        config.setRetryInterval(RETRY_INTERVAL.resolveModelAttribute(context, operation).asLong());
+        config.setRetryIntervalMultiplier(RETRY_INTERVAL_MULTIPLIER.resolveModelAttribute(context, operation).asDouble());
+        config.setScheduledThreadPoolMaxSize(CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, operation).asInt());
+        config.setThreadPoolMaxSize(CONNECTION_THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, operation).asInt());
+        config.setTransactionBatchSize(TRANSACTION_BATCH_SIZE.resolveModelAttribute(context, operation).asInt());
+        config.setUseGlobalPools(USE_GLOBAL_POOLS.resolveModelAttribute(context, operation).asBoolean());
+        config.setLoadBalancingPolicyClassName(LOAD_BALANCING_CLASS_NAME.resolveModelAttribute(context, operation).asString());
 
         return config;
     }

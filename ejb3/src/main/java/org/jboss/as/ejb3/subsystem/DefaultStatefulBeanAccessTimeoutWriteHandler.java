@@ -58,7 +58,7 @@ class DefaultStatefulBeanAccessTimeoutWriteHandler extends AbstractWriteAttribut
     }
 
     void updateOrCreateDefaultStatefulBeanAccessTimeoutService(final OperationContext context, final ModelNode model, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        final long defaultAccessTimeout = EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT.validateResolvedOperation(model).asLong();
+        final long defaultAccessTimeout = EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT.resolveModelAttribute(context, model).asLong();
         final ServiceName serviceName = DefaultAccessTimeoutService.STATEFUL_SERVICE_NAME;
         final ServiceRegistry registry = context.getServiceRegistry(true);
         final ServiceController sc = registry.getService(serviceName);

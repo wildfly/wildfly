@@ -22,15 +22,11 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.AbstractModelUpdateHandler;
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceRegistry;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.logging.CommonAttributes.ENCODING;
+import static org.jboss.as.logging.CommonAttributes.FORMATTER;
+import static org.jboss.as.logging.CommonAttributes.LEVEL;
+import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -42,12 +38,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Handler;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.logging.CommonAttributes.ENCODING;
-import static org.jboss.as.logging.CommonAttributes.FORMATTER;
-import static org.jboss.as.logging.CommonAttributes.LEVEL;
-import static org.jboss.as.logging.CommonAttributes.NAME;
-import static org.jboss.as.logging.LoggingMessages.MESSAGES;
+import org.jboss.as.controller.AbstractModelUpdateHandler;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * Parent operation responsible for updating the common attributes of logging handlers.
@@ -98,9 +97,9 @@ public abstract class HandlerUpdateProperties<T extends Handler> extends Abstrac
         final ServiceController<Handler> controller = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(name));
         if (controller != null) {
             final T handler = (T) controller.getValue();
-            final ModelNode level = LEVEL.validateResolvedOperation(model);
-            final ModelNode formatter = FORMATTER.validateResolvedOperation(model);
-            final ModelNode encoding = ENCODING.validateResolvedOperation(model);
+            final ModelNode level = LEVEL.resolveModelAttribute(context, model);
+            final ModelNode formatter = FORMATTER.resolveModelAttribute(context, model);
+            final ModelNode encoding = ENCODING.resolveModelAttribute(context, model);
             // TODO (jrp) implement filter
 
             if (level.isDefined()) {
@@ -108,7 +107,7 @@ public abstract class HandlerUpdateProperties<T extends Handler> extends Abstrac
             }
 
             if (formatter.isDefined()) {
-                AbstractFormatterSpec.fromModelNode(model).apply(handler);
+                AbstractFormatterSpec.fromModelNode(context, model).apply(handler);
             }
 
             if (encoding.isDefined()) {
@@ -118,11 +117,11 @@ public abstract class HandlerUpdateProperties<T extends Handler> extends Abstrac
                     throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToSetHandlerEncoding()));
                 }
             }
-            updateRuntime(model, handler);
+            updateRuntime(context, model, handler);
         }
     }
 
-    protected abstract void updateRuntime(final ModelNode operation, final T handler) throws OperationFailedException;
+    protected abstract void updateRuntime(OperationContext context, final ModelNode operation, final T handler) throws OperationFailedException;
 
     /**
      * Copies the attribute, represented by the {@code name} parameter, from one {@link ModelNode} to another if the

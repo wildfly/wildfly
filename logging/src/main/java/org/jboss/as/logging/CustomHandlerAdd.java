@@ -22,17 +22,17 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
+import static org.jboss.as.logging.CommonAttributes.CLASS;
+import static org.jboss.as.logging.CommonAttributes.MODULE;
+import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
 
 import java.util.Arrays;
 import java.util.logging.Handler;
 
-import static org.jboss.as.logging.CommonAttributes.CLASS;
-import static org.jboss.as.logging.CommonAttributes.MODULE;
-import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
 
 /**
  * Date: 03.08.2011
@@ -48,9 +48,9 @@ class CustomHandlerAdd extends HandlerAddProperties<CustomHandlerService> {
     }
 
     @Override
-    protected CustomHandlerService createHandlerService(final ModelNode model) throws OperationFailedException {
-        final String className = CLASS.validateResolvedOperation(model).asString();
-        final String moduleName = MODULE.validateResolvedOperation(model).asString();
+    protected CustomHandlerService createHandlerService(OperationContext context, final ModelNode model) throws OperationFailedException {
+        final String className = CLASS.resolveModelAttribute(context, model).asString();
+        final String moduleName = MODULE.resolveModelAttribute(context, model).asString();
         return new CustomHandlerService(className, moduleName);
     }
 

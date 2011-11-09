@@ -30,6 +30,7 @@ import static org.jboss.as.web.Constants.EXECUTOR;
 import static org.jboss.as.web.Constants.MAX_CONNECTIONS;
 import static org.jboss.as.web.Constants.MAX_POST_SIZE;
 import static org.jboss.as.web.Constants.MAX_SAVE_POST_SIZE;
+import static org.jboss.as.web.Constants.PASSWORD;
 import static org.jboss.as.web.Constants.PROTOCOL;
 import static org.jboss.as.web.Constants.PROXY_NAME;
 import static org.jboss.as.web.Constants.PROXY_PORT;
@@ -133,8 +134,7 @@ class WebConnectorAdd extends AbstractAddStepHandler implements DescriptionProvi
         final String bindingRef = operation.require(SOCKET_BINDING).asString();
 
         final boolean enabled = operation.hasDefined(ENABLED) ? operation.get(ENABLED).asBoolean() : true;
-        final String scheme = operation.hasDefined(SCHEME) ? operation.get(SCHEME).asString() : null;
-        final WebConnectorService service = new WebConnectorService(operation.require(PROTOCOL).asString(), scheme);
+        final WebConnectorService service = new WebConnectorService(operation.require(PROTOCOL).asString(), operation.get(SCHEME).asString(), unmaskSslPassword(context, operation));
         if (operation.hasDefined(SECURE)) service.setSecure(operation.get(SECURE).asBoolean());
         if (operation.hasDefined(ENABLE_LOOKUPS))
             service.setEnableLookups(operation.get(ENABLE_LOOKUPS).asBoolean());
@@ -170,5 +170,15 @@ class WebConnectorAdd extends AbstractAddStepHandler implements DescriptionProvi
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return WebSubsystemDescriptions.getConnectorAdd(locale);
+    }
+
+    private String unmaskSslPassword(OperationContext context, ModelNode connector) {
+        if (!connector.hasDefined(SSL)) {
+            return null;
+        }
+        if (!connector.get(SSL).hasDefined(PASSWORD)) {
+            return null;
+        }
+        return context.resolveExpressions(connector.get(SSL, PASSWORD)).asString();
     }
 }

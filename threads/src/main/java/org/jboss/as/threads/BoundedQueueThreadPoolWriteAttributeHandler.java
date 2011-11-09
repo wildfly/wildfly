@@ -53,7 +53,8 @@ public class BoundedQueueThreadPoolWriteAttributeHandler extends ThreadsWriteAtt
         super(BoundedQueueThreadPoolAdd.ATTRIBUTES, BoundedQueueThreadPoolAdd.RW_ATTRIBUTES);
     }
 
-    protected void applyOperation(ModelNode operation, String attributeName, ServiceController<?> service) {
+    @Override
+    protected void applyOperation(final OperationContext context, ModelNode operation, String attributeName, ServiceController<?> service) {
 
         final BoundedQueueThreadPoolService pool =  (BoundedQueueThreadPoolService) service.getService();
         try {

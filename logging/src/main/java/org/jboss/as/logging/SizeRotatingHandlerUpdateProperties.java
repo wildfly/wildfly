@@ -22,12 +22,13 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
+import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
+
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.handlers.SizeRotatingFileHandler;
-
-import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
-import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
 
 /**
  * Operation responsible for updating the properties of a size based rotating log handler.
@@ -42,14 +43,14 @@ public class SizeRotatingHandlerUpdateProperties extends FlushingHandlerUpdatePr
     }
 
     @Override
-    protected void updateRuntime(final ModelNode operation, final SizeRotatingFileHandler handler) throws OperationFailedException {
-        super.updateRuntime(operation, handler);
-        final ModelNode maxBackupIndex = MAX_BACKUP_INDEX.validateResolvedOperation(operation);
+    protected void updateRuntime(OperationContext context, final ModelNode operation, final SizeRotatingFileHandler handler) throws OperationFailedException {
+        super.updateRuntime(context, operation, handler);
+        final ModelNode maxBackupIndex = MAX_BACKUP_INDEX.resolveModelAttribute(context, operation);
         if (maxBackupIndex.isDefined()) {
             handler.setMaxBackupIndex(maxBackupIndex.asInt());
         }
 
-        final ModelNode rotateSizeNode = ROTATE_SIZE.validateResolvedOperation(operation);
+        final ModelNode rotateSizeNode = ROTATE_SIZE.resolveModelAttribute(context, operation);
         if (rotateSizeNode.isDefined()) {
             long rotateSize;
             try {

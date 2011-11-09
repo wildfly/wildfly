@@ -81,13 +81,13 @@ public class BindingAddHandler extends SocketBindingAddHandler {
             throws UnknownHostException, OperationFailedException {
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
-        final ModelNode intfNode = AbstractSocketBindingResourceDefinition.INTERFACE.validateResolvedOperation(config);
+        final ModelNode intfNode = AbstractSocketBindingResourceDefinition.INTERFACE.resolveModelAttribute(context, config);
         final String intf = intfNode.isDefined() ? intfNode.asString() : null;
-        final int port = AbstractSocketBindingResourceDefinition.PORT.validateResolvedOperation(config).asInt();
-        final boolean fixedPort = AbstractSocketBindingResourceDefinition.FIXED_PORT.validateResolvedOperation(config).asBoolean();
-        final ModelNode mcastNode = AbstractSocketBindingResourceDefinition.MULTICAST_ADDRESS.validateResolvedOperation(config);
+        final int port = AbstractSocketBindingResourceDefinition.PORT.resolveModelAttribute(context, config).asInt();
+        final boolean fixedPort = AbstractSocketBindingResourceDefinition.FIXED_PORT.resolveModelAttribute(context, config).asBoolean();
+        final ModelNode mcastNode = AbstractSocketBindingResourceDefinition.MULTICAST_ADDRESS.resolveModelAttribute(context, config);
         final String mcastAddr = mcastNode.isDefined() ? mcastNode.asString() : null;
-        final int mcastPort = AbstractSocketBindingResourceDefinition.MULTICAST_PORT.validateResolvedOperation(config).asInt(0);
+        final int mcastPort = AbstractSocketBindingResourceDefinition.MULTICAST_PORT.resolveModelAttribute(context, config).asInt(0);
         final InetAddress mcastInet = mcastAddr == null ? null : InetAddress.getByName(mcastAddr);
 
         final SocketBindingService service = new SocketBindingService(name, port, fixedPort, mcastInet, mcastPort);

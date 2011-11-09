@@ -37,12 +37,11 @@ import java.util.concurrent.CountDownLatch;
 
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
-import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -72,7 +71,7 @@ public class PlatformMBeanTestModelControllerService extends AbstractControllerS
      * @param processState   the state of the controlled process
      */
     protected PlatformMBeanTestModelControllerService(final ControlledProcessState processState) {
-        super(OperationContext.Type.SERVER, new NullConfigurationPersister(), processState, DESC_PROVIDER, null);
+        super(OperationContext.Type.SERVER, new NullConfigurationPersister(), processState, DESC_PROVIDER, null, ExpressionResolver.DEFAULT);
     }
 
     @Override

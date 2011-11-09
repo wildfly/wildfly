@@ -65,7 +65,7 @@ public class DefaultResourceAdapterWriteHandler extends AbstractWriteAttributeHa
 
     void updateDefaultAdapterService(final OperationContext context, final ModelNode model, List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        final ModelNode adapterNameNode = EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME.validateResolvedOperation(model);
+        final ModelNode adapterNameNode = EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME.resolveModelAttribute(context, model);
         final String adapterName =  adapterNameNode.isDefined() ? adapterNameNode.asString() : null;
 
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(true);

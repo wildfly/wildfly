@@ -22,6 +22,11 @@
 
 package org.jboss.as.server;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.TreeSet;
+
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.server.deployment.repository.impl.ContentRepositoryImpl;
 import org.jboss.as.server.deployment.repository.impl.ServerDeploymentRepositoryImpl;
@@ -45,11 +50,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.threads.AsyncFuture;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TreeSet;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -123,7 +123,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         ServiceModuleLoader.addService(serviceTarget, configuration);
         ExternalModuleService.addService(serviceTarget);
         ModuleIndexService.addService(serviceTarget);
-        ServerService.addService(serviceTarget, configuration, processState, bootstrapListener);
+        ServerService.addService(serviceTarget, configuration, processState, bootstrapListener, new ServerRuntimeVaultReader());
         final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContext() {
             @Override
             public ServiceTarget getServiceTarget() {

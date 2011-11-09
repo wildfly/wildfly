@@ -70,7 +70,7 @@ public class DefaultSessionBeanAccessTimeoutWriteHandler extends AbstractWriteAt
 
 
     private void applyModelToRuntime(OperationContext context, final ModelNode model) throws OperationFailedException {
-        long timeout = attribute.validateResolvedOperation(model).asLong();
+        long timeout = attribute.resolveModelAttribute(context, model).asLong();
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
         ServiceController<DefaultAccessTimeoutService> controller = (ServiceController<DefaultAccessTimeoutService>) serviceRegistry.getService(serviceName);
         if (controller != null) {

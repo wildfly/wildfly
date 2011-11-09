@@ -24,16 +24,13 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.ConnectorServiceConfiguration;
-import org.jboss.as.connector.subsystems.jca.ParamsUtils;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -101,18 +98,18 @@ public class ConnectorServiceAdd extends AbstractAddStepHandler implements Descr
         return MessagingDescriptions.getConnectorServiceAdd(locale);
     }
 
-    static void addConnectorServiceConfigs(final Configuration configuration, final ModelNode model)  throws OperationFailedException {
+    static void addConnectorServiceConfigs(final OperationContext context, final Configuration configuration, final ModelNode model)  throws OperationFailedException {
         if (model.hasDefined(CommonAttributes.CONNECTOR_SERVICE)) {
             final List<ConnectorServiceConfiguration> configs = configuration.getConnectorServiceConfigurations();
             for (Property prop : model.get(CommonAttributes.CONNECTOR_SERVICE).asPropertyList()) {
-                configs.add(createConnectorServiceConfiguration(prop.getName(), prop.getValue()));
+                configs.add(createConnectorServiceConfiguration(context, prop.getName(), prop.getValue()));
             }
         }
     }
 
-    static ConnectorServiceConfiguration createConnectorServiceConfiguration(final String name, final ModelNode model) throws OperationFailedException {
+    static ConnectorServiceConfiguration createConnectorServiceConfiguration(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
 
-        final String factoryClass = CommonAttributes.FACTORY_CLASS.validateResolvedOperation(model).asString();
+        final String factoryClass = CommonAttributes.FACTORY_CLASS.resolveModelAttribute(context, model).asString();
         final Map<String, Object> params = new HashMap<String, Object>();
         if (model.hasDefined(CommonAttributes.PARAM)) {
             for (Property property : model.get(CommonAttributes.PARAM).asPropertyList()) {

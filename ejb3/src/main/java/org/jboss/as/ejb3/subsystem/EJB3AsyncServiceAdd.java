@@ -79,7 +79,7 @@ public class EJB3AsyncServiceAdd extends AbstractBoottimeAddStepHandler {
     @Override
     protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        final String threadPoolName = EJB3AsyncResourceDefinition.THREAD_POOL_NAME.validateResolvedOperation(model).asString();
+        final String threadPoolName = EJB3AsyncResourceDefinition.THREAD_POOL_NAME.resolveModelAttribute(context, model).asString();
         final ServiceName threadPoolServiceName = EJB3ThreadPoolAdd.BASE_SERVICE_NAME.append(threadPoolName);
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {

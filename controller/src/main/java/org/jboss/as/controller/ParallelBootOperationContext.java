@@ -263,4 +263,10 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     void releaseStepLocks(Step step) {
         // Our steps took no locks
     }
+
+    @Override
+    public ModelNode resolveExpressions(ModelNode node) {
+        return primaryContext.resolveExpressions(node);
+    }
+
 }

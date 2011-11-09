@@ -22,21 +22,20 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.as.logging.CommonAttributes.APPEND;
+import static org.jboss.as.logging.CommonAttributes.FILE;
+import static org.jboss.as.logging.CommonAttributes.PATH;
+import static org.jboss.as.logging.CommonAttributes.RELATIVE_TO;
+
+import java.util.logging.Handler;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-
-import java.util.logging.Handler;
-
-import static org.jboss.as.logging.CommonAttributes.APPEND;
-import static org.jboss.as.logging.CommonAttributes.FILE;
-import static org.jboss.as.logging.CommonAttributes.PATH;
-import static org.jboss.as.logging.CommonAttributes.RELATIVE_TO;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -51,23 +50,23 @@ class FileHandlerAdd extends FlushingHandlerAddProperties<FileHandlerService> {
     }
 
     @Override
-    protected FileHandlerService createHandlerService(final ModelNode model) throws OperationFailedException {
+    protected FileHandlerService createHandlerService(OperationContext context, final ModelNode model) throws OperationFailedException {
         return new FileHandlerService();
     }
 
     @Override
     protected void updateRuntime(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final String name, final FileHandlerService service, final ModelNode model) throws OperationFailedException {
         super.updateRuntime(context, serviceBuilder, name, service, model);
-        final ModelNode append = APPEND.validateResolvedOperation(model);
+        final ModelNode append = APPEND.resolveModelAttribute(context, model);
         if (append.isDefined()) {
             service.setAppend(append.asBoolean());
         }
         final ServiceTarget serviceTarget = context.getServiceTarget();
-        final ModelNode file = FILE.validateResolvedOperation(model);
+        final ModelNode file = FILE.resolveModelAttribute(context, model);
         if (file.isDefined()) {
             final HandlerFileService fileService = new HandlerFileService(PATH.validateOperation(file).asString());
             final ServiceBuilder<?> fileBuilder = serviceTarget.addService(LogServices.handlerFileName(name), fileService);
-            final ModelNode relativeTo = RELATIVE_TO.validateResolvedOperation(file);
+            final ModelNode relativeTo = RELATIVE_TO.resolveModelAttribute(context, file);
             if (relativeTo.isDefined()) {
                 fileBuilder.addDependency(AbstractPathService.pathNameOf(relativeTo.asString()), String.class, fileService.getRelativeToInjector());
             }

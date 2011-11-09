@@ -56,7 +56,7 @@ public class EeWriteAttributeHandler extends AbstractWriteAttributeHandler<Void>
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                                            ModelNode newValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
 
-        applyUpdateToDeploymentUnitProcessor(operation, attributeName);
+        applyUpdateToDeploymentUnitProcessor(context, operation, attributeName);
 
         return false;
     }
@@ -67,15 +67,15 @@ public class EeWriteAttributeHandler extends AbstractWriteAttributeHandler<Void>
 
         final ModelNode revertOp = operation.clone();
         revertOp.get(attributeName).set(valueToRestore);
-        applyUpdateToDeploymentUnitProcessor(revertOp, attributeName);
+        applyUpdateToDeploymentUnitProcessor(context, revertOp, attributeName);
     }
 
-    private void applyUpdateToDeploymentUnitProcessor(ModelNode operation, String attributeName) throws OperationFailedException {
+    private void applyUpdateToDeploymentUnitProcessor(final OperationContext context, ModelNode operation, String attributeName) throws OperationFailedException {
         if (GlobalModulesDefinition.INSTANCE.getName().equals(attributeName)) {
-            final ModelNode globalMods = GlobalModulesDefinition.INSTANCE.validateResolvedOperation(operation);
+            final ModelNode globalMods = GlobalModulesDefinition.INSTANCE.resolveModelAttribute(context, operation);
             moduleDependencyProcessor.setGlobalModules(globalMods);
         } else if (EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.getName().equals(attributeName)) {
-            boolean isolate = EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.validateResolvedOperation(operation).asBoolean();
+            boolean isolate = EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.resolveModelAttribute(context, operation).asBoolean();
             isolationProcessor.setEarSubDeploymentsIsolated(isolate);
         }
     }

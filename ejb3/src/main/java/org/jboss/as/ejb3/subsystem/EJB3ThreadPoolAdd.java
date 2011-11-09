@@ -70,8 +70,8 @@ public class EJB3ThreadPoolAdd extends AbstractBoottimeAddStepHandler {
 
     void installRuntimeServices(final OperationContext context, final String name, final ModelNode model, ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        final Integer maxThreads = EJB3ThreadPoolResourceDefinition.MAX_THREADS.validateResolvedOperation(model).asInt(Runtime.getRuntime().availableProcessors());
-        final Integer keepAlive = EJB3ThreadPoolResourceDefinition.KEEPALIVE_TIME.validateResolvedOperation(model).asInt(0);
+        final Integer maxThreads = EJB3ThreadPoolResourceDefinition.MAX_THREADS.resolveModelAttribute(context, model).asInt(Runtime.getRuntime().availableProcessors());
+        final Integer keepAlive = EJB3ThreadPoolResourceDefinition.KEEPALIVE_TIME.resolveModelAttribute(context, model).asInt(0);
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
         final ThreadFactoryService threadFactory = new ThreadFactoryService();

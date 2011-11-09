@@ -70,13 +70,13 @@ public class StrictMaxPoolWriteHandler extends AbstractWriteAttributeHandler<Voi
             StrictMaxPoolConfig smpc = StrictMaxPoolConfig.class.cast(sc.getValue());
             if (smpc != null) {
                 if (StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.equals(attributeName)) {
-                    int maxPoolSize = StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.validateResolvedOperation(model).asInt();
+                    int maxPoolSize = StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.resolveModelAttribute(context, model).asInt();
                     smpc.setMaxPoolSize(maxPoolSize);
                 } else if (StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.equals(attributeName)) {
-                    long timeout = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.validateResolvedOperation(model).asLong();
+                    long timeout = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.resolveModelAttribute(context, model).asLong();
                     smpc.setTimeout(timeout);
                 } else if (StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.equals(attributeName)) {
-                    String timeoutUnit = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.validateResolvedOperation(model).asString();
+                    String timeoutUnit = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.resolveModelAttribute(context, model).asString();
                     smpc.setTimeoutUnit(TimeUnit.valueOf(timeoutUnit));
                 }
             }

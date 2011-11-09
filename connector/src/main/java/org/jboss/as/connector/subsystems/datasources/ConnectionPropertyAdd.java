@@ -76,7 +76,7 @@ public class ConnectionPropertyAdd extends AbstractAddStepHandler implements Des
                                   ServiceVerificationHandler verificationHandler,
                                   List<ServiceController<?>> serviceControllers) throws OperationFailedException {
 
-        final String configPropertyValue = CONNECTION_PROPERTY_VALUE.validateResolvedOperation(recoveryEnvModel).asString();
+        final String configPropertyValue = CONNECTION_PROPERTY_VALUE.resolveModelAttribute(context, recoveryEnvModel).asString();
         final ModelNode address = operation.require(OP_ADDR);
         PathAddress path = PathAddress.pathAddress(address);
         final String jndiName = path.getElement(path.size() - 2).getValue();

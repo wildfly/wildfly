@@ -22,6 +22,14 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.logging.CommonAttributes.NAME;
+import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
+import static org.jboss.as.logging.LoggingMessages.MESSAGES;
+
+import java.util.List;
+import java.util.logging.Handler;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -30,14 +38,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.value.InjectedValue;
-
-import java.util.List;
-import java.util.logging.Handler;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.logging.CommonAttributes.NAME;
-import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
-import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 
 /**
@@ -59,7 +59,7 @@ public class AsyncHandlerAssignSubhandler extends AbstractLogHandlerAssignmentHa
                                   final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         String asyncHandlerName = address.getLastElement().getValue();
-        String handlerNameToAssign = NAME.validateResolvedOperation(model).asString();
+        String handlerNameToAssign = NAME.resolveModelAttribute(context, model).asString();
 
         ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
         ServiceController<Handler> asyncHandlerController = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(asyncHandlerName));

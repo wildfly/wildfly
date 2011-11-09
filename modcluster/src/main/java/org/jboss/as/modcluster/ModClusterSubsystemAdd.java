@@ -98,8 +98,10 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler implements Descripti
             }
         }
         try {
+
+            //Get the unmasked password
             // Add mod_cluster service
-            final ModClusterService service = new ModClusterService(operation.get(CommonAttributes.MOD_CLUSTER_CONFIG).clone());
+            final ModClusterService service = new ModClusterService(unmaskPassword(context, model), operation.get(CommonAttributes.MOD_CLUSTER_CONFIG).clone());
             final ServiceBuilder<ModCluster> serviceBuilder = context.getServiceTarget().addService(ModClusterService.NAME, service)
                     // .addListener(new ResultHandler.ServiceStartListener(resultHandler))
                     .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getWebServer())
@@ -125,6 +127,16 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler implements Descripti
     protected void populateModel(ModelNode operation, ModelNode model) {
         // TODO Auto-generated method stub
 
+    }
+
+    private String unmaskPassword(OperationContext context, ModelNode model) {
+        if (!model.hasDefined(CommonAttributes.SSL)) {
+            return null;
+        }
+        if (!model.get(CommonAttributes.SSL).hasDefined(CommonAttributes.PASSWORD)) {
+            return null;
+        }
+        return context.resolveExpressions(model.get(CommonAttributes.SSL, CommonAttributes.PASSWORD)).toString();
     }
 
 }

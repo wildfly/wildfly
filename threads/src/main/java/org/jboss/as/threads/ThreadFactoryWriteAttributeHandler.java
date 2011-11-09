@@ -56,18 +56,18 @@ public class ThreadFactoryWriteAttributeHandler extends ThreadsWriteAttributeOpe
     }
 
     @Override
-    protected void applyOperation(ModelNode operation, String attributeName, ServiceController<?> service) {
+    protected void applyOperation(final OperationContext context, ModelNode operation, String attributeName, ServiceController<?> service) {
 
         final ThreadFactoryService tf = (ThreadFactoryService) service.getService();
         try {
             if (CommonAttributes.GROUP_NAME.equals(attributeName)) {
-                final ModelNode value = PoolAttributeDefinitions.GROUP_NAME.validateResolvedOperation(operation);
+                final ModelNode value = PoolAttributeDefinitions.GROUP_NAME.resolveModelAttribute(context, operation);
                 tf.setThreadGroupName(value.isDefined() ? value.asString() : null);
             } else if(CommonAttributes.PRIORITY.equals(attributeName)) {
-                final ModelNode value = PoolAttributeDefinitions.PRIORITY.validateResolvedOperation(operation);
+                final ModelNode value = PoolAttributeDefinitions.PRIORITY.resolveModelAttribute(context, operation);
                 tf.setPriority(value.isDefined() ? value.asInt() : -1);
             } else if(CommonAttributes.THREAD_NAME_PATTERN.equals(attributeName)) {
-                final ModelNode value = PoolAttributeDefinitions.THREAD_NAME_PATTERN.validateResolvedOperation(operation);
+                final ModelNode value = PoolAttributeDefinitions.THREAD_NAME_PATTERN.resolveModelAttribute(context, operation);
                 tf.setNamePattern(value.isDefined() ? value.asString() : null);
             } else {
                 throw new IllegalArgumentException("Unexpected attribute '" + attributeName + "'");

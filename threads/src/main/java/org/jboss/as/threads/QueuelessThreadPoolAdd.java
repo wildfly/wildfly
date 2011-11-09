@@ -80,7 +80,7 @@ public class QueuelessThreadPoolAdd extends AbstractAddStepHandler implements De
             final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         for(final AttributeDefinition attribute : ATTRIBUTES) {
-            attribute.validateResolvedOperation(model);
+            attribute.resolveModelAttribute(context, model);
         }
 
         final QueuelessOperationParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseQueuelessThreadPoolOperationParameters(operation);

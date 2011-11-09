@@ -31,7 +31,6 @@ import static org.jboss.as.connector.pool.Constants.POOL_FLUSH_STRATEGY;
 import static org.jboss.as.connector.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ADMIN_OBJECTS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
@@ -39,7 +38,6 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHI
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANVALIDATIONGROUPS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BOOTSTRAPCONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CLASS_NAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
@@ -61,8 +59,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.server.services.security.VaultUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.Defaults;
 import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
@@ -77,14 +75,11 @@ import org.jboss.jca.common.api.metadata.common.FlushStrategy;
 import org.jboss.jca.common.api.metadata.common.Recovery;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.validator.ValidateException;
-import org.jboss.jca.common.metadata.common.CommonAdminObjectImpl;
-import org.jboss.jca.common.metadata.common.CommonConnDefImpl;
 import org.jboss.jca.common.metadata.common.CommonPoolImpl;
 import org.jboss.jca.common.metadata.common.CommonSecurityImpl;
 import org.jboss.jca.common.metadata.common.CommonTimeOutImpl;
 import org.jboss.jca.common.metadata.common.CommonValidationImpl;
 import org.jboss.jca.common.metadata.common.CredentialImpl;
-import org.jboss.security.vault.SecurityVaultException;
 
 public class RaOperationUtil {
 
@@ -118,7 +113,7 @@ public class RaOperationUtil {
 
     }
 
-    public static ModifiableConnDef buildConnectionDefinitionObject(ModelNode operation) throws ValidateException {
+    public static ModifiableConnDef buildConnectionDefinitionObject(final OperationContext context, final ModelNode operation) throws ValidateException {
         Map<String, String> configProperties = new HashMap<String, String>(0);
 //        if (operation.hasDefined(CONFIG_PROPERTIES.getName())) {
 //            configProperties = new HashMap<String, String>(operation.get(CONFIG_PROPERTIES.getName()).asList().size());
@@ -168,15 +163,8 @@ public class RaOperationUtil {
         CommonValidation validation = new CommonValidationImpl(backgroundValidation, backgroundValidationMillis,
                 useFastFail);
         final String recoveryUsername = getStringIfSetOrGetDefault(operation, RECOVERY_USERNAME.getName(), null);
-        String recoveryPassword = getStringIfSetOrGetDefault(operation, RECOVERY_PASSWORD.getName(), null);
-
-        if (VaultUtil.isVaultFormat(recoveryPassword)) {
-            try {
-                recoveryPassword = VaultUtil.getValueAsString(recoveryPassword);
-            } catch (SecurityVaultException e) {
-                throw new RuntimeException(e); // TODO: use bundle from IJ
-            }
-        }
+        //TODO This will be cleaned up once it uses attribute definitions
+        String recoveryPassword = getResolvedStringIfSetOrGetDefault(context, operation, RECOVERY_PASSWORD.getName(), null);
         final String recoverySecurityDomain = getStringIfSetOrGetDefault(operation, RECOVERY_SECURITY_DOMAIN.getName(), null);
 
         final Credential credential = new CredentialImpl(recoveryUsername, recoveryPassword, recoverySecurityDomain);
@@ -232,6 +220,14 @@ public class RaOperationUtil {
     private static String getStringIfSetOrGetDefault(ModelNode dataSourceNode, String key, String defaultValue) {
         if (dataSourceNode.hasDefined(key)) {
             return dataSourceNode.get(key).asString();
+        } else {
+            return defaultValue;
+        }
+    }
+
+    private static String getResolvedStringIfSetOrGetDefault(final OperationContext context, final ModelNode dataSourceNode, final String key, final String defaultValue) {
+        if (dataSourceNode.hasDefined(key)) {
+            return context.resolveExpressions(dataSourceNode.get(key)).asString();
         } else {
             return defaultValue;
         }
