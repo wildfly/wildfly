@@ -45,6 +45,7 @@ interface CommonAttributes {
 
     SimpleAttributeDefinition APPEND = new SimpleAttributeDefinitionBuilder("append", ModelType.BOOLEAN, true).
             setDefaultValue(new ModelNode().set(true)).
+            setFlags(AttributeAccess.Flag.RESTART_JVM).
             build();
 
     String ASYNC_HANDLER = "async-handler";

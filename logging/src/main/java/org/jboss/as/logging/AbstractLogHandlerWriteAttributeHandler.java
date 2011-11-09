@@ -51,10 +51,21 @@ import org.jboss.msc.service.ServiceRegistry;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public abstract class LogHandlerWriteAttributeHandler<T extends Handler> extends AbstractWriteAttributeHandler<T> {
+abstract class AbstractLogHandlerWriteAttributeHandler<T extends Handler> extends AbstractWriteAttributeHandler<T> {
     private final Map<String, AttributeDefinition> attributes;
 
-    LogHandlerWriteAttributeHandler(final AttributeDefinition... attributes) {
+    AbstractLogHandlerWriteAttributeHandler(final AttributeDefinition... attributes) {
+        this.attributes = new HashMap<String, AttributeDefinition>();
+        this.attributes.put(LEVEL.getName(), LEVEL);
+        this.attributes.put(FILTER.getName(), FILTER);
+        this.attributes.put(FORMATTER.getName(), FORMATTER);
+        this.attributes.put(ENCODING.getName(), ENCODING);
+        for (AttributeDefinition attr : attributes) {
+            this.attributes.put(attr.getName(), attr);
+        }
+    }
+
+    AbstractLogHandlerWriteAttributeHandler(final Collection<AttributeDefinition> attributes) {
         this.attributes = new HashMap<String, AttributeDefinition>();
         this.attributes.put(LEVEL.getName(), LEVEL);
         this.attributes.put(FILTER.getName(), FILTER);
@@ -70,11 +81,13 @@ public abstract class LogHandlerWriteAttributeHandler<T extends Handler> extends
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
+        @SuppressWarnings("unchecked")
         final ServiceController<Handler> controller = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(name));
         if (controller == null) {
             return false;
         }
         // Attempt to cast handler
+        @SuppressWarnings("unchecked")
         final T handler = (T) controller.getValue();
         if (LEVEL.getName().equals(attributeName)) {
             handler.setLevel(Level.parse(resolvedValue.asString()));

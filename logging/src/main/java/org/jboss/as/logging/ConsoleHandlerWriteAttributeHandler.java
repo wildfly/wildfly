@@ -37,11 +37,11 @@ import org.jboss.logmanager.handlers.ConsoleHandler;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class ConsoleHandlerWriteAttributeHandler extends LogHandlerWriteAttributeHandler<ConsoleHandler> {
+public class ConsoleHandlerWriteAttributeHandler extends AbstractLogHandlerWriteAttributeHandler<ConsoleHandler> {
     static final ConsoleHandlerWriteAttributeHandler INSTANCE = new ConsoleHandlerWriteAttributeHandler();
 
     private ConsoleHandlerWriteAttributeHandler() {
-        super(TARGET);
+        super(AUTOFLUSH, TARGET);
     }
 
     @Override

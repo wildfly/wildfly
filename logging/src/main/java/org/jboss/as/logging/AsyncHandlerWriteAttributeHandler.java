@@ -37,7 +37,7 @@ import org.jboss.logmanager.handlers.AsyncHandler;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class AsyncHandlerWriteAttributeHandler extends LogHandlerWriteAttributeHandler<AsyncHandler> {
+public class AsyncHandlerWriteAttributeHandler extends AbstractLogHandlerWriteAttributeHandler<AsyncHandler> {
 
     public static final AsyncHandlerWriteAttributeHandler INSTANCE = new AsyncHandlerWriteAttributeHandler();
 

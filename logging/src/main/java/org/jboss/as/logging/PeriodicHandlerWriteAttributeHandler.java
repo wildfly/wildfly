@@ -35,25 +35,28 @@ import org.jboss.logmanager.handlers.PeriodicRotatingFileHandler;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class PeriodicHandlerWriteAttributeHandler extends LogHandlerWriteAttributeHandler<PeriodicRotatingFileHandler> {
+public class PeriodicHandlerWriteAttributeHandler extends AbstractFileHandlerWriteAttributeHandler<PeriodicRotatingFileHandler> {
     static final PeriodicHandlerWriteAttributeHandler INSTANCE = new PeriodicHandlerWriteAttributeHandler();
 
     private PeriodicHandlerWriteAttributeHandler() {
-        super(APPEND, SUFFIX);
+        super(SUFFIX);
     }
 
     @Override
     protected boolean doApplyUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final PeriodicRotatingFileHandler handler) throws OperationFailedException {
+        boolean result = super.applyUpdateToRuntime(operation, attributeName, resolvedValue, currentValue, handler);
         if (APPEND.getName().equals(attributeName)) {
             handler.setAppend(resolvedValue.asBoolean());
         } else if (SUFFIX.getName().equals(attributeName)) {
             handler.setSuffix(resolvedValue.asString());
+            result = false;
         }
-        return false;
+        return result;
     }
 
     @Override
     protected void doRevertUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final PeriodicRotatingFileHandler handler) throws OperationFailedException {
+        super.revertUpdateToRuntime(operation, attributeName, valueToRestore, valueToRevert, handler);
         if (APPEND.getName().equals(attributeName)) {
             handler.setAppend(valueToRestore.asBoolean());
         } else if (SUFFIX.getName().equals(attributeName)) {

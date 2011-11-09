@@ -33,7 +33,7 @@ import java.util.logging.Handler;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class CustomHandlerWriteAttributeHandler extends LogHandlerWriteAttributeHandler<Handler> {
+public class CustomHandlerWriteAttributeHandler extends AbstractLogHandlerWriteAttributeHandler<Handler> {
     static final CustomHandlerWriteAttributeHandler INSTANCE = new CustomHandlerWriteAttributeHandler();
 
     private CustomHandlerWriteAttributeHandler() {

@@ -34,18 +34,17 @@ import java.util.logging.Level;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
-import static org.jboss.as.logging.CommonAttributes.USE_PARENT_HANDLERS;
 
 /**
  * Date: 31.10.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-class LoggerWriteAttributeHandler extends AbstractLoggerWriteAttributeHandler {
-    public static final LoggerWriteAttributeHandler INSTANCE = new LoggerWriteAttributeHandler();
+class RootLoggerWriteAttributeHandler extends AbstractLoggerWriteAttributeHandler {
+    public static final RootLoggerWriteAttributeHandler INSTANCE = new RootLoggerWriteAttributeHandler();
 
-    private LoggerWriteAttributeHandler() {
-        super(LEVEL, USE_PARENT_HANDLERS);
+    private RootLoggerWriteAttributeHandler() {
+        super(LEVEL);
     }
 
     @Override
@@ -53,6 +52,7 @@ class LoggerWriteAttributeHandler extends AbstractLoggerWriteAttributeHandler {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
+        @SuppressWarnings("unchecked")
         final ServiceController<Logger> controller = (ServiceController<Logger>) serviceRegistry.getService(LogServices.handlerName(name));
         if (controller == null) {
             return false;
@@ -61,8 +61,6 @@ class LoggerWriteAttributeHandler extends AbstractLoggerWriteAttributeHandler {
         final Logger logger = controller.getValue();
         if (LEVEL.getName().equals(attributeName)) {
             logger.setLevel(Level.parse(resolvedValue.asString()));
-        } else if (USE_PARENT_HANDLERS.getName().equals(attributeName)) {
-            logger.setUseParentHandlers(resolvedValue.asBoolean());
         }
         return false;
     }
@@ -71,8 +69,6 @@ class LoggerWriteAttributeHandler extends AbstractLoggerWriteAttributeHandler {
     protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final Logger logger) throws OperationFailedException {
         if (LEVEL.getName().equals(attributeName)) {
             logger.setLevel(Level.parse(valueToRestore.asString()));
-        } else if (USE_PARENT_HANDLERS.getName().equals(attributeName)) {
-            logger.setUseParentHandlers(valueToRestore.asBoolean());
         }
     }
 }
