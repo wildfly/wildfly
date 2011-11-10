@@ -155,35 +155,41 @@ main() {
     #  to be in the same directory as build.xml.
     cd $DIRNAME
 
-    MVN_GOAL=$@
-    if [ -z "$MVN_GOAL" ]; then
-        MVN_GOAL="install"
-    fi
 
     . testsuite/groupDefs.sh
 
     #  Add smoke integration test directives before calling maven.
     TESTS=$SMOKE_TESTS
+    MVN_GOAL="";
+    ADDIT_PARAMS="";
     #  For each parameter, check for testsuite directives.
     for param in $@ ; do
         case $param in
-            -DallTests)
-                TESTS=$ALL_TESTS ;;
+            -DallTests)  TESTS=$ALL_TESTS ;;
+            -*)      ADDIT_PARAMS="$ADDIT_PARAMS $param";;
+            clean)   MVN_GOAL="$MVN_GOAL$param ";;
+            test)    MVN_GOAL="$MVN_GOAL$param ";;
+            install) MVN_GOAL="$MVN_GOAL$param ";;
+            deploy)  MVN_GOAL="$MVN_GOAL$param ";;
+            site)    MVN_GOAL="$MVN_GOAL$param ";;
+            *)       ADDIT_PARAMS="$ADDIT_PARAMS $param";;
         esac
     done
+    #  Default goal if none specified.
+    if [ -z "$MVN_GOAL" ]; then MVN_GOAL="install"; fi
 
     MVN_GOAL="$MVN_GOAL $TESTS"
 
     #  Export some stuff for maven.
     export MVN MAVEN_HOME MVN_OPTS MVN_GOAL
 
-    echo "$MVN $MVN_OPTIONS $MVN_GOAL"
+    echo "$MVN $MVN_OPTIONS $MVN_GOAL $ADDIT_PARAMS"
 
     #  Execute in debug mode, or simply execute.
     if [ "x$MVN_DEBUG" != "x" ]; then
-        /bin/sh -x $MVN $MVN_OPTIONS $MVN_GOAL
+        /bin/sh -x $MVN $MVN_OPTIONS $MVN_GOAL $ADDIT_PARAMS
     else
-        exec $MVN $MVN_OPTIONS $MVN_GOAL
+        exec $MVN $MVN_OPTIONS $MVN_GOAL $ADDIT_PARAMS
     fi
 }
 
