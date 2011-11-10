@@ -139,6 +139,11 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         final Lock lock = getLock(timerEntity.getTimedObjectId());
         try {
             final int status = transactionManager.getValue().getStatus();
+            if(status == Status.STATUS_MARKED_ROLLBACK || status == Status.STATUS_ROLLEDBACK ||
+                    status == Status.STATUS_ROLLING_BACK) {
+                //no need to persist anyway
+                return;
+            }
             if (status == Status.STATUS_NO_TRANSACTION ||
                     status == Status.STATUS_UNKNOWN) {
                 try {
