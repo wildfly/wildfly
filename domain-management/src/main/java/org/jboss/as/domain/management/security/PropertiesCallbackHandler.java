@@ -84,7 +84,6 @@ public class PropertiesCallbackHandler implements Service<DomainCallbackHandler>
         } else {
             plainText = false;
         }
-        System.out.println("plainTest=" + plainText);
         supportedCallbacks = plainText ? PLAIN_CALLBACKS : DIGEST_CALLBACKS;
     }
 
@@ -97,7 +96,6 @@ public class PropertiesCallbackHandler implements Service<DomainCallbackHandler>
         String file = relativeTo == null ? path : relativeTo + "/" + path;
 
         propertiesFile = new File(file);
-        System.out.println("Loading properties from " + propertiesFile.getAbsolutePath());
         try {
             getUsersProperties();
         } catch (IOException ioe) {
@@ -129,6 +127,10 @@ public class PropertiesCallbackHandler implements Service<DomainCallbackHandler>
                         is.close();
                     }
                     checkWeakPasswords(props);
+
+                    if (props.size() == 0) {
+                        ROOT_LOGGER.warnf("No users defined to access management interfaces, add a user to '%s'", propertiesFile.getCanonicalPath());
+                    }
 
                     userProperties = props;
                     // Update this last otherwise the check outside the synchronized block could return true before the file is set.
