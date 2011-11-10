@@ -99,11 +99,20 @@
     <name>JBoss Application Server Test Suite: Integration Tests</name>
 
     <properties>
-        <!-- define properties specific to the integration tests -->
-
-        <!-- used to provide an absolute location for the distribution under test -->
-        <!-- this value is overridden in modules with the correct relative pathname -->
-        <jboss.dist>${project.basedir}/../../build/target/jboss-as-${jboss.as.release.version}</jboss.dist>
+        <jbossas.ts.integ.dir>${basedir}</jbossas.ts.integ.dir>
+        <!-- This project's testsuite dir. To be changed for every submodule (until we figure out how to do it automatically). -->
+        <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
+        <!-- This project's root dir. -->
+        <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+        <server.jvm.args.dirs>
+            -Djbossas.ts.integ.dir=${jbossas.ts.integ.dir}
+            -Djbossas.ts.dir=${jbossas.ts.dir}
+            -Djbossas.project.dir=${jbossas.project.dir}
+        </server.jvm.args.dirs>
+        
+        <!-- Used to provide an absolute location for the distribution under test. -->
+        <!-- This value is overridden in modules with the correct relative pathname. -->
+        <jboss.dist>${jbossas.project.dir}/build/target/jboss-as-${jboss.as.release.version}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
 
         <!-- used to provide an absolute location for the XSLT scripts -->
@@ -173,8 +182,15 @@
                         <node1>${node1}</node1>
                         <udpGroup>${udpGroup}</udpGroup>
 
-                        <!-- Used in arquillian.xml -->
-                        <server.jvm.args>${surefire.system.args} ${ip.server.stack}</server.jvm.args>
+                        <jbossas.ts.integ.dir>${jbossas.ts.integ.dir}</jbossas.ts.integ.dir>
+                        <jbossas.ts.dir>${jbossas.ts.dir}</jbossas.ts.dir>
+                        <jbossas.project.dir>${jbossas.project.dir}</jbossas.project.dir>
+
+                        <!--
+                            Used in arquillian.xml - arguments for all JBoss AS instances.
+                            System properties are set here until ARQ-647 is implemented.
+                        -->
+                        <server.jvm.args>${surefire.system.args} ${ip.server.stack} -Dnode0=${node0} -Dnode1=${node1} -DudpGroup=${udpGroup} ${server.jvm.args.dirs}</server.jvm.args>
                     </systemPropertyVariables>
                 </configuration>
                 <executions>
