@@ -70,10 +70,22 @@ public class VFSResourceLoader implements ResourceLoader {
      * @throws IOException if the manifest could not be read or the root URL is invalid
      */
     public VFSResourceLoader(final String rootName, final VirtualFile root) throws IOException {
+        this(rootName, root, false);
+    }
+
+    /**
+     * Construct new instance.
+     *
+     * @param rootName The module root name
+     * @param root The root virtual file
+     * @param usePhysicalCodeSource {@code true} to use the physical root URL for code sources, {@code false} to use the VFS URL
+     * @throws IOException if the manifest could not be read or the root URL is invalid
+     */
+    public VFSResourceLoader(final String rootName, final VirtualFile root, final boolean usePhysicalCodeSource) throws IOException {
         this.root = root;
         this.rootName = rootName;
         manifest = VFSUtils.getManifest(root);
-        rootUrl = root.asFileURL();
+        rootUrl = usePhysicalCodeSource ? VFSUtils.getRootURL(root) : root.asFileURL();
     }
 
     /** {@inheritDoc} */

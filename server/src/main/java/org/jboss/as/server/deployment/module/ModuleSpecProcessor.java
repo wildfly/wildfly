@@ -311,7 +311,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
                     filterBuilder.addFilter(filter.getPathFilter(), filter.isInclude());
                 }
                 specBuilder.addResourceRoot(ResourceLoaderSpec.createResourceLoaderSpec(new VFSResourceLoader(resource
-                        .getRootName(), resource.getRoot()), filterBuilder.create()));
+                        .getRootName(), resource.getRoot(), resource.isUsePhysicalCodeSource()), filterBuilder.create()));
             }
         } catch (IOException e) {
             throw new DeploymentUnitProcessingException("Failed to create VFSResourceLoader for root ["

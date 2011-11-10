@@ -105,7 +105,7 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
     }
 
     enum Attribute {
-        NAME, SLOT, EXPORT, SERVICES, PATH, OPTIONAL, CLASS, VALUE,
+        NAME, SLOT, EXPORT, SERVICES, PATH, OPTIONAL, CLASS, VALUE, USE_PHYSICAL_CODE_SOURCE,
 
         // default unknown attribute
         UNKNOWN;
@@ -122,6 +122,7 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
             attributesMap.put(new QName("optional"), OPTIONAL);
             attributesMap.put(new QName("class"), CLASS);
             attributesMap.put(new QName("value"), VALUE);
+            attributesMap.put(new QName("use-physical-code-source"), USE_PHYSICAL_CODE_SOURCE);
             attributes = attributesMap;
         }
 
@@ -466,6 +467,7 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
                                           final ModuleStructureSpec specBuilder) throws XMLStreamException {
         String name = null;
         String path = null;
+        boolean usePhysicalCodeSource = false;
         final Set<Attribute> required = EnumSet.of(Attribute.PATH);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -477,6 +479,9 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
                     break;
                 case PATH:
                     path = reader.getAttributeValue(i);
+                    break;
+                case USE_PHYSICAL_CODE_SOURCE:
+                    usePhysicalCodeSource = Boolean.parseBoolean(reader.getAttributeValue(i));
                     break;
                 default:
                     throw unexpectedContent(reader);
@@ -498,6 +503,7 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
                     } else {
                         try {
                             final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+                            deploymentRoot.setUsePhysicalCodeSource(usePhysicalCodeSource);
                             final VirtualFile deploymentRootFile = deploymentRoot.getRoot();
                             VirtualFile child = deploymentRootFile.getChild(path);
                             final Closeable closable = child.isFile() ? VFS.mountZip(child, child, TempFileProviderService

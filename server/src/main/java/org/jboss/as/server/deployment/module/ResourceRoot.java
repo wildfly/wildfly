@@ -39,6 +39,7 @@ public final class ResourceRoot extends SimpleAttachable {
     private final VirtualFile root;
     private final MountHandle mountHandle;
     private final List<FilterSpecification> exportFilters = new ArrayList<FilterSpecification>();
+    private boolean usePhysicalCodeSource;
 
     public ResourceRoot(final VirtualFile root, final MountHandle mountHandle) {
         this(root.getName(), root, mountHandle);
@@ -74,5 +75,13 @@ public final class ResourceRoot extends SimpleAttachable {
             builder.append("root=").append(root);
         builder.append("]");
         return builder.toString();
+    }
+
+    public void setUsePhysicalCodeSource(final boolean usePhysicalCodeSource) {
+        this.usePhysicalCodeSource = usePhysicalCodeSource;
+    }
+
+    public boolean isUsePhysicalCodeSource() {
+        return usePhysicalCodeSource;
     }
 }

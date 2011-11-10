@@ -146,7 +146,7 @@
             <xsd:element name="local-last" type="localLast" minOccurs="0" maxOccurs="1">
                 <annotation xmlns="http://www.w3.org/2001/XMLSchema">
                     <documentation>
-                        If this is true then local resources will have the lowest priorty in the dependency list.
+                        If this is true then local resources will have the lowest priority in the dependency list.
                     </documentation>
                 </annotation>
             </xsd:element>
@@ -445,6 +445,15 @@
                 </annotation>
             </xsd:element>
         </xsd:choice>
+        <xsd:attribute name="use-physical-code-source" type="xsd:boolean" default="false" use="optional">
+            <annotation xmlns="http://www.w3.org/2001/XMLSchema">
+                <documentation>
+                    A boolean which signifies how the code source URL for this resource should be established.
+                    If true, the physical location of the deployment is used; if false, the VFS location of the
+                    deployment is used.  Default is false.
+                </documentation>
+            </annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="resourceType">
