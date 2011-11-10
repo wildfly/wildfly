@@ -49,7 +49,6 @@ import org.jboss.dmr.Property;
  */
 public class CommandCommandHandler extends CommandHandlerWithHelp {
 
-    private final ArgumentWithValue profile;
     private final ArgumentWithValue action = new ArgumentWithValue(this, new SimpleTabCompleter(new String[]{"add", "list", "remove"}), 0, "--action");
     private final ArgumentWithValue nodePath;
     private final ArgumentWithValue idProperty;
@@ -65,41 +64,10 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
 
         action.addCantAppearAfter(helpArg);
 
-        profile = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
-            @Override
-            public List<String> getAllCandidates(CommandContext ctx) {
-                return Util.getNodeNames(ctx.getModelControllerClient(), null, "profile");
-            }}), "--profile") {
-            @Override
-            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-                if(!ctx.isDomainMode()) {
-                    return false;
-                }
-                final String actionName = action.getValue(ctx.getParsedCommandLine());
-                if(actionName == null || !"add".equals(actionName)) {
-                    return false;
-                }
-                return super.canAppearNext(ctx);
-            }
-        };
-        profile.addCantAppearAfter(helpArg);
-
         nodePath = new ArgumentWithValue(this, new CommandLineCompleter(){
             @Override
             public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
                 int offset = 0;
-                if(ctx.isDomainMode()) {
-                    final String profileName = profile.getValue(ctx.getParsedCommandLine());
-                    if(profileName == null) {
-                        return -1;
-                    }
-                    StringBuilder buf = new StringBuilder();
-                    buf.append("profile=").append(profileName).append('/');
-                    offset = buf.length();
-                    buf.append(buffer);
-                    buffer = buf.toString();
-                }
-
                 int result = OperationRequestCompleter.ARG_VALUE_COMPLETER.complete(ctx, buffer, cursor + offset, candidates) - offset;
                 if(result < 0) {
                     return result;
@@ -108,9 +76,6 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
             }}, "--node-type") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-                if(ctx.isDomainMode() && !profile.isValueComplete(ctx.getParsedCommandLine())) {
-                    return false;
-                }
                 return "add".equals(action.getValue(ctx.getParsedCommandLine())) && super.canAppearNext(ctx);
             }
         };
@@ -181,10 +146,10 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
                 if(actionStr == null) {
                     return false;
                 }
-/*                if("add".equals(actionStr)) {
-                    return idProperty.isValueComplete(args);
+                if("add".equals(actionStr)) {
+                    return nodePath.isValueComplete(args);
                 }
-*/                if("remove".equals(actionStr)) {
+                if("remove".equals(actionStr)) {
                     return true;
                 }
                 return false;
@@ -215,7 +180,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
             final String propName = this.idProperty.getValue(args, false);
             final String cmdName = this.commandName.getValue(args, true);
 
-            if(!validateInput(ctx, profile.getValue(args), nodePath, propName)) {
+            if(!validateInput(ctx, nodePath, propName)) {
                 return;
             }
 
@@ -256,37 +221,26 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
         if(request == null) {
             return Collections.emptyList();
         }
-        request.get("operation").set("read-resource-description");
-
+        request.get(Util.OPERATION).set(Util.READ_RESOURCE_DESCRIPTION);
         ModelNode result;
         try {
             result = ctx.getModelControllerClient().execute(request);
         } catch (IOException e) {
             return Collections.emptyList();
         }
-        if(!result.hasDefined("result")) {
+        if(!result.hasDefined(Util.RESULT)) {
             return Collections.emptyList();
         }
-        result = result.get("result");
-        if(!result.hasDefined("attributes")) {
+        result = result.get(Util.RESULT);
+        if(!result.hasDefined(Util.ATTRIBUTES)) {
             return Collections.emptyList();
         }
-
-        return result.get("attributes").asPropertyList();
+        return result.get(Util.ATTRIBUTES).asPropertyList();
     }
 
     protected ModelNode initRequest(CommandContext ctx) {
         ModelNode request = new ModelNode();
-        ModelNode address = request.get("address");
-
-        if(ctx.isDomainMode()) {
-            final String profileName = profile.getValue(ctx.getParsedCommandLine());
-            if(profile == null) {
-                ctx.printLine("--profile argument is required to get the node description.");
-                return null;
-            }
-            address.add("profile", profileName);
-        }
+        ModelNode address = request.get(Util.ADDRESS);
 
         final String type = nodePath.getValue(ctx.getParsedCommandLine());
         if(callback == null) {
@@ -313,14 +267,10 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
         return request;
     }
 
-    protected boolean validateInput(CommandContext ctx, String profileName, String typePath, String propertyName) {
+    protected boolean validateInput(CommandContext ctx, String typePath, String propertyName) {
 
         ModelNode request = new ModelNode();
-        ModelNode address = request.get("address");
-
-        if(profileName != null) {
-            address.add("profile", profileName);
-        }
+        ModelNode address = request.get(Util.ADDRESS);
 
         if(callback == null) {
             callback = new DefaultCallbackHandler();
@@ -346,7 +296,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
             address.add(node.getType(), node.getName());
         }
 
-        request.get("operation").set("read-children-types");
+        request.get(Util.OPERATION).set(Util.READ_CHILDREN_TYPES);
 
         ModelNode result;
         try {
@@ -355,13 +305,13 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
             ctx.printLine("Failed to validate input: " + e.getLocalizedMessage());
             return false;
         }
-        if(!result.hasDefined("result")) {
+        if(!result.hasDefined(Util.RESULT)) {
             ctx.printLine("Failed to validate input: operation response doesn't contain result info.");
             return false;
         }
 
         boolean pathValid = false;
-        for(ModelNode typeNode : result.get("result").asList()) {
+        for(ModelNode typeNode : result.get(Util.RESULT).asList()) {
             if(typeNode.asString().equals(typeName)) {
                 pathValid = true;
                 break;
@@ -373,7 +323,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
         }
 
         address.add(typeName, "?");
-        request.get("operation").set("read-resource-description");
+        request.get(Util.OPERATION).set(Util.READ_RESOURCE_DESCRIPTION);
 
         try {
             result = ctx.getModelControllerClient().execute(request);
@@ -381,27 +331,29 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
             ctx.printLine(e.getLocalizedMessage());
             return false;
         }
-        if(!result.hasDefined("result")) {
+        if(!result.hasDefined(Util.RESULT)) {
             ctx.printLine("Failed to validate input: operation response doesn't contain result info.");
             return false;
         }
-        result = result.get("result");
+        result = result.get(Util.RESULT);
         if(!result.hasDefined("attributes")) {
             ctx.printLine("Failed to validate input: description of attributes is missing for " + typePath);
             return false;
         }
 
         if(propertyName != null) {
-            for(Property prop : result.get("attributes").asPropertyList()) {
+            for(Property prop : result.get(Util.ATTRIBUTES).asPropertyList()) {
                 if(prop.getName().equals(propertyName)) {
                     ModelNode value = prop.getValue();
-                    if(value.has("access-type") && "read-only".equals(value.get("access-type").asString())) {
+                    if(value.has(Util.ACCESS_TYPE) && Util.READ_ONLY.equals(value.get(Util.ACCESS_TYPE).asString())) {
                         return true;
                     }
                     ctx.printLine("Property " + propertyName + " is not read-only.");
                     return false;
                 }
             }
+        } else {
+            return true;
         }
         ctx.printLine("Property '" + propertyName + "' wasn't found among the properties of " + typePath);
         return false;
