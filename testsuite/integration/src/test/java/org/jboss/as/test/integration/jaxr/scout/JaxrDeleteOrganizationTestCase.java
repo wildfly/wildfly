@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.jaxr.scout;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -44,6 +45,7 @@ import java.util.Iterator;
  * @since Jan 3, 2005
  */
 @RunWith(Arquillian.class)
+@Ignore // FIXME AS7-2570
 public class JaxrDeleteOrganizationTestCase extends JaxrTestBase
 {
    private static Logger log = Logger.getLogger(JaxrDeleteAssociationTestCase.class);

@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.jaxr.scout;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.jaxr.scout.JaxrTestBase;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -50,6 +51,7 @@ import java.util.List;
  * @since Mar 9, 2005
  */
 @RunWith(Arquillian.class)
+@Ignore // FIXME AS7-2570
 public class JaxrConfimAssociationTestCase extends JaxrTestBase {
     /**
      * Testcase that tests the association between two organizations

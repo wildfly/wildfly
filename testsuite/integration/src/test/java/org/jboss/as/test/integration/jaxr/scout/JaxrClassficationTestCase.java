@@ -34,6 +34,7 @@ import javax.xml.registry.infomodel.Key;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.jaxr.scout.JaxrTestBase;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -46,6 +47,7 @@ import org.junit.runner.RunWith;
  * @since Apr 11, 2006
  */
 @RunWith(Arquillian.class)
+@Ignore // FIXME AS7-2570
 public class JaxrClassficationTestCase extends JaxrTestBase {
     private static final String UUID_TYPE = "uuid:C1ACF26D-9672-4404-9D70-39B756E62AB4";
 
