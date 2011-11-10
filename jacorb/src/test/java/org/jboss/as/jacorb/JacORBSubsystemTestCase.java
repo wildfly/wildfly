@@ -66,7 +66,7 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
         "        <connection retries=\"5\" retry-interval=\"500\" client-timeout=\"0\" server-timeout=\"0\" " +
         "            max-server-connections=\"500\" max-managed-buf-size=\"24\" outbuf-size=\"2048\" " +
         "            outbuf-cache-timeout=\"-1\"/>" +
-        "        <initializers codebase=\"on\" security=\"on\" transactions=\"off\"/>" +
+        "        <initializers security=\"on\" transactions=\"on\"/>" +
         "    </orb>" +
         "    <poa monitoring=\"off\" queue-wait=\"on\" queue-min=\"10\" queue-max=\"100\">" +
         "        <request-processors pool-size=\"10\" max-threads=\"32\"/>" +
@@ -198,7 +198,7 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
         "    <security support-ssl=\"off\" use-domain-socket-factory=\"off\" use-domain-server-socket-factory=\"off\"/>" +
         "    <property key=\"a\" value=\"va\"/>" +
         "    <property key=\"b\" value=\"vb\"/>" +
-        "    <initializers>codebase,security</initializers>" +
+        "    <initializers>security,transactions</initializers>" +
         "</subsystem>";
 
         List<ModelNode> operations = super.parse(subsystemXml);

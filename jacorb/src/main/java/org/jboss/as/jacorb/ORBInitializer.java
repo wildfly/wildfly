@@ -37,14 +37,11 @@ public enum ORBInitializer {
 
     UNKNOWN("", ""),
 
-    // codebase group contains the initializer that inserts the codebase location into generated IORs.
-    CODEBASE("codebase", "org.jboss.as.jacorb.codebase.CodebaseInterceptorInitializer"),
-
     // the security group encompasses both CSIv2 and SAS initializers.
     SECURITY("security", "org.jboss.as.jacorb.csiv2.CSIv2Initializer", "org.jboss.as.jacorb.csiv2.SASInitializer"),
 
     // the transaction group encompasses the Interposition and InboundCurrent initializers.
-    TRANSACTIONS("transaction",
+    TRANSACTIONS("transactions",
             "com.arjuna.ats.jts.orbspecific.jacorb.interceptors.interposition.InterpositionORBInitializerImpl",
             "com.arjuna.ats.jbossatx.jts.InboundTransactionCurrentInitializer",
             "org.jboss.as.jacorb.tm.TxIORInterceptorInitializer",

@@ -344,7 +344,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                     node.get(definition.getName()).set("on");
                 else
                     throw new XMLStreamException(
-                            "Unexpected element value. Should be one of " + JacORBSubsystemDefinitions.ORB_INIT_ATTRIBUTES);
+                            "Unexpected element value. Should be one of [security,transactions]");
             }
         }
     }
@@ -361,8 +361,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
      */
     private void parseORBInitializersConfig_1_1(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
         // parse the initializers config attributes.
-        EnumSet<Attribute> attributes = EnumSet.of(Attribute.ORB_INIT_CODEBASE, Attribute.ORB_INIT_SECURITY,
-                Attribute.ORB_INIT_TRANSACTIONS);
+        EnumSet<Attribute> attributes = EnumSet.of(Attribute.ORB_INIT_SECURITY, Attribute.ORB_INIT_TRANSACTIONS);
         this.parseAttributes(reader, node, attributes, null);
         // the initializers element doesn't have child elements.
         requireNoContent(reader);
@@ -1027,7 +1026,6 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
         ORB_CONN_OUTBUF_CACHE_TIMEOUT(JacORBSubsystemConstants.ORB_CONN_OUTBUF_CACHE_TIMEOUT),
 
         // attributes of the initializers element.
-        ORB_INIT_CODEBASE(JacORBSubsystemConstants.ORB_INIT_CODEBASE),
         ORB_INIT_SECURITY(JacORBSubsystemConstants.ORB_INIT_SECURITY),
         ORB_INIT_TRANSACTIONS(JacORBSubsystemConstants.ORB_INIT_TRANSACTIONS),
 

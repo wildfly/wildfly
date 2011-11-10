@@ -125,13 +125,11 @@
                 <![CDATA[
                 The orbInitializersConfigType specifies the attributes used to configure the ORB initializers.
 
-                * codebase: indicates whether the codebase initializer should be installed (on) or not (off).
                 * security: indicates whether the security (SAS and CSIv2) initializers should be installed (on) or not (off).
                 * transactions: indicates whether the transaction initializers should be installed (on) or not (off).
                         ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="codebase" type="xs:string" use="optional" default="on"/>
         <xs:attribute name="security" type="xs:string" use="optional" default="off"/>
         <xs:attribute name="transactions" type="xs:string" use="optional" default="off"/>
     </xs:complexType>

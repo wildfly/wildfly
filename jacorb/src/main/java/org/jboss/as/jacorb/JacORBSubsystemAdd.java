@@ -230,10 +230,6 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
         List<String> orbInitializers = new ArrayList<String>();
 
         // check which groups of initializers are to be installed.
-        String installCodebase = (String) props.remove(JacORBSubsystemConstants.ORB_INIT_CODEBASE);
-        if (installCodebase.equalsIgnoreCase("on"))
-            orbInitializers.addAll(Arrays.asList(ORBInitializer.CODEBASE.getInitializerClasses()));
-
         String installSecurity = (String) props.remove(JacORBSubsystemConstants.ORB_INIT_SECURITY);
         if (installSecurity.equalsIgnoreCase("on"))
             orbInitializers.addAll(Arrays.asList(ORBInitializer.SECURITY.getInitializerClasses()));
