@@ -33,10 +33,6 @@ import javax.xml.stream.XMLStreamException;
 import java.util.Collections;
 import java.util.List;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
@@ -50,30 +46,22 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
 
     @Override
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
-
-        ModelNode address = new ModelNode();
-        address.add(SUBSYSTEM, JAXRConstants.SUBSYSTEM_NAME);
-        address.protect();
-
-        final ModelNode result = new ModelNode();
-        result.get(OP).set(ADD);
-        result.get(OP_ADDR).set(address);
-
+        final ModelNode addsubsystem = JAXRSubsystemAdd.createAddSubsystemOperation();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case JAXR_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case CONNECTIONFACTORY: {
-                            parseBinding(reader, result, ModelConstants.CONNECTIONFACTORY);
+                            parseBinding(reader, addsubsystem, ModelConstants.CONNECTIONFACTORY);
                             break;
                         }
                         case DATASOURCE: {
-                            parseBinding(reader, result, ModelConstants.DATASOURCE);
+                            parseBinding(reader, addsubsystem, ModelConstants.DATASOURCE);
                             break;
                         }
                         case FLAGS: {
-                            parseFlags(reader, result);
+                            parseFlags(reader, addsubsystem);
                             break;
                         }
                         default:
@@ -82,11 +70,10 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
                 }
             }
         }
-
-        operations.add(result);
+        operations.add(addsubsystem);
     }
 
-    private void parseBinding(XMLExtendedStreamReader reader, ModelNode result, String modelAttribute) throws XMLStreamException {
+    private void parseBinding(XMLExtendedStreamReader reader, ModelNode operation, String modelAttribute) throws XMLStreamException {
 
         // Handle attributes
         String jndiName = null;
@@ -110,10 +97,10 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
 
         requireNoContent(reader);
 
-        result.get(modelAttribute).set(jndiName);
+        operation.get(modelAttribute).set(jndiName);
     }
 
-    private void parseFlags(XMLExtendedStreamReader reader, ModelNode result) throws XMLStreamException {
+    private void parseFlags(XMLExtendedStreamReader reader, ModelNode operation) throws XMLStreamException {
 
         // Handle attributes
         int count = reader.getAttributeCount();
@@ -123,15 +110,15 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case DROPONSTART: {
-                    result.get(ModelConstants.DROPONSTART).set(attrValue);
+                    operation.get(ModelConstants.DROPONSTART).set(attrValue);
                     break;
                 }
                 case CREATEONSTART: {
-                    result.get(ModelConstants.CREATEONSTART).set(attrValue);
+                    operation.get(ModelConstants.CREATEONSTART).set(attrValue);
                     break;
                 }
                 case DROPONSTOP: {
-                    result.get(ModelConstants.DROPONSTOP).set(attrValue);
+                    operation.get(ModelConstants.DROPONSTOP).set(attrValue);
                     break;
                 }
                 default:
