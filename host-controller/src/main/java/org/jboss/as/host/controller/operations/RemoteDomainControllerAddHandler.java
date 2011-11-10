@@ -110,7 +110,7 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler, D
 
         overallConfigPersister.initializeDomainConfigurationPersister(true);
 
-        DomainModelUtil.initializeSlaveDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(), fileRepository);
+        DomainModelUtil.initializeSlaveDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(), fileRepository, hostControllerInfo);
         context.completeStep();
     }
 

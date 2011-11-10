@@ -136,17 +136,17 @@ public class DomainModelUtil {
     public static ExtensionContext initializeMasterDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
                                                                   final ContentRepository contentRepository, final FileRepository fileRepository,
                                                                   final DomainController domainController, final UnregisteredHostChannelRegistry registry) {
-        return initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, true, domainController, registry);
+        return initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, true, domainController, registry, domainController.getLocalHostInfo());
     }
 
     public static ExtensionContext initializeSlaveDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
-                                                                 final FileRepository fileRepository) {
-        return initializeDomainRegistry(root, configurationPersister, null, fileRepository, false, null, null);
+                                                                 final FileRepository fileRepository, final LocalHostControllerInfo hostControllerInfo) {
+        return initializeDomainRegistry(root, configurationPersister, null, fileRepository, false, null, null, hostControllerInfo);
     }
 
     private static ExtensionContext initializeDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
                                                              final ContentRepository contentRepo, final FileRepository fileRepository, final boolean isMaster,
-                                                             final DomainController domainController, final UnregisteredHostChannelRegistry registry) {
+                                                             final DomainController domainController, final UnregisteredHostChannelRegistry registry, final LocalHostControllerInfo hostControllerInfo) {
 
         final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY);
         final EnumSet<OperationEntry.Flag> deploymentUpload = EnumSet.of(OperationEntry.Flag.DEPLOYMENT_UPLOAD);
@@ -248,13 +248,12 @@ public class DomainModelUtil {
         extensions.registerOperationHandler(ExtensionRemoveHandler.OPERATION_NAME, ExtensionRemoveHandler.INSTANCE, ExtensionRemoveHandler.INSTANCE, false);
 
         if(!isMaster) {
-            ApplyRemoteMasterDomainModelHandler armdmh = new ApplyRemoteMasterDomainModelHandler(extensionContext, fileRepository);
+            ApplyRemoteMasterDomainModelHandler armdmh = new ApplyRemoteMasterDomainModelHandler(extensionContext, fileRepository, hostControllerInfo);
             root.registerOperationHandler(ApplyRemoteMasterDomainModelHandler.OPERATION_NAME, armdmh, armdmh, false, OperationEntry.EntryType.PRIVATE);
         } else {
             ReadMasterDomainModelHandler rmdmh = new ReadMasterDomainModelHandler(domainController, registry);
             root.registerOperationHandler(ReadMasterDomainModelHandler.OPERATION_NAME, rmdmh, rmdmh, false, OperationEntry.EntryType.PRIVATE, EnumSet.of(OperationEntry.Flag.READ_ONLY));
         }
-
 
         return extensionContext;
     }
