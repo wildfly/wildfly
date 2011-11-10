@@ -15,6 +15,7 @@ target
 .idea
 # ignore NetBeans files
 nbactions.xml
+nb-configuration.xml
 #
 maven-ant-tasks.jar
 test-output
