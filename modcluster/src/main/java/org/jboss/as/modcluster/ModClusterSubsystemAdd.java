@@ -91,8 +91,10 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler implements Descripti
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         String bindingRef = null;
+        ModelNode node = operation.get(CommonAttributes.MOD_CLUSTER_CONFIG);
         if (operation.hasDefined(CommonAttributes.MOD_CLUSTER_CONFIG)) {
-            final ModelNode node = operation.get(CommonAttributes.MOD_CLUSTER_CONFIG);
+            if (operation.get(CommonAttributes.MOD_CLUSTER_CONFIG).hasDefined(CommonAttributes.CONFIGURATION))
+                node = operation.get(CommonAttributes.MOD_CLUSTER_CONFIG).get(CommonAttributes.CONFIGURATION);
             if (node.hasDefined(CommonAttributes.ADVERTISE_SOCKET)) {
                 bindingRef = node.get(CommonAttributes.ADVERTISE_SOCKET).asString();
             }
@@ -101,7 +103,7 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler implements Descripti
 
             //Get the unmasked password
             // Add mod_cluster service
-            final ModClusterService service = new ModClusterService(unmaskPassword(context, model), operation.get(CommonAttributes.MOD_CLUSTER_CONFIG).clone());
+            final ModClusterService service = new ModClusterService(unmaskPassword(context, model), node.clone());
             final ServiceBuilder<ModCluster> serviceBuilder = context.getServiceTarget().addService(ModClusterService.NAME, service)
                     // .addListener(new ResultHandler.ServiceStartListener(resultHandler))
                     .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getWebServer())
