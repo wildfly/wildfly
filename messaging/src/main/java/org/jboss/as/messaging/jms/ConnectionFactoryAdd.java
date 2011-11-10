@@ -114,7 +114,7 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
     static ConnectionFactoryConfiguration createConfiguration(final OperationContext context, final String name, final ModelNode operation) throws OperationFailedException {
         final ConnectionFactoryConfiguration config = new ConnectionFactoryConfigurationImpl(name, HornetQClient.DEFAULT_HA, JndiEntriesAttribute.getJndiBindings(operation));
 
-        config.setHA(HA.resolveModelAttribute(context, operation).asBoolean());  // TODO this is not in the xsd
+        config.setHA(HA.resolveModelAttribute(context, operation).asBoolean());
         config.setAutoGroup(AUTO_GROUP.resolveModelAttribute(context, operation).asBoolean());
         config.setBlockOnAcknowledge(BLOCK_ON_ACK.resolveModelAttribute(context, operation).asBoolean());
         config.setBlockOnDurableSend(BLOCK_ON_DURABLE_SEND.resolveModelAttribute(context, operation).asBoolean());
