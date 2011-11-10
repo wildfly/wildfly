@@ -28,6 +28,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.jaxr.extension.JAXRConstants.Namespace;
+import static org.jboss.as.jaxr.service.JAXRConfiguration.DEFAULT_CONNECTIONFACTORY_BINDING;
+import static org.jboss.as.jaxr.service.JAXRConfiguration.DEFAULT_CREATEONSTART;
+import static org.jboss.as.jaxr.service.JAXRConfiguration.DEFAULT_DATASOURCE_BINDING;
+import static org.jboss.as.jaxr.service.JAXRConfiguration.DEFAULT_DROPONSTART;
+import static org.jboss.as.jaxr.service.JAXRConfiguration.DEFAULT_DROPONSTOP;
 
 import java.util.List;
 
@@ -35,6 +40,7 @@ import junit.framework.Assert;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.jaxr.service.JAXRConfiguration;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
@@ -67,16 +73,7 @@ public class JAXRSubsystemParsingTestCase extends AbstractSubsystemTest {
         List<ModelNode> operations = super.parse(SUBSYSTEM_XML);
 
         ///Check that we have the expected number of operations
-        Assert.assertEquals(1, operations.size());
-
-        //Check that each operation has the correct content
-        ModelNode addSubsystem = operations.get(0);
-        Assert.assertEquals(ADD, addSubsystem.get(OP).asString());
-        PathAddress addr = PathAddress.pathAddress(addSubsystem.get(OP_ADDR));
-        Assert.assertEquals(1, addr.size());
-        PathElement element = addr.getElement(0);
-        Assert.assertEquals(SUBSYSTEM, element.getKey());
-        Assert.assertEquals(JAXRConstants.SUBSYSTEM_NAME, element.getValue());
+        Assert.assertEquals(6, operations.size());
     }
 
     /**
@@ -84,8 +81,22 @@ public class JAXRSubsystemParsingTestCase extends AbstractSubsystemTest {
      */
     @Test
     public void testInstallIntoController() throws Exception {
+
+        JAXRConfiguration config = JAXRConfiguration.INSTANCE;
+        Assert.assertEquals(DEFAULT_DATASOURCE_BINDING, config.getDataSourceBinding());
+        Assert.assertEquals(DEFAULT_CONNECTIONFACTORY_BINDING, config.getConnectionFactoryBinding());
+        Assert.assertEquals(DEFAULT_DROPONSTART, config.isDropOnStart());
+        Assert.assertEquals(DEFAULT_CREATEONSTART, config.isCreateOnStart());
+        Assert.assertEquals(DEFAULT_DROPONSTOP, config.isDropOnStop());
+
         //Parse the subsystem xml and install into the controller
         KernelServices services = super.installInController(SUBSYSTEM_XML);
+
+        Assert.assertEquals("java:DataSource", config.getDataSourceBinding());
+        Assert.assertEquals("java:ConnectionFactory", config.getConnectionFactoryBinding());
+        Assert.assertEquals(true, config.isDropOnStart());
+        Assert.assertEquals(true, config.isCreateOnStart());
+        Assert.assertEquals(true, config.isDropOnStop());
 
         //Read the whole model and make sure it looks as expected
         ModelNode model = services.readWholeModel();
@@ -128,7 +139,6 @@ public class JAXRSubsystemParsingTestCase extends AbstractSubsystemTest {
                 PathAddress.pathAddress(
                         PathElement.pathElement(SUBSYSTEM, JAXRConstants.SUBSYSTEM_NAME)).toModelNode());
         List<ModelNode> operations = super.checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList();
-
 
         //Install the describe options from the first controller into a second controller
         KernelServices servicesB = super.installInController(operations);

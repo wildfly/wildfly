@@ -33,19 +33,22 @@ public class JAXRConfiguration {
 
     static final ServiceName SERVICE_BASE_NAME = ServiceName.JBOSS.append("jaxr", "as");
 
-    public static final String JAXR_DEFAULT_CONNECTION_FACTORY_BINDING = "java:/jaxr/ConnectionFactory";
-    public static final String JAXR_DEFAULT_DATASOURCE_BINDING = "java:jboss/datasources/ExampleDS";
+    public static final String DEFAULT_CONNECTIONFACTORY_BINDING = "java:/jaxr/ConnectionFactory";
+    public static final String DEFAULT_DATASOURCE_BINDING = "java:jboss/datasources/ExampleDS";
+    public static final boolean DEFAULT_DROPONSTART = false;
+    public static final boolean DEFAULT_CREATEONSTART = false;
+    public static final boolean DEFAULT_DROPONSTOP = false;
 
-    // Should all tables be created on Start
-    private boolean createOnStart=false;
-    // Should all tables be dropped on Stop
-    private boolean dropOnStop=false;
-    // Should all tables be dropped on Start
-    private boolean dropOnStart=false;
     // Datasource to Database
-    private String dataSourceBinding = JAXR_DEFAULT_DATASOURCE_BINDING;
+    private String dataSourceBinding = DEFAULT_DATASOURCE_BINDING;
     // Context to which JAXR ConnectionFactory to bind to
-    private String connectionFactoryBinding = JAXR_DEFAULT_CONNECTION_FACTORY_BINDING;
+    private String connectionFactoryBinding = DEFAULT_CONNECTIONFACTORY_BINDING;
+    // Should all tables be dropped on Start
+    private boolean dropOnStart=DEFAULT_DROPONSTART;
+    // Should all tables be created on Start
+    private boolean createOnStart=DEFAULT_CREATEONSTART;
+    // Should all tables be dropped on Stop
+    private boolean dropOnStop=DEFAULT_DROPONSTOP;
 
     public static JAXRConfiguration INSTANCE = new JAXRConfiguration();
 
