@@ -148,6 +148,8 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class ParseAndMarshalModelsTestCase {
+		
+		private static final String JBOSSAS_PROJECT_DIR = System.getProperty("jbossas.project.dir"); // TODO: Remove default when props start working!
 
     @Deployment
     public static Archive<?> getDeployment() {
@@ -551,19 +553,19 @@ public class ParseAndMarshalModelsTestCase {
         f = f.getParentFile().getParentFile().getParentFile();
         Assert.assertTrue(f.exists());
         f = new File(f, "build");
-        Assert.assertTrue(f.exists());
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
         f = new File(f, "src");
-        Assert.assertTrue(f.exists());
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
         f = new File(f, "main");
-        Assert.assertTrue(f.exists());
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
         f = new File(f, "resources");
-        Assert.assertTrue(f.exists());
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
         f = new File(f, "standalone");
-        Assert.assertTrue(f.exists());
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
         f = new File(f, "configuration");
-        Assert.assertTrue(f.exists());
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
         f = new File(f, profile);
-        Assert.assertTrue(f.exists());
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
         return f;
     }
 
@@ -574,17 +576,17 @@ public class ParseAndMarshalModelsTestCase {
         f = f.getParentFile().getParentFile().getParentFile();
         Assert.assertTrue(f.exists());
         f = new File(f, "build");
-        Assert.assertTrue(f.exists());
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
         f = new File(f, "src");
-        Assert.assertTrue(f.exists());
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
         f = new File(f, "main");
-        Assert.assertTrue(f.exists());
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
         f = new File(f, "resources");
-        Assert.assertTrue(f.exists());
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
         f = new File(f, "domain");
-        Assert.assertTrue(f.exists());
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
         f = new File(f, "configuration");
-        Assert.assertTrue(f.exists());
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
         return f;
     }
 
@@ -593,7 +595,7 @@ public class ParseAndMarshalModelsTestCase {
         //built server could have changed during running of tests
         File f = getDomainConfigDir();
         f = new File(f, "host.xml");
-        Assert.assertTrue(f.exists());
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
         return f;
     }
 
@@ -602,7 +604,7 @@ public class ParseAndMarshalModelsTestCase {
         //built server could have changed during running of tests
         File f = getDomainConfigDir();
         f = new File(f, "domain.xml");
-        Assert.assertTrue(f.exists());
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
         return f;
     }
 
