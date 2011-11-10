@@ -504,10 +504,20 @@
         </xs:attribute>
     </xs:complexType>
 
+    <xs:complexType name="management-remoting-interfaceType">
+        <xs:annotation>
+            <xs:documentation>
+                Makes the native management interface available via the connectors set up in the remoting subsystem,
+                using the remoting subsystem's endpoint. This should only be used for a server not for a HC/DC.
+            </xs:documentation>
+        </xs:annotation>
+    </xs:complexType>
+
     <xs:complexType name="management-interfacesType">
         <xs:all minOccurs="0">
-            <xs:element name="native-interface" type="management-interfaceType"/>
-            <xs:element name="http-interface" type="management-interfaceType"/>
+            <xs:element name="native-remoting-interface" type="management-remoting-interfaceType" minOccurs="0"/>
+            <xs:element name="native-interface" type="management-interfaceType" minOccurs="0"/>
+            <xs:element name="http-interface" type="management-interfaceType" minOccurs="0"/>
         </xs:all>
     </xs:complexType>
 
