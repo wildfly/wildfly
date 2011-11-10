@@ -34,6 +34,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.ejb3.annotation.SecurityDomain;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.ejb.jboss.ejb3.JBossAssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.jboss.ejb3.JBossEjb31MetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 
@@ -74,17 +75,20 @@ public class SecurityDomainMergingProcessor extends AbstractMergingProcessor<EJB
         EjbJarMetaData ejbJarMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
         if (ejbJarMetaData instanceof JBossEjb31MetaData) {
             JBossEjb31MetaData jbossMetaData = JBossEjb31MetaData.class.cast(ejbJarMetaData);
-            List<EJBBoundSecurityMetaData> securityMetaDatas = jbossMetaData.getAssemblyDescriptor().getAny(EJBBoundSecurityMetaData.class);
-            if (securityMetaDatas != null) {
-                for (EJBBoundSecurityMetaData securityMetaData : securityMetaDatas) {
-                    if (securityMetaData.getEjbName().equals(description.getComponentName())) {
-                        securityDomain = securityMetaData.getSecurityDomain();
-                        break;
-                    }
-                    // check global security domain
-                    if (securityMetaData.getEjbName().equals("*")) {
-                        globalSecurityDomain = securityMetaData.getSecurityDomain();
-                        continue;
+            JBossAssemblyDescriptorMetaData assemblyMetadata = jbossMetaData.getAssemblyDescriptor();
+            if(assemblyMetadata != null){
+                List<EJBBoundSecurityMetaData> securityMetaDatas = assemblyMetadata.getAny(EJBBoundSecurityMetaData.class);
+                if (securityMetaDatas != null) {
+                    for (EJBBoundSecurityMetaData securityMetaData : securityMetaDatas) {
+                        if (securityMetaData.getEjbName().equals(description.getComponentName())) {
+                            securityDomain = securityMetaData.getSecurityDomain();
+                            break;
+                        }
+                        // check global security domain
+                        if (securityMetaData.getEjbName().equals("*")) {
+                            globalSecurityDomain = securityMetaData.getSecurityDomain();
+                            continue;
+                        }
                     }
                 }
             }
