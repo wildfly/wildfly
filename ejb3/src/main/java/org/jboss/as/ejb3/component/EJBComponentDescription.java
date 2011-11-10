@@ -29,6 +29,7 @@ import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ee.component.NamespaceConfigurator;
 import org.jboss.as.ee.component.NamespaceViewConfigurator;
+import org.jboss.as.ee.component.TCCLInterceptor;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
@@ -49,6 +50,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactory;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.msc.service.ServiceBuilder;
@@ -296,6 +298,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         getViews().add(view);
         // setup server side view interceptors
         setupViewInterceptors(view);
+        // setup server side home view interceptors
+        this.setupHomeViewInterceptors(view);
         // setup client side view interceptors
         setupClientViewInterceptors(view);
         // return created view
@@ -307,6 +311,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         getViews().add(view);
         // setup server side view interceptors
         setupViewInterceptors(view);
+        // setup server side home view interceptors
+        this.setupHomeViewInterceptors(view);
         // setup client side view interceptors
         setupClientViewInterceptors(view);
 
@@ -416,6 +422,20 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             view.getConfigurators().add(new EJBRemoteTransactionsViewConfigurator());
         }
 
+    }
+
+    private void setupHomeViewInterceptors(final EjbHomeViewDescription ejbHomeViewDescription) {
+        // setup the TCCL interceptor, which usually would have been setup by the ComponentDescription.DefaultConfigurator
+        // but since the DefaultConfiguration is skipped for EJBHomeViewDescription (@see EJBHomeViewDescription.isDefaultConfiguratorRequired())
+        // we add this interceptor here explicitly
+        ejbHomeViewDescription.getConfigurators().add(new ViewConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration viewConfiguration) throws DeploymentUnitProcessingException {
+                final ClassLoader componentClassLoader = componentConfiguration.getComponentClass().getClassLoader();
+                final InterceptorFactory tcclInterceptorFactory = new ImmediateInterceptorFactory(new TCCLInterceptor(componentClassLoader));
+                viewConfiguration.addViewInterceptor(tcclInterceptorFactory, InterceptorOrder.View.TCCL_INTERCEPTOR);
+            }
+        });
     }
 
     protected void setupClientViewInterceptors(ViewDescription view) {
