@@ -22,6 +22,7 @@
 package org.jboss.as.controller.remote;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.io.BufferedInputStream;
@@ -36,6 +37,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.ModelController.OperationTransaction;
 import org.jboss.as.controller.PathAddress;
@@ -45,6 +47,7 @@ import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementBatchIdManager;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
@@ -132,6 +135,8 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
     @Override
     public void execute(final ModelNode operation, final OperationMessageHandler handler, final ProxyOperationControl control, final OperationAttachments attachments) {
         final int batchId = ManagementBatchIdManager.DEFAULT.createBatchId();
+        final CountDownLatch prepareOrFailedLatch = new CountDownLatch(1);
+        final AtomicBoolean failed = new AtomicBoolean(false);
         //As per the interface javadoc this method should block until either the operationFailed() or the operationPrepared() methods of the ProxyOperationControl have been called
         ExecuteRequest request = new ExecuteRequest(
             batchId,
@@ -141,11 +146,14 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
                 @Override
                 public void operationPrepared(OperationTransaction transaction, ModelNode result) {
                     control.operationPrepared(transaction, result);
+                    prepareOrFailedLatch.countDown();
                 }
 
                 @Override
                 public void operationFailed(ModelNode response) {
                     control.operationFailed(response);
+                    failed.set(true);
+                    prepareOrFailedLatch.countDown();
                 }
 
                 @Override
@@ -153,9 +161,22 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
                     control.operationCompleted(response);
                 }
             },
-            attachments);
+            attachments) {
+
+            @Override
+            protected void setError(Exception e) {
+                super.setError(e);
+                if(failed.compareAndSet(false, true)) {
+                    control.operationFailed(new ModelNode().get(OUTCOME).set(FAILED));
+                }
+                prepareOrFailedLatch.countDown();
+            }
+        };
         try {
             request.executeForResult(executorService, getChannelStrategy());
+            // Wait until the remote side completed all steps and sends the prepared
+            // result, or there is a failure
+            prepareOrFailedLatch.await();
         } catch (Exception e) {
             try {
                 ManagementBatchIdManager.DEFAULT.freeBatchId(batchId);

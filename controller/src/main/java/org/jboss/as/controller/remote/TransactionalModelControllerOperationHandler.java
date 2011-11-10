@@ -134,13 +134,6 @@ public class TransactionalModelControllerOperationHandler extends AbstractModelC
                     }
                 }
             });
-            try {
-                executeRequestContext.awaitPreparedOrFailed();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                executeRequestContext.setError(e.getMessage());
-                throw MESSAGES.prepareFailThreadInterrupted();
-            }
         }
     }
 
@@ -275,7 +268,6 @@ public class TransactionalModelControllerOperationHandler extends AbstractModelC
     private class ExecuteRequestContext {
         final ManagementChannel channel;
         final int batchId;
-        final CountDownLatch preparedOrFailedLatch = new CountDownLatch(1);
         final CountDownLatch txCompletedLatch = new CountDownLatch(1);
         final Key closableKey;
         volatile OperationTransaction activeTx;
@@ -298,13 +290,7 @@ public class TransactionalModelControllerOperationHandler extends AbstractModelC
         int getBatchId() {
             return batchId;
         }
-
-        void awaitPreparedOrFailed() throws InterruptedException {
-            preparedOrFailedLatch.await();
-        }
-
         void setPreparedOrFailed() {
-            preparedOrFailedLatch.countDown();
             closableKey.remove();
         }
 
@@ -334,7 +320,6 @@ public class TransactionalModelControllerOperationHandler extends AbstractModelC
         synchronized void setError(String error) {
             this.error = error;
             activeTransactions.remove(batchId);
-            preparedOrFailedLatch.countDown();
             txCompletedLatch.countDown();
         }
 
