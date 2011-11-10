@@ -619,6 +619,7 @@
             </xs:complexType>
          </xs:element>
          <xs:element name="resource-adapter" type="xs:string" minOccurs="0" maxOccurs="1"/>
+         <xs:element name="ha" type="xs:string" minOccurs="0" maxOccurs="1"/>
          <xs:element name="client-failure-check-period" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="connection-ttl" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="call-timeout" type="xs:long" maxOccurs="1" minOccurs="0" />
