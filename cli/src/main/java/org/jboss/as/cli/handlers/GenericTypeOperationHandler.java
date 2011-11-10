@@ -112,15 +112,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             dependsOnProfile = nodeType.contains("/subsystem=") || nodeType.startsWith("subsystem=");
         }
 
-        helpArg = new ArgumentWithoutValue(this, "--help", "-h") {
-            @Override
-            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-                if(dependsOnProfile && ctx.isDomainMode() && !profile.isValueComplete(ctx.getParsedCommandLine())) {
-                    return false;
-                }
-                return super.canAppearNext(ctx);
-            }
-        };
+        helpArg = new ArgumentWithoutValue(this, "--help", "-h");
 
         nodePath = new DefaultOperationRequestAddress();
         CommandLineParser.CallbackHandler handler = new DefaultCallbackHandler(nodePath);
@@ -578,8 +570,8 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             final ModelNode value = attr.getValue();
 
             // filter metrics
-            if (value.has("access-type")) {
-                accessType = value.get("access-type").asString();
+            if (value.has(Util.ACCESS_TYPE)) {
+                accessType = value.get(Util.ACCESS_TYPE).asString();
 //                if("metric".equals(accessType)) {
 //                    continue;
 //                }
@@ -588,8 +580,8 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             final boolean required = value.hasDefined("required") ? value.get("required").asBoolean() : false;
             final StringBuilder descr = new StringBuilder();
 
-            final String type = value.has("type") ? value.get("type").asString() : "no type info";
-            if (value.hasDefined("description")) {
+            final String type = value.has(Util.TYPE) ? value.get(Util.TYPE).asString() : "no type info";
+            if (value.hasDefined(Util.DESCRIPTION)) {
                 descr.append('(');
                 descr.append(type);
                 if(accessType != null) {
@@ -650,25 +642,6 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
     }
 
     protected void printNodeDescription(CommandContext ctx) {
-        ModelNode request = initRequest(ctx);
-        if(request == null) {
-            return;
-        }
-        request.get(Util.OPERATION).set(Util.READ_RESOURCE_DESCRIPTION);
-        ModelNode result = null;
-        try {
-            result = ctx.getModelControllerClient().execute(request);
-            if(!result.hasDefined(Util.RESULT)) {
-                ctx.printLine("Node description is not available.");
-                return;
-            }
-            result = result.get(Util.RESULT);
-            if(!result.hasDefined(Util.DESCRIPTION)) {
-                ctx.printLine("Node description is not available.");
-                return;
-            }
-        } catch (Exception e) {
-        }
 
         final StringBuilder buf = new StringBuilder();
 
@@ -687,10 +660,36 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         buf.append("The command is used to manage resources of type " + this.nodeType + ".");
 
         buf.append("\n\nRESOURCE DESCRIPTION\n\n");
-        if(result != null) {
-            buf.append(result.get(Util.DESCRIPTION).asString());
+
+        if(dependsOnProfile && ctx.isDomainMode() && profile.getValue(ctx.getParsedCommandLine()) == null) {
+            buf.append("(Execute '");
+            buf.append(commandName).append(" --profile=<profile_name> --help' to include the resource description here.)");
         } else {
-            buf.append("N/A. Please, open a jira issue at https://issues.jboss.org/browse/AS7 to get this fixed. Thanks!");
+            ModelNode request = initRequest(ctx);
+            if(request == null) {
+                return;
+            }
+            request.get(Util.OPERATION).set(Util.READ_RESOURCE_DESCRIPTION);
+            ModelNode result = null;
+            try {
+                result = ctx.getModelControllerClient().execute(request);
+                if(!result.hasDefined(Util.RESULT)) {
+                    ctx.printLine("Node description is not available.");
+                    return;
+                }
+                result = result.get(Util.RESULT);
+                if(!result.hasDefined(Util.DESCRIPTION)) {
+                    ctx.printLine("Node description is not available.");
+                    return;
+                }
+            } catch (Exception e) {
+            }
+
+            if(result != null) {
+                buf.append(result.get(Util.DESCRIPTION).asString());
+            } else {
+                buf.append("N/A. Please, open a jira issue at https://issues.jboss.org/browse/AS7 to get this fixed. Thanks!");
+            }
         }
 
         buf.append("\n\nARGUMENTS\n");
@@ -790,7 +789,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         ModelNode address = request.get(Util.ADDRESS);
         if(dependsOnProfile && ctx.isDomainMode()) {
             final String profileName = profile.getValue(ctx.getParsedCommandLine());
-            if(profile == null) {
+            if(profileName == null) {
                 ctx.printLine("--profile argument is required to get the node description.");
                 return null;
             }
