@@ -21,11 +21,13 @@
  */
 package org.jboss.as.test.integration.management.util;
 
-import java.io.IOException;
-import static org.junit.Assert.*;
+import static org.jboss.as.arquillian.container.Authentication.PASSWORD;
+import static org.jboss.as.arquillian.container.Authentication.USERNAME;
+import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StreamTokenizer;
@@ -303,7 +305,9 @@ public class CLIWrapper implements Runnable {
             "-Djline.WindowsTerminal.directConsole=false " +
             "-jar ./target/jbossas/jboss-modules.jar " +
             "-mp ../../build/target/" + asDir + "/modules " +
-            "-logmodule org.jboss.logmanager org.jboss.as.cli";
+            "-logmodule org.jboss.logmanager org.jboss.as.cli" +
+            " --user=" + USERNAME +
+            " --password=" + PASSWORD;
         return cliCommand;
     }
 

@@ -21,13 +21,13 @@
  */
 package org.jboss.as.test.smoke.embedded.demos.ws;
 
-import java.net.URL;
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
+import java.net.URL;
 
 import junit.framework.Assert;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -66,7 +66,7 @@ public class WSTestCase {
 
     @Test
     public void testManagementDescription() throws Exception {
-        final ModelControllerClient client = ModelControllerClient.Factory.create("localhost", 9999);
+        final ModelControllerClient client = ModelControllerClient.Factory.create("localhost", 9999, getCallbackHandler());
         try {
             final ModelNode address = new ModelNode();
             address.add(ModelDescriptionConstants.DEPLOYMENT, "ws-example.war");

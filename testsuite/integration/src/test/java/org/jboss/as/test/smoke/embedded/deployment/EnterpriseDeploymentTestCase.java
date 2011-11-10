@@ -21,22 +21,13 @@
  */
 package org.jboss.as.test.smoke.embedded.deployment;
 
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.ee.deployment.spi.DeploymentManagerImpl;
-import org.jboss.as.ee.deployment.spi.DeploymentMetaData;
-import org.jboss.as.ee.deployment.spi.JarUtils;
-import org.jboss.as.ee.deployment.spi.factories.DeploymentFactoryImpl;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.util.UnreachableStatementException;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static org.jboss.as.arquillian.container.Authentication.PASSWORD;
+import static org.jboss.as.arquillian.container.Authentication.USERNAME;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.shared.StateType;
@@ -62,11 +53,22 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.JarOutputStream;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
-import static org.junit.Assert.assertNull;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.ee.deployment.spi.DeploymentManagerImpl;
+import org.jboss.as.ee.deployment.spi.DeploymentMetaData;
+import org.jboss.as.ee.deployment.spi.JarUtils;
+import org.jboss.as.ee.deployment.spi.factories.DeploymentFactoryImpl;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.util.UnreachableStatementException;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Deployment API JSR-88 tests
@@ -188,7 +190,7 @@ public class EnterpriseDeploymentTestCase {
             DeploymentFactory[] factories = dfManager.getDeploymentFactories();
             assertTrue("DeploymentFactory available", factories.length > 0);
             String mgrURI = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7";
-            deploymentManager = factories[0].getDeploymentManager(mgrURI, null, null);
+            deploymentManager = factories[0].getDeploymentManager(mgrURI, USERNAME, PASSWORD);
         }
         return deploymentManager;
     }

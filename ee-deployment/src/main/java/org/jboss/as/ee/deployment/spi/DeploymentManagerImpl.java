@@ -90,9 +90,11 @@ public class DeploymentManagerImpl implements DeploymentManager {
     private Map<String, File> mapDeploymentPlan;
     private DeploymentMetaData metaData;
 
-    private List<File> tmpFiles = new ArrayList<File>();
-    private URI deployURI;
+    private final List<File> tmpFiles = new ArrayList<File>();
+    private final URI deployURI;
     private boolean isConnected;
+    private final String username;
+    private final String password;
 
     /**
      * Create a deployment manager for the given URL and connected mode.
@@ -116,6 +118,8 @@ public class DeploymentManagerImpl implements DeploymentManager {
         this.deployURI = deployURI;
         this.isConnected = isConnected;
         this.targets = null;
+        this.username = username;
+        this.password = password;
     }
 
     /**
@@ -142,7 +146,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
                 URIParser parser = new URIParser(deployURI);
                 String targetType = parser.getParameter("targetType");
                 if (targetType.equals("as7"))
-                    targets = new Target[] { new DeploymentManagerTarget(deployURI) };
+                    targets = new Target[] { new DeploymentManagerTarget(deployURI, username, password) };
                 else
                     throw new IllegalArgumentException("Invalid targetType in URI: " + deployURI);
             }

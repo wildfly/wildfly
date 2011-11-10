@@ -21,7 +21,7 @@
 */
 package org.jboss.as.test.integration.jmx;
 
-
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -87,7 +87,7 @@ public class ModelControllerMBeanTestCase {
     @Before
     public void initialize() throws Exception {
         connection = setupAndGetConnection();
-        client = ModelControllerClient.Factory.create("localhost", 9999);
+        client = ModelControllerClient.Factory.create("localhost", 9999, getCallbackHandler());
     }
 
     @After

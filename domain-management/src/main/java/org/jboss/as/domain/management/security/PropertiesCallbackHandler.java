@@ -128,6 +128,10 @@ public class PropertiesCallbackHandler implements Service<DomainCallbackHandler>
                     }
                     checkWeakPasswords(props);
 
+                    if (props.size() == 0) {
+                        ROOT_LOGGER.warnf("No users defined to access management interfaces, add a user to '%s'", propertiesFile.getCanonicalPath());
+                    }
+
                     userProperties = props;
                     // Update this last otherwise the check outside the synchronized block could return true before the file is set.
                     fileUpdated = fileLastModified;

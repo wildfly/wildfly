@@ -209,7 +209,9 @@ public final class ProcessControllerServerHandler implements ConnectionHandler {
                                 final String hostName = readUTFZBytes(dataStream);
                                 final int port = readInt(dataStream);
                                 final boolean managementSubsystemEndpoint = readBoolean(dataStream);
-                                processController.sendReconnectProcess(processName, hostName, port, managementSubsystemEndpoint);
+                                final byte[] asAuthKey = new byte[16];
+                                readFully(dataStream, asAuthKey);
+                                processController.sendReconnectProcess(processName, hostName, port, managementSubsystemEndpoint, asAuthKey);
                             } else {
                                 SERVER_LOGGER.tracef("Ignoring reconnect_process message from untrusted source");
                             }

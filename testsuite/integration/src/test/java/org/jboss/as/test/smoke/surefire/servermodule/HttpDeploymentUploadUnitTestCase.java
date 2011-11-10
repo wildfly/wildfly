@@ -23,6 +23,7 @@ package org.jboss.as.test.smoke.surefire.servermodule;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
+import static org.jboss.as.arquillian.container.Authentication.getAuthenticator;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
@@ -33,6 +34,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Authenticator;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.NoSuchElementException;
@@ -78,6 +80,8 @@ public class HttpDeploymentUploadUnitTestCase {
 
     @Test
     public void testHttpDeploymentUpload() throws Exception {
+        Authenticator.setDefault(getAuthenticator());
+
         BufferedOutputStream os = null;
         BufferedInputStream is = null;
 

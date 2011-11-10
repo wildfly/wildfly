@@ -311,7 +311,7 @@ public final class ProcessController {
         }
     }
 
-    public void sendReconnectProcess(String processName, String hostName, int port, boolean managementSubsystemEndpoint) {
+    public void sendReconnectProcess(String processName, String hostName, int port, boolean managementSubsystemEndpoint, byte[] asAuthKey) {
         synchronized (lock) {
             ManagedProcess process = processes.get(processName);
             if (process == null) {
@@ -319,7 +319,7 @@ public final class ProcessController {
                 // ignore
                 return;
             }
-            process.reconnect(hostName, port, managementSubsystemEndpoint);
+            process.reconnect(hostName, port, managementSubsystemEndpoint, asAuthKey);
         }
     }
 

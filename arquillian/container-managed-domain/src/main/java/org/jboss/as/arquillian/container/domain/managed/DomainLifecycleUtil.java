@@ -18,15 +18,21 @@
  */
 package org.jboss.as.arquillian.container.domain.managed;
 
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+import static org.jboss.as.arquillian.container.Authentication.PASSWORD;
+import static org.jboss.as.arquillian.container.Authentication.USERNAME;
+
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.AccessController;
@@ -54,6 +60,8 @@ import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.dmr.ModelNode;
+import org.jboss.sasl.JBossSaslProvider;
+import org.jboss.sasl.util.UsernamePasswordHashUtil;
 
 /**
  * Utility for controlling the lifecycle of a domain.
@@ -65,6 +73,7 @@ public class DomainLifecycleUtil {
     private static final ThreadFactory threadFactory = new AsyncThreadFactory();
 
     private final Logger log = Logger.getLogger(DomainLifecycleUtil.class.getName());
+    private final Provider saslProvider = new JBossSaslProvider();
 
     private Process process;
     private Thread shutdownThread;
@@ -83,6 +92,15 @@ public class DomainLifecycleUtil {
     }
 
     public void start() {
+        AccessController.doPrivileged(new PrivilegedAction<Object>() {
+            public Object run() {
+                if (Security.getProperty(saslProvider.getName()) == null) {
+                    Security.insertProviderAt(saslProvider, 1);
+                }
+                return null;
+            }
+        });
+
         try {
             configuration.validate();
 
@@ -106,6 +124,15 @@ public class DomainLifecycleUtil {
             } else {
                 modulePath = jbossHomeDir + "/modules";
             }
+
+            // No point backing up the file in a test scenario, just write what we need.
+            File usersFile = new File(domainPath + "/configuration/mgmt-users.properties");
+            FileOutputStream fos = new FileOutputStream(usersFile);
+            PrintWriter pw = new PrintWriter(fos);
+            pw.println(USERNAME + "=" + new UsernamePasswordHashUtil().generateHashedHexURP(USERNAME, "ManagementRealm", PASSWORD.toCharArray()));
+            pw.println("slave=" + new UsernamePasswordHashUtil().generateHashedHexURP("slave", "ManagementRealm", "slave_user_password".toCharArray()));
+            pw.close();
+            fos.close();
 
             List<String> cmd = new ArrayList<String>();
             cmd.add(java);
@@ -184,7 +211,6 @@ public class DomainLifecycleUtil {
 
             boolean serversAvailable = false;
             while (timeout > 0 && serversAvailable == false) {
-
                 serversAvailable = areServersStarted();
 
                 if (!serversAvailable) {
@@ -306,7 +332,7 @@ public class DomainLifecycleUtil {
             try {
                 InetAddress managementAddress = InetAddress.getByName(configuration.getHostControllerManagementAddress());
 
-                domainClient = DomainClient.Factory.create(managementAddress, configuration.getHostControllerManagementPort());
+                domainClient = DomainClient.Factory.create(managementAddress, configuration.getHostControllerManagementPort(), getCallbackHandler());
             } catch (UnknownHostException e) {
                 throw new RuntimeException(e);
             }

@@ -194,7 +194,7 @@ public class ServerInventoryImpl implements ServerInventory {
 
         if (running){
             try {
-                server.reconnectServerProcess(environment.getHostControllerPort());
+                server.reconnectServerProcess();
             } catch (IOException e) {
                 log.errorf(e, "Failed to send reconnect message to server %s", serverName);
             }

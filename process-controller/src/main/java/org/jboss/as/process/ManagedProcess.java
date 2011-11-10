@@ -158,11 +158,12 @@ final class ManagedProcess {
         }
     }
 
-    public void reconnect(String hostName, int port, boolean managementSubsystemEndpoint) {
+    public void reconnect(String hostName, int port, boolean managementSubsystemEndpoint, byte[] asAuthKey) {
         try {
             StreamUtils.writeUTFZBytes(stdin, hostName);
             StreamUtils.writeInt(stdin, port);
             StreamUtils.writeBoolean(stdin, managementSubsystemEndpoint);
+            stdin.write(asAuthKey);
             stdin.flush();
         } catch (IOException e) {
             log.failedToSendReconnect(e, processName);

@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.integration.management.cli;
 
-import org.jboss.arquillian.junit.Arquillian;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
+import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;

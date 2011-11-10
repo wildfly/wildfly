@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.common;
 
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.dmr.ModelNode;
@@ -48,7 +50,7 @@ public class JMSAdminOperations {
 
     public JMSAdminOperations(final String hostName, final int port) {
         try {
-            this.modelControllerClient = ModelControllerClient.Factory.create(InetAddress.getByName(hostName), port);
+            this.modelControllerClient = ModelControllerClient.Factory.create(InetAddress.getByName(hostName), port, getCallbackHandler());
         } catch (UnknownHostException e) {
             throw new RuntimeException("Cannot create model controller client for host: " + hostName + " and port " + port, e);
         }

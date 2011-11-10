@@ -141,6 +141,8 @@ public final class DomainServerMain {
             String hostName = StreamUtils.readUTFZBytes(initialInput);
             int port = StreamUtils.readInt(initialInput);
             boolean managementSubsystemEndpoint = StreamUtils.readBoolean(initialInput);
+            byte[] asAuthKey = new byte[16];
+            StreamUtils.readFully(initialInput, asAuthKey);
 
             final CountDownLatch latch = new CountDownLatch(2);
             final UninstallListener connectionListener = new UninstallListener(latch, HostControllerConnectionService.SERVICE_NAME);
@@ -164,7 +166,7 @@ public final class DomainServerMain {
             connection.removeListener(connectionListener);
 
             //Connect to the new HC address
-            addCommunicationServices(container, name, processName, authKey, new InetSocketAddress(InetAddress.getByName(hostName), port), managementSubsystemEndpoint, true);
+            addCommunicationServices(container, name, processName, asAuthKey, new InetSocketAddress(InetAddress.getByName(hostName), port), managementSubsystemEndpoint, true);
 
         } catch (InterruptedIOException e) {
             Thread.interrupted();
