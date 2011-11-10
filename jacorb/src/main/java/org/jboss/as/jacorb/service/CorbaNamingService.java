@@ -23,7 +23,7 @@
 package org.jboss.as.jacorb.service;
 
 import org.jacorb.config.Configuration;
-import org.jboss.as.jacorb.naming.JBossNamingContext;
+import org.jboss.as.jacorb.naming.CorbaNamingContext;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -68,10 +68,10 @@ public class CorbaNamingService implements Service<NamingContextExt> {
 
         try {
             // initialize the static naming service variables.
-            JBossNamingContext.init(orb, rootPOA);
+            CorbaNamingContext.init(orb, rootPOA);
 
             // create and initialize the root context instance according to the configuration.
-            JBossNamingContext ns = new JBossNamingContext();
+            CorbaNamingContext ns = new CorbaNamingContext();
             Configuration configuration = ((org.jacorb.orb.ORB) orb).getConfiguration();
             boolean doPurge = configuration.getAttribute("jacorb.naming.purge", "off").equals("on");
             boolean noPing = configuration.getAttribute("jacorb.naming.noping", "off").equals("on");

@@ -55,12 +55,13 @@ import org.omg.PortableServer.POA;
 
 /**
  * <p>
- * This class implements an in-VM CORBA Naming Server for JBoss to use.
+ * This class implements an in-VM CORBA Naming Server that caches for JBoss to use. All contexts keep a cache of the
+ * local sub-contexts to avoid unnecessary remote calls when resolving a complex name.
  * </p>
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
-public class JBossNamingContext extends NamingContextExtPOA implements Serializable {
+public class CorbaNamingContext extends NamingContextExtPOA implements Serializable {
 
     private static final long serialVersionUID = 132820915998903191L;
 
@@ -94,7 +95,7 @@ public class JBossNamingContext extends NamingContextExtPOA implements Serializa
      * cache of all active naming context implementations - used when resolving contexts recursively to avoid
      * unnecessary remote calls that may lead to thread pool depletion.
      */
-    private static Map<String, JBossNamingContext> contextImpls = new Hashtable<String, JBossNamingContext>();
+    private static Map<String, CorbaNamingContext> contextImpls = new Hashtable<String, CorbaNamingContext>();
 
     /**
      * no tests of bound objects for existence
@@ -121,8 +122,8 @@ public class JBossNamingContext extends NamingContextExtPOA implements Serializa
      * @param rootPoa a reference to the root {@code POA}.
      */
     public static void init(org.omg.CORBA.ORB orb, org.omg.PortableServer.POA rootPoa) {
-        JBossNamingContext.orb = orb;
-        JBossNamingContext.rootPoa = rootPoa;
+        CorbaNamingContext.orb = orb;
+        CorbaNamingContext.rootPoa = rootPoa;
     }
 
     /**
@@ -186,7 +187,7 @@ public class JBossNamingContext extends NamingContextExtPOA implements Serializa
 
             // try first to call the context implementation object directly.
             String contextOID = this.getObjectOID(context);
-            JBossNamingContext jbossContext = (contextOID == null ? null : contextImpls.get(contextOID));
+            CorbaNamingContext jbossContext = (contextOID == null ? null : contextImpls.get(contextOID));
             if (jbossContext != null)
                 jbossContext.bind(ncx, obj);
             else
@@ -231,7 +232,7 @@ public class JBossNamingContext extends NamingContextExtPOA implements Serializa
 
             // try first to call the context implementation object directly.
             String contextOID = this.getObjectOID(context);
-            JBossNamingContext jbossContext = (contextOID == null ? null : contextImpls.get(contextOID));
+            CorbaNamingContext jbossContext = (contextOID == null ? null : contextImpls.get(contextOID));
             if (jbossContext != null)
                 jbossContext.bind_context(ncx, obj);
             else
@@ -326,7 +327,7 @@ public class JBossNamingContext extends NamingContextExtPOA implements Serializa
     public NamingContext new_context() {
         try {
             // create and initialize a new context.
-            JBossNamingContext newContextImpl = new JBossNamingContext();
+            CorbaNamingContext newContextImpl = new CorbaNamingContext();
             newContextImpl.init(this.poa, this.doPurge, this.noPing);
             // create the oid for the new context and activate it with the naming service POA.
             String oid = new String(this.poa.servant_to_id(this)) + "/ctx" + (++this.childCount);
@@ -375,7 +376,7 @@ public class JBossNamingContext extends NamingContextExtPOA implements Serializa
 
             // try first to call the context implementation object directly.
             String contextOID = this.getObjectOID(context);
-            JBossNamingContext jbossContext = (contextOID == null ? null : contextImpls.get(contextOID));
+            CorbaNamingContext jbossContext = (contextOID == null ? null : contextImpls.get(contextOID));
             if (jbossContext != null)
                 jbossContext.rebind(ncx, obj);
             else
@@ -421,7 +422,7 @@ public class JBossNamingContext extends NamingContextExtPOA implements Serializa
 
             // try first to call the context implementation object directly.
             String contextOID = this.getObjectOID(context);
-            JBossNamingContext jbossContext = (contextOID == null ? null : contextImpls.get(contextOID));
+            CorbaNamingContext jbossContext = (contextOID == null ? null : contextImpls.get(contextOID));
             if (jbossContext != null)
                 jbossContext.rebind_context(ncx, obj);
             else
@@ -447,7 +448,7 @@ public class JBossNamingContext extends NamingContextExtPOA implements Serializa
 
             // try first to call the context implementation object directly.
             String contextOID = this.getObjectOID(next_context);
-            JBossNamingContext jbossContext = (contextOID == null ? null : contextImpls.get(contextOID));
+            CorbaNamingContext jbossContext = (contextOID == null ? null : contextImpls.get(contextOID));
             if (jbossContext != null)
                 return jbossContext.resolve(nc_prime);
             else
@@ -504,7 +505,7 @@ public class JBossNamingContext extends NamingContextExtPOA implements Serializa
 
             // try first to call the context implementation object directly.
             String contextOID = this.getObjectOID(context);
-            JBossNamingContext jbossContext = (contextOID == null ? null : contextImpls.get(contextOID));
+            CorbaNamingContext jbossContext = (contextOID == null ? null : contextImpls.get(contextOID));
             if (jbossContext != null)
                 jbossContext.unbind(ncx);
             else
