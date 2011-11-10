@@ -125,12 +125,17 @@ public final class JAXRBootstrapService extends AbstractService<Void> {
     public void stop(final StopContext context) {
         log.infof("Stopping JAXRBootstrapService");
         try {
+            unbindJAXRConnectionFactory(context);
             if (config.isDropOnStop()) {
-                runDrop();
+                try {
+                    runDrop();
+                } catch (SQLException ex) {
+                    // [TODO] AS7-2572 Cannot run JAXR drop tables script on shutdown
+                    log.errorf("Cannot drop JAXR tables: %s", ex);
+                }
             }
-            unBindJAXRConnectionFactory(context);
         } catch (Exception ex) {
-            log.errorf(ex, "Cannot start JUDDI service");
+            log.errorf(ex, "Failure stopping JUDDI service");
         }
     }
 
@@ -238,14 +243,16 @@ public final class JAXRBootstrapService extends AbstractService<Void> {
         }
     }
 
-    private void unBindJAXRConnectionFactory(StopContext context) {
+    private void unbindJAXRConnectionFactory(StopContext context) {
         log.debugf("Unbind JAXR ConnectionFactory");
         try {
             String jndiName = config.getConnectionFactoryUrl();
             ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
             ServiceContainer serviceContainer = context.getController().getServiceContainer();
             ServiceController<?> service = serviceContainer.getService(bindInfo.getBinderServiceName());
-            service.setMode(ServiceController.Mode.REMOVE);
+            if (service != null) {
+                service.setMode(ServiceController.Mode.REMOVE);
+            }
         } catch (Exception ex) {
             log.errorf(ex, "Cannot unbind JAXR ConnectionFactory");
         }
