@@ -89,7 +89,7 @@ public class JaxrConfimAssociationTestCase extends JaxrTestBase {
             orgs.add(source);
             br = blm.saveOrganizations(orgs);
             if (br.getExceptions() != null) {
-                Assert.fail(" Source:Save Orgs failed");
+                Assert.fail("Source:Save Orgs failed");
             }
 
             sourceKeys = br.getCollection();

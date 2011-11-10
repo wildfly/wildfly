@@ -88,15 +88,16 @@ public class JaxrSaveOrganizationTestCase extends JaxrTestBase {
                     Assert.assertNotNull(keyid);
                 }//end while
             } else {
-                System.err.println("JAXRExceptions " +
-                        "occurred during save:");
                 Collection exceptions = br.getExceptions();
-                Iterator iter = exceptions.iterator();
-                while (iter.hasNext()) {
-                    Exception e = (Exception) iter.next();
-                    System.err.println(e.toString());
-                    Assert.fail(e.toString());
+                if (exceptions != null) {
+                    Iterator iter = exceptions.iterator();
+                    while (iter.hasNext())
+                    {
+                        Exception e = (Exception) iter.next();
+                        e.printStackTrace(System.err);
+                    }
                 }
+                Assert.fail("Cannot save Organizations");
             }
             checkBusinessExists("JBOSS");
         } catch (JAXRException e) {
