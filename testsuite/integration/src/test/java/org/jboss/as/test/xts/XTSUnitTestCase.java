@@ -47,6 +47,9 @@ import static org.junit.Assert.assertTrue;
 public class XTSUnitTestCase extends XTSTestBase {
     private static final Logger log = Logger.getLogger(XTSUnitTestCase.class);
 
+    private static final String JBOSSXTS_TESTS_PATH_PROPERTY = "org.jboss.as.test.xts.tests.path";
+    private static final String JBOSSXTS_TESTS_PATH_DEFAULT  = "target/jbossxts-tests/";
+
     private static final String ARCHIVE_WSAS    = "wsas-tests.ear";
     private static final String ARCHIVE_WSCF    = "wscf-tests.ear";
     private static final String ARCHIVE_WSC     = "ws-c-tests.ear";
@@ -56,6 +59,12 @@ public class XTSUnitTestCase extends XTSTestBase {
 
     private static final String BASE_URL        = "http://localhost:8080";
 
+    private static String jbossxtsTestsPath;
+    static {
+        jbossxtsTestsPath = System.getProperty(JBOSSXTS_TESTS_PATH_PROPERTY, JBOSSXTS_TESTS_PATH_DEFAULT);
+        log.info("jbossxtsTestsPath = " + jbossxtsTestsPath);
+    }
+
     public XTSUnitTestCase() {
         super();
         this.repeatable = true;
@@ -64,7 +73,7 @@ public class XTSUnitTestCase extends XTSTestBase {
     @Deployment(name = "wsas", testable = false)
     public static Archive<?> deploymentWSAS() throws Exception {
         Archive<?> archive = ShrinkWrap.create(ZipImporter.class, ARCHIVE_WSAS)
-                .importFrom(new ZipFile("target/jbossxts-tests/" + ARCHIVE_WSAS)).as(EnterpriseArchive.class);
+                .importFrom(new ZipFile(jbossxtsTestsPath + "/" + ARCHIVE_WSAS)).as(EnterpriseArchive.class);
 //        archive.as(ZipExporter.class).exportTo(new File("/tmp/deployment.zip"), true);
         return archive;
     }
@@ -72,28 +81,28 @@ public class XTSUnitTestCase extends XTSTestBase {
     @Deployment(name = "wscf", testable = false)
     public static Archive<?> deploymentWSCF() throws Exception {
         Archive<?> archive = ShrinkWrap.create(ZipImporter.class, ARCHIVE_WSCF)
-                .importFrom(new ZipFile("target/jbossxts-tests/" + ARCHIVE_WSCF)).as(EnterpriseArchive.class);
+                .importFrom(new ZipFile(jbossxtsTestsPath + "/" + ARCHIVE_WSCF)).as(EnterpriseArchive.class);
         return archive;
     }
 
     @Deployment(name = "wsc", testable = false)
     public static Archive<?> deploymentWSC() throws Exception {
         Archive<?> archive = ShrinkWrap.create(ZipImporter.class, ARCHIVE_WSC)
-                .importFrom(new ZipFile("target/jbossxts-tests/" + ARCHIVE_WSC)).as(EnterpriseArchive.class);
+                .importFrom(new ZipFile(jbossxtsTestsPath + "/" + ARCHIVE_WSC)).as(EnterpriseArchive.class);
         return archive;
     }
 
     @Deployment(name = "wst", testable = false)
     public static Archive<?> deploymentWST() throws Exception {
         Archive<?> archive = ShrinkWrap.create(ZipImporter.class, ARCHIVE_WST)
-                .importFrom(new ZipFile("target/jbossxts-tests/" + ARCHIVE_WST)).as(EnterpriseArchive.class);
+                .importFrom(new ZipFile(jbossxtsTestsPath + "/" + ARCHIVE_WST)).as(EnterpriseArchive.class);
         return archive;
     }
 
     @Deployment(name = "wstx", testable = false)
     public static Archive<?> deploymentWSTX() throws Exception {
         Archive<?> archive = ShrinkWrap.create(ZipImporter.class, ARCHIVE_WSTX)
-                .importFrom(new ZipFile("target/jbossxts-tests/" + ARCHIVE_WSTX)).as(EnterpriseArchive.class);
+                .importFrom(new ZipFile(jbossxtsTestsPath + "/" + ARCHIVE_WSTX)).as(EnterpriseArchive.class);
         return archive;
     }
 
@@ -159,7 +168,7 @@ public class XTSUnitTestCase extends XTSTestBase {
     }
 
     private String getOutfileName(String tag) {
-        return OUTFILE_PATH + "TEST-xts.unit.tests." + tag + ".xml";
+        return jbossxtsTestsPath + "/" + "TEST-xts.unit.tests." + tag + ".xml";
     }
 
 }
