@@ -50,8 +50,8 @@ import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.protocol.mgmt.ManagementResponseHandler;
-import org.jboss.as.protocol.mgmt.RequestProcessingException;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
+import org.jboss.as.protocol.mgmt.RequestProcessingException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
@@ -344,7 +344,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
             return new CloseHandler<Channel>() {
                 public void handleClose(final Channel closed, final IOException exception) {
                     if (!done) {
-                        executeRequest.setError(MESSAGES.channelClosed());
+                        executeRequest.setError(MESSAGES.channelClosed(exception));
                     }
                 }
             };
