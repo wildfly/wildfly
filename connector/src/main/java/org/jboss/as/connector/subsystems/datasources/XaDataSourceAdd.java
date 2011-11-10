@@ -46,7 +46,7 @@ import org.jboss.msc.service.ServiceTarget;
 public class XaDataSourceAdd extends AbstractDataSourceAdd {
     static final XaDataSourceAdd INSTANCE = new XaDataSourceAdd();
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         populateAddModel(operation, model, XADATASOURCE_PROPERTIES.getName(), XA_DATASOURCE_ATTRIBUTE);
     }
 
@@ -56,24 +56,15 @@ public class XaDataSourceAdd extends AbstractDataSourceAdd {
         return service;
     }
 
-    protected ServiceController<?> startConfigAndAddDependency(OperationContext context, ServiceBuilder<?> dataSourceServiceBuilder,
-            AbstractDataSourceService dataSourceService, String jndiName, ServiceTarget serviceTarget, final ModelNode operation, final ServiceVerificationHandler handler)
+    @Override
+    protected void startConfigAndAddDependency(ServiceBuilder<?> dataSourceServiceBuilder,
+                                               AbstractDataSourceService dataSourceService, String jndiName, ServiceTarget serviceTarget, final ModelNode operation, final ServiceVerificationHandler handler)
             throws OperationFailedException {
-        final ModifiableXaDataSource dataSourceConfig;
-        try {
-            dataSourceConfig = xaFrom(context, operation);
-        } catch (ValidateException e) {
-            throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToCreate("XaDataSource", operation, e.getLocalizedMessage())));
-        }
-        final ServiceName dataSourceCongServiceName = XADataSourceConfigService.SERVICE_NAME_BASE.append(jndiName);
-        final XADataSourceConfigService configService = new XADataSourceConfigService(dataSourceConfig);
 
-        ServiceController<?> svcController = serviceTarget.addService(dataSourceCongServiceName, configService)
-                .addListener(handler)
-                .install();
+        final ServiceName dataSourceCongServiceName = XADataSourceConfigService.SERVICE_NAME_BASE.append(jndiName);
 
         dataSourceServiceBuilder.addDependency(dataSourceCongServiceName, ModifiableXaDataSource.class,
                 ((XaDataSourceService) dataSourceService).getDataSourceConfigInjector());
-        return svcController;
+
     }
 }

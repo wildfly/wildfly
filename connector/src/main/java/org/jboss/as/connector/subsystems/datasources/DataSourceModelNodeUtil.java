@@ -39,6 +39,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTERCLASSNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLEAVING;
@@ -133,7 +134,7 @@ class DataSourceModelNodeUtil {
         final String urlSelectorStrategyClassName = getStringIfSetOrGetDefault(dataSourceNode,
                 URL_SELECTOR_STRATEGY_CLASS_NAME, null);
         final boolean useJavaContext = getBooleanIfSetOrGetDefault(dataSourceNode, USE_JAVA_CONTEXT, Defaults.USE_JAVA_CONTEXT);
-        final boolean enabled = false;//getBooleanIfSetOrGetDefault(dataSourceNode, ENABLED, Defaults.ENABLED);
+        final boolean enabled = getBooleanIfSetOrGetDefault(dataSourceNode, ENABLED, Defaults.ENABLED);
         final boolean jta = getBooleanIfSetOrGetDefault(dataSourceNode, JTA, Defaults.JTA);
         final Integer maxPoolSize = getIntIfSetOrGetDefault(dataSourceNode, MAX_POOL_SIZE, Defaults.MAX_POOL_SIZE);
         final Integer minPoolSize = getIntIfSetOrGetDefault(dataSourceNode, MIN_POOL_SIZE, Defaults.MIN_POOL_SIZE);
@@ -215,8 +216,7 @@ class DataSourceModelNodeUtil {
         final String urlSelectorStrategyClassName = getStringIfSetOrGetDefault(dataSourceNode,
                 URL_SELECTOR_STRATEGY_CLASS_NAME, null);
         final boolean useJavaContext = getBooleanIfSetOrGetDefault(dataSourceNode, USE_JAVA_CONTEXT, Defaults.USE_JAVA_CONTEXT);
-        final boolean enabled = false;
-                //getBooleanIfSetOrGetDefault(dataSourceNode, ENABLED, Defaults.ENABLED);
+        final boolean enabled = getBooleanIfSetOrGetDefault(dataSourceNode, ENABLED, Defaults.ENABLED);
         final Integer maxPoolSize = getIntIfSetOrGetDefault(dataSourceNode, MAX_POOL_SIZE, Defaults.MAX_POOL_SIZE);
         final Integer minPoolSize = getIntIfSetOrGetDefault(dataSourceNode, MIN_POOL_SIZE, Defaults.MIN_POOL_SIZE);
         final boolean prefill = getBooleanIfSetOrGetDefault(dataSourceNode, POOL_PREFILL, Defaults.PREFILL);

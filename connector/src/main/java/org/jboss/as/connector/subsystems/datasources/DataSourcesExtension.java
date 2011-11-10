@@ -196,8 +196,6 @@ public class DataSourcesExtension implements Extension {
     public void initialize(final ExtensionContext context) {
         SUBSYSTEM_DATASOURCES_LOGGER.debugf("Initializing Datasources Extension");
 
-        final DisableRequiredWriteAttributeHandler disableRequiredWriteAttributeHandler = new DisableRequiredWriteAttributeHandler();
-
         // Register the remoting subsystem
         final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
 
@@ -251,7 +249,7 @@ public class DataSourcesExtension implements Extension {
                dataSources.registerReadWriteAttribute(attribute.getName(), PoolConfigurationReadHandler.INSTANCE,
                     LocalAndXaDataSourcePoolConfigurationWriteHandler.INSTANCE, Storage.CONFIGURATION);
             } else {
-               dataSources.registerReadWriteAttribute(attribute.getName(), null, disableRequiredWriteAttributeHandler , Storage.CONFIGURATION);
+               dataSources.registerReadWriteAttribute(attribute.getName(), null, new DisableRequiredWriteAttributeHandler(DATASOURCE_ATTRIBUTE) , Storage.CONFIGURATION);
             }
         }
 
@@ -287,7 +285,7 @@ public class DataSourcesExtension implements Extension {
                xaDataSources.registerReadWriteAttribute(attribute.getName(), PoolConfigurationReadHandler.INSTANCE,
                     LocalAndXaDataSourcePoolConfigurationWriteHandler.INSTANCE, Storage.CONFIGURATION);
             } else {
-               xaDataSources.registerReadWriteAttribute(attribute.getName(), null, disableRequiredWriteAttributeHandler , Storage.CONFIGURATION);
+               xaDataSources.registerReadWriteAttribute(attribute.getName(), null, new DisableRequiredWriteAttributeHandler(XA_DATASOURCE_ATTRIBUTE) , Storage.CONFIGURATION);
             }
         }
 

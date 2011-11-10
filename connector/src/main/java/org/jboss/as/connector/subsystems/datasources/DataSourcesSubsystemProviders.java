@@ -131,7 +131,7 @@ class DataSourcesSubsystemProviders {
             Constants.RECOVERY_USERNAME, Constants.RECOVERY_PASSWORD,
             Constants.RECOVERY_SECURITY_DOMAIN, Constants.RECOVERLUGIN_CLASSNAME,
             Constants.RECOVERLUGIN_PROPERTIES, Constants.NO_RECOVERY,
-            Constants.XADATASOURCE_PROPERTIES, Constants.ENABLED };
+            Constants.ENABLED };
 
     static final String RESOURCE_NAME = DataSourcesSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
 
