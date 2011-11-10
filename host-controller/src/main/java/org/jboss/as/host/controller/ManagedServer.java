@@ -187,9 +187,9 @@ class ManagedServer {
         }
     }
 
-    void reconnectServerProcess(int port) throws IOException {
+    void reconnectServerProcess() throws IOException {
         synchronized (lock){
-            processControllerClient.reconnectProcess(serverProcessName, managementSocket.getAddress().getHostName(), managementSocket.getPort(), bootConfiguration.isManagementSubsystemEndpoint());
+            processControllerClient.reconnectProcess(serverProcessName, managementSocket.getAddress().getHostName(), managementSocket.getPort(), bootConfiguration.isManagementSubsystemEndpoint(), authKey);
         }
     }
 

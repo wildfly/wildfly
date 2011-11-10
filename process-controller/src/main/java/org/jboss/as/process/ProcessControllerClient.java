@@ -280,7 +280,7 @@ public final class ProcessControllerClient implements Closeable {
         }
     }
 
-    public void reconnectProcess(final String processName, final String hostName, final int port, final boolean managementSubsystemEndpoint) throws IOException {
+    public void reconnectProcess(final String processName, final String hostName, final int port, final boolean managementSubsystemEndpoint, final byte[] authKey) throws IOException {
         if (processName == null){
             throw MESSAGES.nullVar("processName");
         }
@@ -291,6 +291,7 @@ public final class ProcessControllerClient implements Closeable {
             writeUTFZBytes(os, hostName);
             writeInt(os, port);
             writeBoolean(os, managementSubsystemEndpoint);
+            os.write(authKey);
             os.close();
         } finally {
             safeClose(os);
