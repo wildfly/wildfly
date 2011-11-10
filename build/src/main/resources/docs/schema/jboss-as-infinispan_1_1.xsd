@@ -676,6 +676,11 @@
 
     <xs:simpleType name="transaction-mode">
         <xs:restriction base="xs:token">
+            <xs:enumeration value="NONE">
+                <xs:annotation>
+                    <xs:documentation>Cache will not enlist within transactions.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
             <xs:enumeration value="NON_XA">
                 <xs:annotation>
                     <xs:documentation>Cache will enlist within transactions as a javax.transaction.Synchronization</xs:documentation>

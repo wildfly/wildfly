@@ -14,13 +14,22 @@
                              instance-acquisition-timeout-unit="MINUTES"/>
         </bean-instance-pools>
     </pools>
+    <caches>
+        <cache name="simple"/>
+        <cache name="passivating" passivation-store-ref="file"/>
+        <cache name="clustered" passivation-store-ref="cluster"/>
+    </caches>
+    <passivation-stores>
+        <file-passivation-store name="file"/>
+        <cluster-passivation-store name="cluster" backing-cache="sfsb"/>
+    </passivation-stores>
 
     <!-- Session bean configurations -->
     <session-bean>
         <stateless>
             <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
         </stateless>
-        <stateful default-access-timeout="5000"/>
+        <stateful default-access-timeout="5000" cache-ref="file" clustered-cache-ref="cluster"/>
         <singleton default-access-timeout="5000"/>
 
     </session-bean>

@@ -101,6 +101,21 @@ public class StatefulTimeoutTestCase {
         Assert.assertTrue(AnnotatedBean.preDestroy);
     }
 
+    @Test
+    public void testStatefulTimeoutWithPassivation() throws Exception {
+
+        PassivatingBean sfsb1 = lookup(PassivatingBean.class);
+        Assert.assertFalse(PassivatingBean.preDestroy);
+        sfsb1.doStuff();
+        Thread.sleep(2000);
+        try {
+            sfsb1.doStuff();
+            throw new RuntimeException("Expecting NoSuchEjbException");
+        } catch (NoSuchEJBException expected) {
+
+        }
+        Assert.assertTrue(PassivatingBean.preDestroy);
+    }
 
     @Test
     public void testStatefulTimeoutFromDescriptor() throws Exception {
@@ -118,7 +133,6 @@ public class StatefulTimeoutTestCase {
         Assert.assertTrue(DescriptorBean.preDestroy);
     }
 
-
     @Test
     public void testStatefulBeanNotDiscardedWhileInTransaction() throws Exception {
         try {
@@ -134,4 +148,18 @@ public class StatefulTimeoutTestCase {
         }
     }
 
+    @Test
+    public void testStatefulBeanWithPassivationNotDiscardedWhileInTransaction() throws Exception {
+        try {
+            userTransaction.begin();
+            PassivatingBean2 sfsb1 = lookup(PassivatingBean2.class);
+            Assert.assertFalse(PassivatingBean2.preDestroy);
+            sfsb1.doStuff();
+            Thread.sleep(2000);
+            sfsb1.doStuff();
+            Assert.assertFalse(PassivatingBean2.preDestroy);
+        } finally {
+            userTransaction.commit();
+        }
+    }
 }

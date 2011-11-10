@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
  *
  */
 @Stateful
-@StatefulTimeout(value = 100, unit = TimeUnit.MILLISECONDS)
+@StatefulTimeout(value = 1000, unit = TimeUnit.MILLISECONDS)
 public class AnnotatedBean2 {
 
     public static volatile boolean preDestroy = false;

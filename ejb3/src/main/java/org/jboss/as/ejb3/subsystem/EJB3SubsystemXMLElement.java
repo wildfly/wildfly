@@ -47,6 +47,13 @@ public enum EJB3SubsystemXMLElement {
 
     POOLS("pools"),
 
+    CACHE("cache"),
+    CACHES("caches"),
+
+    PASSIVATION_STORES("passivation-stores"),
+    CLUSTER_PASSIVATION_STORE("cluster-passivation-store"),
+    FILE_PASSIVATION_STORE("file-passivation-store"),
+
     REMOTE("remote"),
     RESOURCE_ADAPTER_NAME("resource-adapter-name"),
     RESOURCE_ADAPTER_REF("resource-adapter-ref"),

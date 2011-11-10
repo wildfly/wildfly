@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
@@ -40,8 +42,6 @@ import org.jboss.as.ejb3.subsystem.deployment.MessageDrivenBeanResourceDefinitio
 import org.jboss.as.ejb3.subsystem.deployment.SingletonBeanDeploymentResourceDefinition;
 import org.jboss.as.ejb3.subsystem.deployment.StatefulSessionBeanDeploymentResourceDefinition;
 import org.jboss.as.ejb3.subsystem.deployment.StatelessSessionBeanDeploymentResourceDefinition;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 
 /**
  * Extension that provides the EJB3 subsystem.
@@ -84,6 +84,10 @@ public class EJB3Extension implements Extension {
 
         // subsystem=ejb3/strict-max-bean-instance-pool=*
         subsystemRegistration.registerSubModel(StrictMaxPoolResourceDefinition.INSTANCE);
+
+        subsystemRegistration.registerSubModel(CacheFactoryResourceDefinition.INSTANCE);
+        subsystemRegistration.registerSubModel(FilePassivationStoreResourceDefinition.INSTANCE);
+        subsystemRegistration.registerSubModel(ClusterPassivationStoreResourceDefinition.INSTANCE);
 
         // subsystem=ejb3/service=timerservice
         subsystemRegistration.registerSubModel(TimerServiceResourceDefinition.INSTANCE);

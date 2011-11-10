@@ -30,6 +30,7 @@ import org.jboss.as.controller.PathElement;
 public interface EJB3SubsystemModel {
     String LITE = "lite";
     String NAME = "name";
+    String ALIASES = "aliases";
 
     //only set if this is a cut-down app client boot
     String APPCLIENT = "appclient";
@@ -41,6 +42,8 @@ public interface EJB3SubsystemModel {
 
     String DEFAULT_MDB_INSTANCE_POOL = "default-mdb-instance-pool";
     String DEFAULT_RESOURCE_ADAPTER_NAME = "default-resource-adapter-name";
+    String DEFAULT_SFSB_CACHE = "default-sfsb-cache";
+    String DEFAULT_CLUSTERED_SFSB_CACHE = "default-clustered-sfsb-cache";
     String DEFAULT_SLSB_INSTANCE_POOL = "default-slsb-instance-pool";
     String INSTANCE_ACQUISITION_TIMEOUT = "timeout";
     String INSTANCE_ACQUISITION_TIMEOUT_UNIT = "timeout-unit";
@@ -67,11 +70,24 @@ public interface EJB3SubsystemModel {
     String USE_QUALIFIED_NAME = "use-qualified-name";
     String ENABLE_BY_DEFAULT = "enable-by-default";
 
+    String CACHE = "cache";
+    String PASSIVATION_STORE = "passivation-store";
+
+    String FILE_PASSIVATION_STORE = "file-passivation-store";
+    String IDLE_TIMEOUT = "idle-timeout";
+    String IDLE_TIMEOUT_UNIT = "idle-timeout-unit";
+    String MAX_SIZE = "max-size";
+    String GROUPS_PATH = "groups-path";
+    String SESSIONS_PATH = "sessions-path";
+    String SUBDIRECTORY_COUNT = "subdirectory-count";
+
+    String CLUSTER_PASSIVATION_STORE = "cluster-passivation-store";
+    String BACKING_CACHE = "backing-cache";
+    String PASSIVATE_EVENTS_ON_REPLICATE = "passivate-events-on-replicate";
+
     PathElement REMOTE_SERVICE_PATH = PathElement.pathElement(SERVICE, REMOTE);
     PathElement ASYNC_SERVICE_PATH = PathElement.pathElement(SERVICE, ASYNC);
     PathElement TIMER_SERVICE_PATH = PathElement.pathElement(SERVICE, TIMER_SERVICE);
     PathElement THREAD_POOL_PATH = PathElement.pathElement(THREAD_POOL);
     PathElement IIOP_PATH = PathElement.pathElement(SERVICE, IIOP);
-
-
 }

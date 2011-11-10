@@ -23,7 +23,6 @@
 package org.jboss.as.ejb3.subsystem;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;

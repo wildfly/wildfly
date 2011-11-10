@@ -239,7 +239,6 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
                 throw handleThrowableInTxSync(statefulSessionComponentInstance, t);
             }
             // tx has completed, so mark the SFSB instance as no longer in use
-
             lock.pushOwner(lockOwner);
             try {
                 releaseInstance(statefulSessionComponentInstance);
@@ -247,8 +246,5 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
                 lock.popOwner();
             }
         }
-
     }
-
-
 }

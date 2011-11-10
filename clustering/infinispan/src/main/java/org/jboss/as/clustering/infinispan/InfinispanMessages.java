@@ -55,7 +55,7 @@ public interface InfinispanMessages extends ClusteringMessages {
      *
      * @return a {@link ConfigurationPersistenceException} for the error.
      */
-    @Message(id = 10350, value = "Could not resolve destination address for outbound socket binding named '%s'")
+    @Message(id = 10310, value = "Could not resolve destination address for outbound socket binding named '%s'")
     InjectionException failedToInjectSocketBinding(@Cause UnknownHostException cause, OutboundSocketBinding binding);
 
 

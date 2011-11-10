@@ -246,7 +246,6 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
         }
     }
 
-
     private static JndiName toJndiName(String value) {
         return value.startsWith("java:") ? JndiName.of(value) : JndiName.of("java:jboss").append(value.startsWith("/") ? value.substring(1) : value);
     }

@@ -65,6 +65,8 @@ import org.jboss.as.ejb3.deployment.processors.dd.SecurityRoleRefDDProcessor;
 import org.jboss.as.ejb3.deployment.processors.dd.SessionBeanXmlDescriptorProcessor;
 import org.jboss.as.ejb3.deployment.processors.entity.EntityBeanComponentDescriptionFactory;
 import org.jboss.as.ejb3.deployment.processors.merging.ApplicationExceptionMergingProcessor;
+import org.jboss.as.ejb3.deployment.processors.merging.CacheMergingProcessor;
+import org.jboss.as.ejb3.deployment.processors.merging.ClusteredMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.ConcurrencyManagementMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.DeclareRolesMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.EjbConcurrencyMergingProcessor;
@@ -76,8 +78,9 @@ import org.jboss.as.ejb3.deployment.processors.merging.RemoveMethodMergingProces
 import org.jboss.as.ejb3.deployment.processors.merging.ResourceAdaptorMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.RunAsMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.SecurityDomainMergingProcessor;
-import org.jboss.as.ejb3.deployment.processors.merging.SessionBeanMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.SecurityRolesMergingProcessor;
+import org.jboss.as.ejb3.deployment.processors.merging.SessionBeanMergingProcessor;
+import org.jboss.as.ejb3.deployment.processors.merging.SessionPassivationMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.SessionSynchronizationMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.StartupMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.StatefulTimeoutMergingProcessor;
@@ -112,8 +115,10 @@ import org.jboss.msc.service.ServiceTarget;
 import org.omg.PortableServer.POA;
 
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.APPCLIENT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_CLUSTERED_SFSB_CACHE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_MDB_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_CACHE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT;
@@ -131,17 +136,21 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         //
     }
 
+    @Override
     protected void populateModel(ModelNode operation, ModelNode model) {
         if (operation.hasDefined(APPCLIENT)) {
             model.get(APPCLIENT).set(operation.get(APPCLIENT));
         }
         model.get(DEFAULT_MDB_INSTANCE_POOL).set(operation.get(DEFAULT_MDB_INSTANCE_POOL));
         model.get(DEFAULT_SLSB_INSTANCE_POOL).set(operation.get(DEFAULT_SLSB_INSTANCE_POOL));
+        model.get(DEFAULT_SFSB_CACHE).set(operation.get(DEFAULT_SFSB_CACHE));
+        model.get(DEFAULT_CLUSTERED_SFSB_CACHE).set(operation.get(DEFAULT_CLUSTERED_SFSB_CACHE));
         model.get(DEFAULT_RESOURCE_ADAPTER_NAME).set(operation.get(DEFAULT_RESOURCE_ADAPTER_NAME));
         model.get(DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT).set(operation.get(DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT));
         model.get(DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT).set(operation.get(DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT));
     }
 
+    @Override
     protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         //setup IIOP related stuff
@@ -165,6 +174,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         final boolean appclient = model.hasDefined(APPCLIENT) && model.get(APPCLIENT).asBoolean();
 
         context.addStep(new AbstractDeploymentChainStep() {
+            @Override
             protected void execute(DeploymentProcessorTarget processorTarget) {
 
                 //DUP's that are used even for app client deployments
@@ -223,6 +233,9 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                     processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_SESSION_BEAN, new SessionBeanMergingProcessor());
                     processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_SECURITY_PRINCIPAL_ROLE_MAPPING_MERGE, new SecurityRolesMergingProcessor());
                     processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_LOCAL_HOME, new SessionBeanHomeProcessor());
+                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_CLUSTERED, new ClusteredMergingProcessor());
+                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_CACHE, new CacheMergingProcessor());
+                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_SESSION_PASSIVATION, new SessionPassivationMergingProcessor());
 
                     processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_DEPENDS_ON_ANNOTATION, new EjbDependsOnMergingProcessor());
                     processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_DEPLOYMENT_REPOSITORY, new DeploymentRepositoryProcessor());
@@ -239,6 +252,13 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         if (model.hasDefined(DEFAULT_SLSB_INSTANCE_POOL)) {
             EJB3SubsystemDefaultPoolWriteHandler.SLSB_POOL.updatePoolService(context, model, newControllers);
+        }
+
+        if (model.hasDefined(DEFAULT_SFSB_CACHE)) {
+            EJB3SubsystemDefaultCacheWriteHandler.SFSB_CACHE.updateCacheService(context, model, newControllers);
+        }
+        if (model.hasDefined(DEFAULT_CLUSTERED_SFSB_CACHE)) {
+            EJB3SubsystemDefaultCacheWriteHandler.CLUSTERED_SFSB_CACHE.updateCacheService(context, model, newControllers);
         }
 
         if (model.hasDefined(DEFAULT_RESOURCE_ADAPTER_NAME)) {
@@ -286,7 +306,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         // Add the tccl based client context selector
         final TCCLBasedEJBClientContextSelector tcclBasedClientContextSelector = new TCCLBasedEJBClientContextSelector();
-        context.getServiceTarget().addService(tcclBasedClientContextSelector.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME,
+        context.getServiceTarget().addService(TCCLBasedEJBClientContextSelector.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME,
                 tcclBasedClientContextSelector).install();
 
         //add the default EjbClientContext
