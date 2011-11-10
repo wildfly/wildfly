@@ -30,7 +30,7 @@ public class TestsuiteSanityTestCase {
 		}
 		
 		@Test
-        @RunAsClient
+		@RunAsClient
 		public void testSystemPropertiesClient() throws Exception {
 
 				for( String var : new String[]{"jbossas.ts.module.dir", "jbossas.ts.integ.dir", "jbossas.ts.dir", "jbossas.project.dir", "jboss.dist", "jboss.inst"} ){
@@ -44,5 +44,4 @@ public class TestsuiteSanityTestCase {
 		}
 		
 }// class
-
 
