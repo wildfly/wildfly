@@ -37,12 +37,28 @@
                 The configuration of the Remoting subsystem.
 
                 The nested "connector" element(s) define connectors for this subsystem.
+                
+                The attributes correspond to the following xnio options:
+                  org.xnio.Options#WORKER_READ_THREADS (normally 1 or maybe 2-3 for an exceptionally busy server)
+                  org.xnio.Options#WORKER_WRITE_THREADS (same)
+                  org.xnio.Options#WORKER_ACCEPT_THREADS (we can just leave this at 1, it doesn't have to be tunable for Remoting)
+                  org.xnio.Options#WORKER_TASK_CORE_THREADS (core pool size)
+                  org.xnio.Options#WORKER_TASK_MAX_THREADS (max pool size)
+                  org.xnio.Options#WORKER_TASK_KEEPALIVE (keepalive time in milliseconds)
+                  org.xnio.Options#WORKER_TASK_LIMIT (worker queue length)
             ]]>
             </xs:documentation>
         </xs:annotation>
         <xs:choice minOccurs="0" maxOccurs="unbounded">
             <xs:element name="connector" type="connector"/>
         </xs:choice>
+        <xs:attribute name="worker-read-threads" type="xs:integer" use="optional"/>
+        <xs:attribute name="worker-write-threads" type="xs:integer" use="optional"/>
+        <xs:attribute name="worker-task-core-threads" type="xs:integer" use="optional"/>
+        <xs:attribute name="worker-task-max-threads" type="xs:integer" use="optional"/>
+        <xs:attribute name="worker-task-keepalive" type="xs:integer" use="optional"/>
+        <xs:attribute name="worker-task-limit" type="xs:integer" use="optional"/>
+        
     </xs:complexType>
 
     <xs:complexType name="connector">

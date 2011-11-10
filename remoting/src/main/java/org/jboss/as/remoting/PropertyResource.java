@@ -21,14 +21,23 @@
 */
 package org.jboss.as.remoting;
 
+import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
 import static org.jboss.as.remoting.CommonAttributes.PROPERTY;
-import static org.jboss.as.remoting.CommonAttributes.VALUE;
 
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.RestartParentResourceAddHandler;
+import org.jboss.as.controller.RestartParentResourceRemoveHandler;
+import org.jboss.as.controller.RestartParentWriteAttributeHandler;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceName;
 
 /**
  *
@@ -38,7 +47,7 @@ public class PropertyResource extends SimpleResourceDefinition {
 
     static final PropertyResource INSTANCE = new PropertyResource();
 
-    static final SimpleAttributeDefinition VALUE_ATTRIBUTE = new NamedValueAttributeDefinition(VALUE, Attribute.VALUE, null, ModelType.STRING, true);
+    static final SimpleAttributeDefinition VALUE = new NamedValueAttributeDefinition(CommonAttributes.VALUE, Attribute.VALUE, null, ModelType.STRING, true);
 
     private PropertyResource() {
         super(PathElement.pathElement(PROPERTY),
@@ -49,8 +58,84 @@ public class PropertyResource extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadOnlyAttribute(VALUE_ATTRIBUTE, null);
+        resourceRegistration.registerReadWriteAttribute(VALUE, null, new PropertyWriteAttributeHandler());
     }
 
+    private static void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel,
+            ServiceVerificationHandler verificationHandler) {
+        try {
+            ConnectorAdd.INSTANCE.launchServices(context, parentAddress, parentAddress.getLastElement().getValue(), parentModel, verificationHandler, null);
+        } catch (OperationFailedException e) {
+            //TODO handle better?
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static ServiceName getParentServiceName(PathAddress parentAddress) {
+        return RemotingServices.serverServiceName(parentAddress.getLastElement().getValue());
+    }
+
+    private static class PropertyWriteAttributeHandler extends RestartParentWriteAttributeHandler {
+
+        public PropertyWriteAttributeHandler() {
+            // FIXME PropertyWriteAttributeHandler constructor
+            super(CONNECTOR, VALUE);
+        }
+
+        @Override
+        protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel,
+                ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+            PropertyResource.recreateParentService(context, parentAddress, parentModel, verificationHandler);
+        }
+
+        @Override
+        protected ServiceName getParentServiceName(PathAddress parentAddress) {
+            return PropertyResource.getParentServiceName(parentAddress);
+        }
+    }
+
+    private static class PropertyAdd extends RestartParentResourceAddHandler {
+
+        static final PropertyAdd INSTANCE = new PropertyAdd();
+
+        private PropertyAdd() {
+            super(CONNECTOR);
+        }
+
+        protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException{
+            PropertyResource.VALUE.validateAndSet(operation, model);
+        }
+
+        @Override
+        protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel,
+                ServiceVerificationHandler verificationHandler) {
+            PropertyResource.recreateParentService(context, parentAddress, parentModel, verificationHandler);
+        }
+
+        @Override
+        protected ServiceName getParentServiceName(PathAddress parentAddress) {
+            return PropertyResource.getParentServiceName(parentAddress);
+        }
+    }
+
+    private static class PropertyRemove extends RestartParentResourceRemoveHandler {
+
+        static final PropertyRemove INSTANCE = new PropertyRemove();
+
+        private PropertyRemove() {
+            super(CONNECTOR);
+        }
+
+        @Override
+        protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel,
+                ServiceVerificationHandler verificationHandler)  {
+            PropertyResource.recreateParentService(context, parentAddress, parentModel, verificationHandler);
+        }
+
+        @Override
+        protected ServiceName getParentServiceName(PathAddress parentAddress) {
+            return PropertyResource.getParentServiceName(parentAddress);
+        }
+    }
 
 }

@@ -27,6 +27,7 @@ import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.msc.value.InjectedValue;
+import org.xnio.OptionMap;
 
 /**
  * {@link AbstractStreamServerService} that uses an injected network interface binding service.
@@ -38,7 +39,8 @@ public class InjectedNetworkBindingStreamServerService extends AbstractStreamSer
     private final InjectedValue<NetworkInterfaceBinding> interfaceBindingValue = new InjectedValue<NetworkInterfaceBinding>();
     private final int port;
 
-    public InjectedNetworkBindingStreamServerService(int port) {
+    public InjectedNetworkBindingStreamServerService(final OptionMap connectorPropertiesOptionMap, int port) {
+        super(connectorPropertiesOptionMap);
         this.port = port;
     }
 

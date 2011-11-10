@@ -23,6 +23,7 @@
 package org.jboss.as.remoting;
 
 import java.io.IOException;
+
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -46,6 +47,9 @@ public final class EndpointService implements Service<Endpoint> {
     private OptionMap optionMap;
 
     public EndpointService(String nodeName, EndpointType type) {
+        if (nodeName == null) {
+            nodeName = "remote";
+        }
         endpointName = type == EndpointType.SUBSYSTEM ? nodeName : nodeName + ":" + type;
     }
 

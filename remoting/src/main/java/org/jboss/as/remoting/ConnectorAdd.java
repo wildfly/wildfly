@@ -39,18 +39,23 @@ import static org.jboss.as.remoting.CommonAttributes.STRENGTH;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.xnio.Option;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Sequence;
@@ -69,19 +74,42 @@ public class ConnectorAdd extends AbstractAddStepHandler {
     static final ConnectorAdd INSTANCE = new ConnectorAdd();
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException{
-        ConnectorResource.SOCKET_BINDING_ATTRIBUTE.validateAndSet(operation, model);
-        ConnectorResource.AUTHENTICATION_PROVIER_ATTRIBUTE.validateAndSet(operation, model);
+        ConnectorResource.SOCKET_BINDING.validateAndSet(operation, model);
+        ConnectorResource.AUTHENTICATION_PROVIDER.validateAndSet(operation, model);
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        //TODO SASL and properties
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String connectorName = address.getLastElement().getValue();
+        RemotingServices.installSecurityServices(context.getServiceTarget(), connectorName, null, null, verificationHandler, newControllers);
+        launchServices(context, address, connectorName, model, verificationHandler, newControllers);
+    }
+
+    void launchServices(OperationContext context, PathAddress pathAddress, String connectorName, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        //TODO SASL and properties
 
         final ServiceTarget target = context.getServiceTarget();
 
-        ServiceName socketBindingName = SocketBinding.JBOSS_BINDING_NAME.append(ConnectorResource.SOCKET_BINDING_ATTRIBUTE.validateOperation(model).asString());
-        RemotingServices.installConnectorServicesForSocketBinding(target, RemotingServices.SUBSYSTEM_ENDPOINT, connectorName, socketBindingName, null, null, verificationHandler, newControllers);
+        final ServiceName socketBindingName = SocketBinding.JBOSS_BINDING_NAME.append(ConnectorResource.SOCKET_BINDING.resolveModelAttribute(context, model).asString());
+
+
+        final OptionMap optionMap;
+        Resource resource = findResource(context.getRootResource(), pathAddress);
+        Set<ResourceEntry> entries = resource.getChildren(CommonAttributes.PROPERTY);
+        if (entries.size() > 0) {
+            OptionMap.Builder builder = OptionMap.builder();
+            final ClassLoader loader = SecurityActions.getClassLoader(this.getClass());
+            for (ResourceEntry entry : entries) {
+                final Option option = Option.fromString(entry.getName(), loader);
+                builder.set(option, option.parseValue(entry.getModel().get(CommonAttributes.VALUE).asString(), loader));
+            }
+            optionMap = builder.getMap();
+        } else {
+            optionMap = OptionMap.EMPTY;
+        }
+
+
+        RemotingServices.installConnectorServicesForSocketBinding(target, RemotingServices.SUBSYSTEM_ENDPOINT, connectorName, socketBindingName, optionMap, verificationHandler, newControllers);
 
         //TODO AuthenticationHandler
 //
@@ -102,6 +130,14 @@ public class ConnectorAdd extends AbstractAddStepHandler {
 //        } catch (ServiceRegistryException e) {
 //            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
 //        }
+    }
+
+    private Resource findResource(Resource rootResource, PathAddress address) {
+        Resource resource = rootResource;
+        for (ListIterator<PathElement> iterator = address.iterator() ; iterator.hasNext() ; ) {
+            resource = resource.getChild(iterator.next());
+        }
+        return resource;
     }
 
     static OptionMap createOptionMap(final ModelNode parameters) {

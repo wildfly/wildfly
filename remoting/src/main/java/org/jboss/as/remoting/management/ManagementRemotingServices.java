@@ -33,7 +33,6 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.remote.AbstractModelControllerOperationHandlerFactoryService;
 import org.jboss.as.controller.remote.ManagementOperationHandlerFactory;
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFactoryService;
-import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.remoting.EndpointService;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.msc.service.ServiceBuilder;
@@ -67,6 +66,35 @@ public final class ManagementRemotingServices extends RemotingServices {
 
     public static final String MANAGEMENT_CONNECTOR = "management";
 
+
+    /**
+     * Installs the management remoting endpoint service.
+     * For the host controller this method will always be called. For servers this only be called if a management endpoint
+     * not coming from the subsystem is desired.
+     *
+     * @param serviceTarget the service target to install the services into
+     * @param hostName the name of this host
+     */
+    public static void installManagementRemotingEndpoint(ServiceTarget serviceTarget, String hostName) {
+        installRemotingEndpoint(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT, hostName, EndpointService.EndpointType.MANAGEMENT, null, null);
+    }
+
+    /**
+     * Removes the remoting stream server for a domain instance and then reinstalls it.
+     *
+     * @param operationContext context of the operation that is triggering the re-install
+     * @param networkInterfaceBinding the network interface binding
+     * @param port the port
+     */
+    public static void reinstallDomainConnectorServices(final OperationContext operationContext,
+            final ServiceName endpointName,
+            final ServiceName networkInterfaceBinding,
+            final int port,
+            final ServiceName securityRealmName) {
+        removeConnectorServices(operationContext, MANAGEMENT_CONNECTOR);
+        installDomainConnectorServices(operationContext.getServiceTarget(), endpointName, networkInterfaceBinding, port, securityRealmName, null, null);
+    }
+
     /**
      * Installs a remoting stream server for a domain instance
      *
@@ -85,7 +113,29 @@ public final class ManagementRemotingServices extends RemotingServices {
                                                       final ServiceVerificationHandler verificationHandler,
                                                       final List<ServiceController<?>> newControllers) {
         ServiceName serverCallbackService = ServiceName.JBOSS.append("host", "controller", "server-inventory", "callback");
-        installConnectorServicesForNetworkInterfaceBinding(serviceTarget, endpointName, MANAGEMENT_CONNECTOR, networkInterfaceBinding, port, securityRealmName, serverCallbackService, verificationHandler, newControllers);
+        installSecurityServices(serviceTarget, MANAGEMENT_CONNECTOR, securityRealmName, serverCallbackService, verificationHandler, newControllers);
+        installConnectorServicesForNetworkInterfaceBinding(serviceTarget, endpointName, MANAGEMENT_CONNECTOR, networkInterfaceBinding, port, OptionMap.EMPTY, verificationHandler, newControllers);
+    }
+
+    /**
+     * Installs a remoting stream server for a standalone instance
+     *
+     * @param serviceTarget the service target to install the services into
+     * @param endpointName the name of the endpoint to install a stream server into
+     * @param networkInterfaceBindingName the name of the network interface binding
+     * @param port the port
+     * @param verificationHandler the verification handler
+     * @param newControllers list to add the new services to
+     */
+    public static void installStandaloneConnectorServices(ServiceTarget serviceTarget,
+            final ServiceName endpointName,
+            final ServiceName networkInterfaceBindingName,
+            final int port,
+            final ServiceName securityRealmName,
+            final ServiceVerificationHandler verificationHandler,
+            final List<ServiceController<?>> newControllers) {
+        installSecurityServices(serviceTarget, MANAGEMENT_CONNECTOR, securityRealmName, null, verificationHandler, newControllers);
+        installConnectorServicesForNetworkInterfaceBinding(serviceTarget, endpointName, MANAGEMENT_CONNECTOR, networkInterfaceBindingName, port, OptionMap.EMPTY, verificationHandler, newControllers);
     }
 
     /**

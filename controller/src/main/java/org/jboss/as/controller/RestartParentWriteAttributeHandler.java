@@ -63,7 +63,7 @@ public abstract class RestartParentWriteAttributeHandler extends AbstractWriteAt
     }
 
     @Override
-    protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> voidHandback) {
+    protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> voidHandback) throws OperationFailedException {
          if (context.isBooting()) {
             return false;
         }
@@ -94,7 +94,7 @@ public abstract class RestartParentWriteAttributeHandler extends AbstractWriteAt
         return !restartServices;
     }
 
-    protected abstract void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel, ServiceVerificationHandler verificationHandler);
+    protected abstract void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel, ServiceVerificationHandler verificationHandler) throws OperationFailedException;
 
     protected abstract ServiceName getParentServiceName(PathAddress parentAddress);
 
@@ -105,7 +105,7 @@ public abstract class RestartParentWriteAttributeHandler extends AbstractWriteAt
 
 
     @Override
-    protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode resolvedValue, Void handback) {
+    protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode resolvedValue, Void handback) throws OperationFailedException {
         PathAddress address = getParentAddress(PathAddress.pathAddress(operation.require(OP_ADDR)));
         ServiceName serviceName = getParentServiceName(address);
         ServiceController<?> service = serviceName != null ?

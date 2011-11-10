@@ -21,12 +21,6 @@
 */
 package org.jboss.as.remoting;
 
-import static org.jboss.as.remoting.CommonAttributes.FORWARD_SECRECY;
-import static org.jboss.as.remoting.CommonAttributes.NO_ACTIVE;
-import static org.jboss.as.remoting.CommonAttributes.NO_ANONYMOUS;
-import static org.jboss.as.remoting.CommonAttributes.NO_DICTIONARY;
-import static org.jboss.as.remoting.CommonAttributes.NO_PLAIN_TEXT;
-import static org.jboss.as.remoting.CommonAttributes.PASS_CREDENTIALS;
 import static org.jboss.as.remoting.CommonAttributes.POLICY;
 import static org.jboss.as.remoting.CommonAttributes.SASL_POLICY;
 
@@ -46,12 +40,12 @@ public class SaslPolicyResource extends SimpleResourceDefinition {
 
     static final SaslPolicyResource INSTANCE = new SaslPolicyResource();
 
-    static final AttributeDefinition FORWARD_SECRECY_ATTRIBUTE = new BooleanValueAttributeDefinition(FORWARD_SECRECY);
-    static final AttributeDefinition NO_ACTIVE_ATTRIBUTE = new BooleanValueAttributeDefinition(NO_ACTIVE);
-    static final AttributeDefinition NO_ANONYMOUS_ATTRIBUTE = new BooleanValueAttributeDefinition(NO_ANONYMOUS);
-    static final AttributeDefinition NO_DICTIONARY_ATTRIBUTE = new BooleanValueAttributeDefinition(NO_DICTIONARY);
-    static final AttributeDefinition NO_PLAIN_TEXT_ATTRIBUTE = new BooleanValueAttributeDefinition(NO_PLAIN_TEXT);
-    static final AttributeDefinition PASS_CREDENTIALS_ATTRIBUTE = new BooleanValueAttributeDefinition(PASS_CREDENTIALS);
+    static final AttributeDefinition FORWARD_SECRECY = new BooleanValueAttributeDefinition(CommonAttributes.FORWARD_SECRECY);
+    static final AttributeDefinition NO_ACTIVE = new BooleanValueAttributeDefinition(CommonAttributes.NO_ACTIVE);
+    static final AttributeDefinition NO_ANONYMOUS = new BooleanValueAttributeDefinition(CommonAttributes.NO_ANONYMOUS);
+    static final AttributeDefinition NO_DICTIONARY = new BooleanValueAttributeDefinition(CommonAttributes.NO_DICTIONARY);
+    static final AttributeDefinition NO_PLAIN_TEXT = new BooleanValueAttributeDefinition(CommonAttributes.NO_PLAIN_TEXT);
+    static final AttributeDefinition PASS_CREDENTIALS = new BooleanValueAttributeDefinition(CommonAttributes.PASS_CREDENTIALS);
 
     private SaslPolicyResource() {
         super(SASL_POLICY_CONFIG_PATH,
@@ -62,12 +56,12 @@ public class SaslPolicyResource extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadOnlyAttribute(FORWARD_SECRECY_ATTRIBUTE, null);
-        resourceRegistration.registerReadOnlyAttribute(NO_ACTIVE_ATTRIBUTE, null);
-        resourceRegistration.registerReadOnlyAttribute(NO_ANONYMOUS_ATTRIBUTE, null);
-        resourceRegistration.registerReadOnlyAttribute(NO_DICTIONARY_ATTRIBUTE, null);
-        resourceRegistration.registerReadOnlyAttribute(NO_PLAIN_TEXT_ATTRIBUTE, null);
-        resourceRegistration.registerReadOnlyAttribute(PASS_CREDENTIALS_ATTRIBUTE, null);
+        resourceRegistration.registerReadOnlyAttribute(FORWARD_SECRECY, null);
+        resourceRegistration.registerReadOnlyAttribute(NO_ACTIVE, null);
+        resourceRegistration.registerReadOnlyAttribute(NO_ANONYMOUS, null);
+        resourceRegistration.registerReadOnlyAttribute(NO_DICTIONARY, null);
+        resourceRegistration.registerReadOnlyAttribute(NO_PLAIN_TEXT, null);
+        resourceRegistration.registerReadOnlyAttribute(PASS_CREDENTIALS, null);
     }
 
     private static class BooleanValueAttributeDefinition extends NamedValueAttributeDefinition {

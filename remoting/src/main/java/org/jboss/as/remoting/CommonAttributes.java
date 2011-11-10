@@ -50,5 +50,12 @@ interface CommonAttributes {
     String SUBSYSTEM = "subsystem";
     String THREAD_POOL = "thread-pool";
     String VALUE = "value";
+    String WORKER_READ_THREADS = "worker-read-threads";
+    String WORKER_TASK_CORE_THREADS = "worker-task-core-threads";
+    String WORKER_TASK_KEEPALIVE = "worker-task-keepalive";
+    String WORKER_TASK_LIMIT = "worker-task-limit";
+    String WORKER_TASK_MAX_THREADS = "worker-task-max-threads";
+    String WORKER_WRITE_THREADS = "worker-write-threads";
+
 
 }

@@ -40,6 +40,7 @@ import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFacto
 import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.remoting.EndpointService;
+import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.Services;
@@ -49,6 +50,7 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.xnio.OptionMap;
 
 
 /**
@@ -159,13 +161,14 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
             Logger.getLogger("org.jboss.as").warn("No security realm defined for native management service, all access will be unrestricted.");
         }
 
+        RemotingServices.installSecurityServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_CONNECTOR, realmSvcName, null, verificationHandler, newControllers);
         if (socketBindingServiceName == null) {
             ManagementRemotingServices.installConnectorServicesForNetworkInterfaceBinding(serviceTarget, endpointName,
-                    ManagementRemotingServices.MANAGEMENT_CONNECTOR, interfaceSvcName, port, realmSvcName, null, verificationHandler, newControllers);
+                    ManagementRemotingServices.MANAGEMENT_CONNECTOR, interfaceSvcName, port, OptionMap.EMPTY, verificationHandler, newControllers);
         } else {
             ManagementRemotingServices.installConnectorServicesForSocketBinding(serviceTarget, endpointName,
                     ManagementRemotingServices.MANAGEMENT_CONNECTOR,
-                    socketBindingServiceName, realmSvcName, null, verificationHandler, newControllers);
+                    socketBindingServiceName, OptionMap.EMPTY, verificationHandler, newControllers);
         }
     }
 
