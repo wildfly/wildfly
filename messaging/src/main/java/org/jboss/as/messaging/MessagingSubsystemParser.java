@@ -2187,6 +2187,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     ParseUtils.requireNoContent(reader);
                     break;
                 }
+                case HA:
                 case DISCOVERY_INITIAL_WAIT_TIMEOUT:
                 case CLIENT_FAILURE_CHECK_PERIOD:
                 case CONNECTION_TTL:
