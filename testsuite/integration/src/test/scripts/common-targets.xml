@@ -94,7 +94,7 @@
         <attribute name="name" default="jbossas"/>
         <attribute name="output.dir" default="${project.build.directory}"/>
         <attribute name="jboss.dist" default="${jboss.dist}"/>
-        <attribute name="test.configs.dir" default="${basedir}/src/test/resources/test-configs"/>
+        <attribute name="test.configs.dir" default="${jbossas.ts.integ.dir}/src/test/resources/test-configs"/>
         <element name="filter-elements" optional="yes" description="additional filter elements"/>
 
         <sequential>
@@ -118,7 +118,7 @@
                     <filter token="node1" value="${node1}"/>
                     <filter token="udpGroup" value="${udpGroup}"/>
                     <filter-elements/>
-                  </filterset>
+                </filterset>
             </copy>
         </sequential>
     </macrodef>
@@ -136,7 +136,7 @@
 
             <!-- process *.xml to *.xml.mod -->
             <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
-                  style="${basedir}/src/test/xslt/changeIPAddresses.xsl"
+                  style="${jbossas.ts.integ.dir}/src/test/xslt/changeIPAddresses.xsl"
                   extension=".xml.mod"
                   useImplicitFileset="false">
                 <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
@@ -154,7 +154,7 @@
                    <include name="**/standalone-ha.xml.mod"/>
                </fileset>
                <mapper type="glob" from="*.mod" to="*"/>
-             </move>
+            </move>
         </sequential>
     </macrodef>
 
@@ -175,7 +175,7 @@
 
             <!-- process *.xml to *.xml.mod -->
             <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
-                  style="${basedir}/src/test/xslt/changeIPAddresses.xsl"
+                  style="${jbossas.ts.integ.dir}/src/test/xslt/changeIPAddresses.xsl"
                   extension=".xml.mod"
                   useImplicitFileset="false">
                 <!-- can't get this to work -->
@@ -218,7 +218,7 @@
 
             <!-- process *.xml to *.xml.mod -->
             <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
-                  style="${basedir}/src/test/xslt/addPortOffset.xsl"
+                  style="${jbossas.ts.integ.dir}/src/test/xslt/addPortOffset.xsl"
                   extension=".xml.mod"
                   useImplicitFileset="false">
                 <!-- can't get this to work -->
