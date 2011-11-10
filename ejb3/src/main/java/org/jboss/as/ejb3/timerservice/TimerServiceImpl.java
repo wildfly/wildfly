@@ -545,13 +545,13 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             switch (timer.getState()) {
                 case CANCELED:
                 case EXPIRED:
-                    nonPersistentTimers.remove(timer.getHandle());
+                    nonPersistentTimers.remove(timer.handle);
             }
         } else {
             // get the persistent entity from the timer
             final TimerEntity timerEntity = timer.getPersistentState();
             try {
-                persistentWaitingOnTxCompletionTimers.remove(timer.getHandle());
+                persistentWaitingOnTxCompletionTimers.remove(timer.handle);
                 //if timer persistence is disabled
                 if (timerPersistence == null) {
                     logger.warn("Timer persistence is not enabled, persistent timers will not survive JVM restarts");
@@ -657,8 +657,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             //TODO: we need to make sure that these only fire one event after being restored
             this.startTimer(activeTimer);
             logger.debug("Started timer: " + activeTimer);
-            // save any changes to the state (that will have happened on call to startTimer)
-            this.persistTimer(activeTimer);
         }
 
         for (ScheduleTimer timer : newAutoTimers) {

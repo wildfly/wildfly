@@ -89,7 +89,7 @@ public class TimerImpl implements Timer {
     /**
      * A {@link javax.ejb.TimerHandle} for this timer
      */
-    protected TimerHandleImpl handle;
+    protected final TimerHandleImpl handle;
 
     /**
      * The initial (first) expiry date of this timer
