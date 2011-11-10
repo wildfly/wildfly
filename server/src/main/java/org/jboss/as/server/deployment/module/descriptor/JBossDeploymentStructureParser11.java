@@ -3,6 +3,7 @@ package org.jboss.as.server.deployment.module.descriptor;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,13 +24,19 @@ import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.module.TempFileProviderService;
+import org.jboss.modules.DependencySpec;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.modules.filter.MultiplePathFilterBuilder;
+import org.jboss.modules.filter.PathFilter;
 import org.jboss.modules.filter.PathFilters;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
+
+import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 
 /**
  * @author Stuart Douglas
@@ -61,6 +68,9 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
         TRANSFORMER,
         EXCLUSIONS,
         LOCAL_LAST,
+        SYSTEM,
+        PATHS,
+        MODULE_ALIAS,
 
         // default unknown element
         UNKNOWN;
@@ -242,7 +252,7 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
         if (result.getSubDeploymentSpecifications().containsKey(name)) {
             throw new XMLStreamException("Sub deployment " + name + " is listed twice in jboss-structure.xml");
         }
-        ModuleStructureSpec moduleSpecification = new ModuleStructureSpec();
+        final ModuleStructureSpec moduleSpecification = new ModuleStructureSpec();
         result.getSubDeploymentSpecifications().put(name, moduleSpecification);
         parseModuleStructureSpec(result.getDeploymentUnit(), reader, moduleSpecification, result.getModuleLoader());
     }
@@ -274,7 +284,7 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
             throw new XMLStreamException("Additional module name " + name
                     + " is not valid. Names must start with 'deployment.'");
         }
-        ModuleStructureSpec moduleSpecification = new ModuleStructureSpec();
+        final ModuleStructureSpec moduleSpecification = new ModuleStructureSpec();
         moduleSpecification.setModuleIdentifier(ModuleIdentifier.create(name, slot));
         result.getAdditionalModules().add(moduleSpecification);
         parseModuleStructureSpec(result.getDeploymentUnit(), reader, moduleSpecification, result.getModuleLoader());
@@ -314,6 +324,9 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
                         case LOCAL_LAST:
                             parseLocalLast(reader, moduleSpec);
                             break;
+                        case MODULE_ALIAS:
+                            parseModuleAlias(reader, moduleSpec);
+                            break;
                         default:
                             throw unexpectedContent(reader);
                     }
@@ -327,8 +340,47 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
         throw endOfDocument(reader.getLocation());
     }
 
+    private static void parseModuleAlias(final XMLStreamReader reader, final ModuleStructureSpec moduleSpec) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        String name = null;
+        String slot = null;
+        final Set<Attribute> required = EnumSet.of(Attribute.NAME);
+        for (int i = 0; i < count; i++) {
+            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case NAME:
+                    name = reader.getAttributeValue(i);
+                    break;
+                case SLOT:
+                    slot = reader.getAttributeValue(i);
+                    break;
+                default:
+                    throw unexpectedContent(reader);
+            }
+        }
+        if (!required.isEmpty()) {
+            throw missingAttributes(reader.getLocation(), required);
+        }
+        if (!moduleSpec.getModuleIdentifier().equals(ModuleIdentifier.create(name, slot))) {
+            throw new XMLStreamException("Module alias " + moduleSpec.getModuleIdentifier() + " is the same as the module name", reader.getLocation());
+        }
+        while (reader.hasNext()) {
+            switch (reader.nextTag()) {
+                case END_ELEMENT: {
+                    moduleSpec.addAlias(ModuleIdentifier.create(name, slot));
+                    return;
+                }
+                default: {
+                    throw unexpectedContent(reader);
+                }
+            }
+        }
+        throw endOfDocument(reader.getLocation());
+    }
+
     private static void parseDependencies(final XMLStreamReader reader, final ModuleStructureSpec specBuilder,
-                                          ModuleLoader moduleLoader) throws XMLStreamException {
+                                          final ModuleLoader moduleLoader) throws XMLStreamException {
         // xsd:choice
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
@@ -339,6 +391,9 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
                     switch (Element.of(reader.getName())) {
                         case MODULE:
                             parseModuleDependency(reader, specBuilder, moduleLoader);
+                            break;
+                        case SYSTEM:
+                            parseSystemDependency(reader, specBuilder);
                             break;
                         default:
                             throw unexpectedContent(reader);
@@ -351,6 +406,144 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
             }
         }
         throw endOfDocument(reader.getLocation());
+    }
+
+    private static void parseSystemDependency(final XMLStreamReader reader, final ModuleStructureSpec specBuilder) throws XMLStreamException {
+        boolean export = false;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            switch (attribute) {
+                case EXPORT:
+                    export = Boolean.parseBoolean(reader.getAttributeValue(i));
+                    break;
+                default:
+                    throw unexpectedContent(reader);
+            }
+        }
+        Set<String> paths = Collections.emptySet();
+        final MultiplePathFilterBuilder exportBuilder = PathFilters.multiplePathFilterBuilder(export);
+        while (reader.hasNext()) {
+            switch (reader.nextTag()) {
+                case END_ELEMENT: {
+                    if (export) {
+                        // If re-exported, add META-INF/** -> false at the end of the list (require explicit override)
+                        exportBuilder.addFilter(PathFilters.getMetaInfSubdirectoriesFilter(), false);
+                        exportBuilder.addFilter(PathFilters.getMetaInfFilter(), false);
+                    }
+                    final PathFilter exportFilter = exportBuilder.create();
+                    specBuilder.addSystemDependency(DependencySpec.createSystemDependencySpec(PathFilters.getDefaultImportFilter(), exportFilter, paths));
+                    return;
+                }
+                case START_ELEMENT: {
+                    switch (Element.of(reader.getName())) {
+                        case PATHS: {
+                            paths = parseSet(reader);
+                            break;
+                        }
+                        case EXPORTS: {
+                            parseFilterList(reader, exportBuilder);
+                            break;
+                        }
+                        default: {
+                            throw unexpectedContent(reader);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static void parseSet(final XMLStreamReader reader, final boolean include, final MultiplePathFilterBuilder builder) throws XMLStreamException {
+        builder.addFilter(PathFilters.in(parseSet(reader)), include);
+    }
+
+    private static Set<String> parseSet(final XMLStreamReader reader) throws XMLStreamException {
+        final Set<String> set = new HashSet<String>();
+        // xsd:choice
+        while (reader.hasNext()) {
+            switch (reader.nextTag()) {
+                case END_ELEMENT: {
+                    return set;
+                }
+                case START_ELEMENT: {
+                    switch (Element.of(reader.getName())) {
+                        case PATH:
+                            parsePathName(reader, set);
+                            break;
+                    }
+                }
+            }
+        }
+        return set;
+    }
+
+    private static void parseFilterList(final XMLStreamReader reader, final MultiplePathFilterBuilder builder) throws XMLStreamException {
+        // xsd:choice
+        while (reader.hasNext()) {
+            switch (reader.nextTag()) {
+                case END_ELEMENT: {
+                    return;
+                }
+                case START_ELEMENT: {
+                    switch (Element.of(reader.getName())) {
+                        case INCLUDE:
+                            parsePath(reader, true, builder);
+                            break;
+                        case EXCLUDE:
+                            parsePath(reader, false, builder);
+                            break;
+                        case INCLUDE_SET:
+                            parseSet(reader, true, builder);
+                            break;
+                        case EXCLUDE_SET:
+                            parseSet(reader, false, builder);
+                            break;
+                        default:
+                            throw unexpectedContent(reader);
+                    }
+                    break;
+                }
+                default: {
+                    throw unexpectedContent(reader);
+                }
+            }
+        }
+        throw endOfDocument(reader.getLocation());
+    }
+
+    private static void parsePath(final XMLStreamReader reader, final boolean include, final MultiplePathFilterBuilder builder) throws XMLStreamException {
+        String path = null;
+        final Set<Attribute> required = EnumSet.of(Attribute.PATH);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case PATH:
+                    path = reader.getAttributeValue(i);
+                    break;
+                default:
+                    throw unexpectedContent(reader);
+            }
+        }
+        if (!required.isEmpty()) {
+            throw missingAttributes(reader.getLocation(), required);
+        }
+
+        final boolean literal = path.indexOf('*') == -1 && path.indexOf('?') == -1;
+        if (literal) {
+            if (path.charAt(path.length() - 1) == '/') {
+                builder.addFilter(PathFilters.isChildOf(path), include);
+            } else {
+                builder.addFilter(PathFilters.is(path), include);
+            }
+        } else {
+            builder.addFilter(PathFilters.match(path), include);
+        }
+
+        // consume remainder of element
+        parseNoContent(reader);
     }
 
     private static void parseModuleDependency(final XMLStreamReader reader, final ModuleStructureSpec specBuilder,
@@ -503,16 +696,16 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
                     } else {
                         try {
                             final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-                            deploymentRoot.setUsePhysicalCodeSource(usePhysicalCodeSource);
                             final VirtualFile deploymentRootFile = deploymentRoot.getRoot();
-                            VirtualFile child = deploymentRootFile.getChild(path);
+                            final VirtualFile child = deploymentRootFile.getChild(path);
                             final Closeable closable = child.isFile() ? VFS.mountZip(child, child, TempFileProviderService
                                     .provider()) : null;
                             final MountHandle mountHandle = new MountHandle(closable);
-                            ResourceRoot resourceRoot = new ResourceRoot(name, child, mountHandle);
-                            for (FilterSpecification filter : resourceFilters) {
+                            final ResourceRoot resourceRoot = new ResourceRoot(name, child, mountHandle);
+                            for (final FilterSpecification filter : resourceFilters) {
                                 resourceRoot.getExportFilters().add(filter);
                             }
+                            resourceRoot.setUsePhysicalCodeSource(usePhysicalCodeSource);
                             specBuilder.addResourceRoot(resourceRoot);
                         } catch (IOException e) {
                             throw new XMLStreamException(e);

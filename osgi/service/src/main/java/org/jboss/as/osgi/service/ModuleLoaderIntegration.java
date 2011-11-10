@@ -21,7 +21,8 @@
  */
 package org.jboss.as.osgi.service;
 
-import org.jboss.as.server.deployment.module.ModuleSpecification;
+import java.util.List;
+
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.Module;
@@ -48,14 +49,11 @@ import org.jboss.osgi.resolver.XModule;
 import org.jboss.osgi.resolver.XModuleIdentity;
 import org.jboss.osgi.spi.NotImplementedException;
 
-import java.util.List;
-
 import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 import static org.jboss.as.server.Services.JBOSS_SERVICE_MODULE_LOADER;
 import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SERVICE_PREFIX;
 import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SPEC_SERVICE_PREFIX;
-import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_INFORMATION_SERVICE_PREFIX;
 
 /**
  * This is the single {@link ModuleLoader} that the OSGi layer uses for the modules that are associated with the bundles that
@@ -118,9 +116,6 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
 
         ServiceName moduleSpecName = ServiceModuleLoader.moduleSpecServiceName(identifier);
         serviceTarget.addService(moduleSpecName, new ValueService<ModuleSpec>(new ImmediateValue<ModuleSpec>(moduleSpec))).install();
-
-        ServiceName moduleInfoName = ServiceModuleLoader.moduleInformationServiceName(identifier);
-        serviceTarget.addService(moduleInfoName, new ValueService<ModuleSpecification>(new ImmediateValue<ModuleSpecification>(new ModuleSpecification()))).install();
     }
 
     /**
@@ -156,10 +151,6 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
         controller = serviceContainer.getService(serviceName);
         if (controller != null) {
             ROOT_LOGGER.debugf("Remove module fom loader: %s", serviceName);
-            controller.setMode(Mode.REMOVE);
-        }
-        controller = serviceContainer.getService(getModuleInformationServiceName(identifier));
-        if (controller != null) {
             controller.setMode(Mode.REMOVE);
         }
     }
@@ -214,10 +205,6 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
 
     private ServiceName getModuleServiceName(ModuleIdentifier identifier) {
         return MODULE_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
-    }
-
-    private ServiceName getModuleInformationServiceName(ModuleIdentifier identifier) {
-        return MODULE_INFORMATION_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
     }
 
     @Override

@@ -43,6 +43,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.module.AdditionalModuleSpecification;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
@@ -126,13 +127,25 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                 moduleSpec.setSubDeploymentModulesIsolated(result.getEarSubDeploymentsIsolated());
             }
             // handle the the root deployment
-            if (result.getRootDeploymentSpecification() != null) {
-                moduleSpec.addUserDependencies(result.getRootDeploymentSpecification().getModuleDependencies());
-                moduleSpec.addExclusions(result.getRootDeploymentSpecification().getExclusions());
-                for (final ResourceRoot additionalResourceRoot : result.getRootDeploymentSpecification().getResourceRoots()) {
-                    deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, additionalResourceRoot);
+            final ModuleStructureSpec rootDeploymentSpecification = result.getRootDeploymentSpecification();
+            if (rootDeploymentSpecification != null) {
+                final Map<VirtualFile, ResourceRoot> resourceRoots = resourceRoots(deploymentUnit);
+                moduleSpec.addUserDependencies(rootDeploymentSpecification.getModuleDependencies());
+                moduleSpec.addExclusions(rootDeploymentSpecification.getExclusions());
+                moduleSpec.addAliases(rootDeploymentSpecification.getAliases());
+                moduleSpec.addModuleSystemDependencies(rootDeploymentSpecification.getSytemDependencies());
+                for (final ResourceRoot additionalResourceRoot : rootDeploymentSpecification.getResourceRoots()) {
+
+                    final ResourceRoot existingRoot = resourceRoots.get(additionalResourceRoot.getRoot());
+                    if (existingRoot != null) {
+                        //we already have to the resource root
+                        //so now we want to merge it
+                        existingRoot.merge(additionalResourceRoot);
+                    } else {
+                        deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, additionalResourceRoot);
+                    }
                 }
-                for (final String classFileTransformer : result.getRootDeploymentSpecification().getClassFileTransformers()) {
+                for (final String classFileTransformer : rootDeploymentSpecification.getClassFileTransformers()) {
                     moduleSpec.addClassFileTransformer(classFileTransformer);
                 }
             }
@@ -154,10 +167,20 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                 final DeploymentUnit subDeployment = subDeploymentMap.get(path);
                 final ModuleSpecification subModuleSpec = subDeployment.getAttachment(Attachments.MODULE_SPECIFICATION);
 
+                final Map<VirtualFile, ResourceRoot> resourceRoots = resourceRoots(subDeployment);
                 subModuleSpec.addUserDependencies(spec.getModuleDependencies());
                 subModuleSpec.addExclusions(spec.getExclusions());
+                subModuleSpec.addAliases(spec.getAliases());
+                subModuleSpec.addModuleSystemDependencies(spec.getSytemDependencies());
                 for (final ResourceRoot additionalResourceRoot : spec.getResourceRoots()) {
-                    subDeployment.addToAttachmentList(Attachments.RESOURCE_ROOTS, additionalResourceRoot);
+                    final ResourceRoot existingRoot = resourceRoots.get(additionalResourceRoot.getRoot());
+                    if (existingRoot != null) {
+                        //we already have to the resource root
+                        //so now we want to merge it
+                        existingRoot.merge(additionalResourceRoot);
+                    } else {
+                        subDeployment.addToAttachmentList(Attachments.RESOURCE_ROOTS, additionalResourceRoot);
+                    }
                 }
                 for (final String classFileTransformer : spec.getClassFileTransformers()) {
                     subModuleSpec.addClassFileTransformer(classFileTransformer);
@@ -179,12 +202,20 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         }
     }
 
-    private DeploymentUnitProcessingException subDeploymentNotFound(String path, Collection<String> subDeployments) {
-        StringBuilder builder = new StringBuilder();
+    private Map<VirtualFile, ResourceRoot> resourceRoots(final DeploymentUnit deploymentUnit) {
+        final Map<VirtualFile, ResourceRoot> resourceRoots = new HashMap<VirtualFile, ResourceRoot>();
+        for (final ResourceRoot root : DeploymentUtils.allResourceRoots(deploymentUnit)) {
+            resourceRoots.put(root.getRoot(), root);
+        }
+        return resourceRoots;
+    }
+
+    private DeploymentUnitProcessingException subDeploymentNotFound(final String path, final Collection<String> subDeployments) {
+        final StringBuilder builder = new StringBuilder();
         builder.append("Sub deployment ");
         builder.append(path);
         builder.append(" in jboss-structure.xml was not found. Available sub deployments: ");
-        for (String dep : subDeployments) {
+        for (final String dep : subDeployments) {
             builder.append(dep);
             builder.append(", ");
         }
@@ -192,7 +223,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
     }
 
     @Override
-    public void undeploy(DeploymentUnit context) {
+    public void undeploy(final DeploymentUnit context) {
 
     }
 

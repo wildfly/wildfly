@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.jboss.as.server.deployment.module.ExtensionListEntry;
 import org.jboss.as.server.deployment.module.FilterSpecification;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.modules.DependencySpec;
 import org.jboss.modules.ModuleIdentifier;
 
 /**
@@ -17,11 +17,12 @@ class ModuleStructureSpec {
 
     private ModuleIdentifier moduleIdentifier;
     private final List<ModuleDependency> moduleDependencies = new ArrayList<ModuleDependency>();
+    private final List<DependencySpec> systemDependencies = new ArrayList<DependencySpec>();
     private final List<ResourceRoot> resourceRoots = new ArrayList<ResourceRoot>();
-    private final List<ExtensionListEntry> moduleExtensionDependencies = new ArrayList<ExtensionListEntry>();
     private final List<FilterSpecification> exportFilters = new ArrayList<FilterSpecification>();
     private final List<ModuleIdentifier> exclusions = new ArrayList<ModuleIdentifier>();
     private final List<String> classFileTransformers = new ArrayList<String>();
+    private final List<ModuleIdentifier> aliases = new ArrayList<ModuleIdentifier>();
     private boolean localLast = false;
 
     public ModuleIdentifier getModuleIdentifier() {
@@ -48,14 +49,21 @@ class ModuleStructureSpec {
         return Collections.unmodifiableList(resourceRoots);
     }
 
-    public void addModuleExtensionDependency(ExtensionListEntry extension) {
-        moduleExtensionDependencies.add(extension);
+    public void addSystemDependency(final DependencySpec dependency) {
+        systemDependencies.add(dependency);
     }
 
-    public List<ExtensionListEntry> getModuleExtensionDependencies() {
-        return Collections.unmodifiableList(moduleExtensionDependencies);
+    public List<DependencySpec> getSytemDependencies() {
+        return Collections.unmodifiableList(systemDependencies);
     }
 
+    public void addAlias(final ModuleIdentifier dependency) {
+        aliases.add(dependency);
+    }
+
+    public List<ModuleIdentifier> getAliases() {
+        return Collections.unmodifiableList(aliases);
+    }
     public List<ModuleIdentifier> getExclusions() {
         return exclusions;
     }

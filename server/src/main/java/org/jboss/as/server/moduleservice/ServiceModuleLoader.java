@@ -139,8 +139,6 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
 
     public static final ServiceName MODULE_SPEC_SERVICE_PREFIX = ServiceName.JBOSS.append("module", "spec", "service");
 
-    public static final ServiceName MODULE_INFORMATION_SERVICE_PREFIX = ServiceName.JBOSS.append("module", "information", "service");
-
     public static final ServiceName MODULE_SERVICE_PREFIX = ServiceName.JBOSS.append("module", "service");
 
     public static final String MODULE_PREFIX = "deployment.";
@@ -234,18 +232,5 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
             throw new IllegalArgumentException(identifier + " cannot be loaded from a ServiceModuleLoader as its name does not start with " + MODULE_PREFIX);
         }
         return MODULE_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
-    }
-
-    /**
-     * Returns the corresponding module information service name for the given module.
-     *
-     * @param identifier The module identifier
-     * @return The service name of the service
-     */
-    public static ServiceName moduleInformationServiceName(ModuleIdentifier identifier) {
-        if (!identifier.getName().startsWith(MODULE_PREFIX)) {
-            throw new IllegalArgumentException(identifier + " cannot be loaded from a ServiceModuleLoader as its name does not start with " + MODULE_PREFIX);
-        }
-        return MODULE_INFORMATION_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
     }
 }

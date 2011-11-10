@@ -21,6 +21,7 @@
  */
 package org.jboss.as.server.moduleservice;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.server.Services;
@@ -31,19 +32,18 @@ import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleSpec;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.value.InjectedValue;
 
 /**
  * Service that loads and re-links a module once all the modules dependencies are available.
  *
  * @author Stuart Douglas
- *
  */
 public class ModuleLoadService implements Service<Module> {
 
@@ -79,16 +79,23 @@ public class ModuleLoadService implements Service<Module> {
         return module;
     }
 
-    public static ServiceName install(ServiceTarget target, ModuleIdentifier identifier,
-            List<ModuleDependency> dependencies) {
-        ModuleLoadService service  = new ModuleLoadService();
-        ServiceName serviceName = ServiceModuleLoader.moduleServiceName(identifier);
-        ServiceBuilder<Module> builder = target.addService(serviceName, service);
-        builder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER,ServiceModuleLoader.class,service.getServiceModuleLoader());
+    public static ServiceName install(final ServiceTarget target, final ModuleIdentifier identifier, final List<ModuleDependency> dependencies) {
+        final List<ModuleIdentifier> deps = new ArrayList<ModuleIdentifier>();
+        for (final ModuleDependency i : dependencies) {
+            deps.add(i.getIdentifier());
+        }
+        return installService(target, identifier, deps);
+    }
+
+    public static ServiceName installService(final ServiceTarget target, final ModuleIdentifier identifier, final List<ModuleIdentifier> dependencies) {
+        final ModuleLoadService service = new ModuleLoadService();
+        final ServiceName serviceName = ServiceModuleLoader.moduleServiceName(identifier);
+        final ServiceBuilder<Module> builder = target.addService(serviceName, service);
+        builder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, service.getServiceModuleLoader());
         builder.addDependency(ServiceModuleLoader.moduleSpecServiceName(identifier), ModuleSpec.class, service.getModuleSpec());
-        for (ModuleDependency dep : dependencies) {
-            if (dep.getIdentifier().getName().startsWith(ServiceModuleLoader.MODULE_PREFIX)) {
-                builder.addDependencies(ServiceModuleLoader.moduleSpecServiceName(dep.getIdentifier()));
+        for (final ModuleIdentifier dep : dependencies) {
+            if (dep.getName().startsWith(ServiceModuleLoader.MODULE_PREFIX)) {
+                builder.addDependencies(ServiceModuleLoader.moduleSpecServiceName(dep));
             }
         }
         builder.setInitialMode(Mode.ON_DEMAND);

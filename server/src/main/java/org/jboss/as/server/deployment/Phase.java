@@ -292,7 +292,6 @@ public enum Phase {
     public static final int DEPENDENCIES_APPLICATION_CLIENT             = 0x1400;
     public static final int DEPENDENCIES_CMP                            = 0x1500;
     //these must be last
-    public static final int DEPENDENCIES_MODULE_INFO_SERVICE            = 0x1600;
     public static final int DEPENDENCIES_VISIBLE_MODULES                = 0x1700;
     public static final int DEPENDENCIES_EE_CLASS_DESCRIPTIONS          = 0x1800;
 

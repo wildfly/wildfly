@@ -24,9 +24,8 @@ package org.jboss.as.server.deployment.module;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
@@ -45,7 +44,6 @@ import org.jboss.modules.ResourceLoaderSpec;
 import org.jboss.modules.filter.MultiplePathFilterBuilder;
 import org.jboss.modules.filter.PathFilter;
 import org.jboss.modules.filter.PathFilters;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ValueService;
@@ -103,9 +101,6 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
                     + deploymentUnit.getName());
         }
 
-
-        processTransitiveDependencies(moduleSpecification, phaseContext);
-
         // create the module servce and set it to attach to the deployment in the next phase
         final ServiceName moduleServiceName = createModuleService(phaseContext, deploymentUnit, resourceRoots, moduleSpecification,
                 moduleIdentifier);
@@ -122,13 +117,11 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         if (additionalModules == null) {
             return;
         }
-        for (AdditionalModuleSpecification module : additionalModules) {
-
-            processTransitiveDependencies(module, phaseContext);
+        for (final AdditionalModuleSpecification module : additionalModules) {
 
             addSystemDependencies(moduleSpecification, module);
 
-            ServiceName additionalModuleServiceName = createModuleService(phaseContext, deploymentUnit, module
+            final ServiceName additionalModuleServiceName = createModuleService(phaseContext, deploymentUnit, module
                     .getResourceRoots(), module, module.getModuleIdentifier());
             phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, additionalModuleServiceName);
         }
@@ -136,106 +129,51 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
 
     /**
      * Gives any additional modules the same system dependencies as the primary module.
-     *
+     * <p/>
      * This makes sure they can access all API classes etc.
      *
      * @param moduleSpecification The primary module spec
-     * @param module The additional module
+     * @param module              The additional module
      */
     private void addSystemDependencies(final ModuleSpecification moduleSpecification, final AdditionalModuleSpecification module) {
-            module.addSystemDependencies(moduleSpecification.getSystemDependencies());
+        module.addSystemDependencies(moduleSpecification.getSystemDependencies());
     }
 
-    /**
-     * Handle transitive dependencies
-     *
-     * @param moduleSpecification
-     * @param phaseContext
-     */
-    private void processTransitiveDependencies(final ModuleSpecification moduleSpecification, final DeploymentPhaseContext phaseContext) {
-        final Set<ModuleIdentifier> deps = new HashSet<ModuleIdentifier>();
-        for (ModuleDependency dependency : moduleSpecification.getAllDependencies()) {
-            deps.add(dependency.getIdentifier());
-        }
-        for (final ModuleSpecification depInfo : phaseContext.getAttachmentList(Attachments.MODULE_DEPENDENCY_INFORMATION)) {
-
-            for (ModuleDependency dependency : depInfo.getAllDependencies()) {
-                if (deps.contains(dependency.getIdentifier())) {
-                    continue;
-                }
-                deps.add(dependency.getIdentifier());
-                if (depInfo.isRequiresTransitiveDependencies()) {
-                    moduleSpecification.addSystemDependency(dependency);
-                    if (dependency.getIdentifier().getName().startsWith(ServiceModuleLoader.MODULE_PREFIX)) {
-                        processManualTransitiveDependencies(moduleSpecification, phaseContext, deps, dependency.getIdentifier());
-                    }
-                }
-            }
-        }
-
-    }
-
-    /**
-     * Process second level transitive dependencies. These are resolved on a 'best-effort' basis. Unfortunately we can't rely on their
-     * module information services to be up, as module information services cannot express a dependency on each other due to circular
-     * dependencies.
-     * <p/>
-     * One option would be to block here until missing services come up, or relink once they do
-     * <p/>
-     * In practice this should not actually present a real issue, it can only really come up when you are depending on a rar
-     * deployment that depends on another rar deployment, and all three deployments are starting asynchronosly.
-     */
-    private void processManualTransitiveDependencies(final ModuleSpecification moduleSpecification, final DeploymentPhaseContext phaseContext, final Set<ModuleIdentifier> deps, final ModuleIdentifier identifier) {
-        final ServiceController<ModuleSpecification> controller = (ServiceController<ModuleSpecification>) phaseContext.getServiceRegistry()
-                .getService(ServiceModuleLoader.moduleInformationServiceName(identifier));
-        if (controller == null) {
-            logger.warnf("Could not resolve transitive dependencies for module %s ", identifier);
-            return;
-        }
-        try {
-            final ModuleSpecification specification = controller.getValue();
-            final List<ModuleDependency> allDeps = specification.getAllDependencies();
-            for (final ModuleDependency dependency : allDeps) {
-                if (deps.contains(dependency.getIdentifier())) {
-                    continue;
-                }
-                deps.add(dependency.getIdentifier());
-                moduleSpecification.addSystemDependency(dependency);
-                if (dependency.getIdentifier().getName().startsWith(ServiceModuleLoader.MODULE_PREFIX)) {
-                    processManualTransitiveDependencies(moduleSpecification, phaseContext, deps, dependency.getIdentifier());
-                }
-            }
-        } catch (IllegalStateException e) {
-            logger.warnf("Could not resolve transitive dependencies for module %s ", identifier);
-        }
-    }
 
     private ServiceName createModuleService(final DeploymentPhaseContext phaseContext, final DeploymentUnit deploymentUnit,
                                             final List<ResourceRoot> resourceRoots, final ModuleSpecification moduleSpecification,
                                             final ModuleIdentifier moduleIdentifier) throws DeploymentUnitProcessingException {
+        logger.debug("Creating module" + moduleIdentifier);
         final ModuleSpec.Builder specBuilder = ModuleSpec.build(moduleIdentifier);
+        for (final DependencySpec dep : moduleSpecification.getModuleSystemDependencies()) {
+            specBuilder.addDependency(dep);
+        }
         final List<ModuleDependency> dependencies = moduleSpecification.getSystemDependencies();
         final List<ModuleDependency> localDependencies = moduleSpecification.getLocalDependencies();
         final List<ModuleDependency> userDependencies = moduleSpecification.getUserDependencies();
 
+        installAliases(moduleSpecification, moduleIdentifier, deploymentUnit, phaseContext);
+
         // add aditional resource loaders first
         for (final ResourceLoaderSpec resourceLoaderSpec : moduleSpecification.getResourceLoaders()) {
+            logger.debug("Adding resource loader " + resourceLoaderSpec + " to module " + moduleIdentifier);
             specBuilder.addResourceRoot(resourceLoaderSpec);
         }
 
         for (final ResourceRoot resourceRoot : resourceRoots) {
+            logger.debug("Adding resource " + resourceRoot.getRoot() + " to module " + moduleIdentifier);
             addResourceRoot(specBuilder, resourceRoot);
         }
 
-        createDependencies(phaseContext, specBuilder, dependencies);
-        createDependencies(phaseContext, specBuilder, userDependencies);
+        createDependencies(phaseContext, specBuilder, dependencies, moduleSpecification.isRequiresTransitiveDependencies());
+        createDependencies(phaseContext, specBuilder, userDependencies, moduleSpecification.isRequiresTransitiveDependencies());
 
         if (moduleSpecification.isLocalLast()) {
-            createDependencies(phaseContext, specBuilder, localDependencies);
+            createDependencies(phaseContext, specBuilder, localDependencies, moduleSpecification.isRequiresTransitiveDependencies());
             specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
         } else {
             specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
-            createDependencies(phaseContext, specBuilder, localDependencies);
+            createDependencies(phaseContext, specBuilder, localDependencies, moduleSpecification.isRequiresTransitiveDependencies());
         }
 
         final DelegatingClassFileTransformer delegatingClassFileTransformer = new DelegatingClassFileTransformer();
@@ -256,9 +194,22 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         return ModuleLoadService.install(phaseContext.getServiceTarget(), moduleIdentifier, allDependencies);
     }
 
-    private void createDependencies(final DeploymentPhaseContext phaseContext, final ModuleSpec.Builder specBuilder, final List<ModuleDependency> apiDependencies) {
+    private void installAliases(final ModuleSpecification moduleSpecification, final ModuleIdentifier moduleIdentifier, final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext) {
+        for (final ModuleIdentifier alias : moduleSpecification.getAliases()) {
+            final ServiceName moduleSpecServiceName = ServiceModuleLoader.moduleSpecServiceName(alias);
+            final ModuleSpec spec = ModuleSpec.buildAlias(alias, moduleIdentifier).create();
+            final ValueService<ModuleSpec> moduleSpecService = new ValueService<ModuleSpec>(new ImmediateValue<ModuleSpec>(spec));
+            phaseContext.getServiceTarget().addService(moduleSpecServiceName, moduleSpecService).addDependencies(
+                    deploymentUnit.getServiceName()).addDependencies(phaseContext.getPhaseServiceName()).setInitialMode(
+                    Mode.ON_DEMAND).install();
+            ModuleLoadService.installService(phaseContext.getServiceTarget(), moduleIdentifier, Collections.singletonList(moduleIdentifier));
+        }
+    }
+
+    private void createDependencies(final DeploymentPhaseContext phaseContext, final ModuleSpec.Builder specBuilder, final List<ModuleDependency> apiDependencies, final boolean requireTransitive) {
         if (apiDependencies != null)
             for (final ModuleDependency dependency : apiDependencies) {
+                final boolean export = requireTransitive ? true : dependency.isExport();
                 final List<FilterSpecification> importFilters = dependency.getImportFilters();
                 final List<FilterSpecification> exportFilters = dependency.getExportFilters();
                 final PathFilter importFilter;
@@ -274,14 +225,14 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
                 importBuilder.addFilter(PathFilters.getMetaInfFilter(), false);
                 importFilter = importBuilder.create();
                 if (exportFilters.isEmpty()) {
-                    if (dependency.isExport()) {
+                    if (export) {
                         exportFilter = PathFilters.acceptAll();
                     } else {
                         exportFilter = PathFilters.rejectAll();
                     }
                 } else {
                     final MultiplePathFilterBuilder exportBuilder = PathFilters
-                            .multiplePathFilterBuilder(dependency.isExport());
+                            .multiplePathFilterBuilder(export);
                     for (final FilterSpecification filter : exportFilters) {
                         exportBuilder.addFilter(filter.getPathFilter(), filter.isInclude());
                     }
@@ -290,6 +241,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
                 final DependencySpec depSpec = DependencySpec.createModuleDependencySpec(importFilter, exportFilter, dependency
                         .getModuleLoader(), dependency.getIdentifier(), dependency.isOptional());
                 specBuilder.addDependency(depSpec);
+                logger.debug("Adding dependency " + dependency + " to module " + specBuilder.getIdentifier());
 
                 final String depName = dependency.getIdentifier().getName();
                 if (depName.startsWith(ServiceModuleLoader.MODULE_PREFIX)) {
