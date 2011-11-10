@@ -26,18 +26,14 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.jaxr.service.JAXRBootstrapService;
 import org.jboss.as.jaxr.service.JAXRConfiguration;
 import org.jboss.as.jaxr.service.JUDDIContextService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
 import java.util.List;
-import java.util.Locale;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -108,32 +104,4 @@ class JAXRSubsystemAdd extends AbstractAddStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
     }
-
-    /**
-     * Used to create the description of the subsystem add method
-     */
-    static DescriptionProvider DESCRIPTION = new DescriptionProvider() {
-        public ModelNode getModelDescription(Locale locale) {
-            final ModelNode node = new ModelNode();
-            node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.ADD);
-            node.get(ModelDescriptionConstants.DESCRIPTION).set("Adds the JAXR subsystem");
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.CONNECTIONFACTORY, ModelDescriptionConstants.DESCRIPTION).set("The JNDI name for the ConnectionFactory");
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.CONNECTIONFACTORY, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.CONNECTIONFACTORY, ModelDescriptionConstants.REQUIRED).set(false);
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.DATASOURCE, ModelDescriptionConstants.DESCRIPTION).set("The JNDI name for the DataSource");
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.DATASOURCE, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.DATASOURCE, ModelDescriptionConstants.REQUIRED).set(false);
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.DROPONSTART, ModelDescriptionConstants.DESCRIPTION).set("Should tables be dropped on Start");
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.DROPONSTART, ModelDescriptionConstants.TYPE).set(ModelType.BOOLEAN);
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.DROPONSTART, ModelDescriptionConstants.REQUIRED).set(false);
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.CREATEONSTART, ModelDescriptionConstants.DESCRIPTION).set("Should tables be dropped on Start");
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.CREATEONSTART, ModelDescriptionConstants.TYPE).set(ModelType.BOOLEAN);
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.CREATEONSTART, ModelDescriptionConstants.REQUIRED).set(false);
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.DROPONSTOP, ModelDescriptionConstants.DESCRIPTION).set("Should tables be dropped on Start");
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.DROPONSTOP, ModelDescriptionConstants.TYPE).set(ModelType.BOOLEAN);
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.DROPONSTOP, ModelDescriptionConstants.REQUIRED).set(false);
-            node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
-            return node;
-        }
-    };
 }

@@ -17,7 +17,7 @@
             </xs:documentation>
         </xs:annotation>
         <xs:all>
-            <xs:element name="connectionFactory" type="connectionFactoryType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="connection-factory" type="connectionFactoryType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="datasource" type="datasourceType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="flags" type="flagsType" minOccurs="0" maxOccurs="1"/>
         </xs:all>
@@ -28,7 +28,7 @@
             <xs:annotation>
                 <xs:documentation>
                 <![CDATA[[
-                Specifies the JNDI name for the ConnectionFactory
+                The JNDI name for the ConnectionFactory
                 ]]>
                 </xs:documentation>
             </xs:annotation>
@@ -40,7 +40,7 @@
             <xs:annotation>
                 <xs:documentation>
                 <![CDATA[[
-                Specifies the JNDI name for the DataSource
+                The JNDI name for the DataSource
                 ]]>
                 </xs:documentation>
             </xs:annotation>
@@ -48,7 +48,7 @@
     </xs:complexType>
 
     <xs:complexType name="flagsType" mixed="false">
-        <xs:attribute name="dropOnStart" type="xs:boolean" default="false">
+        <xs:attribute name="drop-on-start" type="xs:boolean" default="false">
             <xs:annotation>
                 <xs:documentation>
                 <![CDATA[[
@@ -57,7 +57,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="createOnStart" type="xs:boolean" default="false">
+        <xs:attribute name="create-on-start" type="xs:boolean" default="false">
             <xs:annotation>
                 <xs:documentation>
                 <![CDATA[[
@@ -66,7 +66,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="dropOnStop" type="xs:boolean" default="false">
+        <xs:attribute name="drop-on-stop" type="xs:boolean" default="false">
             <xs:annotation>
                 <xs:documentation>
                 <![CDATA[[

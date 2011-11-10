@@ -28,15 +28,11 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.jaxr.extension.JAXRConstants.Namespace;
 import org.jboss.dmr.ModelNode;
 
-import java.util.EnumSet;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 
 
@@ -46,9 +42,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
  */
 public class JAXRSubsystemExtension implements Extension {
 
-    /**
-     * The parser used for parsing our subsystem
-     */
     private final JAXRSubsystemParser parser = new JAXRSubsystemParser();
 
     @Override
@@ -56,17 +49,10 @@ public class JAXRSubsystemExtension implements Extension {
         context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), parser);
     }
 
-
     @Override
     public void initialize(ExtensionContext context) {
         SubsystemRegistration subsystem = context.registerSubsystem(JAXRConstants.SUBSYSTEM_NAME);
-        ManagementResourceRegistration registration = subsystem.registerSubsystemModel(JAXRSubsystemProviders.SUBSYSTEM);
-        registration.registerOperationHandler(ADD, JAXRSubsystemAdd.INSTANCE, JAXRSubsystemAdd.DESCRIPTION, false);
-        registration.registerReadWriteAttribute(ModelConstants.CONNECTIONFACTORY, null, JAXRConnectionFactoryAttributeHandler.INSTANCE, EnumSet.of(AttributeAccess.Flag.STORAGE_CONFIGURATION, AttributeAccess.Flag.RESTART_ALL_SERVICES));
-        registration.registerReadWriteAttribute(ModelConstants.DATASOURCE, null, JAXRDatasourceAttributeHandler.INSTANCE, EnumSet.of(AttributeAccess.Flag.STORAGE_CONFIGURATION, AttributeAccess.Flag.RESTART_ALL_SERVICES));
-        registration.registerReadWriteAttribute(ModelConstants.DROPONSTART, null, JAXRDropOnStartAttributeHandler.INSTANCE, EnumSet.of(AttributeAccess.Flag.STORAGE_CONFIGURATION, AttributeAccess.Flag.RESTART_ALL_SERVICES));
-        registration.registerReadWriteAttribute(ModelConstants.CREATEONSTART, null, JAXRCreateOnStartAttributeHandler.INSTANCE, EnumSet.of(AttributeAccess.Flag.STORAGE_CONFIGURATION, AttributeAccess.Flag.RESTART_ALL_SERVICES));
-        registration.registerReadWriteAttribute(ModelConstants.DROPONSTOP, null, JAXRDropOnStopAttributeHandler.INSTANCE, EnumSet.of(AttributeAccess.Flag.STORAGE_CONFIGURATION, AttributeAccess.Flag.RESTART_ALL_SERVICES));
+        ManagementResourceRegistration registration = subsystem.registerSubsystemModel(JAXRSubsystemRootResource.INSTANCE);
         registration.registerOperationHandler(DESCRIBE, SubsystemDescribeHandler.INSTANCE, SubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         subsystem.registerXMLElementWriter(JAXRSubsystemWriter.INSTANCE);
     }

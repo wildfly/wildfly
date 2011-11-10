@@ -53,23 +53,23 @@ public class JAXRConfiguration {
     private JAXRConfiguration() {
     }
 
-    boolean isDropOnStop() {
+    public boolean isDropOnStop() {
         return dropOnStop;
     }
 
-    boolean isDropOnStart() {
+    public boolean isDropOnStart() {
         return dropOnStart;
     }
 
-    boolean isCreateOnStart() {
+    public boolean isCreateOnStart() {
         return createOnStart;
     }
 
-    String getDataSourceBinding() {
+    public String getDataSourceBinding() {
         return dataSourceBinding;
     }
 
-    String getConnectionFactoryBinding() {
+    public String getConnectionFactoryBinding() {
         return connectionFactoryBinding;
     }
 
