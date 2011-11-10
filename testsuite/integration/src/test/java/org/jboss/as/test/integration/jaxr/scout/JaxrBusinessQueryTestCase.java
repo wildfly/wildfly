@@ -81,11 +81,15 @@ public class JaxrBusinessQueryTestCase extends JaxrTestBase {
                 }//end while
             } else {
                 Collection exceptions = br.getExceptions();
-                Iterator iter = exceptions.iterator();
-                while (iter.hasNext()) {
-                    Exception e = (Exception) iter.next();
-                    Assert.fail(e.toString());
+                if (exceptions != null) {
+                    Iterator iter = exceptions.iterator();
+                    while (iter.hasNext())
+                    {
+                        Exception e = (Exception) iter.next();
+                        e.printStackTrace(System.err);
+                    }
                 }
+                Assert.fail("Cannot save Organizations");
             }
         } catch (JAXRException e) {
             e.printStackTrace();

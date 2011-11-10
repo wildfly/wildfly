@@ -162,7 +162,7 @@ public class JaxrFindAssociationsTestCase extends JaxrTestBase {
             associationTypes.add(type);
             br = bqm.findAssociations(null, sourceId, targetId, null);
             if (br.getExceptions() != null) {
-                Assert.fail("Error:    findAssociations failed ");
+                Assert.fail("Error: findAssociations failed ");
             }
             associations = null;
             associations = br.getCollection();
