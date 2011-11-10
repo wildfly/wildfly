@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.jboss.as</groupId>
+        <artifactId>jboss-as-testsuite-integration-agg</artifactId>
+        <version>7.1.0.Alpha2-SNAPSHOT</version>
+    </parent>
+
+    <!-- ********************************************************************************** -->
+    <!-- ******************************** Basic Integration ******************************* -->
+    <!-- ********************************************************************************** -->
+    <groupId>org.jboss.as</groupId>
+    <artifactId>jboss-as-testsuite-integration-basic</artifactId>
+    <version>7.1.0.Alpha2-SNAPSHOT</version>
+
+    <name>JBoss AS Test Suite: Integration - Basic</name>
+
+    <properties>
+        <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
+        <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
+        <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+    </properties>
+
+    <build>
+        <testSourceDirectory>../src/test/java</testSourceDirectory>
+        <testResources>
+            <testResource>
+                <directory>../src/test/resources</directory>
+            </testResource>
+            <testResource>
+                <directory>../src/test/java</directory>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
+            </testResource>
+        </testResources>
+    </build>
+
+    <profiles>
+
+        <profile>
+            <id>basic.integration.tests.profile</id>
+            <activation>
+                <property>
+                    <name>!no.basic.integration.tests</name>
+                </property>
+            </activation>
+
+            <!--
+                Server configuration executions.
+            -->
+            <build>
+                <plugins>
+
+                    <!-- Build the target/jbossas server configuration. -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions combine.children="append">
+                            <!-- Copy in some jars. -->
+                            <execution>
+                                <id>prepare-jars-basic-integration.server</id>
+                                <phase>process-test-resources</phase>
+                                <goals><goal>run</goal></goals>
+                                <configuration>
+                                    <target>
+                                        <property name="tests.resources.dir" value="${basedir}/../src/test/resources"/>
+                                        <property name="tests.output.dir" value="${project.build.directory}"/>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions combine.children="append">
+
+                            <!-- Disable default-test execution. -->
+                            <execution>
+                                <id>default-test</id>
+                                <goals><goal>test</goal></goals>
+                                <phase>none</phase>
+                            </execution>
+
+
+                            <execution>
+                                <id>basic-integration-default.surefire</id>
+                                <phase>test</phase>
+                                <goals><goal>test</goal></goals>
+                                <configuration>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/**/*TestCase*.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
+                                    </excludes>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <arquillian.xml>arquillian.xml</arquillian.xml>
+                                        <arquillian.launch>jboss</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                                    </systemPropertyVariables>
+
+                                    <additionalClasspathElements>
+                                        <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
+                                    </additionalClasspathElements>
+
+                                    <reportNameSuffix>tests-basic-integration-default</reportNameSuffix>
+                                </configuration>
+                            </execution>
+                            <!-- The second run tests rely on restoring timer services setup in the first run of tests. -->
+                            <execution>
+                                <id>basic-integration-2nd.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <skipTests>false</skipTests>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <enableAssertions>true</enableAssertions>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/**/*SecondTestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>none</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+
+                        </executions>
+
+                    </plugin>
+
+                </plugins>
+            </build>
+        </profile>
+
+    </profiles>
+</project>

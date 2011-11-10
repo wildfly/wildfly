@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.jboss.as</groupId>
+        <artifactId>jboss-as-testsuite-integration-agg</artifactId>
+        <version>7.1.0.Alpha2-SNAPSHOT</version>
+    </parent>
+
+    <!-- ********************************************************************************** -->
+    <!-- ******************************** Smoke Integration ******************************* -->
+    <!-- ********************************************************************************** -->
+    <groupId>org.jboss.as</groupId>
+    <artifactId>jboss-as-testsuite-integration-smoke</artifactId>
+    <version>7.1.0.Alpha2-SNAPSHOT</version>
+
+    <name>JBoss AS Test Suite: Integration - Smoke</name>
+    
+    <properties>
+        <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
+        <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
+        <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+    </properties>
+
+    <build>
+        <testSourceDirectory>../src/test/java</testSourceDirectory>
+        <testResources>
+            <testResource>
+                <directory>../src/test/resources</directory>
+            </testResource>
+            <testResource>
+                <directory>../src/test/java</directory>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
+            </testResource>
+        </testResources>
+    </build>
+
+
+    <profiles>
+
+        <!-- ********************************************************************************** -->
+        <!-- ****     Smoke tests                                                     ********* -->
+        <!-- ********************************************************************************** -->
+        <profile>
+            <id>smoke.integration.tests.profile</id>
+            <activation>
+                <property>
+                    <name>!noSmoke</name>
+                </property>
+            </activation>
+
+            <properties>
+            </properties>
+
+            <!--
+                Server configuration executions.
+                Naming convention for executions (which we read in the log): for server config X, call it X.server
+            -->
+            <build>
+                <plugins>
+
+                    <!-- Build the target/smoke server configuration. -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>build-smoke.server</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <!-- Build the UDP server configs in target. -->
+                                        <ant antfile="${basedir}/../src/test/scripts/smoke-build.xml">
+                                            <target name="build-smoke"/>
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions combine.children="append">
+
+                            <!-- Disable default-test execution. -->
+                            <execution>
+                                <id>default-test</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+
+                            <!-- Smoke tests. -->
+                            <execution>
+                                <id>smoke-default.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/smoke/**/*TestCase.java</include>
+                                    </includes>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <arquillian.xml>smoke-arquillian.xml</arquillian.xml>
+                                        <arquillian.launch>jboss</arquillian.launch>
+
+                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                                        <!-- Use combine.children="append" to pick up parent properties automatically. -->
+                                    </systemPropertyVariables>
+
+                                    <!-- Access to resources for clustering tests. -->
+                                    <additionalClasspathElements>
+                                        <additionalClasspathElement>${project.basedir}/../src/test/resources/smoke</additionalClasspathElement>
+                                    </additionalClasspathElements>
+
+                                    <reportNameSuffix>tests-smoke-default</reportNameSuffix>
+                                </configuration>
+                            </execution>
+
+                        </executions>
+
+                    </plugin>
+
+                </plugins>
+            </build>
+        </profile>
+
+    </profiles>
+</project>
