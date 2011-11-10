@@ -55,6 +55,11 @@ class JAXRWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
     }
 
     @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return context.getType() == OperationContext.Type.SERVER;
+    }
+
+    @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> voidHandbackHolder) throws OperationFailedException {
         JAXRConfiguration config = JAXRConfiguration.INSTANCE;
         if (attributeName.equals(ModelConstants.CONNECTIONFACTORY)) {

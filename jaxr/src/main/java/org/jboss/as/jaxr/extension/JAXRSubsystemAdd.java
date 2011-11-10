@@ -55,10 +55,10 @@ class JAXRSubsystemAdd extends AbstractAddStepHandler {
     }
 
     static ModelNode createAddSubsystemOperation() {
-        final ModelNode subsystem = new ModelNode();
-        subsystem.get(OP).set(ADD);
-        subsystem.get(OP_ADDR).add(SUBSYSTEM, JAXRConstants.SUBSYSTEM_NAME);
-        return subsystem;
+        final ModelNode addop = new ModelNode();
+        addop.get(OP).set(ADD);
+        addop.get(OP_ADDR).add(SUBSYSTEM, JAXRConstants.SUBSYSTEM_NAME);
+        return addop;
     }
 
     @Override
