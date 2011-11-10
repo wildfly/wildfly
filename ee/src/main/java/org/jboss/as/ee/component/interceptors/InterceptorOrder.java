@@ -113,7 +113,8 @@ public class
     }
 
     public static final class View {
-        public static final int JNDI_NAMESPACE_INTERCEPTOR                              = 0x000;
+        public static final int TCCL_INTERCEPTOR                                        = 0x000;
+        public static final int JNDI_NAMESPACE_INTERCEPTOR                              = 0x050;
         public static final int NOT_BUSINESS_METHOD                                     = 0x100;
         public static final int REMOTE_EXCEPTION_TRANSFORMER                            = 0x200;
         public static final int SECURITY_CONTEXT                                        = 0x250;
