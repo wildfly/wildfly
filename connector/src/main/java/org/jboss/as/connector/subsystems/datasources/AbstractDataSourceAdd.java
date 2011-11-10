@@ -25,6 +25,7 @@ package org.jboss.as.connector.subsystems.datasources;
 import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
+import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.sql.Driver;
@@ -68,6 +69,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
         final ModelNode address = operation.require(OP_ADDR);
         final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();
+        final String jndiName = operation.hasDefined(JNDINAME.getName()) ? operation.get(JNDINAME.getName()).asString() : dsName;
 
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
@@ -92,7 +94,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                 .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
                         dataSourceService.getDriverRegistryInjector()).addDependency(NamingService.SERVICE_NAME);
 
-        controllers.add(startConfigAndAddDependency(context, dataSourceServiceBuilder, dataSourceService, dsName, serviceTarget, operation, verificationHandler));
+        startConfigAndAddDependency(dataSourceServiceBuilder, dataSourceService, dsName, serviceTarget, operation, verificationHandler);
 
         final String driverName = node.asString();
         final ServiceName driverServiceName = ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_"));
@@ -101,52 +103,10 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                     dataSourceService.getDriverInjector());
         }
 
-        final DataSourceReferenceFactoryService referenceFactoryService = new DataSourceReferenceFactoryService();
-        final ServiceName referenceFactoryServiceName = DataSourceReferenceFactoryService.SERVICE_NAME_BASE
-                .append(dsName);
-        final ServiceBuilder<?> referenceBuilder = serviceTarget.addService(referenceFactoryServiceName,
-                referenceFactoryService).addDependency(dataSourceServiceName, DataSource.class,
-                referenceFactoryService.getDataSourceInjector());
+        dataSourceServiceBuilder.setInitialMode(ServiceController.Mode.NEVER);
 
-        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(dsName);
-        final BinderService binderService = new BinderService(bindInfo.getBindName());
-        final ServiceBuilder<?> binderBuilder = serviceTarget
-                .addService(bindInfo.getBinderServiceName(), binderService)
-                .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class, binderService.getManagedObjectInjector())
-                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
-                    public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
-                        switch (transition) {
-                            case STARTING_to_UP: {
-                                SUBSYSTEM_DATASOURCES_LOGGER.boundDataSource(dsName);
-                                break;
-                            }
-                            case START_REQUESTED_to_DOWN: {
-                                SUBSYSTEM_DATASOURCES_LOGGER.unboundDataSource(dsName);
-                                break;
-                            }
-                            case REMOVING_to_REMOVED: {
-                                SUBSYSTEM_DATASOURCES_LOGGER.debugf("Removed JDBC Data-source [%s]", dsName);
-                                break;
-                            }
-                        }
-                    }
-                });
-
-        if (enabled) {
-            dataSourceServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE)
-                    .addListener(verificationHandler);
-            referenceBuilder.setInitialMode(ServiceController.Mode.ACTIVE)
-                    .addListener(verificationHandler);
-            binderBuilder.setInitialMode(ServiceController.Mode.ACTIVE)
-                    .addListener(verificationHandler);
-        } else {
-            dataSourceServiceBuilder.setInitialMode(ServiceController.Mode.NEVER);
-            referenceBuilder.setInitialMode(ServiceController.Mode.NEVER);
-            binderBuilder.setInitialMode(ServiceController.Mode.NEVER);
-        }
         controllers.add(dataSourceServiceBuilder.install());
-        controllers.add(referenceBuilder.install());
-        controllers.add(binderBuilder.install());
+
     }
 
     static String cleanupJavaContext(String jndiName) {
@@ -161,28 +121,26 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         return bindName;
     }
 
-    protected abstract ServiceController<?> startConfigAndAddDependency(OperationContext context, ServiceBuilder<?> dataSourceServiceBuilder,
+    protected abstract void startConfigAndAddDependency(ServiceBuilder<?> dataSourceServiceBuilder,
             AbstractDataSourceService dataSourceService, String jndiName, ServiceTarget serviceTarget, final ModelNode operation, final ServiceVerificationHandler serviceVerificationHandler)
             throws OperationFailedException;
 
-    protected abstract void populateModel(final ModelNode operation, final ModelNode model);
+    protected abstract void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException;
 
     protected abstract AbstractDataSourceService createDataSourceService(final String jndiName) throws OperationFailedException;
 
-    static void populateAddModel(final ModelNode existingModel, final ModelNode newModel,
-            final String connectionPropertiesProp, final SimpleAttributeDefinition[] attributes) {
-        if (existingModel.hasDefined(connectionPropertiesProp)) {
+    static void populateAddModel(final ModelNode operation, final ModelNode modelNode,
+            final String connectionPropertiesProp, final SimpleAttributeDefinition[] attributes) throws OperationFailedException {
+        if (operation.hasDefined(connectionPropertiesProp)) {
 
-            for (Property property : existingModel.get(connectionPropertiesProp).asPropertyList()) {
-                newModel.get(connectionPropertiesProp, property.getName()).set(property.getValue().asString());
+            for (Property property : operation.get(connectionPropertiesProp).asPropertyList()) {
+                modelNode.get(connectionPropertiesProp, property.getName()).set(property.getValue().asString());
             }
         }
         for (final SimpleAttributeDefinition attribute : attributes) {
-            if (existingModel.hasDefined(attribute.getName())) {
-                newModel.get(attribute.getName()).set(existingModel.get(attribute.getName()));
-            }
+            attribute.validateAndSet(operation, modelNode);
         }
-        newModel.get(ENABLED.getName()).set(false);
+        modelNode.get(ENABLED.getName()).set(false);
 
     }
 

@@ -92,13 +92,13 @@ public class ConnectionPropertyAdd extends AbstractAddStepHandler implements Des
                 .append(jndiName);
         final ServiceController<?> dataSourceConfigController = registry
                 .getService(dataSourceConfigServiceName);
-        if (dataSourceConfigController != null && !((DataSource) dataSourceConfigController.getValue()).isEnabled()) {
+        if (dataSourceConfigController == null || !((DataSource) dataSourceConfigController.getValue()).isEnabled()) {
 
 
             final ServiceTarget serviceTarget = context.getServiceTarget();
 
             final ConnectionPropertiesService service = new ConnectionPropertiesService(configPropertyName, configPropertyValue);
-            serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.ACTIVE)
+            serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.NEVER)
                     .addDependency(dsServiceName, ModifiableDataSource.class, service.getDSInjector())
                     .addListener(verificationHandler).install();
 

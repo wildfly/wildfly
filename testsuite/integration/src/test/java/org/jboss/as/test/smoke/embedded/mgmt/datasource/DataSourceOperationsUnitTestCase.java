@@ -410,7 +410,7 @@ public class DataSourceOperationsUnitTestCase {
     @Test
     public void testMarshallUnmarshallXaDs() throws Exception {
         final String dsName = "XaDsName2";
-        final String jndiDsName = "XaJndiDsName";
+        final String jndiDsName = "XaJndiDsName2";
 
         final ModelNode address = new ModelNode();
         address.add("subsystem", "datasources");
@@ -459,7 +459,7 @@ public class DataSourceOperationsUnitTestCase {
 
         final Map<String, ModelNode> parseChildren = getChildren(newList.get(1));
         Assert.assertFalse(parseChildren.isEmpty());
-        Assert.assertEquals("java:jboss/datasources/XaJndiDsName", parseChildren.get("jndi-name").asString());
+        Assert.assertEquals("java:jboss/datasources/XaJndiDsName2", parseChildren.get("jndi-name").asString());
 
         remove(xaDatasourcePropertiesAddress);
         execute(compensatingOperation);

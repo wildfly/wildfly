@@ -54,6 +54,7 @@ public class DisableRequiredWriteAttributeHandler extends AbstractWriteAttribute
         if (!submodel.hasDefined(Constants.ENABLED.getName()) || submodel.get(Constants.ENABLED.getName()).asBoolean()) {
            return true;
         } else {
+            //do thejob
             return false;
         }
     }

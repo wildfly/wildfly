@@ -45,7 +45,8 @@ import org.jboss.msc.service.ServiceTarget;
 public class DataSourceAdd extends AbstractDataSourceAdd {
     static final DataSourceAdd INSTANCE = new DataSourceAdd();
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+
         populateAddModel(operation, model, CONNECTION_PROPERTIES.getName(), DATASOURCE_ATTRIBUTE);
     }
 
@@ -56,26 +57,14 @@ public class DataSourceAdd extends AbstractDataSourceAdd {
     }
 
     @Override
-    protected ServiceController<?> startConfigAndAddDependency(OperationContext context, ServiceBuilder<?> dataSourceServiceBuilder,
-            AbstractDataSourceService dataSourceService, String jndiName, ServiceTarget serviceTarget, final ModelNode operation, final ServiceVerificationHandler serviceVerificationHandler)
+    protected void startConfigAndAddDependency(ServiceBuilder<?> dataSourceServiceBuilder,
+            AbstractDataSourceService dataSourceService, String jndiName, ServiceTarget serviceTarget, final ModelNode operation, final ServiceVerificationHandler handler)
             throws OperationFailedException {
-        final ModifiableDataSource dataSourceConfig;
-        try {
-            dataSourceConfig = from(context, operation);
-        } catch (ValidateException e) {
-            e.printStackTrace();
-            throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToCreate("DataSource", operation, e.getLocalizedMessage())));
-        }
-        final ServiceName dataSourceCongServiceName = DataSourceConfigService.SERVICE_NAME_BASE.append(jndiName);
-        final DataSourceConfigService configService = new DataSourceConfigService(dataSourceConfig);
 
-        ServiceController<?> svcController = serviceTarget.addService(dataSourceCongServiceName, configService)
-                .addListener(serviceVerificationHandler)
-                .install();
+        final ServiceName dataSourceCongServiceName = DataSourceConfigService.SERVICE_NAME_BASE.append(jndiName);
 
         dataSourceServiceBuilder.addDependency(dataSourceCongServiceName, ModifiableDataSource.class,
                 ((LocalDataSourceService) dataSourceService).getDataSourceConfigInjector());
 
-        return svcController;
     }
 }
