@@ -21,8 +21,10 @@
  */
 package org.jboss.as.connector.subsystems.datasources;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.jca.common.api.metadata.Defaults;
@@ -187,7 +189,23 @@ class Constants {
 
     static SimpleAttributeDefinition DATASOURCE_CLASS = new SimpleAttributeDefinition(DATASOURCE_CLASS_NAME, DataSource.Tag.DATASOURCE_CLASS.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition JNDINAME = new SimpleAttributeDefinition(JNDINAME_NAME, DataSource.Attribute.JNDI_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition JNDINAME = new SimpleAttributeDefinition(JNDINAME_NAME, DataSource.Attribute.JNDI_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE, new ParameterValidator() {
+        @Override
+        public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
+            if (value.isDefined() && value.getType() != ModelType.EXPRESSION) {
+            String str = value.asString();
+            if (! str.startsWith("java:/") && ! str.startsWith("java:jboss/")) {
+                throw new OperationFailedException(new ModelNode().set("Jndi name have to start with java:/ or java:jboss/"));
+            }
+        }
+        }
+
+        @Override
+        public void validateResolvedParameter(String parameterName, ModelNode value) throws OperationFailedException {
+            //TODO implement validateResolvedParameter
+            throw new UnsupportedOperationException();
+        }
+    });
 
     static SimpleAttributeDefinition DATASOURCE_DRIVER = new SimpleAttributeDefinition(DATASOURCE_DRIVER_NAME, DataSource.Tag.DRIVER.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
 
@@ -255,7 +273,7 @@ class Constants {
 
     static SimpleAttributeDefinition USE_CCM = new SimpleAttributeDefinition(USE_CCM_NAME, DataSource.Attribute.USE_CCM.getLocalName(), new ModelNode().set(Defaults.USE_CCM), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition XADATASOURCECLASS = new SimpleAttributeDefinition(XADATASOURCECLASS_NAME, XaDataSource.Tag.XA_DATASOURCE_CLASS.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition XADATASOURCECLASS = new SimpleAttributeDefinition(XADATASOURCECLASS_NAME, XaDataSource.Tag.XA_DATASOURCE_CLASS.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition INTERLEAVING = new SimpleAttributeDefinition(INTERLEAVING_NAME, CommonXaPool.Tag.INTERLEAVING.getLocalName(), new ModelNode().set(Defaults.INTERLEAVING), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 

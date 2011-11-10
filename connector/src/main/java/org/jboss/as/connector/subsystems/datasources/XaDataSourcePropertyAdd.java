@@ -79,26 +79,26 @@ public class XaDataSourcePropertyAdd extends AbstractAddStepHandler implements D
         final String configPropertyValue = XADATASOURCE_PROPERTY_VALUE.resolveModelAttribute(context, recoveryEnvModel).asString();
         final ModelNode address = operation.require(OP_ADDR);
         PathAddress path = PathAddress.pathAddress(address);
-        final String jndiName = path.getElement(path.size() - 2).getValue();
+        final String dsName = path.getElement(path.size() - 2).getValue();
         final String configPropertyName = PathAddress.pathAddress(address).getLastElement().getValue();
 
-        ServiceName serviceName = XADataSourceConfigService.SERVICE_NAME_BASE.append(jndiName).append(configPropertyName);
-        ServiceName xadsServiceName = XADataSourceConfigService.SERVICE_NAME_BASE.append(jndiName);
+        ServiceName serviceName = XADataSourceConfigService.SERVICE_NAME_BASE.append(dsName).append(configPropertyName);
+        ServiceName xadsServiceName = XADataSourceConfigService.SERVICE_NAME_BASE.append(dsName);
 
         final ServiceRegistry registry = context.getServiceRegistry(true);
 
 
         final ServiceName dataSourceConfigServiceName = XADataSourceConfigService.SERVICE_NAME_BASE
-                .append(jndiName);
+                .append(dsName);
         final ServiceController<?> dataSourceConfigController = registry
                 .getService(dataSourceConfigServiceName);
-        if (dataSourceConfigController != null && !((XaDataSource) dataSourceConfigController.getValue()).isEnabled()) {
+        if (dataSourceConfigController == null || !((XaDataSource) dataSourceConfigController.getValue()).isEnabled()) {
 
 
             final ServiceTarget serviceTarget = context.getServiceTarget();
 
             final XaDataSourcePropertiesService service = new XaDataSourcePropertiesService(configPropertyName, configPropertyValue);
-            serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.ACTIVE)
+            serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.NEVER)
                     .addDependency(xadsServiceName, ModifiableXaDataSource.class, service.getXADSInjector())
                     .addListener(verificationHandler).install();
 

@@ -22,10 +22,15 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import java.util.List;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -46,8 +51,9 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
         final ServiceRegistry registry = context.getServiceRegistry(true);
         final ModelNode address = operation.require(OP_ADDR);
         final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();
+        final String jndiName = model.get(JNDINAME.getName()).asString();
 
-        final ServiceName binderServiceName = ContextNames.bindInfoFor(dsName).getBinderServiceName();
+        final ServiceName binderServiceName = ContextNames.bindInfoFor(jndiName).getBinderServiceName();
         final ServiceController<?> binderController = registry.getService(binderServiceName);
         if (binderController != null) {
             context.removeService(binderServiceName);
@@ -61,13 +67,26 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
         }
 
         final ServiceName dataSourceConfigServiceName = DataSourceConfigService.SERVICE_NAME_BASE.append(dsName);
+        final ServiceName xaDataSourceConfigServiceName = XADataSourceConfigService.SERVICE_NAME_BASE
+                        .append(dsName);
+        final List<ServiceName> serviceNames = registry.getServiceNames();
+
+
+        for (ServiceName name : serviceNames) {
+            if (dataSourceConfigServiceName.isParentOf(name) && !dataSourceConfigServiceName.equals(name)) {
+                context.removeService(name);
+            }
+            if (xaDataSourceConfigServiceName.isParentOf(name) && !xaDataSourceConfigServiceName.equals(name)) {
+                context.removeService(name);
+            }
+        }
+
+
         final ServiceController<?> dataSourceConfigController = registry.getService(dataSourceConfigServiceName);
         if (dataSourceConfigController != null) {
             context.removeService(dataSourceConfigServiceName);
         }
 
-        final ServiceName xaDataSourceConfigServiceName = XADataSourceConfigService.SERVICE_NAME_BASE
-                .append(dsName);
         final ServiceController<?> xaDataSourceConfigController = registry
                 .getService(xaDataSourceConfigServiceName);
         if (xaDataSourceConfigController != null) {
