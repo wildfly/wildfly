@@ -182,9 +182,13 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                     // maintain this in a collection of subdeployment virtual files, to be used later
                     subDeploymentFiles.add(moduleFile);
 
-                    final boolean explodeDuringMount = module.getType() == ModuleType.Web;
-                    final ResourceRoot childResource = this.createResourceRoot(deploymentUnit, moduleFile, true, explodeDuringMount);
+                    final boolean webArchive = module.getType() == ModuleType.Web;
+                    final ResourceRoot childResource = this.createResourceRoot(deploymentUnit, moduleFile, true, webArchive);
                     childResource.putAttachment(org.jboss.as.ee.structure.Attachments.MODULE_META_DATA, module);
+
+                    if(!webArchive) {
+                        ModuleRootMarker.mark(childResource);
+                    }
 
                     final String alternativeDD = module.getAlternativeDD();
                     if (alternativeDD != null && alternativeDD.trim().length() > 0) {

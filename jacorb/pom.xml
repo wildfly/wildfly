@@ -113,11 +113,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.integration</groupId>
-            <artifactId>jboss-corba-ots-spi</artifactId>
-        </dependency>
-
-        <dependency>
          <groupId>org.picketbox</groupId>
          <artifactId>picketbox</artifactId>
         </dependency>

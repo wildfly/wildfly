@@ -28,4 +28,8 @@
 
     <application-name>application-name-in-application.xml</application-name>
 
+    <module>
+        <ejb>ejb.jar</ejb>
+    </module>
+
 </application>

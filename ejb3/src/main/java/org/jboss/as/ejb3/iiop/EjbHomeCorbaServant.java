@@ -36,7 +36,6 @@ import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.jacorb.csiv2.idl.SASCurrent;
 import org.jboss.as.jacorb.rmi.RmiIdlUtil;
 import org.jboss.as.jacorb.rmi.marshal.strategy.SkeletonStrategy;
-import org.jboss.iiop.tm.InboundTransactionCurrent;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
 import org.jboss.security.SecurityContext;
@@ -121,7 +120,7 @@ public class EjbHomeCorbaServant extends Servant implements InvokeHandler, Local
      * A reference to the InboundTransactionCurrent, or null if OTS interceptors
      * are not installed.
      */
-    private final InboundTransactionCurrent inboundTxCurrent;
+    private final org.jboss.iiop.tm.InboundTransactionCurrent inboundTxCurrent;
 
     /**
      * Constructs an <code>EjbHomeCorbaServant></code>.
@@ -141,9 +140,9 @@ public class EjbHomeCorbaServant extends Servant implements InvokeHandler, Local
             sasCurrent = null;
         }
         this.sasCurrent = sasCurrent;
-        InboundTransactionCurrent inboundTxCurrent;
+        org.jboss.iiop.tm.InboundTransactionCurrent inboundTxCurrent;
         try {
-            inboundTxCurrent = (InboundTransactionCurrent) orb.resolve_initial_references(InboundTransactionCurrent.NAME);
+            inboundTxCurrent = (org.jboss.iiop.tm.InboundTransactionCurrent) orb.resolve_initial_references(org.jboss.iiop.tm.InboundTransactionCurrent.NAME);
         } catch (InvalidName invalidName) {
             inboundTxCurrent = null;
         }

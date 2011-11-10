@@ -114,9 +114,6 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
                 return System.setProperty("org.jboss.com.sun.CORBA.ORBUseDynamicStub", "true");
             }
         });
-        //always propagate the transaction context
-        //TODO: need a better way to do this
-        jtsPropertyManager.getJTSEnvironmentBean().setAlwaysPropagateContext(true);
 
         //setup naming
         InitialContext.addUrlContextFactory("corbaloc", JBossCNCtxFactory.INSTANCE);

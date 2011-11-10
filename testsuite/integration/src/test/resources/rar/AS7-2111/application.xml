@@ -30,5 +30,8 @@
 			helloworld.rar
 		</connector>
 	</module>
+    <module>
+        <ejb>ejb.jar</ejb>
+    </module>
 </application>
 

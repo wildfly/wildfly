@@ -135,7 +135,6 @@
         <version.org.jboss.ejb-client>1.0.0.Beta5</version.org.jboss.ejb-client>
         <version.org.jboss.ejb3.ext-api>2.0.0-beta-1</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.interceptor>2.0.0.Alpha3</version.org.jboss.interceptor>
-        <version.org.jboss.integration.corba-ots-spi>6.0.0.CR1</version.org.jboss.integration.corba-ots-spi>
         <version.org.jboss.invocation>1.1.1.Final</version.org.jboss.invocation>
         <version.org.jboss.ironjacamar>1.0.5.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jandex>1.0.3.Final</version.org.jboss.jandex>
@@ -3224,18 +3223,6 @@
                     <exclusion>
                         <groupId>org.jboss.javaee</groupId>
                         <artifactId>jboss-ejb-api</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.integration</groupId>
-                <artifactId>jboss-corba-ots-spi</artifactId>
-                <version>${version.org.jboss.integration.corba-ots-spi}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.javaee</groupId>
-                        <artifactId>jboss-transaction-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
