@@ -55,7 +55,8 @@ public final class EEModuleInitialProcessor implements DeploymentUnitProcessor {
                 appName = parentName;
             }
         }
-        deploymentUnit.putAttachment(Attachments.EE_MODULE_DESCRIPTION, new EEModuleDescription(appName, moduleName));
+        final String earApplicationName = deploymentUnit.getAttachment(Attachments.EAR_APPLICATION_NAME);
+        deploymentUnit.putAttachment(Attachments.EE_MODULE_DESCRIPTION, new EEModuleDescription(appName, moduleName, earApplicationName));
     }
 
     public void undeploy(final DeploymentUnit context) {

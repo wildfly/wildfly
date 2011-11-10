@@ -82,6 +82,7 @@ public abstract class EJBComponent extends BasicComponent {
     protected final Map<Method, InterceptorFactory> timeoutInterceptors;
     private final Method timeoutMethod;
     private final String applicationName;
+    private final String earApplicationName;
     private final String moduleName;
     private final String distinctName;
     private final EJBRemoteTransactionsRepository ejbRemoteTransactionsRepository;
@@ -117,6 +118,7 @@ public abstract class EJBComponent extends BasicComponent {
         this.ejbLocalHome = ejbComponentCreateService.getEjbLocalHome();
         this.ejbHome = ejbComponentCreateService.getEjbHome();
         this.applicationName = ejbComponentCreateService.getApplicationName();
+        this.earApplicationName = ejbComponentCreateService.getEarApplicationName();
         this.distinctName = ejbComponentCreateService.getDistinctName();
         this.moduleName = ejbComponentCreateService.getModuleName();
 
@@ -205,7 +207,8 @@ public abstract class EJBComponent extends BasicComponent {
         }
         final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(ejbHome);
         final ComponentView view = (ComponentView) serviceController.getValue();
-        return EJBClient.createProxy(new EJBHomeLocator<EJBHome>((Class<EJBHome>) view.getViewClass(), applicationName, moduleName, getComponentName(), distinctName));
+        final String locatorAppName = earApplicationName == null ? "" : earApplicationName;
+        return EJBClient.createProxy(new EJBHomeLocator<EJBHome>((Class<EJBHome>) view.getViewClass(), locatorAppName, moduleName, getComponentName(), distinctName));
     }
 
     public EJBLocalHome getEJBLocalHome() throws IllegalStateException {
@@ -376,6 +379,10 @@ public abstract class EJBComponent extends BasicComponent {
 
     public String getApplicationName() {
         return applicationName;
+    }
+
+    public String getEarApplicationName() {
+        return this.earApplicationName;
     }
 
     public String getDistinctName() {

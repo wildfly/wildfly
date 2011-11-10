@@ -38,6 +38,7 @@ import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
 public final class EEModuleDescription {
     private final String applicationName;
     private volatile String moduleName;
+    private final String earApplicationName;
     //distinct name defaults to the empty string
     private volatile String distinctName = "";
     private final Map<String, ComponentDescription> componentsByName = new HashMap<String, ComponentDescription>();
@@ -58,10 +59,12 @@ public final class EEModuleDescription {
      *
      * @param applicationName the application name
      * @param moduleName      the module name
+     * @param earApplicationName
      */
-    public EEModuleDescription(final String applicationName, final String moduleName) {
+    public EEModuleDescription(final String applicationName, final String moduleName, final String earApplicationName) {
         this.applicationName = applicationName;
         this.moduleName = moduleName;
+        this.earApplicationName = earApplicationName;
     }
 
     /**
@@ -175,6 +178,10 @@ public final class EEModuleDescription {
             throw new IllegalArgumentException("Distinct name cannot be null");
         }
         this.distinctName = distinctName;
+    }
+
+    public String getEarApplicationName() {
+        return this.earApplicationName;
     }
 
     /**

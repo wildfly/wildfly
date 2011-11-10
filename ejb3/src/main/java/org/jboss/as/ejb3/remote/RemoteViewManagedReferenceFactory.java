@@ -50,7 +50,7 @@ public class RemoteViewManagedReferenceFactory implements ManagedReferenceFactor
     private final boolean stateful;
 
     public RemoteViewManagedReferenceFactory(final String appName, final String moduleName, final String distinctName, final String beanName, final String viewClass, final boolean stateful) {
-        this.appName = appName;
+        this.appName = appName == null ? "" : appName;
         this.moduleName = moduleName;
         this.distinctName = distinctName;
         this.beanName = beanName;

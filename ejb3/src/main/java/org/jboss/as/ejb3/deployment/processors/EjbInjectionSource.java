@@ -103,7 +103,8 @@ public class EjbInjectionSource extends InjectionSource {
             if(ejbViewDescription.getMethodIntf() == MethodIntf.REMOTE || ejbViewDescription.getMethodIntf() == MethodIntf.HOME) {
                 final EJBComponentDescription componentDescription = (EJBComponentDescription) description.getComponentDescription();
                 final EEModuleDescription moduleDescription = componentDescription.getModuleDescription();
-                remoteFactory = new RemoteViewManagedReferenceFactory(moduleDescription.getApplicationName(), moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), description.getViewClassName(), componentDescription.isStateful());
+                final String earApplicationName = moduleDescription.getEarApplicationName();
+                remoteFactory = new RemoteViewManagedReferenceFactory(earApplicationName, moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), description.getViewClassName(), componentDescription.isStateful());
             }
         }
         ServiceName serviceName = description.getServiceName();

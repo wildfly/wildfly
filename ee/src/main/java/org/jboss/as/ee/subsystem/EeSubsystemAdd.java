@@ -38,6 +38,7 @@ import org.jboss.as.ee.component.deployers.EEDistinctNameProcessor;
 import org.jboss.as.ee.component.deployers.EEModuleConfigurationProcessor;
 import org.jboss.as.ee.component.deployers.EEModuleInitialProcessor;
 import org.jboss.as.ee.component.deployers.EEModuleNameProcessor;
+import org.jboss.as.ee.component.deployers.EarApplicationNameProcessor;
 import org.jboss.as.ee.component.deployers.InterceptorsAnnotationParsingProcessor;
 import org.jboss.as.ee.component.deployers.LifecycleAnnotationParsingProcessor;
 import org.jboss.as.ee.component.deployers.ModuleJndiBindingProcessor;
@@ -118,6 +119,7 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_DEPLOYMENT_INIT, new EarInitializationProcessor());
                 processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_APP_XML_PARSE, new EarMetaDataParsingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_JBOSS_APP_XML_PARSE, new JBossAppMetaDataParsingProcessor());
+                processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EJB_EAR_APPLICATION_NAME, new EarApplicationNameProcessor());
                 processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR, new EarStructureProcessor());
                 processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EJB_JAR_IN_EAR, new EjbJarDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_APPLICATION_CLIENT_IN_EAR, new ApplicationClientDeploymentProcessor());

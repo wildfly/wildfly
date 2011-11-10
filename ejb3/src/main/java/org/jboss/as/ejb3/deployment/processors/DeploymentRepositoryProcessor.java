@@ -1,5 +1,9 @@
 package org.jboss.as.ejb3.deployment.processors;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentView;
@@ -16,16 +20,10 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.metadata.ear.spec.Ear6xMetaData;
-import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Stuart Douglas
@@ -46,8 +44,8 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
         }
         // Note, we do not use the EEModuleDescription.getApplicationName() because that API returns the
         // module name if the top level unit isn't a .ear, which is not what we want. We really want a
-        // .ear name as application name (that's the semantic in EJB spec).
-        String applicationName = this.getApplicationName(deploymentUnit);
+        // .ear name as application name (that's the semantic in EJB spec). So use EEModuleDescription.getEarApplicationName
+        String applicationName = eeModuleDescription.getEarApplicationName();
         // if it's not a .ear deployment then set app name to empty string
         applicationName = applicationName == null ? "" : applicationName;
         final DeploymentModuleIdentifier identifier = new DeploymentModuleIdentifier(applicationName, eeModuleDescription.getModuleName(), eeModuleDescription.getDistinctName());
@@ -57,20 +55,20 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
 
         final Map<ServiceName, InjectedValue<?>> injectedValues = new HashMap<ServiceName, InjectedValue<?>>();
 
-        for(final ComponentDescription component : componentDescriptions) {
-            if(component instanceof EJBComponentDescription) {
+        for (final ComponentDescription component : componentDescriptions) {
+            if (component instanceof EJBComponentDescription) {
                 final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) component;
 
                 final InjectedValue<EJBComponent> componentInjectedValue = new InjectedValue<EJBComponent>();
                 injectedValues.put(component.getCreateServiceName(), componentInjectedValue);
                 final Map<String, InjectedValue<ComponentView>> views = new HashMap<String, InjectedValue<ComponentView>>();
-                for(ViewDescription view : ejbComponentDescription.getViews()) {
+                for (ViewDescription view : ejbComponentDescription.getViews()) {
                     final InjectedValue<ComponentView> componentViewInjectedValue = new InjectedValue<ComponentView>();
                     views.put(view.getViewClassName(), componentViewInjectedValue);
                     injectedValues.put(view.getServiceName(), componentViewInjectedValue);
                 }
                 final InjectedValue<EjbIIOPService> iorFactory = new InjectedValue<EjbIIOPService>();
-                if(ejbComponentDescription.isExposedViaIiop()) {
+                if (ejbComponentDescription.isExposedViaIiop()) {
                     injectedValues.put(ejbComponentDescription.getServiceName().append(EjbIIOPService.SERVICE_NAME), iorFactory);
                 }
 
@@ -81,8 +79,8 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
 
         final ModuleDeployment deployment = new ModuleDeployment(identifier, deploymentInformationMap);
         final ServiceBuilder<ModuleDeployment> builder = phaseContext.getServiceTarget().addService(deploymentUnit.getServiceName().append(ModuleDeployment.SERVICE_NAME), deployment);
-        for(Map.Entry<ServiceName, InjectedValue<?>> entry : injectedValues.entrySet()) {
-            builder.addDependency(entry.getKey(), (InjectedValue<Object>)entry.getValue());
+        for (Map.Entry<ServiceName, InjectedValue<?>> entry : injectedValues.entrySet()) {
+            builder.addDependency(entry.getKey(), (InjectedValue<Object>) entry.getValue());
         }
         builder.addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, deployment.getDeploymentRepository());
         builder.install();
@@ -95,43 +93,4 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
 
     }
 
-    /**
-     * Returns the application name for the passed deployment. If the passed deployment isn't an .ear or doesn't belong
-     * to a .ear, then this method returns null. Else it returns the application-name set in the application.xml of the .ear
-     * or if that's not set, will return the .ear deployment unit name (stripped off the .ear suffix).
-     *
-     * @param deploymentUnit The deployment unit
-     */
-    private String getApplicationName(DeploymentUnit deploymentUnit) {
-        final DeploymentUnit parentDU = deploymentUnit.getParent();
-        if (parentDU == null) {
-            final EarMetaData earMetaData = deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.EAR_METADATA);
-            if (earMetaData != null && earMetaData instanceof Ear6xMetaData) {
-                final String overriddenAppName = ((Ear6xMetaData) earMetaData).getApplicationName();
-                if (overriddenAppName == null) {
-                    return this.getEarName(deploymentUnit);
-                }
-                return overriddenAppName;
-            } else {
-                return this.getEarName(deploymentUnit);
-            }
-        }
-        // traverse to top level DU
-        return this.getApplicationName(parentDU);
-    }
-
-    /**
-     * Returns the name (stripped off the .ear suffix) of the passed <code>deploymentUnit</code>.
-     * Returns null if the passed <code>deploymentUnit</code>'s name doesn't end with .ear suffix.
-     *
-     * @param deploymentUnit Deployment unit
-     * @return
-     */
-    private String getEarName(final DeploymentUnit deploymentUnit) {
-        final String duName = deploymentUnit.getName();
-        if (duName.endsWith(".ear")) {
-            return duName.substring(0, duName.length() - ".ear".length());
-        }
-        return null;
-    }
 }

@@ -39,7 +39,7 @@ public class IIOPNamingInContainerTestCase {
 
         final Properties prope = new Properties();
         final InitialContext context = new InitialContext(prope);
-        final Object iiopObj = context.lookup("corbaname:iiop:localhost:3528#test/test/IIOPNamingBean");
+        final Object iiopObj = context.lookup("corbaname:iiop:localhost:3528#test/IIOPNamingBean");
         final IIOPNamingHome object = (IIOPNamingHome) PortableRemoteObject.narrow(iiopObj, IIOPNamingHome.class);
         final IIOPRemote result = object.create();
         Assert.assertEquals("hello", result.hello());
@@ -49,7 +49,7 @@ public class IIOPNamingInContainerTestCase {
     public void testStatefulIIOPNamingInvocation() throws NamingException, RemoteException, RemoveException {
         final Properties prope = new Properties();
         final InitialContext context = new InitialContext(prope);
-        final Object iiopObj = context.lookup("corbaname:iiop:localhost:3528#test/test/IIOPStatefulNamingBean");
+        final Object iiopObj = context.lookup("corbaname:iiop:localhost:3528#test/IIOPStatefulNamingBean");
         final IIOPStatefulNamingHome object = (IIOPStatefulNamingHome) PortableRemoteObject.narrow(iiopObj, IIOPStatefulNamingHome.class);
         final IIOPStatefulRemote result = object.create(10);
         Assert.assertEquals(11, result.increment());

@@ -87,7 +87,8 @@ public class EJBViewDescription extends ViewDescription {
         } else {
             final EJBComponentDescription componentDescription = getComponentDescription();
             final EEModuleDescription desc = componentDescription.getModuleDescription();
-            return new RemoteViewInjectionSource(serviceName, desc.getApplicationName(), desc.getModuleName(), desc.getDistinctName(), componentDescription.getComponentName(), getViewClassName() , componentDescription.isStateful());
+            final String earApplicationName = desc.getEarApplicationName();
+            return new RemoteViewInjectionSource(serviceName, earApplicationName, desc.getModuleName(), desc.getDistinctName(), componentDescription.getComponentName(), getViewClassName() , componentDescription.isStateful());
         }
     }
 
