@@ -21,23 +21,15 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.aroundtimeout;
 
-import javax.ejb.Stateless;
-import javax.interceptor.AroundTimeout;
-import javax.interceptor.Interceptors;
-import javax.interceptor.InvocationContext;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
+import javax.interceptor.InterceptorBinding;
 
 /**
  * @author Stuart Douglas
  */
-@Stateless
-@Interceptors(InterceptorChild.class)
-@Intercepted
-public class BeanChild extends BeanParent {
-
-    @AroundTimeout
-    public Object aroundTimeoutChild(final InvocationContext context) throws Exception {
-        InterceptorOrder.intercept(BeanChild.class);
-        return context.proceed();
-    }
-
+@Retention(RetentionPolicy.RUNTIME)
+@InterceptorBinding
+public @interface Intercepted {
 }
