@@ -23,11 +23,15 @@
 package org.jboss.as.ejb3.component.stateful;
 
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
@@ -43,7 +47,7 @@ import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
-import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
+import org.jboss.as.ejb3.cache.CacheInfo;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.interceptors.ComponentTypeIdentityInterceptorFactory;
@@ -60,25 +64,21 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.proxy.MethodIdentifier;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * User: jpai
  */
 public class StatefulComponentDescription extends SessionBeanComponentDescription {
 
-    private static final Logger logger = Logger.getLogger(StatefulComponentDescription.class);
-
     private Method afterBegin;
     private Method afterCompletion;
     private Method beforeCompletion;
+    private final Set<Method> prePassivateMethods = new HashSet<Method>();
+    private final Set<Method> postActivateMethods = new HashSet<Method>();
     private final Map<MethodIdentifier, StatefulRemoveMethod> removeMethods = new HashMap<MethodIdentifier, StatefulRemoveMethod>();
     private StatefulTimeoutInfo statefulTimeout;
-
-    private DefaultAccessTimeoutService defaultAccessTimeoutProvider;
+    private CacheInfo cache;
 
     /**
      * Map of init method, to the corresponding home create method on the home interface
@@ -204,6 +204,14 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
         return beforeCompletion;
     }
 
+    public Set<Method> getPrePassivateMethods() {
+        return Collections.unmodifiableSet(this.prePassivateMethods);
+    }
+
+    public Set<Method> getPostActivateMethods() {
+        return Collections.unmodifiableSet(this.postActivateMethods);
+    }
+
     @Override
     public SessionBeanType getSessionBeanType() {
         return SessionBeanComponentDescription.SessionBeanType.STATEFUL;
@@ -219,6 +227,14 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
 
     public void setBeforeCompletion(final Method afterCompletion) {
         this.beforeCompletion = afterCompletion;
+    }
+
+    public void addPrePassivateMethod(final Method prePassivate) {
+        this.prePassivateMethods.add(prePassivate);
+    }
+
+    public void addPostActivateMethod(final Method postActivate) {
+        this.postActivateMethods.add(postActivate);
     }
 
     @Override
@@ -364,4 +380,11 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
         return Collections.unmodifiableMap(initMethods);
     }
 
+    public CacheInfo getCache() {
+        return this.cache;
+    }
+
+    public void setCache(CacheInfo cache) {
+        this.cache = cache;
+    }
 }

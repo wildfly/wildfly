@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.io.File;
+
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;
 
@@ -38,15 +40,20 @@ public class FileCacheStoreConfig extends org.infinispan.loaders.file.FileCacheS
         return relativeTo;
     }
 
-    public void setPath(String path) {
+    public FileCacheStoreConfig path(String path) {
         this.path = path;
+        return this;
+    }
+
+    public String getPath() {
+        return this.path;
     }
 
     @Override
     public String getLocation() {
         StringBuilder builder = new StringBuilder(this.relativeTo.getValue());
         if (this.path != null) {
-            builder.append('/').append(this.path);
+            builder.append(File.separatorChar).append(this.path);
         }
         return builder.toString();
     }

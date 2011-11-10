@@ -23,18 +23,28 @@
 package org.jboss.as.ejb3.component.stateful;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.TCCLInterceptor;
+import org.jboss.as.ejb3.cache.CacheFactory;
+import org.jboss.as.ejb3.cache.CacheInfo;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.InvokeMethodOnTargetInterceptor;
 import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentCreateService;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
+import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
+import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.SimpleClassResolver;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;
 
@@ -48,9 +58,15 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
     private final Method afterCompletionMethod;
     private final InterceptorFactory beforeCompletion;
     private final Method beforeCompletionMethod;
+    private final Collection<InterceptorFactory> prePassivate;
+    private final Collection<InterceptorFactory> postActivate;
     private final StatefulTimeoutInfo statefulTimeout;
+    private final CacheInfo cache;
+    private final MarshallingConfiguration marshallingConfiguration;
     private final InjectedValue<DefaultAccessTimeoutService> defaultAccessTimeoutService = new InjectedValue<DefaultAccessTimeoutService>();
     private final InterceptorFactory ejb2XRemoveMethod;
+    @SuppressWarnings("rawtypes")
+    private final InjectedValue<CacheFactory> cacheFactory = new InjectedValue<CacheFactory>();
 
     /**
      * Construct a new instance.
@@ -65,26 +81,31 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         final InterceptorFactory namespaceContextInterceptorFactory = componentConfiguration.getNamespaceContextInterceptorFactory();
 
         this.afterBeginMethod = componentDescription.getAfterBegin();
-        if (componentDescription.getAfterBegin() != null) {
-            this.afterBegin = Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(componentDescription.getAfterBegin()));
-        } else {
-            this.afterBegin = null;
-        }
+        this.afterBegin = (this.afterBeginMethod != null) ? Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(this.afterBeginMethod)) : null;
         this.afterCompletionMethod = componentDescription.getAfterCompletion();
-        if (componentDescription.getAfterCompletion() != null) {
-            this.afterCompletion = Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(componentDescription.getAfterCompletion()));
-        } else {
-            this.afterCompletion = null;
-        }
+        this.afterCompletion = (this.afterCompletionMethod != null) ? Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(this.afterCompletionMethod)) : null;
         this.beforeCompletionMethod = componentDescription.getBeforeCompletion();
-        if (componentDescription.getBeforeCompletion() != null) {
-            this.beforeCompletion = Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(componentDescription.getBeforeCompletion()));
-        } else {
-            this.beforeCompletion = null;
-        }
+        this.beforeCompletion = (this.beforeCompletionMethod != null) ? Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(this.beforeCompletionMethod)) : null;
+        this.prePassivate = createInterceptorFactories(componentDescription.getPrePassivateMethods(), tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY);
+        this.postActivate = createInterceptorFactories(componentDescription.getPostActivateMethods(), tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY);
         this.statefulTimeout = componentDescription.getStatefulTimeout();
         //the interceptor chain for EJB e.x remove methods
         this.ejb2XRemoveMethod = Interceptors.getChainedInterceptorFactory(StatefulSessionSynchronizationInterceptor.FACTORY, new ImmediateInterceptorFactory(new StatefulRemoveInterceptor(false)), Interceptors.getTerminalInterceptorFactory());
+        this.cache = componentDescription.getCache();
+        this.marshallingConfiguration = new MarshallingConfiguration();
+        this.marshallingConfiguration.setClassResolver(new SimpleClassResolver(componentConfiguration.getModuleClassLoder()));
+    }
+
+    private static Collection<InterceptorFactory> createInterceptorFactories(Collection<Method> methods, InterceptorFactory... factories) {
+        if (methods.isEmpty()) return Collections.emptyList();
+        Collection<InterceptorFactory> collection = new ArrayList<InterceptorFactory>(methods.size());
+        for (Method method: methods) {
+            List<InterceptorFactory> list = new ArrayList<InterceptorFactory>(factories.length + 1);
+            list.addAll(Arrays.asList(factories));
+            list.add(invokeMethodOnTarget(method));
+            collection.add(Interceptors.getChainedInterceptorFactory(list));
+        }
+        return collection;
     }
 
     private static InterceptorFactory invokeMethodOnTarget(final Method method) {
@@ -110,6 +131,14 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         return beforeCompletion;
     }
 
+    public Collection<InterceptorFactory> getPrePassivate() {
+        return this.prePassivate;
+    }
+
+    public Collection<InterceptorFactory> getPostActivate() {
+        return this.postActivate;
+    }
+
     public Method getAfterBeginMethod() {
         return afterBeginMethod;
     }
@@ -126,6 +155,14 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         return statefulTimeout;
     }
 
+    public CacheInfo getCache() {
+        return this.cache;
+    }
+
+    public MarshallingConfiguration getMarshallingConfiguration() {
+        return this.marshallingConfiguration;
+    }
+
     public DefaultAccessTimeoutService getDefaultAccessTimeoutService() {
         return defaultAccessTimeoutService.getValue();
     }
@@ -136,5 +173,15 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
 
     public InterceptorFactory getEjb2XRemoveMethod() {
         return ejb2XRemoveMethod;
+    }
+
+    @SuppressWarnings("unchecked")
+    public CacheFactory<SessionID, StatefulSessionComponentInstance> getCacheFactory() {
+        return (CacheFactory<SessionID, StatefulSessionComponentInstance>) this.cacheFactory.getValue();
+    }
+
+    @SuppressWarnings("rawtypes")
+    Injector<CacheFactory> getCacheFactoryInjector() {
+        return this.cacheFactory;
     }
 }

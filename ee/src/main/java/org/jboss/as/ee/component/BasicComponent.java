@@ -37,6 +37,7 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.ImmediateValue;
 
@@ -56,6 +57,7 @@ public class BasicComponent implements Component {
     private final InterceptorFactory preDestroy;
     private final Map<Method, InterceptorFactory> interceptorFactoryMap;
     private final NamespaceContextSelector namespaceContextSelector;
+    private final ServiceName createServiceName;
 
     private volatile boolean gate;
     private final AtomicBoolean stopping = new AtomicBoolean();
@@ -72,6 +74,7 @@ public class BasicComponent implements Component {
         preDestroy = createService.getPreDestroy();
         interceptorFactoryMap = createService.getComponentInterceptors();
         namespaceContextSelector = createService.getNamespaceContextSelector();
+        createServiceName = createService.getServiceName();
     }
 
     /**
@@ -79,7 +82,7 @@ public class BasicComponent implements Component {
      */
     public ComponentInstance createInstance() {
         waitForComponentStart();
-        BasicComponentInstance instance = constructComponentInstance(null);
+        BasicComponentInstance instance = constructComponentInstance(null, true);
         return instance;
     }
 
@@ -90,7 +93,7 @@ public class BasicComponent implements Component {
      */
     public ComponentInstance createInstance(Object instance) {
         waitForComponentStart();
-        BasicComponentInstance obj = constructComponentInstance(new ValueManagedReference(new ImmediateValue<Object>(instance)));
+        BasicComponentInstance obj = constructComponentInstance(new ValueManagedReference(new ImmediateValue<Object>(instance)), true);
         return obj;
     }
 
@@ -121,7 +124,7 @@ public class BasicComponent implements Component {
      * @param instance An instance to be wrapped, or null if a new instance should be created
      * @return the component instance
      */
-    protected final BasicComponentInstance constructComponentInstance(ManagedReference instance) {
+    protected final BasicComponentInstance constructComponentInstance(ManagedReference instance, boolean invokePostConstruct) {
         // Interceptor factory context
         final SimpleInterceptorFactoryContext context = new SimpleInterceptorFactoryContext();
         context.getContextData().put(Component.class, this);
@@ -131,6 +134,7 @@ public class BasicComponent implements Component {
         // create the pre-destroy interceptors
         final Interceptor componentInstancePreDestroyInterceptor = this.getPreDestroy().create(context);
 
+        @SuppressWarnings("unchecked")
         final AtomicReference<ManagedReference> instanceReference = (AtomicReference<ManagedReference>) context.getContextData().get(BasicComponentInstance.INSTANCE_KEY);
 
         instanceReference.set(instance);
@@ -146,18 +150,18 @@ public class BasicComponent implements Component {
         // create the component instance
         final BasicComponentInstance basicComponentInstance = this.instantiateComponentInstance(instanceReference, componentInstancePreDestroyInterceptor, interceptorMap, context);
 
-        // now invoke the postconstruct interceptors
-        final InterceptorContext interceptorContext = new InterceptorContext();
-        interceptorContext.putPrivateData(Component.class, this);
-        interceptorContext.putPrivateData(ComponentInstance.class, basicComponentInstance);
-        interceptorContext.setContextData(new HashMap<String, Object>());
+        if (invokePostConstruct) {
+            // now invoke the postconstruct interceptors
+            final InterceptorContext interceptorContext = new InterceptorContext();
+            interceptorContext.putPrivateData(Component.class, this);
+            interceptorContext.putPrivateData(ComponentInstance.class, basicComponentInstance);
+            interceptorContext.setContextData(new HashMap<String, Object>());
 
-
-
-        try {
-            componentInstancePostConstructInterceptor.processInvocation(interceptorContext);
-        } catch (Exception e) {
-            throw MESSAGES.componentConstructionFailure(e);
+            try {
+                componentInstancePostConstructInterceptor.processInvocation(interceptorContext);
+            } catch (Exception e) {
+                throw MESSAGES.componentConstructionFailure(e);
+            }
         }
         // return the component instance
         return basicComponentInstance;
@@ -172,7 +176,7 @@ public class BasicComponent implements Component {
      *
      * @return
      */
-    protected BasicComponentInstance instantiateComponentInstance(final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, final InterceptorFactoryContext interceptorContext) {
+    protected BasicComponentInstance instantiateComponentInstance(final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, final InterceptorFactoryContext context) {
         // create and return the component instance
         return new BasicComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
     }
@@ -193,6 +197,10 @@ public class BasicComponent implements Component {
      */
     public String getComponentName() {
         return componentName;
+    }
+
+    public ServiceName getCreateServiceName() {
+        return createServiceName;
     }
 
     /**

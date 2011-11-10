@@ -653,6 +653,10 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-clustering-common"/>
         </module-def>
 
+        <module-def name="org.jboss.as.clustering.ejb3.infinispan">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-clustering-ejb3-infinispan"/>
+        </module-def>
+
         <module-def name="org.jboss.as.clustering.impl">
             <maven-resource group="org.jboss.as" artifact="jboss-as-clustering-impl"/>
         </module-def>

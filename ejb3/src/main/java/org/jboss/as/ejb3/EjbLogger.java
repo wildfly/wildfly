@@ -24,7 +24,13 @@
 
 package org.jboss.as.ejb3;
 
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.TRACE;
+import static org.jboss.logging.Logger.Level.WARN;
+
 import java.io.File;
+import java.io.Serializable;
 import java.lang.reflect.Method;
 
 import javax.ejb.Timer;
@@ -41,11 +47,6 @@ import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 import org.jboss.remoting3.Channel;
-
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.TRACE;
-import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * Date: 19.10.2011
@@ -74,17 +75,17 @@ public interface EjbLogger extends BasicLogger {
      * @param cause the cause of the error.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 14100, value = "Exception removing stateful bean %s")
-    void errorRemovingStatefulBean(SessionID id, @Cause Throwable cause);
+    @Message(id = 14100, value = "Failed to remove %s from cache")
+    void cacheRemoveFailed(Object id);
 
     /**
      * Logs an warning message indicating the it could not find a EJB for the specific id
      *
      * @param id the session id that could not be released
      */
-    @LogMessage(level = TRACE)
-    @Message(id = 14101, value = "Could not find stateful bean to release %s")
-    void couldNotFindStatefulBean(SessionID id);
+    @LogMessage(level = INFO)
+    @Message(id = 14101, value = "Failed to find %s in cache")
+    void cacheEntryNotFound(Object id);
 
     /**
      * Logs an error message indicating an exception occurred while executing an invocation
@@ -337,7 +338,6 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 14136, value = "EJB %s is not being replaced with a Stub as it is not exposed over IIOP")
     void ejbNotExposedOverIIOP(EJBLocator locator);
-
 
     /**
      * Logs an error message indicating that dynamic stub creation failed

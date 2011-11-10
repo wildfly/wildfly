@@ -25,12 +25,17 @@ package org.jboss.as.ejb3.component.stateful;
 import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.DependencyConfigurator;
+import org.jboss.as.ejb3.cache.CacheInfo;
+import org.jboss.as.ejb3.cache.CacheFactory;
+import org.jboss.as.ejb3.cache.CacheFactoryService;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.EJBComponentCreateServiceFactory;
-import org.jboss.as.ejb3.component.singleton.SingletonComponentCreateService;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 /**
  * User: jpai
  */
@@ -46,6 +51,20 @@ public class StatefulComponentCreateServiceFactory extends EJBComponentCreateSer
             @Override
             public void configureDependency(ServiceBuilder<?> serviceBuilder, StatefulSessionComponentCreateService componentCreateService) throws DeploymentUnitProcessingException {
                 serviceBuilder.addDependency(DefaultAccessTimeoutService.STATEFUL_SERVICE_NAME, DefaultAccessTimeoutService.class, componentCreateService.getDefaultAccessTimeoutInjector());
+            }
+        });
+        configuration.getCreateDependencies().add(new DependencyConfigurator<StatefulSessionComponentCreateService>() {
+            @Override
+            public void configureDependency(ServiceBuilder<?> builder, StatefulSessionComponentCreateService service) throws DeploymentUnitProcessingException {
+                builder.addDependency(this.getServiceName(service), CacheFactory.class, service.getCacheFactoryInjector());
+            }
+
+            private ServiceName getServiceName(StatefulSessionComponentCreateService service) {
+                CacheInfo cache = service.getCache();
+                if (cache != null) {
+                    return CacheFactoryService.getServiceName(cache.getName());
+                }
+                return (service.getClustering() == null) ? CacheFactoryService.DEFAULT_SFSB_CACHE_SERVICE_NAME : CacheFactoryService.DEFAULT_CLUSTERED_SFSB_CACHE_SERVICE_NAME;
             }
         });
         return new StatefulSessionComponentCreateService(configuration, this.ejbJarConfiguration);

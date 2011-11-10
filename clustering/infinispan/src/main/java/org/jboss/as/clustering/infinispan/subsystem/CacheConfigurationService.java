@@ -25,11 +25,11 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 
-import org.infinispan.Cache;
 import org.infinispan.config.Configuration;
 import org.infinispan.config.FluentConfiguration;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.transaction.tm.BatchModeTransactionManager;
 import org.jboss.as.clustering.infinispan.TransactionManagerProvider;
 import org.jboss.as.clustering.infinispan.TransactionSynchronizationRegistryProvider;
 import org.jboss.logging.Logger;
@@ -39,6 +39,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 
@@ -100,7 +101,7 @@ public class CacheConfigurationService implements Service<Configuration> {
         configuration.applyOverrides(overrides);
 
         // check for missing dependencies
-        if (configuration.isTransactionalCache() && configurationHelper.getTransactionManager() == null) {
+        if (configuration.isTransactionalCache() && !configuration.isInvocationBatchingEnabled() && configurationHelper.getTransactionManager() == null) {
             throw new StartException("Missing dependency: transaction manager required") ;
         }
         if (configuration.isUseSynchronizationForTransactions() && configurationHelper.getTransactionSynchronizationRegistry() == null) {
@@ -110,18 +111,19 @@ public class CacheConfigurationService implements Service<Configuration> {
         // for transactional caches, our first opportunity to set the providers
         FluentConfiguration.TransactionConfig tx = configuration.fluent().transaction();
         if (configuration.isTransactionalCache()) {
-            Value<TransactionManager> txManager = this.configurationHelper.getTransactionManager();
-            if (txManager != null) {
-                tx.transactionManagerLookup(new TransactionManagerProvider(txManager));
-            }
-            if (configuration.isUseSynchronizationForTransactions()) {
-                Value<TransactionSynchronizationRegistry> txSyncRegistry = this.configurationHelper.getTransactionSynchronizationRegistry();
-                if (txSyncRegistry != null) {
-                    tx.transactionSynchronizationRegistryLookup(new TransactionSynchronizationRegistryProvider(txSyncRegistry));
+            if (configuration.isInvocationBatchingEnabled()) {
+                tx.transactionManagerLookup(new TransactionManagerProvider(new ImmediateValue<TransactionManager>(BatchModeTransactionManager.getInstance())));
+            } else {
+                Value<TransactionManager> tm = this.configurationHelper.getTransactionManager();
+                if (tm != null) {
+                    tx.transactionManagerLookup(new TransactionManagerProvider(tm));
                 }
-            }
-            if (configuration.isTransactionRecoveryEnabled()) {
-                // set injection
+                if (configuration.isUseSynchronizationForTransactions()) {
+                    Value<TransactionSynchronizationRegistry> txSyncRegistry = this.configurationHelper.getTransactionSynchronizationRegistry();
+                    if (txSyncRegistry != null) {
+                        tx.transactionSynchronizationRegistryLookup(new TransactionSynchronizationRegistryProvider(txSyncRegistry));
+                    }
+                }
             }
         }
 
@@ -149,7 +151,7 @@ public class CacheConfigurationService implements Service<Configuration> {
     }
 
     private String dumpCacheConfiguration(String name, Configuration c) {
-        StringBuffer sb = new StringBuffer() ;
+        StringBuilder sb = new StringBuilder() ;
         if (name != null && c != null) {
             sb.append("cache name: " + name) ;
             sb.append(", eviction strategy: " + c.getEvictionStrategy()) ;

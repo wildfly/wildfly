@@ -1867,4 +1867,48 @@ public interface EjbMessages {
     @Message(id=14527, value = "Cannot call timer service methods in %s")
     IllegalStateException cannotCallTimerServiceMethod(String methodName);
 
+    @Message(id = 14528, value = "%s is already associated with serialization group %s")
+    IllegalStateException existingSerializationGroup(Object key, Object group);
+
+    @Message(id = 14529, value = "%s is not compatible with serialization group %s")
+    IllegalStateException incompatibleSerializationGroup(Object object, Object group);
+
+    @Message(id = 14530, value = "Cache entry %s is in use")
+    IllegalStateException cacheEntryInUse(Object entry);
+
+    @Message(id = 14531, value = "Cache entry %s is not in use")
+    IllegalStateException cacheEntryNotInUse(Object entry);
+
+    @Message(id = 14532, value = "Failed to acquire lock on %s")
+    RuntimeException lockAcquisitionInterrupted(@Cause Throwable cause, Object id);
+
+    @Message(id = 14533, value = "%s is already a member of serialization group %s")
+    IllegalStateException duplicateSerializationGroupMember(Object id, Object groupId);
+
+    @Message(id = 14534, value = "%s is not a member of serialization group %s")
+    IllegalStateException missingSerializationGroupMember(Object id, Object groupId);
+
+    @Message(id = 14535, value = "%s already exists in cache")
+    IllegalStateException duplicateCacheEntry(Object id);
+
+    @Message(id = 14536, value = "%s is missing from cache")
+    IllegalStateException missingCacheEntry(Object id);
+
+    @Message(id = 14537, value = "Incompatible cache implementations in nested hierarchy")
+    IllegalStateException incompatibleCaches();
+
+    @Message(id = 14538, value = "Failed to passivate %s")
+    RuntimeException passivationFailed(@Cause Throwable cause, Object id);
+
+    @Message(id = 14539, value = "Failed to activate %s")
+    RuntimeException activationFailed(@Cause Throwable cause, Object id);
+
+    @Message(id = 14540, value = "Failed to create passivation directory: %s")
+    RuntimeException passivationDirectoryCreationFailed(String path);
+
+    @Message(id = 14541, value = "Failed to create passivation directory: %s")
+    RuntimeException passivationPathNotADirectory(String path);
+
+    @Message(id = 14542, value = "Group creation context already exists")
+    IllegalStateException groupCreationContextAlreadyExists();
 }

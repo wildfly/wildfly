@@ -150,7 +150,7 @@
         <version.org.jboss.common-core>2.2.17.GA</version.org.jboss.common-core>
         <version.org.jboss.com.sun.httpserver>1.0.0.Beta3</version.org.jboss.com.sun.httpserver>
         <version.org.jboss.ejb-client>1.0.0.Beta8</version.org.jboss.ejb-client>
-        <version.org.jboss.ejb3.ext-api>2.0.0-beta-1</version.org.jboss.ejb3.ext-api>
+        <version.org.jboss.ejb3.ext-api>2.0.0-beta-2</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.iiop-client>1.0.0.Beta1</version.org.jboss.iiop-client>
         <version.org.jboss.interceptor>2.0.0.Alpha3</version.org.jboss.interceptor>
         <version.org.jboss.invocation>1.1.1.Final</version.org.jboss.invocation>
@@ -730,6 +730,12 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-clustering-ejb3-infinispan</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-clustering-impl</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -748,13 +754,13 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-clustering-web-spi</artifactId>
+                <artifactId>jboss-as-clustering-web-infinispan</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-clustering-web-infinispan</artifactId>
+                <artifactId>jboss-as-clustering-web-spi</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

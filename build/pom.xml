@@ -730,6 +730,11 @@
 
                 <dependency>
                     <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-clustering-ejb3-infinispan</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-clustering-impl</artifactId>
                 </dependency>
 

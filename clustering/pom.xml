@@ -41,10 +41,11 @@
         <module>api</module>
         <module>common</module>
         <module>impl</module>
-        <module>infinispan</module>
         <module>jgroups</module>
-        <module>web-infinispan</module>
+        <module>infinispan</module>
         <module>web-spi</module>
+        <module>web-infinispan</module>
+        <module>ejb3-infinispan</module>
     </modules>
 
     <dependencies>

@@ -22,9 +22,57 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.parsing.ParseUtils.duplicateAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ALIASES;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ASYNC;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.BACKING_CACHE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CACHE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CLUSTER_PASSIVATION_STORE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_CLUSTERED_SFSB_CACHE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_CACHE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.FILE_PASSIVATION_STORE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.GROUPS_PATH;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IDLE_TIMEOUT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IDLE_TIMEOUT_UNIT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IIOP;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT_UNIT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.KEEPALIVE_TIME;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_POOL_SIZE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_SIZE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_THREADS;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PASSIVATE_EVENTS_ON_REPLICATE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PASSIVATION_STORE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SESSIONS_PATH;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SUBDIRECTORY_COUNT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL_NAME;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
+
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamConstants;
@@ -40,36 +88,6 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.parsing.ParseUtils.duplicateAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
-import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ASYNC;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IIOP;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT_UNIT;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.KEEPALIVE_TIME;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_POOL_SIZE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_THREADS;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL_NAME;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
 /**
  * @author Jaikiran Pai
  */
@@ -106,7 +124,9 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             writer.writeEndElement();
         }
         // <stateful> element
-        if (model.hasDefined(EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT)) {
+        if (model.hasDefined(EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT)
+                || model.hasDefined(EJB3SubsystemModel.DEFAULT_SFSB_CACHE)
+                || model.hasDefined(EJB3SubsystemModel.DEFAULT_CLUSTERED_SFSB_CACHE)) {
             // <stateful>
             writer.writeStartElement(EJB3SubsystemXMLElement.STATEFUL.getLocalName());
             // write out the <stateful> element contents
@@ -154,13 +174,33 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             writer.writeEndElement();
         }
 
+        // write the caches element
+        if (model.hasDefined(EJB3SubsystemModel.CACHE)) {
+            // <caches>
+            writer.writeStartElement(EJB3SubsystemXMLElement.CACHES.getLocalName());
+            // write the caches
+            this.writeCaches(writer, model);
+            // </caches>
+            writer.writeEndElement();
+        }
+        // write the passivation-stores element
+        if (model.hasDefined(EJB3SubsystemModel.CLUSTER_PASSIVATION_STORE)
+                || model.hasDefined(EJB3SubsystemModel.FILE_PASSIVATION_STORE)) {
+            // <passivation-stores>
+            writer.writeStartElement(EJB3SubsystemXMLElement.PASSIVATION_STORES.getLocalName());
+            // write the caches
+            this.writeFilePassivationStores(writer, model);
+            this.writeClusterPassivationStores(writer, model);
+            // </passivation-stores>
+            writer.writeEndElement();
+        }
+
         // write the async element
         if (model.hasDefined(SERVICE) && model.get(SERVICE).hasDefined(ASYNC)) {
             writer.writeStartElement(EJB3SubsystemXMLElement.ASYNC.getLocalName());
             writeAsync(writer, model.get(SERVICE, ASYNC));
             writer.writeEndElement();
         }
-
         // timer-service
         if (model.hasDefined(SERVICE) && model.get(SERVICE).hasDefined(TIMER_SERVICE)) {
             // <timer-service>
@@ -244,6 +284,14 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                         throw unexpectedElement(reader);
                     }
                     switch (element) {
+                        case CACHES: {
+                            this.parseCaches(reader, operations);
+                            break;
+                        }
+                        case PASSIVATION_STORES: {
+                            this.parsePassivationStores(reader, operations);
+                            break;
+                        }
                         case MDB: {
                             // read <mdb>
                             this.parseMDB(reader, operations, ejb3SubsystemAddOperation);
@@ -371,10 +419,19 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
     }
 
     private void writeStatefulBean(final XMLExtendedStreamWriter writer, final ModelNode statefulBeanModel) throws XMLStreamException {
-        final String defaultAccessTimeout = statefulBeanModel.get(DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT).asString();
-        writer.writeAttribute(EJB3SubsystemXMLAttribute.DEFAULT_ACCESS_TIMEOUT.getLocalName(), defaultAccessTimeout);
+        if (statefulBeanModel.hasDefined(DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT)) {
+            String defaultAccessTimeout = statefulBeanModel.get(DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT).asString();
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.DEFAULT_ACCESS_TIMEOUT.getLocalName(), defaultAccessTimeout);
+        }
+        if (statefulBeanModel.hasDefined(DEFAULT_SFSB_CACHE)) {
+            String cache = statefulBeanModel.get(DEFAULT_SFSB_CACHE).asString();
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.CACHE_REF.getLocalName(), cache);
+        }
+        if (statefulBeanModel.hasDefined(DEFAULT_CLUSTERED_SFSB_CACHE)) {
+            String cache = statefulBeanModel.get(DEFAULT_CLUSTERED_SFSB_CACHE).asString();
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.CLUSTERED_CACHE_REF.getLocalName(), cache);
+        }
     }
-
 
     private void writeDefaultSLSBPool(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
 
@@ -426,6 +483,57 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
         StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.marshallAsAttribute(strictMaxPoolModelNode, writer);
         StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.marshallAsAttribute(strictMaxPoolModelNode, writer);
         StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.marshallAsAttribute(strictMaxPoolModelNode, writer);
+    }
+
+    private void writeCaches(XMLExtendedStreamWriter writer, ModelNode model) throws XMLStreamException {
+        List<Property> caches = model.get(EJB3SubsystemModel.CACHE).asPropertyList();
+        for (Property property : caches) {
+            // <strict-max-pool>
+            writer.writeStartElement(EJB3SubsystemXMLElement.CACHE.getLocalName());
+            ModelNode cache = property.getValue();
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), cache.get(EJB3SubsystemModel.NAME).asString());
+            CacheFactoryResourceDefinition.PASSIVATION_STORE.marshallAsAttribute(cache, writer);
+            CacheFactoryResourceDefinition.ALIASES.marshallAsElement(cache, writer);
+            writer.writeEndElement();
+        }
+    }
+
+    private void writeClusterPassivationStores(XMLExtendedStreamWriter writer, ModelNode model) throws XMLStreamException {
+        if (model.hasDefined(EJB3SubsystemModel.CLUSTER_PASSIVATION_STORE)) {
+            List<Property> caches = model.get(EJB3SubsystemModel.CLUSTER_PASSIVATION_STORE).asPropertyList();
+            for (Property property : caches) {
+                // <strict-max-pool>
+                writer.writeStartElement(EJB3SubsystemXMLElement.CLUSTER_PASSIVATION_STORE.getLocalName());
+                ModelNode store = property.getValue();
+                writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), store.get(EJB3SubsystemModel.NAME).asString());
+                PassivationStoreResourceDefinition.IDLE_TIMEOUT.marshallAsAttribute(store, writer);
+                PassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT.marshallAsAttribute(store, writer);
+                ClusterPassivationStoreResourceDefinition.MAX_SIZE.marshallAsAttribute(store, writer);
+                ClusterPassivationStoreResourceDefinition.BACKING_CACHE.marshallAsAttribute(store, writer);
+                ClusterPassivationStoreResourceDefinition.PASSIVATE_EVENTS_ON_REPLICATE.marshallAsAttribute(store, writer);
+                writer.writeEndElement();
+            }
+        }
+    }
+
+    private void writeFilePassivationStores(XMLExtendedStreamWriter writer, ModelNode model) throws XMLStreamException {
+        if (model.hasDefined(EJB3SubsystemModel.FILE_PASSIVATION_STORE)) {
+            List<Property> caches = model.get(EJB3SubsystemModel.FILE_PASSIVATION_STORE).asPropertyList();
+            for (Property property : caches) {
+                // <strict-max-pool>
+                writer.writeStartElement(EJB3SubsystemXMLElement.FILE_PASSIVATION_STORE.getLocalName());
+                ModelNode store = property.getValue();
+                writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), store.get(EJB3SubsystemModel.NAME).asString());
+                PassivationStoreResourceDefinition.IDLE_TIMEOUT.marshallAsAttribute(store, writer);
+                PassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT.marshallAsAttribute(store, writer);
+                FilePassivationStoreResourceDefinition.MAX_SIZE.marshallAsAttribute(store, writer);
+                FilePassivationStoreResourceDefinition.RELATIVE_TO.marshallAsAttribute(store, writer);
+                FilePassivationStoreResourceDefinition.GROUPS_PATH.marshallAsAttribute(store, writer);
+                FilePassivationStoreResourceDefinition.SESSIONS_PATH.marshallAsAttribute(store, writer);
+                FilePassivationStoreResourceDefinition.SUBDIRECTORY_COUNT.marshallAsAttribute(store, writer);
+                writer.writeEndElement();
+            }
+        }
     }
 
     private void writeTimerService(final XMLExtendedStreamWriter writer, final ModelNode timerServiceModel) throws XMLStreamException {
@@ -602,27 +710,41 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
 
     private void parseStatefulBean(final XMLExtendedStreamReader reader, final List<ModelNode> operations, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
         final int count = reader.getAttributeCount();
-        final EnumSet<EJB3SubsystemXMLAttribute> missingRequiredAttributes = EnumSet.of(EJB3SubsystemXMLAttribute.DEFAULT_ACCESS_TIMEOUT);
+        final EnumSet<EJB3SubsystemXMLAttribute> missingRequiredAttributes = EnumSet.of(EJB3SubsystemXMLAttribute.DEFAULT_ACCESS_TIMEOUT, EJB3SubsystemXMLAttribute.CACHE_REF);
         String defaultAccessTimeout = null;
+        String cache = null;
+        String clusteredCache = null;
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
             final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
-                case DEFAULT_ACCESS_TIMEOUT:
+                case DEFAULT_ACCESS_TIMEOUT: {
                     defaultAccessTimeout = EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT.parse(value, reader.getLocation()).asString();
-                    // found the mandatory attribute
-                    missingRequiredAttributes.remove(EJB3SubsystemXMLAttribute.DEFAULT_ACCESS_TIMEOUT);
                     break;
-                default:
+                }
+                case CACHE_REF: {
+                    cache = EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_CACHE.parse(value, reader.getLocation()).asString();
+                    break;
+                }
+                case CLUSTERED_CACHE_REF: {
+                    clusteredCache = EJB3SubsystemRootResourceDefinition.DEFAULT_CLUSTERED_SFSB_CACHE.parse(value, reader.getLocation()).asString();
+                    break;
+                }
+                default: {
                     throw unexpectedAttribute(reader, i);
+                }
             }
+            // found the mandatory attribute
+            missingRequiredAttributes.remove(attribute);
         }
         requireNoContent(reader);
         if (!missingRequiredAttributes.isEmpty()) {
             throw missingRequired(reader, missingRequiredAttributes);
         }
         EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT.parseAndSetParameter(defaultAccessTimeout, ejb3SubsystemAddOperation, reader.getLocation());
+        EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_CACHE.parseAndSetParameter(cache, ejb3SubsystemAddOperation, reader.getLocation());
+        EJB3SubsystemRootResourceDefinition.DEFAULT_CLUSTERED_SFSB_CACHE.parseAndSetParameter(clusteredCache, ejb3SubsystemAddOperation, reader.getLocation());
     }
 
     private void parseSingletonBean(final XMLExtendedStreamReader reader, final List<ModelNode> operations, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
@@ -717,6 +839,185 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
         }
         // create and add the operation
         operations.add(this.createAddStrictMaxBeanInstancePoolOperation(poolName, maxPoolSize, timeout, unit));
+    }
+
+    private void parseCaches(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+        // no attributes expected
+        requireNoAttributes(reader);
+
+        while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
+            switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
+                case CACHE: {
+                    this.parseCache(reader, operations);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private void parseCache(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+        String name = null;
+        String passivationStore = null;
+        Set<String> aliases = new LinkedHashSet<String>();
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            switch (EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i))) {
+                case NAME: {
+                    name = value;
+                    break;
+                }
+                case PASSIVATION_STORE_REF: {
+                    passivationStore = CacheFactoryResourceDefinition.PASSIVATION_STORE.parse(value, reader.getLocation()).asString();
+                    break;
+                }
+                case ALIASES: {
+                    for (String alias: reader.getListAttributeValue(i)) {
+                        aliases.add(CacheFactoryResourceDefinition.ALIASES.parse(alias, reader.getLocation()).asString());
+                    }
+                    break;
+                }
+                default: {
+                    throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        requireNoContent(reader);
+        if (name == null) {
+            throw missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.NAME.getLocalName()));
+        }
+        // create and add the operation
+        operations.add(this.createAddStatefulCacheOperation(name, aliases, passivationStore));
+    }
+
+    private void parsePassivationStores(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+        // no attributes expected
+        requireNoAttributes(reader);
+
+        while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
+            switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
+                case FILE_PASSIVATION_STORE: {
+                    this.parseFilePassivationStore(reader, operations);
+                    break;
+                }
+                case CLUSTER_PASSIVATION_STORE: {
+                    this.parseClusterPassivationStore(reader, operations);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private void parseFilePassivationStore(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+        String name = null;
+        Integer maxSize = null;
+        Long timeout = null;
+        String unit = null;
+        String relativeTo = null;
+        String groupsPath = null;
+        String sessionsPath = null;
+        Integer subdirectoryCount = null;
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            switch (EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i))) {
+                case NAME: {
+                    name = value;
+                    break;
+                }
+                case MAX_SIZE: {
+                    maxSize = FilePassivationStoreResourceDefinition.MAX_SIZE.parse(value, reader.getLocation()).asInt();
+                    break;
+                }
+                case IDLE_TIMEOUT: {
+                    timeout = PassivationStoreResourceDefinition.IDLE_TIMEOUT.parse(value, reader.getLocation()).asLong();
+                    break;
+                }
+                case IDLE_TIMEOUT_UNIT: {
+                    unit = PassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT.parse(value, reader.getLocation()).asString();
+                    break;
+                }
+                case RELATIVE_TO: {
+                    relativeTo = FilePassivationStoreResourceDefinition.RELATIVE_TO.parse(value, reader.getLocation()).asString();
+                    break;
+                }
+                case GROUPS_PATH: {
+                    groupsPath = FilePassivationStoreResourceDefinition.GROUPS_PATH.parse(value, reader.getLocation()).asString();
+                    break;
+                }
+                case SESSIONS_PATH: {
+                    sessionsPath = FilePassivationStoreResourceDefinition.SESSIONS_PATH.parse(value, reader.getLocation()).asString();
+                    break;
+                }
+                case SUBDIRECTORY_COUNT: {
+                    subdirectoryCount = FilePassivationStoreResourceDefinition.SUBDIRECTORY_COUNT.parse(value, reader.getLocation()).asInt();
+                    break;
+                }
+                default: {
+                    throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        requireNoContent(reader);
+        if (name == null) {
+            throw missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.NAME.getLocalName()));
+        }
+        // create and add the operation
+        operations.add(this.createAddFilePassivationStoreOperation(name, maxSize, timeout, unit, relativeTo, groupsPath, sessionsPath, subdirectoryCount));
+    }
+
+    private void parseClusterPassivationStore(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+        String name = null;
+        Integer maxSize = null;
+        Long timeout = null;
+        String unit = null;
+        String backingCache = null;
+        Boolean passivateEventsOnReplicate = null;
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            switch (EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i))) {
+                case NAME: {
+                    name = value;
+                    break;
+                }
+                case MAX_SIZE: {
+                    maxSize = ClusterPassivationStoreResourceDefinition.MAX_SIZE.parse(value, reader.getLocation()).asInt();
+                    break;
+                }
+                case IDLE_TIMEOUT: {
+                    timeout = PassivationStoreResourceDefinition.IDLE_TIMEOUT.parse(value, reader.getLocation()).asLong();
+                    break;
+                }
+                case IDLE_TIMEOUT_UNIT: {
+                    unit = PassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT.parse(value, reader.getLocation()).asString();
+                    break;
+                }
+                case BACKING_CACHE: {
+                    backingCache = ClusterPassivationStoreResourceDefinition.BACKING_CACHE.parse(value, reader.getLocation()).asString();
+                    break;
+                }
+                case PASSIVATE_EVENTS_ON_REPLICATE: {
+                    passivateEventsOnReplicate = ClusterPassivationStoreResourceDefinition.PASSIVATE_EVENTS_ON_REPLICATE.parse(value, reader.getLocation()).asBoolean();
+                    break;
+                }
+                default: {
+                    throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        requireNoContent(reader);
+        if (name == null) {
+            throw missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.NAME.getLocalName()));
+        }
+        // create and add the operation
+        operations.add(this.createAddClusterPassivationStoreOperation(name, maxSize, timeout, unit, backingCache, passivateEventsOnReplicate));
     }
 
     private void parseTimerService(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
@@ -924,8 +1225,71 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
         return addStrictMaxPoolOperation;
     }
 
+    private ModelNode createAddStatefulCacheOperation(String name, Set<String> aliases, String passivationStoreRef) {
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(ADD);
+        // set the address for this operation
+        final PathAddress address = this.getEJB3SubsystemAddress().append(PathElement.pathElement(CACHE, name));
+        operation.get(OP_ADDR).set(address.toModelNode());
+        // set the params for the operation
+        if (passivationStoreRef != null) {
+            operation.get(PASSIVATION_STORE).set(passivationStoreRef);
+        }
+        if (!aliases.isEmpty()) {
+            ModelNode aliasModel = operation.get(ALIASES).setEmptyList();
+            for (String alias: aliases) {
+                aliasModel.add(alias);
+            }
+        }
+        return operation;
+    }
+
+    private ModelNode createAddPassivationStoreOperation(String operationName, String name, Integer maxSize, Long idleTimeout, String idleTimeoutUnit) {
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set(ADD);
+        PathAddress address = this.getEJB3SubsystemAddress().append(PathElement.pathElement(operationName, name));
+        operation.get(OP_ADDR).set(address.toModelNode());
+        if (idleTimeout != null) {
+            operation.get(IDLE_TIMEOUT).set(idleTimeout);
+        }
+        if (idleTimeoutUnit != null) {
+            operation.get(IDLE_TIMEOUT_UNIT).set(idleTimeoutUnit);
+        }
+        if (maxSize != null) {
+            operation.get(MAX_SIZE).set(maxSize);
+        }
+        return operation;
+    }
+
+    private ModelNode createAddFilePassivationStoreOperation(String name, Integer maxSize, Long idleTimeout, String idleTimeoutUnit, String relativeTo, String groupsPath, String sessionsPath, Integer subdirectoryCount) {
+        ModelNode operation = this.createAddPassivationStoreOperation(FILE_PASSIVATION_STORE, name, maxSize, idleTimeout, idleTimeoutUnit);
+        if (relativeTo != null) {
+            operation.get(RELATIVE_TO).set(relativeTo);
+        }
+        if (groupsPath != null) {
+            operation.get(GROUPS_PATH).set(groupsPath);
+        }
+        if (sessionsPath != null) {
+            operation.get(SESSIONS_PATH).set(sessionsPath);
+        }
+        if (subdirectoryCount != null) {
+            operation.get(SUBDIRECTORY_COUNT).set(subdirectoryCount);
+        }
+        return operation;
+    }
+
+    private ModelNode createAddClusterPassivationStoreOperation(String name, Integer maxSize, Long idleTimeout, String idleTimeoutUnit, String backingCache, Boolean passivateEventsOnReplicate) {
+        ModelNode operation = this.createAddPassivationStoreOperation(CLUSTER_PASSIVATION_STORE, name, maxSize, idleTimeout, idleTimeoutUnit);
+        if (backingCache != null) {
+            operation.get(BACKING_CACHE).set(backingCache);
+        }
+        if (passivateEventsOnReplicate != null) {
+            operation.get(PASSIVATE_EVENTS_ON_REPLICATE).set(passivateEventsOnReplicate);
+        }
+        return operation;
+    }
+
     private PathAddress getEJB3SubsystemAddress() {
-        PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME));
-        return addr;
+        return PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME));
     }
 }

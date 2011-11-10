@@ -56,6 +56,7 @@ public abstract class SessionBeanComponentCreateService extends EJBComponentCrea
 
     private final ServiceName ejbObjectview;
     private final ServiceName ejbLocalObjectView;
+    private final ClusteringInfo clustering;
 
     /**
      * Construct a new instance.
@@ -104,6 +105,7 @@ public abstract class SessionBeanComponentCreateService extends EJBComponentCrea
         ejbLocalObjectView = local == null ? null : local.getServiceName();
         final EJBViewDescription remote = sessionBeanComponentDescription.getEjbRemoteView();
         ejbObjectview = remote == null ? null : remote.getServiceName();
+        this.clustering = sessionBeanComponentDescription.getClustering();
     }
 
     public Map<String, LockType> getBeanLockType() {
@@ -151,5 +153,9 @@ public abstract class SessionBeanComponentCreateService extends EJBComponentCrea
 
     public ServiceName getEjbObjectview() {
         return ejbObjectview;
+    }
+
+    public ClusteringInfo getClustering() {
+        return this.clustering;
     }
 }

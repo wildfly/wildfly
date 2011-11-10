@@ -32,6 +32,8 @@ import javax.ejb.AfterBegin;
 import javax.ejb.AfterCompletion;
 import javax.ejb.Asynchronous;
 import javax.ejb.BeforeCompletion;
+import javax.ejb.PostActivate;
+import javax.ejb.PrePassivate;
 import javax.ejb.Startup;
 
 import org.jboss.as.ee.component.deployers.BooleanAnnotationInformationFactory;
@@ -68,6 +70,8 @@ public class EjbAnnotationProcessor extends AbstractEEAnnotationProcessor {
         factories.add(new BooleanAnnotationInformationFactory<BeforeCompletion>(BeforeCompletion.class));
         factories.add(new BooleanAnnotationInformationFactory<AfterCompletion>(AfterCompletion.class));
 
+        factories.add(new BooleanAnnotationInformationFactory<PrePassivate>(PrePassivate.class));
+        factories.add(new BooleanAnnotationInformationFactory<PostActivate>(PostActivate.class));
 
         //security annotations
         factories.add(new RunAsAnnotationInformationFactory());
@@ -81,6 +85,10 @@ public class EjbAnnotationProcessor extends AbstractEEAnnotationProcessor {
         //view annotations
         factories.add(new LocalHomeAnnotationInformationFactory());
         factories.add(new RemoteHomeAnnotationInformationFactory());
+
+        // clustering/cache annotations
+        factories.add(new ClusteredAnnotationInformationFactory());
+        factories.add(new CacheAnnotationInformationFactory());
 
         this.factories = Collections.unmodifiableList(factories);
     }

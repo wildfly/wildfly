@@ -40,6 +40,8 @@
             <xs:element name="session-bean" type="session-beanType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="mdb" type="mdbType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="pools" type="poolsType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="caches" type="cachesType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="passivation-stores" type="passivation-storesType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="async" type="asyncType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="timer-service" type="timerServiceType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="remote" type="remoteType" minOccurs="0" maxOccurs="1"/>
@@ -86,6 +88,8 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="cache-ref" type="xs:string"/>
+        <xs:attribute name="clustered-cache-ref" type="xs:string" use="optional"/>
     </xs:complexType>
 
     <xs:complexType name="singleton-beanType">
@@ -122,11 +126,59 @@
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="max-pool-size" type="xs:positiveInteger" default="20" use="optional"/>
         <xs:attribute name="instance-acquisition-timeout" type="xs:positiveInteger" default="5" use="optional"/>
-        <xs:attribute name="instance-acquisition-timeout-unit" type="instance-acquisition-timeout-unitType"
+        <xs:attribute name="instance-acquisition-timeout-unit" type="timeout-unitType"
                       default="MINUTES" use="optional"/>
     </xs:complexType>
 
-    <xs:simpleType name="instance-acquisition-timeout-unitType">
+    <xs:complexType name="cachesType">
+        <xs:sequence>
+            <xs:element name="cache" type="cacheType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="cacheType">
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="passivation-store-ref" type="xs:string"/>
+        <xs:attribute name="aliases" type="aliases"/>
+    </xs:complexType>
+    
+    <xs:complexType name="passivation-storesType">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="file-passivation-store" type="file-passivation-storeType"/>
+            <xs:element name="cluster-passivation-store" type="cluster-passivation-storeType"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:attributeGroup name="passivation-common">
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="idle-timeout" type="xs:positiveInteger" default="300"/>
+        <xs:attribute name="idle-timeout-unit" type="timeout-unitType" default="SECONDS"/>
+    </xs:attributeGroup>
+
+    <xs:complexType name="file-passivation-storeType">
+        <xs:attributeGroup ref="passivation-common"/>
+        <xs:attribute name="max-size" type="xs:positiveInteger" default="100000"/>
+        <xs:attribute name="relative-to" type="xs:string" default="jboss.server.data.dir"/>
+        <xs:attribute name="sessions-path" type="xs:string" default="ejb3/sessions"/>
+        <xs:attribute name="groups-path" type="xs:string" default="ejb3/groups"/>
+        <xs:attribute name="subdirectory-count" type="xs:positiveInteger" default="100"/>
+    </xs:complexType>
+
+    <xs:complexType name="cluster-passivation-storeType">
+        <xs:attributeGroup ref="passivation-common"/>
+        <xs:attribute name="max-size" type="xs:positiveInteger" default="10000"/>
+        <xs:attribute name="passivate-events-on-replicate" type="xs:boolean" default="true"/>
+        <xs:attribute name="backing-cache" type="xs:string" default="sfsb"/>
+    </xs:complexType>
+
+    <xs:simpleType name="aliases">
+        <xs:annotation>
+            <xs:documentation>A list of aliases.</xs:documentation>
+        </xs:annotation>
+        <xs:list itemType="xs:string"/>
+    </xs:simpleType>
+
+    <xs:simpleType name="timeout-unitType">
         <xs:annotation>
             <xs:documentation>
                 TimeUnit that are allowed for instance-acquisition-timeout on a pool

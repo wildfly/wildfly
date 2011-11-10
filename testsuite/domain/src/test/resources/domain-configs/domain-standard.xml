@@ -125,6 +125,13 @@
                                          instance-acquisition-timeout-unit="MINUTES"/>
                     </bean-instance-pools>
                 </pools>
+                <caches>
+                    <cache name="simple" aliases="NoPassivationCache"/>
+                    <cache name="passivating" passivation-store-ref="file" aliases="SimpleStatefulCache"/>
+                </caches>
+                <passivation-stores>
+                    <file-passivation-store name="file"/>
+                </passivation-stores>
 
                 <!-- Default MDB configurations -->
                 <mdb>
@@ -137,7 +144,7 @@
                     <stateless>
                         <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
                     </stateless>
-                    <stateful default-access-timeout="5000"/>
+                    <stateful default-access-timeout="5000" cache-ref="simple"/>
                     <singleton default-access-timeout="5000"/>
                 </session-bean>
 
