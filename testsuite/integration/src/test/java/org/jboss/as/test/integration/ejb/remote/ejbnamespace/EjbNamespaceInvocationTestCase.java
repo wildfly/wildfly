@@ -43,12 +43,13 @@ import javax.naming.NamingException;
 @RunWith(Arquillian.class)
 public class EjbNamespaceInvocationTestCase {
 
-    public static final String ARCHIVE_NAME = "RemoteInvocationTest";
+    private static final String APP_NAME = "";
+    private static final String MODULE_NAME = "RemoteInvocationTest";
 
     @Deployment
     public static Archive<?> deploy() {
 
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         jar.addPackage(EjbNamespaceInvocationTestCase.class.getPackage());
         return jar;
     }
@@ -70,11 +71,11 @@ public class EjbNamespaceInvocationTestCase {
 
 
     protected <T> T lookupEjb(String beanName, Class<T> interfaceType) throws NamingException {
-        return interfaceType.cast(iniCtx.lookup("ejb:" + ARCHIVE_NAME + "/" + ARCHIVE_NAME + "//" + beanName + "!" + interfaceType.getName()));
+        return interfaceType.cast(iniCtx.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME + "//" + beanName + "!" + interfaceType.getName()));
     }
 
     protected <T> T lookup(String beanName, Class<T> interfaceType) throws NamingException {
-        return interfaceType.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + beanName + "!" + interfaceType.getName()));
+        return interfaceType.cast(iniCtx.lookup("java:global/" + MODULE_NAME + "/" + beanName + "!" + interfaceType.getName()));
     }
 
 }

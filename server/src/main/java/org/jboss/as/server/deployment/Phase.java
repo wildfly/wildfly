@@ -186,6 +186,7 @@ public enum Phase {
     public static final int STRUCTURE_EAR_DEPLOYMENT_INIT               = 0x0600;
     public static final int STRUCTURE_EAR_APP_XML_PARSE                 = 0x0700;
     public static final int STRUCTURE_EAR_JBOSS_APP_XML_PARSE           = 0x0800;
+    public static final int STRUCTURE_EJB_EAR_APPLICATION_NAME          = 0x0850;
     public static final int STRUCTURE_EAR                               = 0x0900;
     public static final int STRUCTURE_APP_CLIENT                        = 0x0950;
     public static final int STRUCTURE_SERVICE_MODULE_LOADER             = 0x0A00;

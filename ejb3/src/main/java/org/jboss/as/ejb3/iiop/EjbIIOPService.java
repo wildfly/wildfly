@@ -244,10 +244,13 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
             final boolean interfaceRepositorySupported = false;
 
             final EJBComponent component = ejbComponentInjectedValue.getValue();
+            final String earApplicationName = component.getEarApplicationName();
             if (component.getDistinctName() == null || component.getDistinctName().isEmpty()) {
-                name = component.getApplicationName() + "/" + component.getModuleName() + "/" + component.getComponentName();
+                name = earApplicationName == null ? "" : earApplicationName + "/";
+                name = name + component.getModuleName() + "/" + component.getComponentName();
             } else {
-                name = component.getApplicationName() + "/" + component.getModuleName() + "/" + component.getDistinctName() + "/" + component.getComponentName();
+                name = earApplicationName == null ? "" : earApplicationName + "/";
+                name = name + component.getModuleName() + "/" + component.getDistinctName() + "/" + component.getComponentName();
             }
             final ORB orb = this.orb.getValue();
             if (interfaceRepositorySupported) {
@@ -411,8 +414,9 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
     public Object referenceForLocator(final EJBLocator<? extends Object> locator) {
         final EJBComponent ejbComponent = ejbComponentInjectedValue.getValue();
         try {
+            final String earApplicationName = ejbComponent.getEarApplicationName() == null ? "" : ejbComponent.getEarApplicationName();
             if (locator.getBeanName().equals(ejbComponent.getComponentName()) &&
-                    locator.getAppName().equals(ejbComponent.getApplicationName()) &&
+                    locator.getAppName().equals(earApplicationName) &&
                     locator.getModuleName().equals(ejbComponent.getModuleName()) &&
                     locator.getDistinctName().equals(ejbComponent.getDistinctName())) {
                 if (locator instanceof EJBHomeLocator) {

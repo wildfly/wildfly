@@ -42,7 +42,7 @@ public class RemoteHomeViewInstanceFactory implements ViewInstanceFactory {
     private final String beanName;
 
     public RemoteHomeViewInstanceFactory(final String applicationName, final String moduleName, final String distinctName, final String beanName) {
-        this.applicationName = applicationName;
+        this.applicationName = applicationName == null ? "" : applicationName;
         this.moduleName = moduleName;
         this.distinctName = distinctName;
         this.beanName = beanName;

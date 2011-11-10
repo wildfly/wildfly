@@ -241,7 +241,8 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                 view.getConfigurators().add(new ViewConfigurator() {
                     @Override
                     public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                        configuration.setViewInstanceFactory(new StatefulRemoteViewInstanceFactory(componentConfiguration.getApplicationName(), componentConfiguration.getModuleName(), componentConfiguration.getComponentDescription().getModuleDescription().getDistinctName(), componentConfiguration.getComponentName()));
+                        final String earApplicationName = componentConfiguration.getComponentDescription().getModuleDescription().getEarApplicationName();
+                        configuration.setViewInstanceFactory(new StatefulRemoteViewInstanceFactory(earApplicationName, componentConfiguration.getModuleName(), componentConfiguration.getComponentDescription().getModuleDescription().getDistinctName(), componentConfiguration.getComponentName()));
                     }
                 });
             }

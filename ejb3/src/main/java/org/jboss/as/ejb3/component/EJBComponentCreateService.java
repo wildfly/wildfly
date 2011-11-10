@@ -76,6 +76,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
 
     private final String applicationName;
+    private final String earApplicationName;
     private final String moduleName;
     private final String distinctName;
 
@@ -126,7 +127,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
                         if (!Modifier.isPublic(method.getModifiers()))
                             continue;
                         final Method componentMethod = getComponentMethod(componentConfiguration, method.getName(), method.getParameterTypes());
-                        if(componentMethod != null) {
+                        if (componentMethod != null) {
                             this.processTxAttr(ejbComponentDescription, viewType, componentMethod);
                         }
                     }
@@ -149,11 +150,12 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
             viewServices.put(view.getViewClassName(), view.getServiceName());
         }
         this.viewServices = viewServices;
-        EjbHomeViewDescription localHome= ejbComponentDescription.getEjbLocalHomeView();
+        EjbHomeViewDescription localHome = ejbComponentDescription.getEjbLocalHomeView();
         this.ejbLocalHome = localHome == null ? null : ejbComponentDescription.getEjbLocalHomeView().getServiceName();
         EjbHomeViewDescription home = ejbComponentDescription.getEjbHomeView();
         this.ejbHome = home == null ? null : home.getServiceName();
         this.applicationName = componentConfiguration.getApplicationName();
+        this.earApplicationName = componentConfiguration.getComponentDescription().getModuleDescription().getEarApplicationName();
         this.moduleName = componentConfiguration.getModuleName();
         this.distinctName = componentConfiguration.getComponentDescription().getModuleDescription().getDistinctName();
     }
@@ -237,6 +239,10 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     public String getApplicationName() {
         return applicationName;
+    }
+
+    public String getEarApplicationName() {
+        return this.earApplicationName;
     }
 
     public String getDistinctName() {
