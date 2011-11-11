@@ -176,7 +176,7 @@ interface CommonAttributes {
             setValidator(new TargetValidator(false)).
             build();
 
-    SimpleAttributeDefinition USE_PARENT_HANDLERS = new SimpleAttributeDefinitionBuilder("use-parent-handlers", ModelType.BOOLEAN).
+    SimpleAttributeDefinition USE_PARENT_HANDLERS = new SimpleAttributeDefinitionBuilder("use-parent-handlers", ModelType.BOOLEAN, true).
             setDefaultValue(new ModelNode().set(true)).
             build();
 
