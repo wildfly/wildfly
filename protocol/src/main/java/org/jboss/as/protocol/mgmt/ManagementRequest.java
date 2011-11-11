@@ -45,7 +45,7 @@ import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
  * @author Kabir Khan
  * @author Emanuel Muckenhuber
  */
-public abstract class ManagementRequest<T> extends AsyncFutureTask<T> {
+public abstract class ManagementRequest<T> extends AsyncFutureTask<T> implements CloseHandler<Channel> {
 
     private static final AtomicInteger requestId = new AtomicInteger();
     private final int currentRequestId = requestId.incrementAndGet();
@@ -166,7 +166,17 @@ public abstract class ManagementRequest<T> extends AsyncFutureTask<T> {
      * @return the close handler
      */
     protected CloseHandler<Channel> getRequestCloseHandler() {
-        return null;
+        return this;
+    }
+
+    @Override
+    public void handleClose(final Channel closed, IOException exception) {
+        // The default implementation, this will set the status to failed
+        // if done() wasn't called before
+        if(exception == null) {
+            exception = new IOException("Channel closed.");
+        }
+        failed(exception);
     }
 
     private final class DelegatingResponseHandler extends ManagementResponseHandler<T>{

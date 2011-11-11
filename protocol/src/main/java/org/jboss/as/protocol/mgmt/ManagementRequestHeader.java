@@ -38,7 +38,7 @@ public class ManagementRequestHeader extends ManagementProtocolHeader {
     private int requestId;
     private int batchId;
     private byte operationId;
-    //TODO still unused, put in the protocol for when we get round to doing requests not expecting a response
+    @Deprecated
     private boolean oneWay;
 
     /**

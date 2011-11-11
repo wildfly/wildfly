@@ -265,13 +265,18 @@ public class ModelControllerClientTestCase {
         ManagementChannel clientChannel = channels.getClientChannel();
         clientChannel.startReceiving();
 
+        final CountDownLatch checkAsync = new CountDownLatch(1);
         final CountDownLatch executeLatch = new CountDownLatch(1);
         MockModelController controller = new MockModelController() {
             @Override
             public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {
                 this.operation = operation;
+                try {
+                    checkAsync.await();
+                } catch(Exception e) {
+                    throw new RuntimeException(e);
+                }
                 executeLatch.countDown();
-
                 try {
                     log.debug("Waiting for interrupt");
                     //Wait for this operation to be cancelled
@@ -308,6 +313,7 @@ public class ModelControllerClientTestCase {
                             }
                         }
                     });
+            checkAsync.countDown();
             executeLatch.await();
             Assert.assertTrue(resultFuture.cancel(false));
         } finally {
