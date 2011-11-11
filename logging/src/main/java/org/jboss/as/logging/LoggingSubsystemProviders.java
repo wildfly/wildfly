@@ -365,6 +365,7 @@ class LoggingSubsystemProviders {
             NAME.addResourceAttributeDescription(bundle, "handler", node);
             LEVEL.addResourceAttributeDescription(bundle, "handler", node);
             FILTER.addResourceAttributeDescription(bundle, "handler", node);
+            FORMATTER.addResourceAttributeDescription(bundle, "handler", node);
             QUEUE_LENGTH.addResourceAttributeDescription(bundle, "async", node);
             OVERFLOW_ACTION.addResourceAttributeDescription(bundle, "async", node);
             SUBHANDLERS.addResourceAttributeDescription(bundle, "async.handler", node);
@@ -385,6 +386,7 @@ class LoggingSubsystemProviders {
             NAME.addOperationParameterDescription(bundle, "handler", operation);
             LEVEL.addOperationParameterDescription(bundle, "handler", operation);
             FILTER.addOperationParameterDescription(bundle, "handler", operation);
+            FORMATTER.addOperationParameterDescription(bundle, "handler", operation);
             QUEUE_LENGTH.addOperationParameterDescription(bundle, "async", operation);
             OVERFLOW_ACTION.addOperationParameterDescription(bundle, "async", operation);
             SUBHANDLERS.addOperationParameterDescription(bundle, "async.handler", operation);
@@ -405,6 +407,7 @@ class LoggingSubsystemProviders {
             NAME.addOperationParameterDescription(bundle, "handler", operation);
             LEVEL.addOperationParameterDescription(bundle, "handler", operation);
             FILTER.addOperationParameterDescription(bundle, "handler", operation);
+            FORMATTER.addOperationParameterDescription(bundle, "handler", operation);
             QUEUE_LENGTH.addOperationParameterDescription(bundle, "async", operation);
             OVERFLOW_ACTION.addOperationParameterDescription(bundle, "async", operation);
             SUBHANDLERS.addOperationParameterDescription(bundle, "async.handler", operation);

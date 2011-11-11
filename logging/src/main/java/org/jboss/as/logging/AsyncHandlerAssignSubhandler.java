@@ -27,17 +27,19 @@ import static org.jboss.as.logging.CommonAttributes.NAME;
 import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
-import java.util.List;
-import java.util.logging.Handler;
-
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.value.InjectedValue;
+
+import java.util.List;
+import java.util.logging.Handler;
 
 
 /**
@@ -60,27 +62,60 @@ public class AsyncHandlerAssignSubhandler extends AbstractLogHandlerAssignmentHa
                                   final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         String asyncHandlerName = address.getLastElement().getValue();
-        String handlerNameToAssign = NAME.resolveModelAttribute(context, model).asString();
-
-        ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
-        @SuppressWarnings("unchecked")
-        ServiceController<Handler> asyncHandlerController = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(asyncHandlerName));
-        @SuppressWarnings("unchecked")
-        ServiceController<Handler> handlerToAssignController = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(handlerNameToAssign));
-
-        if (handlerToAssignController == null) {
-            throw createFailureMessage(MESSAGES.handlerNotFound(handlerNameToAssign));
-        }
-
-        AsyncHandlerService service = (AsyncHandlerService) asyncHandlerController.getService();
-        InjectedValue<Handler> injectedHandler = new InjectedValue<Handler>();
-        injectedHandler.inject(handlerToAssignController.getValue());
-
-        service.addHandler(injectedHandler);
+        String handlerNameToAdd = NAME.resolveModelAttribute(context, model).asString();
+        addHandler(context, asyncHandlerName, handlerNameToAdd);
     }
 
     @Override
     protected String getHandlerName(final ModelNode model) throws OperationFailedException {
         return NAME.validateOperation(model).asString();
+    }
+
+    /**
+     * Adds the handler, represented by the {@code handlerNameToRemove} parameter, from the async handler.
+     *
+     * @param context          the context of the operation.
+     * @param asyncHandlerName the async handler name.
+     * @param handlerNameToAdd the name of the handler to add.
+     *
+     * @throws OperationFailedException if an error occurs.
+     */
+    public static void addHandler(final OperationContext context, final String asyncHandlerName, final String handlerNameToAdd) throws OperationFailedException {
+        final ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
+        @SuppressWarnings("unchecked")
+        final ServiceController<Handler> asyncHandlerController = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(asyncHandlerName));
+        @SuppressWarnings("unchecked")
+        final ServiceController<Handler> handlerToAssignController = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(handlerNameToAdd));
+
+        if (handlerToAssignController == null) {
+            throw createFailureMessage(MESSAGES.handlerNotFound(handlerNameToAdd));
+        }
+
+        final AsyncHandlerService service = AsyncHandlerService.class.cast(asyncHandlerController.getService());
+        final InjectedValue<Handler> injectedHandler = new InjectedValue<Handler>();
+        injectedHandler.inject(handlerToAssignController.getValue());
+
+        service.addHandler(injectedHandler);
+    }
+
+    /**
+     * Adds the subhandlers to the async handler.
+     *
+     * @param attribute the attribute definition.
+     * @param node      the model node to extract the subhandlers from.
+     * @param context   the context of the operation.
+     *
+     * @throws OperationFailedException if an error occurs.
+     */
+    public static void addHandlers(final AttributeDefinition attribute, final ModelNode node, final OperationContext context,
+                                   final String asyncHandlerName) throws OperationFailedException {
+        final ModelNode handlers = attribute.resolveModelAttribute(context, node);
+        if (handlers.isDefined()) {
+            if (handlers.getType() == ModelType.LIST) {
+                for (ModelNode handler : handlers.asList()) {
+                    addHandler(context, asyncHandlerName, handler.asString());
+                }
+            }
+        }
     }
 }

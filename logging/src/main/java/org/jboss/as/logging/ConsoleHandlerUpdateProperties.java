@@ -22,9 +22,8 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
 import static org.jboss.as.logging.CommonAttributes.TARGET;
-
-import java.util.Locale;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -36,17 +35,32 @@ import org.jboss.logmanager.handlers.ConsoleHandler;
  *
  * @author John Bailey
  */
-public class ConsoleHandlerUpdateProperties extends FlushingHandlerUpdateProperties<ConsoleHandler> {
+public class ConsoleHandlerUpdateProperties extends HandlerUpdateProperties<ConsoleHandler> {
     static final ConsoleHandlerUpdateProperties INSTANCE = new ConsoleHandlerUpdateProperties();
 
     private ConsoleHandlerUpdateProperties() {
-        super(TARGET);
+        super(AUTOFLUSH, TARGET);
     }
 
     @Override
-    protected void updateRuntime(OperationContext context, final ModelNode operation, final ConsoleHandler handler) throws OperationFailedException {
-        super.updateRuntime(context, operation, handler);
-        switch (Target.fromString(TargetValidator.properCase(TARGET.resolveModelAttribute(context, operation).asString()))) {
+    protected boolean applyUpdateToRuntime(final OperationContext context, final String handlerName, final ModelNode model,
+                                           final ModelNode originalModel, final ConsoleHandler handler) throws OperationFailedException {
+        switch (Target.fromString(TargetValidator.properCase(TARGET.resolveModelAttribute(context, model).asString()))) {
+            case SYSTEM_ERR: {
+                handler.setTarget(ConsoleHandler.Target.SYSTEM_ERR);
+                break;
+            }
+            case SYSTEM_OUT: {
+                handler.setTarget(ConsoleHandler.Target.SYSTEM_OUT);
+                break;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    protected void revertUpdateToRuntime(final OperationContext context, final String handlerName, final ModelNode model, final ModelNode originalModel, final ConsoleHandler handler) throws OperationFailedException {
+         switch (Target.fromString(TargetValidator.properCase(TARGET.resolveModelAttribute(context, originalModel).asString()))) {
             case SYSTEM_ERR: {
                 handler.setTarget(ConsoleHandler.Target.SYSTEM_ERR);
                 break;

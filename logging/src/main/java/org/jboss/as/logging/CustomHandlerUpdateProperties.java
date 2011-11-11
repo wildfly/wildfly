@@ -43,9 +43,18 @@ public class CustomHandlerUpdateProperties extends HandlerUpdateProperties<Handl
     }
 
     @Override
-    protected void updateRuntime(OperationContext context, final ModelNode operation, final Handler handler) throws OperationFailedException {
-        if (operation.hasDefined(PROPERTIES)) {
-            LogHandlerPropertiesConfigurator.setProperties(handler, operation.get(PROPERTIES).asPropertyList());
+    protected boolean applyUpdateToRuntime(final OperationContext context, final String handlerName, final ModelNode model,
+                                           final ModelNode originalModel, final Handler handler) throws OperationFailedException {
+        if (model.hasDefined(PROPERTIES)) {
+            LogHandlerPropertiesConfigurator.setProperties(handler, model.get(PROPERTIES).asPropertyList());
+        }
+        return false;
+    }
+
+    @Override
+    protected void revertUpdateToRuntime(final OperationContext context, final String handlerName, final ModelNode model, final ModelNode originalModel, final Handler handler) throws OperationFailedException {
+        if (originalModel.hasDefined(PROPERTIES)) {
+            LogHandlerPropertiesConfigurator.setProperties(handler, originalModel.get(PROPERTIES).asPropertyList());
         }
     }
 }

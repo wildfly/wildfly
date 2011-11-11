@@ -23,6 +23,7 @@
 package org.jboss.as.logging;
 
 import static org.jboss.as.logging.CommonAttributes.APPEND;
+import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -34,18 +35,22 @@ import org.jboss.logmanager.handlers.FileHandler;
  *
  * @author John Bailey
  */
-public class FileHandlerUpdateProperties extends FlushingHandlerUpdateProperties<FileHandler> {
+public class FileHandlerUpdateProperties extends HandlerUpdateProperties<FileHandler> {
     static final FileHandlerUpdateProperties INSTANCE = new FileHandlerUpdateProperties();
 
     private FileHandlerUpdateProperties() {
-        super(APPEND);
+        super(APPEND, AUTOFLUSH);
         // TODO (jrp) consider implementing FILE as well
     }
 
     @Override
-    protected void updateRuntime(OperationContext context, final ModelNode operation, final FileHandler handler) throws OperationFailedException {
-        super.updateRuntime(context, operation, handler);
-        final ModelNode append = APPEND.resolveModelAttribute(context, operation);
+    protected boolean applyUpdateToRuntime(final OperationContext context, final String handlerName, final ModelNode model,
+                                           final ModelNode originalModel, final FileHandler handler) throws OperationFailedException {
+        final ModelNode autoflush = AUTOFLUSH.resolveModelAttribute(context, model);
+        if (autoflush.isDefined()) {
+            handler.setAutoFlush(autoflush.asBoolean());
+        }
+        final ModelNode append = APPEND.resolveModelAttribute(context, model);
         if (append.isDefined()) {
             handler.setAppend(append.asBoolean());
         }
@@ -63,5 +68,18 @@ public class FileHandlerUpdateProperties extends FlushingHandlerUpdateProperties
          fileBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
          serviceBuilder.addDependency(LogServices.handlerFileName(name), String.class, service.getFileNameInjector());
          } **/
+        return false;
+    }
+
+    @Override
+    protected void revertUpdateToRuntime(final OperationContext context, final String handlerName, final ModelNode model, final ModelNode originalModel, final FileHandler handler) throws OperationFailedException {
+        final ModelNode autoflush = AUTOFLUSH.resolveModelAttribute(context, originalModel);
+        if (autoflush.isDefined()) {
+            handler.setAutoFlush(autoflush.asBoolean());
+        }
+        final ModelNode append = APPEND.resolveModelAttribute(context, originalModel);
+        if (append.isDefined()) {
+            handler.setAppend(append.asBoolean());
+        }
     }
 }

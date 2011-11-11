@@ -41,13 +41,13 @@ public class CustomHandlerWriteAttributeHandler extends AbstractLogHandlerWriteA
     }
 
     @Override
-    protected boolean doApplyUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final Handler handler) throws OperationFailedException {
+    protected boolean doApplyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final String handlerName, final Handler handler) throws OperationFailedException {
         // TODO (jrp) see if we can implement a write-attribute(property)
         return false;
     }
 
     @Override
-    protected void doRevertUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final Handler handler) throws OperationFailedException {
+    protected void doRevertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final String handlerName, final Handler handler) throws OperationFailedException {
         //TODO (jrp) - return proper value
     }
 }

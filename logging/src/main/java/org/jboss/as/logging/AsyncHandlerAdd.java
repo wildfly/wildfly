@@ -27,6 +27,7 @@ import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
 import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Handler;
@@ -41,17 +42,16 @@ import org.jboss.msc.value.InjectedValue;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  */
-class AsyncHandlerAdd extends FlushingHandlerAddProperties<AsyncHandlerService> {
+class AsyncHandlerAdd extends HandlerAddProperties<AsyncHandlerService> {
 
     static final AsyncHandlerAdd INSTANCE = new AsyncHandlerAdd();
 
     private AsyncHandlerAdd() {
-        super(SUBHANDLERS, QUEUE_LENGTH, OVERFLOW_ACTION);
+        super(Arrays.asList(SUBHANDLERS, QUEUE_LENGTH, OVERFLOW_ACTION));
     }
 
     @Override
     protected void updateRuntime(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final String name, final AsyncHandlerService service, final ModelNode model) throws OperationFailedException {
-        super.updateRuntime(context, serviceBuilder, name, service, model);
         final List<InjectedValue<Handler>> list = new ArrayList<InjectedValue<Handler>>();
         final ModelNode subhandlers = SUBHANDLERS.resolveModelAttribute(context, model);
         if (subhandlers.isDefined()) {

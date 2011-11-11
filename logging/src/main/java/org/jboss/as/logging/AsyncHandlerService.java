@@ -37,7 +37,7 @@ import java.util.logging.Level;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class AsyncHandlerService implements FlushingHandlerService {
+public final class AsyncHandlerService implements HandlerService {
 
     private final List<InjectedValue<Handler>> subhandlers = new ArrayList<InjectedValue<Handler>>();
 
@@ -158,19 +158,14 @@ public final class AsyncHandlerService implements FlushingHandlerService {
         for (InjectedValue<Handler> injectedHandler : subhandlers) {
             if (injectedHandler.getValue().equals(subHandler)) valueToRemove = injectedHandler;
         }
+        if (valueToRemove != null) {
 
-        subhandlers.remove(valueToRemove);
+            subhandlers.remove(valueToRemove);
 
-        final AsyncHandler handler = value;
-        handler.removeHandler(valueToRemove.getValue());
-    }
-
-    @Override
-    public synchronized void setAutoflush(final boolean autoflush) {
-        this.autoflush = autoflush;
-        final AsyncHandler handler = value;
-        if (handler != null) {
-            handler.setAutoFlush(autoflush);
+            final AsyncHandler handler = value;
+            if (handler != null) {
+                handler.removeHandler(valueToRemove.getValue());
+            }
         }
     }
 }

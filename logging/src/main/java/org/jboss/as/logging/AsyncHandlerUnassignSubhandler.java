@@ -26,16 +26,18 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.logging.CommonAttributes.NAME;
 import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
 
-import java.util.List;
-import java.util.logging.Handler;
-
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
+
+import java.util.List;
+import java.util.logging.Handler;
 
 
 /**
@@ -57,21 +59,55 @@ public class AsyncHandlerUnassignSubhandler extends AbstractLogHandlerAssignment
                                   final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         String asyncHandlerName = address.getLastElement().getValue();
-        String handlerNameToUnassign = NAME.resolveModelAttribute(context, model).asString();
-
-        ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
-        @SuppressWarnings("unchecked")
-        ServiceController<Handler> asyncHandlerController = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(asyncHandlerName));
-        @SuppressWarnings("unchecked")
-        ServiceController<Handler> handlerToUnassignController = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(handlerNameToUnassign));
-
-        AsyncHandlerService service = (AsyncHandlerService) asyncHandlerController.getService();
-        Handler injectedHandler = handlerToUnassignController.getService().getValue();
-        service.removeHandler(injectedHandler);
+        String handlerNameToRemove = NAME.resolveModelAttribute(context, model).asString();
+        removeHandler(context, asyncHandlerName, handlerNameToRemove);
     }
 
     @Override
     protected String getHandlerName(final ModelNode model) throws OperationFailedException {
         return NAME.validateOperation(model).asString();
+    }
+
+    /**
+     * Removes the handler, represented by the {@code handlerNameToRemove} parameter, from the async handler.
+     *
+     * @param context             the context of the operation.
+     * @param asyncHandlerName    the async handler name.
+     * @param handlerNameToRemove the name of the handler to remove.
+     *
+     * @throws OperationFailedException if an error occurs.
+     */
+    public static void removeHandler(final OperationContext context, final String asyncHandlerName, final String handlerNameToRemove) throws OperationFailedException {
+        ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
+        @SuppressWarnings("unchecked")
+        ServiceController<Handler> handlerController = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(asyncHandlerName));
+        @SuppressWarnings("unchecked")
+        ServiceController<Handler> handlerToRemoveController = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(handlerNameToRemove));
+
+        AsyncHandlerService service = AsyncHandlerService.class.cast(handlerController.getService());
+        Handler injectedHandler = handlerToRemoveController.getService().getValue();
+        service.removeHandler(injectedHandler);
+
+    }
+
+    /**
+     * Removes the subhandlers to the async handler.
+     *
+     * @param attribute the attribute definition.
+     * @param node      the model node to extract the subhandlers from.
+     * @param context   the context of the operation.
+     *
+     * @throws OperationFailedException if an error occurs.
+     */
+    public static void removeHandlers(final AttributeDefinition attribute, final ModelNode node, final OperationContext context,
+                                   final String asyncHandlerName) throws OperationFailedException {
+        final ModelNode handlers = attribute.resolveModelAttribute(context, node);
+        if (handlers.isDefined()) {
+            if (handlers.getType() == ModelType.LIST) {
+                for (ModelNode handler : handlers.asList()) {
+                    removeHandler(context, asyncHandlerName, handler.asString());
+                }
+            }
+        }
     }
 }
