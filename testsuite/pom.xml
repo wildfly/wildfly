@@ -344,6 +344,7 @@
                     <systemPropertyVariables>
                         <jboss.options>${surefire.system.args}</jboss.options>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                        <jboss.dist>${jboss.dist}</jboss.dist>
                         <jboss.home>${basedir}/target/jbossas</jboss.home>
                         <module.path>${jboss.dist}/modules</module.path>
                     </systemPropertyVariables>
