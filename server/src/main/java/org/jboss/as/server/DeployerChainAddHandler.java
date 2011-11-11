@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentSkipListSet;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
@@ -51,9 +53,6 @@ public class DeployerChainAddHandler implements OperationStepHandler, Descriptio
 
     static void addDeploymentProcessor(Phase phase, int priority, DeploymentUnitProcessor processor) {
         final EnumMap<Phase, Set<RegisteredProcessor>> deployerMap = INSTANCE.deployerMap;
-        if (deployerMap == null) {
-            throw new IllegalStateException("No deployers set");
-        }
         deployerMap.get(phase).add(new RegisteredProcessor(priority, processor));
     }
 
@@ -63,22 +62,23 @@ public class DeployerChainAddHandler implements OperationStepHandler, Descriptio
         OPERATION.get(ADDRESS).setEmptyList();
     }
 
-    private  EnumMap<Phase, Set<RegisteredProcessor>> deployerMap;
+    // This map is concurrently read by multiple threads but will only
+    // be written by a single thread, the boot thread
+    private final EnumMap<Phase, Set<RegisteredProcessor>> deployerMap;
 
     private DeployerChainAddHandler() {
-    }
-
-    /** This is only public so AbstractSubsystemTest can use it. */
-    public void initDeployerMap() {
-        deployerMap = new EnumMap<Phase, Set<RegisteredProcessor>>(Phase.class);
+        final EnumMap<Phase, Set<RegisteredProcessor>> map = new EnumMap<Phase, Set<RegisteredProcessor>>(Phase.class);
         for (Phase phase : Phase.values()) {
-            deployerMap.put(phase, new TreeSet<RegisteredProcessor>());
+            map.put(phase, new ConcurrentSkipListSet<RegisteredProcessor>());
         }
+        this.deployerMap = map;
     }
 
-    /** This is only public so AbstractSubsystemTest can use it. */
+    /** This is only public so AbstractSubsystemTest can use it; otherwise it would be package-protected. */
     public void clearDeployerMap() {
-        deployerMap = null;
+        for (Set<RegisteredProcessor> set : deployerMap.values()) {
+            set.clear();
+        }
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
