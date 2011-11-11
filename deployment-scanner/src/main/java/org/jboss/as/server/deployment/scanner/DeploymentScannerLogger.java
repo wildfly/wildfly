@@ -214,4 +214,12 @@ public interface DeploymentScannerLogger extends BasicLogger {
             "Deployment changes will not be processed until all problematic content is either removed or whether to " +
             "deploy the content or not is indicated via a %s or %s marker file. Problematic deployments are %s")
     void unsafeAutoDeploy(String marker1, String marker2, Set<String> problems);
+
+    /**
+     * Logs an info level message indicating that a failed deployment {@code deploymentName} is being re-attempted.
+     * @param deploymentName The name of the failed deployment.
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 15014, value = "Re-attempting failed deployment %s")
+    void reattemptingFailedDeployment(String deploymentName);
 }
