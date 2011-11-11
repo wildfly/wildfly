@@ -21,51 +21,24 @@
  */
 package org.jboss.as.webservices.tomcat;
 
-import org.jboss.metadata.common.ejb.IAssemblyDescriptorMetaData;
-import org.jboss.metadata.ejb.jboss.JBossMetaData;
-import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
+import java.util.List;
+
+import org.jboss.as.webservices.metadata.model.EJBEndpoint;
+import org.jboss.as.webservices.metadata.model.JAXRPCDeployment;
 import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
-import org.jboss.wsf.spi.metadata.j2ee.EJBArchiveMetaData;
 
 /**
  * Creates web app security meta data for EJB 21 deployment.
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
- * @author <a href="mailto:tdiesler@redhat.com">Thomas Diesler</a>
  */
 final class SecurityMetaDataAccessorEJB21 extends AbstractSecurityMetaDataAccessorEJB {
 
-    /**
-     * Constructor.
-     */
-    SecurityMetaDataAccessorEJB21() {
-        super();
+    @Override
+    protected List<EJBEndpoint> getEjbEndpoints(final Deployment dep) {
+        final JAXRPCDeployment jaxrpcDeployment = WSHelper.getRequiredAttachment(dep, JAXRPCDeployment.class);
+        return jaxrpcDeployment.getEjbEndpoints();
     }
 
-    /**
-     * @see org.jboss.webservices.integration.tomcat.AbstractSecurityMetaDataAccessorEJB#getSecurityDomain(Deployment)
-     *
-     * @param dep webservice deployment
-     * @return security domain associated with EJB 21 deployment
-     */
-    public String getSecurityDomain(final Deployment dep) {
-        final EJBArchiveMetaData ejbMetaData = WSHelper.getRequiredAttachment(dep, EJBArchiveMetaData.class);
-
-        //return super.appendJaasPrefix(ejbMetaData.getSecurityDomain()); TODO: properly removed?
-        return ejbMetaData.getSecurityDomain();
-    }
-
-    /**
-     * @see org.jboss.webservices.integration.tomcat.AbstractSecurityMetaDataAccessorEJB#getSecurityRoles(Deployment)
-     *
-     * @param dep webservice deployment
-     * @return security roles associated with EJB 21 deployment
-     */
-    public SecurityRolesMetaData getSecurityRoles(final Deployment dep) {
-        final JBossMetaData jbossWebMD = WSHelper.getRequiredAttachment(dep, JBossMetaData.class);
-        final IAssemblyDescriptorMetaData assemblyDescriptorMD = jbossWebMD.getAssemblyDescriptor();
-
-        return (assemblyDescriptorMD != null) ? assemblyDescriptorMD.getSecurityRoles() : null;
-    }
 }

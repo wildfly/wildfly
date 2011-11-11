@@ -28,6 +28,10 @@ import static org.jboss.as.webservices.util.ASHelper.getOptionalAttachment;
 import static org.jboss.as.webservices.util.ASHelper.getRequiredAttachment;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.WEBSERVICES_METADATA_KEY;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.xml.rpc.handler.MessageContext;
 import javax.xml.rpc.handler.soap.SOAPMessageContext;
 
@@ -48,6 +52,8 @@ import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
+import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
+import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.wsf.spi.invocation.HandlerCallback;
 import org.jboss.wsf.spi.invocation.Invocation;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
@@ -78,16 +84,17 @@ public final class WSIntegrationProcessorJAXRPC_EJB implements DeploymentUnitPro
 
     private static void createJaxrpcDeployment(final DeploymentUnit unit, final WebservicesMetaData webservicesMD, final EEModuleDescription moduleDescription) {
         final JAXRPCDeployment jaxrpcDeployment = getJaxrpcDeployment(unit);
+        final Set<String> securityRoles = getSecurityRoles(unit);
 
         for (final WebserviceDescriptionMetaData wsDescriptionMD : webservicesMD.getWebserviceDescriptions()) {
             for (final PortComponentMetaData portComponentMD : wsDescriptionMD.getPortComponents()) {
-                final EJBEndpoint ejbEndpoint = newEjbEndpoint(portComponentMD, moduleDescription);
+                final EJBEndpoint ejbEndpoint = newEjbEndpoint(portComponentMD, moduleDescription, securityRoles);
                 jaxrpcDeployment.addEndpoint(ejbEndpoint);
             }
         }
     }
 
-    private static EJBEndpoint newEjbEndpoint(final PortComponentMetaData portComponentMD, final EEModuleDescription moduleDescription) {
+    private static EJBEndpoint newEjbEndpoint(final PortComponentMetaData portComponentMD, final EEModuleDescription moduleDescription, final Set<String> securityRoles) {
         final String ejbName = portComponentMD.getEjbLink();
         final SessionBeanComponentDescription sessionBean = (SessionBeanComponentDescription)moduleDescription.getComponentByName(ejbName);
         final String seiIfaceClassName = portComponentMD.getServiceEndpointInterface();
@@ -99,7 +106,24 @@ public final class WSIntegrationProcessorJAXRPC_EJB implements DeploymentUnitPro
         sessionBean.getConfigurators().addLast(new JAXRPCHandlersConfigurator());
         final String ejbViewName = ejbViewDescription.getServiceName().getCanonicalName();
 
-        return new EJBEndpoint(sessionBean, null, ejbViewName);
+        return new EJBEndpoint(sessionBean, ejbViewName, securityRoles, null, false, null);
+    }
+
+    private static Set<String> getSecurityRoles(final DeploymentUnit unit) {
+        final Set<String> securityRoles = new HashSet<String>();
+
+        // process assembly-descriptor DD section
+        final EjbJarMetaData ejbJarMD = unit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
+        if (ejbJarMD != null && ejbJarMD.getAssemblyDescriptor() != null) {
+            final SecurityRolesMetaData securityRolesMD = ejbJarMD.getAssemblyDescriptor().getSecurityRoles();
+            if (securityRolesMD != null && securityRolesMD.size() > 0) {
+                for (final SecurityRoleMetaData securityRoleMD : securityRolesMD) {
+                    securityRoles.add(securityRoleMD.getRoleName());
+                }
+            }
+        }
+
+        return (securityRoles.size() > 0) ? Collections.unmodifiableSet(securityRoles) : Collections.<String>emptySet();
     }
 
     private static final class JAXRPCHandlersConfigurator implements ComponentConfigurator {
