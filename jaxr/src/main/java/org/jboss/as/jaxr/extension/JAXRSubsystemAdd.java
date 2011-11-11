@@ -39,6 +39,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.jaxr.extension.JAXRWriteAttributeHandler.applyUpdateToConfig;
 
 /**
  * Handler responsible for adding the subsystem resource to the model
@@ -63,31 +64,10 @@ class JAXRSubsystemAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        JAXRConfiguration config = JAXRConfiguration.INSTANCE;
-        if (operation.has(ModelConstants.CONNECTIONFACTORY)) {
-            ModelNode node = operation.get(ModelConstants.CONNECTIONFACTORY);
-            model.get(ModelConstants.CONNECTIONFACTORY).set(node);
-            config.setConnectionFactoryBinding(node.asString());
-        }
-        if (operation.has(ModelConstants.DATASOURCE)) {
-            ModelNode node = operation.get(ModelConstants.DATASOURCE);
-            model.get(ModelConstants.DATASOURCE).set(node);
-            config.setDataSourceBinding(node.asString());
-        }
-        if (operation.has(ModelConstants.DROPONSTART)) {
-            ModelNode node = operation.get(ModelConstants.DROPONSTART);
-            model.get(ModelConstants.DROPONSTART).set(node);
-            config.setDropOnStart(node.asBoolean());
-        }
-        if (operation.has(ModelConstants.CREATEONSTART)) {
-            ModelNode node = operation.get(ModelConstants.CREATEONSTART);
-            model.get(ModelConstants.CREATEONSTART).set(node);
-            config.setCreateOnStart(node.asBoolean());
-        }
-        if (operation.has(ModelConstants.DROPONSTOP)) {
-            ModelNode node = operation.get(ModelConstants.DROPONSTOP);
-            model.get(ModelConstants.DROPONSTOP).set(node);
-            config.setDropOnStop(node.asBoolean());
+        for (String attr : JAXRWriteAttributeHandler.REQUIRED_ATTRIBUTES) {
+            ModelNode node = operation.get(attr);
+            applyUpdateToConfig(attr, node);
+            model.get(attr).set(node);
         }
     }
 

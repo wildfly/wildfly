@@ -40,8 +40,16 @@ import org.jboss.dmr.ModelType;
  */
 class JAXRWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
 
-    static AttributeDefinition DATASOURCE_ATTRIBUTE = new BindingAttributeDefinition (ModelConstants.DATASOURCE);
-    static AttributeDefinition CONNECTIONFACTORY_ATTRIBUTE = new BindingAttributeDefinition (ModelConstants.CONNECTIONFACTORY);
+    static String[] REQUIRED_ATTRIBUTES = new String[]{
+            ModelConstants.CONNECTIONFACTORY,
+            ModelConstants.DATASOURCE,
+            ModelConstants.DROPONSTART,
+            ModelConstants.CREATEONSTART,
+            ModelConstants.DROPONSTOP
+    };
+
+    static AttributeDefinition DATASOURCE_ATTRIBUTE = new BindingAttributeDefinition(ModelConstants.DATASOURCE);
+    static AttributeDefinition CONNECTIONFACTORY_ATTRIBUTE = new BindingAttributeDefinition(ModelConstants.CONNECTIONFACTORY);
     static AttributeDefinition DROPONSTART_ATTRIBUTE = new BooleanAttributeDefinition(ModelConstants.DROPONSTART, false);
     static AttributeDefinition CREATEONSTART_ATTRIBUTE = new BooleanAttributeDefinition(ModelConstants.CREATEONSTART, false);
     static AttributeDefinition DROPONSTOP_ATTRIBUTE = new BooleanAttributeDefinition(ModelConstants.DROPONSTOP, false);
@@ -55,48 +63,30 @@ class JAXRWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
     }
 
     @Override
-    protected boolean requiresRuntime(OperationContext context) {
-        return context.getType() == OperationContext.Type.SERVER;
-    }
-
-    @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> voidHandbackHolder) throws OperationFailedException {
-        JAXRConfiguration config = JAXRConfiguration.INSTANCE;
-        if (attributeName.equals(ModelConstants.CONNECTIONFACTORY)) {
-            config.setConnectionFactoryBinding(resolvedValue.asString());
-        }
-        if (attributeName.equals(ModelConstants.DATASOURCE)) {
-            config.setDataSourceBinding(resolvedValue.asString());
-        }
-        if (attributeName.equals(ModelConstants.DROPONSTART)) {
-            config.setDropOnStart(resolvedValue.asBoolean());
-        }
-        if (attributeName.equals(ModelConstants.CREATEONSTART)) {
-            config.setCreateOnStart(resolvedValue.asBoolean());
-        }
-        if (attributeName.equals(ModelConstants.DROPONSTOP)) {
-            config.setDropOnStop(resolvedValue.asBoolean());
-        }
+        applyUpdateToConfig(attributeName, resolvedValue);
         return false;
     }
 
     @Override
     protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
+        applyUpdateToConfig(attributeName, valueToRestore);
+    }
+
+    static void applyUpdateToConfig(String attributeName, ModelNode attributeValue) {
         JAXRConfiguration config = JAXRConfiguration.INSTANCE;
         if (attributeName.equals(ModelConstants.CONNECTIONFACTORY)) {
-            config.setConnectionFactoryBinding(valueToRestore.asString());
-        }
-        if (attributeName.equals(ModelConstants.DATASOURCE)) {
-            config.setDataSourceBinding(valueToRestore.asString());
-        }
-        if (attributeName.equals(ModelConstants.DROPONSTART)) {
-            config.setDropOnStart(valueToRestore.asBoolean());
-        }
-        if (attributeName.equals(ModelConstants.CREATEONSTART)) {
-            config.setCreateOnStart(valueToRestore.asBoolean());
-        }
-        if (attributeName.equals(ModelConstants.DROPONSTOP)) {
-            config.setDropOnStop(valueToRestore.asBoolean());
+            config.setConnectionFactoryBinding(attributeValue.asString());
+        } else if (attributeName.equals(ModelConstants.DATASOURCE)) {
+            config.setDataSourceBinding(attributeValue.asString());
+        } else if (attributeName.equals(ModelConstants.DROPONSTART)) {
+            config.setDropOnStart(attributeValue.asBoolean());
+        } else if (attributeName.equals(ModelConstants.CREATEONSTART)) {
+            config.setCreateOnStart(attributeValue.asBoolean());
+        } else if (attributeName.equals(ModelConstants.DROPONSTOP)) {
+            config.setDropOnStop(attributeValue.asBoolean());
+        } else {
+            throw new IllegalArgumentException("Invalid attribute name: " + attributeName);
         }
     }
 

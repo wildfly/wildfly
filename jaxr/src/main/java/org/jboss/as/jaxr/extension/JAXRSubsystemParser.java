@@ -30,21 +30,10 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.controller.parsing.ParseUtils.*;
 
 /**
  * The subsystem parser.
@@ -53,28 +42,22 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
 
     @Override
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
-
         final ModelNode addop = JAXRSubsystemAdd.createAddSubsystemOperation();
-        operations.add(addop);
-
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case JAXR_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case CONNECTIONFACTORY: {
-                            ModelNode result = parseBinding(reader, addop, ModelConstants.CONNECTIONFACTORY);
-                            operations.add(result);
+                            parseBinding(reader, addop, ModelConstants.CONNECTIONFACTORY);
                             break;
                         }
                         case DATASOURCE: {
-                            ModelNode result = parseBinding(reader, addop, ModelConstants.DATASOURCE);
-                            operations.add(result);
+                            parseBinding(reader, addop, ModelConstants.DATASOURCE);
                             break;
                         }
                         case FLAGS: {
-                            List<ModelNode> result = parseFlags(reader, addop);
-                            operations.addAll(result);
+                            parseFlags(reader, addop);
                             break;
                         }
                         default:
@@ -83,13 +66,10 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
                 }
             }
         }
+        operations.add(addop);
     }
 
-    private ModelNode parseBinding(XMLExtendedStreamReader reader, ModelNode addop, String modelAttribute) throws XMLStreamException {
-
-        final ModelNode result = new ModelNode();
-        result.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-        result.get(OP_ADDR).add(SUBSYSTEM, JAXRConstants.SUBSYSTEM_NAME);
+    private void parseBinding(XMLExtendedStreamReader reader, ModelNode addop, String modelAttribute) throws XMLStreamException {
 
         // Handle attributes
         String jndiName = null;
@@ -114,19 +94,9 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
         requireNoContent(reader);
 
         addop.get(modelAttribute).set(jndiName);
-
-        result.get(NAME).set(modelAttribute);
-        result.get(VALUE).set(jndiName);
-
-        return result;
     }
 
-    private List<ModelNode> parseFlags(XMLExtendedStreamReader reader, ModelNode addop) throws XMLStreamException {
-
-        List<ModelNode> result = new ArrayList<ModelNode>();
-        final ModelNode op = new ModelNode();
-        op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-        op.get(OP_ADDR).add(SUBSYSTEM, JAXRConstants.SUBSYSTEM_NAME);
+    private void parseFlags(XMLExtendedStreamReader reader, ModelNode addop) throws XMLStreamException {
 
         // Handle attributes
         int count = reader.getAttributeCount();
@@ -137,31 +107,20 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
             switch (attribute) {
                 case DROPONSTART: {
                     addop.get(ModelConstants.DROPONSTART).set(attrValue);
-                    op.get(NAME).set(ModelConstants.DROPONSTART);
-                    op.get(VALUE).set(attrValue);
-                    result.add(op);
                     break;
                 }
                 case CREATEONSTART: {
                     addop.get(ModelConstants.CREATEONSTART).set(attrValue);
-                    op.get(NAME).set(ModelConstants.CREATEONSTART);
-                    op.get(VALUE).set(attrValue);
-                    result.add(op);
                     break;
                 }
                 case DROPONSTOP: {
                     addop.get(ModelConstants.DROPONSTOP).set(attrValue);
-                    op.get(NAME).set(ModelConstants.DROPONSTOP);
-                    op.get(VALUE).set(attrValue);
-                    result.add(op);
                     break;
                 }
                 default:
                     throw unexpectedAttribute(reader, i);
             }
         }
-
         requireNoContent(reader);
-        return result;
     }
 }
