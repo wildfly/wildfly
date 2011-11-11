@@ -21,27 +21,23 @@
  */
 package org.jboss.as.test.integration.ee.appclient.basic;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.ee.appclient.util.AppClientWrapper;
 import org.jboss.ejb.client.EJBClient;
-import org.jboss.ejb.client.EJBClientTransactionContext;
 import org.jboss.ejb.client.StatelessEJBLocator;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Tests that an application client can launch and conntect to a remote EJB
@@ -94,19 +90,6 @@ public class SimpleApplicationClientTestCase {
 
         archive = ear;
         return ear;
-    }
-
-    /**
-     * Create and setup the EJB client context backed by the remoting receiver
-     *
-     * @throws Exception
-     */
-    @Before
-    public void beforeTest() throws Exception {
-        final EJBClientTransactionContext localUserTxContext = EJBClientTransactionContext.createLocal();
-        // set the tx context
-        EJBClientTransactionContext.setGlobalContext(localUserTxContext);
-
     }
 
     /**
