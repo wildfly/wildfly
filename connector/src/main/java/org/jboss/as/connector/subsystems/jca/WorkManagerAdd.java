@@ -97,9 +97,9 @@ public class WorkManagerAdd extends AbstractBoottimeAddStepHandler {
         ServiceBuilder builder = serviceTarget
                 .addService(ConnectorServices.WORKMANAGER_SERVICE.append(name), wmService);
         if (operation.get(WORKMANAGER_LONG_RUNNING).isDefined() && operation.get(WORKMANAGER_LONG_RUNNING).asBoolean()) {
-            builder.addDependency(ThreadsServices.EXECUTOR.append(WORKMANAGER_LONG_RUNNING), Executor.class, wmService.getExecutorLongInjector());
+            builder.addDependency(ThreadsServices.EXECUTOR.append(name + "-" + WORKMANAGER_LONG_RUNNING), Executor.class, wmService.getExecutorLongInjector());
         }
-        builder.addDependency(ThreadsServices.EXECUTOR.append(WORKMANAGER_SHORT_RUNNING), Executor.class, wmService.getExecutorShortInjector());
+        builder.addDependency(ThreadsServices.EXECUTOR.append(name + "-" + WORKMANAGER_SHORT_RUNNING), Executor.class, wmService.getExecutorShortInjector());
 
         builder.addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, wmService.getXaTerminatorInjector())
                 .addListener(verificationHandler)

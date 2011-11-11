@@ -448,11 +448,11 @@ public class JcaExtension implements Extension {
 
                 switch (element) {
                     case LONG_RUNNING_THREADS: {
-                        ThreadsParser.getInstance().parseBoundedQueueThreadPool(reader, workManagerAddress, list, WORKMANAGER_LONG_RUNNING, WORKMANAGER_LONG_RUNNING);
+                        ThreadsParser.getInstance().parseBoundedQueueThreadPool(reader, workManagerAddress, list, WORKMANAGER_LONG_RUNNING, name + "-" + WORKMANAGER_LONG_RUNNING);
                         break;
                     }
                     case SHORT_RUNNING_THREADS: {
-                        ThreadsParser.getInstance().parseBoundedQueueThreadPool(reader, workManagerAddress, list, WORKMANAGER_SHORT_RUNNING, WORKMANAGER_SHORT_RUNNING);
+                        ThreadsParser.getInstance().parseBoundedQueueThreadPool(reader, workManagerAddress, list, WORKMANAGER_SHORT_RUNNING,  name + "-" + WORKMANAGER_SHORT_RUNNING);
                         break;
                     }
                     default:
