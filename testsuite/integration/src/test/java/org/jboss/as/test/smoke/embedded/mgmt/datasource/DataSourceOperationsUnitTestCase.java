@@ -116,14 +116,14 @@ public class DataSourceOperationsUnitTestCase {
 
         final ModelNode address = new ModelNode();
         address.add("subsystem", "datasources");
-        address.add("data-source", "MyNewDs");
+        address.add("data-source", "java:jboss/datasources/MyNewDs");
         address.protect();
 
         final ModelNode operation = new ModelNode();
         operation.get(OP).set("add");
         operation.get(OP_ADDR).set(address);
 
-        operation.get("name").set("MyNewDs");
+        operation.get("name").set("java:jboss/datasources/MyNewDs");
         operation.get("jndi-name").set("java:jboss/datasources/MyNewDs");
 
 
@@ -142,13 +142,13 @@ public class DataSourceOperationsUnitTestCase {
 
         execute(operation2);
 
-        testConnection("MyNewDs", getModelControllerClient());
+        testConnection("java:jboss/datasources/MyNewDs", getModelControllerClient());
 
         List<ModelNode> newList = marshalAndReparseDsResources("data-source");
 
         Assert.assertNotNull(newList);
 
-        final Map<String, ModelNode> parseChildren = getChildren(newList.get(1));
+        final Map<String, ModelNode> parseChildren = getChildren(newList.get(3));
         Assert.assertFalse(parseChildren.isEmpty());
         Assert.assertEquals("java:jboss/datasources/MyNewDs", parseChildren.get("jndi-name").asString());
 
@@ -165,14 +165,14 @@ public class DataSourceOperationsUnitTestCase {
 
         final ModelNode address = new ModelNode();
         address.add("subsystem", "datasources");
-        address.add("data-source", "MyNewDs");
+        address.add("data-source", "java:jboss/datasources/MyNewDs");
         address.protect();
 
         final ModelNode operation = new ModelNode();
         operation.get(OP).set("add");
         operation.get(OP_ADDR).set(address);
 
-        operation.get("name").set("MyNewDs");
+        operation.get("name").set("java:jboss/datasources/MyNewDs");
         operation.get("jndi-name").set("java:jboss/datasources/MyNewDs");
 
         operation.get("driver-name").set("h2");
@@ -190,13 +190,13 @@ public class DataSourceOperationsUnitTestCase {
 
         execute(operation2);
 
-        testConnection("MyNewDs", getModelControllerClient());
+        testConnection("java:jboss/datasources/MyNewDs", getModelControllerClient());
 
         List<ModelNode> newList = marshalAndReparseDsResources("data-source");
 
         Assert.assertNotNull(newList);
 
-        final Map<String, ModelNode> parseChildren = getChildren(newList.get(1));
+        final Map<String, ModelNode> parseChildren = getChildren(newList.get(3));
         Assert.assertFalse(parseChildren.isEmpty());
         Assert.assertEquals("java:jboss/datasources/MyNewDs", parseChildren.get("jndi-name").asString());
 
@@ -208,14 +208,14 @@ public class DataSourceOperationsUnitTestCase {
 
         final ModelNode address = new ModelNode();
         address.add("subsystem", "datasources");
-        address.add("data-source", "MyNewDs");
+        address.add("data-source", "java:jboss/datasources/MyNewDs");
         address.protect();
 
         final ModelNode operation = new ModelNode();
         operation.get(OP).set("add");
         operation.get(OP_ADDR).set(address);
 
-        operation.get("name").set("MyNewDs");
+        operation.get("name").set("java:jboss/datasources/MyNewDs");
         operation.get("jndi-name").set("java:jboss/datasources/MyNewDs");
 
 
@@ -253,7 +253,7 @@ public class DataSourceOperationsUnitTestCase {
 
         Assert.assertNotNull(newList);
 
-        final Map<String, ModelNode> parseChildren = getChildren(newList.get(1));
+        final Map<String, ModelNode> parseChildren = getChildren(newList.get(3));
         Assert.assertFalse(parseChildren.isEmpty());
         Assert.assertEquals("java:jboss/datasources/MyNewDs", parseChildren.get("jndi-name").asString());
 
@@ -262,7 +262,7 @@ public class DataSourceOperationsUnitTestCase {
 
     @Test
     public void testAddAndRemoveSameName() throws Exception {
-        final String dsName = "SameNameDs";
+        final String dsName = "java:jboss/datasources/" + "SameNameDs";
         final ModelNode address = new ModelNode();
         address.add("subsystem", "datasources");
         address.add("data-source", dsName);
@@ -273,7 +273,7 @@ public class DataSourceOperationsUnitTestCase {
         operation.get(OP_ADDR).set(address);
 
         operation.get("name").set(dsName);
-        operation.get("jndi-name").set("java:jboss/datasources/" + dsName);
+        operation.get("jndi-name").set(dsName);
 
         operation.get("driver-name").set("h2");
         operation.get("pool-name").set(dsName + "_Pool");
@@ -298,8 +298,8 @@ public class DataSourceOperationsUnitTestCase {
      */
     //@Test
     public void testAddAndRemoveNameAndJndiNameDifferent() throws Exception {
-        final String dsName = "DsName";
-        final String jndiDsName = "JndiDsName";
+        final String dsName = "java:jboss/datasources/" + "DsName";
+
 
         final ModelNode address = new ModelNode();
         address.add("subsystem", "datasources");
@@ -311,7 +311,7 @@ public class DataSourceOperationsUnitTestCase {
         operation.get(OP_ADDR).set(address);
 
         operation.get("name").set(dsName);
-        operation.get("jndi-name").set("java:jboss/datasources/" + jndiDsName);
+        operation.get("jndi-name").set(dsName);
 
 
         operation.get("driver-name").set("h2");
@@ -329,8 +329,8 @@ public class DataSourceOperationsUnitTestCase {
 
     @Test
     public void testAddAndRemoveXaDs() throws Exception {
-        final String dsName = "XaDsName";
-        final String jndiDsName = "XaJndiDsName";
+        final String dsName = "java:jboss/datasources/" + "XaDsName";
+
 
         final ModelNode address = new ModelNode();
         address.add("subsystem", "datasources");
@@ -342,7 +342,7 @@ public class DataSourceOperationsUnitTestCase {
         operation.get(OP_ADDR).set(address);
 
         operation.get("name").set(dsName);
-        operation.get("jndi-name").set("java:jboss/datasources/" + jndiDsName);
+        operation.get("jndi-name").set(dsName);
 
 
         operation.get("driver-name").set("h2");
@@ -384,8 +384,8 @@ public class DataSourceOperationsUnitTestCase {
      */
     @Test
     public void testMarshallUnmarshallXaDs() throws Exception {
-        final String dsName = "XaDsName2";
-        final String jndiDsName = "XaJndiDsName2";
+        final String dsName = "java:jboss/datasources/" + "XaDsName2";
+
 
         final ModelNode address = new ModelNode();
         address.add("subsystem", "datasources");
@@ -397,7 +397,7 @@ public class DataSourceOperationsUnitTestCase {
         operation.get(OP_ADDR).set(address);
 
         operation.get("name").set(dsName);
-        operation.get("jndi-name").set("java:jboss/datasources/" + jndiDsName);
+        operation.get("jndi-name").set(dsName);
 
 
         operation.get("driver-name").set("h2");
@@ -430,7 +430,7 @@ public class DataSourceOperationsUnitTestCase {
 
         final Map<String, ModelNode> parseChildren = getChildren(newList.get(1));
         Assert.assertFalse(parseChildren.isEmpty());
-        Assert.assertEquals("java:jboss/datasources/XaJndiDsName2", parseChildren.get("jndi-name").asString());
+        Assert.assertEquals(dsName, parseChildren.get("jndi-name").asString());
 
         remove(address);
         // remove from xml too
@@ -445,8 +445,8 @@ public class DataSourceOperationsUnitTestCase {
      */
     @Test
     public void DisableAndReEnableXaDs() throws Exception {
-        final String dsName = "XaDsNameDisEn";
-        final String jndiDsName = "XaJndiDsNameDisEn";
+        final String dsName = "java:jboss/datasources/" + "XaDsNameDisEn";
+
 
         final ModelNode address = new ModelNode();
         address.add("subsystem", "datasources");
@@ -458,7 +458,7 @@ public class DataSourceOperationsUnitTestCase {
         operation.get(OP_ADDR).set(address);
 
         operation.get("name").set(dsName);
-        operation.get("jndi-name").set("java:jboss/datasources/" + jndiDsName);
+        operation.get("jndi-name").set(dsName);
 
 
         operation.get("driver-name").set("h2");
@@ -531,7 +531,7 @@ public class DataSourceOperationsUnitTestCase {
     @Test
     public void testAddXaDsWithProperties() throws Exception {
 
-        final String xaDs = "MyNewXaDs";
+        final String xaDs = "java:jboss/xa-datasources/" + "MyNewXaDs";
         final ModelNode address = new ModelNode();
         address.add("subsystem", "datasources");
         address.add("xa-data-source", xaDs);
@@ -542,7 +542,7 @@ public class DataSourceOperationsUnitTestCase {
         operation.get(OP_ADDR).set(address);
 
         operation.get("name").set(xaDs);
-        operation.get("jndi-name").set("java:jboss/xa-datasources/" + xaDs);
+        operation.get("jndi-name").set(xaDs);
         operation.get("driver-name").set("h2");
 
         operation.get("pool-name").set(xaDs + "_Pool");
@@ -576,7 +576,7 @@ public class DataSourceOperationsUnitTestCase {
 
         final Map<String, ModelNode> parseChildren = getChildren(newList.get(1));
         Assert.assertFalse(parseChildren.isEmpty());
-        Assert.assertEquals("java:jboss/xa-datasources/" + xaDs, parseChildren.get("jndi-name").asString());
+        Assert.assertEquals(xaDs, parseChildren.get("jndi-name").asString());
 
         remove(address);
     }
