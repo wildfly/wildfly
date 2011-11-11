@@ -598,7 +598,6 @@ public abstract class AbstractSubsystemTest {
                 if (validateOps) {
                     new OperationValidator(rootRegistration).validateOperations(bootOperations);
                 }
-                DeployerChainAddHandler.INSTANCE.initDeployerMap();
                 super.boot(persister.bootOperations);
             } catch (Exception e) {
                 error = e;

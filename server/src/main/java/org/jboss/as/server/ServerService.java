@@ -184,8 +184,6 @@ public final class ServerService extends AbstractControllerService {
                 new ExtensionIndexService(newExtDirs)).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
 
-        DeployerChainAddHandler.INSTANCE.initDeployerMap();
-
         // Activate module loader
         DeployerChainAddHandler.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_SERVICE_MODULE_LOADER, new DeploymentUnitProcessor() {
             @Override
