@@ -69,7 +69,7 @@
                                 <configuration>
                                     <target>
                                         <!-- build the UDP server configs in target-->
-                                        <ant antfile="${basedir}/../src/test/scripts/iiop-build.xml">
+                                        <ant antfile="${jbossas.ts.integ.dir}/src/test/scripts/iiop-build.xml">
                                             <target name="build-iiop"/>
                                         </ant>
                                     </target>
@@ -111,7 +111,7 @@
                                     </systemPropertyVariables>
 
                                     <additionalClasspathElements>
-                                        <additionalClasspathElement>${project.basedir}/../src/test/resources/iiop</additionalClasspathElement>
+                                        <additionalClasspathElement>${jbossas.ts.integ.dir}/src/test/resources/iiop</additionalClasspathElement>
                                     </additionalClasspathElements>
 
                                     <reportNameSuffix>tests-iiop-multi-node</reportNameSuffix>

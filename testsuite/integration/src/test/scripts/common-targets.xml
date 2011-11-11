@@ -258,7 +258,7 @@
 
             <!-- process *.xml to *.xml.mod -->
             <xslt destdir="@{output.dir}/jbossas-@{name}/@{config.dir.name}"
-                  style="${basedir}/src/test/xslt/enableJTS.xsl"
+                  style="${jbossas.ts.integ.dir}/src/test/xslt/enableJTS.xsl"
                   extension=".xml.mod"
                   useImplicitFileset="false">
                 <fileset dir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">

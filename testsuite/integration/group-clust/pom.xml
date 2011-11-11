@@ -109,7 +109,7 @@
                                     </systemPropertyVariables>
 
                                     <additionalClasspathElements>
-                                        <additionalClasspathElement>${project.basedir}/src/test/resources/clustering</additionalClasspathElement>
+                                        <additionalClasspathElement>${jbossas.ts.integ.dir}/src/test/resources/clustering</additionalClasspathElement>
                                     </additionalClasspathElements>
 
                                     <reportNameSuffix>tests-clustering-single-node</reportNameSuffix>
@@ -136,7 +136,7 @@
                                     </systemPropertyVariables>
 
                                     <additionalClasspathElements>
-                                        <additionalClasspathElement>${project.basedir}/src/test/resources/clustering</additionalClasspathElement>
+                                        <additionalClasspathElement>${jbossas.ts.integ.dir}/src/test/resources/clustering</additionalClasspathElement>
                                     </additionalClasspathElements>
 
                                     <reportNameSuffix>tests-clustering-multi-node</reportNameSuffix>
