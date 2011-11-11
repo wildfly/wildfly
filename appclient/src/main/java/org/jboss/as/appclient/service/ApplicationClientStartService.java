@@ -38,6 +38,7 @@ import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.remoting.IoFutureHelper;
 import org.jboss.msc.service.Service;
@@ -112,6 +113,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
 
                                     final EJBClientContext ejbClientContext = EJBClientContext.create();
                                     ejbClientContext.registerConnection(connection);
+                                    final ContextSelector<EJBClientContext> previousSelector = EJBClientContext.setConstantContext(ejbClientContext);
                                     applicationClientDeploymentServiceInjectedValue.getValue().getDeploymentCompleteLatch().await();
 
                                     try {
@@ -121,6 +123,9 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                                         instance = applicationClientComponent.getValue().createInstance();
                                         mainMethod.invoke(null, new Object[]{parameters});
                                     } finally {
+                                        if (previousSelector != null) {
+                                            EJBClientContext.setSelector(previousSelector);
+                                        }
                                         NamespaceContextSelector.popCurrentSelector();
                                     }
                                 } catch (InvocationTargetException e) {
