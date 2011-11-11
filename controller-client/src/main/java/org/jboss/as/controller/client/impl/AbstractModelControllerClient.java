@@ -221,21 +221,9 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
                         node.readExternal(input);
                         log.tracef("Client read response %d successfully", getBatchId());
                         return node;
-                    } catch (Exception e) {
-                        log.tracef(e, "Client read response %d with error", getBatchId());
-                        //super.setError(new ClientException(e));
-                        setError(e);
-                        if (e instanceof IOException) {
-                            throw (IOException)e;
-                        }
-                        if (e instanceof RuntimeException) {
-                            throw (RuntimeException)e;
-                        }
-                        throw new IOException(e);
                     } finally {
                         ManagementBatchIdManager.DEFAULT.freeBatchId(getBatchId());
                         activeRequests.remove(getBatchId());
-                        executeRequestContext.done();
                     }
                 }
             };
@@ -316,7 +304,6 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
             }
         }
 
-
         @Override
         protected void writeResponse(final FlushableDataOutput output) throws IOException {
             output.write(ModelControllerProtocol.PARAM_INPUTSTREAM_LENGTH);
@@ -331,7 +318,6 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
         final ExecuteRequest executeRequest;
         final OperationMessageHandler messageHandler;
         final OperationAttachments attachments;
-        volatile boolean done;
 
         ExecuteRequestContext(final ExecuteRequest executeRequest, final OperationMessageHandler messageHandler, final OperationAttachments attachments) {
             this.executeRequest = executeRequest;
@@ -342,9 +328,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
         CloseHandler<Channel> getRequestCloseHandler(){
             return new CloseHandler<Channel>() {
                 public void handleClose(final Channel closed, final IOException exception) {
-                    if (!done) {
-                        executeRequest.setError(new IOException("Channel closed"));
-                    }
+                    executeRequest.setError(new IOException("Channel closed"));
                 }
             };
         }
@@ -355,10 +339,6 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
 
         OperationAttachments getAttachments() {
             return attachments;
-        }
-
-        void done() {
-            this.done = true;
         }
     }
 

@@ -24,6 +24,7 @@ package org.jboss.as.protocol.mgmt;
 
 import java.io.DataInput;
 import java.io.IOException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -40,15 +41,14 @@ import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
  * Base management request used for remote requests.  Provides the basic mechanism for connecting to a remote host controller
  * for performing a task.  It will manage connecting and retrieving the correct response.
  *
- *
  * @author John Bailey
  * @author Kabir Khan
+ * @author Emanuel Muckenhuber
  */
-public abstract class ManagementRequest<T> {
+public abstract class ManagementRequest<T> extends AsyncFutureTask<T> {
 
     private static final AtomicInteger requestId = new AtomicInteger();
     private final int currentRequestId = requestId.incrementAndGet();
-    private final ManagementFuture<T> future = new ManagementFuture<T>();
     private final int batchId;
 
     /**
@@ -63,7 +63,19 @@ public abstract class ManagementRequest<T> {
      *
      *  @param batchId the id of the 'execution' this request is a part of
      */
-    protected ManagementRequest(int batchId) {
+    protected ManagementRequest(final int batchId) {
+        this(batchId, null);
+    }
+
+    /**
+     * Create a new ManagementRequest that is part of a batch and has an executor
+     * to run listener tasks.
+     *
+     *  @param batchId the id of the 'execution' this request is a part of
+     * @param executor the executor
+     */
+    protected ManagementRequest(final int batchId, Executor executor) {
+        super(executor);
         this.batchId = batchId;
     }
 
@@ -74,6 +86,13 @@ public abstract class ManagementRequest<T> {
      * @return the request code
      */
     protected abstract byte getRequestCode();
+
+    /**
+     * Get the associated response handler.
+     *
+     * @return the response handler
+     */
+    protected abstract ManagementResponseHandler<T> getResponseHandler();
 
     protected int getCurrentRequestId() {
         return currentRequestId;
@@ -92,7 +111,7 @@ public abstract class ManagementRequest<T> {
      * @return A future to retrieve the result when the request is complete
      */
     public AsyncFuture<T> execute(final ExecutorService executor, final ManagementClientChannelStrategy channelStrategy) {
-        ROOT_LOGGER.tracef("Scheduling request %s with future %s - %d (%d)", this, future, getBatchId(), getCurrentRequestId());
+        ROOT_LOGGER.tracef("Scheduling request %s - %d (%d)", this, getBatchId(), getCurrentRequestId());
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -104,13 +123,13 @@ public abstract class ManagementRequest<T> {
                     //Ends up in writeRequest(ProtocolChannel, FlushableDataOutput)
                     channel.executeRequest(ManagementRequest.this, new DelegatingResponseHandler(channelStrategy));
                 } catch (Exception e) {
-                    ROOT_LOGGER.tracef(e, "Could not get channel for request %s, failing %s for %d", ManagementRequest.this, future, getCurrentRequestId());
-                    future.failed(e);
+                    ROOT_LOGGER.tracef(e, "Could not get channel for request %s, for %d", ManagementRequest.this, getCurrentRequestId());
+                    failed(e);
                 }
             }
         });
 
-        return future;
+        return this;
     }
 
     void writeRequest(ProtocolChannel channel, FlushableDataOutput output) throws IOException {
@@ -161,7 +180,7 @@ public abstract class ManagementRequest<T> {
         protected T readResponse(DataInput input) {
             final String error = getResponseHeader().getError();
             if (error != null) {
-                future.failed(MESSAGES.serverError(error));
+                failed(MESSAGES.serverError(error));
                 return null;
             }
 
@@ -170,7 +189,7 @@ public abstract class ManagementRequest<T> {
                 ManagementResponseHandler<T> responseHandler = getResponseHandler();
                 responseHandler.setContextInfo(this);
                 result = responseHandler.readResponse(input);
-                future.done(result);
+                done(result);
                 return result;
             } catch (Exception e) {
                 setError(e);
@@ -181,23 +200,16 @@ public abstract class ManagementRequest<T> {
         }
     }
 
+    protected void done(T result) {
+        super.setResult(result);
+    }
+
     protected void setError(Exception e) {
-        future.failed(e);
+        super.setFailed(e);
     }
 
-    protected abstract ManagementResponseHandler<T> getResponseHandler();
-
-    static class ManagementFuture<T> extends AsyncFutureTask<T>{
-        protected ManagementFuture() {
-            super(null);
-        }
-
-        void done(T result) {
-            super.setResult(result);
-        }
-
-        void failed(Exception ex) {
-            super.setFailed(ex);
-        }
+    protected boolean failed(Exception e) {
+        return super.setFailed(e);
     }
+
 }
