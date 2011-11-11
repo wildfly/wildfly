@@ -90,9 +90,6 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
     }
 
     private File getXmlFile(String xmlName) throws MalformedURLException {
-        if (baseDir() == null)
-            Assert.fail("Server not built");
-
-        return new File(baseDir(), xmlName);
+        return new File(getBaseDir(), xmlName);
     }
 }
