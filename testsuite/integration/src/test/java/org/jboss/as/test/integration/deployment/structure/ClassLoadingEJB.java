@@ -31,10 +31,10 @@ import javax.ejb.Stateless;
 public class ClassLoadingEJB {
 
 
-    public void loadClass(String className) throws ClassNotFoundException {
+    public Class<?> loadClass(String className) throws ClassNotFoundException {
         if (className == null || className.trim().isEmpty()) {
             throw new RuntimeException("Classname parameter cannot be null or empty");
         }
-        Class<?> klass = this.getClass().getClassLoader().loadClass(className);
+        return this.getClass().getClassLoader().loadClass(className);
     }
 }

@@ -202,7 +202,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
             phaseContext.getServiceTarget().addService(moduleSpecServiceName, moduleSpecService).addDependencies(
                     deploymentUnit.getServiceName()).addDependencies(phaseContext.getPhaseServiceName()).setInitialMode(
                     Mode.ON_DEMAND).install();
-            ModuleLoadService.installService(phaseContext.getServiceTarget(), moduleIdentifier, Collections.singletonList(moduleIdentifier));
+            ModuleLoadService.installService(phaseContext.getServiceTarget(), alias, Collections.singletonList(moduleIdentifier));
         }
     }
 
@@ -256,7 +256,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         try {
             if (resource.getExportFilters().isEmpty()) {
                 specBuilder.addResourceRoot(ResourceLoaderSpec.createResourceLoaderSpec(new VFSResourceLoader(resource
-                        .getRootName(), resource.getRoot())));
+                        .getRootName(), resource.getRoot(), resource.isUsePhysicalCodeSource())));
             } else {
                 final MultiplePathFilterBuilder filterBuilder = PathFilters.multiplePathFilterBuilder(true);
                 for (final FilterSpecification filter : resource.getExportFilters()) {

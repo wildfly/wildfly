@@ -44,7 +44,7 @@
                 The jboss structure declaration type; contains deployments and additional modules.
             </xsd:documentation>
         </xsd:annotation>
-        <xsd:sequence>
+        <xsd:sequence minOccurs="0" maxOccurs="unbounded">
             <xsd:element name="ear-subdeployments-isolated" type="xsd:boolean" minOccurs="0" maxOccurs="1">
                 <annotation xmlns="http://www.w3.org/2001/XMLSchema">
                     <documentation>
@@ -84,7 +84,7 @@
                     </documentation>
                 </annotation>
             </xsd:element>
-            <xsd:element name="sub-deployment" type="deploymentType" minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="sub-deployment" type="subDeploymentType" minOccurs="0" maxOccurs="unbounded">
                 <annotation xmlns="http://www.w3.org/2001/XMLSchema">
                     <documentation>
                         Element that corresponds to a deployment. This is used to customise
@@ -506,15 +506,6 @@
                 </annotation>
             </xsd:element>
         </xsd:choice>
-        <xsd:attribute name="use-physical-code-source" type="xsd:boolean" default="false" use="optional">
-            <annotation xmlns="http://www.w3.org/2001/XMLSchema">
-                <documentation>
-                    A boolean which signifies how the code source URL for this resource should be established.
-                    If true, the physical location of the deployment is used; if false, the VFS location of the
-                    deployment is used. Default is false.
-                </documentation>
-            </annotation>
-        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="resourceType">
@@ -545,6 +536,15 @@
             <annotation xmlns="http://www.w3.org/2001/XMLSchema">
                 <documentation>
                     The path of this resource root, relative to the path in which the module.xml file is found.
+                </documentation>
+            </annotation>
+        </xsd:attribute>
+        <xsd:attribute name="use-physical-code-source" type="xsd:boolean" default="false" use="optional">
+            <annotation xmlns="http://www.w3.org/2001/XMLSchema">
+                <documentation>
+                    A boolean which signifies how the code source URL for this resource should be established.
+                    If true, the physical location of the deployment is used; if false, the VFS location of the
+                    deployment is used. Default is false.
                 </documentation>
             </annotation>
         </xsd:attribute>

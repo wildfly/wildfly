@@ -1,5 +1,7 @@
 package org.jboss.as.test.integration.deployment.structure;
 
+import javax.ejb.EJB;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
@@ -10,8 +12,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.ejb.EJB;
 
 
 /**
@@ -26,6 +26,9 @@ public class JBossDeploymentStructureTestCase {
 
     @EJB(mappedName = "java:module/ClassLoadingEJB")
     private ClassLoadingEJB ejb;
+
+    public static final String TO_BE_FOUND_CLASS_NAME = "org.jboss.as.test.integration.deployment.structure.Available";
+    public static final String TO_BE_MISSSING_CLASS_NAME = "org.jboss.as.test.integration.deployment.structure.ToBeIgnored";
 
     /**
      * .ear
@@ -45,7 +48,7 @@ public class JBossDeploymentStructureTestCase {
     @Deployment
     public static Archive<?> createDeployment() {
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "deployment-structure.ear");
-        ear.addAsManifestResource("deployment/structure/jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
+        ear.addAsManifestResource(JBossDeploymentStructureTestCase.class.getPackage(), "jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
 
         final JavaArchive jarOne = ShrinkWrap.create(JavaArchive.class, "available.jar");
         jarOne.addClass(Available.class);
@@ -72,16 +75,21 @@ public class JBossDeploymentStructureTestCase {
      */
     @Test
     public void testDeploymentStructureFilters() throws Exception {
-        final String toBeFoundClassName = "org.jboss.as.test.integration.deployment.structure.Available";
-        this.ejb.loadClass(toBeFoundClassName);
+        this.ejb.loadClass(TO_BE_FOUND_CLASS_NAME);
 
-        final String toBeMisssingClassName = "org.jboss.as.test.integration.deployment.structure.ToBeIgnored";
         try {
-            this.ejb.loadClass(toBeMisssingClassName);
-            Assert.fail("Unexpectedly found class " + toBeMisssingClassName);
+            this.ejb.loadClass(TO_BE_MISSSING_CLASS_NAME);
+            Assert.fail("Unexpectedly found class " + TO_BE_MISSSING_CLASS_NAME);
         } catch (ClassNotFoundException cnfe) {
             // expected
         }
+    }
+
+    @Test
+    public void testUsePhysicalCodeSource() throws ClassNotFoundException {
+        Class<?> clazz = this.ejb.loadClass(TO_BE_FOUND_CLASS_NAME);
+        Assert.assertTrue( clazz.getProtectionDomain().getCodeSource().getLocation().getProtocol().equals("jar"));
+        Assert.assertTrue( ClassLoadingEJB.class.getProtectionDomain().getCodeSource().getLocation().getProtocol().equals("jar"));
     }
 
 }

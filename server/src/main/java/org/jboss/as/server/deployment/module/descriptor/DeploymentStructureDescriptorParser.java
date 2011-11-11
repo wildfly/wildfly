@@ -193,6 +193,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                 final AdditionalModuleSpecification additional = new AdditionalModuleSpecification(additionalModule
                         .getModuleIdentifier(),
                         additionalModule.getResourceRoots());
+                additional.addAliases(additionalModule.getAliases());
                 additional.addSystemDependencies(additionalModule.getModuleDependencies());
                 deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_MODULES, additional);
             }

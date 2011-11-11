@@ -99,6 +99,7 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
             elementsMap.put(new QName(NAMESPACE_1_1, "transformers"), Element.TRANSFORMERS);
             elementsMap.put(new QName(NAMESPACE_1_1, "transformer"), Element.TRANSFORMER);
             elementsMap.put(new QName(NAMESPACE_1_1, "local-last"), Element.LOCAL_LAST);
+            elementsMap.put(new QName(NAMESPACE_1_1, "module-alias"), Element.MODULE_ALIAS);
             elements = elementsMap;
         }
 
@@ -361,9 +362,6 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
         }
         if (!required.isEmpty()) {
             throw missingAttributes(reader.getLocation(), required);
-        }
-        if (!moduleSpec.getModuleIdentifier().equals(ModuleIdentifier.create(name, slot))) {
-            throw new XMLStreamException("Module alias " + moduleSpec.getModuleIdentifier() + " is the same as the module name", reader.getLocation());
         }
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
@@ -685,31 +683,26 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
         }
         if (name == null)
             name = path;
-        List<FilterSpecification> resourceFilters = new ArrayList<FilterSpecification>();
+        final List<FilterSpecification> resourceFilters = new ArrayList<FilterSpecification>();
         final Set<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case XMLStreamConstants.END_ELEMENT: {
-                    if (path.startsWith("/")) {
-                        throw new XMLStreamException(
-                                "External resource roots not supported, resource roots may not start with a '/' :" + path);
-                    } else {
-                        try {
-                            final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-                            final VirtualFile deploymentRootFile = deploymentRoot.getRoot();
-                            final VirtualFile child = deploymentRootFile.getChild(path);
-                            final Closeable closable = child.isFile() ? VFS.mountZip(child, child, TempFileProviderService
-                                    .provider()) : null;
-                            final MountHandle mountHandle = new MountHandle(closable);
-                            final ResourceRoot resourceRoot = new ResourceRoot(name, child, mountHandle);
-                            for (final FilterSpecification filter : resourceFilters) {
-                                resourceRoot.getExportFilters().add(filter);
-                            }
-                            resourceRoot.setUsePhysicalCodeSource(usePhysicalCodeSource);
-                            specBuilder.addResourceRoot(resourceRoot);
-                        } catch (IOException e) {
-                            throw new XMLStreamException(e);
+                    try {
+                        final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+                        final VirtualFile deploymentRootFile = deploymentRoot.getRoot();
+                        final VirtualFile child = deploymentRootFile.getChild(path);
+                        final Closeable closable = child.isFile() ? VFS.mountZip(child, child, TempFileProviderService
+                                .provider()) : null;
+                        final MountHandle mountHandle = new MountHandle(closable);
+                        final ResourceRoot resourceRoot = new ResourceRoot(name, child, mountHandle);
+                        for (final FilterSpecification filter : resourceFilters) {
+                            resourceRoot.getExportFilters().add(filter);
                         }
+                        resourceRoot.setUsePhysicalCodeSource(usePhysicalCodeSource);
+                        specBuilder.addResourceRoot(resourceRoot);
+                    } catch (IOException e) {
+                        throw new XMLStreamException(e);
                     }
                     return;
                 }

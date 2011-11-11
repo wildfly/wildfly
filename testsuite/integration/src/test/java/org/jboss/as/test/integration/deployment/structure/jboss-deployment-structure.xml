@@ -19,18 +19,22 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<jboss-deployment-structure>
+<jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.1">
     <deployment>
         <dependencies>
             <module name="deployment.module.ignored"/>
-            <module name="deployment.module.available"/>
+            <module name="deployment.aaa"/>
         </dependencies>
     </deployment>
     <sub-deployment name="ejb.jar">
+        <resources>
+            <resource-root path="ejb.jar"  use-physical-code-source="true"/>
+        </resources>
         <dependencies>
             <module name="deployment.module.ignored"/>
-            <module name="deployment.module.available"/>
+            <module name="deployment.aaa"/>
         </dependencies>
+        <module-alias name="deployment.bbb" />
     </sub-deployment>
     <module name="deployment.module.ignored">
         <resources>
@@ -43,8 +47,9 @@
     </module>
     <module name="deployment.module.available">
         <resources>
-            <resource-root path="available.jar"/>
+            <resource-root path="available.jar" use-physical-code-source="true"/>
         </resources>
+        <module-alias name="deployment.aaa" />
     </module>
 
 </jboss-deployment-structure>
