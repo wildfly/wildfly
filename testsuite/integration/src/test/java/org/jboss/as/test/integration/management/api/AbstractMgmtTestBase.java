@@ -1,3 +1,4 @@
+
 /*
  * JBoss, Home of Professional Open Source.
  * Copyright 2011, Red Hat, Inc., and individual contributors
@@ -44,6 +45,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
 import static org.junit.Assert.*;
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 
 /**
  *
@@ -59,7 +61,7 @@ public class AbstractMgmtTestBase {
     
     protected void init(final String hostName, final int port) {
         try {
-            this.modelControllerClient = ModelControllerClient.Factory.create(InetAddress.getByName(hostName), port);
+            this.modelControllerClient = ModelControllerClient.Factory.create(InetAddress.getByName(hostName), port, getCallbackHandler());
         } catch (UnknownHostException e) {
             throw new RuntimeException("Cannot create model controller client for host: " + hostName + " and port " + port, e);
         }
