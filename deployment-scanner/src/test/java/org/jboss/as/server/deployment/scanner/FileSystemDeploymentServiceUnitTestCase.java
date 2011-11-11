@@ -312,12 +312,13 @@ public class FileSystemDeploymentServiceUnitTestCase {
         Assert.assertTrue(ok.exists());
         Assert.assertTrue(nestedOK.exists());
 
-        // The others should get cleaned in a scan
-
         ts.testee.scan();
 
-        Assert.assertFalse(f5.exists());
-        Assert.assertFalse(f6.exists());
+        // failed deployments should not be cleaned on initial scan - will retry
+        Assert.assertTrue(f5.exists());
+        Assert.assertTrue(f6.exists());
+        
+        // The others should get cleaned in a scan
         Assert.assertFalse(f7.exists());
         Assert.assertFalse(f8.exists());
         Assert.assertFalse(f9.exists());
@@ -332,6 +333,10 @@ public class FileSystemDeploymentServiceUnitTestCase {
         f2 = createFile(new File(tmpDir, "nested"), "nested" + FileSystemDeploymentService.DEPLOYED);
 
         ts.testee.scan();
+        
+        // Failed deployments should be cleaned on subsequent scans.
+        Assert.assertFalse(f5.exists());
+        Assert.assertFalse(f6.exists());
 
         Assert.assertFalse(f1.exists());
         Assert.assertFalse(f2.exists());
