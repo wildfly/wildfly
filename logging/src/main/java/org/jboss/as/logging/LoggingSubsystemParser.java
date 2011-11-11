@@ -295,6 +295,10 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     parseHandlersElement(node.get(SUBHANDLERS.getName()), reader);
                     break;
                 }
+                case FORMATTER: {
+                    FORMATTER.parseAndSetParameter(parseFormatterElement(reader), node, location);
+                    break;
+                }
                 case QUEUE_LENGTH: {
                     QUEUE_LENGTH.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, location);
                     break;
@@ -1077,6 +1081,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         writer.writeAttribute(NAME.getXmlName(), name);
         writeLevel(writer, node);
         writeFilter(writer, node);
+        writeFormatter(writer, node);
         writeProperties(writer, node);
         if (QUEUE_LENGTH.isMarshallable(node)) {
             writer.writeStartElement(Element.QUEUE_LENGTH.getLocalName());

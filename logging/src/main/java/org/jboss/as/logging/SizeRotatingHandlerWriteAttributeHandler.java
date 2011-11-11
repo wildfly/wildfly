@@ -43,8 +43,8 @@ public class SizeRotatingHandlerWriteAttributeHandler extends AbstractFileHandle
     }
 
     @Override
-    protected boolean doApplyUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final SizeRotatingFileHandler handler) throws OperationFailedException {
-        boolean result = super.doApplyUpdateToRuntime(operation, attributeName, resolvedValue, currentValue, handler);
+    protected boolean doApplyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final String handlerName, final SizeRotatingFileHandler handler) throws OperationFailedException {
+        boolean result = super.doApplyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue, handlerName, handler);
         if (MAX_BACKUP_INDEX.getName().equals(attributeName)) {
             handler.setMaxBackupIndex(resolvedValue.asInt());
             result = false;
@@ -56,8 +56,8 @@ public class SizeRotatingHandlerWriteAttributeHandler extends AbstractFileHandle
     }
 
     @Override
-    protected void doRevertUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final SizeRotatingFileHandler handler) throws OperationFailedException {
-        super.doRevertUpdateToRuntime(operation, attributeName, valueToRestore, valueToRevert, handler);
+    protected void doRevertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final String handlerName, final SizeRotatingFileHandler handler) throws OperationFailedException {
+        super.doRevertUpdateToRuntime(context, operation, attributeName, valueToRestore, valueToRevert, handlerName, handler);
         if (MAX_BACKUP_INDEX.getName().equals(attributeName)) {
             handler.setMaxBackupIndex(valueToRestore.asInt());
         } else if (ROTATE_SIZE.getName().equals(attributeName)) {

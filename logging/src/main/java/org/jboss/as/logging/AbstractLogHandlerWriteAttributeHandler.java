@@ -103,12 +103,14 @@ abstract class AbstractLogHandlerWriteAttributeHandler<T extends Handler> extend
                 throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToSetHandlerEncoding()));
             }
         }
-        return doApplyUpdateToRuntime(operation, attributeName, resolvedValue, currentValue, handler);
+        return doApplyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue, name, handler);
     }
 
     @Override
     protected final void revertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final T handler) throws OperationFailedException {
         if (handler != null) {
+            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            final String name = address.getLastElement().getValue();
             if (LEVEL.getName().equals(attributeName)) {
                 handler.setLevel(Level.parse(valueToRestore.asString().toUpperCase(Locale.US)));
             } else if (FILTER.getName().equals(attributeName)) {
@@ -122,37 +124,41 @@ abstract class AbstractLogHandlerWriteAttributeHandler<T extends Handler> extend
                     throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToSetHandlerEncoding()));
                 }
             }
-            doRevertUpdateToRuntime(operation, attributeName, valueToRestore, valueToRevert, handler);
+            doRevertUpdateToRuntime(context, operation, attributeName, valueToRestore, valueToRevert, name, handler);
         }
     }
 
     /**
      * Applies additional runtime attributes for the handler.
      *
+     * @param context       the context for the operation.
      * @param operation     the operation
      * @param attributeName the name of the attribute being modified
-     * @param resolvedValue the new value for the attribute, after {@link ModelNode#resolve()} has been called on it
+     * @param resolvedValue the new value for the attribute, after {@link org.jboss.dmr.ModelNode#resolve()} has been called on it
      * @param currentValue  the existing value for the attribute
-     * @param handler       the {@link Handler handler} to apply the changes to.
+     * @param handlerName   the name of the handler.
+     * @param handler       the {@link java.util.logging.Handler handler} to apply the changes to.
      *
      * @return {@code true} if the server requires restart to effect the attribute value change; {@code false} if not.
      *
      * @throws OperationFailedException if the operation fails.
      */
-    protected abstract boolean doApplyUpdateToRuntime(ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, T handler) throws OperationFailedException;
+    protected abstract boolean doApplyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, String handlerName, T handler) throws OperationFailedException;
 
     /**
      * Reverts updates to the handler.
      *
+     * @param context        the context for the operation.
      * @param operation      the operation
      * @param attributeName  the name of the attribute being modified
      * @param valueToRestore the previous value for the attribute, before this operation was executed
      * @param valueToRevert  the new value for the attribute that should be reverted
+     * @param handlerName    the name of the handler.
      * @param handler        the handler to apply the changes to.
      *
      * @throws OperationFailedException if the operation fails.
      */
-    protected abstract void doRevertUpdateToRuntime(ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, T handler) throws OperationFailedException;
+    protected abstract void doRevertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, String handlerName, T handler) throws OperationFailedException;
 
     @Override
     protected final void validateResolvedValue(final String name, final ModelNode value) throws OperationFailedException {
@@ -170,6 +176,11 @@ abstract class AbstractLogHandlerWriteAttributeHandler<T extends Handler> extend
         } else {
             super.validateUnresolvedValue(name, value);
         }
+    }
+
+    @Override
+    protected AttributeDefinition getAttributeDefinition(final String attributeName) {
+        return attributes == null ? null : attributes.get(attributeName);
     }
 
     /**

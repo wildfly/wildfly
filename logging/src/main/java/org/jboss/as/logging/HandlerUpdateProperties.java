@@ -26,14 +26,17 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
+import static org.jboss.as.logging.LoggingLogger.ROOT_LOGGER;
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
-import org.jboss.as.controller.AbstractModelUpdateHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
@@ -52,33 +55,108 @@ import java.util.logging.Handler;
  * Parent operation responsible for updating the common attributes of logging handlers.
  *
  * @author John Bailey
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public abstract class HandlerUpdateProperties<T extends Handler> extends AbstractModelUpdateHandler {
+public abstract class HandlerUpdateProperties<T extends Handler> implements OperationStepHandler {
     static final String OPERATION_NAME = "update-properties";
 
     private final Set<String> attributes;
     private final List<AttributeDefinition> attributeDefinitions;
 
-    protected HandlerUpdateProperties(final List<String> attributes, final List<? extends AttributeDefinition> attributeDefinitions) {
-        this.attributes = new HashSet<String>(attributes);
+    protected HandlerUpdateProperties(final AttributeDefinition... attributeDefinitions) {
+        this.attributes = Collections.emptySet();
         this.attributes.addAll(attributes);
         this.attributeDefinitions = new ArrayList<AttributeDefinition>();
         this.attributeDefinitions.add(ENCODING);
         this.attributeDefinitions.add(FORMATTER);
         this.attributeDefinitions.add(LEVEL);
         // TODO - support filter
-        this.attributeDefinitions.addAll(attributeDefinitions);
+        Collections.addAll(this.attributeDefinitions, attributeDefinitions);
     }
 
     protected HandlerUpdateProperties(final String... attributes) {
-        this(Arrays.asList(attributes), Collections.<AttributeDefinition>emptyList());
+        this.attributes = new HashSet<String>();
+        Collections.addAll(this.attributes, attributes);
+        this.attributeDefinitions = Collections.emptyList();
     }
 
-    protected HandlerUpdateProperties(final List<? extends AttributeDefinition> attributeDefinitions) {
-        this(Collections.<String>emptyList(), attributeDefinitions);
-    }
-
+    /**
+     * {@inheritDoc
+     */
     @Override
+    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+        final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
+        final ModelNode originalModel = resource.getModel().clone();
+        final ModelNode model = resource.getModel();
+        updateModel(operation, model);
+
+        if (requiresRuntime(context)) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
+                    final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
+                    final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+                    final String name = address.getLastElement().getValue();
+                    final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
+                    @SuppressWarnings("unchecked")
+                    final ServiceController<Handler> controller = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(name));
+                    if (controller != null) {
+                        @SuppressWarnings("unchecked")
+                        final T handler = (T) controller.getValue();
+                        final ModelNode level = LEVEL.resolveModelAttribute(context, model);
+                        final ModelNode formatter = FORMATTER.resolveModelAttribute(context, model);
+                        final ModelNode encoding = ENCODING.resolveModelAttribute(context, model);
+                        // TODO (jrp) implement filter
+
+                        if (level.isDefined()) {
+                            handler.setLevel(java.util.logging.Level.parse(level.asString()));
+                        }
+
+                        if (formatter.isDefined()) {
+                            AbstractFormatterSpec.fromModelNode(context, model).apply(handler);
+                        }
+
+                        if (encoding.isDefined()) {
+                            try {
+                                handler.setEncoding(encoding.asString());
+                            } catch (UnsupportedEncodingException e) {
+                                throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToSetHandlerEncoding()));
+                            }
+                        }
+                        final boolean restartRequired = applyUpdateToRuntime(context, name, model, originalModel, handler);
+
+                        if (restartRequired) {
+                            context.reloadRequired();
+                        }
+
+                        if (context.completeStep() != OperationContext.ResultAction.KEEP) {
+                            try {
+                                revertUpdateToRuntime(context, name, model, originalModel, handler);
+                            } catch (Exception e) {
+                                ROOT_LOGGER.errorRevertingOperation(e, getClass().getSimpleName(),
+                                        operation.require(ModelDescriptionConstants.OP).asString(),
+                                        PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)));
+                            }
+                            if (restartRequired) {
+                                context.revertReloadRequired();
+                            }
+                        }
+                    }
+
+                }
+            }, OperationContext.Stage.RUNTIME);
+        }
+        context.completeStep();
+    }
+
+    /**
+     * Update the given node in the persistent configuration model based on the values in the given operation.
+     *
+     * @param operation the operation
+     * @param model     persistent configuration model node that corresponds to the address of {@code operation}
+     *
+     * @throws OperationFailedException if {@code operation} is invalid or populating the model otherwise fails
+     */
     protected final void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
         for (AttributeDefinition attr : attributeDefinitions) {
             attr.validateAndSet(operation, model);
@@ -88,42 +166,44 @@ public abstract class HandlerUpdateProperties<T extends Handler> extends Abstrac
         }
     }
 
-    @Override
-    protected final void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
-                                        final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String name = address.getLastElement().getValue();
-        final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
-        @SuppressWarnings("unchecked")
-        final ServiceController<Handler> controller = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(name));
-        if (controller != null) {
-            @SuppressWarnings("unchecked")
-            final T handler = (T) controller.getValue();
-            final ModelNode level = LEVEL.resolveModelAttribute(context, model);
-            final ModelNode formatter = FORMATTER.resolveModelAttribute(context, model);
-            final ModelNode encoding = ENCODING.resolveModelAttribute(context, model);
-            // TODO (jrp) implement filter
+    /**
+     * Hook to allow subclasses to make runtime changes to effect the attribute value change.
+     *
+     * @param context       the context of the operation
+     * @param model         the model
+     * @param originalModel the original model
+     * @param handler       the log handler
+     *
+     * @return {@code true} if the server requires restart to effect the attribute
+     *         value change; {@code false} if not
+     */
+    protected abstract boolean applyUpdateToRuntime(OperationContext context, String handlerName, ModelNode model, ModelNode originalModel, T handler) throws OperationFailedException;
 
-            if (level.isDefined()) {
-                handler.setLevel(java.util.logging.Level.parse(level.asString()));
-            }
+    /**
+     * Hook to allow subclasses to revert runtime changes made in
+     * {@link #applyUpdateToRuntime(OperationContext, String, ModelNode, ModelNode, T)}.
+     *
+     * @param context       the context of the operation
+     * @param model         the model
+     * @param originalModel the original model
+     * @param handler       the log handler
+     */
+    protected abstract void revertUpdateToRuntime(OperationContext context, String handlerName, ModelNode model, ModelNode originalModel, T handler)
+            throws OperationFailedException;
 
-            if (formatter.isDefined()) {
-                AbstractFormatterSpec.fromModelNode(context, model).apply(handler);
-            }
 
-            if (encoding.isDefined()) {
-                try {
-                    handler.setEncoding(encoding.asString());
-                } catch (UnsupportedEncodingException e) {
-                    throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToSetHandlerEncoding()));
-                }
-            }
-            updateRuntime(context, model, handler);
-        }
+    /**
+     * Gets whether a {@link OperationContext.Stage#RUNTIME} handler should be added. This default implementation
+     * returns {@code true} if the {@link OperationContext#getType() context type} is {@link OperationContext.Type#SERVER}
+     * and {@link OperationContext#isBooting() context.isBooting()} returns {@code false}.
+     *
+     * @param context operation context
+     *
+     * @return {@code true} if a runtime stage handler should be added; {@code false} otherwise.
+     */
+    protected boolean requiresRuntime(OperationContext context) {
+        return context.getType() == OperationContext.Type.SERVER && !context.isBooting();
     }
-
-    protected abstract void updateRuntime(OperationContext context, final ModelNode operation, final T handler) throws OperationFailedException;
 
     /**
      * Copies the attribute, represented by the {@code name} parameter, from one {@link ModelNode} to another if the

@@ -23,34 +23,60 @@
 package org.jboss.as.logging;
 
 import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
-
-import java.util.Locale;
+import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.handlers.AsyncHandler;
 
+import java.util.Locale;
+
 /**
  * Operation responsible for updating the properties of an async logging handler.
  *
  * @author John Bailey
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class AsyncHandlerUpdateProperties extends FlushingHandlerUpdateProperties<AsyncHandler> {
+public class AsyncHandlerUpdateProperties extends HandlerUpdateProperties<AsyncHandler> {
     static final AsyncHandlerUpdateProperties INSTANCE = new AsyncHandlerUpdateProperties();
 
     static final String OPERATION_NAME = HandlerUpdateProperties.OPERATION_NAME;
 
     private AsyncHandlerUpdateProperties() {
-        super(OVERFLOW_ACTION);
+        super(OVERFLOW_ACTION, SUBHANDLERS);
         // TODO (jrp) implement QUEUE_LENGTH
     }
 
     @Override
-    protected void updateRuntime(OperationContext context, final ModelNode operation, final AsyncHandler handler) throws OperationFailedException {
-        final ModelNode overflowAction = OVERFLOW_ACTION.resolveModelAttribute(context, operation);
+    protected boolean applyUpdateToRuntime(OperationContext context, final String handlerName, final ModelNode model, final ModelNode originalModel, final AsyncHandler handler) throws OperationFailedException {
+        boolean requireRestart = false;
+        final ModelNode overflowAction = OVERFLOW_ACTION.resolveModelAttribute(context, model);
         if (overflowAction.isDefined()) {
-            handler.setOverflowAction(AsyncHandler.OverflowAction.valueOf(OVERFLOW_ACTION.resolveModelAttribute(context, operation).asString().toUpperCase(Locale.US)));
+            handler.setOverflowAction(AsyncHandler.OverflowAction.valueOf(overflowAction.asString().toUpperCase(Locale.US)));
+        }
+
+        // TODO (jrp) implement QUEUE_LENGTH
+
+        // TODO (jrp) might need a removal process.
+        // Only if not restart required
+        if (!requireRestart) {
+            final ModelNode subhandlers = SUBHANDLERS.resolveModelAttribute(context, model);
+            if (subhandlers.isDefined()) {
+                // Remove old handlers
+                AsyncHandlerUnassignSubhandler.removeHandlers(SUBHANDLERS, originalModel, context, handlerName);
+                // Add the new handlers
+                AsyncHandlerAssignSubhandler.addHandlers(SUBHANDLERS, model, context, handlerName);
+            }
+        }
+        return requireRestart;
+    }
+
+    @Override
+    protected void revertUpdateToRuntime(final OperationContext context, final String handlerName, final ModelNode model, final ModelNode originalModel, final AsyncHandler handler) throws OperationFailedException {
+        final ModelNode overflowAction = OVERFLOW_ACTION.resolveModelAttribute(context, originalModel);
+        if (overflowAction.isDefined()) {
+            handler.setOverflowAction(AsyncHandler.OverflowAction.valueOf(overflowAction.asString().toUpperCase(Locale.US)));
         }
         // TODO (jrp) implement QUEUE_LENGTH
     }

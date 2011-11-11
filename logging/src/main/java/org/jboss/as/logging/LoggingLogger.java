@@ -22,6 +22,7 @@
 
 package org.jboss.as.logging;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
@@ -29,6 +30,7 @@ import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 
+import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
@@ -46,6 +48,20 @@ interface LoggingLogger extends BasicLogger {
     LoggingLogger ROOT_LOGGER = Logger.getMessageLogger(LoggingLogger.class, LoggingLogger.class.getPackage().getName());
 
     /**
+     * Logs an error message indicating the class, represented by the {@code className} parameter, caught exception
+     * attempting to revert the operation, represented by the {@code op} parameter, at the address, represented by the
+     * {@code address} parameter.
+     *
+     * @param cause     the cause of the error.
+     * @param className the name of the class that caught the error.
+     * @param op        the operation.
+     * @param address   the address.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 11500, value = "%s caught exception attempting to revert operation %s at address %s")
+    void errorRevertingOperation(@Cause Throwable cause, String className, String op, PathAddress address);
+
+    /**
      * Logs a warning message indicating an error occurred trying to set the property, represented by the
      * {@code propertyName} parameter, on the handler class, represented by the {@code className} parameter.
      *
@@ -54,21 +70,21 @@ interface LoggingLogger extends BasicLogger {
      * @param className    the name of the class.
      */
     @LogMessage(level = WARN)
-    @Message(id = 11500, value = "An error occurred trying to set the property '%s' on handler '%s'.")
+    @Message(id = 11501, value = "An error occurred trying to set the property '%s' on handler '%s'.")
     void errorSettingProperty(@Cause Throwable cause, String propertyName, String className);
 
     /**
      * Logs an informational message indicating the bootstrap log handlers are being removed.
      */
     @LogMessage(level = INFO)
-    @Message(id = 11501, value = "Removing bootstrap log handlers")
+    @Message(id = 11502, value = "Removing bootstrap log handlers")
     void removingBootstrapLogHandlers();
 
     /**
      * Logs an informational message indicating the bootstrap log handlers have been restored.
      */
     @LogMessage(level = INFO)
-    @Message(id = 11502, value = "Restored bootstrap log handlers")
+    @Message(id = 11503, value = "Restored bootstrap log handlers")
     void restoredBootstrapLogHandlers();
 
     /**
@@ -79,6 +95,6 @@ interface LoggingLogger extends BasicLogger {
      * @param className    the name of the class.
      */
     @LogMessage(level = WARN)
-    @Message(id = 11503, value = "Unknown property '%s' for '%s'.")
+    @Message(id = 11504, value = "Unknown property '%s' for '%s'.")
     void unknownProperty(String propertyName, String className);
 }

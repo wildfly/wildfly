@@ -43,8 +43,8 @@ public class PeriodicHandlerWriteAttributeHandler extends AbstractFileHandlerWri
     }
 
     @Override
-    protected boolean doApplyUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final PeriodicRotatingFileHandler handler) throws OperationFailedException {
-        boolean result = super.doApplyUpdateToRuntime(operation, attributeName, resolvedValue, currentValue, handler);
+    protected boolean doApplyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final String handlerName, final PeriodicRotatingFileHandler handler) throws OperationFailedException {
+        boolean result = super.doApplyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue, handlerName, handler);
         if (APPEND.getName().equals(attributeName)) {
             handler.setAppend(resolvedValue.asBoolean());
         } else if (SUFFIX.getName().equals(attributeName)) {
@@ -55,8 +55,8 @@ public class PeriodicHandlerWriteAttributeHandler extends AbstractFileHandlerWri
     }
 
     @Override
-    protected void doRevertUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final PeriodicRotatingFileHandler handler) throws OperationFailedException {
-        super.doRevertUpdateToRuntime(operation, attributeName, valueToRestore, valueToRevert, handler);
+    protected void doRevertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final String handlerName, final PeriodicRotatingFileHandler handler) throws OperationFailedException {
+        super.doRevertUpdateToRuntime(context, operation, attributeName, valueToRestore, valueToRevert, handlerName, handler);
         if (APPEND.getName().equals(attributeName)) {
             handler.setAppend(valueToRestore.asBoolean());
         } else if (SUFFIX.getName().equals(attributeName)) {
