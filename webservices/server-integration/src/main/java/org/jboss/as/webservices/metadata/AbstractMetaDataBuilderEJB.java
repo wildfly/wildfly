@@ -32,9 +32,9 @@ import org.jboss.wsf.spi.metadata.j2ee.EJBMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.EJBSecurityMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.PublishLocationAdapter;
 import org.jboss.wsf.spi.metadata.j2ee.SLSBMetaData;
-import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
 import org.jboss.wsf.spi.metadata.webservices.JBossPortComponentMetaData;
 import org.jboss.wsf.spi.metadata.webservices.JBossWebserviceDescriptionMetaData;
+import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
@@ -128,28 +128,53 @@ abstract class AbstractMetaDataBuilderEJB {
      * @param jbossEjbMD
      *            jboss specific EJB meta data
      */
-    protected void buildEnterpriseBeanMetaData(final List<EJBMetaData> wsEjbsMD, final EJBEndpoint jbossEjbMD, final JBossWebservicesMetaData jbossWebservicesMD) {
+    protected void buildEnterpriseBeanMetaData(final List<EJBMetaData> wsEjbsMD, final EJBEndpoint ejbEndpoint, final JBossWebservicesMetaData jbossWebservicesMD) {
         final EJBMetaData wsEjbMD = new SLSBMetaData();
 
         // set EJB name and class
-        wsEjbMD.setEjbName(jbossEjbMD.getName());
-        wsEjbMD.setEjbClass(jbossEjbMD.getClassName());
+        wsEjbMD.setEjbName(ejbEndpoint.getName());
+        wsEjbMD.setEjbClass(ejbEndpoint.getClassName());
 
-        final JBossPortComponentMetaData portComponentMD = getPortComponent(jbossEjbMD.getName(), jbossWebservicesMD);
+        final JBossPortComponentMetaData portComponentMD = getPortComponent(ejbEndpoint.getName(), jbossWebservicesMD);
         if (portComponentMD != null) {
             // set port component meta data
             wsEjbMD.setPortComponentName(portComponentMD.getPortComponentName());
             wsEjbMD.setPortComponentURI(portComponentMD.getPortComponentURI());
-
-            // set security meta data
-            final EJBSecurityMetaData smd = new EJBSecurityMetaData();
-            smd.setAuthMethod(portComponentMD.getAuthMethod());
-            smd.setTransportGuarantee(portComponentMD.getTransportGuarantee());
-            smd.setSecureWSDLAccess(portComponentMD.getSecureWSDLAccess());
-            wsEjbMD.setSecurityMetaData(smd);
         }
+        // set security meta data
+        buildSecurityMetaData(wsEjbMD, ejbEndpoint, portComponentMD);
 
         wsEjbsMD.add(wsEjbMD);
+    }
+
+    private static void buildSecurityMetaData(final EJBMetaData wsEjbMD, final EJBEndpoint ejbEndpoint, final JBossPortComponentMetaData portComponentMD) {
+        final EJBSecurityMetaData smd = new EJBSecurityMetaData();
+        // auth method
+        final String authMethod = getAuthMethod(ejbEndpoint, portComponentMD);
+        smd.setAuthMethod(authMethod);
+        // transport guarantee
+        final String transportGuarantee = getTransportGuarantee(ejbEndpoint, portComponentMD);
+        smd.setTransportGuarantee(transportGuarantee);
+        // secure wsdl access
+        final boolean secureWsdlAccess = isSecureWsdlAccess(ejbEndpoint, portComponentMD);
+        smd.setSecureWSDLAccess(secureWsdlAccess);
+        // propagate
+        wsEjbMD.setSecurityMetaData(smd);
+    }
+
+    private static String getAuthMethod(final EJBEndpoint ejbEndpoint, final JBossPortComponentMetaData portComponentMD) {
+        if (ejbEndpoint.getAuthMethod() != null) return ejbEndpoint.getAuthMethod();
+        return portComponentMD != null ? portComponentMD.getAuthMethod() : null;
+    }
+
+    private static String getTransportGuarantee(final EJBEndpoint ejbEndpoint, final JBossPortComponentMetaData portComponentMD) {
+        if (ejbEndpoint.getTransportGuarantee() != null) return ejbEndpoint.getTransportGuarantee();
+        return portComponentMD != null ? portComponentMD.getTransportGuarantee() : null;
+    }
+
+    private static boolean isSecureWsdlAccess(final EJBEndpoint ejbEndpoint, final JBossPortComponentMetaData portComponentMD) {
+        if (ejbEndpoint.isSecureWsdlAccess()) return true;
+        return (portComponentMD != null && portComponentMD.getSecureWSDLAccess() != null) ? portComponentMD.getSecureWSDLAccess() : false;
     }
 
 }

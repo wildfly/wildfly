@@ -33,8 +33,8 @@ import javax.xml.ws.WebServiceProvider;
 import javax.xml.ws.WebServiceRef;
 import javax.xml.ws.WebServiceRefs;
 
-import org.jboss.ejb3.annotation.SecurityDomain;
 import org.jboss.jandex.DotName;
+import org.jboss.ws.api.annotation.WebContext;
 
 /**
  * Centralized DotNames relevant for WS integration.
@@ -51,10 +51,10 @@ public final class DotNames {
     public static final DotName JAXWS_SERVICE_CLASS = DotName.createSimple(Service.class.getName());
     public static final DotName OBJECT_CLASS = DotName.createSimple(Object.class.getName());
     public static final DotName ROLES_ALLOWED_ANNOTATION = DotName.createSimple(RolesAllowed.class.getName());
-    public static final DotName SECURITY_DOMAIN_ANNOTATION = DotName.createSimple(SecurityDomain.class.getName());
     public static final DotName SERVLET_CLASS = DotName.createSimple(Servlet.class.getName());
     public static final DotName SINGLETON_ANNOTATION = DotName.createSimple(Singleton.class.getName());
     public static final DotName STATELESS_ANNOTATION = DotName.createSimple(Stateless.class.getName());
+    public static final DotName WEB_CONTEXT_ANNOTATION = DotName.createSimple(WebContext.class.getName());
     public static final DotName WEB_SERVICE_ANNOTATION = DotName.createSimple(WebService.class.getName());
     public static final DotName WEB_SERVICE_PROVIDER_ANNOTATION = DotName.createSimple(WebServiceProvider.class.getName());
     public static final DotName WEB_SERVICE_REF_ANNOTATION = DotName.createSimple(WebServiceRef.class.getName());
