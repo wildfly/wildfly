@@ -39,35 +39,33 @@ final class XaDataSourcePropertiesService implements Service<String> {
 
 
     private final String value;
-        private final String name;
-        private final InjectedValue<ModifiableXaDataSource> xads = new InjectedValue<ModifiableXaDataSource>();
+    private final String name;
 
 
-        /** create an instance **/
-        public XaDataSourcePropertiesService(String name, String value) {
-            this.name = name;
-            this.value = value;
-        }
+    /**
+     * create an instance *
+     */
+    public XaDataSourcePropertiesService(String name, String value) {
+        this.name = name;
+        this.value = value;
+    }
 
-        @Override
-        public String getValue() throws IllegalStateException {
-            return value;
-        }
+    @Override
+    public String getValue() throws IllegalStateException {
+        return value;
+    }
 
-        @Override
-        public void start(StartContext context) throws StartException {
-            Logger.getLogger(this.getClass()).infof("addinf %s,%s to %s",name,value, xads.getValue().getJndiName());
-            xads.getValue().addXaDataSourceProperty(name,value);
-        }
+    @Override
+    public void start(StartContext context) throws StartException {
+    }
 
-        @Override
-        public void stop(StopContext context) {
+    @Override
+    public void stop(StopContext context) {
 
-        }
+    }
 
-        public Injector<ModifiableXaDataSource> getXADSInjector() {
-            return xads;
-        }
-
+    public String getName() {
+        return name;
+    }
 
 }

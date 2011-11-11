@@ -43,8 +43,6 @@ import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.jca.common.api.metadata.ds.DataSource;
-import org.jboss.jca.common.api.metadata.ds.XaDataSource;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceBuilder;
@@ -105,18 +103,21 @@ public class DataSourceEnable implements OperationStepHandler {
                             throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToCreate("XaDataSource", operation, e.getLocalizedMessage())));
                         }
                         final ServiceName xaDataSourceConfigServiceName = XADataSourceConfigService.SERVICE_NAME_BASE.append(dsName);
-                        final XADataSourceConfigService configService = new XADataSourceConfigService(dataSourceConfig);
+                        final XADataSourceConfigService xaDataSourceConfigService = new XADataSourceConfigService(dataSourceConfig);
 
-                        final ServiceBuilder<?> builder = serviceTarget.addService(xaDataSourceConfigServiceName, configService);
+                        final ServiceBuilder<?> builder = serviceTarget.addService(xaDataSourceConfigServiceName, xaDataSourceConfigService);
                         builder.addListener(verificationHandler);
 
                         for (ServiceName name : serviceNames) {
-                            if (xaDataSourceConfigServiceName.isParentOf(name) && !xaDataSourceConfigServiceName.equals(name)) {
+                            if (xaDataSourceConfigServiceName.append("xa-datasource-properties").isParentOf(name)) {
                                 final ServiceController<?> xaConfigProperyController = registry.getService(name);
+                                XaDataSourcePropertiesService xaPropService = (XaDataSourcePropertiesService) xaConfigProperyController.getService();
 
                                 if (xaConfigProperyController != null) {
                                     if (! ServiceController.State.UP.equals(xaConfigProperyController.getState())) {
                                         xaConfigProperyController.setMode(ServiceController.Mode.ACTIVE);
+                                        builder.addDependency(name, String.class, xaDataSourceConfigService.getXaDataSourcePropertyInjector(xaPropService.getName()));
+
                                     } else {
                                         throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceAlreadyStarted("Data-source.xa-config-property", name)));
                                     }
@@ -145,12 +146,15 @@ public class DataSourceEnable implements OperationStepHandler {
 
 
                         for (ServiceName name : serviceNames) {
-                            if (dataSourceCongServiceName.isParentOf(name) && !dataSourceCongServiceName.equals(name)) {
+                            if (dataSourceCongServiceName.append("connetion-properties").isParentOf(name)) {
                                 final ServiceController<?> dataSourceController = registry.getService(name);
+                                ConnectionPropertiesService connPropService = (ConnectionPropertiesService) dataSourceController.getService();
 
                                 if (dataSourceController != null) {
                                     if (!ServiceController.State.UP.equals(dataSourceController.getState())) {
                                         dataSourceController.setMode(ServiceController.Mode.ACTIVE);
+                                        builder.addDependency(name, String.class, configService.getConnectionPropertyInjector(connPropService.getName()));
+
                                     } else {
                                         throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceAlreadyStarted("Data-source.connectionProperty", name)));
                                     }

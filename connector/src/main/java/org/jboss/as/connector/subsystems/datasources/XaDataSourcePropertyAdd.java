@@ -82,8 +82,7 @@ public class XaDataSourcePropertyAdd extends AbstractAddStepHandler implements D
         final String dsName = path.getElement(path.size() - 2).getValue();
         final String configPropertyName = PathAddress.pathAddress(address).getLastElement().getValue();
 
-        ServiceName serviceName = XADataSourceConfigService.SERVICE_NAME_BASE.append(dsName).append(configPropertyName);
-        ServiceName xadsServiceName = XADataSourceConfigService.SERVICE_NAME_BASE.append(dsName);
+        ServiceName serviceName = XADataSourceConfigService.SERVICE_NAME_BASE.append(dsName).append("xa-datasource-properties").append(configPropertyName);
 
         final ServiceRegistry registry = context.getServiceRegistry(true);
 
@@ -99,7 +98,6 @@ public class XaDataSourcePropertyAdd extends AbstractAddStepHandler implements D
 
             final XaDataSourcePropertiesService service = new XaDataSourcePropertiesService(configPropertyName, configPropertyValue);
             serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.NEVER)
-                    .addDependency(xadsServiceName, ModifiableXaDataSource.class, service.getXADSInjector())
                     .addListener(verificationHandler).install();
 
             context.addStep(verificationHandler, OperationContext.Stage.VERIFY);

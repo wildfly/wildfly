@@ -73,10 +73,10 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
 
 
         for (ServiceName name : serviceNames) {
-            if (dataSourceConfigServiceName.isParentOf(name) && !dataSourceConfigServiceName.equals(name)) {
+            if (dataSourceConfigServiceName.append("connetion-properties").isParentOf(name)) {
                 context.removeService(name);
             }
-            if (xaDataSourceConfigServiceName.isParentOf(name) && !xaDataSourceConfigServiceName.equals(name)) {
+            if (xaDataSourceConfigServiceName.append("xa-datasource-properties").isParentOf(name)) {
                 context.removeService(name);
             }
         }
