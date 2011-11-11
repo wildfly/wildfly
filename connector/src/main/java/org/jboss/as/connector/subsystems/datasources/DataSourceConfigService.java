@@ -22,7 +22,13 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import org.jboss.jca.common.api.metadata.ds.DataSource;
+import org.jboss.msc.inject.ConcurrentMapInjector;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -37,6 +43,9 @@ public class DataSourceConfigService implements Service<ModifiableDataSource> {
 
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("data-source-config");
 
+    private final ConcurrentMap<String, String> connectionProperties = new ConcurrentHashMap<String, String>(0);
+
+
     private final ModifiableDataSource dataSourceConfig;
 
     public DataSourceConfigService(ModifiableDataSource dataSourceConfig) {
@@ -45,6 +54,9 @@ public class DataSourceConfigService implements Service<ModifiableDataSource> {
     }
 
     public synchronized void start(StartContext startContext) throws StartException {
+        for (Map.Entry<String, String> connectionProperty : connectionProperties.entrySet()) {
+            dataSourceConfig.addConnectionProperty(connectionProperty.getKey(), connectionProperty.getValue());
+        }
     }
 
     public synchronized void stop(StopContext stopContext) {
@@ -53,6 +65,10 @@ public class DataSourceConfigService implements Service<ModifiableDataSource> {
     @Override
     public ModifiableDataSource getValue() throws IllegalStateException, IllegalArgumentException {
         return dataSourceConfig;
+    }
+
+    public Injector<String> getConnectionPropertyInjector(String key) {
+        return new ConcurrentMapInjector(connectionProperties, key);
     }
 
 }

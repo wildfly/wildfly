@@ -50,7 +50,7 @@ public static final XaDataSourcePropertyRemove INSTANCE = new XaDataSourceProper
         final String jndiName = path.getElement(path.size() - 2).getValue();
         final String configPropertyName = PathAddress.pathAddress(address).getLastElement().getValue();
 
-        ServiceName serviceName = XADataSourceConfigService.SERVICE_NAME_BASE.append(jndiName).append(configPropertyName);
+        ServiceName serviceName = XADataSourceConfigService.SERVICE_NAME_BASE.append(jndiName).append("xa-datasource-properties").append(configPropertyName);
 
         final ServiceController<?> dataSourceConfigController = registry.getService(serviceName);
         if (dataSourceConfigController != null) {

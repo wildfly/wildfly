@@ -152,11 +152,7 @@ public class DataSourceOperationsUnitTestCase {
         Assert.assertFalse(parseChildren.isEmpty());
         Assert.assertEquals("java:jboss/datasources/MyNewDs", parseChildren.get("jndi-name").asString());
 
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set("remove");
-        compensatingOperation.get(OP_ADDR).set(address);
-
-        execute(compensatingOperation);
+        remove(address);
     }
 
     /**
@@ -204,11 +200,7 @@ public class DataSourceOperationsUnitTestCase {
         Assert.assertFalse(parseChildren.isEmpty());
         Assert.assertEquals("java:jboss/datasources/MyNewDs", parseChildren.get("jndi-name").asString());
 
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set("remove");
-        compensatingOperation.get(OP_ADDR).set(address);
-
-        execute(compensatingOperation);
+        remove(address);
     }
 
     @Test
@@ -265,14 +257,7 @@ public class DataSourceOperationsUnitTestCase {
         Assert.assertFalse(parseChildren.isEmpty());
         Assert.assertEquals("java:jboss/datasources/MyNewDs", parseChildren.get("jndi-name").asString());
 
-        remove(connectionPropertyAddress);
-
-        //TODO: verify connection-properties
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set("remove");
-        compensatingOperation.get(OP_ADDR).set(address);
-
-        execute(compensatingOperation);
+        remove(address);
     }
 
     @Test
@@ -297,14 +282,11 @@ public class DataSourceOperationsUnitTestCase {
         operation.get("user-name").set("sa");
         operation.get("password").set("sa");
 
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set("remove");
-        compensatingOperation.get(OP_ADDR).set(address);
         // do twice, test for AS7-720
         for (int i = 1; i <= 2; i++) {
             execute(operation);
 
-            execute(compensatingOperation);
+            remove(address);
         }
     }
 
@@ -339,11 +321,9 @@ public class DataSourceOperationsUnitTestCase {
         operation.get("user-name").set("sa");
         operation.get("password").set("sa");
 
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set("remove");
-        compensatingOperation.get(OP_ADDR).set(address);
+
         execute(operation);
-        execute(compensatingOperation);
+        remove(address);
 
     }
 
@@ -371,9 +351,6 @@ public class DataSourceOperationsUnitTestCase {
         operation.get("user-name").set("sa");
         operation.get("password").set("sa");
 
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set("remove");
-        compensatingOperation.get(OP_ADDR).set(address);
 
         execute(operation);
 
@@ -397,10 +374,7 @@ public class DataSourceOperationsUnitTestCase {
 
         testConnectionXA(dsName, getModelControllerClient());
 
-        remove(xaDatasourcePropertiesAddress);
-
-        execute(compensatingOperation);
-
+        remove(address);
     }
 
     /**
@@ -432,10 +406,6 @@ public class DataSourceOperationsUnitTestCase {
         operation.get("user-name").set("sa");
         operation.get("password").set("sa");
 
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set("remove");
-        compensatingOperation.get(OP_ADDR).set(address);
-
         execute(operation);
 
         final ModelNode xaDatasourcePropertiesAddress = address.clone();
@@ -462,9 +432,7 @@ public class DataSourceOperationsUnitTestCase {
         Assert.assertFalse(parseChildren.isEmpty());
         Assert.assertEquals("java:jboss/datasources/XaJndiDsName2", parseChildren.get("jndi-name").asString());
 
-        remove(xaDatasourcePropertiesAddress);
-        execute(compensatingOperation);
-
+        remove(address);
         // remove from xml too
         marshalAndReparseDsResources("xa-data-source");
 
@@ -499,10 +467,6 @@ public class DataSourceOperationsUnitTestCase {
         operation.get("user-name").set("sa");
         operation.get("password").set("sa");
 
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set("remove");
-        compensatingOperation.get(OP_ADDR).set(address);
-
         final ModelNode enableOperation = new ModelNode();
         enableOperation.get(OP).set("enable");
         enableOperation.get(OP_ADDR).set(address);
@@ -536,10 +500,7 @@ public class DataSourceOperationsUnitTestCase {
 
         testConnectionXA(dsName, getModelControllerClient());
 
-        remove(xaDatasourcePropertiesAddress);
-
-        execute(compensatingOperation);
-
+        remove(address);
     }
 
     @Test
@@ -617,13 +578,7 @@ public class DataSourceOperationsUnitTestCase {
         Assert.assertFalse(parseChildren.isEmpty());
         Assert.assertEquals("java:jboss/xa-datasources/" + xaDs, parseChildren.get("jndi-name").asString());
 
-        remove(xaDatasourcePropertiesAddress);
-
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set("remove");
-        compensatingOperation.get(OP_ADDR).set(address);
-
-        execute(compensatingOperation);
+        remove(address);
     }
 
     public List<ModelNode> marshalAndReparseDsResources(final String childType) throws Exception {
