@@ -27,6 +27,7 @@ import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 import java.util.List;
 
+import org.jboss.as.jpa.config.PersistenceUnitCount;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.server.deployment.Attachments;
@@ -50,20 +51,30 @@ public class PersistenceUnitSearch {
         if (traceEnabled) {
             ROOT_LOGGER.tracef("pu search for name '%s' inside of %s", persistenceUnitName, deploymentUnit.getName());
         }
-        int i = (persistenceUnitName == null ? -1 : persistenceUnitName.indexOf('#'));
-        if (i != -1) {
-            final String path = persistenceUnitName.substring(0, i);
-            final String name = persistenceUnitName.substring(i + 1);
+        int scopeSeparatorCharacter = (persistenceUnitName == null ? -1 : persistenceUnitName.indexOf('#'));
+        if (scopeSeparatorCharacter != -1) {
+            final String path = persistenceUnitName.substring(0, scopeSeparatorCharacter);
+            final String name = persistenceUnitName.substring(scopeSeparatorCharacter + 1);
             PersistenceUnitMetadata pu = getPersistenceUnit(deploymentUnit, path, name);
             if (traceEnabled) {
                 ROOT_LOGGER.tracef("pu search found %s", pu.getScopedPersistenceUnitName());
             }
             return pu;
         } else {
+            if ( persistenceUnitName == null) {
+                PersistenceUnitCount counter = getTopLevel(deploymentUnit).getAttachment(PersistenceUnitCount.PERSISTENCE_UNIT_COUNT);
+
+                if (counter.get() > 1) {
+                    // AS7-2275 no unitName and there is more than one persistence unit;
+                    throw MESSAGES.noPUnitNameSpecifiedAndMultiplePersistenceUnits(counter.get(),getTopLevel(deploymentUnit));
+                }
+                ROOT_LOGGER.tracef("pu searching with empty unit name, application %s has %d persistence unit definitions",
+                    getTopLevel(deploymentUnit).getName(), counter.get());
+            }
             PersistenceUnitMetadata name = findPersistenceUnitSupplier(deploymentUnit, persistenceUnitName);
             if (traceEnabled) {
                 if (name != null) {
-                    ROOT_LOGGER.tracef("pu search found %s", name);
+                    ROOT_LOGGER.tracef("pu search found %s", name.getScopedPersistenceUnitName());
                 }
             }
             return name;
