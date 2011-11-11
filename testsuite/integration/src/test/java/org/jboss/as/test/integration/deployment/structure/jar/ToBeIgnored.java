@@ -20,21 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.deployment.structure;
-
-import javax.ejb.Stateless;
+package org.jboss.as.test.integration.deployment.structure.jar;
 
 /**
  * User: jpai
  */
-@Stateless
-public class ClassLoadingEJB {
-
-
-    public Class<?> loadClass(String className) throws ClassNotFoundException {
-        if (className == null || className.trim().isEmpty()) {
-            throw new RuntimeException("Classname parameter cannot be null or empty");
-        }
-        return this.getClass().getClassLoader().loadClass(className);
-    }
+public class ToBeIgnored {
 }

@@ -1,4 +1,4 @@
-package org.jboss.as.test.integration.deployment.structure;
+package org.jboss.as.test.integration.deployment.structure.jar;
 
 import javax.ejb.EJB;
 
@@ -7,7 +7,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -20,35 +20,20 @@ import org.junit.runner.RunWith;
  * User: Jaikiran Pai
  */
 @RunWith(Arquillian.class)
-public class JBossDeploymentStructureTestCase {
+public class JarJBossDeploymentStructureTestCase {
 
-    private static final Logger logger = Logger.getLogger(JBossDeploymentStructureTestCase.class);
+    private static final Logger logger = Logger.getLogger(JarJBossDeploymentStructureTestCase.class);
 
     @EJB(mappedName = "java:module/ClassLoadingEJB")
     private ClassLoadingEJB ejb;
 
-    public static final String TO_BE_FOUND_CLASS_NAME = "org.jboss.as.test.integration.deployment.structure.Available";
-    public static final String TO_BE_MISSSING_CLASS_NAME = "org.jboss.as.test.integration.deployment.structure.ToBeIgnored";
+    public static final String TO_BE_FOUND_CLASS_NAME = "org.jboss.as.test.integration.deployment.structure.jar.Available";
+    public static final String TO_BE_MISSSING_CLASS_NAME = "org.jboss.as.test.integration.deployment.structure.jar.ToBeIgnored";
 
-    /**
-     * .ear
-     * |
-     * |--- META-INF
-     * |       |
-     * |       |--- jboss-deployment-structure.xml
-     * |
-     * |--- ejb.jar
-     * |
-     * |--- available.jar
-     * |
-     * |--- ignored.jar
-     *
-     * @return
-     */
     @Deployment
     public static Archive<?> createDeployment() {
-        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "deployment-structure.ear");
-        ear.addAsManifestResource(JBossDeploymentStructureTestCase.class.getPackage(), "jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "deployment-structure.jar");
+        jar.addAsManifestResource(JarJBossDeploymentStructureTestCase.class.getPackage(), "jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
 
         final JavaArchive jarOne = ShrinkWrap.create(JavaArchive.class, "available.jar");
         jarOne.addClass(Available.class);
@@ -56,15 +41,14 @@ public class JBossDeploymentStructureTestCase {
         final JavaArchive ignoredJar = ShrinkWrap.create(JavaArchive.class, "ignored.jar");
         ignoredJar.addClass(ToBeIgnored.class);
 
-        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "ejb.jar");
-        ejbJar.addClasses(ClassLoadingEJB.class, JBossDeploymentStructureTestCase.class);
+        jar.addClasses(ClassLoadingEJB.class, JarJBossDeploymentStructureTestCase.class);
 
-        ear.addAsModule(jarOne);
-        ear.addAsModule(ignoredJar);
-        ear.addAsModule(ejbJar);
+        jar.add(jarOne, "a", ZipExporter.class);
+        jar.add(ignoredJar, "i", ZipExporter.class);
 
-        logger.info(ear.toString(true));
-        return ear;
+
+        logger.info(jar.toString(true));
+        return jar;
     }
 
     /**
@@ -89,7 +73,7 @@ public class JBossDeploymentStructureTestCase {
     public void testUsePhysicalCodeSource() throws ClassNotFoundException {
         Class<?> clazz = this.ejb.loadClass(TO_BE_FOUND_CLASS_NAME);
         Assert.assertTrue( clazz.getProtectionDomain().getCodeSource().getLocation().getProtocol().equals("jar"));
-        Assert.assertTrue( ClassLoadingEJB.class.getProtectionDomain().getCodeSource().getLocation().getProtocol().equals("jar"));
+        Assert.assertTrue(ClassLoadingEJB.class.getProtectionDomain().getCodeSource().getLocation().getProtocol().equals("jar"));
     }
 
 }
