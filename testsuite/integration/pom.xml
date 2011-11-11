@@ -477,6 +477,216 @@
 
 
         <!-- ********************************************************************************** -->
+        <!-- *********************************** XTS        *********************************** -->
+        <!-- ********************************************************************************** -->
+
+        <profile>
+            <id>xts.integration.tests.profile</id>
+            <activation>
+                <property>
+                    <name>xts.integration.tests</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <properties>
+            </properties>
+            <!--
+                XTS unit/interop test dependencies.
+            -->
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.jbossts</groupId>
+                    <artifactId>jbossxts-tests</artifactId>
+                    <version>${version.org.jboss.jbossts.jbossxts}</version>
+                    <type>zip</type>
+                    <scope>test</scope>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>commons-httpclient</groupId>
+                            <artifactId>commons-httpclient</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>emma</groupId>
+                            <artifactId>emma</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>emma</groupId>
+                            <artifactId>emma_ant</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>tanukisoft</groupId>
+                            <artifactId>wrapper</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>jacorb</groupId>
+                            <artifactId>idl</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.integration</groupId>
+                            <artifactId>jboss-corba-ots-spi</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.jbossas</groupId>
+                            <artifactId>jboss-server-manager</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.remoting</groupId>
+                            <artifactId>jboss-remoting</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+                <dependency>
+                    <groupId>org.jboss.jbossts</groupId>
+                    <artifactId>jbossxts-interop-tests</artifactId>
+                    <version>${version.org.jboss.jbossts.jbossxts}</version>
+                    <type>zip</type>
+                    <scope>test</scope>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>commons-httpclient</groupId>
+                            <artifactId>commons-httpclient</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>emma</groupId>
+                            <artifactId>emma</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>emma</groupId>
+                            <artifactId>emma_ant</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>tanukisoft</groupId>
+                            <artifactId>wrapper</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>jacorb</groupId>
+                            <artifactId>idl</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.integration</groupId>
+                            <artifactId>jboss-corba-ots-spi</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.jbossas</groupId>
+                            <artifactId>jboss-server-manager</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.remoting</groupId>
+                            <artifactId>jboss-remoting</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+            </dependencies>
+            <!--
+                Server configuration executions.
+                Naming convention for executions (which we read in the log): for server config X, call it X.server
+            -->
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>process-xts-test.resource</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>unpack</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>org.jboss.jbossts</groupId>
+                                            <artifactId>jbossxts-tests</artifactId>
+                                            <type>zip</type>
+                                        </artifactItem>
+                                        <artifactItem>
+                                            <groupId>org.jboss.jbossts</groupId>
+                                            <artifactId>jbossxts-interop-tests</artifactId>
+                                            <type>zip</type>
+                                        </artifactItem>
+                                    </artifactItems>
+                                    <outputDirectory>${project.build.directory}/jbossxts-tests</outputDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>build-xts.server</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <!-- build the UDP server configs in target-->
+                                        <ant antfile="${basedir}/src/test/scripts/xts-build.xml">
+                                            <target name="build-xts"/>
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!--
+                       Surefire test executions
+                    -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions combine.children="append">
+
+                            <!-- Disable default-test execution. -->
+                            <execution>
+                                <id>default-test</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                            <!-- Multi node clustering tests. -->
+                            <execution>
+                                <id>tests-xts.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/xts/**/*TestCase.java</include>
+                                    </includes>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <arquillian.xml>xts-arquillian.xml</arquillian.xml>
+                                        <arquillian.launch>jboss</arquillian.launch>
+                                        <!-- Use combine.children="append" to pick up parent properties automatically. -->
+                                        <jboss.server.config.file.name>standalone-xts.xml</jboss.server.config.file.name>
+                                    </systemPropertyVariables>
+
+                                    <additionalClasspathElements>
+                                        <additionalClasspathElement>${project.basedir}/src/test/resources/xts</additionalClasspathElement>
+                                    </additionalClasspathElements>
+
+                                    <reportNameSuffix>tests-xts</reportNameSuffix>
+                                </configuration>
+                            </execution>
+
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+
+        <!-- ********************************************************************************** -->
         <!-- ******************************** Basic Integration ******************************* -->
         <!-- ********************************************************************************** -->
 

@@ -79,12 +79,14 @@ public class XTSInteropTestCase extends XTSTestBase {
         return archive;
     }
 
+/*  JBTM-914
     @Deployment(name = "sc007", testable = false)
     public static Archive<?> deploymentSC007() throws Exception {
         Archive<?> archive = ShrinkWrap.create(ZipImporter.class, ARCHIVE_SC007)
                 .importFrom(new ZipFile(jbossxtsTestsPath + "/" + ARCHIVE_SC007)).as(WebArchive.class);
         return archive;
     }
+*/
 
 
     @Test

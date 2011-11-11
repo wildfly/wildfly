@@ -55,7 +55,6 @@ public class XTSUnitTestCase extends XTSTestBase {
     private static final String ARCHIVE_WSC     = "ws-c-tests.ear";
     private static final String ARCHIVE_WST     = "ws-t-tests.ear";
     private static final String ARCHIVE_WSTX    = "wstx-tests.ear";
-    private static final String OUTFILE_PATH    = "target/jbossxts-tests/";
 
     private static final String BASE_URL        = "http://localhost:8080";
 
