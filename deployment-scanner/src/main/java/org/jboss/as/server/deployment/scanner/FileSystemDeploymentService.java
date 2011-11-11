@@ -310,8 +310,6 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
     /**
      * This method isn't private solely to allow a unit test in the same package to call it.
-     * @param firstRun Whether or not this is the first run of the scanner. Determines whether or not failed deployments will be
-     *        reattempted.
      */
     void scan() {
 
