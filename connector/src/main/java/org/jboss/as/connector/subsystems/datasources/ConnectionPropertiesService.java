@@ -40,34 +40,32 @@ final class ConnectionPropertiesService implements Service<String> {
 
 
     private final String value;
-        private final String name;
-        private final InjectedValue<ModifiableDataSource> ds = new InjectedValue<ModifiableDataSource>();
+    private final String name;
 
 
-        /** create an instance **/
-        public ConnectionPropertiesService(String name, String value) {
-            this.name = name;
-            this.value = value;
-        }
+    /**
+     * create an instance *
+     */
+    public ConnectionPropertiesService(String name, String value) {
+        this.name = name;
+        this.value = value;
+    }
 
-        @Override
-        public String getValue() throws IllegalStateException {
-            return value;
-        }
+    @Override
+    public String getValue() throws IllegalStateException {
+        return value;
+    }
 
-        @Override
-        public void start(StartContext context) throws StartException {
-            ds.getValue().addConnectionProperty(name,value);
-        }
+    @Override
+    public void start(StartContext context) throws StartException {
+    }
 
-        @Override
-        public void stop(StopContext context) {
+    @Override
+    public void stop(StopContext context) {
 
-        }
+    }
 
-        public Injector<ModifiableDataSource> getDSInjector() {
-            return ds;
-        }
-
-
+    public String getName() {
+        return name;
+    }
 }

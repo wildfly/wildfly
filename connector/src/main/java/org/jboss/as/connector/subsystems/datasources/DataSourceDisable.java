@@ -101,7 +101,7 @@ public class DataSourceDisable implements OperationStepHandler {
 
 
                     for (ServiceName name : serviceNames) {
-                        if (dataSourceConfigServiceName.isParentOf(name) && !dataSourceConfigServiceName.equals(name)) {
+                        if (dataSourceConfigServiceName.append("connetion-properties").isParentOf(name)) {
                             final ServiceController<?> connProperyController = registry.getService(name);
 
                             if (connProperyController != null) {
@@ -114,7 +114,7 @@ public class DataSourceDisable implements OperationStepHandler {
                                 throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceNotAvailable("Data-source.connectionProperty", name)));
                             }
                         }
-                        if (xaDataSourceConfigServiceName.isParentOf(name) && !xaDataSourceConfigServiceName.equals(name)) {
+                        if (xaDataSourceConfigServiceName.append("xa-datasource-properties").isParentOf(name)) {
                             final ServiceController<?> xaConfigProperyController = registry.getService(name);
 
                             if (xaConfigProperyController != null) {
@@ -130,11 +130,11 @@ public class DataSourceDisable implements OperationStepHandler {
                     }
 
 
-                    if (xaDataSourceConfigController != null && ServiceController.State.UP.equals(xaDataSourceConfigController.getState())) {
+                    if (xaDataSourceConfigController != null) {
                         xaDataSourceConfigController.setMode(ServiceController.Mode.REMOVE);
                     }
 
-                    if (dataSourceConfigController != null && ServiceController.State.UP.equals(dataSourceConfigController.getState())) {
+                    if (dataSourceConfigController != null) {
                         dataSourceConfigController.setMode(ServiceController.Mode.REMOVE);
                     }
 

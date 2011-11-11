@@ -22,9 +22,15 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
+import org.jboss.msc.inject.ConcurrentMapInjector;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -41,12 +47,19 @@ public class XADataSourceConfigService implements Service<ModifiableXaDataSource
 
     private final ModifiableXaDataSource dataSourceConfig;
 
+    private final ConcurrentMap<String, String> xaDataSourceProperties = new ConcurrentHashMap<String, String>(0);
+
+
+
     public XADataSourceConfigService(ModifiableXaDataSource dataSourceConfig) {
         super();
         this.dataSourceConfig = dataSourceConfig;
     }
 
     public synchronized void start(StartContext startContext) throws StartException {
+        for (Map.Entry<String, String> xaDataSourceProperty : xaDataSourceProperties.entrySet()) {
+            dataSourceConfig.addXaDataSourceProperty(xaDataSourceProperty.getKey(), xaDataSourceProperty.getValue());
+        }
     }
 
     public synchronized void stop(StopContext stopContext) {
@@ -56,5 +69,10 @@ public class XADataSourceConfigService implements Service<ModifiableXaDataSource
     public ModifiableXaDataSource getValue() throws IllegalStateException, IllegalArgumentException {
         return dataSourceConfig;
     }
+
+    public Injector<String> getXaDataSourcePropertyInjector(String key) {
+        return new ConcurrentMapInjector(xaDataSourceProperties, key);
+    }
+
 
 }
