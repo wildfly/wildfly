@@ -252,10 +252,10 @@ public class DeployHandler extends BatchModeCommandHandler {
 
                 // replace
                 builder = new DefaultOperationRequestBuilder();
-                builder.setOperationName("full-replace-deployment");
+                builder.setOperationName(Util.FULL_REPLACE_DEPLOYMENT);
                 builder.addProperty("name", name);
                 if(runtimeName != null) {
-                    builder.addProperty("runtime-name", runtimeName);
+                    builder.addProperty(Util.RUNTIME_NAME, runtimeName);
                 }
 
                 FileInputStream is = null;
@@ -264,7 +264,7 @@ public class DeployHandler extends BatchModeCommandHandler {
                     ModelNode request = builder.buildRequest();
                     OperationBuilder op = new OperationBuilder(request);
                     op.addInputStream(is);
-                    request.get("content").get(0).get("input-stream-index").set(0);
+                    request.get(Util.CONTENT).get(0).get(Util.INPUT_STREAM_INDEX).set(0);
                     result = client.execute(op.build());
                 } catch(Exception e) {
                     ctx.printLine("Failed to replace the deployment: " + e.getLocalizedMessage());
@@ -285,44 +285,12 @@ public class DeployHandler extends BatchModeCommandHandler {
             return;
         } else {
 
-            DefaultOperationRequestBuilder builder;
-            ModelNode result;
-
-            // add
-            if (f != null) {
-                builder = new DefaultOperationRequestBuilder();
-                builder.setOperationName("add");
-                builder.addNode("deployment", name);
-                if (runtimeName != null) {
-                    builder.addProperty("runtime-name", runtimeName);
-                }
-
-                FileInputStream is = null;
-                try {
-                    is = new FileInputStream(f);
-                    ModelNode request = builder.buildRequest();
-                    OperationBuilder op = new OperationBuilder(request);
-                    op.addInputStream(is);
-                    request.get("content").get(0).get("input-stream-index").set(0);
-                    result = client.execute(op.build());
-                } catch (Exception e) {
-                    ctx.printLine("Failed to add the deployment content to the repository: " + e.getLocalizedMessage());
-                    return;
-                } finally {
-                    StreamUtils.safeClose(is);
-                }
-                if (!Util.isSuccess(result)) {
-                    ctx.printLine(Util.getFailureDescription(result));
-                    return;
-                }
-            }
-
-            //deploy
+            // deploy
+            // Actually, the add is performed first.
+            // But the deploy request is build before to make sure all the required parameters have been provided
+            ModelNode deployRequest = null;
             if (!disabled.isPresent(args)) {
-                final ModelNode request;
-
                 if (ctx.isDomainMode()) {
-
                     final List<String> serverGroups;
                     if (ctx.isDomainMode()) {
                         if(allServerGroups.isPresent(args)) {
@@ -330,7 +298,13 @@ public class DeployHandler extends BatchModeCommandHandler {
                         } else {
                             String serverGroupsStr = this.serverGroups.getValue(args);
                             if(serverGroupsStr == null) {
-                                ctx.printLine("Either --all-server-groups or --server-groups must be specified.");
+                                final StringBuilder buf = new StringBuilder();
+                                buf.append("One of ");
+                                if(f != null) {
+                                    buf.append(disabled.getFullName()).append(", ");
+                                }
+                                buf.append("--all-server-groups or --server-groups is missing.");
+                                ctx.printLine(buf.toString());
                                 return;
                             }
                             serverGroups = Arrays.asList(serverGroupsStr.split(","));
@@ -344,32 +318,60 @@ public class DeployHandler extends BatchModeCommandHandler {
                         serverGroups = null;
                     }
 
-                    request = new ModelNode();
-                    request.get("operation").set("composite");
-                    request.get("address").setEmptyList();
-                    ModelNode steps = request.get("steps");
+                    deployRequest = new ModelNode();
+                    deployRequest.get(Util.OPERATION).set(Util.COMPOSITE);
+                    deployRequest.get(Util.ADDRESS).setEmptyList();
+                    ModelNode steps = deployRequest.get(Util.STEPS);
 
                     for (String serverGroup : serverGroups) {
-                        steps.add(Util.configureDeploymentOperation("add", name, serverGroup));
+                        steps.add(Util.configureDeploymentOperation(Util.ADD, name, serverGroup));
                     }
 
                     for (String serverGroup : serverGroups) {
-                        steps.add(Util.configureDeploymentOperation("deploy", name, serverGroup));
+                        steps.add(Util.configureDeploymentOperation(Util.DEPLOY, name, serverGroup));
                     }
                 } else {
-                    builder = new DefaultOperationRequestBuilder();
-                    builder.setOperationName("deploy");
-                    builder.addNode("deployment", name);
-                    try {
-                        request = builder.buildRequest();
-                    } catch (Exception e) {
-                        ctx.printLine("Failed to deploy: " + e.getLocalizedMessage());
-                        return;
-                    }
+                    deployRequest = new ModelNode();
+                    deployRequest.get(Util.OPERATION).set(Util.DEPLOY);
+                    deployRequest.get(Util.ADDRESS, Util.DEPLOYMENT).set(name);
+                }
+            }
+
+
+            // add
+            if (f != null) {
+                ModelNode request = new ModelNode();
+                request.get(Util.OPERATION).set(Util.ADD);
+                request.get(Util.ADDRESS, Util.DEPLOYMENT).set(name);
+                if (runtimeName != null) {
+                    request.get(Util.RUNTIME_NAME).set(runtimeName);
                 }
 
+                ModelNode result;
+                FileInputStream is = null;
                 try {
-                    result = client.execute(request);
+                    is = new FileInputStream(f);
+                    OperationBuilder op = new OperationBuilder(request);
+                    op.addInputStream(is);
+                    request.get(Util.CONTENT).get(0).get(Util.INPUT_STREAM_INDEX).set(0);
+                    result = client.execute(op.build());
+                } catch (Exception e) {
+                    ctx.printLine("Failed to add the deployment content to the repository: " + e.getLocalizedMessage());
+                    return;
+                } finally {
+                    StreamUtils.safeClose(is);
+                }
+                if (!Util.isSuccess(result)) {
+                    ctx.printLine(Util.getFailureDescription(result));
+                    return;
+                }
+            }
+
+
+            if(deployRequest != null) {
+                ModelNode result;
+                try {
+                    result = client.execute(deployRequest);
                 } catch (Exception e) {
                     ctx.printLine("Failed to deploy: " + e.getLocalizedMessage());
                     return;
@@ -418,14 +420,14 @@ public class DeployHandler extends BatchModeCommandHandler {
 
                 // replace
                 builder = new DefaultOperationRequestBuilder();
-                builder.setOperationName("full-replace-deployment");
-                builder.addProperty("name", name);
+                builder.setOperationName(Util.FULL_REPLACE_DEPLOYMENT);
+                builder.addProperty(Util.NAME, name);
                 if(runtimeName != null) {
-                    builder.addProperty("runtime-name", runtimeName);
+                    builder.addProperty(Util.RUNTIME_NAME, runtimeName);
                 }
 
                 byte[] bytes = readBytes(f);
-                builder.getModelNode().get("content").get(0).get("bytes").set(bytes);
+                builder.getModelNode().get(Util.CONTENT).get(0).get(Util.BYTES).set(bytes);
                 return builder.buildRequest();
             } else {
                 throw new OperationFormatException("'" + name + "' is already deployed (use -f to force re-deploy).");
@@ -452,23 +454,23 @@ public class DeployHandler extends BatchModeCommandHandler {
         }
 
         ModelNode composite = new ModelNode();
-        composite.get("operation").set("composite");
-        composite.get("address").setEmptyList();
-        ModelNode steps = composite.get("steps");
+        composite.get(Util.OPERATION).set(Util.COMPOSITE);
+        composite.get(Util.ADDRESS).setEmptyList();
+        ModelNode steps = composite.get(Util.STEPS);
 
         DefaultOperationRequestBuilder builder;
 
         // add
         if (f != null) {
             builder = new DefaultOperationRequestBuilder();
-            builder.setOperationName("add");
-            builder.addNode("deployment", name);
+            builder.setOperationName(Util.ADD);
+            builder.addNode(Util.DEPLOYMENT, name);
             if (runtimeName != null) {
-                builder.addProperty("runtime-name", runtimeName);
+                builder.addProperty(Util.RUNTIME_NAME, runtimeName);
             }
 
             byte[] bytes = readBytes(f);
-            builder.getModelNode().get("content").get(0).get("bytes").set(bytes);
+            builder.getModelNode().get(Util.CONTENT).get(0).get(Util.BYTES).set(bytes);
             steps.add(builder.buildRequest());
         }
 
@@ -476,15 +478,15 @@ public class DeployHandler extends BatchModeCommandHandler {
             // deploy
             if (ctx.isDomainMode()) {
                 for (String serverGroup : serverGroups) {
-                    steps.add(Util.configureDeploymentOperation("add", name, serverGroup));
+                    steps.add(Util.configureDeploymentOperation(Util.ADD, name, serverGroup));
                 }
                 for (String serverGroup : serverGroups) {
-                    steps.add(Util.configureDeploymentOperation("deploy", name, serverGroup));
+                    steps.add(Util.configureDeploymentOperation(Util.DEPLOY, name, serverGroup));
                 }
             } else {
                 builder = new DefaultOperationRequestBuilder();
-                builder.setOperationName("deploy");
-                builder.addNode("deployment", name);
+                builder.setOperationName(Util.DEPLOY);
+                builder.addNode(Util.DEPLOYMENT, name);
                 steps.add(builder.buildRequest());
             }
         }
