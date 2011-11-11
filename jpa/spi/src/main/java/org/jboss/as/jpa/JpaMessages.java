@@ -291,7 +291,7 @@ public interface JpaMessages {
      *
      * @return the message.
      */
-    @Message(id = 11440, value = "Can't find a deployment unit named %s at %s")
+    @Message(id = 11440, value = "Can't find a deployment unit named %s in %s")
     String deploymentUnitNotFound(String puName, DeploymentUnit deploymentUnit);
 
     /**
@@ -553,4 +553,21 @@ public interface JpaMessages {
      */
     @Message(id = 11469, value = "Transaction is required to perform this operation (either use a transaction or extended persistence context)")
     TransactionRequiredException transactionRequired();
+
+    /**
+     * JBoss 4 prevented applications from referencing the persistence unit without specifying the pu name, if there
+     * were multiple persistence unit definitions in the app.  JBoss 5 loosened the checking up, to let applications,
+     * just use any PU definition that they find.  For AS7, we are strictly enforcing this again just like we did in
+     * JBoss 4.
+     * AS7-2275
+     *
+     * @param deploymentUnit the deployment unit.
+     * @param puCount is number of persistence units defined in application
+     *
+     * @return an {@link IllegalArgumentException} for the error.
+     */
+    @Message(id = 11470, value = "Persistence unitName was not specified and there are %d persistence unit definitions in application %s."+
+        "  Either change the application to have only one persistence unit definition or specify the unitName for each reference to a persistence unit")
+    IllegalArgumentException noPUnitNameSpecifiedAndMultiplePersistenceUnits(int puCount, DeploymentUnit deploymentUnit);
+
 }

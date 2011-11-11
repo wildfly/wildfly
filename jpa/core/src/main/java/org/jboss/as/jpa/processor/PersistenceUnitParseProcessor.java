@@ -39,6 +39,7 @@ import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.jpa.config.PersistenceUnitCount;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.puparser.PersistenceUnitXmlParser;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
@@ -47,11 +48,9 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.jandex.Index;
 import org.jboss.metadata.parser.util.NoopXmlResolver;
 import org.jboss.vfs.VirtualFile;
 
@@ -109,12 +108,15 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             deploymentRoot.putAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS, holder);
             markDU(holder, deploymentUnit);
             JPA_LOGGER.tracef("parsed persistence unit definitions for jar %s", deploymentRoot.getRootName());
+
+            incrementPersistenceUnitCount(deploymentUnit, holder.getPersistenceUnits().size());
         }
     }
 
     private void handleWarDeployment(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (isWarDeployment(deploymentUnit)) {
+            int puCount = 0;
             // ordered list of PUs
             List<PersistenceUnitMetadataHolder> listPUHolders = new ArrayList<PersistenceUnitMetadataHolder>(1);
 
@@ -136,6 +138,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             PersistenceUnitMetadataHolder holder = normalize(listPUHolders);
             deploymentRoot.putAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS, holder);
             markDU(holder, deploymentUnit);
+            puCount = holder.getPersistenceUnits().size();
 
             // look for persistence.xml in jar files in the META-INF/persistence.xml directory (these are not currently
             // handled as subdeployments)
@@ -149,15 +152,19 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
                     holder = normalize(listPUHolders);
                     resourceRoot.putAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS, holder);
                     markDU(holder, deploymentUnit);
+                    puCount += holder.getPersistenceUnits().size();
                 }
             }
             JPA_LOGGER.tracef("parsed persistence unit definitions for war %s", deploymentRoot.getRootName());
+
+            incrementPersistenceUnitCount(deploymentUnit, puCount);
         }
     }
 
     private void handleEarDeployment(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (isEarDeployment(deploymentUnit)) {
+            int puCount = 0;
             // ordered list of PUs
             List<PersistenceUnitMetadataHolder> listPUHolders = new ArrayList<PersistenceUnitMetadataHolder>(1);
             // handle META-INF/persistence.xml
@@ -167,7 +174,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             PersistenceUnitMetadataHolder holder = normalize(listPUHolders);
             deploymentRoot.putAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS, holder);
             markDU(holder, deploymentUnit);
-
+            puCount = holder.getPersistenceUnits().size();
             // Parsing persistence.xml in EJB jar/war files is handled as subdeployments.
             // We need to handle jars in the EAR/lib folder here
             List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
@@ -184,9 +191,11 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
                     holder = normalize(listPUHolders);
                     resourceRoot.putAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS, holder);
                     markDU(holder, deploymentUnit);
+                    puCount += holder.getPersistenceUnits().size();
                 }
             }
             JPA_LOGGER.tracef("parsed persistence unit definitions for ear %s", deploymentRoot.getRootName());
+            incrementPersistenceUnitCount(deploymentUnit, puCount);
         }
     }
 
@@ -361,6 +370,25 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
         if (holder.getPersistenceUnits() != null && holder.getPersistenceUnits().size() > 0) {
             JPADeploymentMarker.mark(deploymentUnit);
         }
+    }
+
+    private void incrementPersistenceUnitCount(DeploymentUnit deploymentUnit, int persistenceUnitCount) {
+        if (deploymentUnit.getParent() != null) {
+            deploymentUnit = deploymentUnit.getParent();
+        }
+
+        PersistenceUnitCount counter;
+        // create persistence unit counter if not done already
+        synchronized (deploymentUnit) {  // ensure that only deployment thread sets this
+            counter = deploymentUnit.getAttachment(PersistenceUnitCount.PERSISTENCE_UNIT_COUNT);
+            if (counter == null) {
+                counter = new PersistenceUnitCount();
+                deploymentUnit.putAttachment(PersistenceUnitCount.PERSISTENCE_UNIT_COUNT, counter);
+            }
+        }
+
+        counter.increment(persistenceUnitCount);
+        JPA_LOGGER.tracef("incrementing PU count for %s by %d", deploymentUnit.getName(), persistenceUnitCount);
     }
 
 
