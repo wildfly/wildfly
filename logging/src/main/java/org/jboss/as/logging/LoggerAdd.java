@@ -37,7 +37,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
 import java.util.List;
-import java.util.logging.Level;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -64,7 +63,7 @@ class LoggerAdd extends AbstractAddStepHandler {
         try {
             // Install logger service
             final LoggerService service = new LoggerService(name);
-            if (level.isDefined()) service.setLevel(Level.parse(level.asString()));
+            if (level.isDefined()) service.setLevel(ModelParser.parseLevel(level));
             if (useParentHandlers.isDefined()) service.setUseParentHandlers(useParentHandlers.asBoolean());
             newControllers.add(target.addService(LogServices.loggerName(name), service)
                     .addListener(verificationHandler)

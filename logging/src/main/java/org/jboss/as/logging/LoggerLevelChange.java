@@ -33,7 +33,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
@@ -62,7 +61,7 @@ public class LoggerLevelChange extends AbstractModelUpdateHandler {
         @SuppressWarnings("unchecked")
         final ServiceController<Logger> controller = (ServiceController<Logger>) serviceRegistry.getService(LogServices.loggerName(name));
         if (controller != null && level.isDefined()) {
-            controller.getValue().setLevel(Level.parse(level.asString()));
+            controller.getValue().setLevel(ModelParser.parseLevel(level));
         }
     }
 }

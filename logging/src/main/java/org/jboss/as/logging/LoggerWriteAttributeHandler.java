@@ -30,8 +30,6 @@ import org.jboss.logmanager.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 
-import java.util.logging.Level;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.USE_PARENT_HANDLERS;
@@ -61,7 +59,7 @@ class LoggerWriteAttributeHandler extends AbstractLoggerWriteAttributeHandler {
         // Get the logger
         final Logger logger = controller.getValue();
         if (LEVEL.getName().equals(attributeName)) {
-            logger.setLevel(Level.parse(resolvedValue.asString()));
+            logger.setLevel(ModelParser.parseLevel(resolvedValue));
         } else if (USE_PARENT_HANDLERS.getName().equals(attributeName)) {
             logger.setUseParentHandlers(resolvedValue.asBoolean());
         }
@@ -71,7 +69,7 @@ class LoggerWriteAttributeHandler extends AbstractLoggerWriteAttributeHandler {
     @Override
     protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final Logger logger) throws OperationFailedException {
         if (LEVEL.getName().equals(attributeName)) {
-            logger.setLevel(Level.parse(valueToRestore.asString()));
+            logger.setLevel(ModelParser.parseLevel(valueToRestore));
         } else if (USE_PARENT_HANDLERS.getName().equals(attributeName)) {
             logger.setUseParentHandlers(valueToRestore.asBoolean());
         }

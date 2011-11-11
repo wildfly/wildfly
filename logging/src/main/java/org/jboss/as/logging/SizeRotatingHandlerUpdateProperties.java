@@ -62,7 +62,7 @@ public class SizeRotatingHandlerUpdateProperties extends HandlerUpdateProperties
 
         final ModelNode rotateSizeNode = ROTATE_SIZE.resolveModelAttribute(context, model);
         if (rotateSizeNode.isDefined()) {
-            handler.setRotateSize(SizeValidator.parseSize(rotateSizeNode.asString()));
+            handler.setRotateSize(ModelParser.parseSize(rotateSizeNode));
         }
         return false;
     }
@@ -85,7 +85,7 @@ public class SizeRotatingHandlerUpdateProperties extends HandlerUpdateProperties
 
         final ModelNode rotateSizeNode = ROTATE_SIZE.resolveModelAttribute(context, originalModel);
         if (rotateSizeNode.isDefined()) {
-            handler.setRotateSize(SizeValidator.parseSize(rotateSizeNode.asString()));
+            handler.setRotateSize(ModelParser.parseSize(rotateSizeNode));
         }
     }
 }

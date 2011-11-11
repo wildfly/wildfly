@@ -53,7 +53,7 @@ public class AsyncHandlerUpdateProperties extends HandlerUpdateProperties<AsyncH
         boolean requireRestart = false;
         final ModelNode overflowAction = OVERFLOW_ACTION.resolveModelAttribute(context, model);
         if (overflowAction.isDefined()) {
-            handler.setOverflowAction(AsyncHandler.OverflowAction.valueOf(overflowAction.asString().toUpperCase(Locale.US)));
+            handler.setOverflowAction(ModelParser.parseOverflowAction(overflowAction));
         }
 
         final ModelNode queueLength = QUEUE_LENGTH.resolveModelAttribute(context, model);

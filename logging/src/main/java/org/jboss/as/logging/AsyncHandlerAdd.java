@@ -29,7 +29,6 @@ import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.logging.Handler;
 
 import org.jboss.as.controller.OperationContext;
@@ -65,7 +64,7 @@ class AsyncHandlerAdd extends HandlerAddProperties<AsyncHandlerService> {
         service.setQueueLength(QUEUE_LENGTH.resolveModelAttribute(context, model).asInt());
         final ModelNode overflowAction = OVERFLOW_ACTION.resolveModelAttribute(context, model);
         if (overflowAction.isDefined()) {
-            service.setOverflowAction(OverflowAction.valueOf(overflowAction.asString().toUpperCase(Locale.US)));
+            service.setOverflowAction(ModelParser.parseOverflowAction(overflowAction));
         }
     }
 

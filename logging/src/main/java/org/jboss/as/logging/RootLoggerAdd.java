@@ -31,9 +31,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.logging.Level;
 
 import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
@@ -63,7 +61,7 @@ class RootLoggerAdd extends AbstractAddStepHandler {
         try {
 
             final RootLoggerService service = new RootLoggerService();
-            if (level.isDefined()) service.setLevel(Level.parse(level.asString()));
+            if (level.isDefined()) service.setLevel(ModelParser.parseLevel(level));
             newControllers.add(target.addService(LogServices.loggerName(name), service)
                     .addListener(verificationHandler)
                     .setInitialMode(ServiceController.Mode.ACTIVE)

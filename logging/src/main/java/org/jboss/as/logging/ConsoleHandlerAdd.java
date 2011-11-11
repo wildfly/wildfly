@@ -53,7 +53,7 @@ class ConsoleHandlerAdd extends FlushingHandlerAddProperties<ConsoleHandlerServi
         super.updateRuntime(context, serviceBuilder, name, service, model);
         final ModelNode target = TARGET.resolveModelAttribute(context, model);
         if (target.isDefined()) {
-            service.setTarget(Target.fromString(TargetValidator.properCase(target.asString())));
+            service.setTarget(Target.fromString(target.asString()));
         }
     }
 }

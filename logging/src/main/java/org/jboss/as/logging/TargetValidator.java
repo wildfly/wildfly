@@ -52,8 +52,7 @@ class TargetValidator extends ModelTypeValidator implements AllowedValuesValidat
     public void validateParameter(final String parameterName, final ModelNode value) throws OperationFailedException {
         super.validateParameter(parameterName, value);
         if (value.isDefined()) {
-            final String targetString = properCase(value.asString());
-            final Target target = Target.fromString(targetString);
+            final Target target = Target.fromString(value.asString());
             if (target == null || !allowedValues.contains(target)) {
                 throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidTargetName(allowedValues)));
             }
@@ -67,12 +66,5 @@ class TargetValidator extends ModelTypeValidator implements AllowedValuesValidat
             result.add(new ModelNode().set(target.toString()));
         }
         return result;
-    }
-
-    public static String properCase(final String target) {
-        final StringBuilder result = new StringBuilder(target.length());
-        result.append(Character.toUpperCase(target.charAt(0)));
-        result.append(target.substring(1).toLowerCase(Locale.US));
-        return result.toString();
     }
 }

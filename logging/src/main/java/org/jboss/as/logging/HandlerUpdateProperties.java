@@ -43,7 +43,6 @@ import org.jboss.msc.service.ServiceRegistry;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -109,7 +108,7 @@ public abstract class HandlerUpdateProperties<T extends Handler> implements Oper
                         // TODO (jrp) implement filter
 
                         if (level.isDefined()) {
-                            handler.setLevel(java.util.logging.Level.parse(level.asString()));
+                            handler.setLevel(ModelParser.parseLevel(level));
                         }
 
                         if (formatter.isDefined()) {

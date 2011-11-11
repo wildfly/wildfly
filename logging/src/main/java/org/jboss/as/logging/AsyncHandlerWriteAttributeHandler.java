@@ -31,8 +31,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.handlers.AsyncHandler;
 
-import java.util.Locale;
-
 /**
  * Date: 12.10.2011
  *
@@ -49,7 +47,7 @@ public class AsyncHandlerWriteAttributeHandler extends AbstractLogHandlerWriteAt
     @Override
     protected boolean doApplyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final String handlerName, final AsyncHandler handler) throws OperationFailedException {
         if (OVERFLOW_ACTION.getName().equals(attributeName)) {
-            handler.setOverflowAction(AsyncHandler.OverflowAction.valueOf(resolvedValue.asString().toUpperCase(Locale.US)));
+            handler.setOverflowAction(ModelParser.parseOverflowAction(resolvedValue));
         } else if (SUBHANDLERS.getName().equals(attributeName)) {
             // Remove the subhandlers
             AsyncHandlerUnassignSubhandler.removeHandlers(SUBHANDLERS, currentValue, context, handlerName);
@@ -64,7 +62,7 @@ public class AsyncHandlerWriteAttributeHandler extends AbstractLogHandlerWriteAt
     @Override
     protected void doRevertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final String handlerName, final AsyncHandler handler) throws OperationFailedException {
         if (OVERFLOW_ACTION.getName().equals(attributeName)) {
-            handler.setOverflowAction(AsyncHandler.OverflowAction.valueOf(valueToRestore.asString().toUpperCase(Locale.US)));
+            handler.setOverflowAction(ModelParser.parseOverflowAction(valueToRestore));
         } else if (SUBHANDLERS.getName().equals(attributeName)) {
             // Remove the subhandlers
             AsyncHandlerUnassignSubhandler.removeHandlers(SUBHANDLERS, valueToRevert, context, handlerName);

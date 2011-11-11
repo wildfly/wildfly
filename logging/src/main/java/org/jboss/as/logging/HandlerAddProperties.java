@@ -34,7 +34,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Handler;
-import java.util.logging.Level;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -97,7 +96,7 @@ public abstract class HandlerAddProperties<T extends HandlerService> extends Abs
         // TODO - support filter
 
         if (level.isDefined()) {
-            service.setLevel(Level.parse(level.asString()));
+            service.setLevel(ModelParser.parseLevel(level));
         }
 
         try {

@@ -25,12 +25,11 @@ package org.jboss.as.logging;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
-import org.jboss.as.controller.operations.validation.LongRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.logmanager.handlers.AsyncHandler.OverflowAction;
 
-import java.util.logging.Level;
 
 /**
  * @author Emanuel Muckenhuber
