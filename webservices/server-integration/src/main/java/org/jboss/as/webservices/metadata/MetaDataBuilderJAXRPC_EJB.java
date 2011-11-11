@@ -44,13 +44,10 @@ final class MetaDataBuilderJAXRPC_EJB extends AbstractMetaDataBuilderEJB {
         final JBossWebservicesMetaData jbossWebservicesMD = WSHelper.getOptionalAttachment(dep, JBossWebservicesMetaData.class);
         final JAXRPCDeployment jaxrpcDeployment = WSHelper.getRequiredAttachment(dep, JAXRPCDeployment.class);
 
-        for (final EJBEndpoint jbossEjbMD : jaxrpcDeployment.getEjbEndpoints()) {
-            this.buildEnterpriseBeanMetaData(wsEjbsMD, jbossEjbMD, jbossWebservicesMD);
+        for (final EJBEndpoint ejbEndpoint : jaxrpcDeployment.getEjbEndpoints()) {
+            this.buildEnterpriseBeanMetaData(wsEjbsMD, ejbEndpoint, jbossWebservicesMD);
         }
-        // TODO: security domain support
-        // final String securityDomain = jbossMetaData.getSecurityDomain();
-        // log.debug("Setting security domain: " + securityDomain);
-        // ejbArchiveMD.setSecurityDomain(securityDomain);
+
         ejbArchiveMD.setEnterpriseBeans(wsEjbsMD);
     }
 
