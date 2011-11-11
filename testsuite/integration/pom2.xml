@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.jboss.as</groupId>
+        <artifactId>jboss-as-testsuite</artifactId>
+        <version>7.1.0.Alpha2-SNAPSHOT</version>
+    </parent>
+
+    <groupId>org.jboss.as</groupId>
+    <artifactId>jboss-as-testsuite-integration-agg</artifactId>
+    <packaging>pom</packaging>
+    <version>7.1.0.Alpha2-SNAPSHOT</version>
+
+    <name>JBoss Application Server Test Suite: Integration Aggregator</name>
+
+    <properties>
+        <jbossas.ts.integ.dir>${basedir}</jbossas.ts.integ.dir>
+        <!-- This project's testsuite dir. To be changed for every submodule (until we figure out how to do it automatically). -->
+        <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
+        <!-- This project's root dir. -->
+        <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+        <jvm.args.dirs>-Djbossas.ts.integ.dir=${jbossas.ts.integ.dir} -Djbossas.ts.dir=${jbossas.ts.dir} -Djbossas.project.dir=${jbossas.project.dir} -Djboss.dist=${jboss.dist}</jvm.args.dirs>
+        
+        <!-- Used to provide an absolute location for the distribution under test. -->
+        <!-- This value is overridden in modules with the correct relative pathname. -->
+        <jboss.dist>${jbossas.project.dir}/build/target/jboss-as-${jboss.as.release.version}</jboss.dist>
+        <jboss.home>${jboss.dist}</jboss.home>
+        
+        <group.string><!-- Override this in submodules. --></group.string>
+
+        <!-- Used to provide an absolute location for the XSLT scripts. -->
+        <!-- This value is overridden in modules with the correct relative pathname. -->
+        <!-- TODO: Remove, use ${jbossas.ts.integ.dir} in ant scripts. -->
+        <xslt.scripts.dir>${jbossas.ts.dir}/integration/src/test/xslt</xslt.scripts.dir>
+    </properties>
+
+
+    <profiles>
+        
+        <!-- Run all tests on -DallTests. -->
+        <profile>
+            <id>ts.integ.allGroups</id>
+            <activation><property><name>allTests</name></property></activation>
+            <modules>
+                <module>group-smoke</module>
+                <module>group-basic</module>
+                <module>group-clust</module>
+                <module>group-iiop</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.smoke -->
+        <profile>
+            <id>ts.integ.group.smoke</id>
+            <activation><property><name>ts.smoke</name></property></activation>
+            <modules>
+                <module>group-smoke</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.basic -->
+        <profile>
+            <id>ts.integ.group.basic</id>
+            <activation><property><name>ts.basic</name></property></activation>
+            <modules>
+                <module>group-basic</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.clust -->
+        <profile>
+            <id>ts.integ.group.clust</id>
+            <activation><property><name>ts.clust</name></property></activation>
+            <modules>
+                <module>group-clust</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.iiop -->
+        <profile>
+            <id>ts.integ.group.iiop</id>
+            <activation><property><name>ts.iiop</name></property></activation>
+            <modules>
+                <module>group-iiop</module>
+            </modules>
+        </profile>
+
+    </profiles>
+    
+
+    <build>
+        <plugins>
+            <!-- General plugin configuration for all integration tests -->
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-help-plugin</artifactId>
+                <version>2.1.1</version>
+                <inherited>true</inherited>
+                <executions>
+                    <execution><id>help.active-profiles</id>
+                        <phase>initialize</phase>
+                        <goals><goal>active-profiles</goal></goals>
+                        <configuration><output>target/help.active-profiles.txt</output></configuration>
+                    </execution>
+                    <execution><id>help.effective-pom</id>
+                        <phase>initialize</phase>
+                        <goals><goal>effective-pom</goal></goals>
+                        <configuration><output>target/help.effective-pom.txt</output></configuration>
+                    </execution>
+                    <execution><id>help.effective-settings</id>
+                        <phase>initialize</phase>
+                        <goals><goal>effective-settings</goal></goals>
+                        <configuration><output>target/help.effective-settings.txt</output></configuration>
+                    </execution>
+                   <execution><id>help.system</id>
+                        <phase>initialize</phase>
+                        <goals><goal>system</goal></goals>
+                        <configuration><output>target/help.system.txt</output></configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            
+            <!-- Copy JBoss AS to target/jbossas. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions combine.children="append">
+                    <!-- First, make a copy for this module. -->
+                    <execution>
+                        <inherited>false</inherited>
+                        <id>ts.copy-jbossas</id>
+                        <phase>generate-test-resources</phase>
+                        <goals><goal>copy-resources</goal></goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/jbossas</outputDirectory>
+                            <overwrite>true</overwrite>
+                            <resources>
+                                <resource>
+                                    <directory>${jboss.home}</directory>
+                                    <!-- Modules and bundles not copied as they are read-only (see Surefire props). -->
+                                    <excludes>
+                                        <exclude>modules/</exclude>
+                                        <exclude>bundles/</exclude>
+                                    </excludes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <!-- Copy this copy into submodules. -->
+                    <execution>
+                        <inherited>true</inherited>
+                        <id>ts.copy-jbossas.groups</id>
+                        <phase>generate-test-resources</phase>
+                        <goals><goal>copy-resources</goal></goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/jbossas</outputDirectory>
+                            <overwrite>true</overwrite>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/../target/jbossas</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+
+            <!-- General surefire configuration. Applies to submodules too. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- Prevent test and server output appearing in console. -->
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    <enableAssertions>true</enableAssertions>
+                    <!--<basedir>${jbossas.ts.integ.dir}</basedir>  <!- - "The base directory of the project being tested." Sets ${basedir}. -->
+                    <workingDirectory>${basedir}/target/workdir</workingDirectory> <!-- Work in submodule's own dir. -->
+
+                    <!-- Forked process timeout -->
+                    <forkedProcessTimeoutInSeconds>${surefire.forked.process.timeout}</forkedProcessTimeoutInSeconds>
+                    <!-- System properties to forked surefire JVM which runs clients. -->
+                    <argLine>${ip.client.stack}</argLine>
+
+                    <!-- System properties passed to test cases -->
+                    <systemPropertyVariables combine.children="append">
+                        <node0>${node0}</node0>
+                        <node1>${node1}</node1>
+                        <udpGroup>${udpGroup}</udpGroup>
+
+                        <jbossas.ts.submodule.dir>${basedir}</jbossas.ts.submodule.dir>
+                        <jbossas.ts.integ.dir>${jbossas.ts.integ.dir}</jbossas.ts.integ.dir>
+                        <jbossas.ts.dir>${jbossas.ts.dir}</jbossas.ts.dir>
+                        <jbossas.project.dir>${jbossas.project.dir}</jbossas.project.dir>
+                        <jboss.dist>${jboss.dist}</jboss.dist>
+
+                        <!--
+                            Used in arquillian.xml - arguments for all JBoss AS instances.
+                            System properties are duplicated here until ARQ-647 is implemented.
+                        -->
+                        <server.jvm.args>${surefire.system.args} ${ip.server.stack} -Dnode0=${node0} -Dnode1=${node1} -DudpGroup=${udpGroup} ${jvm.args.dirs}</server.jvm.args>
+                    </systemPropertyVariables>
+                    
+                </configuration>
+            </plugin>
+            
+        </plugins>
+    </build>
+
+    <dependencies>
+        <!-- Dependencies specific to the integration tests. -->
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-webservices-tests-integration</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-demos-legacy</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-demos-internals</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    
+</project>
