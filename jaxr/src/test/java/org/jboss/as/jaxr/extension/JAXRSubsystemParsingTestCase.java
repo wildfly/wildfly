@@ -73,7 +73,7 @@ public class JAXRSubsystemParsingTestCase extends AbstractSubsystemTest {
         List<ModelNode> operations = super.parse(SUBSYSTEM_XML);
 
         ///Check that we have the expected number of operations
-        Assert.assertEquals(6, operations.size());
+        Assert.assertEquals(1, operations.size());
     }
 
     /**
