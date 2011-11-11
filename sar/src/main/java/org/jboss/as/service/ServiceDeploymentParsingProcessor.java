@@ -55,6 +55,7 @@ public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcesso
      */
     public ServiceDeploymentParsingProcessor() {
         xmlMapper.registerRootElement(new QName("urn:jboss:service:7.0", "server"), new JBossServiceXmlDescriptorParser());
+        xmlMapper.registerRootElement(new QName(null, "server"), new JBossServiceXmlDescriptorParser());
     }
 
     /**
