@@ -23,6 +23,7 @@
 package org.jboss.as.logging;
 
 import org.jboss.logmanager.handlers.AsyncHandler;
+import org.jboss.logmanager.handlers.AsyncHandler.OverflowAction;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -56,8 +57,7 @@ public final class AsyncHandlerService implements HandlerService {
         final AsyncHandler handler = new AsyncHandler(queueLength);
         value = handler;
         formatterSpec.apply(handler);
-        final OverflowAction action = overflowAction;
-        setAction(handler, action);
+        handler.setOverflowAction(overflowAction);
         handler.setAutoFlush(autoflush);
         try {
             handler.setEncoding(encoding);
@@ -70,22 +70,6 @@ public final class AsyncHandlerService implements HandlerService {
         }
         handler.setHandlers(handlers);
         if (level != null) handler.setLevel(level);
-    }
-
-    private static void setAction(final AsyncHandler handler, final OverflowAction action) {
-        if (handler == null) {
-            return;
-        }
-        switch (action) {
-            case BLOCK: {
-                handler.setOverflowAction(AsyncHandler.OverflowAction.BLOCK);
-                break;
-            }
-            case DISCARD: {
-                handler.setOverflowAction(AsyncHandler.OverflowAction.DISCARD);
-                break;
-            }
-        }
     }
 
     public synchronized void stop(final StopContext context) {
@@ -102,7 +86,10 @@ public final class AsyncHandlerService implements HandlerService {
 
     public synchronized void setOverflowAction(final OverflowAction overflowAction) {
         this.overflowAction = overflowAction;
-        setAction(value, overflowAction);
+        final AsyncHandler handler = value;
+        if (handler != null) {
+            handler.setOverflowAction(overflowAction);
+        }
     }
 
     public synchronized void setQueueLength(final int queueLength) {

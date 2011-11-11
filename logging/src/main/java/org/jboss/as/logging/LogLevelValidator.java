@@ -22,6 +22,8 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.as.logging.LoggingMessages.MESSAGES;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
@@ -32,8 +34,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
-
-import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 /**
  * Checks the value to see if it's a valid {@link Level}.
@@ -84,7 +84,7 @@ final class LogLevelValidator extends ModelTypeValidator implements AllowedValue
         if (value.isDefined()) {
             final String levelString = value.asString();
             try {
-                final Level level = Level.parse(levelString);
+                final Level level = ModelParser.parseLevel(value);
                 if (!allowedValues.contains(level)) {
                     throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidLogLevel(levelString)));
                 }

@@ -49,7 +49,7 @@ public class SizeRotatingHandlerWriteAttributeHandler extends AbstractFileHandle
             handler.setMaxBackupIndex(resolvedValue.asInt());
             result = false;
         } else if (ROTATE_SIZE.getName().equals(attributeName)) {
-            handler.setRotateSize(SizeValidator.parseSize(resolvedValue.asString()));
+            handler.setRotateSize(ModelParser.parseSize(resolvedValue));
             result = false;
         }
         return result;
@@ -61,7 +61,7 @@ public class SizeRotatingHandlerWriteAttributeHandler extends AbstractFileHandle
         if (MAX_BACKUP_INDEX.getName().equals(attributeName)) {
             handler.setMaxBackupIndex(valueToRestore.asInt());
         } else if (ROTATE_SIZE.getName().equals(attributeName)) {
-            handler.setRotateSize(SizeValidator.parseSize(valueToRestore.asString()));
+            handler.setRotateSize(ModelParser.parseSize(valueToRestore));
         }
     }
 }

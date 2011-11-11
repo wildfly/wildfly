@@ -27,7 +27,6 @@ import static org.jboss.as.logging.CommonAttributes.LEVEL;
 
 import java.util.List;
 import java.util.logging.Handler;
-import java.util.logging.Level;
 
 import org.jboss.as.controller.AbstractModelUpdateHandler;
 import org.jboss.as.controller.OperationContext;
@@ -62,7 +61,7 @@ public class HandlerLevelChange extends AbstractModelUpdateHandler {
         final ServiceController<Handler> controller = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(name));
         final ModelNode level = LEVEL.resolveModelAttribute(context, model);
         if (controller != null && level.isDefined()) {
-            controller.getValue().setLevel(Level.parse(level.asString()));
+            controller.getValue().setLevel(ModelParser.parseLevel(level));
         }
     }
 }

@@ -45,7 +45,7 @@ public class ConsoleHandlerWriteAttributeHandler extends AbstractLogHandlerWrite
     @Override
     protected boolean doApplyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final String handlerName, final ConsoleHandler handler) throws OperationFailedException {
         if (TARGET.getName().equals(attributeName)) {
-            switch (Target.fromString(TargetValidator.properCase(resolvedValue.asString()))) {
+            switch (Target.fromString(resolvedValue.asString())) {
                 case SYSTEM_ERR: {
                     handler.setTarget(ConsoleHandler.Target.SYSTEM_ERR);
                     break;
@@ -64,7 +64,7 @@ public class ConsoleHandlerWriteAttributeHandler extends AbstractLogHandlerWrite
     @Override
     protected void doRevertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final String handlerName, final ConsoleHandler handler) throws OperationFailedException {
         if (TARGET.getName().equals(attributeName)) {
-            switch (Target.fromString(TargetValidator.properCase(TargetValidator.properCase(valueToRestore.asString())))) {
+            switch (Target.fromString(valueToRestore.asString())) {
                 case SYSTEM_ERR: {
                     handler.setTarget(ConsoleHandler.Target.SYSTEM_ERR);
                     break;

@@ -27,9 +27,6 @@ import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 /**
@@ -38,8 +35,6 @@ import static org.jboss.as.logging.LoggingMessages.MESSAGES;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 class SizeValidator extends ModelTypeValidator {
-
-    private static final Pattern SIZE_PATTERN = Pattern.compile("(\\d+)([kKmMgGbBtT])?");
 
     public SizeValidator() {
         this(false);
@@ -55,57 +50,12 @@ class SizeValidator extends ModelTypeValidator {
         if (value.isDefined()) {
             final String stringValue = value.asString();
             try {
-                parseSize(stringValue);
+                ModelParser.parseSize(value);
             } catch (IllegalArgumentException e) {
                 throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidSize(stringValue)));
             } catch (IllegalStateException e) {
                 throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidSize(stringValue)));
             }
         }
-    }
-
-    /**
-     * Parses the string value of the size and returns the long value.
-     *
-     * @param value the string value.
-     *
-     * @return the long value.
-     *
-     * @throws IllegalArgumentException if the value is invalid.
-     * @throws IllegalStateException    if the ending character is not valid.
-     */
-    public static long parseSize(final String value) {
-        final Matcher matcher = SIZE_PATTERN.matcher(value);
-        if (!matcher.matches()) {
-            throw new IllegalArgumentException();
-        }
-        long qty = Long.parseLong(matcher.group(1), 10);
-        final String chr = matcher.group(2);
-        if (chr != null) {
-            switch (chr.charAt(0)) {
-                case 'b':
-                case 'B':
-                    break;
-                case 'k':
-                case 'K':
-                    qty <<= 10L;
-                    break;
-                case 'm':
-                case 'M':
-                    qty <<= 20L;
-                    break;
-                case 'g':
-                case 'G':
-                    qty <<= 30L;
-                    break;
-                case 't':
-                case 'T':
-                    qty <<= 40L;
-                    break;
-                default:
-                    throw new IllegalStateException();
-            }
-        }
-        return qty;
     }
 }

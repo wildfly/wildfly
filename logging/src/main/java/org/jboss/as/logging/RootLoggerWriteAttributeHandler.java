@@ -30,9 +30,6 @@ import org.jboss.logmanager.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 
-import java.util.Locale;
-import java.util.logging.Level;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 
@@ -61,7 +58,7 @@ class RootLoggerWriteAttributeHandler extends AbstractLoggerWriteAttributeHandle
         // Get the logger
         final Logger logger = controller.getValue();
         if (LEVEL.getName().equals(attributeName)) {
-            logger.setLevel(Level.parse(resolvedValue.asString().toUpperCase(Locale.US)));
+            logger.setLevel(ModelParser.parseLevel(resolvedValue));
         }
         return false;
     }
@@ -69,7 +66,7 @@ class RootLoggerWriteAttributeHandler extends AbstractLoggerWriteAttributeHandle
     @Override
     protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final Logger logger) throws OperationFailedException {
         if (LEVEL.getName().equals(attributeName)) {
-            logger.setLevel(Level.parse(valueToRestore.asString().toUpperCase(Locale.US)));
+            logger.setLevel(ModelParser.parseLevel(valueToRestore));
         }
     }
 }

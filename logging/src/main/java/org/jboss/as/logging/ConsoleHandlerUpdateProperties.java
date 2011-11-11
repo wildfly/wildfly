@@ -45,7 +45,7 @@ public class ConsoleHandlerUpdateProperties extends HandlerUpdateProperties<Cons
     @Override
     protected boolean applyUpdateToRuntime(final OperationContext context, final String handlerName, final ModelNode model,
                                            final ModelNode originalModel, final ConsoleHandler handler) throws OperationFailedException {
-        switch (Target.fromString(TargetValidator.properCase(TARGET.resolveModelAttribute(context, model).asString()))) {
+        switch (Target.fromString(TARGET.resolveModelAttribute(context, model).asString())) {
             case SYSTEM_ERR: {
                 handler.setTarget(ConsoleHandler.Target.SYSTEM_ERR);
                 break;
@@ -60,7 +60,7 @@ public class ConsoleHandlerUpdateProperties extends HandlerUpdateProperties<Cons
 
     @Override
     protected void revertUpdateToRuntime(final OperationContext context, final String handlerName, final ModelNode model, final ModelNode originalModel, final ConsoleHandler handler) throws OperationFailedException {
-         switch (Target.fromString(TargetValidator.properCase(TARGET.resolveModelAttribute(context, originalModel).asString()))) {
+         switch (Target.fromString(TARGET.resolveModelAttribute(context, originalModel).asString())) {
             case SYSTEM_ERR: {
                 handler.setTarget(ConsoleHandler.Target.SYSTEM_ERR);
                 break;

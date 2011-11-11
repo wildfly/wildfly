@@ -42,10 +42,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Handler;
-import java.util.logging.Level;
 
 /**
  * Date: 12.10.2011
@@ -91,7 +89,7 @@ abstract class AbstractLogHandlerWriteAttributeHandler<T extends Handler> extend
         @SuppressWarnings("unchecked")
         final T handler = (T) controller.getValue();
         if (LEVEL.getName().equals(attributeName)) {
-            handler.setLevel(Level.parse(resolvedValue.asString().toUpperCase(Locale.US)));
+            handler.setLevel(ModelParser.parseLevel(resolvedValue));
         } else if (FILTER.getName().equals(attributeName)) {
             // TODO (jrp) implement filter
         } else if (FORMATTER.getName().equals(attributeName)) {
@@ -112,7 +110,7 @@ abstract class AbstractLogHandlerWriteAttributeHandler<T extends Handler> extend
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             final String name = address.getLastElement().getValue();
             if (LEVEL.getName().equals(attributeName)) {
-                handler.setLevel(Level.parse(valueToRestore.asString().toUpperCase(Locale.US)));
+                handler.setLevel(ModelParser.parseLevel(valueToRestore));
             } else if (FILTER.getName().equals(attributeName)) {
                 // TODO (jrp) implement filter
             } else if (FORMATTER.getName().equals(attributeName)) {

@@ -80,7 +80,7 @@ class SizeRotatingFileHandlerAdd extends FlushingHandlerAddProperties<SizeRotati
 
         final ModelNode rotateSizeNode = ROTATE_SIZE.resolveModelAttribute(context, model);
         if (rotateSizeNode.isDefined()) {
-            service.setRotateSize(SizeValidator.parseSize(rotateSizeNode.asString()));
+            service.setRotateSize(ModelParser.parseSize(rotateSizeNode));
         }
     }
 }

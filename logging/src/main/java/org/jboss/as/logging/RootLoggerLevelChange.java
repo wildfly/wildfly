@@ -32,7 +32,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
@@ -58,7 +57,7 @@ public class RootLoggerLevelChange extends AbstractModelUpdateHandler {
         final ServiceController<Logger> controller = (ServiceController<Logger>) serviceRegistry.getService(LogServices.ROOT_LOGGER);
         final ModelNode level = LEVEL.resolveModelAttribute(context, model.get(ROOT_LOGGER));
         if (controller != null && level.isDefined()) {
-            controller.getValue().setLevel(Level.parse(level.asString()));
+            controller.getValue().setLevel(ModelParser.parseLevel(level));
         }
     }
 }

@@ -22,19 +22,18 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.as.logging.LoggingMessages.MESSAGES;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.logmanager.handlers.AsyncHandler.OverflowAction;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Locale;
-
-import static org.jboss.as.logging.LoggingMessages.MESSAGES;
-import static org.jboss.dmr.ModelType.EXPRESSION;
 
 /**
  * Date: 21.09.2011
@@ -59,7 +58,7 @@ final class OverflowActionValidator extends ModelTypeValidator implements Allowe
         if (value.isDefined()) {
             final String oaString = value.asString();
             try {
-                final OverflowAction overflowAction = OverflowAction.valueOf(oaString.toUpperCase(Locale.US));
+                final OverflowAction overflowAction = ModelParser.parseOverflowAction(value);
                 if (overflowAction == null || !allowedValues.contains(overflowAction)) {
                     throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidOverflowAction(oaString)));
                 }

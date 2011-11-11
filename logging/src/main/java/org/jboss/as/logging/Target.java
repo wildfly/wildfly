@@ -22,6 +22,8 @@
 
 package org.jboss.as.logging;
 
+import java.util.Locale;
+
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -31,9 +33,9 @@ public enum Target {
     SYSTEM_ERR,;
 
     public static Target fromString(String value) {
-        if (value.equals("System.out")) {
+        if (value.equalsIgnoreCase("System.out")) {
             return SYSTEM_OUT;
-        } else if (value.equals("System.err")) {
+        } else if (value.equalsIgnoreCase("System.err")) {
             return SYSTEM_ERR;
         } else {
             return null;
