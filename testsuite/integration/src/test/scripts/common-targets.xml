@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
   ~ JBoss, Home of Professional Open Source.
   ~ Copyright 2011, Red Hat, Inc., and individual contributors
@@ -24,23 +23,20 @@
 
 <project>
 
-    <!--
-       Property sets
-    -->
     <propertyset id="ds.properties">
         <propertyref prefix="ds"/>
     </propertyset>
 
+
+
+
     <!--
-      Targets
+          Change AS database configuration.
     -->
-
     <condition property="changeDB">
-        <not>
-            <equals arg1="${ds.db}" arg2=""/>
-        </not>
+        <not><equals arg1="${ds.db}" arg2=""/></not>
     </condition>
-
+    
     <target name="changeDefaultDatabase" description="Changes the default database" if="changeDB">
 
         <echo message="Changing database for ${server-config} with parameters:"/>
@@ -50,19 +46,15 @@
         <echo message="ds.jdbc.user = ${ds.jdbc.user}"/>
         <echo message="ds.jdbc.pass = ${ds.jdbc.pass}"/>
 
-        <property name="server.dir" value="${project.build.directory}/${server-config}"/>
+        <property name="server.dir" value="${project.build.directory}/jbossas"/> <!-- Ant will copy actual instances from this "template" (when imlpemented). -->
         <property name="config.dir" value="${server.dir}/standalone/configuration"/>
 
-        <!-- copy in jar into standalone/deployments; this installs the driver under a new driver name -->
-        <copy file="${main.basedir}/target/jdbcDrivers/${ds.jdbc.driver.jar}" todir="${server.dir}/standalone/deployments"/>
+        <!-- Copy jar into standalone/deployments. This installs the driver under a new driver name. -->
+        <copy file="${jbossas.ts.integ.dir}/target/jdbcDrivers/${ds.jdbc.driver.jar}" todir="${server.dir}/standalone/deployments"/>
 
-        <!-- change standalone/configuration/standalone.xml file:
-              i.e. update datasource subsystem config
-         -->
-        <xslt destdir="${config.dir}"
-              extension=".xml.mod"
-              style="${main.basedir}/../integration/src/test/xslt/changeDatabase.xsl"
-              useImplicitFileset="false">
+        <!-- Change standalone/configuration/standalone.xml file. I.e. update datasource subsystem config. -->
+        <xslt destdir="${config.dir}" extension=".xml.mod" useImplicitFileset="false"
+              style="${jbossas.ts.integ.dir}/src/test/xslt/changeDatabase.xsl">
             <fileset dir="${config.dir}">
                 <include name="standalone.xml"/>
                 <include name="standalone-xts.xml"/>
@@ -74,7 +66,7 @@
             <param name="ds.jdbc.pass" expression="${ds.jdbc.pass}"/>
         </xslt>
 
-        <!-- move processed files back -->
+        <!-- Move processed files back. -->
         <move todir="${config.dir}">
            <fileset dir="${config.dir}">
                <include name="**/standalone.xml.mod"/>
@@ -86,8 +78,11 @@
     </target>
 
 
+
     <!--
-       Macros
+        Build server configutation:
+           * Copy from distribution directory (TODO: Copy from ${basedir}target/jbossas to pick up changes by Maven!
+           * Overwrite some config files, replace tokens.
      -->
     <macrodef name="build-server-config" description="Builds a server configuration">
 
@@ -123,6 +118,11 @@
         </sequential>
     </macrodef>
 
+
+
+    <!--
+        Change IP adresses config.
+     -->
     <macrodef name="change-ip-addresses" description="Changes the IP addresses of a single node configuration">
 
         <attribute name="name" default="jbossas"/>
@@ -134,7 +134,7 @@
 
             <echo message="Changing IP addresses for config @{name}"/>
 
-            <!-- process *.xml to *.xml.mod -->
+            <!-- Process *.xml to *.xml.mod. -->
             <xslt destdir="@{output.dir}/jbossas-@{name}/@{config.dir.name}"
                   style="${jbossas.ts.integ.dir}/src/test/xslt/changeIPAddresses.xsl"
                   extension=".xml.mod"
@@ -147,7 +147,7 @@
                 <param name="publicIPAddress" expression="@{node}"/>
             </xslt>
 
-            <!-- move processed files back -->
+            <!-- Move processed files back. -->
             <move todir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">
                <fileset dir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">
                    <include name="**/standalone.xml.mod"/>
@@ -158,6 +158,11 @@
         </sequential>
     </macrodef>
 
+
+    <!--
+        Change IP adresses, including multicast.
+        This macro makes use of saxon via  ${net.sf.saxon:saxon:jar}.
+    -->
     <macrodef name="change-ip-multicast-addresses" description="Changes the IP *and* multicast addresses of a node configuration">
 
         <attribute name="name" default="jbossas"/>
@@ -166,19 +171,15 @@
         <attribute name="node" default="${node0}"/>
         <attribute name="mcastaddr" default="${udpGroup}"/>
 
-        <!--
-         This macro makes use of saxon via  ${net.sf.saxon:saxon:jar}
-        -->
-
         <sequential>
             <echo message="Changing IP addresses for config @{name}"/>
 
-            <!-- process *.xml to *.xml.mod -->
+            <!-- Process *.xml to *.xml.mod. -->
             <xslt destdir="@{output.dir}/jbossas-@{name}/@{config.dir.name}"
                   style="${jbossas.ts.integ.dir}/src/test/xslt/changeIPAddresses.xsl"
                   extension=".xml.mod"
                   useImplicitFileset="false">
-                <!-- can't get this to work -->
+                <!-- Can't get this to work. -->
                 <!-- classpath path="${net.sf.saxon:saxon:jar}"/ -->
                 <fileset dir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">
                     <include name="**/standalone-ha.xml"/>
@@ -189,7 +190,7 @@
                 <param name="udpMcastAddress" expression="@{mcastaddr}"/>
             </xslt>
 
-            <!-- move processed files back -->
+            <!-- Move processed files back. -->
             <move todir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">
                <fileset dir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">
                    <include name="**/standalone-ha.xml.mod"/>
@@ -200,6 +201,12 @@
         </sequential>
     </macrodef>
 
+
+    
+    <!--
+        Configure port offset.
+        This macro makes use of saxon via  ${net.sf.saxon:saxon:jar}.
+    -->
     <macrodef name="add-port-offset" description="Add a port offeset a node configuration">
 
         <attribute name="name" default="jbossas"/>
@@ -209,14 +216,10 @@
         <attribute name="nativePort" default="9999"/>
         <attribute name="httpPort" default="9990"/>
 
-        <!--
-         This macro makes use of saxon via  ${net.sf.saxon:saxon:jar}
-        -->
-
         <sequential>
             <echo message="Adding port offset for config @{name}"/>
 
-            <!-- process *.xml to *.xml.mod -->
+            <!-- Process *.xml to *.xml.mod. -->
             <xslt destdir="@{output.dir}/jbossas-@{name}/@{config.dir.name}"
                   style="${jbossas.ts.integ.dir}/src/test/xslt/addPortOffset.xsl"
                   extension=".xml.mod"
@@ -232,7 +235,7 @@
                 <param name="httpInterfaceManagementPort" expression="@{httpPort}"/>
             </xslt>
 
-            <!-- move processed files back -->
+            <!-- Move processed files back. -->
             <move todir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">
                <fileset dir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">
                    <include name="**/standalone-ha.xml.mod"/>
@@ -243,20 +246,22 @@
         </sequential>
     </macrodef>
 
+
+    
+    <!--
+        Enable JTS.
+        This macro makes use of saxon via  ${net.sf.saxon:saxon:jar}.
+    -->
     <macrodef name="add-jts" description="Enable JTS">
 
         <attribute name="name" default="jbossas"/>
         <attribute name="output.dir" default="${project.build.directory}"/>
         <attribute name="config.dir.name" default="standalone/configuration"/>
 
-        <!--
-         This macro makes use of saxon via  ${net.sf.saxon:saxon:jar}
-        -->
-
         <sequential>
             <echo message="Enabling JTS for config @{name}"/>
 
-            <!-- process *.xml to *.xml.mod -->
+            <!-- Process *.xml to *.xml.mod. -->
             <xslt destdir="@{output.dir}/jbossas-@{name}/@{config.dir.name}"
                   style="${jbossas.ts.integ.dir}/src/test/xslt/enableJTS.xsl"
                   extension=".xml.mod"
@@ -267,7 +272,7 @@
                 </fileset>
             </xslt>
 
-            <!-- move processed files back -->
+            <!-- Move processed files back. -->
             <move todir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">
                <fileset dir="@{output.dir}/jbossas-@{name}/@{config.dir.name}">
                    <include name="**/standalone-ha.xml.mod"/>
