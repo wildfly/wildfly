@@ -24,6 +24,7 @@ package org.jboss.as.domain.http.server;
 
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
+import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 
 /**
@@ -31,6 +32,7 @@ import org.jboss.logging.Messages;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
+@MessageBundle(projectCode = "JBAS")
 public interface HttpServerMessages {
 
     /**
