@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -24,7 +24,6 @@ package org.jboss.as.logging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
@@ -35,39 +34,16 @@ import org.jboss.msc.service.ServiceRegistry;
 import java.util.logging.Handler;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
- * @author Emanuel Muckenhuber
+ * Date: 11.11.2011
+ *
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-class LoggerHandlerRemove extends AbstractRemoveStepHandler {
+class LoggerFileHandlerRemove extends LoggerHandlerRemove {
 
-    static final LoggerHandlerRemove INSTANCE = new LoggerHandlerRemove();
-
-    @Override
-    protected final void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String name = address.getLastElement().getValue();
-        final ServiceName serviceName = LogServices.handlerName(name);
-        final ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
-        @SuppressWarnings("unchecked")
-        final ServiceController<Handler> controller = (ServiceController<Handler>) serviceRegistry.getService(serviceName);
-        controller.getValue().close();
-        context.removeService(serviceName);
-        removeAdditionalServices(context, name);
-    }
+    static final LoggerFileHandlerRemove INSTANCE = new LoggerFileHandlerRemove();
 
     @Override
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
-        // TODO:  RE-ADD SERVICES
-    }
-
-    /**
-     * Removes any additional services.
-     *
-     * @param context the operation context.
-     * @param name    the handler name
-     */
     protected void removeAdditionalServices(final OperationContext context, final String name) {
-
+        context.removeService(LogServices.handlerFileName(name));
     }
-
 }
