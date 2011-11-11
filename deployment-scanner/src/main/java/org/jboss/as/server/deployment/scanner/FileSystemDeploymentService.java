@@ -507,6 +507,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 final String deploymentName = fileName.substring(0, fileName.length() - markerStatus.length());
 
                 if (FAILED_DEPLOY.equals(markerStatus)) {
+                    ROOT_LOGGER.reattemptingFailedDeployment(deploymentName);
                     ROOT_LOGGER.infof("Re-attempting failed deployment %s", deploymentName);
                 }
 
