@@ -81,15 +81,15 @@ public class HandlerTestCase extends AbstractMgmtTestBase {
         executeOperation(op);
         
         // register it with root logger
-        op = createOpNode("subsystem=logging", "root-logger-assign-handler");
+        op = createOpNode("subsystem=logging/root-logger=ROOT", "root-logger-assign-handler");
         op.get("name").set("test-fh");
         executeOperation(op);        
 
         // check it is listed in root-logger
-        op = createOpNode("subsystem=logging", "read-attribute");
-        op.get("name").set("root-logger");
-        ModelNode rootLogger = executeOperation(op);        
-        List<String> loggers = ModelUtil.modelNodeAsStingList(rootLogger.get("handlers"));
+        op = createOpNode("subsystem=logging/root-logger=ROOT", "read-attribute");
+        op.get("name").set("handlers");
+        ModelNode handlers = executeOperation(op);        
+        List<String> loggers = ModelUtil.modelNodeAsStingList(handlers);
         assertTrue(loggers.contains("test-fh"));
         
         // force server to issue a log message
@@ -97,15 +97,15 @@ public class HandlerTestCase extends AbstractMgmtTestBase {
         assertTrue(response.contains("Logging servlet."));
         
         // deregister handler from logger
-        op = createOpNode("subsystem=logging", "root-logger-unassign-handler");
+        op = createOpNode("subsystem=logging/root-logger=ROOT", "root-logger-unassign-handler");
         op.get("name").set("test-fh");
         executeOperation(op);        
 
         // check it is not listed in root-logger
-        op = createOpNode("subsystem=logging", "read-attribute");
-        op.get("name").set("root-logger");
-        rootLogger = executeOperation(op);        
-        loggers = ModelUtil.modelNodeAsStingList(rootLogger.get("handlers"));
+        op = createOpNode("subsystem=logging/root-logger=ROOT", "read-attribute");
+        op.get("name").set("handlers");
+        handlers = executeOperation(op);  
+        loggers = ModelUtil.modelNodeAsStingList(handlers);
         assertFalse(loggers.contains("test-fh"));
         
         // remove handler

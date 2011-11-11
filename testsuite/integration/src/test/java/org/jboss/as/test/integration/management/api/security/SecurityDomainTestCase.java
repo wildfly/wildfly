@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.management.api.security;
 
+import org.junit.Ignore;
 import java.io.PrintWriter;
 import org.jboss.as.test.integration.management.cli.GlobalOpsTestCase;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -80,6 +81,7 @@ public class SecurityDomainTestCase extends AbstractMgmtTestBase {
     }
 
     @Test
+    @Ignore("AS7-2602")
     public void testAddRemoveSecurityDomain(@ArquillianResource Deployer deployer) throws Exception {
 
         // specify login module options
@@ -109,13 +111,12 @@ public class SecurityDomainTestCase extends AbstractMgmtTestBase {
         try {
             String response = HttpRequest.get(url.toString() + "/SecurityDomainTestCase/SecuredServlet", "test", "test", 10, TimeUnit.SECONDS);
         } catch (Exception e) {
-            assertFalse(e.toString().contains("Status 403"));
-            throw e;
+            throw new Exception("Unable to access secured servlet.", e);
         }
-        assertTrue(failed);        
         
         // undeploy servlet
         deployer.undeploy("secured-servlet");
+        
         
         // remove security domain
         op = createOpNode("subsystem=security/security-domain=test", "remove");

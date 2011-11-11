@@ -93,7 +93,7 @@ public class RootLoggerTestCase extends AbstractMgmtTestBase {
         // log messages on all levels with different root logger level settings
         for(Level level : levels) {            
             // change root log level
-            ModelNode op = createOpNode("subsystem=logging", "change-root-log-level");
+            ModelNode op = createOpNode("subsystem=logging/root-logger=ROOT", "change-root-log-level");
             op.get("level").set(level.name());
             ModelNode ret = executeOperation(op);
             
@@ -178,7 +178,7 @@ public class RootLoggerTestCase extends AbstractMgmtTestBase {
     }
     
     private void addFileHandler(String name, String level, File file, boolean assign) throws Exception {
-         
+
         // add file handler
         ModelNode op = createOpNode("subsystem=logging/file-handler=" + name, "add");
         op.get("name").set(name);
@@ -189,7 +189,7 @@ public class RootLoggerTestCase extends AbstractMgmtTestBase {
         if (!assign) return;
         
         // register it with root logger
-        op = createOpNode("subsystem=logging", "root-logger-assign-handler");
+        op = createOpNode("subsystem=logging/root-logger=ROOT", "root-logger-assign-handler");
         op.get("name").set(name);
         executeOperation(op);        
     }
@@ -198,7 +198,7 @@ public class RootLoggerTestCase extends AbstractMgmtTestBase {
         
         if (unassign) {
             // deregister handler from logger
-            ModelNode op = createOpNode("subsystem=logging", "root-logger-unassign-handler");
+            ModelNode op = createOpNode("subsystem=logging/root-logger=ROOT", "root-logger-unassign-handler");
             op.get("name").set(name);
             executeOperation(op);        
         }
