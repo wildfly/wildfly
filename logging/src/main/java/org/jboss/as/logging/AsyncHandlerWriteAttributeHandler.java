@@ -23,6 +23,7 @@
 package org.jboss.as.logging;
 
 import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
+import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
 import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
 
 import org.jboss.as.controller.OperationContext;
@@ -42,7 +43,7 @@ public class AsyncHandlerWriteAttributeHandler extends AbstractLogHandlerWriteAt
     public static final AsyncHandlerWriteAttributeHandler INSTANCE = new AsyncHandlerWriteAttributeHandler();
 
     private AsyncHandlerWriteAttributeHandler() {
-        super(OVERFLOW_ACTION, SUBHANDLERS);
+        super(OVERFLOW_ACTION, SUBHANDLERS, QUEUE_LENGTH);
     }
 
     @Override
@@ -54,6 +55,8 @@ public class AsyncHandlerWriteAttributeHandler extends AbstractLogHandlerWriteAt
             AsyncHandlerUnassignSubhandler.removeHandlers(SUBHANDLERS, currentValue, context, handlerName);
             // Add the new handlers
             AsyncHandlerAssignSubhandler.addHandlers(SUBHANDLERS, resolvedValue, context, handlerName);
+        } else if (QUEUE_LENGTH.getName().equals(attributeName)) {
+            return true;
         }
         return false;
     }

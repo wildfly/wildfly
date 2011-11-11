@@ -23,6 +23,7 @@
 package org.jboss.as.logging;
 
 import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
+import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
 import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
 
 import org.jboss.as.controller.OperationContext;
@@ -44,8 +45,7 @@ public class AsyncHandlerUpdateProperties extends HandlerUpdateProperties<AsyncH
     static final String OPERATION_NAME = HandlerUpdateProperties.OPERATION_NAME;
 
     private AsyncHandlerUpdateProperties() {
-        super(OVERFLOW_ACTION, SUBHANDLERS);
-        // TODO (jrp) implement QUEUE_LENGTH
+        super(OVERFLOW_ACTION, SUBHANDLERS, QUEUE_LENGTH);
     }
 
     @Override
@@ -56,18 +56,18 @@ public class AsyncHandlerUpdateProperties extends HandlerUpdateProperties<AsyncH
             handler.setOverflowAction(AsyncHandler.OverflowAction.valueOf(overflowAction.asString().toUpperCase(Locale.US)));
         }
 
-        // TODO (jrp) implement QUEUE_LENGTH
+        final ModelNode queueLength = QUEUE_LENGTH.resolveModelAttribute(context, model);
+        if (queueLength.isDefined()) {
+            requireRestart = true;
+        }
 
-        // TODO (jrp) might need a removal process.
         // Only if not restart required
-        if (!requireRestart) {
-            final ModelNode subhandlers = SUBHANDLERS.resolveModelAttribute(context, model);
-            if (subhandlers.isDefined()) {
-                // Remove old handlers
-                AsyncHandlerUnassignSubhandler.removeHandlers(SUBHANDLERS, originalModel, context, handlerName);
-                // Add the new handlers
-                AsyncHandlerAssignSubhandler.addHandlers(SUBHANDLERS, model, context, handlerName);
-            }
+        final ModelNode subhandlers = SUBHANDLERS.resolveModelAttribute(context, model);
+        if (subhandlers.isDefined()) {
+            // Remove old handlers
+            AsyncHandlerUnassignSubhandler.removeHandlers(SUBHANDLERS, originalModel, context, handlerName);
+            // Add the new handlers
+            AsyncHandlerAssignSubhandler.addHandlers(SUBHANDLERS, model, context, handlerName);
         }
         return requireRestart;
     }
@@ -78,6 +78,5 @@ public class AsyncHandlerUpdateProperties extends HandlerUpdateProperties<AsyncH
         if (overflowAction.isDefined()) {
             handler.setOverflowAction(AsyncHandler.OverflowAction.valueOf(overflowAction.asString().toUpperCase(Locale.US)));
         }
-        // TODO (jrp) implement QUEUE_LENGTH
     }
 }
