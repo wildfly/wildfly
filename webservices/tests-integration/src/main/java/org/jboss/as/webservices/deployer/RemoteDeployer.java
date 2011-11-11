@@ -168,7 +168,7 @@ public final class RemoteDeployer implements Deployer {
 
     @Override
     public void removeSecurityDomain(String name) throws Exception {
-        final ModelControllerClient client = ModelControllerClient.Factory.create(address, PORT);
+        final ModelControllerClient client = ModelControllerClient.Factory.create(address, PORT, callbackHandler);
         final ModelNode op = new ModelNode();
         op.get(OP).set(REMOVE);
         op.get(OP_ADDR).add(SUBSYSTEM, "security");
