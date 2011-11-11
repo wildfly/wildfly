@@ -439,6 +439,14 @@
             <maven-resource group="javassist" artifact="javassist"/>
         </module-def>
 
+        <module-def name="org.jaxen">
+            <maven-resource group="jaxen" artifact="jaxen"/>
+        </module-def>
+
+        <module-def name="org.jdom">
+            <maven-resource group="org.jdom" artifact="jdom"/>
+        </module-def>
+
         <module-def name="org.jboss.as.aggregate" />
 
         <module-def name="org.jboss.as.appclient">
@@ -1034,6 +1042,10 @@
 
         <module-def name="javax.wsdl4j.api">
             <maven-resource group="wsdl4j" artifact="wsdl4j"/>
+        </module-def>
+
+        <module-def name="nu.xom">
+            <maven-resource group="xom" artifact="xom"/>
         </module-def>
 
         <module-def name="sun.jdk"/>

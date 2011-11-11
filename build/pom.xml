@@ -214,6 +214,11 @@
         </dependency>
 
         <dependency>
+            <groupId>jaxen</groupId>
+            <artifactId>jaxen</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>jboss.jaxbintros</groupId>
             <artifactId>jboss-jaxb-intros</artifactId>
         </dependency>
@@ -1490,6 +1495,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jdom</groupId>
+            <artifactId>jdom</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jgroups</groupId>
             <artifactId>jgroups</artifactId>
         </dependency>
@@ -1594,6 +1604,10 @@
             <artifactId>xercesImpl</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>xom</groupId>
+            <artifactId>xom</artifactId>
+        </dependency>
     </dependencies>
 
     <profiles>
