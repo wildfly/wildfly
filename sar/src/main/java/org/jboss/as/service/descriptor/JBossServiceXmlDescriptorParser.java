@@ -39,42 +39,71 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
+ * @author John Bailey
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class JBossServiceXmlDescriptorParser implements XMLElementReader<ParseResult<JBossServiceXmlDescriptor>>, XMLStreamConstants {
-    public static final String NAMESPACE = "urn:jboss:service:7.0";
 
-    private enum Element {
-        MBEAN(new QName(NAMESPACE, "mbean")),
-        CONSTRUCTOR(new QName(NAMESPACE, "constructor")),
-        ARG(new QName(NAMESPACE, "arg")),
-        ATTRIBUTE(new QName(NAMESPACE, "attribute")),
-        INJECT(new QName(NAMESPACE, "inject")),
-        VALUE_FACTORY(new QName(NAMESPACE, "value-factory")),
-        PARAMETER(new QName(NAMESPACE, "parameter")),
-        DEPENDS(new QName(NAMESPACE, "depends")),
-        DEPENDS_LIST(new QName(NAMESPACE, "depends-list")),
-        DEPENDS_LIST_ELEMENT(new QName(NAMESPACE, "depends-list-element")),
-        ALIAS(new QName(NAMESPACE, "alias")),
-        ANNOTATION(new QName(NAMESPACE, "annotation")),
-        UNKNOWN(null);
+    private enum Namespace {
+        UNKNOWN(null),
+        NONE(""),
+        SERVICE_7_0("urn:jboss:service:7.0"),
+        ;
+        private final String namespace;
 
-        private final QName qName;
-
-        private static final Map<QName, Element> QNAME_MAP = new HashMap<QName, Element>();
+        private static final Map<String, Namespace> NS_MAP = new HashMap<String, Namespace>();
 
         static {
-            for(Element element : Element.values()) {
-                QNAME_MAP.put(element.qName, element);
+            for (Namespace namespace : Namespace.values()) {
+                NS_MAP.put(namespace.namespace, namespace);
             }
         }
 
-        private Element(final QName qName) {
-            this.qName = qName;
+        private Namespace(String namespace) {
+            this.namespace = namespace;
         }
 
-        static Element of(QName qName) {
-            final Element element = QNAME_MAP.get(qName);
+        public static Namespace of(final String uri) {
+            if (uri == null) return NONE;
+            final Namespace namespace = NS_MAP.get(uri);
+            return namespace == null ? UNKNOWN : namespace;
+        }
+    }
+
+    public static final String NAMESPACE = "urn:jboss:service:7.0";
+
+    private enum Element {
+        UNKNOWN(null),
+        MBEAN("mbean"),
+        CONSTRUCTOR("constructor"),
+        ARG("arg"),
+        ATTRIBUTE("attribute"),
+        INJECT("inject"),
+        VALUE_FACTORY("value-factory"),
+        PARAMETER("parameter"),
+        DEPENDS("depends"),
+        DEPENDS_LIST("depends-list"),
+        DEPENDS_LIST_ELEMENT("depends-list-element"),
+        ALIAS("alias"),
+        ANNOTATION("annotation"),
+        ;
+
+        private final String localName;
+
+        private static final Map<String, Element> NAME_MAP = new HashMap<String, Element>();
+
+        static {
+            for (Element element : Element.values()) {
+                NAME_MAP.put(element.localName, element);
+            }
+        }
+
+        private Element(final String localName) {
+            this.localName = localName;
+        }
+
+        static Element of(final String localName) {
+            final Element element = NAME_MAP.get(localName);
             return element == null ? UNKNOWN : element;
         }
     }
@@ -141,13 +170,19 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
                 case END_ELEMENT:
                     return;
                 case START_ELEMENT:
-                    switch(Element.of(reader.getName())) {
+                    switch (Namespace.of(reader.getNamespaceURI())) {
+                        case NONE:
+                        case SERVICE_7_0: {
+                            break;
+                        }
+                        default: throw unexpectedContent(reader);
+                    }
+                    switch (Element.of(reader.getLocalName())) {
                         case MBEAN:
                             serviceConfigs.add(parseMBean(reader));
                             break;
-                        case UNKNOWN:
-                            unexpectedContent(reader);
-                            break;
+                        default:
+                            throw unexpectedContent(reader);
                     }
                     break;
             }
@@ -194,7 +229,14 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
 
                     return serviceConfig;
                 case START_ELEMENT:
-                    switch(Element.of(reader.getName())) {
+                    switch (Namespace.of(reader.getNamespaceURI())) {
+                        case NONE:
+                        case SERVICE_7_0: {
+                            break;
+                        }
+                        default: throw unexpectedContent(reader);
+                    }
+                    switch(Element.of(reader.getLocalName())) {
                         case CONSTRUCTOR:
                             serviceConfig.setConstructorConfig(parseConstructor(reader));
                             break;
@@ -213,9 +255,8 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
                         case ATTRIBUTE:
                             attributes.add(parseAttribute(reader));
                             break;
-                        case UNKNOWN:
-                            unexpectedContent(reader);
-                            break;
+                        default:
+                            throw unexpectedContent(reader);
                     }
                     break;
             }
@@ -233,13 +274,19 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
                     constructorConfig.setArguments(arguments.toArray(new JBossServiceConstructorConfig.Argument[arguments.size()]));
                     return constructorConfig;
                 case START_ELEMENT:
-                    switch(Element.of(reader.getName())) {
+                    switch (Namespace.of(reader.getNamespaceURI())) {
+                        case NONE:
+                        case SERVICE_7_0: {
+                            break;
+                        }
+                        default: throw unexpectedContent(reader);
+                    }
+                    switch(Element.of(reader.getLocalName())) {
                         case ARG:
                             arguments.add(parseArgument(reader));
                             break;
-                        case UNKNOWN:
-                            unexpectedContent(reader);
-                            break;
+                        default:
+                            throw unexpectedContent(reader);
                     }
                     break;
             }
@@ -307,16 +354,22 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
                 case END_ELEMENT:
                     return attributeConfig;
                 case START_ELEMENT:
-                    switch(Element.of(reader.getName())) {
+                    switch (Namespace.of(reader.getNamespaceURI())) {
+                        case NONE:
+                        case SERVICE_7_0: {
+                            break;
+                        }
+                        default: throw unexpectedContent(reader);
+                    }
+                    switch(Element.of(reader.getLocalName())) {
                         case INJECT:
                             attributeConfig.setInject(parseInject(reader));
                             break;
                         case VALUE_FACTORY:
                             attributeConfig.setValueFactory(parseValueFactory(reader));
                             break;
-                        case UNKNOWN:
-                            unexpectedContent(reader);
-                            break;
+                        default:
+                            throw unexpectedContent(reader);
                     }
                     break;
                 case CHARACTERS:
@@ -384,13 +437,19 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
                     valueFactory.setParameters(parameters.toArray(new JBossServiceAttributeConfig.ValueFactoryParameter[parameters.size()]));
                     return valueFactory;
                 case START_ELEMENT:
-                    switch(Element.of(reader.getName())) {
+                    switch (Namespace.of(reader.getNamespaceURI())) {
+                        case NONE:
+                        case SERVICE_7_0: {
+                            break;
+                        }
+                        default: throw unexpectedContent(reader);
+                    }
+                    switch(Element.of(reader.getLocalName())) {
                         case PARAMETER:
                             parameters.add(parseValueFactoryParameter(reader));
                             break;
-                        case UNKNOWN:
-                            unexpectedContent(reader);
-                            break;
+                        default:
+                            throw unexpectedContent(reader);
                     }
                     break;
             }
@@ -474,15 +533,21 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
                     // If optionalAttributeName is set, we need to create an attribute...
                     return dependencyConfigs;
                 case START_ELEMENT:
-                    switch(Element.of(reader.getName())) {
+                    switch (Namespace.of(reader.getNamespaceURI())) {
+                        case NONE:
+                        case SERVICE_7_0: {
+                            break;
+                        }
+                        default: throw unexpectedContent(reader);
+                    }
+                    switch(Element.of(reader.getLocalName())) {
                         case DEPENDS_LIST_ELEMENT:
                             final JBossServiceDependencyConfig dependencyConfig = new JBossServiceDependencyConfig();
                             parseDependency(reader, dependencyConfig);
                             dependencyConfigs.add(dependencyConfig);
                             break;
-                        case UNKNOWN:
-                            unexpectedContent(reader);
-                            break;
+                        default:
+                            throw unexpectedContent(reader);
                     }
                     break;
             }
@@ -497,13 +562,19 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
 
                     return;
                 case START_ELEMENT:
-                    switch(Element.of(reader.getName())) {
+                    switch (Namespace.of(reader.getNamespaceURI())) {
+                        case NONE:
+                        case SERVICE_7_0: {
+                            break;
+                        }
+                        default: throw unexpectedContent(reader);
+                    }
+                    switch(Element.of(reader.getLocalName())) {
                         case MBEAN:
                             dependencyConfig.setServiceConfig(parseMBean(reader));
                             break;
-                        case UNKNOWN:
-                            unexpectedContent(reader);
-                            break;
+                        default:
+                            throw unexpectedContent(reader);
                     }
                     break;
                 case CHARACTERS:
