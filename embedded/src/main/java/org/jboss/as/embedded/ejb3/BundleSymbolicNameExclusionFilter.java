@@ -21,7 +21,9 @@
  */
 package org.jboss.as.embedded.ejb3;
 
-import org.jboss.logging.Logger;
+import static org.jboss.as.embedded.EmbeddedLogger.ROOT_LOGGER;
+import static org.jboss.as.embedded.EmbeddedMessages.MESSAGES;
+
 import org.jboss.vfs.VirtualFile;
 
 import java.io.IOException;
@@ -44,11 +46,6 @@ public class BundleSymbolicNameExclusionFilter implements ExclusionFilter {
     //-------------------------------------------------------------------------------------||
     // Class Members ----------------------------------------------------------------------||
     //-------------------------------------------------------------------------------------||
-
-    /**
-     * Logger
-     */
-    private static final Logger log = Logger.getLogger(BundleSymbolicNameExclusionFilter.class);
 
     /**
      * Key of the bundle symbolic name header
@@ -82,7 +79,7 @@ public class BundleSymbolicNameExclusionFilter implements ExclusionFilter {
     public BundleSymbolicNameExclusionFilter(final String... exclusionValues) throws IllegalArgumentException {
         // Precondition check
         if (exclusionValues == null || exclusionValues.length == 0) {
-            throw new IllegalArgumentException("one or more exclusion values must be specified");
+            throw MESSAGES.exclusionValuesRequired();
         }
 
         // Defensive copy on set and make immutable
@@ -107,7 +104,7 @@ public class BundleSymbolicNameExclusionFilter implements ExclusionFilter {
     public boolean exclude(final VirtualFile file) {
         // Precondition checks
         if (file == null) {
-            throw new IllegalArgumentException("file must be specified");
+            throw MESSAGES.nullVar("file");
         }
 
         // If this exists, first of all
@@ -134,9 +131,9 @@ public class BundleSymbolicNameExclusionFilter implements ExclusionFilter {
                     // Check if it also contains a matching value
                     for (final String exclusionValue : this.exclusionValues) {
                         if (line.contains(exclusionValue)) {
-                            if (log.isTraceEnabled()) {
-                                log.tracef("Configured exclusion value \"" + exclusionValue
-                                        + "\" encountered in manifest header \"" + header + "\"; skipping " + file);
+                            if (ROOT_LOGGER.isTraceEnabled()) {
+                                ROOT_LOGGER.tracef("Configured exclusion value \"%s\" encountered in manifest header \"%s\"; skipping %s",
+                                        exclusionValue, header, file);
                             }
                             // Skip
                             return true;
@@ -145,7 +142,7 @@ public class BundleSymbolicNameExclusionFilter implements ExclusionFilter {
                 }
             }
         } catch (final IOException ioe) {
-            throw new RuntimeException("Could not read contents of " + file, ioe);
+            throw MESSAGES.cannotReadContent(ioe, file);
         }
 
         // No conditions met

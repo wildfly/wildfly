@@ -41,6 +41,7 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.OP;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OP_ADDR;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OUTCOME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.SUCCESS;
+import static org.jboss.as.embedded.EmbeddedMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -68,11 +69,11 @@ public class JBossStandaloneEJBContainerProvider implements EJBContainerProvider
         String jbossHomeKey = "jboss.home";
         String jbossHomeProp = System.getProperty(jbossHomeKey);
         if (jbossHomeProp == null)
-            throw new EJBException("Cannot find system property: " + jbossHomeKey);
+            throw MESSAGES.systemPropertyNotFound(jbossHomeKey);
 
         File jbossHomeDir = new File(jbossHomeProp);
         if (jbossHomeDir.isDirectory() == false)
-            throw new EJBException("Invalid jboss home directory: " + jbossHomeDir);
+            throw MESSAGES.invalidJbossHome(jbossHomeDir);
 
         // Per default we assume that we're running in a modular environment.
         // To allow setting up the modular environment ourselves, set org.jboss.as.embedded.ejb3.BARREN to true.

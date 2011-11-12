@@ -25,7 +25,6 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
-import org.jboss.logging.Logger;
 import org.jboss.vfs.TempFileProvider;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
@@ -52,6 +51,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static java.security.AccessController.doPrivileged;
+import static org.jboss.as.embedded.EmbeddedLogger.ROOT_LOGGER;
+import static org.jboss.as.embedded.EmbeddedMessages.MESSAGES;
 
 /**
  * Implements JVM ClassPath scanning for EJB JARs as defined
@@ -82,11 +83,6 @@ class ClassPathEjbJarScanner {
     //-------------------------------------------------------------------------------------||
     // Class Members ----------------------------------------------------------------------||
     //-------------------------------------------------------------------------------------||
-
-    /**
-     * Logger
-     */
-    private static final Logger log = Logger.getLogger(ClassPathEjbJarScanner.class);
 
     /**
      * System property key denoting the JVM ClassPath
@@ -177,8 +173,8 @@ class ClassPathEjbJarScanner {
         String classPath = getSystemProperty("surefire.test.class.path");
         if (classPath == null || classPath.isEmpty())
             classPath = getSystemProperty(SYS_PROP_KEY_CLASS_PATH);
-        if (log.isTraceEnabled()) {
-            log.tracef("Class Path: %s", classPath);
+        if (ROOT_LOGGER.isTraceEnabled()) {
+            ROOT_LOGGER.tracef("Class Path: %s", classPath);
         }
 
         // Split by the path separator character
@@ -207,7 +203,7 @@ class ClassPathEjbJarScanner {
                 moduleNames = new HashSet<String>();
                 moduleNames.add(modules.toString());
             } else {
-                throw new RuntimeException(EJBContainer.MODULES + " was not of type File[], File, String[] or String, but of type " + modules.getClass());
+                throw MESSAGES.invalidModuleType(EJBContainer.MODULES, modules.getClass());
             }
         }
         // For each CP entry
@@ -226,8 +222,8 @@ class ClassPathEjbJarScanner {
 
 
         // Return
-        if (log.isDebugEnabled()) {
-            log.debug("EJB Modules discovered on ClassPath: " + returnValue);
+        if (ROOT_LOGGER.isDebugEnabled()) {
+            ROOT_LOGGER.debugf("EJB Modules discovered on ClassPath: %s", returnValue);
         }
         return returnValue.toArray(DUMMY);
     }
@@ -288,8 +284,8 @@ class ClassPathEjbJarScanner {
             // If we should exclude this
             if (exclusionFilter.exclude(file)) {
                 // Exclude from further processing
-                if (log.isTraceEnabled()) {
-                    log.tracef("%s matched %s for exclusion; skipping", exclusionFilter, file);
+                if (ROOT_LOGGER.isTraceEnabled()) {
+                    ROOT_LOGGER.tracef("%s matched %s for exclusion; skipping", exclusionFilter, file);
                 }
                 return null;
             }
@@ -315,14 +311,14 @@ class ClassPathEjbJarScanner {
                 // No conditions met
                 else {
                     // So it's obvious if we've got something we didn't properly mount
-                    log.warn("Encountered unknown file type, skipping: " + file);
+                    ROOT_LOGGER.skippingUnknownFileType(file);
                     return null;
                 }
 
             }
             // Not a real file
             else {
-                log.warn("File on ClassPath could not be found: " + file);
+                ROOT_LOGGER.fileNotFound(file);
                 return null;
             }
 
@@ -335,8 +331,8 @@ class ClassPathEjbJarScanner {
                 // Look for META-INF/ejb-jar.xml
                 final VirtualFile ejbJarXml = file.getChild(PATH_EJB_JAR_XML);
                 if (ejbJarXml.exists()) {
-                    if (log.isTraceEnabled()) {
-                        log.tracef("Found descriptor %s in %s", ejbJarXml.getPathNameRelativeTo(file), file);
+                    if (ROOT_LOGGER.isTraceEnabled()) {
+                        ROOT_LOGGER.tracef("Found descriptor %s in %s", ejbJarXml.getPathNameRelativeTo(file), file);
                     }
                     return getModuleNameFromEjbJar(file, ejbJarXml);
                 }
@@ -353,11 +349,11 @@ class ClassPathEjbJarScanner {
                     handle.close();
                 } catch (final IOException e) {
                     // Ignore
-                    log.warn("Could not close handle to mounted " + file, e);
+                    ROOT_LOGGER.cannotCloseFile(e, file);
                 }
             }
         } catch (final IOException e) {
-            throw new RuntimeException("Could not mount file '" + candidate + "'", e);
+            throw MESSAGES.cannotMountFile(e, candidate);
         }
 
     }
@@ -414,7 +410,9 @@ class ClassPathEjbJarScanner {
     private static void indexClasses(final VirtualFile root, final VirtualFile file, Indexer indexer) {
 
         // Precondition check
-        assert file != null : "File must be specified";
+        if (file == null) {
+            throw MESSAGES.nullVar("file");
+        }
 
         // For all children
         for (final VirtualFile child : file.getChildren()) {
@@ -432,7 +430,7 @@ class ClassPathEjbJarScanner {
                         stream = child.openStream();
                         indexer.index(stream);
                     } catch (IOException e) {
-                        log.warn("Could not load class file " + child, e);
+                        ROOT_LOGGER.cannotLoadClassFile(e, child);
                     }
                 } finally {
                     try {
@@ -440,7 +438,7 @@ class ClassPathEjbJarScanner {
                             stream.close();
                         }
                     } catch (IOException e) {
-                        log.warn("Exception closing file " + child, e);
+                        ROOT_LOGGER.errorClosingFile(e, child);
                     }
                 }
             }

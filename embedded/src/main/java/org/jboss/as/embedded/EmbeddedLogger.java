@@ -23,8 +23,16 @@
 package org.jboss.as.embedded;
 
 import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Cause;
+import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
+import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
+import org.jboss.vfs.VirtualFile;
+
+import java.io.File;
+
+import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * Date: 05.11.2011
@@ -38,4 +46,63 @@ public interface EmbeddedLogger extends BasicLogger {
      * A logger with a category of the package name.
      */
     EmbeddedLogger ROOT_LOGGER = Logger.getMessageLogger(EmbeddedLogger.class, EmbeddedLogger.class.getPackage().getName());
+
+    /**
+     * Logs a warning message indicating the file handle, represented by the {@code file} parameter, could not be
+     * closed.
+     *
+     * @param cause the cause of the error.
+     * @param file  the file.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11100, value = "Could not close handle to mounted %s")
+    void cannotCloseFile(@Cause Throwable cause, VirtualFile file);
+
+    /**
+     * Logs a warning message indicating the class file, represented by the {@code file} parameter, could not be loaded.
+     *
+     * @param cause the cause of the error.
+     * @param file  the file that could not be loaded.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11101, value = "Could not load class file %s")
+    void cannotLoadClassFile(@Cause Throwable cause, VirtualFile file);
+
+    /**
+     * Logs a warning message indicating there was an exception closing the file.
+     *
+     * @param cause the cause of the error.
+     * @param file  the file that failed to close.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11102, value = "Exception closing file %s")
+    void errorClosingFile(@Cause Throwable cause, VirtualFile file);
+
+    /**
+     * Logs a warning message indicating there was a failure to undeploy the file.
+     *
+     * @param cause the cause of the error.
+     * @param file  the file that failed to undeploy.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11103, value = "Failed to undeploy %s")
+    void failedToUndeploy(@Cause Throwable cause, File file);
+
+    /**
+     * Logs a warning message indicating the file on the ClassPath could not be found.
+     *
+     * @param file the file that could not be found.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11104, value = "File on ClassPath could not be found: %s")
+    void fileNotFound(VirtualFile file);
+
+    /**
+     * Logs a warning message indicating an unknown file type was encountered and is being skipped.
+     *
+     * @param file the file.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11105, value = "Encountered unknown file type, skipping: %s")
+    void skippingUnknownFileType(VirtualFile file);
 }
