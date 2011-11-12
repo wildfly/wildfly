@@ -21,6 +21,9 @@
  */
 package org.jboss.as.ejb3.remote;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.EJBReceiver;
@@ -32,9 +35,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Service that manages an EJBClientContext
@@ -75,7 +75,11 @@ public class EjbClientContextService implements Service<EJBClientContext> {
         }
         this.context = clientContext;
         // setup the client context selector
-        previousSelector = EJBClientContext.getAndSetCurrent(this.tcclEJBClientContextSelector.getValue());
+        // TODO: We set this up here, for now. But we need to rethink about how we are going to
+        // handle manual overrides of EJB client context selector by user code on the server side.
+        // Setting this up via interceptor isn't a good idea too since that will end up overriding
+        // the selector which the user code might have set intentionally. So let this be here for now
+        previousSelector = EJBClientContext.setSelector(this.tcclEJBClientContextSelector.getValue());
     }
 
     @Override
