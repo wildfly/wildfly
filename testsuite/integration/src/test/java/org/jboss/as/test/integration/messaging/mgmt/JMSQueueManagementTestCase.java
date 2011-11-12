@@ -200,7 +200,7 @@ public class JMSQueueManagementTestCase {
         Assert.assertTrue(result.isDefined());
         Assert.assertFalse(result.asBoolean());
     }
-    
+
     @org.junit.Ignore("AS7-2480")
     @Test
     public void testMessageRemoval() throws Exception {
@@ -232,6 +232,7 @@ public class JMSQueueManagementTestCase {
 
     }
 
+    @org.junit.Ignore("AS7-2480")
     @Test
     public void testMessageMovement() throws Exception {
 

@@ -173,6 +173,7 @@ public class CoreQueueManagementTestCase {
         Assert.assertFalse(result.asBoolean());
     }
 
+    @org.junit.Ignore("AS7-2480")
     @Test
     public void testMessageRemoval() throws Exception {
 
@@ -208,6 +209,7 @@ public class CoreQueueManagementTestCase {
         return result.get(0).get("messageID").asLong();
     }
 
+    @org.junit.Ignore("AS7-2480")
     @Test
     public void testMessageMovement() throws Exception {
 
