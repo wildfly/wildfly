@@ -37,7 +37,10 @@ public class OrganisationBean {
     @PersistenceUnit(unitName = "mainPu")
     private EntityManagerFactory entityManagerFactory;
 
-    @PersistenceUnit
+    // AS7-2275 requires each PU reference to specify a persistence unit name, if there are
+    // multiple persistence unit definitions.
+    // as a workaround, specified the pu name
+    @PersistenceUnit(unitName = "mainPu")
     private EntityManagerFactory defaultEntityManagerFactory;
 
     public EntityManagerFactory getEntityManagerFactory() {
