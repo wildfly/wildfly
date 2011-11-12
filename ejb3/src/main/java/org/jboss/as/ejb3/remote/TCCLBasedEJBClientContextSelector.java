@@ -33,6 +33,9 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 /**
+ * A EJB client context selector which returns a {@link EJBClientContext} based on the thread context classloader
+ * that's present when the {@link #getCurrent()} is invoked.
+ *
  * @author Jaikiran Pai
  */
 public class TCCLBasedEJBClientContextSelector implements Service<TCCLBasedEJBClientContextSelector>,
@@ -40,6 +43,9 @@ public class TCCLBasedEJBClientContextSelector implements Service<TCCLBasedEJBCl
 
     public static final ServiceName TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME = ServiceName.JBOSS.append("ejb").append("remote").append("tccl-based-ejb-client-context-selector");
 
+    /**
+     * EJB client contexts mapped against the classloader
+     */
     private final WeakHashMap<ClassLoader, EJBClientContext> ejbClientContexts = new WeakHashMap<ClassLoader, EJBClientContext>();
 
     @Override
@@ -60,6 +66,7 @@ public class TCCLBasedEJBClientContextSelector implements Service<TCCLBasedEJBCl
 
     @Override
     public void stop(StopContext context) {
+        // clear the contexts
         synchronized (this.ejbClientContexts) {
             this.ejbClientContexts.clear();
         }
@@ -70,6 +77,12 @@ public class TCCLBasedEJBClientContextSelector implements Service<TCCLBasedEJBCl
         return this;
     }
 
+    /**
+     * Associates a {@link EJBClientContext} with the passed <code>classLoader</code>.
+     *
+     * @param ejbClientContext The EJB client context
+     * @param classLoader      The classloader with which the EJB client context has to be associated
+     */
     public void registerEJBClientContext(final EJBClientContext ejbClientContext, final ClassLoader classLoader) {
         synchronized (this.ejbClientContexts) {
             this.ejbClientContexts.put(classLoader, ejbClientContext);

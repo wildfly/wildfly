@@ -72,7 +72,6 @@ public class
 
         public static final int TCCL_INTERCEPTOR = 0x100;
         public static final int EJB_SESSION_CONTEXT_INTERCEPTOR = 0x200;
-        public static final int EJB_CLIENT_CONTEXT_INTERCEPTOR = 0x250;
         public static final int TRANSACTION_INTERCEPTOR = 0x300;
         public static final int JPA_SFSB_PRE_CREATE = 0x400;
         public static final int JNDI_NAMESPACE_INTERCEPTOR = 0x500;
@@ -97,7 +96,6 @@ public class
 
         public static final int TCCL_INTERCEPTOR = 0x100;
         public static final int EJB_SESSION_CONTEXT_INTERCEPTOR = 0x200;
-        public static final int EJB_CLIENT_CONTEXT_INTERCEPTOR = 0x250;
         public static final int TRANSACTION_INTERCEPTOR = 0x300;
         public static final int JNDI_NAMESPACE_INTERCEPTOR = 0x400;
         public static final int JPA_SFSB_DESTROY = 0x500;
@@ -119,7 +117,6 @@ public class
         public static final int REMOTE_EXCEPTION_TRANSFORMER                            = 0x200;
         public static final int SECURITY_CONTEXT                                        = 0x250;
         public static final int EJB_SECURITY_AUTHORIZATION_INTERCEPTOR                  = 0x300;
-        public static final int EJB_CLIENT_CONTEXT                                      = 0x350;
         public static final int INVOCATION_CONTEXT_INTERCEPTOR                          = 0x400;
         // should happen before the CMT/BMT interceptors
         public static final int REMOTE_TRANSACTION_PROPOGATION_INTERCEPTOR              = 0x450;
