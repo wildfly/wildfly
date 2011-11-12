@@ -69,14 +69,22 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
      *
      */
     @Override
-    protected void processBeanMetaData(SessionBeanMetaData sessionBean, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+    protected void processBeanMetaData(final SessionBeanMetaData sessionBean, final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEApplicationClasses applicationClassesDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         // get the module description
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
 
         final String beanName = sessionBean.getName();
-        SessionBeanComponentDescription sessionBeanDescription = (SessionBeanComponentDescription) moduleDescription.getComponentByName(beanName);
+
+        final ComponentDescription bean = moduleDescription.getComponentByName(beanName);
+        if(!(bean instanceof SessionBeanComponentDescription)) {
+            //TODO: this is a hack to deal with descriptor merging
+            //if this is a GenericBeanMetadata it may actually represent an MDB
+            return;
+        }
+
+        SessionBeanComponentDescription sessionBeanDescription = (SessionBeanComponentDescription) bean;
 
         if (appclient) {
             if (sessionBeanDescription == null) {
@@ -97,7 +105,7 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
         // mapped-name
         sessionBeanDescription.setMappedName(sessionBean.getMappedName());
         // local business interface views
-        BusinessLocalsMetaData businessLocals = sessionBean.getBusinessLocals();
+        final BusinessLocalsMetaData businessLocals = sessionBean.getBusinessLocals();
         if (businessLocals != null && !businessLocals.isEmpty()) {
             sessionBeanDescription.addLocalBusinessInterfaceViews(businessLocals);
         }
@@ -113,7 +121,7 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
         }
 
         // remote business interface views
-        BusinessRemotesMetaData businessRemotes = sessionBean.getBusinessRemotes();
+        final BusinessRemotesMetaData businessRemotes = sessionBean.getBusinessRemotes();
         if (businessRemotes != null && !businessRemotes.isEmpty()) {
             sessionBeanDescription.addRemoteBusinessInterfaceViews(businessRemotes);
         }
@@ -126,7 +134,7 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
 
 
 
-    private void processSessionBean31(SessionBean31MetaData sessionBean31MetaData, SessionBeanComponentDescription sessionBeanComponentDescription) {
+    private void processSessionBean31(final SessionBean31MetaData sessionBean31MetaData, final SessionBeanComponentDescription sessionBeanComponentDescription) {
         // no-interface view
         if (sessionBean31MetaData.isNoInterfaceBean()) {
             sessionBeanComponentDescription.addNoInterfaceView();

@@ -22,6 +22,13 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import java.lang.reflect.Modifier;
+import java.util.List;
+
+import javax.ejb.Singleton;
+import javax.ejb.Stateful;
+import javax.ejb.Stateless;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -42,15 +49,10 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
+import org.jboss.metadata.ejb.spec.GenericBeanMetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.metadata.ejb.spec.SessionType;
 import org.jboss.msc.service.ServiceName;
-
-import javax.ejb.Singleton;
-import javax.ejb.Stateful;
-import javax.ejb.Stateless;
-import java.lang.reflect.Modifier;
-import java.util.List;
 
 /**
  * User: jpai
@@ -231,6 +233,10 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
         }
 
         final SessionType sessionType = sessionBean.getSessionType();
+        if(sessionType == null && sessionBean instanceof GenericBeanMetaData) {
+            //TODO: this is a hack
+            return;
+        }
         if (sessionType == null) {
             for (final ComponentDescription component : additionalComponents) {
                 if (component.getComponentName().equals(beanName)) {

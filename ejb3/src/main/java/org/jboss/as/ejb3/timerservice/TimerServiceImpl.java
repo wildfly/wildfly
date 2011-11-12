@@ -42,6 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
 import javax.ejb.EJBException;
+import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.ScheduleExpression;
 import javax.ejb.Timer;
 import javax.ejb.TimerConfig;
@@ -824,7 +825,10 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             return null;
         }
 
-        TimerEntity timerEntity = timerPersistence.getValue().loadTimer(id, timedObjectId);
+        final TimerEntity timerEntity = timerPersistence.getValue().loadTimer(id, timedObjectId);
+        if(timerEntity == null) {
+            throw new NoSuchObjectLocalException("Could not load timer with id " + id);
+        }
         if (timerEntity.isCalendarTimer()) {
             return new CalendarTimer((CalendarTimerEntity) timerEntity, this);
         }

@@ -45,7 +45,7 @@ public class TimerHandleImpl implements TimerHandle {
     /**
      * The service name of the timer service
      */
-    private final ServiceName serviceName;
+    private final String serviceName;
 
     /**
      * Each {@link TimedObjectInvoker} can have multiple timer instances.
@@ -80,7 +80,7 @@ public class TimerHandleImpl implements TimerHandle {
         this.timedObjectId = timedObjectId;
         this.id = id;
         this.service = service;
-        this.serviceName = service.getServiceName();
+        this.serviceName = service.getServiceName().getCanonicalName();
     }
 
     /**
@@ -91,7 +91,7 @@ public class TimerHandleImpl implements TimerHandle {
     public Timer getTimer() throws IllegalStateException, EJBException {
         if (service == null) {
             // get hold of the timer service through the use of timed object id
-            service = (TimerServiceImpl) CurrentServiceContainer.getServiceContainer().getRequiredService(serviceName).getValue();
+            service = (TimerServiceImpl) CurrentServiceContainer.getServiceContainer().getRequiredService(ServiceName.parse(serviceName)).getValue();
             if (service == null) {
                 throw new EJBException("Timerservice with timedObjectId: " + timedObjectId + " is not registered");
             }
