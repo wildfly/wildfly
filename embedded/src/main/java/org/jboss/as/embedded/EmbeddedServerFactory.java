@@ -22,6 +22,8 @@
 
 package org.jboss.as.embedded;
 
+import static org.jboss.as.embedded.EmbeddedMessages.MESSAGES;
+
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
@@ -74,7 +76,7 @@ public class EmbeddedServerFactory {
             final StandaloneServer standaloneServer = (StandaloneServer) createMethod.invoke(null, jbossHomeDir, moduleLoader, systemProps, systemEnv);
             return standaloneServer;
         } catch (ModuleLoadException e) {
-            throw new RuntimeException(e.getMessage() + " in " + moduleLoader, e);
+            throw MESSAGES.moduleLoaderError(e, e.getMessage(), moduleLoader);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         } catch (NoSuchMethodException e) {
@@ -88,7 +90,7 @@ public class EmbeddedServerFactory {
 
     public static StandaloneServer create(final File jbossHomeDir, final Properties systemProps, final Map<String, String> systemEnv, String...systemPackages) {
         if (jbossHomeDir == null || jbossHomeDir.isDirectory() == false)
-            throw new IllegalStateException("Invalid jboss.home.dir: " + jbossHomeDir);
+            throw MESSAGES.invalidJbossHome(jbossHomeDir);
 
         if (systemProps.getProperty(ServerEnvironment.HOME_DIR) == null)
             systemProps.setProperty(ServerEnvironment.HOME_DIR, jbossHomeDir.getAbsolutePath());
@@ -107,7 +109,7 @@ public class EmbeddedServerFactory {
                 Thread.currentThread().setContextClassLoader(logModuleClassLoader);
                 systemProps.setProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager");
                 if (LogManager.getLogManager().getClass() == LogManager.class) {
-                    System.err.println("WARNING: Failed to load the specified logmodule " + logModuleId);
+                    System.err.println(MESSAGES.failedToLoadLogModule(logModuleId));
                 } else {
                     Module.setModuleLogger(new JDKModuleLogger());
                 }
@@ -131,11 +133,11 @@ public class EmbeddedServerFactory {
         String jbossHomeKey = "jboss.home";
         String jbossHomeProp = System.getProperty(jbossHomeKey);
         if (jbossHomeProp == null)
-            throw new IllegalStateException("Cannot find system property: " + jbossHomeKey);
+            throw MESSAGES.systemPropertyNotFound(jbossHomeKey);
 
         File jbossHomeDir = new File(jbossHomeProp);
         if (jbossHomeDir.isDirectory() == false)
-            throw new IllegalStateException("Invalid jboss home directory: " + jbossHomeDir);
+            throw MESSAGES.invalidJbossHome(jbossHomeDir);
 
         Module.registerURLStreamHandlerFactoryModule(Module.getBootModuleLoader().loadModule(ModuleIdentifier.create("org.jboss.vfs")));
         StandaloneServer server = create(jbossHomeDir, System.getProperties(), System.getenv());

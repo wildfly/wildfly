@@ -21,6 +21,8 @@
  */
 package org.jboss.as.embedded;
 
+import static org.jboss.as.embedded.EmbeddedMessages.MESSAGES;
+
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 
@@ -47,7 +49,7 @@ final class InitialModuleLoaderFactory {
     public static ModuleLoader getModuleLoader(File modulePath, String... systemPackages) {
 
         if (modulePath == null || modulePath.isDirectory() == false)
-            throw new IllegalArgumentException("Invalid module path: " + modulePath);
+            throw MESSAGES.invalidModulePath(modulePath);
 
         String oldClassPath = SecurityActions.getSystemProperty("java.class.path");
         try {

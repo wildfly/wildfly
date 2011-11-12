@@ -21,8 +21,10 @@
  */
 package org.jboss.as.embedded.ejb3;
 
+import static org.jboss.as.embedded.EmbeddedLogger.ROOT_LOGGER;
+import static org.jboss.as.embedded.EmbeddedMessages.MESSAGES;
+
 import org.jboss.as.embedded.StandaloneServer;
-import org.jboss.logging.Logger;
 
 import javax.ejb.embeddable.EJBContainer;
 import javax.naming.Context;
@@ -44,7 +46,6 @@ import java.util.zip.ZipOutputStream;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class JBossStandaloneEJBContainer extends EJBContainer {
-    private static final Logger log = Logger.getLogger(JBossStandaloneEJBContainer.class);
 
     private final StandaloneServer server;
     private final List<File> deployments = new LinkedList<File>();
@@ -60,7 +61,7 @@ public class JBossStandaloneEJBContainer extends EJBContainer {
             try {
                 server.undeploy(deployment);
             } catch (Exception e) {
-                log.warnf(e, "Failed to undeploy %s", deployment);
+                ROOT_LOGGER.failedToUndeploy(e, deployment);
             }
         }
         server.stop();
