@@ -145,7 +145,7 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
                         }
                     } else if (!isEmpty(localInterface)) {
                         try {
-                            localInterfaceType = classLoader.loadClass(localInterface);
+                            localInterfaceType = index.classIndex(localInterface).getModuleClass();
                         } catch (ClassNotFoundException e) {
                             throw new DeploymentUnitProcessingException("Could not load local interface type " + localInterface, e);
                         }
