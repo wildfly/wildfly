@@ -51,8 +51,7 @@ import java.util.List;
  * @since Mar 9, 2005
  */
 @RunWith(Arquillian.class)
-@Ignore // FIXME AS7-2570
-public class JaxrConfimAssociationTestCase extends JaxrTestBase {
+public class JaxrConfirmAssociationTestCase extends JaxrTestBase {
     /**
      * Testcase that tests the association between two organizations
      */
