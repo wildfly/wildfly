@@ -108,6 +108,7 @@
                 </handlers>
             </root-logger>
         </subsystem>
+        <subsystem xmlns="urn:jboss:domain:cmp:1.0"/>
         <subsystem xmlns="urn:jboss:domain:datasources:1.0">
             <datasources>
                 <datasource jndi-name="java:jboss/datasources/ExampleDS" enabled="true" use-java-context="true"
@@ -170,7 +171,6 @@
                 <thread-pool name="default" max-threads="10" keepalive-time="100" />
             </thread-pools>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:cmp:1.0"/>
         <subsystem xmlns="urn:jboss:domain:infinispan:1.0" default-cache-container="hibernate">
             <cache-container name="hibernate" default-cache="local-query">
                 <local-cache name="entity">
