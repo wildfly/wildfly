@@ -26,8 +26,6 @@ import org.jboss.msc.service.ServiceName;
 /**
  * The configuration of the JAXR subsystem.
  *
- * [TODO] AS7-2278 JAXR configuration through the domain model
- *
  * @author Thomas.Diesler@jboss.com
  * @since 26-Oct-2011
  */
@@ -35,19 +33,22 @@ public class JAXRConfiguration {
 
     static final ServiceName SERVICE_BASE_NAME = ServiceName.JBOSS.append("jaxr", "as");
 
-    public static final String JAXR_DEFAULT_CONNECTION_FACTORY_BINDING = "java:/jaxr/ConnectionFactory";
-    public static final String JAXR_DEFAULT_DATASOURCE_BINDING = "java:jboss/datasources/ExampleDS";
+    public static final String DEFAULT_CONNECTIONFACTORY_BINDING = "java:/jaxr/ConnectionFactory";
+    public static final String DEFAULT_DATASOURCE_BINDING = "java:jboss/datasources/ExampleDS";
+    public static final boolean DEFAULT_DROPONSTART = false;
+    public static final boolean DEFAULT_CREATEONSTART = false;
+    public static final boolean DEFAULT_DROPONSTOP = false;
 
-    // Should all tables be created on Start
-    private boolean createOnStart=true;
-    // Should all tables be dropped on Stop
-    private boolean dropOnStop=false;
-    // Should all tables be dropped on Start
-    private boolean dropOnStart=true;
     // Datasource to Database
-    private String dataSourceUrl= JAXR_DEFAULT_DATASOURCE_BINDING;
+    private String dataSourceBinding = DEFAULT_DATASOURCE_BINDING;
     // Context to which JAXR ConnectionFactory to bind to
-    private String connectionFactoryUrl = JAXR_DEFAULT_CONNECTION_FACTORY_BINDING;
+    private String connectionFactoryBinding = DEFAULT_CONNECTIONFACTORY_BINDING;
+    // Should all tables be dropped on Start
+    private boolean dropOnStart=DEFAULT_DROPONSTART;
+    // Should all tables be created on Start
+    private boolean createOnStart=DEFAULT_CREATEONSTART;
+    // Should all tables be dropped on Stop
+    private boolean dropOnStop=DEFAULT_DROPONSTOP;
 
     public static JAXRConfiguration INSTANCE = new JAXRConfiguration();
 
@@ -55,36 +56,36 @@ public class JAXRConfiguration {
     private JAXRConfiguration() {
     }
 
-    boolean isDropOnStop() {
+    public boolean isDropOnStop() {
         return dropOnStop;
     }
 
-    boolean isDropOnStart() {
+    public boolean isDropOnStart() {
         return dropOnStart;
     }
 
-    String getDataSourceUrl() {
-        return dataSourceUrl;
-    }
-
-    String getConnectionFactoryUrl() {
-        return connectionFactoryUrl;
-    }
-
-    boolean isCreateOnStart() {
+    public boolean isCreateOnStart() {
         return createOnStart;
     }
 
-    public void setConnectionFactoryUrl(String connectionFactoryUrl) {
-        this.connectionFactoryUrl = connectionFactoryUrl;
+    public String getDataSourceBinding() {
+        return dataSourceBinding;
+    }
+
+    public String getConnectionFactoryBinding() {
+        return connectionFactoryBinding;
+    }
+
+    public void setConnectionFactoryBinding(String connectionFactoryBinding) {
+        this.connectionFactoryBinding = connectionFactoryBinding;
+    }
+
+    public void setDataSourceBinding(String dataSourceBinding) {
+        this.dataSourceBinding = dataSourceBinding;
     }
 
     public void setCreateOnStart(boolean createOnStart) {
         this.createOnStart = createOnStart;
-    }
-
-    public void setDataSourceUrl(String dataSourceUrl) {
-        this.dataSourceUrl = dataSourceUrl;
     }
 
     public void setDropOnStart(boolean dropOnStart) {
