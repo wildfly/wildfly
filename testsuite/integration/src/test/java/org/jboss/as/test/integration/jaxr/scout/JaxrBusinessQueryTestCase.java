@@ -52,7 +52,6 @@ import java.util.Iterator;
  *  @since Dec 29, 2004
  */
 @RunWith(Arquillian.class)
-@Ignore // FIXME AS7-2570
 public class JaxrBusinessQueryTestCase extends JaxrTestBase {
 
     private String querystr = "JBOSS";
