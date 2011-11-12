@@ -257,7 +257,7 @@ public interface JpaMessages {
             "because the transaction already has a transactional context associated with it.  " +
             "This can be avoided by changing application code, either eliminate the extended " +
             "persistence context or the transactional context.  See JPA spec 2.0 section 7.6.3.1.  " +
-            "Scoped persistence unit name=%s, persistence context already in transaction =%s, extended persistence context =%s")
+            "Scoped persistence unit name=%s, persistence context already in transaction =%s, extended persistence context =%s.")
     EJBException cannotUseExtendedPersistenceTransaction(String puScopedName, EntityManager existingEntityManager, EntityManager self);
 
     /**
@@ -279,7 +279,7 @@ public interface JpaMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11439, value = "Class level %s annotations must provide a %s.")
+    @Message(id = 11439, value = "Class level %s annotations must provide a %s")
     IllegalArgumentException classLevelAnnotationParameterRequired(String annotation, String parameter);
 
     /**
@@ -439,7 +439,7 @@ public interface JpaMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 11457, value = "More than one thread is invoking stateful session bean '%s' at the same time.")
+    @Message(id = 11457, value = "More than one thread is invoking stateful session bean '%s' at the same time")
     RuntimeException multipleThreadsInvokingSfsb(Object sessionBean);
 
     /**
@@ -449,7 +449,7 @@ public interface JpaMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 11458, value = "More than one thread is using EntityManager instance '%s' at the same time.")
+    @Message(id = 11458, value = "More than one thread is using EntityManager instance '%s' at the same time")
     RuntimeException multipleThreadsUsingEntityManager(EntityManager entityManager);
 
     /**
@@ -567,7 +567,7 @@ public interface JpaMessages {
      * @return an {@link IllegalArgumentException} for the error.
      */
     @Message(id = 11470, value = "Persistence unitName was not specified and there are %d persistence unit definitions in application %s."+
-        "  Either change the application to have only one persistence unit definition or specify the unitName for each reference to a persistence unit")
+        "  Either change the application to have only one persistence unit definition or specify the unitName for each reference to a persistence unit.")
     IllegalArgumentException noPUnitNameSpecifiedAndMultiplePersistenceUnits(int puCount, DeploymentUnit deploymentUnit);
 
 }
