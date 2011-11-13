@@ -57,9 +57,9 @@ public final class EEModuleDescription {
     /**
      * Construct a new instance.
      *
-     * @param applicationName the application name
+     * @param applicationName the application name (which is same as the module name if the .ear is absent)
      * @param moduleName      the module name
-     * @param earApplicationName
+     * @param earApplicationName The application name (which is null if the .ear is absent)
      */
     public EEModuleDescription(final String applicationName, final String moduleName, final String earApplicationName) {
         this.applicationName = applicationName;
@@ -132,6 +132,13 @@ public final class EEModuleDescription {
         list.add(description);
     }
 
+    /**
+     * Returns the application name which can be the same as the module name, in the absence of a .ear top level
+     * deployment
+     *
+     * @return
+     * @see {@link #getEarApplicationName()}
+     */
     public String getApplicationName() {
         return applicationName;
     }
@@ -180,6 +187,14 @@ public final class EEModuleDescription {
         this.distinctName = distinctName;
     }
 
+    /**
+     * Unlike the {@link #getApplicationName()} which follows the Java EE6 spec semantics i.e. application name is the
+     * name of the top level deployment (even if it is just a jar and not a ear), this method returns the
+     * application name which follows the EJB spec semantics i.e. the application name is the
+     * .ear name or any configured value in application.xml. This method returns null in the absence of a .ear
+     *
+     * @return
+     */
     public String getEarApplicationName() {
         return this.earApplicationName;
     }
