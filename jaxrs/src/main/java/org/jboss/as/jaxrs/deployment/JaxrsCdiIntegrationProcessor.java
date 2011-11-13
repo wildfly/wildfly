@@ -21,6 +21,8 @@
  */
 package org.jboss.as.jaxrs.deployment;
 
+import static org.jboss.as.jaxrs.JaxrsLogger.JAXRS_LOGGER;
+
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -31,7 +33,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.deployment.WeldAttachments;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
@@ -48,8 +49,6 @@ import java.util.List;
 public class JaxrsCdiIntegrationProcessor implements DeploymentUnitProcessor {
 
     public static final String CDI_INJECTOR_FACTORY_CLASS = "org.jboss.resteasy.cdi.CdiInjectorFactory";
-
-    private static final Logger log = Logger.getLogger("org.jboss.jaxrs");
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -72,7 +71,7 @@ public class JaxrsCdiIntegrationProcessor implements DeploymentUnitProcessor {
             module.getClassLoader().loadClass(CDI_INJECTOR_FACTORY_CLASS);
             // don't set this param if CDI is not in classpath
             if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
-                log.debug("Found CDI, adding injector factory class");
+                JAXRS_LOGGER.debug("Found CDI, adding injector factory class");
                 setContextParameter(webdata, "resteasy.injector.factory", CDI_INJECTOR_FACTORY_CLASS);
                 //now we need to add the CDI extension, if it has not
                 //already been added

@@ -22,6 +22,8 @@
 
 package org.jboss.as.jaxrs;
 
+import static org.jboss.as.jaxrs.JaxrsLogger.JAXRS_LOGGER;
+
 import java.util.List;
 import java.util.Locale;
 import javax.xml.stream.XMLStreamConstants;
@@ -46,7 +48,6 @@ import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -60,8 +61,6 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class JaxrsExtension implements Extension {
 
-    private static final Logger log = Logger.getLogger("org.jboss.jaxrs");
-
     public static final String SUBSYSTEM_NAME = "jaxrs";
     public static final String NAMESPACE = "urn:jboss:domain:jaxrs:1.0";
 
@@ -70,7 +69,7 @@ public class JaxrsExtension implements Extension {
     /** {@inheritDoc} */
     @Override
     public void initialize(final ExtensionContext context) {
-        log.debug("Activating JAX-RS Extension");
+        JAXRS_LOGGER.debug("Activating JAX-RS Extension");
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(SUBSYSTEM_DESCRIPTION);
         registration.registerOperationHandler(ADD, JaxrsSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESCRIPTION, false);

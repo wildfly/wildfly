@@ -1,5 +1,7 @@
 package org.jboss.as.jaxrs.deployment;
 
+import static org.jboss.as.jaxrs.JaxrsMessages.MESSAGES;
+
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 
 import javax.ws.rs.core.Application;
@@ -33,7 +35,7 @@ public class ResteasyDeploymentData {
             if (!dispatcherCreated && scannedApplicationClass == null) {
                 if (data.getScannedApplicationClass() != null) {
                     if (application != null) {
-                        throw new DeploymentUnitProcessingException("More than one Application class found in deployment " + application + " and " + data.getScannedApplicationClass());
+                        throw MESSAGES.moreThanOneApplicationClassFound(application, data.getScannedApplicationClass());
                     }
                     application = data.getScannedApplicationClass();
                 }

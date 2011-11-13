@@ -21,6 +21,9 @@
  */
 package org.jboss.as.jaxrs.deployment;
 
+import static org.jboss.as.jaxrs.JaxrsLogger.JAXRS_LOGGER;
+import static org.jboss.as.jaxrs.JaxrsMessages.MESSAGES;
+
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,7 +49,6 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.MethodInfo;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.FilterMetaData;
@@ -65,8 +67,6 @@ import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
  * @author Stuart Douglas
  */
 public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
-
-    private static final Logger log = Logger.getLogger("org.jboss.jaxrs");
 
     public static final DotName APPLICATION = DotName.createSimple(Application.class.getName());
 
@@ -197,7 +197,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
         final Set<ClassInfo> applicationClass = index.getAllKnownSubclasses(APPLICATION);
         try {
             if (applicationClass.size() > 1) {
-                StringBuilder builder = new StringBuilder("Only one JAX-RS Application Class allowed.");
+                StringBuilder builder = new StringBuilder();
                 Set<ClassInfo> aClasses = new HashSet<ClassInfo>();
                 for (ClassInfo c : applicationClass) {
                     if (!Modifier.isAbstract(c.flags())) {
@@ -206,7 +206,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
                     builder.append(" ").append(c.name().toString());
                 }
                 if (aClasses.size() > 1) {
-                    throw new DeploymentUnitProcessingException(builder.toString());
+                    throw new DeploymentUnitProcessingException(MESSAGES.onlyOneApplicationClassAllowed(builder));
                 } else if (aClasses.size() == 1) {
                     ClassInfo aClass = applicationClass.iterator().next();
                     resteasyDeploymentData.setScannedApplicationClass((Class<? extends Application>) classLoader
@@ -218,7 +218,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
                         .loadClass(aClass.name().toString()));
             }
         } catch (ClassNotFoundException e) {
-            throw new DeploymentUnitProcessingException("Could not load JAX-RS Application class:", e);
+            throw MESSAGES.cannotLoadApplicationClass(e);
         }
 
         List<AnnotationInstance> resources = null;
@@ -242,7 +242,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
                     //ignore
                     continue;
                 } else {
-                    log.warnf("@Path annotation not on Class or Method: %s", e.target());
+                    JAXRS_LOGGER.classOrMethodAnnotationNotFound("@Path", e.target());
                     continue;
                 }
                 if (!Modifier.isInterface(info.flags())) {
@@ -260,7 +260,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
                         resteasyDeploymentData.getScannedProviderClasses().add(info.name().toString());
                     }
                 } else {
-                    log.warnf("@Provider annotation not on Class: %s", e.target());
+                    JAXRS_LOGGER.classAnnotationNotFound("@Provider", e.target());
                 }
             }
         }
