@@ -11,7 +11,7 @@ import javax.ejb.Stateless;
 @Stateless
 public class ClientEjb {
 
-    @EJB(lookup = "corbaname:iiop:localhost:3628#server/server/IIOPBasicBean")
+    @EJB(lookup = "corbaname:iiop:localhost:3628#server/IIOPBasicBean")
     private IIOPBasicHome home;
 
     public String getRemoteMessage() throws RemoteException {
