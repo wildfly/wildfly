@@ -23,6 +23,8 @@ package org.jboss.as.jmx;
 
 // $Id$
 
+import static org.jboss.as.jmx.JmxMessages.MESSAGES;
+
 import java.util.Hashtable;
 
 import javax.management.MalformedObjectNameException;
@@ -40,7 +42,7 @@ public class ObjectNameFactory {
         try {
             return new ObjectName(name);
         } catch (MalformedObjectNameException e) {
-            throw new Error("Invalid ObjectName: " + name + "; " + e);
+            throw MESSAGES.invalidObjectName(name, e.getLocalizedMessage());
         }
     }
 
@@ -48,7 +50,7 @@ public class ObjectNameFactory {
         try {
             return new ObjectName(domain, key, value);
         } catch (MalformedObjectNameException e) {
-            throw new Error("Invalid ObjectName: " + domain + "," + key + "," + value + "; " + e);
+            throw MESSAGES.invalidObjectName(domain, key, value, e.getLocalizedMessage());
         }
     }
 
@@ -56,7 +58,7 @@ public class ObjectNameFactory {
         try {
             return new ObjectName(domain, table);
         } catch (MalformedObjectNameException e) {
-            throw new Error("Invalid ObjectName: " + domain + "," + table + "; " + e);
+            throw MESSAGES.invalidObjectName(domain, table, e.getLocalizedMessage());
         }
     }
 }

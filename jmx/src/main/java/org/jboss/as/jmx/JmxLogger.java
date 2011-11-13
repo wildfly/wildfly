@@ -22,9 +22,17 @@
 
 package org.jboss.as.jmx;
 
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.WARN;
+
 import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Cause;
+import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
+import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
+
+import javax.management.ObjectName;
 
 /**
  * Date: 05.11.2011
@@ -38,4 +46,48 @@ public interface JmxLogger extends BasicLogger {
      * A logger with the category of the package name.
      */
     JmxLogger ROOT_LOGGER = Logger.getMessageLogger(JmxLogger.class, JmxLogger.class.getPackage().getName());
+
+    /**
+     * Creates an exception indicating the inability to shutdown the RMI registry.
+     *
+     * @param cause the cause of the error.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 11300, value = "Could not shutdown rmi registry")
+    void cannotShutdownRmiRegistry(@Cause Throwable cause);
+
+    /**
+     * Creates an exception indicating the JMX connector could not undbind from the registry.
+     *
+     * @param cause the cause of the error.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 11301, value = "Could not stop connector server")
+    void cannotStopConnectorServer(@Cause Throwable cause);
+
+    /**
+     * Creates an exception indicating the JMX connector could not undbind from the registry.
+     *
+     * @param cause the cause of the error.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 11302, value = "Could not unbind jmx connector from registry")
+    void cannotUnbindConnector(@Cause Throwable cause);
+
+    /**
+     * Logs a warning message indicating no {@link javax.management.ObjectName} is available to unregister.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11303, value = "No ObjectName available to unregister")
+    void cannotUnregisterObject();
+
+    /**
+     * Logs an error message indicating a failure to unregister the object name.
+     *
+     * @param cause the cause of the error.
+     * @param name  the name of the object name.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 11304, value = "Failed to unregister [%s]")
+    void unregistrationFailure(@Cause Throwable cause, ObjectName name);
 }

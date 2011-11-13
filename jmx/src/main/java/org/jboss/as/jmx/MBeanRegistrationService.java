@@ -22,11 +22,13 @@
 
 package org.jboss.as.jmx;
 
+import static org.jboss.as.jmx.JmxLogger.ROOT_LOGGER;
+import static org.jboss.as.jmx.JmxMessages.MESSAGES;
+
 import java.lang.management.ManagementFactory;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -42,7 +44,6 @@ import org.jboss.msc.value.Value;
  * @author John Bailey
  */
 public class MBeanRegistrationService<T> implements Service<Void> {
-    private static final Logger log = Logger.getLogger("org.jboss.as.jmx");
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("mbean", "registration");
     private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
     private final InjectedValue<T> value = new InjectedValue<T>();
@@ -81,14 +82,14 @@ public class MBeanRegistrationService<T> implements Service<Void> {
         try {
             objectName = new ObjectName(name);
         } catch (MalformedObjectNameException e) {
-            throw new StartException("Failed to register mbean [" + name + "]", e);
+            throw MESSAGES.mbeanRegistrationFailed(e, name);
         }
 
         try {
-            log.debugf("Registering [%s] with name [%s]", value, objectName);
+            ROOT_LOGGER.debugf("Registering [%s] with name [%s]", value, objectName);
             mBeanServer.registerMBean(value, objectName);
         } catch (Exception e) {
-            throw new StartException("Failed to register mbean [" + name + "]", e);
+            throw MESSAGES.mbeanRegistrationFailed(e, name);
         }
     }
 
@@ -99,13 +100,13 @@ public class MBeanRegistrationService<T> implements Service<Void> {
      */
     public synchronized void stop(StopContext context) {
         if(objectName == null){
-            log.warn("No ObjectName available to unregister");
+            ROOT_LOGGER.cannotUnregisterObject();
         }
         final MBeanServer mBeanServer = getMBeanServer();
         try {
             mBeanServer.unregisterMBean(objectName);
         } catch (Exception e) {
-            log.errorf(e, "Failed to unregister [%s]", objectName);
+            ROOT_LOGGER.unregistrationFailure(e, objectName);
         }
     }
 
