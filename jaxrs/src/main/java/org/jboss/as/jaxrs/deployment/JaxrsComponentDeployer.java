@@ -1,5 +1,7 @@
 package org.jboss.as.jaxrs.deployment;
 
+import static org.jboss.as.jaxrs.JaxrsLogger.JAXRS_LOGGER;
+
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -10,7 +12,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.deployment.component.WebComponentDescription;
 import org.jboss.as.weld.WeldDeploymentMarker;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.resteasy.util.GetRestful;
 
@@ -23,7 +24,6 @@ import org.jboss.resteasy.util.GetRestful;
  * @author Stuart Douglas
  */
 public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
-    private static final Logger log = Logger.getLogger("org.jboss.jaxrs");
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -70,7 +70,7 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
             if (component instanceof SessionBeanComponentDescription) {
                 Class jaxrsType = GetRestful.getSubResourceClass(componentClass);
                 String jndiName = "java:app/" + moduleDescription.getModuleName() + "/" + componentClass.getSimpleName() + "!" + jaxrsType.getName();
-                log.debug("Found JAX-RS Managed Bean: " + component.getComponentClassName() + " local jndi name: " + jndiName);
+                JAXRS_LOGGER.debugf("Found JAX-RS Managed Bean: %s local jndi name: %s", component.getComponentClassName(), jndiName);
                 StringBuilder buf = new StringBuilder();
                 buf.append(jndiName).append(";").append(component.getComponentClassName()).append(";").append("true");
 
@@ -80,7 +80,7 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
             } else {
 
                 String jndiName = "java:app/" + moduleDescription.getModuleName() + "/" + component.getComponentName();
-                log.debug("Found JAX-RS Managed Bean: " + component.getComponentClassName() + " local jndi name: " + jndiName);
+                JAXRS_LOGGER.debugf("Found JAX-RS Managed Bean: %s local jndi name: %s", component.getComponentClassName(), jndiName);
                 StringBuilder buf = new StringBuilder();
                 buf.append(jndiName).append(";").append(component.getComponentClassName()).append(";").append("true");
 
