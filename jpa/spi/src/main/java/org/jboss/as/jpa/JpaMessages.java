@@ -570,4 +570,15 @@ public interface JpaMessages {
         "  Either change the application to have only one persistence unit definition or specify the unitName for each reference to a persistence unit.")
     IllegalArgumentException noPUnitNameSpecifiedAndMultiplePersistenceUnits(int puCount, DeploymentUnit deploymentUnit);
 
+    /**
+     * Creates an exception indicating the persistence provider could not be instantiated ,
+     *
+     * @param cause the cause of the error.
+     * @param providerClassName
+     *
+     * @return a {@link RuntimeException} for the error.
+     */
+    @Message(id = 11471, value = "Could not create instance of persistence provider class %s")
+    RuntimeException couldNotCreateInstanceProvider(@Cause Throwable cause, String providerClassName);
+
 }
