@@ -29,6 +29,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.junit.Assert.assertTrue;
@@ -43,6 +44,7 @@ import org.junit.BeforeClass;
  * @author Strong Liu
  */
 @RunWith(Arquillian.class)
+@Ignore("[AS7-2612] BasicEnversTestCase seems to corrupt JAXR database")
 public class BasicEnversTestCase {
 	private static final String ARCHIVE_NAME = "jpa_BasicEnversTestCase";
 
