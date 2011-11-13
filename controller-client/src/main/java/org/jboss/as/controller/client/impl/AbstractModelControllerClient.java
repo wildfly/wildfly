@@ -18,6 +18,9 @@
  */
 package org.jboss.as.controller.client.impl;
 
+import static org.jboss.as.controller.client.ControllerClientLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -50,7 +53,6 @@ import org.jboss.as.protocol.mgmt.ManagementResponseHandler;
 import org.jboss.as.protocol.mgmt.RequestProcessingException;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.threads.AsyncFuture;
@@ -64,7 +66,6 @@ import org.jboss.threads.AsyncFuture;
 public abstract class AbstractModelControllerClient implements ModelControllerClient, ManagementOperationHandler {
     private final Map<Integer, ExecuteRequestContext> activeRequests = Collections.synchronizedMap(new HashMap<Integer, ExecuteRequestContext>());
     protected final ExecutorService executor = Executors.newCachedThreadPool();
-    final Logger log = Logger.getLogger("org.jboss.as.controller.client");
 
     @Override
     public void close() throws IOException {
@@ -182,7 +183,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
         @Override
         protected void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
             try {
-                log.tracef("Client writing request %d", getBatchId());
+                ROOT_LOGGER.tracef("Client writing request %d", getBatchId());
                 activeRequests.put(getBatchId(), executeRequestContext);
 
                 output.write(ModelControllerProtocol.PARAM_OPERATION);
@@ -196,9 +197,9 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
                     }
                 }
                 output.writeInt(inputStreamLength);
-                log.tracef("Client wrote request %d successfully", getBatchId());
+                ROOT_LOGGER.tracef("Client wrote request %d successfully", getBatchId());
             } catch (Exception e) {
-                log.tracef(e, "Client wrote request %d with error", getBatchId());
+                ROOT_LOGGER.tracef(e, "Client wrote request %d with error", getBatchId());
                 setError(e);
                 if (e instanceof IOException) {
                     throw (IOException)e;
@@ -214,15 +215,15 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
             return new ManagementResponseHandler<ModelNode>() {
                 @Override
                 protected ModelNode readResponse(final DataInput input) throws IOException {
-                    log.tracef("Client reading response %d", getBatchId());
+                    ROOT_LOGGER.tracef("Client reading response %d", getBatchId());
                     try {
                         ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_RESPONSE);
                         ModelNode node = new ModelNode();
                         node.readExternal(input);
-                        log.tracef("Client read response %d successfully", getBatchId());
+                        ROOT_LOGGER.tracef("Client read response %d successfully", getBatchId());
                         return node;
                     } catch (Exception e) {
-                        log.tracef(e, "Client read response %d with error", getBatchId());
+                        ROOT_LOGGER.tracef(e, "Client read response %d with error", getBatchId());
                         //super.setError(new ClientException(e));
                         setError(e);
                         if (e instanceof IOException) {
@@ -263,7 +264,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
 
             ExecuteRequestContext requestContext = activeRequests.get(batchId);
             if (requestContext == null) {
-                throw new IOException("No active request found for " + batchId);
+                throw MESSAGES.noActiveRequest(batchId);
             }
             if (requestContext.getMessageHandler() != null) {
                 requestContext.getMessageHandler().handleReport(severity, message);
@@ -285,13 +286,13 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
         @Override
         protected void readRequest(final DataInput input) throws IOException {
             int batchId = getHeader().getBatchId();
-            log.tracef("Client got inputstream request %d",  batchId);
+            ROOT_LOGGER.tracef("Client got inputstream request %d",  batchId);
             ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAM_INDEX);
             int index = input.readInt();
 
             ExecuteRequestContext requestContext = activeRequests.get(batchId);
             if (requestContext == null) {
-                throw new IOException("No active request found for " + batchId);
+                throw MESSAGES.noActiveRequest(batchId);
             }
             InputStream in = requestContext.getAttachments().getInputStreams().get(index);
             attachmentInput = in != null ? new BufferedInputStream(in) : null;
@@ -323,7 +324,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
             output.writeInt(bytes.length);
             output.write(ModelControllerProtocol.PARAM_INPUTSTREAM_CONTENTS);
             output.write(bytes);
-            log.tracef("Client handled inputstream request %d",  getHeader().getBatchId());
+            ROOT_LOGGER.tracef("Client handled inputstream request %d",  getHeader().getBatchId());
         }
     }
 
@@ -343,7 +344,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
             return new CloseHandler<Channel>() {
                 public void handleClose(final Channel closed, final IOException exception) {
                     if (!done) {
-                        executeRequest.setError(new IOException("Channel closed"));
+                        executeRequest.setError(MESSAGES.channelClosed());
                     }
                 }
             };

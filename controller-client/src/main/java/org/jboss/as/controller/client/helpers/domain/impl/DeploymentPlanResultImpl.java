@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.client.helpers.domain.impl;
 
+import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -58,9 +60,9 @@ public class DeploymentPlanResultImpl implements DeploymentPlanResult {
 
     public DeploymentPlanResultImpl(final DeploymentPlan plan, final InvalidDeploymentPlanException invalidPlanException) {
         if (plan == null)
-            throw new IllegalArgumentException("plan is null");
+            throw MESSAGES.nullVar("plan");
         if (invalidPlanException == null)
-            throw new IllegalArgumentException("invalidPlanException is null");
+            throw MESSAGES.nullVar("invalidPlanException");
         this.plan = plan;
         this.results = null;
         this.idpe = invalidPlanException;

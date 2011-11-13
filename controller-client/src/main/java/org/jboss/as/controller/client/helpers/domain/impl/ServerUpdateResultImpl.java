@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.client.helpers.domain.impl;
 
+import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
+
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -103,13 +105,13 @@ class ServerUpdateResultImpl implements ServerUpdateResult, Serializable {
             return null;
         }
         else if (rollbackResult.isCancelled()) {
-            return new RollbackCancelledException("Rollback was cancelled");
+            return MESSAGES.rollbackCancelled();
         }
         else if (rollbackResult.isRolledBack()) {
-            return new RollbackCancelledException("Rollback was itself rolled back");
+            return MESSAGES.rollbackRolledBack();
         }
         else if (rollbackResult.isTimedOut()) {
-            return new RollbackCancelledException("Rollback timed out");
+            return MESSAGES.rollbackTimedOut();
         }
         else {
             return rollbackResult.getFailureResult();

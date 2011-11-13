@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.client.helpers.standalone.impl;
 
+import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -272,7 +274,7 @@ class DeploymentPlanBuilderImpl
         if (last.getType() != Type.UNDEPLOY) {
             // Someone cast to the impl class instead of using the interface
             cleanup();
-            throw new IllegalStateException("Preceding action was not a " + Type.UNDEPLOY);
+            throw MESSAGES.invalidPrecedingAction(Type.UNDEPLOY);
         }
         DeploymentActionImpl removeMod = DeploymentActionImpl.getRemoveAction(last.getDeploymentUnitUniqueName());
         return new DeploymentPlanBuilderImpl(this, removeMod);
@@ -289,11 +291,11 @@ class DeploymentPlanBuilderImpl
         if (deploymentActions.size() > 0) {
             // Someone has cast to this impl class
             cleanup();
-            throw new IllegalStateException(InitialDeploymentPlanBuilder.class.getSimpleName() + " operations are not allowed after content and deployment modifications");
+            throw MESSAGES.operationsNotAllowed(InitialDeploymentPlanBuilder.class.getSimpleName());
         }
         if (shutdown) {
             cleanup();
-            throw new IllegalStateException("Global rollback is not compatible with a server restart");
+            throw MESSAGES.globalRollbackNotCompatible();
         }
         return new DeploymentPlanBuilderImpl(this, true);
     }
@@ -303,7 +305,7 @@ class DeploymentPlanBuilderImpl
         if (deploymentActions.size() > 0) {
             // Someone has cast to this impl class
             cleanup();
-            throw new IllegalStateException(InitialDeploymentPlanBuilder.class.getSimpleName() + " operations are not allowed after content and deployment modifications");
+            throw MESSAGES.operationsNotAllowed(InitialDeploymentPlanBuilder.class.getSimpleName());
         }
         return new DeploymentPlanBuilderImpl(this, false);
     }
@@ -317,16 +319,16 @@ class DeploymentPlanBuilderImpl
         if (deploymentActions.size() > 0) {
             // Someone has to cast this impl class
             cleanup();
-            throw new IllegalStateException(InitialDeploymentPlanBuilder.class.getSimpleName() + " operations are not allowed after content and deployment modifications");
+            throw MESSAGES.operationsNotAllowed(InitialDeploymentPlanBuilder.class.getSimpleName());
         }
         if (globalRollback) {
             cleanup();
-            throw new IllegalStateException("Global rollback is not compatible with a server restart");
+            throw MESSAGES.globalRollbackNotCompatible();
         }
         long period = timeUnit.toMillis(timeout);
         if (shutdown && period != gracefulShutdownPeriod) {
             cleanup();
-            throw new IllegalStateException("Graceful shutdown already configured with a timeout of " + gracefulShutdownPeriod + " ms");
+            throw MESSAGES.gracefulShutdownAlreadyConfigured(gracefulShutdownPeriod);
         }
         return new DeploymentPlanBuilderImpl(this, period);
     }
@@ -340,15 +342,15 @@ class DeploymentPlanBuilderImpl
         if (deploymentActions.size() > 0) {
             // Someone has to cast this impl class
             cleanup();
-            throw new IllegalStateException(InitialDeploymentPlanBuilder.class.getSimpleName() + " operations are not allowed after content and deployment modifications");
+            throw MESSAGES.operationsNotAllowed(InitialDeploymentPlanBuilder.class.getSimpleName());
         }
         if (globalRollback) {
             cleanup();
-            throw new IllegalStateException("Global rollback is not compatible with a server restart");
+            throw MESSAGES.globalRollbackNotCompatible();
         }
         if (shutdown && gracefulShutdownPeriod != -1) {
             cleanup();
-            throw new IllegalStateException("Graceful shutdown already configured with a timeout of " + gracefulShutdownPeriod + " ms");
+            throw MESSAGES.gracefulShutdownAlreadyConfigured(gracefulShutdownPeriod);
         }
         return new DeploymentPlanBuilderImpl(this, -1);
     }
@@ -359,7 +361,7 @@ class DeploymentPlanBuilderImpl
         if (last.getType() != Type.ADD) {
             // Someone cast to the impl class instead of using the interface
             cleanup();
-            throw new IllegalStateException("Preceding action was not a " + Type.ADD);
+            throw MESSAGES.invalidPrecedingAction(Type.ADD);
         }
         return last.getDeploymentUnitUniqueName();
     }
@@ -371,7 +373,7 @@ class DeploymentPlanBuilderImpl
                 return f.getName();
             } catch (URISyntaxException e) {
                 cleanup();
-                throw new IllegalArgumentException(url + " is not a valid URI", e);
+                throw MESSAGES.invalidUri(e, url);
             }
         }
 
@@ -383,8 +385,7 @@ class DeploymentPlanBuilderImpl
         }
         if (idx == -1) {
             cleanup();
-            throw new IllegalArgumentException("Cannot derive a deployment name from " +
-                    url + " -- use an overloaded method variant that takes a 'name' parameter");
+            throw MESSAGES.cannotDeriveDeploymentName(url);
         }
 
         return path.substring(idx + 1);

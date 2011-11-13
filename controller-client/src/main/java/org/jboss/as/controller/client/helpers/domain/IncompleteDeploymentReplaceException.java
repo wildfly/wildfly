@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.client.helpers.domain;
 
+import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
+
 /**
  * {@link InvalidDeploymentPlanException} thrown when a deployment plan
  * specifies that a new version of content replace existing content of the same
@@ -35,16 +37,11 @@ public class IncompleteDeploymentReplaceException extends InvalidDeploymentPlanE
     private static final long serialVersionUID = -8322852398826927588L;
 
     public IncompleteDeploymentReplaceException(String deploymentName, String... missingGroups) {
-        super(createMessage(deploymentName, missingGroups));
+        super(MESSAGES.incompleteDeploymentReplace(deploymentName, createMissingGroups(missingGroups)));
     }
 
-    private static String createMessage(String deploymentName, String[] missingGroups) {
-        StringBuilder sb = new StringBuilder("Only one version of deployment with "
-                + "a given unique name can exist in the domain. The deployment plan "
-                + "specified that a new version of deployment ");
-        sb.append(deploymentName);
-        sb.append(" replace an existing deployment with the same unique name, but did not "
-                + "apply the replacement to all server groups. Missing server groups were: ");
+    private static String createMissingGroups(String[] missingGroups) {
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < missingGroups.length; i++) {
             if (i > 0) {
                 sb.append(", ");

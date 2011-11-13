@@ -18,7 +18,10 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */package org.jboss.as.controller.client.helpers.domain.impl;
+ */
+package org.jboss.as.controller.client.helpers.domain.impl;
+
+import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -54,7 +57,7 @@ public class DeploymentActionImpl implements DeploymentAction, Serializable {
 
     public static DeploymentActionImpl getReplaceAction(String deploymentName, String replacedName) {
         if (replacedName == null) {
-            throw new IllegalArgumentException("replacedName is null");
+            throw MESSAGES.nullVar("replacedName");
         }
         return new DeploymentActionImpl(Type.REPLACE, deploymentName, null, null, replacedName);
     }
@@ -77,9 +80,11 @@ public class DeploymentActionImpl implements DeploymentAction, Serializable {
     private final byte[] newContentHash;
 
     private DeploymentActionImpl(Type type, String deploymentUnitName, String newContentFileName, byte[] newContentHash, String replacedDeploymentUnitName) {
-        assert type != null : "type is null";
+        if (type == null) {
+            throw MESSAGES.nullVar("type");
+        }
         if (deploymentUnitName == null) {
-            throw new IllegalArgumentException("deploymentUnitName is null");
+            throw MESSAGES.nullVar("deploymentUnitName");
         }
         this.type = type;
         this.deploymentUnitName = deploymentUnitName;

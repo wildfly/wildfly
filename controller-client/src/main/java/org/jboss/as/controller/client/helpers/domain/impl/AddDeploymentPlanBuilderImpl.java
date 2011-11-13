@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.client.helpers.domain.impl;
 
+import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
+
 import org.jboss.as.controller.client.helpers.domain.AddDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.DeployDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.ReplaceDeploymentPlanBuilder;
@@ -47,7 +49,7 @@ class AddDeploymentPlanBuilderImpl extends DeploymentPlanBuilderImpl implements 
     public DeployDeploymentPlanBuilder andDeploy() {
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
         if (currentSet.hasServerGroupPlans()) {
-            throw new IllegalStateException("Cannot add deployment actions after starting creation of a rollout plan");
+            throw MESSAGES.cannotAddDeploymentAction();
         }
         DeploymentActionImpl mod = DeploymentActionImpl.getDeployAction(newContentKey);
         DeploymentSetPlanImpl newSet = currentSet.addAction(mod);

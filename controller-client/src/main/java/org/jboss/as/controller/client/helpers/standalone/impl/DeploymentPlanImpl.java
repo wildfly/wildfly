@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.client.helpers.standalone.impl;
 
+import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -46,7 +48,7 @@ public class DeploymentPlanImpl implements DeploymentPlan {
 
     DeploymentPlanImpl(List<DeploymentActionImpl> actions, boolean globalRollback, boolean shutdown, long gracefulTimeout) {
         if (actions == null)
-            throw new IllegalArgumentException("actions is null");
+            throw MESSAGES.nullVar("actions");
         this.deploymentActions.addAll(actions);
         this.globalRollback = globalRollback;
         this.shutdown = shutdown;

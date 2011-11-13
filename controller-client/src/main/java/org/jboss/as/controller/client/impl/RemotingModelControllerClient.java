@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.client.impl;
 
+import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 
@@ -71,7 +73,7 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
     @Override
     protected synchronized ManagementClientChannelStrategy getClientChannelStrategy() throws URISyntaxException, IOException {
         if (closed) {
-            throw new IllegalStateException(String.format("%s is closed", ModelControllerClient.class.getSimpleName()));
+            throw MESSAGES.objectIsClosed( ModelControllerClient.class.getSimpleName());
         }
         if (strategy == null) {
             endpoint = Remoting.createEndpoint("management-client", OptionMap.EMPTY);

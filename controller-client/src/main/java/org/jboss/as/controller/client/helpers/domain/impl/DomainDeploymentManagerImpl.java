@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.client.helpers.domain.impl;
 
+import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
 import static org.jboss.as.controller.client.helpers.ClientConstants.ADD;
 import static org.jboss.as.controller.client.helpers.ClientConstants.COMPOSITE;
 import static org.jboss.as.controller.client.helpers.ClientConstants.CONTENT;
@@ -98,7 +99,7 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
     @Override
     public Future<DeploymentPlanResult> execute(DeploymentPlan plan) {
         if (!(plan instanceof DeploymentPlanImpl)) {
-            throw new IllegalArgumentException("Cannot use a DeploymentPlan not created by this manager");
+            throw MESSAGES.cannotUseDeploymentPlan();
         }
         DeploymentPlanImpl planImpl = DeploymentPlanImpl.class.cast(plan);
         Map<UUID, String> actionsById = new HashMap<UUID, String>();
@@ -209,7 +210,7 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
                 break;
             }
             default: {
-                throw new IllegalStateException("Unknown action type " + action.getType());
+                throw MESSAGES.unknownActionType(action.getType());
             }
             }
 

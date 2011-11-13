@@ -23,6 +23,8 @@ package org.jboss.as.controller.client;
 
 import org.jboss.dmr.ModelNode;
 
+import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +42,7 @@ public class OperationBuilder {
 
     public OperationBuilder(final ModelNode operation) {
         if (operation == null) {
-            throw new IllegalArgumentException("Null operation");
+            throw MESSAGES.nullVar("operation");
         }
         this.operation = operation;
     }

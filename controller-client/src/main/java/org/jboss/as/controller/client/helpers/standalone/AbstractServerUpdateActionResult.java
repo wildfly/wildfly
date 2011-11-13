@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.client.helpers.standalone;
 
+import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
+
 import java.util.UUID;
 
 
@@ -55,9 +57,9 @@ public abstract class AbstractServerUpdateActionResult<T extends ServerUpdateAct
 
     public AbstractServerUpdateActionResult(UUID id, Result result, Throwable deploymentException) {
         if (id == null)
-            throw new IllegalStateException("id is null");
+            throw MESSAGES.nullVar("id");
         if (result == null)
-            throw new IllegalStateException("result is null");
+            throw MESSAGES.nullVar("result");
         this.id = id;
         this.result = result;
         this.deploymentException = deploymentException;

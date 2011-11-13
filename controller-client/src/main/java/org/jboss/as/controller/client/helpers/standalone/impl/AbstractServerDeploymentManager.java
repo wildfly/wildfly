@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.client.helpers.standalone.impl;
 
+import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
 import static org.jboss.as.controller.client.helpers.ClientConstants.ADD;
 import static org.jboss.as.controller.client.helpers.ClientConstants.COMPOSITE;
 import static org.jboss.as.controller.client.helpers.ClientConstants.CONTENT;
@@ -71,7 +72,7 @@ public abstract class AbstractServerDeploymentManager implements ServerDeploymen
     @Override
     public Future<ServerDeploymentPlanResult> execute(DeploymentPlan plan) {
         if (!(plan instanceof DeploymentPlanImpl)) {
-            throw new IllegalArgumentException("Plan was not created by this manager");
+            throw MESSAGES.cannotUseDeploymentPlan();
         }
         DeploymentPlanImpl planImpl = (DeploymentPlanImpl) plan;
         Operation operation = getCompositeOperation(planImpl);
@@ -139,7 +140,7 @@ public abstract class AbstractServerDeploymentManager implements ServerDeploymen
                 break;
             }
             default: {
-                throw new IllegalStateException("Unknown action type " + action.getType());
+                throw MESSAGES.unknownActionType(action.getType());
             }
             }
             steps.add(step);

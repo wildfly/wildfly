@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.client.helpers.domain;
 
+import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
+
 import java.io.Serializable;
 
 /**
@@ -46,7 +48,7 @@ public class ServerGroupDeploymentPlan implements Serializable {
 
     private ServerGroupDeploymentPlan(final String serverGroupName, final boolean rollback, final boolean rollingToServers, final int maxFailures, final int maxFailurePercentage) {
         if (serverGroupName == null) {
-            throw new IllegalArgumentException("serverGroupName is null");
+            throw MESSAGES.nullVar("serverGroupName");
         }
         this.serverGroupName = serverGroupName;
         this.rollback = rollback;
@@ -109,13 +111,13 @@ public class ServerGroupDeploymentPlan implements Serializable {
 
     public ServerGroupDeploymentPlan createAllowFailures(int serverFailures) {
         if (serverFailures < 1)
-            throw new IllegalArgumentException(String.format("Illegal serverFailures value %s -- must be greater than zero", serverFailures));
+            throw MESSAGES.invalidValue("serverFailures", serverFailures, 0);
         return new ServerGroupDeploymentPlan(serverGroupName, true, rollingToServers, serverFailures, maxFailurePercentage);
     }
 
     public ServerGroupDeploymentPlan createAllowFailurePercentage(int serverFailurePercentage) {
         if (serverFailurePercentage < 1 || serverFailurePercentage > 99)
-            throw new IllegalArgumentException(String.format("Illegal serverFailures vaue %s -- must be greater than zero and less than 100 ", serverFailurePercentage));
+            throw MESSAGES.invalidValue("serverFailurePercentage", serverFailurePercentage, 0, 100);
         return new ServerGroupDeploymentPlan(serverGroupName, true, rollingToServers, maxFailures, serverFailurePercentage);
     }
 
