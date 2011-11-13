@@ -49,7 +49,8 @@ public class EJBViewDescription extends ViewDescription {
     private final boolean ejb2xView;
 
     public EJBViewDescription(final ComponentDescription componentDescription, final String viewClassName, final MethodIntf methodIntf, final boolean ejb2xView) {
-        super(componentDescription, viewClassName);
+        //only add the default configurator if an 3jb 3.x business view
+        super(componentDescription, viewClassName, !ejb2xView && methodIntf != MethodIntf.HOME && methodIntf != MethodIntf.LOCAL_HOME );
         this.methodIntf = methodIntf;
         this.ejb2xView = ejb2xView;
         hasJNDIBindings = initHasJNDIBindings(methodIntf);

@@ -32,14 +32,20 @@ import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ee.component.interceptors.ComponentDispatcherInterceptor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.interceptors.GetHomeInterceptorFactory;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.Interceptors;
+import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
 
 /**
@@ -52,7 +58,7 @@ public abstract class SessionBeanObjectViewConfigurator implements ViewConfigura
     @Override
     public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
         //note that we don't have to handle all methods on the EJBObject, as some are handled client side
-
+        final DeploymentReflectionIndex index = context.getDeploymentUnit().getAttachment(Attachments.REFLECTION_INDEX);
         for (final Method method : configuration.getProxyFactory().getCachedMethods()) {
 
             if (method.getName().equals("getPrimaryKey") && method.getParameterTypes().length == 0) {
@@ -74,7 +80,7 @@ public abstract class SessionBeanObjectViewConfigurator implements ViewConfigura
                         serviceBuilder.addDependency(componentDescription.getEjbLocalHomeView().getServiceName(), ComponentView.class, factory.getViewToCreate());
                     }
                 });
-            }else if (method.getName().equals("getEJBHome") && method.getParameterTypes().length == 0) {
+            } else if (method.getName().equals("getEJBHome") && method.getParameterTypes().length == 0) {
                 configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
                 final GetHomeInterceptorFactory factory = new GetHomeInterceptorFactory();
                 configuration.addViewInterceptor(method, factory, InterceptorOrder.View.COMPONENT_DISPATCHER);
@@ -85,8 +91,18 @@ public abstract class SessionBeanObjectViewConfigurator implements ViewConfigura
                         serviceBuilder.addDependency(componentDescription.getEjbHomeView().getServiceName(), ComponentView.class, factory.getViewToCreate());
                     }
                 });
+            } else {
+                final Method componentMethod = ClassReflectionIndexUtil.findMethod(index, componentConfiguration.getComponentClass(), MethodIdentifier.getIdentifierForMethod(method));
+                if (componentMethod != null) {
+                    configuration.addViewInterceptor(method, new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(componentMethod)), InterceptorOrder.View.COMPONENT_DISPATCHER);
+                    configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
+                }
             }
         }
+
+        configuration.addClientPostConstructInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ClientPostConstruct.TERMINAL_INTERCEPTOR);
+        configuration.addClientPreDestroyInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ClientPreDestroy.TERMINAL_INTERCEPTOR);
+
     }
 
     protected abstract InterceptorFactory getEjbRemoveInterceptorFactory();

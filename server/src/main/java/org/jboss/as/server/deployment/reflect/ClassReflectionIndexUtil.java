@@ -42,25 +42,21 @@ public class ClassReflectionIndexUtil {
      * Returns null if no such method is found
      *
      * @param deploymentReflectionIndex The deployment reflection index
-     * @param classReflectionIndex      The class reflection index which will be used to traverse the class hierarchy to find the method
+     * @param clazz      The class reflection index which will be used to traverse the class hierarchy to find the method
      * @param methodIdentifier          The method identifier of the method being searched for
      * @return
      */
-    public static Method findMethod(final DeploymentReflectionIndex deploymentReflectionIndex, final ClassReflectionIndex classReflectionIndex, final MethodIdentifier methodIdentifier) {
-        Method method = classReflectionIndex.getMethod(methodIdentifier);
-        if (method != null) {
-            return method;
-        }
-        // find on super class
-        Class<?> superClass = classReflectionIndex.getIndexedClass().getSuperclass();
-        if (superClass != null) {
-            ClassReflectionIndex<?> superClassIndex = deploymentReflectionIndex.getClassIndex(superClass);
-            if (superClassIndex != null) {
-                return findMethod(deploymentReflectionIndex, superClassIndex, methodIdentifier);
+    public static Method findMethod(final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> clazz, final MethodIdentifier methodIdentifier) {
+        Class<?> c = clazz;
+        while (c != null) {
+            final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(c);
+            final Method method = index.getMethod(methodIdentifier);
+            if(method != null) {
+                return method;
             }
-
+            c = c.getSuperclass();
         }
-        return method;
+        return null;
     }
 
     /**
@@ -70,17 +66,17 @@ public class ClassReflectionIndexUtil {
      * Throws {@link org.jboss.as.server.deployment.DeploymentUnitProcessingException} if no such method is found.
      *
      * @param deploymentReflectionIndex The deployment reflection index
-     * @param classReflectionIndex      The class reflection index which will be used to traverse the class hierarchy to find the method
+     * @param clazz                     The class to search
      * @param methodIdentifier          The method identifier of the method being searched for
      * @return
      * @throws org.jboss.as.server.deployment.DeploymentUnitProcessingException
      *          If no such method is found
      */
-    public static Method findRequiredMethod(final DeploymentReflectionIndex deploymentReflectionIndex, final ClassReflectionIndex classReflectionIndex, final MethodIdentifier methodIdentifier) throws DeploymentUnitProcessingException {
-        Method method = findMethod(deploymentReflectionIndex, classReflectionIndex, methodIdentifier);
+    public static Method findRequiredMethod(final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> clazz, final MethodIdentifier methodIdentifier) throws DeploymentUnitProcessingException {
+        Method method = findMethod(deploymentReflectionIndex, clazz, methodIdentifier);
         if (method == null) {
             throw new DeploymentUnitProcessingException("No method found with id: " + methodIdentifier + " on class (or its super class) "
-                    + classReflectionIndex.getIndexedClass());
+                    + clazz);
         }
         return method;
     }
@@ -93,18 +89,18 @@ public class ClassReflectionIndexUtil {
      * Throws {@link org.jboss.as.server.deployment.DeploymentUnitProcessingException} if no such method is found.
      *
      * @param deploymentReflectionIndex The deployment reflection index
-     * @param classReflectionIndex      The class reflection index which will be used to traverse the class hierarchy to find the method
+     * @param clazz                     The class
      * @param method                    The method being searched for
      * @return
      * @throws org.jboss.as.server.deployment.DeploymentUnitProcessingException
      *          If no such method is found
      */
-    public static Method findRequiredMethod(final DeploymentReflectionIndex deploymentReflectionIndex, final ClassReflectionIndex classReflectionIndex, final Method method) throws DeploymentUnitProcessingException {
+    public static Method findRequiredMethod(final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> clazz, final Method method) throws DeploymentUnitProcessingException {
         if (method == null) {
             throw new IllegalArgumentException("Method cannot be null");
         }
-        MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifierForMethod(method);
-        return findRequiredMethod(deploymentReflectionIndex, classReflectionIndex, methodIdentifier);
+        final MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifierForMethod(method);
+        return findRequiredMethod(deploymentReflectionIndex, clazz, methodIdentifier);
     }
 
     /**
@@ -114,16 +110,16 @@ public class ClassReflectionIndexUtil {
      * <p/>
      *
      * @param deploymentReflectionIndex The deployment reflection index
-     * @param classReflectionIndex      The class reflection index which will be used to traverse the class hierarchy to find the method
+     * @param clazz                     The class
      * @param method                    The method being searched for
      * @return
      */
-    public static Method findMethod(final DeploymentReflectionIndex deploymentReflectionIndex, final ClassReflectionIndex classReflectionIndex, final Method method) {
+    public static Method findMethod(final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> clazz, final Method method) {
         if (method == null) {
             throw new IllegalArgumentException("Method cannot be null");
         }
         MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifierForMethod(method);
-        return findMethod(deploymentReflectionIndex, classReflectionIndex, methodIdentifier);
+        return findMethod(deploymentReflectionIndex, clazz, methodIdentifier);
     }
 
     /**
@@ -139,7 +135,7 @@ public class ClassReflectionIndexUtil {
      * @return
      */
     public static Collection<Method> findMethods(final DeploymentReflectionIndex deploymentReflectionIndex, final ClassReflectionIndex classReflectionIndex, final String methodName, final String... paramTypes) {
-        Collection<Method> methods = classReflectionIndex.getMethods(methodName, paramTypes);
+        final Collection<Method> methods = classReflectionIndex.getMethods(methodName, paramTypes);
         if (!methods.isEmpty()) {
             return methods;
         }

@@ -32,7 +32,6 @@ import org.jboss.as.test.integration.ejb.home.localhome.SimpleLocalInterface;
 import org.jboss.as.test.integration.ejb.home.localhome.SimpleStatefulLocalHome;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -47,29 +46,6 @@ public class SimpleLocalHomeTestCase {
 
     private static final String ARCHIVE_NAME = "SimpleLocalHomeTest.war";
 
-    private static final String EJB_JAR_XML = "<ejb-jar xmlns=\"http://java.sun.com/xml/ns/javaee\"\n" +
-            "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-            "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd\"\n" +
-            "         version=\"3.1\">\n" +
-            "    <enterprise-beans>\n" +
-            "        <session>\n" +
-            "            <ejb-name>SimpleLocalHomeBean</ejb-name>\n" +
-            "            <local-home>org.jboss.as.test.integration.ejb.home.localhome.SimpleLocalHome</local-home>\n" +
-            "            <local>org.jboss.as.test.integration.ejb.home.localhome.SimpleLocalInterface</local>\n" +
-            "            <ejb-class>org.jboss.as.test.integration.ejb.home.localhome.descriptor.SimpleStatelessLocalBean</ejb-class>\n" +
-            "            <session-type>Stateless</session-type>\n" +
-            "        </session>\n" +
-            "        <session>\n" +
-            "            <ejb-name>SimpleStatefulLocalHomeBean</ejb-name>\n" +
-            "            <local-home>org.jboss.as.test.integration.ejb.home.localhome.SimpleStatefulLocalHome</local-home>\n" +
-            "            <local>org.jboss.as.test.integration.ejb.home.localhome.SimpleLocalInterface</local>\n" +
-            "            <ejb-class>org.jboss.as.test.integration.ejb.home.localhome.descriptor.SimpleStatefulLocalBean</ejb-class>\n" +
-            "            <session-type>Stateful</session-type>\n" +
-            "        </session>\n" +
-            "    </enterprise-beans>\n" +
-            "</ejb-jar>";
-
-
     @ArquillianResource
     private InitialContext iniCtx;
 
@@ -79,7 +55,7 @@ public class SimpleLocalHomeTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME);
         war.addPackage(SimpleLocalHomeTestCase.class.getPackage());
         war.addPackage(SimpleLocalInterface.class.getPackage());
-        war.addAsWebInfResource(new StringAsset(EJB_JAR_XML), "ejb-jar.xml");
+        war.addAsWebInfResource(SimpleLocalHomeTestCase.class.getPackage(),"ejb-jar.xml" , "ejb-jar.xml");
         return war;
     }
 

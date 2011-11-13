@@ -88,7 +88,7 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
                         failed.add(componentDescription.getServiceName());
                         iterator.remove();
                     } else {
-                        throw new DeploymentUnitProcessingException("Could not load component class " + componentDescription.getComponentClassName(), e);
+                        throw new DeploymentUnitProcessingException("Could not configure component " + componentDescription.getComponentName(), e);
                     }
                 }
             }

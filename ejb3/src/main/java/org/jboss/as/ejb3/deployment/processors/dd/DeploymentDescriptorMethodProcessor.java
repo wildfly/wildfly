@@ -63,7 +63,7 @@ public class DeploymentDescriptorMethodProcessor implements DeploymentUnitProces
         final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
 
         if (eeModuleDescription != null) {
-            for (ComponentDescription component : eeModuleDescription.getComponentDescriptions()) {
+            for (final ComponentDescription component : eeModuleDescription.getComponentDescriptions()) {
                 if (component instanceof EJBComponentDescription) {
                     try {
                         handleSessionBean((EJBComponentDescription) component, classIndex, reflectionIndex);
@@ -91,14 +91,14 @@ public class DeploymentDescriptorMethodProcessor implements DeploymentUnitProces
 
         final ClassIndex componentClass = classIndex.classIndex(component.getComponentClassName());
         final MethodIdentifier ejbCreateId = MethodIdentifier.getIdentifier(void.class, "ejbCreate");
-        final Method ejbCreate = ClassReflectionIndexUtil.findMethod(reflectionIndex, reflectionIndex.getClassIndex(componentClass.getModuleClass()), ejbCreateId);
+        final Method ejbCreate = ClassReflectionIndexUtil.findMethod(reflectionIndex, componentClass.getModuleClass(), ejbCreateId);
         if (ejbCreate != null) {
             final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder();
             builder.setPostConstruct(ejbCreateId);
             component.addInterceptorMethodOverride(ejbCreate.getDeclaringClass().getName(), builder.build());
         }
         final MethodIdentifier ejbRemoveId = MethodIdentifier.getIdentifier(void.class, "ejbRemove");
-        final Method ejbRemove = ClassReflectionIndexUtil.findMethod(reflectionIndex, reflectionIndex.getClassIndex(componentClass.getModuleClass()), ejbRemoveId);
+        final Method ejbRemove = ClassReflectionIndexUtil.findMethod(reflectionIndex, componentClass.getModuleClass(), ejbRemoveId);
         if (ejbRemove != null) {
             final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder();
             builder.setPreDestroy(ejbRemoveId);
@@ -125,7 +125,7 @@ public class DeploymentDescriptorMethodProcessor implements DeploymentUnitProces
                     MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(Object.class, methodName, InvocationContext.class);
                     builder.setAroundInvoke(methodIdentifier);
                     if (aroundInvoke.getClassName() == null || aroundInvoke.getClassName().isEmpty()) {
-                        final String className = ClassReflectionIndexUtil.findRequiredMethod(reflectionIndex, reflectionIndex.getClassIndex(componentClass.getModuleClass()), methodIdentifier).getDeclaringClass().getName();
+                        final String className = ClassReflectionIndexUtil.findRequiredMethod(reflectionIndex, componentClass.getModuleClass(), methodIdentifier).getDeclaringClass().getName();
                         component.addInterceptorMethodOverride(className, builder.build());
                     } else {
                         component.addInterceptorMethodOverride(aroundInvoke.getClassName(), builder.build());
@@ -143,7 +143,7 @@ public class DeploymentDescriptorMethodProcessor implements DeploymentUnitProces
                 MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(void.class, methodName);
                 builder.setPostConstruct(methodIdentifier);
                 if (postConstruct.getClassName() == null || postConstruct.getClassName().isEmpty()) {
-                    final String className = ClassReflectionIndexUtil.findRequiredMethod(reflectionIndex, reflectionIndex.getClassIndex(componentClass.getModuleClass()), methodIdentifier).getDeclaringClass().getName();
+                    final String className = ClassReflectionIndexUtil.findRequiredMethod(reflectionIndex, componentClass.getModuleClass(), methodIdentifier).getDeclaringClass().getName();
                     component.addInterceptorMethodOverride(className, builder.build());
                 } else {
                     component.addInterceptorMethodOverride(postConstruct.getClassName(), builder.build());
@@ -152,15 +152,15 @@ public class DeploymentDescriptorMethodProcessor implements DeploymentUnitProces
         }
 
         // pre-destroy(s) of the interceptor configured (if any) in the deployment descriptor
-        LifecycleCallbacksMetaData preDestroys = metaData.getPreDestroys();
+        final LifecycleCallbacksMetaData preDestroys = metaData.getPreDestroys();
         if (preDestroys != null) {
-            for (LifecycleCallbackMetaData preDestroy : preDestroys) {
+            for (final LifecycleCallbackMetaData preDestroy : preDestroys) {
                 final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder();
-                String methodName = preDestroy.getMethodName();
-                MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(void.class, methodName);
+                final String methodName = preDestroy.getMethodName();
+                final MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(void.class, methodName);
                 builder.setPreDestroy(methodIdentifier);
                 if (preDestroy.getClassName() == null || preDestroy.getClassName().isEmpty()) {
-                    final String className = ClassReflectionIndexUtil.findRequiredMethod(reflectionIndex, reflectionIndex.getClassIndex(componentClass.getModuleClass()), methodIdentifier).getDeclaringClass().getName();
+                    final String className = ClassReflectionIndexUtil.findRequiredMethod(reflectionIndex, componentClass.getModuleClass(), methodIdentifier).getDeclaringClass().getName();
                     component.addInterceptorMethodOverride(className, builder.build());
                 } else {
                     component.addInterceptorMethodOverride(preDestroy.getClassName(), builder.build());

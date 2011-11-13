@@ -76,13 +76,13 @@ public class AsynchronousMergingProcessor extends AbstractMergingProcessor<Sessi
     @Override
     protected void handleAnnotations(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription description) throws DeploymentUnitProcessingException {
         final RuntimeAnnotationInformation<Boolean> data = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, Asynchronous.class);
-        for (Map.Entry<String, List<Boolean>> entry : data.getClassAnnotations().entrySet()) {
+        for (final Map.Entry<String, List<Boolean>> entry : data.getClassAnnotations().entrySet()) {
             if (!entry.getValue().isEmpty()) {
                 description.addAsynchronousClass(entry.getKey());
             }
         }
 
-        for (Map.Entry<Method, List<Boolean>> entry : data.getMethodAnnotations().entrySet()) {
+        for (final Map.Entry<Method, List<Boolean>> entry : data.getMethodAnnotations().entrySet()) {
             if (!entry.getValue().isEmpty()) {
                 description.addAsynchronousMethod(MethodIdentifier.getIdentifierForMethod(entry.getKey()));
             }
@@ -130,7 +130,7 @@ public class AsynchronousMergingProcessor extends AbstractMergingProcessor<Sessi
                         for (final Method method : configuration.getProxyFactory().getCachedMethods()) {
 
                             //we need the component method to get the correct declaring class
-                            final Method componentMethod = ClassReflectionIndexUtil.findMethod(deploymentReflectionIndex, deploymentReflectionIndex.getClassIndex(componentClass), method);
+                            final Method componentMethod = ClassReflectionIndexUtil.findMethod(deploymentReflectionIndex, componentClass, method);
 
                             if (componentMethod != null) {
                                 if (componentDescription.getAsynchronousClasses().contains(componentMethod.getDeclaringClass().getName())) {

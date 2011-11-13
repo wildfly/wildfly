@@ -57,7 +57,7 @@ public class ApplicationClientDescriptorMethodProcessor implements DeploymentUni
         final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
 
         if (eeModuleDescription != null) {
-            for (ComponentDescription component : eeModuleDescription.getComponentDescriptions()) {
+            for (final ComponentDescription component : eeModuleDescription.getComponentDescriptions()) {
                 if (component instanceof ApplicationClientComponentDescription) {
                     try {
                         handleApplicationClient((ApplicationClientComponentDescription) component, classIndex, reflectionIndex, deploymentUnit);
@@ -94,7 +94,7 @@ public class ApplicationClientDescriptorMethodProcessor implements DeploymentUni
                 MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(void.class, methodName);
                 builder.setPostConstruct(methodIdentifier);
                 if (postConstruct.getClassName() == null || postConstruct.getClassName().isEmpty()) {
-                    final String className = ClassReflectionIndexUtil.findRequiredMethod(reflectionIndex, reflectionIndex.getClassIndex(componentClass.getModuleClass()), methodIdentifier).getDeclaringClass().getName();
+                    final String className = ClassReflectionIndexUtil.findRequiredMethod(reflectionIndex, componentClass.getModuleClass(), methodIdentifier).getDeclaringClass().getName();
                     component.addInterceptorMethodOverride(className, builder.build());
                 } else {
                     component.addInterceptorMethodOverride(postConstruct.getClassName(), builder.build());
@@ -111,7 +111,7 @@ public class ApplicationClientDescriptorMethodProcessor implements DeploymentUni
                 MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(void.class, methodName);
                 builder.setPreDestroy(methodIdentifier);
                 if (preDestroy.getClassName() == null || preDestroy.getClassName().isEmpty()) {
-                    final String className = ClassReflectionIndexUtil.findRequiredMethod(reflectionIndex, reflectionIndex.getClassIndex(componentClass.getModuleClass()), methodIdentifier).getDeclaringClass().getName();
+                    final String className = ClassReflectionIndexUtil.findRequiredMethod(reflectionIndex, componentClass.getModuleClass(), methodIdentifier).getDeclaringClass().getName();
                     component.addInterceptorMethodOverride(className, builder.build());
                 } else {
                     component.addInterceptorMethodOverride(preDestroy.getClassName(), builder.build());

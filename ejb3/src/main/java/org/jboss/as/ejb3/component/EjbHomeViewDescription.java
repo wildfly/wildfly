@@ -47,8 +47,4 @@ public class EjbHomeViewDescription extends EJBViewDescription {
         return Collections.unmodifiableSet(createMethods);
     }
 
-    @Override
-    protected boolean isDefaultConfiguratorRequired() {
-        return false;
-    }
 }

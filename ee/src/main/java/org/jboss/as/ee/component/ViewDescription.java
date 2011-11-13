@@ -22,8 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
-
 import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -32,10 +30,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.ee.component.interceptors.ComponentDispatcherInterceptor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.ImmediateInterceptorFactory;
@@ -45,6 +43,8 @@ import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.msc.service.ServiceName;
+
+import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
 /**
  * A description of a view.
@@ -67,16 +67,23 @@ public class ViewDescription {
      * @param viewClassName        the view class name
      */
     public ViewDescription(final ComponentDescription componentDescription, final String viewClassName) {
+        this(componentDescription, viewClassName, true);
+    }
+
+    /**
+     * Construct a new instance.
+     *
+     * @param componentDescription the associated component description
+     * @param viewClassName        the view class name
+     * @param defaultConfiguratorRequired
+     */
+    public ViewDescription(final ComponentDescription componentDescription, final String viewClassName, final boolean defaultConfiguratorRequired) {
         this.componentDescription = componentDescription;
         this.viewClassName = viewClassName;
-        if (isDefaultConfiguratorRequired()) {
+        if (defaultConfiguratorRequired) {
             configurators.addFirst(DefaultConfigurator.INSTANCE);
         }
         configurators.addFirst(ViewBindingConfigurator.INSTANCE);
-    }
-
-    protected boolean isDefaultConfiguratorRequired() {
-        return true;
     }
 
     /**
@@ -173,11 +180,10 @@ public class ViewDescription {
 
         public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
             // Create method indexes
-            DeploymentReflectionIndex reflectionIndex = context.getDeploymentUnit().getAttachment(REFLECTION_INDEX);
-            ClassReflectionIndex<?> index = reflectionIndex.getClassIndex(componentConfiguration.getComponentClass());
-            List<Method> methods = configuration.getProxyFactory().getCachedMethods();
-            for (Method method : methods) {
-                final Method componentMethod = ClassReflectionIndexUtil.findMethod(reflectionIndex, index, MethodIdentifier.getIdentifierForMethod(method));
+            final DeploymentReflectionIndex reflectionIndex = context.getDeploymentUnit().getAttachment(REFLECTION_INDEX);
+            final List<Method> methods = configuration.getProxyFactory().getCachedMethods();
+            for (final Method method : methods) {
+                final Method componentMethod = ClassReflectionIndexUtil.findMethod(reflectionIndex, componentConfiguration.getComponentClass(), MethodIdentifier.getIdentifierForMethod(method));
                 if (componentMethod != null) {
                     configuration.addViewInterceptor(method, new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(componentMethod)), InterceptorOrder.View.COMPONENT_DISPATCHER);
                     configuration.addClientInterceptor(method, CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
@@ -201,31 +207,6 @@ public class ViewDescription {
             final List<BindingConfiguration> bindingConfigurations = configuration.getBindingConfigurations();
             for (String bindingName : description.getBindingNames()) {
                 bindingConfigurations.add(new BindingConfiguration(bindingName, description.createInjectionSource(description.getServiceName())));
-            }
-        }
-    }
-
-    private static class ComponentDispatcherInterceptor implements Interceptor {
-
-        private final Method componentMethod;
-
-        public ComponentDispatcherInterceptor(final Method componentMethod) {
-            this.componentMethod = componentMethod;
-        }
-
-        public Object processInvocation(final InterceptorContext context) throws Exception {
-            ComponentInstance componentInstance = context.getPrivateData(ComponentInstance.class);
-            if (componentInstance == null) {
-                throw new IllegalStateException("No component instance associated");
-            }
-            Method oldMethod = context.getMethod();
-            try {
-                context.setMethod(componentMethod);
-                context.setTarget(componentInstance.getInstance());
-                return componentInstance.getInterceptor(componentMethod).processInvocation(context);
-            } finally {
-                context.setMethod(oldMethod);
-                context.setTarget(null);
             }
         }
     }

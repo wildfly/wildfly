@@ -51,4 +51,8 @@ public class SimpleStatefulLocalBean  {
     public String otherMethod() {
         return ((SimpleLocalInterface)sessionContext.getEJBLocalObject()).sayHello();
     }
+
+    public void remove() {
+
+    }
 }
