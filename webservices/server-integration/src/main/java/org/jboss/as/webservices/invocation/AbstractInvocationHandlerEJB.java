@@ -21,8 +21,6 @@
  */
 package org.jboss.as.webservices.invocation;
 
-import static org.jboss.as.webservices.metadata.model.EJBEndpoint.EJB_COMPONENT_VIEW_NAME;
-
 import java.lang.reflect.Method;
 import java.util.Collection;
 
@@ -39,6 +37,8 @@ import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.invocation.Invocation;
 import org.jboss.wsf.spi.ioc.IoCContainerProxy;
 import org.jboss.wsf.spi.ioc.IoCContainerProxyFactory;
+
+import static org.jboss.as.webservices.metadata.model.EJBEndpoint.EJB_COMPONENT_VIEW_NAME;
 
 /**
  * Invocation abstraction for both EJB3 and  EJB21 endpoints.
@@ -85,10 +85,12 @@ abstract class AbstractInvocationHandlerEJB extends AbstractInvocationHandler {
     * @return EJB container
     */
    private ComponentView getComponentView() {
-      if (ejbComponentView == null) {
+       //we need to check both, otherwise it is possible for
+       //ejbComponentView to be initalized before reference
+      if (ejbComponentView == null || reference == null) {
          synchronized(this) {
             if (ejbComponentView == null) {
-               ejbComponentView= iocContainer.getBean(ejbComponentName, ComponentView.class);
+               ejbComponentView = iocContainer.getBean(ejbComponentName, ComponentView.class);
                if (ejbComponentView == null) {
                   throw new WebServiceException("Cannot find ejb: " + ejbComponentName);
                }
