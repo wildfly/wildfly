@@ -68,7 +68,7 @@ public class OSGiWebAppTestCase {
     @StartLevelAware(startLevel = 4)
     public static WebArchive createdeployment() {
         final WebArchive archive = ShrinkWrap.create(WebArchive.class, "example-webapp");
-        archive.addClasses(OSGiTestSupport.class, EndpointServlet.class);
+        archive.addClasses(HttpTestSupport.class, OSGiTestSupport.class, EndpointServlet.class);
         archive.addAsWebResource("osgi/webapp/message.txt", "message.txt");
         archive.addAsWebInfResource("osgi/webapp/webA.xml", "web.xml");
         // [SHRINKWRAP-278] WebArchive.setManifest() results in WEB-INF/classes/META-INF/MANIFEST.MF

@@ -27,7 +27,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.HttpTestSupport;
-import org.jboss.as.test.integration.osgi.OSGiTestSupport;
 import org.jboss.as.test.integration.osgi.xservice.api.Echo;
 import org.jboss.as.test.integration.osgi.xservice.bundle.TargetBundleActivator;
 import org.jboss.logging.Logger;
@@ -70,7 +69,7 @@ public class RestEasyIntegrationTestCase {
     @Deployment
     public static JavaArchive createDeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "jaxrs-osgi-target");
-        archive.addClasses(OSGiTestSupport.class, Echo.class, TargetBundleActivator.class);
+        archive.addClasses(HttpTestSupport.class, Echo.class, TargetBundleActivator.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
