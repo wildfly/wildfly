@@ -179,6 +179,8 @@ public class ModelDescriptionConstants {
     public static final String RECURSIVE = "recursive";
     public static final String REDEPLOY = "redeploy";
     public static final String RELATIVE_TO = "relative-to";
+    public static final String RELEASE_CODENAME = "release-codename";
+    public static final String RELEASE_VERSION = "release-version";
     public static final String REMOVE = "remove";
     public static final String REMOTE = "remote";
     public static final String REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING = "remote-destination-outbound-socket-binding";

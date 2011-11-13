@@ -42,6 +42,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_CODENAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
@@ -115,6 +117,7 @@ import org.jboss.as.server.services.security.RuntimeVaultReader;
 import org.jboss.as.server.services.security.VaultAddHandler;
 import org.jboss.as.server.services.security.VaultRemoveHandler;
 import org.jboss.as.server.services.security.VaultWriteAttributeHandler;
+import org.jboss.as.version.Version;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -128,6 +131,10 @@ import org.jboss.dmr.ModelType;
 public class HostModelUtil {
 
     public static void initCoreModel(final ModelNode root) {
+
+        root.get(RELEASE_VERSION).set(Version.AS_VERSION);
+        root.get(RELEASE_CODENAME).set(Version.AS_RELEASE_CODENAME);
+
         root.get(NAME);
         root.get(NAMESPACES).setEmptyList();
         root.get(SCHEMA_LOCATIONS).setEmptyList();
