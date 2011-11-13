@@ -24,6 +24,7 @@ package org.jboss.as.jmx.model;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
+import static org.jboss.as.jmx.JmxMessages.MESSAGES;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -128,7 +129,7 @@ public abstract class TypeConverter {
         case UNDEFINED:
             return UndefinedTypeConverter.INSTANCE;
         default:
-            throw new RuntimeException("Unknown type " + modelType);
+            throw MESSAGES.unknownType(modelType);
         }
     }
 
@@ -553,7 +554,7 @@ public abstract class TypeConverter {
                     public String getKey() {
                         List<?> keyList = (List<?>)entry.getKey();
                         if (keyList.size() != 1) {
-                            throw new IllegalArgumentException("Invalid key " + keyList + " for " + entry);
+                            throw MESSAGES.invalidKey(keyList, entry);
                         }
                         return (String)keyList.get(0);
                     }
@@ -728,7 +729,7 @@ public abstract class TypeConverter {
                 final CompositeData composite = (CompositeData)o;
                 for (String key : composite.getCompositeType().keySet()) {
                     if (!typeNode.hasDefined(key)){
-                        throw new IllegalArgumentException("Unknown value " + key);
+                        throw MESSAGES.unknownValue(key);
                     }
                     final ModelNode type = typeNode.get(key).get(TYPE);
                     final ModelNode valueType = typeNode.get(key).get(VALUE_TYPE);

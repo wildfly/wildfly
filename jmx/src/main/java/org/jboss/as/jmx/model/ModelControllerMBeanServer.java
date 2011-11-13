@@ -21,6 +21,8 @@
 */
 package org.jboss.as.jmx.model;
 
+import static org.jboss.as.jmx.JmxMessages.MESSAGES;
+
 import java.io.ObjectInputStream;
 import java.util.HashSet;
 import java.util.Set;
@@ -71,7 +73,7 @@ public class ModelControllerMBeanServer implements MBeanServer {
     public ObjectInstance createMBean(String className, ObjectName name, Object[] params, String[] signature) throws ReflectionException,
             InstanceAlreadyExistsException, MBeanException, NotCompliantMBeanException {
         if (ObjectNameAddressUtil.isReservedDomain(name)) {
-            throw new NotCompliantMBeanException("You can't create mbeans under the reserved domain '" + Constants.DOMAIN + "'");
+            throw new NotCompliantMBeanException(MESSAGES.reservedMBeanDomain(Constants.DOMAIN));
         }
         return delegate.createMBean(className, name, params, signature);
     }
@@ -80,7 +82,7 @@ public class ModelControllerMBeanServer implements MBeanServer {
             throws ReflectionException, InstanceAlreadyExistsException, MBeanException, NotCompliantMBeanException,
             InstanceNotFoundException {
         if (ObjectNameAddressUtil.isReservedDomain(name)) {
-            throw new NotCompliantMBeanException("You can't create mbeans under the reserved domain '" + Constants.DOMAIN + "'");
+            throw new NotCompliantMBeanException(MESSAGES.reservedMBeanDomain(Constants.DOMAIN));
         }
         return delegate.createMBean(className, name, loaderName, params, signature);
     }
@@ -88,7 +90,7 @@ public class ModelControllerMBeanServer implements MBeanServer {
     public ObjectInstance createMBean(String className, ObjectName name, ObjectName loaderName) throws ReflectionException,
             InstanceAlreadyExistsException, MBeanException, NotCompliantMBeanException, InstanceNotFoundException {
         if (ObjectNameAddressUtil.isReservedDomain(name)) {
-            throw new NotCompliantMBeanException("You can't create mbeans under the reserved domain '" + Constants.DOMAIN + "'");
+            throw new NotCompliantMBeanException(MESSAGES.reservedMBeanDomain(Constants.DOMAIN));
         }
         return delegate.createMBean(className, name, loaderName);
     }
@@ -96,7 +98,7 @@ public class ModelControllerMBeanServer implements MBeanServer {
     public ObjectInstance createMBean(String className, ObjectName name) throws ReflectionException, InstanceAlreadyExistsException,
              MBeanException, NotCompliantMBeanException {
         if (ObjectNameAddressUtil.isReservedDomain(name)) {
-            throw new NotCompliantMBeanException("You can't create mbeans under the reserved domain '" + Constants.DOMAIN + "'");
+            throw new NotCompliantMBeanException(MESSAGES.reservedMBeanDomain(Constants.DOMAIN));
         }
         return delegate.createMBean(className, name);
     }
@@ -235,7 +237,7 @@ public class ModelControllerMBeanServer implements MBeanServer {
     public ObjectInstance registerMBean(Object object, ObjectName name) throws InstanceAlreadyExistsException, MBeanRegistrationException,
             NotCompliantMBeanException {
         if (ObjectNameAddressUtil.isReservedDomain(name)) {
-            throw new MBeanRegistrationException(new RuntimeException("You can't register mbeans under the reserved domain '" + Constants.DOMAIN + "'"));
+            throw new MBeanRegistrationException(new RuntimeException(MESSAGES.reservedMBeanDomain(Constants.DOMAIN)));
         }
         return delegate.registerMBean(object, name);
     }
@@ -258,7 +260,7 @@ public class ModelControllerMBeanServer implements MBeanServer {
 
     public void unregisterMBean(ObjectName name) throws InstanceNotFoundException, MBeanRegistrationException {
         if (ObjectNameAddressUtil.isReservedDomain(name)) {
-            throw new MBeanRegistrationException(new RuntimeException("You can't unregister mbeans under the reserved domain '" + Constants.DOMAIN + "'"));
+            throw new MBeanRegistrationException(new RuntimeException(MESSAGES.reservedMBeanDomain(Constants.DOMAIN)));
         }
         delegate.unregisterMBean(name);
     }

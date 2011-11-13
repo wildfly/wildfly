@@ -21,6 +21,8 @@
 */
 package org.jboss.as.jmx.model;
 
+import static org.jboss.as.jmx.JmxMessages.MESSAGES;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -83,7 +85,7 @@ class ObjectNameAddressUtil {
         try {
             return ObjectName.getInstance(sb.toString());
         } catch (MalformedObjectNameException e) {
-            throw new RuntimeException("Could not create ObjectName for address" + pathAddress, e);
+            throw MESSAGES.cannotCreateObjectName(e, pathAddress);
         }
     }
 
