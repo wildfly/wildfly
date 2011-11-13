@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.client.helpers.domain.impl;
 
+import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
+
 import org.jboss.as.controller.client.helpers.domain.DeploymentAction;
 import org.jboss.as.controller.client.helpers.domain.RemoveDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlanBuilder;
@@ -43,7 +45,7 @@ class UndeployDeploymentPlanBuilderImpl extends DeploymentPlanBuilderImpl implem
         super(existing, setPlan);
         DeploymentAction modification = setPlan.getLastAction();
         if (modification.getType() != DeploymentAction.Type.UNDEPLOY) {
-            throw new IllegalStateException("Invalid action type " + modification.getType());
+            throw MESSAGES.invalidActionType(modification.getType());
         }
         this.undeployModification = modification;
     }
@@ -57,7 +59,7 @@ class UndeployDeploymentPlanBuilderImpl extends DeploymentPlanBuilderImpl implem
     public RemoveDeploymentPlanBuilder andRemoveUndeployed() {
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
         if (currentSet.hasServerGroupPlans()) {
-            throw new IllegalStateException("Cannot add deployment actions after starting creation of a rollout plan");
+            throw MESSAGES.cannotAddDeploymentActionsAfterStart();
         }
         DeploymentActionImpl mod = DeploymentActionImpl.getRemoveAction(undeployModification.getDeploymentUnitUniqueName());
         DeploymentSetPlanImpl newSet = currentSet.addAction(mod);

@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.client.helpers.domain.impl;
 
+import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
+
 import org.jboss.as.controller.client.helpers.domain.RollbackDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlan;
 import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlanBuilder;
@@ -43,7 +45,7 @@ class RollbackDeploymentPlanBuilderImpl extends ServerGroupDeploymentPlanBuilder
         DeploymentSetPlanImpl setPlan = getCurrentDeploymentSetPlan();
         ServerGroupDeploymentPlan groupPlan = setPlan.getLatestServerGroupDeploymentPlan();
         if (groupPlan == null) {
-            throw new IllegalStateException(String.format("No %s is configured", ServerGroupDeploymentPlan.class.getSimpleName()));
+            throw MESSAGES.notConfigured(ServerGroupDeploymentPlan.class.getSimpleName());
         }
         groupPlan = groupPlan.createAllowFailures(serverFailures);
         setPlan = setPlan.storeServerGroup(groupPlan);
@@ -55,7 +57,7 @@ class RollbackDeploymentPlanBuilderImpl extends ServerGroupDeploymentPlanBuilder
         DeploymentSetPlanImpl setPlan = getCurrentDeploymentSetPlan();
         ServerGroupDeploymentPlan groupPlan = setPlan.getLatestServerGroupDeploymentPlan();
         if (groupPlan == null) {
-            throw new IllegalStateException(String.format("No %s is configured", ServerGroupDeploymentPlan.class.getSimpleName()));
+            throw MESSAGES.notConfigured(ServerGroupDeploymentPlan.class.getSimpleName());
         }
         groupPlan = groupPlan.createAllowFailurePercentage(serverFailurePercentage);
         setPlan = setPlan.storeServerGroup(groupPlan);

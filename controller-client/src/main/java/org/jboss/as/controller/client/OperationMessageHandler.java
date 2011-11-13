@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.client;
 
+import static org.jboss.as.controller.client.ControllerClientLogger.ROOT_LOGGER;
+
 import org.jboss.logging.Logger;
 
 /**
@@ -42,17 +44,20 @@ public interface OperationMessageHandler {
      * An operation message handler which logs to the current system log.
      */
     OperationMessageHandler logging = new OperationMessageHandler() {
-        private final Logger log = Logger.getLogger("org.jboss.as.controller.client");
 
         public void handleReport(final MessageSeverity severity, final String message) {
-            Logger.Level level;
             switch (severity) {
-                case ERROR: level = Logger.Level.ERROR; break;
-                case WARN: level = Logger.Level.WARN; break;
+                case ERROR:
+                    ROOT_LOGGER.error(message);
+                    break;
+                case WARN:
+                    ROOT_LOGGER.warn(message);
+                    break;
                 case INFO:
-                default: level = Logger.Level.TRACE; break;
+                default:
+                    ROOT_LOGGER.trace(message);
+                    break;
             }
-            log.log(level, message);
         }
     };
 }

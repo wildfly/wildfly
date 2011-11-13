@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.client.helpers.domain.impl;
 
+import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
+
 import java.io.Serializable;
 
 import org.jboss.as.controller.client.helpers.domain.UpdateFailedException;
@@ -48,7 +50,7 @@ public class UpdateResultHandlerResponse implements Serializable {
     private final Throwable rollbackFailure;
 
     public static UpdateResultHandlerResponse fromModelNode(ModelNode modelNode) {
-        String outcome = modelNode.hasDefined("outcome") ? modelNode.get("outcome").asString() : "failed";
+        String outcome = modelNode.hasDefined("outcome") ? modelNode.get("outcome").asString() : MESSAGES.failed();
         UpdateResultHandlerResponse result;
         if ("success".equals(outcome)) {
             result = createSuccessResponse(modelNode.get("result"));
@@ -57,7 +59,7 @@ public class UpdateResultHandlerResponse implements Serializable {
             return createCancellationResponse();
         }
         else {
-            String message = modelNode.hasDefined("failure-description") ? modelNode.get("failure-description").asString() : "No failure details provided";
+            String message = modelNode.hasDefined("failure-description") ? modelNode.get("failure-description").asString() : MESSAGES.noFailureDetails();
             result = createFailureResponse(new UpdateFailedException(message));
         }
         if (modelNode.get("rolled-back").asBoolean(false)) {

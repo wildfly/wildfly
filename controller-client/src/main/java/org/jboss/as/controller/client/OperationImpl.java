@@ -23,6 +23,8 @@ package org.jboss.as.controller.client;
 
 import org.jboss.dmr.ModelNode;
 
+import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,7 +63,7 @@ class OperationImpl implements Operation {
     @Override
     public Operation clone(final ModelNode operation) {
         if (operation == null) {
-            throw new IllegalArgumentException("Null operation");
+            throw MESSAGES.nullVar("operation");
         }
         List<InputStream> streamsCopy = inputStreams == null ? null : new ArrayList<InputStream>(inputStreams);
         return new OperationImpl(operation, streamsCopy);

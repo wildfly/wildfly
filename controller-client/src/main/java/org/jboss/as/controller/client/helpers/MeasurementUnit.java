@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.client.helpers;
 
+import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
+
 /**
  * Metric data values can be in one of the following known units of measurement. These enum values should correspond to
  * the "units" attribute enumerated type values as defined in the plugin descriptor's &ltmetric> element.
@@ -86,7 +88,7 @@ public enum MeasurementUnit {
 
     private MeasurementUnit(String displayUnits, Family family, Scale scale) {
         if (displayUnits.length() > 5) {
-            throw new RuntimeException("Screen real estate is expensive; displayUnits must be 5 characters or less");
+            throw MESSAGES.maxDisplayUnitLength();
         }
 
         this.displayUnits = displayUnits;
@@ -132,7 +134,7 @@ public enum MeasurementUnit {
     public static Double calculateOffset(MeasurementUnit first, MeasurementUnit second)
         throws MeasurementConversionException {
         if (first.isComparableTo(second) == false) {
-            throw new MeasurementConversionException("Can not convert " + first.name() + " to " + second.name());
+            throw new MeasurementConversionException(MESSAGES.cannotConvert(first.name(), second.name()));
         }
 
         return Scale.calculateOffset(first.scale, second.scale);

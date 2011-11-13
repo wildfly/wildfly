@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.client.helpers.domain.impl;
 
+import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
+
 import org.jboss.as.controller.client.helpers.domain.DeploymentAction;
 import org.jboss.as.controller.client.helpers.domain.DeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.ReplaceDeploymentPlanBuilder;
@@ -52,7 +54,7 @@ class ReplaceDeploymentPlanBuilderImpl extends DeploymentPlanBuilderImpl impleme
     public DeploymentPlanBuilder andRemoveUndeployed() {
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
         if (currentSet.hasServerGroupPlans()) {
-            throw new IllegalStateException("Cannot add deployment actions after starting creation of a rollout plan");
+            throw MESSAGES.cannotAddDeploymentAction();
         }
         DeploymentActionImpl mod = DeploymentActionImpl.getRemoveAction(replacementModification.getReplacedDeploymentUnitUniqueName());
         DeploymentSetPlanImpl newSet = currentSet.addAction(mod);

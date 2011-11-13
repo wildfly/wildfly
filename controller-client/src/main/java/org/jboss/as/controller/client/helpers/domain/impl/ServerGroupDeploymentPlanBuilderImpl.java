@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.client.helpers.domain.impl;
 
+import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
+
 import org.jboss.as.controller.client.helpers.domain.DeploymentSetPlan;
 import org.jboss.as.controller.client.helpers.domain.RollbackDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlan;
@@ -46,7 +48,7 @@ class ServerGroupDeploymentPlanBuilderImpl extends InitialDeploymentSetBuilderIm
         DeploymentSetPlanImpl setPlan = getCurrentDeploymentSetPlan();
         ServerGroupDeploymentPlan groupPlan = setPlan.getLatestServerGroupDeploymentPlan();
         if (groupPlan == null) {
-            throw new IllegalStateException(String.format("No %s is configured", ServerGroupDeploymentPlan.class.getSimpleName()));
+            throw MESSAGES.notConfigured(ServerGroupDeploymentPlan.class.getSimpleName());
         }
         groupPlan = groupPlan.createRollback();
         setPlan = setPlan.storeServerGroup(groupPlan);
@@ -58,7 +60,7 @@ class ServerGroupDeploymentPlanBuilderImpl extends InitialDeploymentSetBuilderIm
         DeploymentSetPlanImpl setPlan = getCurrentDeploymentSetPlan();
         ServerGroupDeploymentPlan groupPlan = setPlan.getLatestServerGroupDeploymentPlan();
         if (groupPlan == null) {
-            throw new IllegalStateException(String.format("No %s is configured", ServerGroupDeploymentPlan.class.getSimpleName()));
+            throw MESSAGES.notConfigured(ServerGroupDeploymentPlan.class.getSimpleName());
         }
         groupPlan = groupPlan.createRollingToServers();
         setPlan = setPlan.storeServerGroup(groupPlan);

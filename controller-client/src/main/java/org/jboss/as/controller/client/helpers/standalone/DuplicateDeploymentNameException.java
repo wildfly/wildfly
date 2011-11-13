@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.client.helpers.standalone;
 
+import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
+
 /**
  * Exception indicating an attempt to add deployment content to a domain or
  * server that has the same name as existing content.
@@ -37,7 +39,7 @@ public class DuplicateDeploymentNameException extends Exception {
      * @param message
      */
     public DuplicateDeploymentNameException(String name, boolean fullDomain) {
-        super("Deployment with name " + name + " already present in the " + (fullDomain ? "domain" : "server"));
+        super(fullDomain ? MESSAGES.domainDeploymentAlreadyExists(name) : MESSAGES.serverDeploymentAlreadyExists(name));
         this.name = name;
     }
 
