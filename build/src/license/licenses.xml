@@ -1489,7 +1489,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.as</groupId>
-      <artifactId>jboss-as-domain-http-api</artifactId>
+      <artifactId>jboss-as-domain-http-interface</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License, Version 2.1</name>

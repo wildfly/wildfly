@@ -269,7 +269,7 @@
         <module>deployment-scanner</module>
         <module>dist</module>
         <module>domain-controller</module>
-        <module>domain-http-api</module>
+        <module>domain-http</module>
         <module>domain-management</module>
         <module>ee</module>
         <module>ee-deployment</module>
@@ -807,7 +807,7 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-domain-http-api</artifactId>
+                <artifactId>jboss-as-domain-http-interface</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

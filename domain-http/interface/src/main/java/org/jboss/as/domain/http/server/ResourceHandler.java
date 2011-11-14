@@ -22,10 +22,21 @@
 package org.jboss.as.domain.http.server;
 
 
-import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.com.sun.net.httpserver.Headers;
-import org.jboss.com.sun.net.httpserver.HttpExchange;
-import org.jboss.com.sun.net.httpserver.HttpServer;
+import static org.jboss.as.domain.http.server.Constants.APPLICATION_JAVASCRIPT;
+import static org.jboss.as.domain.http.server.Constants.APPLICATION_OCTET_STREAM;
+import static org.jboss.as.domain.http.server.Constants.CONTENT_TYPE;
+import static org.jboss.as.domain.http.server.Constants.GET;
+import static org.jboss.as.domain.http.server.Constants.IMAGE_GIF;
+import static org.jboss.as.domain.http.server.Constants.IMAGE_JPEG;
+import static org.jboss.as.domain.http.server.Constants.IMAGE_PNG;
+import static org.jboss.as.domain.http.server.Constants.LOCATION;
+import static org.jboss.as.domain.http.server.Constants.METHOD_NOT_ALLOWED;
+import static org.jboss.as.domain.http.server.Constants.MOVED_PERMENANTLY;
+import static org.jboss.as.domain.http.server.Constants.NOT_FOUND;
+import static org.jboss.as.domain.http.server.Constants.OK;
+import static org.jboss.as.domain.http.server.Constants.TEXT_CSS;
+import static org.jboss.as.domain.http.server.Constants.TEXT_HTML;
+import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -47,16 +58,22 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.jboss.as.domain.http.server.Constants.*;
-import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
+import org.jboss.as.domain.management.SecurityRealm;
+import org.jboss.com.sun.net.httpserver.Headers;
+import org.jboss.com.sun.net.httpserver.HttpExchange;
+import org.jboss.com.sun.net.httpserver.HttpServer;
 
 /**
+ * A generic handler to server up resources requested using a GET request.
+ *
+ * The ClassLoader provided in the constructor should only have access to
+ * resources being server by this handler.
+ *
  * @author Heiko Braun
  * @date 3/14/11
  */
-public class ConsoleHandler implements ManagementHttpHandler {
+class ResourceHandler implements ManagementHttpHandler {
 
-    public  static final String CONTEXT = "/console";
     private static final String EXPIRES_HEADER = "Expires";
     private static final String LAST_MODIFIED_HEADER = "Last-Modified";
     private static final String NOCACHE_JS = ".nocache.js";
@@ -64,7 +81,9 @@ public class ConsoleHandler implements ManagementHttpHandler {
     private static final String CACHE_CONTROL_HEADER = "Cache-Control";
     private static final String CONTENT_LENGTH_HEADER = "Content-Length";
 
-    private ClassLoader loader = null;
+    private final String context;
+    private final String defaultResource;
+    private final ClassLoader loader;
 
     private static Map<String, String> contentTypeMapping = new ConcurrentHashMap<String, String>();
 
@@ -77,8 +96,6 @@ public class ConsoleHandler implements ManagementHttpHandler {
     private static Map<String, ResourceHandle> buffer = new ConcurrentHashMap<String, ResourceHandle>();
 
     static {
-
-
         LAST_MODIFIED = createDateFormat().format(new Date());
 
         contentTypeMapping.put(".js",   APPLICATION_JAVASCRIPT);
@@ -90,10 +107,9 @@ public class ConsoleHandler implements ManagementHttpHandler {
         contentTypeMapping.put(".jpeg", IMAGE_JPEG);
     }
 
-    public ConsoleHandler() {
-    }
-
-    public ConsoleHandler(ClassLoader loader) {
+    public ResourceHandler(final String context, final String defaultResource, final ClassLoader loader) {
+        this.context = context;
+        this.defaultResource = defaultResource;
         this.loader = loader;
     }
 
@@ -109,14 +125,16 @@ public class ConsoleHandler implements ManagementHttpHandler {
 
         // normalize to request resource
         String path = uri.getPath();
-        String resource = path.substring(CONTEXT.length(), path.length());
+        String resource = path.substring(context.length(), path.length());
         if(resource.startsWith("/")) resource = resource.substring(1);
 
         if (resource.equals("")) {
-            // "/console" request redirect to "/console/index.html"
-
+            /*
+             * This is a request to the root of the context, redirect to the
+             * default resource.
+             */
             Headers responseHeaders = http.getResponseHeaders();
-            responseHeaders.add(LOCATION, "/console/index.html");
+            responseHeaders.add(LOCATION, context + defaultResource);
             http.sendResponseHeaders(MOVED_PERMENANTLY, 0);
             http.close();
 
@@ -271,18 +289,15 @@ public class ConsoleHandler implements ManagementHttpHandler {
     }
 
     private ClassLoader getLoader() {
-        if(loader!=null)
             return loader;
-        else
-            return ConsoleHandler.class.getClassLoader();
     }
 
     public void start(HttpServer httpServer, SecurityRealm securityRealm) {
-        httpServer.createContext(CONTEXT, this);
+        httpServer.createContext(context, this);
     }
 
     public void stop(HttpServer httpServer) {
-        httpServer.removeContext(CONTEXT);
+        httpServer.removeContext(context);
     }
 
     class ResourceHandle {
