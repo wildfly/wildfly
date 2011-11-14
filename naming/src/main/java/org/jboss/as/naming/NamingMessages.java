@@ -54,7 +54,7 @@ public interface NamingMessages {
      *
      * @return A {@link SecurityException} for the error.
      */
-    @Message(value = "Attempt to add a Permission to a readonly PermissionCollection")
+    @Message(id = 11830, value = "Attempt to add a Permission to a readonly PermissionCollection")
     SecurityException cannotAddToReadOnlyPermissionCollection();
 
     /**
@@ -64,7 +64,7 @@ public interface NamingMessages {
      *
      * @return the message.
      */
-    @Message(value = "%s cannot be null.")
+    @Message(id = 11831, value = "%s cannot be null.")
     String cannotBeNull(String name);
 
     /**
@@ -74,7 +74,7 @@ public interface NamingMessages {
      *
      * @return a {@link NamingException} for the error.
      */
-    @Message(value = "Could not dereference object")
+    @Message(id = 11832, value = "Could not dereference object")
     NamingException cannotDeferenceObject(@Cause Throwable cause);
 
     /**
@@ -82,7 +82,7 @@ public interface NamingMessages {
      *
      * @return a {@link NamingException} for the error.
      */
-    @Message(value = "Unable to list a non Context binding.")
+    @Message(id = 11833, value = "Unable to list a non Context binding.")
     NamingException cannotListNonContextBinding();
 
     /**
@@ -90,7 +90,7 @@ public interface NamingMessages {
      *
      * @return the message.
      */
-    @Message(value = "Could not lookup link")
+    @Message(id = 11834, value = "Could not lookup link")
     String cannotLookupLink();
 
     /**
@@ -101,7 +101,7 @@ public interface NamingMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(value = "Cannot obtain %s")
+    @Message(id = 11835, value = "Cannot obtain %s")
     IllegalStateException cannotObtain(@Cause Throwable cause, String name);
 
     /**
@@ -111,7 +111,7 @@ public interface NamingMessages {
      *
      * @return a {@link NamingException} for the error.
      */
-    @Message(value = "Could not resolve service %s")
+    @Message(id = 11836, value = "Could not resolve service %s")
     NamingException cannotResolveService(ServiceName serviceName);
 
     /**
@@ -123,7 +123,7 @@ public interface NamingMessages {
      *
      * @return a {@link NamingException} for the error.
      */
-    @Message(value = "Could not resolve service reference to %s in factory %s. Service was in state %s.")
+    @Message(id = 11837, value = "Could not resolve service reference to %s in factory %s. Service was in state %s.")
     NamingException cannotResolveService(ServiceName serviceName, String className, String state);
 
     /**
@@ -135,7 +135,7 @@ public interface NamingMessages {
      *
      * @return a {@link NamingException} for the error.
      */
-    @Message(value = "Could not resolve service reference to %s in factory %s. This is a bug in ServiceReferenceObjectFactory. State was %s.")
+    @Message(id = 11838, value = "Could not resolve service reference to %s in factory %s. This is a bug in ServiceReferenceObjectFactory. State was %s.")
     NamingException cannotResolveServiceBug(ServiceName serviceName, String className, String state);
 
     /**
@@ -147,7 +147,7 @@ public interface NamingMessages {
      *
      * @return the message.
      */
-    @Message(value = "Duplicate JNDI bindings for '%s' are not compatible.  [%s] != [%s]")
+    @Message(id = 11839, value = "Duplicate JNDI bindings for '%s' are not compatible.  [%s] != [%s]")
     String duplicateBinding(JndiName jndiName, Object existing, Object value);
 
     /**
@@ -155,7 +155,7 @@ public interface NamingMessages {
      *
      * @return an {@link InvalidNameException} for the error.
      */
-    @Message(value = "An empty name is not allowed")
+    @Message(id = 11840, value = "An empty name is not allowed")
     InvalidNameException emptyNameNotAllowed();
 
     /**
@@ -167,7 +167,7 @@ public interface NamingMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(value = "Jndi entry '%s' is not yet registered in context '%s'")
+    @Message(id = 11841, value = "Jndi entry '%s' is not yet registered in context '%s'")
     IllegalStateException entryNotRegistered(@Cause Throwable cause, String contextName, Context context);
 
     /**
@@ -177,7 +177,7 @@ public interface NamingMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(value = "Failed to destroy root context")
+    @Message(id = 11842, value = "Failed to destroy root context")
     IllegalStateException failedToDestroyRootContext(@Cause Throwable cause);
 
     /**
@@ -189,7 +189,7 @@ public interface NamingMessages {
      *
      * @return a {@link NamingException} for the error.
      */
-    @Message(value = "Failed instantiate %s %s from classloader %s")
+    @Message(id = 11843, value = "Failed instantiate %s %s from classloader %s")
     NamingException failedToInstantiate(String description, String className, ClassLoader classLoader);
 
     /**
@@ -200,7 +200,7 @@ public interface NamingMessages {
      *
      * @return the message.
      */
-    @Message(value = "Failed to read %s context entries.")
+    @Message(id = 11844, value = "Failed to read %s context entries.")
     String failedToReadContextEntries(String bindingName);
 
     /**
@@ -210,7 +210,7 @@ public interface NamingMessages {
      *
      * @return the message.
      */
-    @Message(value = "Failed to start %s")
+    @Message(id = 11845, value = "Failed to start %s")
     String failedToStart(String name);
 
     /**
@@ -220,7 +220,7 @@ public interface NamingMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(value = "Illegal context in name: %s")
+    @Message(id = 11846, value = "Illegal context in name: %s")
     RuntimeException illegalContextInName(String jndiName);
 
     /**
@@ -228,7 +228,7 @@ public interface NamingMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(value = "invalid actions mask")
+    @Message(id = 11847, value = "invalid actions mask")
     IllegalArgumentException invalidActionMask();
 
     /**
@@ -238,7 +238,7 @@ public interface NamingMessages {
      *
      * @return a {@link NamingException} for the error.
      */
-    @Message(value = "Invalid context reference.  Not a '%s' reference.")
+    @Message(id = 11848, value = "Invalid context reference.  Not a '%s' reference.")
     NamingException invalidContextReference(String referenceName);
 
     /**
@@ -248,7 +248,7 @@ public interface NamingMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(value = "A valid JNDI name must be provided: %s")
+    @Message(id = 11849, value = "A valid JNDI name must be provided: %s")
     IllegalArgumentException invalidJndiName(String jndiName);
 
     /**
@@ -256,7 +256,7 @@ public interface NamingMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(value = "Load factor must be greater than 0 and less than or equal to 1")
+    @Message(id = 11850, value = "Load factor must be greater than 0 and less than or equal to 1")
     IllegalArgumentException invalidLoadFactor();
 
     /**
@@ -266,7 +266,7 @@ public interface NamingMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(value = "invalid permission, unknown action: %s")
+    @Message(id = 11851, value = "invalid permission, unknown action: %s")
     IllegalArgumentException invalidPermission(Permission permission);
 
     /**
@@ -276,7 +276,7 @@ public interface NamingMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(value = "invalid permission, unknown action: %s")
+    @Message(id = 11852, value = "invalid permission, unknown action: %s")
     IllegalArgumentException invalidPermissionAction(String permissionAction);
 
     /**
@@ -284,7 +284,7 @@ public interface NamingMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(value = "Can not have a negative size table!")
+    @Message(id = 11853, value = "Can not have a negative size table!")
     IllegalArgumentException invalidTableSize();
 
     /**
@@ -292,7 +292,7 @@ public interface NamingMessages {
      *
      * @return the message.
      */
-    @Message(value = "Jndi view is only available in runtime mode.")
+    @Message(id = 11854, value = "Jndi view is only available in runtime mode.")
     String jndiViewNotAvailable();
 
     /**
@@ -303,7 +303,7 @@ public interface NamingMessages {
      *
      * @return a {@link NameNotFoundException} for the error.
      */
-    @Message(value = "Name '%s' not found in context '%s'")
+    @Message(id = 11855, value = "Name '%s' not found in context '%s'")
     NameNotFoundException nameNotFoundInContext(String name, Name contextName);
 
     /**
@@ -311,7 +311,7 @@ public interface NamingMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(value = "Nothing available to bind to.")
+    @Message(id = 11856, value = "Nothing available to bind to.")
     IllegalStateException noBindingsAvailable();
 
     /**
@@ -321,7 +321,7 @@ public interface NamingMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(value = "%s is null")
+    @Message(id = 11857, value = "%s is null")
     IllegalArgumentException nullVar(String varName);
 
     /**
@@ -331,7 +331,7 @@ public interface NamingMessages {
      *
      * @return a {@link NamingException} for the error.
      */
-    @Message(value = "Failed to create object factory from classloader.")
+    @Message(id = 11858, value = "Failed to create object factory from classloader.")
     NamingException objectFactoryCreationFailure(@Cause Throwable cause);
 
     /**
@@ -339,7 +339,7 @@ public interface NamingMessages {
      *
      * @return an {@link UnsupportedOperationException} for the error.
      */
-    @Message(value = "Naming context is read-only")
+    @Message(id = 11859, value = "Naming context is read-only")
     UnsupportedOperationException readOnlyNamingContext();
 
     /**
@@ -349,7 +349,7 @@ public interface NamingMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(value = "Service with name [%s] already bound.")
+    @Message(id = 11860, value = "Service with name [%s] already bound.")
     IllegalArgumentException serviceAlreadyBound(ServiceName serviceName);
 
     /**
@@ -357,7 +357,7 @@ public interface NamingMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(value = "Table is full!")
+    @Message(id = 11861, value = "Table is full!")
     IllegalStateException tableIsFull();
 
     /**
@@ -367,6 +367,6 @@ public interface NamingMessages {
      *
      * @return a {@link NamingException} for the error.
      */
-    @Message(value = "Thread interrupted while retrieving service reference for service %s")
+    @Message(id = 11862, value = "Thread interrupted while retrieving service reference for service %s")
     NamingException threadInterrupt(ServiceName serviceName);
 }

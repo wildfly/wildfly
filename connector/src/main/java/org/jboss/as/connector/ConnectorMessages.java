@@ -54,7 +54,7 @@ public interface ConnectorMessages {
      *
      * @return a {@link DeployException} for the error.
      */
-    @Message(value = "unable to deploy")
+    @Message(id = 10430, value = "unable to deploy")
     DeployException cannotDeploy(@Cause Throwable cause);
 
     /**
@@ -64,7 +64,7 @@ public interface ConnectorMessages {
      *
      * @return a {@link DeployException} for the error.
      */
-    @Message(value = "unable to validate and deploy ds or xads")
+    @Message(id = 10431, value = "unable to validate and deploy ds or xads")
     DeployException cannotDeployAndValidate(@Cause Throwable cause);
 
     /**
@@ -73,7 +73,7 @@ public interface ConnectorMessages {
      *
      * @return a {@link StartException} for the error.
      */
-    @Message(value = "Unable to start the ds because it generated more than one cf")
+    @Message(id = 10432, value = "Unable to start the ds because it generated more than one cf")
     StartException cannotStartDs();
 
     /**
@@ -84,7 +84,7 @@ public interface ConnectorMessages {
      *
      * @return a {@link StartException} for the error.
      */
-    @Message(value = "Error during the deployment of %s")
+    @Message(id = 10433, value = "Error during the deployment of %s")
     StartException deploymentError(@Cause Throwable cause, String name);
 
     /**
@@ -105,7 +105,7 @@ public interface ConnectorMessages {
      *
      * @return the message.
      */
-    @Message(value = "Unable to instantiate driver class \"%s\". See log (WARN) for more details")
+    @Message(id = 10434, value = "Unable to instantiate driver class \"%s\". See log (WARN) for more details")
     String cannotInstantiateDriverClass(String driverClassName);
 
     /**
@@ -113,7 +113,7 @@ public interface ConnectorMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(value = "Specified driver version doesn't match with actual driver version")
+    @Message(id = 10435, value = "Specified driver version doesn't match with actual driver version")
     IllegalStateException driverVersionMismatch();
 
     /**
@@ -126,7 +126,7 @@ public interface ConnectorMessages {
      *
      * @return the message.
      */
-    @Message(value = "Failed to create %s instance for [%s]%n reason: %s")
+    @Message(id = 10436, value = "Failed to create %s instance for [%s]%n reason: %s")
     String failedToCreate(String type, ModelNode operation, String reasonMessage);
 
     /**
@@ -136,7 +136,7 @@ public interface ConnectorMessages {
      *
      * @return the message.
      */
-    @Message(value = "failed to get metrics: %s")
+    @Message(id = 10437, value = "failed to get metrics: %s")
     String failedToGetMetrics(String message);
 
     /**
@@ -147,7 +147,7 @@ public interface ConnectorMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(value = "Failed to get module attachment for %s")
+    @Message(id = 10438, value = "Failed to get module attachment for %s")
     DeploymentUnitProcessingException failedToGetModuleAttachment(DeploymentUnit deploymentUnit);
 
     /**
@@ -157,7 +157,7 @@ public interface ConnectorMessages {
      *
      * @return a {@link DeployException} for the error.
      */
-    @Message(value = "failed to get url delimiter")
+    @Message(id = 10439, value = "failed to get url delimiter")
     DeployException failedToGetUrlDelimiter(@Cause Throwable cause);
 
     /**
@@ -167,7 +167,7 @@ public interface ConnectorMessages {
      *
      * @return th message.
      */
-    @Message(value = "failed to invoke operation: %s")
+    @Message(id = 10440, value = "failed to invoke operation: %s")
     String failedToInvokeOperation(String message);
 
     /**
@@ -177,7 +177,7 @@ public interface ConnectorMessages {
      *
      * @return the message.
      */
-    @Message(value = "Failed to load module for driver [%s]")
+    @Message(id = 10441, value = "Failed to load module for driver [%s]")
     String failedToLoadModuleDriver(String moduleName);
 
     /**
@@ -187,7 +187,7 @@ public interface ConnectorMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(value = "failed to match pool. Check JndiName: %s")
+    @Message(id = 10442, value = "failed to match pool. Check JndiName: %s")
     IllegalArgumentException failedToMatchPool(String jndiName);
 
     /**
@@ -197,7 +197,7 @@ public interface ConnectorMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(value = "Failed to parse service xml [%s]")
+    @Message(id = 10443, value = "Failed to parse service xml [%s]")
     DeploymentUnitProcessingException failedToParseServiceXml(VirtualFile xmlFile);
 
     /**
@@ -219,7 +219,7 @@ public interface ConnectorMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(value = "Failed to process RA child archives for [%s]")
+    @Message(id = 10444, value = "Failed to process RA child archives for [%s]")
     DeploymentUnitProcessingException failedToProcessRaChild(@Cause Throwable cause, VirtualFile deploymentRoot);
 
     /**
@@ -229,7 +229,7 @@ public interface ConnectorMessages {
      *
      * @return the message.
      */
-    @Message(value = "failed to set attribute: %s")
+    @Message(id = 10445, value = "failed to set attribute: %s")
     String failedToSetAttribute(String message);
 
     /**
@@ -241,7 +241,7 @@ public interface ConnectorMessages {
      *
      * @return a {@link StartException} for the error.
      */
-    @Message(value = "Failed to start RA deployment [%s]")
+    @Message(id = 10446, value = "Failed to start RA deployment [%s]")
     StartException failedToStartRaDeployment(@Cause Throwable cause, String deploymentName);
 
     /**
@@ -249,7 +249,7 @@ public interface ConnectorMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(value = "Connection is not valid")
+    @Message(id = 10447, value = "Connection is not valid")
     IllegalStateException invalidConnection();
 
     /**
@@ -259,7 +259,7 @@ public interface ConnectorMessages {
      *
      * @return the message.
      */
-    @Message(value = "Invalid parameter name: %s")
+    @Message(id = 10448, value = "Invalid parameter name: %s")
     String invalidParameterName(String parameterName);
 
     /**
@@ -267,7 +267,7 @@ public interface ConnectorMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(value = "Non-explicit JNDI bindings not supported")
+    @Message(id = 10449, value = "Non-explicit JNDI bindings not supported")
     IllegalStateException jndiBindingsNotSupported();
 
     /**
@@ -275,7 +275,7 @@ public interface ConnectorMessages {
      *
      * @return the message.
      */
-    @Message(value = "no metrics available")
+    @Message(id = 10450, value = "no metrics available")
     String noMetricsAvailable();
 
     /**
@@ -285,7 +285,7 @@ public interface ConnectorMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(value = "%s should be an annotation")
+    @Message(id = 10451, value = "%s should be an annotation")
     IllegalArgumentException notAnAnnotation(Class<?> clazz);
 
     /**
@@ -295,7 +295,7 @@ public interface ConnectorMessages {
      *
      * @return the message
      */
-    @Message(value = "%s is null")
+    @Message(id = 10452, value = "%s is null")
     String nullVar(String name);
 
     /**
@@ -307,7 +307,7 @@ public interface ConnectorMessages {
      *
      * @return the message.
      */
-    @Message(value = "%s service [%s] is already started")
+    @Message(id = 10453, value = "%s service [%s] is already started")
     String serviceAlreadyStarted(String serviceType, Object obj);
 
     /**
@@ -319,7 +319,7 @@ public interface ConnectorMessages {
      *
      * @return the message.
      */
-    @Message(value = "%s service [%s] is not available")
+    @Message(id = 10454, value = "%s service [%s] is not available")
     String serviceNotAvailable(String serviceType, Object obj);
 
     /**
@@ -331,7 +331,7 @@ public interface ConnectorMessages {
      *
      * @return the message.
      */
-    @Message(value = "%s service [%s] is not enabled")
+    @Message(id = 10455, value = "%s service [%s] is not enabled")
     String serviceNotEnabled(String serviceType, Object obj);
 
     /**
@@ -339,7 +339,7 @@ public interface ConnectorMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(value = "Service not started")
+    @Message(id = 10456, value = "Service not started")
     IllegalStateException serviceNotStarted();
 
     /**
@@ -350,7 +350,7 @@ public interface ConnectorMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(value = "Unknown property type: %s for property %s")
+    @Message(id = 10457, value = "Unknown property type: %s for property %s")
     IllegalArgumentException unknownPropertyType(String propertyType, String propertyName);
 
     /**
@@ -360,7 +360,7 @@ public interface ConnectorMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(value = "%s is undefined")
+    @Message(id = 10458, value = "%s is undefined")
     IllegalArgumentException undefinedVar(String name);
 
     /**
@@ -370,7 +370,7 @@ public interface ConnectorMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(value = "Service '%s' already registered")
+    @Message(id = 10459, value = "Service '%s' already registered")
     IllegalStateException serviceAlreadyRegistered(String name);
 
     /**
@@ -380,7 +380,7 @@ public interface ConnectorMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(value = "Service '%s' isn't registered")
+    @Message(id = 10460, value = "Service '%s' isn't registered")
     IllegalStateException serviceIsntRegistered(String name);
 
     /**
@@ -388,6 +388,6 @@ public interface ConnectorMessages {
      * @param e the exception.
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(value = "Failed to load native libraries")
+    @Message(id = 10461, value = "Failed to load native libraries")
     DeploymentUnitProcessingException failedToLoadNativeLibraries(@Cause Throwable cause);
 }

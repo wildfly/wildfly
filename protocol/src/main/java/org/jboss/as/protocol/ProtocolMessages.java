@@ -51,7 +51,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(value = "Already connected")
+    @Message(id = 12140, value = "Already connected")
     IllegalStateException alreadyConnected();
 
     /**
@@ -59,7 +59,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(value = "Channel and receiver already started")
+    @Message(id = 12141, value = "Channel and receiver already started")
     IllegalStateException alreadyStarted();
 
     /**
@@ -68,7 +68,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(value = "Can't use both a connect timeout and a connect timeout property")
+    @Message(id = 12142, value = "Can't use both a connect timeout and a connect timeout property")
     IllegalArgumentException cannotSpecifyMultipleTimeouts();
 
     /**
@@ -76,7 +76,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(value = "Can't set uriScheme with specified endpoint")
+    @Message(id = 12143, value = "Can't set uriScheme with specified endpoint")
     IllegalArgumentException cannotSetUriScheme();
 
     /**
@@ -87,10 +87,10 @@ public interface ProtocolMessages {
      *
      * @return a {@link ConnectException} for the error.
      */
-    @Message(value = "Could not connect to %s. Make sure the server is running.")
+    @Message(id = 12144, value = "Could not connect to %s. Make sure the server is running.")
     ConnectException couldNotConnect(URI uri, @Cause Exception e);
 
-    @Message(value = "Connection was cancelled")
+    @Message(id = 12145, value = "Connection was cancelled")
     ConnectException connectWasCancelled();
 
     /**
@@ -98,7 +98,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link IOException} for the error.
      */
-    @Message(value = "Failed to create server thread")
+    @Message(id = 12146, value = "Failed to create server thread")
     IOException failedToCreateServerThread();
 
     /**
@@ -108,7 +108,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link IOException} for the error.
      */
-    @Message(value = "Failed to read object")
+    @Message(id = 12147, value = "Failed to read object")
     IOException failedToReadObject(@Cause Throwable cause);
 
     /**
@@ -118,7 +118,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link IOException} for the error.
      */
-    @Message(value = "Failed to write management response headers")
+    @Message(id = 12148, value = "Failed to write management response headers")
     IOException failedToWriteManagementResponseHeaders(@Cause Throwable cause);
 
     /**
@@ -126,7 +126,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link UTFDataFormatException} for the error.
      */
-    @Message(value = "Invalid byte")
+    @Message(id = 12149, value = "Invalid byte")
     UTFDataFormatException invalidByte();
 
     /**
@@ -137,7 +137,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link UTFDataFormatException} for the error.
      */
-    @Message(value = "Invalid byte:%s(%d)")
+    @Message(id = 12150, value = "Invalid byte:%s(%d)")
     UTFDataFormatException invalidByte(char c, int i);
 
     /**
@@ -148,7 +148,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link IOException} for the error.
      */
-    @Message(value = "Invalid byte token.  Expecting '%s' received '%s'")
+    @Message(id = 12151, value = "Invalid byte token.  Expecting '%s' received '%s'")
     IOException invalidByteToken(int expected, byte actual);
 
     /**
@@ -158,7 +158,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link IOException} for the error.
      */
-    @Message(value = "Invalid command byte read: %s")
+    @Message(id = 12152, value = "Invalid command byte read: %s")
     IOException invalidCommandByte(int commandByte);
 
     /**
@@ -168,7 +168,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link IOException} for the error.
      */
-    @Message(value = "Invalid signature [%s]")
+    @Message(id = 12153, value = "Invalid signature [%s]")
     IOException invalidSignature(String signature);
 
     /**
@@ -178,7 +178,7 @@ public interface ProtocolMessages {
      *
      * @return an {@code IOException} for the error.
      */
-    @Message(value = "Invalid start chunk start [%s]")
+    @Message(id = 12154, value = "Invalid start chunk start [%s]")
     IOException invalidStartChunk(int chunk);
 
     /**
@@ -188,7 +188,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link IOException} for the error.
      */
-    @Message(value = "Invalid type: %s")
+    @Message(id = 12155, value = "Invalid type: %s")
     IOException invalidType(String type);
 
     /**
@@ -200,7 +200,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(value = "Type is neither %s or %s: %s")
+    @Message(id = 12156, value = "Type is neither %s or %s: %s")
     IllegalArgumentException invalidType(String validType1, String validType2, byte providedType);
 
     /**
@@ -210,7 +210,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(value = "Only '%s' is a valid url")
+    @Message(id = 12157, value = "Only '%s' is a valid url")
     IllegalArgumentException invalidUrl(String url);
 
     /**
@@ -218,7 +218,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link IOException} for the error.
      */
-    @Message(value = "No operation handler set")
+    @Message(id = 12158, value = "No operation handler set")
     IOException operationHandlerNotSet();
 
     /**
@@ -226,7 +226,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(value = "Not connected")
+    @Message(id = 12159, value = "Not connected")
     IllegalStateException notConnected();
 
     /**
@@ -236,7 +236,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(value = "%s is null")
+    @Message(id = 12160, value = "%s is null")
     IllegalArgumentException nullVar(String varName);
 
     /**
@@ -247,7 +247,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(value = "%s and %s are null")
+    @Message(id = 12161, value = "%s and %s are null")
     IllegalArgumentException nullParameters(String parameterName1, String parameterName2);
 
     /**
@@ -257,7 +257,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link EOFException} for the error.
      */
-    @Message(value = "Read %d bytes.")
+    @Message(id = 12162, value = "Read %d bytes.")
     EOFException readBytes(int bytesRead);
 
     /**
@@ -268,7 +268,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link IOException} for the error.
      */
-    @Message(value = "No request handler found with id %s in operation handler %s")
+    @Message(id = 12163, value = "No request handler found with id %s in operation handler %s")
     IOException requestHandlerIdNotFound(byte id, ManagementOperationHandler operationHandler);
 
     /**
@@ -276,7 +276,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link IOException} for the error.
      */
-    @Message(value = "Response handler already registered for request")
+    @Message(id = 12164, value = "Response handler already registered for request")
     IOException responseHandlerAlreadyRegistered();
 
     /**
@@ -296,7 +296,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link IOException} for the error
      */
-    @Message(value = "A problem happened executing on the server: %s")
+    @Message(id = 12165, value = "A problem happened executing on the server: %s")
     IOException serverError(String errorMessage);
 
     /**
@@ -304,7 +304,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link IOException} for the error.
      */
-    @Message(value = "Stream closed")
+    @Message(id = 12166, value = "Stream closed")
     IOException streamClosed();
 
     /**
@@ -312,7 +312,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(value = "Thread creation was refused")
+    @Message(id = 12167, value = "Thread creation was refused")
     IllegalStateException threadCreationRefused();
 
     /**
@@ -320,7 +320,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link EOFException} for the error.
      */
-    @Message(value = "Unexpected end of stream")
+    @Message(id = 12168, value = "Unexpected end of stream")
     EOFException unexpectedEndOfStream();
 
     /**
@@ -331,7 +331,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(value = "Scheme %s does not match uri %s")
+    @Message(id = 12169, value = "Scheme %s does not match uri %s")
     IllegalArgumentException unmatchedScheme(String scheme, URI uri);
 
     /**
@@ -339,7 +339,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link IOException} for the error.
      */
-    @Message(value = "Write channel closed")
+    @Message(id = 12170, value = "Write channel closed")
     IOException writeChannelClosed();
 
     /**
@@ -347,6 +347,6 @@ public interface ProtocolMessages {
      *
      * @return an {@link IOException} for the error.
      */
-    @Message(value = "Writes are already shut down")
+    @Message(id = 12171, value = "Writes are already shut down")
     IOException writesAlreadyShutdown();
 }
