@@ -33,7 +33,7 @@ public class JAXRConfiguration {
 
     static final ServiceName SERVICE_BASE_NAME = ServiceName.JBOSS.append("jaxr", "as");
 
-    public static final String DEFAULT_CONNECTIONFACTORY_BINDING = "java:/jaxr/ConnectionFactory";
+    public static final String DEFAULT_CONNECTIONFACTORY_BINDING = "java:jboss/jaxr/ConnectionFactory";
     public static final String DEFAULT_DATASOURCE_BINDING = "java:jboss/datasources/ExampleDS";
     public static final boolean DEFAULT_DROPONSTART = false;
     public static final boolean DEFAULT_CREATEONSTART = false;
