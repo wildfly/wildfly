@@ -122,7 +122,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
         if (resourceRefs == null) {
             return bindings;
         }
-        for (ResourceReferenceMetaData resourceRef : resourceRefs) {
+        for (final ResourceReferenceMetaData resourceRef : resourceRefs) {
             final String name;
             if (resourceRef.getName().startsWith("java:")) {
                 name = resourceRef.getName();
@@ -146,20 +146,19 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
             if (!isEmpty(resourceRef.getLookupName())) {
                 bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(resourceRef.getLookupName()));
             } else if (!isEmpty(resourceRef.getResUrl())) {
-                if (classType.equals(URL.class)) {
-                    try {
-                        bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(new URL(resourceRef.getResUrl())));
-                    } catch (MalformedURLException e) {
-                        throw new DeploymentUnitProcessingException("Unable to parse resource-ref URL: " + resourceRef.getResUrl(), e);
-                    }
-                } else if (classType.equals(URI.class)) {
+                //
+                if (classType != null && classType.equals(URI.class)) {
                     try {
                         bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(new URI(resourceRef.getResUrl())));
                     } catch (URISyntaxException e) {
                         throw new DeploymentUnitProcessingException("Unable to parse resource-ref URI: " + resourceRef.getResUrl(), e);
                     }
                 } else {
-                    bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(resourceRef.getResUrl()));
+                    try {
+                        bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(new URL(resourceRef.getResUrl())));
+                    } catch (MalformedURLException e) {
+                        throw new DeploymentUnitProcessingException("Unable to parse resource-ref URL: " + resourceRef.getResUrl(), e);
+                    }
                 }
             } else {
                 if (classType == null) {
