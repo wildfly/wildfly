@@ -41,6 +41,8 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.spec.EnvironmentEntriesMetaData;
 import org.jboss.metadata.javaee.spec.EnvironmentEntryMetaData;
+import org.jboss.metadata.javaee.spec.MessageDestinationReferenceMetaData;
+import org.jboss.metadata.javaee.spec.MessageDestinationReferencesMetaData;
 import org.jboss.metadata.javaee.spec.ResourceEnvironmentReferenceMetaData;
 import org.jboss.metadata.javaee.spec.ResourceEnvironmentReferencesMetaData;
 import org.jboss.metadata.javaee.spec.ResourceReferenceMetaData;
@@ -62,6 +64,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
         bindings.addAll(getEnvironmentEntries(environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription, applicationClasses));
         bindings.addAll(getResourceEnvRefEntries(environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription, applicationClasses));
         bindings.addAll(getResourceRefEntries(environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription, applicationClasses));
+        bindings.addAll(getMessageDestinationRefs(environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription, applicationClasses));
         return bindings;
     }
 
@@ -259,6 +262,48 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                 throw new DeploymentUnitProcessingException("Unkown env-entry type " + type);
             }
             bindings.add(bindingConfiguration);
+        }
+        return bindings;
+    }
+
+    /**
+     * TODO: should this be part of the messaging subsystem
+     */
+    private List<BindingConfiguration> getMessageDestinationRefs(final DeploymentDescriptorEnvironment environment, final ClassLoader classLoader, final DeploymentReflectionIndex deploymentReflectionIndex, final EEModuleDescription moduleDescription, final ComponentDescription componentDescription, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
+        final List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
+        final MessageDestinationReferencesMetaData messageDestinationReferences = environment.getEnvironment().getMessageDestinationReferences();
+        if (messageDestinationReferences == null) {
+            return bindings;
+        }
+        for (final MessageDestinationReferenceMetaData messageRef : messageDestinationReferences) {
+            final String name;
+            if (messageRef.getName().startsWith("java:")) {
+                name = messageRef.getName();
+            } else {
+                name = environment.getDefaultContext() + messageRef.getName();
+            }
+            Class<?> classType = null;
+            if (messageRef.getType() != null) {
+                try {
+                    classType = classLoader.loadClass(messageRef.getType());
+                } catch (ClassNotFoundException e) {
+                    throw new DeploymentUnitProcessingException("Could not load " + messageRef.getType() + " referenced in env-entry ", e);
+                }
+            }
+            // our injection (source) comes from the local (ENC) lookup, no matter what.
+            LookupInjectionSource injectionSource = new LookupInjectionSource(name);
+
+            classType = processInjectionTargets(moduleDescription, componentDescription, applicationClasses, injectionSource, classLoader, deploymentReflectionIndex, messageRef, classType);
+            final BindingConfiguration bindingConfiguration;
+            if (!isEmpty(messageRef.getLookupName())) {
+                bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(messageRef.getLookupName()));
+                bindings.add(bindingConfiguration);
+            } else if (!isEmpty(messageRef.getMappedName())) {
+                bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(messageRef.getMappedName()));
+                bindings.add(bindingConfiguration);
+            } else {
+                logger.warn("Could not resolve message-destination-ref " + name);
+            }
         }
         return bindings;
     }
