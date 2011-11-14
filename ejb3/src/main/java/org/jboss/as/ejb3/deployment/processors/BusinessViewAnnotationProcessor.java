@@ -174,14 +174,14 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
             }
             return Collections.emptySet();
         }
-        Class<?>[] remoteViews = localViewAnnotation.value();
-        if (remoteViews == null || remoteViews.length == 0) {
+        Class<?>[] localViews = localViewAnnotation.value();
+        if (localViews == null || localViews.length == 0) {
             Set<Class<?>> interfaces = getPotentialBusinessInterfaces(sessionBeanClass);
             if (interfaces.size() != 1)
-                throw new DeploymentUnitProcessingException("Bean " + sessionBeanClass + " specifies @Remote annotation, but does not implement 1 interface");
+                throw new DeploymentUnitProcessingException("Bean " + sessionBeanClass + " specifies @Local annotation, but does not implement 1 interface");
             return interfaces;
         }
-        return Arrays.asList(remoteViews);
+        return Arrays.asList(localViews);
     }
 
     private static Collection<Class<?>> getBusinessInterfacesFromInterfaceAnnotations(Class<?> sessionBeanClass, Class<? extends Annotation> annotation) {
