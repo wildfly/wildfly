@@ -121,4 +121,9 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
     public SessionID getId() {
         return id;
     }
+
+    @Override
+    public String toString() {
+        return " Instance of " + getComponent().getComponentName() + " {" + id + "}";
+    }
 }
