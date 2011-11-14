@@ -164,6 +164,9 @@ public class ManagementChannel extends ProtocolChannel {
             if (error != null) {
                 ROOT_LOGGER.tracef(error, "Error processing request %s", this);
             }
+            if(requestHandler != null && ! requestHandler.isWriteResponse()) {
+                return;
+            }
             requestReceiver.writeResponse(requestHeader, requestHandler, error);
         } else if (wasPing) {
             ROOT_LOGGER.tracef("Sending pong on %s", this);

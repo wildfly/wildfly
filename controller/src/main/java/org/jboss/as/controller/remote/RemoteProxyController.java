@@ -22,6 +22,8 @@
 package org.jboss.as.controller.remote;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.OperationFailedException;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.io.BufferedInputStream;
@@ -36,6 +38,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.ModelController.OperationTransaction;
 import org.jboss.as.controller.PathAddress;
@@ -81,12 +84,13 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
 
         channel.addCloseHandler(new CloseHandler<Channel>() {
             public void handleClose(final Channel closed, final IOException exception) {
-                RemoteProxyController.this.closed.set(true);
-                synchronized (activeRequests) {
-                    for (ExecuteRequestContext context : activeRequests.values()) {
-                        context.setError(MESSAGES.channelClosed());
+                if(RemoteProxyController.this.closed.compareAndSet(false, true)) {
+                    synchronized (activeRequests) {
+                        for (ExecuteRequestContext context : activeRequests.values()) {
+                            context.setError(MESSAGES.channelClosed());
+                        }
+                        activeRequests.clear();
                     }
-                    activeRequests.clear();
                 }
             }
         });
@@ -137,25 +141,11 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
             batchId,
             getOperationForProxy(operation),
             handler,
-            new ProxyOperationControl() {
-                @Override
-                public void operationPrepared(OperationTransaction transaction, ModelNode result) {
-                    control.operationPrepared(transaction, result);
-                }
-
-                @Override
-                public void operationFailed(ModelNode response) {
-                    control.operationFailed(response);
-                }
-
-                @Override
-                public void operationCompleted(ModelNode response) {
-                    control.operationCompleted(response);
-                }
-            },
+            control,
             attachments);
         try {
             request.executeForResult(executorService, getChannelStrategy());
+            request.executeRequestContext.awaitPreparedOrFailed();
         } catch (Exception e) {
             try {
                 ManagementBatchIdManager.DEFAULT.freeBatchId(batchId);
@@ -187,11 +177,35 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
     private class ExecuteRequest extends ManagementRequest<Void> {
 
         private final ExecuteRequestContext executeRequestContext;
+        private final ProxyOperationControl control;
+        private final AtomicBoolean failed = new AtomicBoolean(false);
         private final ModelNode operation;
 
-        ExecuteRequest(final int batchId, final ModelNode operation, final OperationMessageHandler messageHandler, final ProxyOperationControl control, final OperationAttachments attachments) {
+        ExecuteRequest(final int batchId, final ModelNode operation, final OperationMessageHandler messageHandler, final ProxyOperationControl delegate, final OperationAttachments attachments) {
             super(batchId);
             this.operation = operation;
+            this.control = new ProxyOperationControl() {
+                @Override
+                public void operationFailed(final ModelNode response) {
+                    delegate.operationFailed(response);
+                    if(failed.compareAndSet(false, true)) {
+                        failed(new OperationFailedException(response));
+                        executeRequestContext.setPreparedOrFailed();
+                        executeRequestContext.setControlCompleted();
+                    }
+                }
+
+                @Override
+                public void operationCompleted(final ModelNode response) {
+                    delegate.operationCompleted(response);
+                }
+
+                @Override
+                public void operationPrepared(final OperationTransaction transaction, final ModelNode result) {
+                    delegate.operationPrepared(transaction, result);
+                    executeRequestContext.setPreparedOrFailed();
+                }
+            };
             executeRequestContext = new ExecuteRequestContext(this, messageHandler, control, attachments);
         }
 
@@ -231,7 +245,12 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
         }
 
         protected void setError(Exception e) {
-            super.setError(e);
+            if(failed.compareAndSet(false, true)) {
+                failed(e);
+                control.operationFailed(new ModelNode().set("failed"));
+                executeRequestContext.setPreparedOrFailed();
+                executeRequestContext.setControlCompleted();
+            }
         }
 
         @Override
@@ -432,6 +451,7 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
         final OperationMessageHandler messageHandler;
         final ProxyOperationControl control;
         final OperationAttachments attachments;
+        final CountDownLatch preparedOrFailedLatch = new CountDownLatch(1);
         final CountDownLatch controlCompletedLatch = new CountDownLatch(1);
 
         public ExecuteRequestContext(final ExecuteRequest request, final OperationMessageHandler messageHandler, final ProxyOperationControl control, final OperationAttachments attachments) {
@@ -457,12 +477,19 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
             controlCompletedLatch.await();
         }
 
+        void awaitPreparedOrFailed() throws InterruptedException {
+            preparedOrFailedLatch.await();
+        }
+
         void setControlCompleted() {
             controlCompletedLatch.countDown();
         }
 
+        void setPreparedOrFailed() {
+            preparedOrFailedLatch.countDown();
+        }
+
         synchronized void setError(String error) {
-            controlCompletedLatch.countDown();
             request.setError(new Exception(error));
         }
 

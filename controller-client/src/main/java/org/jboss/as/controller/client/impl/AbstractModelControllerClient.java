@@ -55,13 +55,11 @@ import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.threads.AsyncFuture;
 
-
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
 public abstract class AbstractModelControllerClient implements ModelControllerClient, ManagementOperationHandler {
+
     private final Map<Integer, ExecuteRequestContext> activeRequests = Collections.synchronizedMap(new HashMap<Integer, ExecuteRequestContext>());
     protected final ExecutorService executor = Executors.newCachedThreadPool();
     final Logger log = Logger.getLogger("org.jboss.as.controller.client");
@@ -122,9 +120,8 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
 
     private ModelNode executeSynch(ModelNode operation, OperationAttachments attachments, OperationMessageHandler messageHandler) throws IOException {
         final int batchId = ManagementBatchIdManager.DEFAULT.createBatchId();
-
         try {
-            return new ExecuteRequest(batchId, false, operation, messageHandler, attachments).executeForResult(executor, getClientChannelStrategy());
+            return new ExecuteRequest(batchId, operation, messageHandler, attachments).executeForResult(executor, getClientChannelStrategy());
         } catch (Exception e) {
             ManagementBatchIdManager.DEFAULT.freeBatchId(batchId);
             Throwable cause = e;
@@ -144,7 +141,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
     private AsyncFuture<ModelNode> executeAsync(ModelNode operation, OperationAttachments attachments, OperationMessageHandler messageHandler) {
         final int batchId = ManagementBatchIdManager.DEFAULT.createBatchId();
         try {
-            return new DelegatingCancellableAsyncFuture(new ExecuteRequest(batchId, true, operation, messageHandler, attachments).execute(executor, getClientChannelStrategy()), batchId);
+            return new DelegatingCancellableAsyncFuture(new ExecuteRequest(batchId, operation, messageHandler, attachments).execute(executor, getClientChannelStrategy()), batchId);
         } catch (Exception e) {
             ManagementBatchIdManager.DEFAULT.freeBatchId(batchId);
             if (e instanceof RuntimeException) {
@@ -161,22 +158,16 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
 
         private final ExecuteRequestContext executeRequestContext;
         private final ModelNode operation;
-        private final boolean async;
 
-        ExecuteRequest(final int batchId, final boolean async, final ModelNode operation, final OperationMessageHandler messageHandler, final OperationAttachments attachments) {
+        ExecuteRequest(final int batchId, final ModelNode operation, final OperationMessageHandler messageHandler, final OperationAttachments attachments) {
             super(batchId);
             this.operation = operation;
-            this.async = async;
             executeRequestContext = new ExecuteRequestContext(this, messageHandler, attachments);
         }
 
         @Override
         protected byte getRequestCode() {
-            return async ? ModelControllerProtocol.EXECUTE_ASYNC_CLIENT_REQUEST : ModelControllerProtocol.EXECUTE_CLIENT_REQUEST;
-        }
-
-        protected CloseHandler<Channel> getRequestCloseHandler(){
-            return executeRequestContext.getRequestCloseHandler();
+            return ModelControllerProtocol.EXECUTE_ASYNC_CLIENT_REQUEST;
         }
 
         @Override
@@ -221,21 +212,9 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
                         node.readExternal(input);
                         log.tracef("Client read response %d successfully", getBatchId());
                         return node;
-                    } catch (Exception e) {
-                        log.tracef(e, "Client read response %d with error", getBatchId());
-                        //super.setError(new ClientException(e));
-                        setError(e);
-                        if (e instanceof IOException) {
-                            throw (IOException)e;
-                        }
-                        if (e instanceof RuntimeException) {
-                            throw (RuntimeException)e;
-                        }
-                        throw new IOException(e);
                     } finally {
                         ManagementBatchIdManager.DEFAULT.freeBatchId(getBatchId());
                         activeRequests.remove(getBatchId());
-                        executeRequestContext.done();
                     }
                 }
             };
@@ -316,7 +295,6 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
             }
         }
 
-
         @Override
         protected void writeResponse(final FlushableDataOutput output) throws IOException {
             output.write(ModelControllerProtocol.PARAM_INPUTSTREAM_LENGTH);
@@ -331,22 +309,11 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
         final ExecuteRequest executeRequest;
         final OperationMessageHandler messageHandler;
         final OperationAttachments attachments;
-        volatile boolean done;
 
         ExecuteRequestContext(final ExecuteRequest executeRequest, final OperationMessageHandler messageHandler, final OperationAttachments attachments) {
             this.executeRequest = executeRequest;
             this.messageHandler = messageHandler;
             this.attachments = attachments;
-        }
-
-        CloseHandler<Channel> getRequestCloseHandler(){
-            return new CloseHandler<Channel>() {
-                public void handleClose(final Channel closed, final IOException exception) {
-                    if (!done) {
-                        executeRequest.setError(new IOException("Channel closed"));
-                    }
-                }
-            };
         }
 
         OperationMessageHandler getMessageHandler() {
@@ -355,10 +322,6 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
 
         OperationAttachments getAttachments() {
             return attachments;
-        }
-
-        void done() {
-            this.done = true;
         }
     }
 
@@ -429,11 +392,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
             }
             try {
                 new CancelAsyncRequest().executeForResult(executor, getClientChannelStrategy());
-                if (isDone()) {
-                    isCancelled = false;
-                }
-                isCancelled = true;
-                return isCancelled;
+                return true;
             } catch (Exception e) {
                 e.printStackTrace();
                 return false;
@@ -465,6 +424,11 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
             @Override
             protected ManagementResponseHandler<Void> getResponseHandler() {
                 return ManagementResponseHandler.EMPTY_RESPONSE;
+            }
+
+            @Override
+            protected CloseHandler<Channel> getRequestCloseHandler() {
+                return null;
             }
         }
     }

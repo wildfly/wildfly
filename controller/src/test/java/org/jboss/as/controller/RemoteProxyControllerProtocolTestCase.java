@@ -491,9 +491,11 @@ public class RemoteProxyControllerProtocolTestCase {
                     commitControl,
                     null);
             latch.await();
-            Assert.fail("Should have failed");
-        } catch (Exception expected) {
+            // Assert.fail("Should have failed");
+        } catch (Exception ignore) {
+            //
         }
+        Assert.assertEquals(1, commitControl.txCompletionStatus.get());
         Assert.assertNull(errorRef.get());
     }
 
@@ -534,6 +536,7 @@ public class RemoteProxyControllerProtocolTestCase {
     }
 
     private static class CommitProxyOperationControl implements ProxyOperationControl {
+        final AtomicInteger txCompletionStatus = new AtomicInteger(-1);
         OperationTransaction tx;
         @Override
         public void operationPrepared(OperationTransaction transaction, ModelNode result) {
@@ -543,10 +546,16 @@ public class RemoteProxyControllerProtocolTestCase {
 
         @Override
         public void operationFailed(ModelNode response) {
+            if(! txCompletionStatus.compareAndSet(-1, 1)) {
+                throw new IllegalStateException();
+            }
         }
 
         @Override
         public void operationCompleted(ModelNode response) {
+            if(! txCompletionStatus.compareAndSet(-1, 2)) {
+                throw new IllegalStateException();
+            }
         }
 
     }
