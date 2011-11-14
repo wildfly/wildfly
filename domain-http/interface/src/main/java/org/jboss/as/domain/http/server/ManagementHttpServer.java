@@ -36,6 +36,7 @@ import org.jboss.com.sun.net.httpserver.HttpServer;
 import org.jboss.com.sun.net.httpserver.HttpsConfigurator;
 import org.jboss.com.sun.net.httpserver.HttpsParameters;
 import org.jboss.com.sun.net.httpserver.HttpsServer;
+import org.jboss.modules.ModuleLoadException;
 
 /**
  * The general HTTP server for handling management API requests.
@@ -158,7 +159,12 @@ public class ManagementHttpServer {
         ManagementHttpServer managementHttpServer = new ManagementHttpServer(httpServer, secureHttpServer, securityRealm);
         managementHttpServer.addHandler(new RootHandler());
         managementHttpServer.addHandler(new DomainApiHandler(modelControllerClient));
-        managementHttpServer.addHandler(new ConsoleHandler());
+
+        try {
+            managementHttpServer.addHandler(new ConsoleHandler());
+        } catch (ModuleLoadException e) {
+            throw new IOException("Unable to load resource handler", e);
+        }
 
         return managementHttpServer;
     }

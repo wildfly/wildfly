@@ -720,7 +720,7 @@
 
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-domain-http-api</artifactId>
+            <artifactId>jboss-as-domain-http-interface</artifactId>
         </dependency>
 
         <dependency>

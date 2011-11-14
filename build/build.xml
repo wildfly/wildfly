@@ -453,6 +453,10 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-appclient"/>
         </module-def>
 
+        <module-def name="org.jboss.as.console">
+            <maven-resource-with-classifier group="org.jboss.as" artifact="jboss-as-console" classifier="resources"/>
+        </module-def>
+
         <module-def name="org.jboss.as.cli">
             <maven-resource group="org.jboss.as" artifact="jboss-as-cli"/>
         </module-def>
@@ -509,8 +513,8 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-deployment-scanner"/>
         </module-def>
 
-        <module-def name="org.jboss.as.domain-http-api">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-domain-http-api"/>
+        <module-def name="org.jboss.as.domain-http-interface">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-domain-http-interface"/>
         </module-def>
 
         <module-def name="org.jboss.as.domain-controller">
@@ -689,7 +693,6 @@
 
         <module-def name="org.jboss.com.sun.httpserver">
             <maven-resource group="org.jboss.com.sun.httpserver" artifact="httpserver"/>
-            <maven-resource-with-classifier group="org.jboss.as" artifact="jboss-as-console" classifier="resources"/>
         </module-def>
 
         <module-def name="org.jboss.dmr">
