@@ -276,9 +276,7 @@ public class EjbObjectCorbaServant extends Servant implements InvokeHandler, Loc
                 op.writeRetval(out, retVal);
             }
         } catch (Exception e) {
-            if (logger.isTraceEnabled()) {
-                logger.trace("Exception in EJBObject invocation", e);
-            }
+            logger.error("Exception in EJBObject invocation", e);
             if (e instanceof MBeanException) {
                 e = ((MBeanException) e).getTargetException();
             }

@@ -262,9 +262,7 @@ public class EjbHomeCorbaServant extends Servant implements InvokeHandler, Local
                 op.writeRetval(out, retVal);
             }
         } catch (Exception e) {
-            if (logger.isTraceEnabled()) {
-                logger.trace("Exception in EJBHome invocation", e);
-            }
+            logger.error("Exception in EJBHome invocation", e);
             RmiIdlUtil.rethrowIfCorbaSystemException(e);
             out = (org.omg.CORBA_2_3.portable.OutputStream) handler.createExceptionReply();
             op.writeException(out, e);
