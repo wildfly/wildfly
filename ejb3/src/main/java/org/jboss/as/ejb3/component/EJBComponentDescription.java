@@ -21,6 +21,13 @@
  */
 package org.jboss.as.ejb3.component;
 
+import org.jboss.as.ee.component.ComponentDescription;
+
+
+import javax.ejb.TimerService;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagementType;
+
 import java.lang.reflect.Method;
 import java.rmi.Remote;
 import java.util.ArrayList;
@@ -34,9 +41,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+
 import javax.ejb.TimerService;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
+
 
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
@@ -53,6 +62,7 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.EJBMethodIdentifier;
 import org.jboss.as.ejb3.component.interceptors.EjbExceptionTransformingInterceptorFactory;
+import org.jboss.as.ejb3.component.interceptors.LoggingInterceptor;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
@@ -72,6 +82,7 @@ import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+
 
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
@@ -395,6 +406,13 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     }
 
     protected void setupViewInterceptors(EJBViewDescription view) {
+        // add a logging interceptor (to take care of EJB3 spec, section 14.3 logging requirements)
+        view.getConfigurators().add(new ViewConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration viewConfiguration) throws DeploymentUnitProcessingException {
+                viewConfiguration.addViewInterceptor(new ImmediateInterceptorFactory(LoggingInterceptor.INSTANCE), InterceptorOrder.View.EJB_EXCEPTION_LOGGING_INTERCEPTOR);
+            }
+        });
         this.addCurrentInvocationContextFactory(view);
         this.setupSecurityInterceptors(view);
         this.setupRemoteViewInterceptors(view);
@@ -752,7 +770,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             throw MESSAGES.ejbMethodIsNullForViewType(viewType);
         }
         if (roles == null) {
-            throw MESSAGES.rolesIsNullOnViewTypeAndMethod(viewType,ejbMethodIdentifier);
+            throw MESSAGES.rolesIsNullOnViewTypeAndMethod(viewType, ejbMethodIdentifier);
         }
 
         // find the right view(s) to apply the @RolesAllowed
@@ -904,7 +922,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
             final ApplicationExceptions appExceptions = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.APPLICATION_EXCEPTION_DETAILS);
             if (appExceptions == null) {
-                 throw MESSAGES.ejbJarConfigNotFound(deploymentUnit);
+                throw MESSAGES.ejbJarConfigNotFound(deploymentUnit);
             }
             final EJBComponentCreateServiceFactory ejbComponentCreateServiceFactory = (EJBComponentCreateServiceFactory) configuration.getComponentCreateServiceFactory();
             ejbComponentCreateServiceFactory.setEjbJarConfiguration(appExceptions);
