@@ -233,8 +233,7 @@ public class OperationRequestCompleter implements CommandLineCompleter {
 
             Collections.sort(candidates);
             if(parsedCmd.endsOnSeparator()) {
-                final int i = parsedCmd.getLastSeparatorIndex();
-                return i == 0 ? 0 : i + 1;
+                return parsedCmd.getLastSeparatorIndex() + 1;
             } else {
                 return parsedCmd.getLastChunkIndex();
             }
