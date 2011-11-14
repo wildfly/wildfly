@@ -22,9 +22,6 @@
 
 package org.jboss.as.ee.component.deployers;
 
-import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
-import static org.jboss.as.server.deployment.Attachments.MODULE;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -59,11 +56,15 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
+import org.jboss.msc.service.CircularDependencyException;
 import org.jboss.msc.service.DuplicateServiceException;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+
+import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
+import static org.jboss.as.server.deployment.Attachments.MODULE;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -245,6 +246,8 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                     BinderService service = (BinderService) registered.getService();
                     if (!service.getSource().equals(bindingConfiguration.getSource()))
                         throw new IllegalArgumentException("Incompatible conflicting binding at " + bindingName + " source: " + bindingConfiguration.getSource());
+                }catch (CircularDependencyException e) {
+                        throw new IllegalArgumentException("Circular dependency installing " + bindingName);
                 }
             }
         }

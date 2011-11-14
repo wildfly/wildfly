@@ -52,6 +52,7 @@ import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.CircularDependencyException;
 import org.jboss.msc.service.DuplicateServiceException;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -218,6 +219,8 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                     BinderService service = (BinderService) registered.getService();
                     if (!service.getSource().equals(bindingConfiguration.getSource()))
                         throw new IllegalArgumentException("Incompatible conflicting binding at " + bindingName + " source: " + bindingConfiguration.getSource());
+                } catch (CircularDependencyException e) {
+                        throw new IllegalArgumentException("Circular dependency installing " + bindingName);
                 }
 
             } else {
