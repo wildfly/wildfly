@@ -56,17 +56,11 @@ public class LoggingInterceptor implements Interceptor {
             // we just pass on the control and do our work only when an exception occurs
             return interceptorContext.proceed();
         } catch (Throwable t) {
-            final Component component = interceptorContext.getPrivateData(Component.class);
+            final EJBComponent component = (EJBComponent) interceptorContext.getPrivateData(Component.class);
             final Method invokedMethod = interceptorContext.getMethod();
-            if (component instanceof EJBComponent) {
-                // check if it's an application exception. If yes, then *don't* log
-                final ApplicationExceptionDetails appException = ((EJBComponent) component).getApplicationException(t.getClass(), invokedMethod);
-                if (appException == null) {
-                    logger.error("Invocation failure for component " + component + " on method " + invokedMethod, t);
-                }
-            } else {
-                // just log, since it's not even a EJB component and hence no question of being an application exception.
-                // Ideally, this should never happen since this interceptor is only applicable for EJB components
+            // check if it's an application exception. If yes, then *don't* log
+            final ApplicationExceptionDetails appException = component.getApplicationException(t.getClass(), invokedMethod);
+            if (appException == null) {
                 logger.error("Invocation failure for component " + component + " on method " + invokedMethod, t);
             }
             if (t instanceof Exception) {
