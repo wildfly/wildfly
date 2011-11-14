@@ -21,6 +21,13 @@
  */
 package org.jboss.as.ee.component.deployers;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
@@ -38,9 +45,6 @@ import org.jboss.metadata.javaee.spec.ResourceEnvironmentReferenceMetaData;
 import org.jboss.metadata.javaee.spec.ResourceEnvironmentReferencesMetaData;
 import org.jboss.metadata.javaee.spec.ResourceReferenceMetaData;
 import org.jboss.metadata.javaee.spec.ResourceReferencesMetaData;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Deployment processor that sets up env-entry, resource-ref and resource-env-ref bindings
@@ -142,7 +146,21 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
             if (!isEmpty(resourceRef.getLookupName())) {
                 bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(resourceRef.getLookupName()));
             } else if (!isEmpty(resourceRef.getResUrl())) {
-                bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(resourceRef.getResUrl()));
+                if (classType.equals(URL.class)) {
+                    try {
+                        bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(new URL(resourceRef.getResUrl())));
+                    } catch (MalformedURLException e) {
+                        throw new DeploymentUnitProcessingException("Unable to parse resource-ref URL: " + resourceRef.getResUrl(), e);
+                    }
+                } else if (classType.equals(URI.class)) {
+                    try {
+                        bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(new URI(resourceRef.getResUrl())));
+                    } catch (URISyntaxException e) {
+                        throw new DeploymentUnitProcessingException("Unable to parse resource-ref URI: " + resourceRef.getResUrl(), e);
+                    }
+                } else {
+                    bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(resourceRef.getResUrl()));
+                }
             } else {
                 if (classType == null) {
                     throw new DeploymentUnitProcessingException("Could not determine type for resource-ref " + name);
