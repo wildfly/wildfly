@@ -437,6 +437,11 @@
                                             <exclude>jboss.web:servlet-api</exclude>
                                             <exclude>net.sf.kxml:kxml2</exclude>
                                             <exclude>org.apache.aries.jmx:org.apache.aries.jmx.api</exclude>
+                                            <exclude>org.apache.geronimo.specs:geronimo-activation_1.1_spec</exclude>
+                                            <exclude>org.apache.geronimo.specs:geronimo-jaxb_2.1_spec</exclude>
+                                            <exclude>org.apache.geronimo.specs:geronimo-jaxr_1.0_spec</exclude>
+                                            <exclude>org.apache.geronimo.specs:geronimo-saaj_1.3_spec</exclude>
+                                            <exclude>org.apache.geronimo.specs:geronimo-stax-api_1.0_spec</exclude>
                                             <exclude>org.apache.xalan:serializer</exclude>
                                             <exclude>org.apache.xalan:xalan</exclude>
                                             <exclude>org.hibernate:ejb3-persistence</exclude>
@@ -458,6 +463,7 @@
                                             <exclude>org.jboss.logging:jboss-logging-log4j</exclude>
                                             <exclude>org.jboss.logging:jboss-logging-jdk</exclude>
                                             <exclude>org.jboss.logging:jboss-logging-logmanager</exclude>
+                                            <exclude>org.jboss.security:jbosssx</exclude>
                                             <exclude>org.jboss.slf4j:slf4j-jboss-logging</exclude>
                                             <exclude>org.jboss.spec.javax.resource:jboss-connector-api_1.5_spec</exclude>
                                             <exclude>org.opensaml:opensaml</exclude>
@@ -471,6 +477,7 @@
                                             <exclude>oro:oro</exclude>
                                             <exclude>sun-jaxb:jaxb-api</exclude>
                                             <exclude>trove:trove</exclude>
+                                            <exclude>woodstox:wstx-lgpl</exclude>
                                             <exclude>xml-apis:xml-apis</exclude>
                                             <exclude>xml-resolver:xml-resolver</exclude>
                                         </excludes>
@@ -2733,6 +2740,28 @@
               <groupId>org.apache.ws.scout</groupId>
               <artifactId>scout</artifactId>
               <version>${version.org.apache.ws.scout}</version>
+              <exclusions>
+                  <exclusion>
+                      <groupId>org.apache.geronimo.specs</groupId>
+                      <artifactId>geronimo-activation_1.1_spec</artifactId>
+                  </exclusion>
+                  <exclusion>
+                      <groupId>org.apache.geronimo.specs</groupId>
+                      <artifactId>geronimo-jaxb_2.1_spec</artifactId>
+                  </exclusion>
+                  <exclusion>
+                      <groupId>org.apache.geronimo.specs</groupId>
+                      <artifactId>geronimo-jaxr_1.0_spec</artifactId>
+                  </exclusion>
+                  <exclusion>
+                      <groupId>org.apache.geronimo.specs</groupId>
+                      <artifactId>geronimo-saaj_1.3_spec</artifactId>
+                  </exclusion>              
+                  <exclusion>
+                      <groupId>org.apache.geronimo.specs</groupId>
+                      <artifactId>geronimo-stax-api_1.0_spec</artifactId>
+                  </exclusion>              
+              </exclusions>
             </dependency>
 
             <dependency>
@@ -3559,10 +3588,6 @@
                         <artifactId>stax-api</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>org.jboss.ws.native</groupId>
-                        <artifactId>jbossws-native-core</artifactId>
-                    </exclusion>
-                    <exclusion>
                         <groupId>org.jboss.ws</groupId>
                         <artifactId>jbossws-common</artifactId>
                     </exclusion>
@@ -3701,10 +3726,6 @@
                     <exclusion>
                         <groupId>stax</groupId>
                         <artifactId>stax-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.ws.native</groupId>
-                        <artifactId>jbossws-native-core</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.jboss.ws</groupId>
@@ -3953,10 +3974,6 @@
                     <exclusion>
                         <groupId>stax</groupId>
                         <artifactId>stax-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.ws.native</groupId>
-                        <artifactId>jbossws-native-core</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.jboss.ws</groupId>
@@ -4809,10 +4826,6 @@
                 <version>${version.org.jboss.weld.weld}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.javassist</groupId>
-                        <artifactId>javassist</artifactId>
-                    </exclusion>
-                    <exclusion>
                         <groupId>javax.enterprise</groupId>
                         <artifactId>cdi-api</artifactId>
                     </exclusion>
@@ -4843,6 +4856,10 @@
                     <exclusion>
                         <groupId>org.jboss.weld</groupId>
                         <artifactId>weld-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.weld</groupId>
+                        <artifactId>weld-build-config</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.jboss.weld</groupId>
@@ -5071,10 +5088,6 @@
                         <artifactId>jboss-logging-log4j</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>org.jboss.spec.javax.xml.rpc</groupId>
-                        <artifactId>jboss-jaxrpc-api_1.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
                         <groupId>javax.xml.stream.api</groupId>
                         <artifactId>stax-api</artifactId>
                     </exclusion>
@@ -5244,10 +5257,6 @@
                         <artifactId>jboss-logging-log4j</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>org.jboss.spec.javax.xml.rpc</groupId>
-                        <artifactId>jboss-jaxrpc-api_1.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
                         <groupId>javax.xml.stream.api</groupId>
                         <artifactId>stax-api</artifactId>
                     </exclusion>
@@ -5267,85 +5276,41 @@
                 <artifactId>jbossws-native-core</artifactId>
                 <version>${version.org.jboss.ws.jbossws-native}</version>
                 <exclusions>
-                     <exclusion>
-                        <groupId>com.sun.xml.ws</groupId>
-                        <artifactId>jaxws-rt</artifactId>
-                     </exclusion>
-                     <exclusion>
-                        <groupId>com.sun.xml.ws</groupId>
-                        <artifactId>jaxws-tools</artifactId>
-                     </exclusion>
-                     <exclusion>
-                        <groupId>woodstox</groupId>
-                        <artifactId>wstx-lgpl</artifactId>
-                     </exclusion>
-                     <exclusion>
-                        <groupId>javax.xml.stream</groupId>
-                        <artifactId>stax-api</artifactId>
-                     </exclusion>
-                     <exclusion>
-                        <groupId>com.sun.xml.bind</groupId>
-                        <artifactId>jaxb-impl</artifactId>
-                     </exclusion>
-                     <exclusion>
-                        <groupId>com.sun.xml.bind</groupId>
-                        <artifactId>jaxb-xjc</artifactId>
-                     </exclusion>
-                     <exclusion>
+                    <exclusion>
                         <groupId>com.sun.xml.fastinfoset</groupId>
                         <artifactId>FastInfoset</artifactId>
-                     </exclusion>
-                     <exclusion>
-                        <groupId>ws-commons</groupId>
-                        <artifactId>policy</artifactId>
-                     </exclusion>
-                     <exclusion>
-                        <groupId>org.codehaus.jettison</groupId>
-                        <artifactId>jettison</artifactId>
-                     </exclusion>
-                     <exclusion>
-                        <groupId>org.apache</groupId>
-                        <artifactId>xmlsec</artifactId>
-                     </exclusion>
-                     <exclusion>
-                        <groupId>org.jboss.spec.javax.xml.rpc</groupId>
-                        <artifactId>jboss-jaxrpc-api_1.1_spec</artifactId>
-                     </exclusion>
-                     <exclusion>
-                        <groupId>org.jboss.spec.javax.xml.soap</groupId>
-                        <artifactId>jboss-saaj-api_1.3_spec</artifactId>
-                     </exclusion>
-                     <exclusion>
-                        <groupId>org.jboss.spec.javax.xml.ws</groupId>
-                        <artifactId>jboss-jaxws-api_2.2_spec</artifactId>
-                     </exclusion>
-                     <exclusion>
-                        <groupId>javax.jws</groupId>
-                        <artifactId>jsr181-api</artifactId>
-                     </exclusion>
-                     <exclusion>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.xml.ws</groupId>
+                        <artifactId>jaxws-rt</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.xml.ws</groupId>
+                        <artifactId>jaxws-tools</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>commons-logging</groupId>
                         <artifactId>commons-logging</artifactId>
-                     </exclusion>
-                     <exclusion>
-                        <groupId>org.jboss.spec.javax.xml.bind</groupId>
-                        <artifactId>jboss-jaxb-api_2.2_spec</artifactId>
-                     </exclusion>
-                     <exclusion>
-                        <groupId>javax.mail</groupId>
-                        <artifactId>mail</artifactId>
-                     </exclusion>
-                     <exclusion>
-                        <groupId>org.jboss.netty</groupId>
-                        <artifactId>netty</artifactId>
-                     </exclusion>
-                     <exclusion>
-                        <groupId>wsdl4j</groupId>
-                        <artifactId>wsdl4j</artifactId>
-                     </exclusion>
-                     <exclusion>
-                        <groupId>javassist</groupId>
-                        <artifactId>javassist</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.xml.stream</groupId>
+                        <artifactId>stax-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache</groupId>
+                        <artifactId>xmlsec</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.codehaus.jettison</groupId>
+                        <artifactId>jettison</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.codehaus.woodstox</groupId>
+                        <artifactId>wstx-lgpl</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>ws-commons</groupId>
+                        <artifactId>policy</artifactId>
                     </exclusion>
                </exclusions>
             </dependency>
@@ -5434,10 +5399,22 @@
                 <artifactId>picketlink-bindings</artifactId>
                 <version>${version.org.picketlink}</version>
                 <exclusions>
-                  <exclusion>
-                    <groupId>javax.servlet</groupId>
-                    <artifactId>servlet-api</artifactId>
-                  </exclusion>
+                    <exclusion>
+                        <groupId>javax.servlet</groupId>
+                        <artifactId>servlet-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.picketlink</groupId>
+                        <artifactId>picketlink-fed-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.picketlink</groupId>
+                        <artifactId>picketlink-fed-model</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.picketlink</groupId>
+                        <artifactId>picketlink-web</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -5445,6 +5422,28 @@
                 <groupId>org.picketlink</groupId>
                 <artifactId>picketlink-bindings-jboss</artifactId>
                 <version>${version.org.picketlink}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.security</groupId>
+                        <artifactId>jboss-security-spi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.security</groupId>
+                        <artifactId>jbosssx</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.picketlink</groupId>
+                        <artifactId>picketlink-fed-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.picketlink</groupId>
+                        <artifactId>picketlink-fed-model</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.picketlink</groupId>
+                        <artifactId>picketlink-web</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -5452,10 +5451,18 @@
                 <artifactId>picketlink-trust-jbossws</artifactId>
                 <version>${version.org.picketlink}</version>
                 <exclusions>
-                  <exclusion>
-                    <groupId>org.jboss.logging</groupId>
-                    <artifactId>jboss-logging-spi</artifactId>
-                  </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-spi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.picketbox</groupId>
+                        <artifactId>jboss-security-spi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.picketbox</groupId>
+                        <artifactId>jbosssx</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
