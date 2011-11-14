@@ -24,10 +24,7 @@ package org.jboss.as.test.integration.jpa.hibernate.envers;
 
 import java.util.HashSet;
 import java.util.Set;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 
 import org.hibernate.envers.Audited;
 
@@ -36,6 +33,7 @@ import org.hibernate.envers.Audited;
  */
 @Entity
 @Audited
+@Table(name="ADDRESS_HIB")
 public class Address {
     @Id
     @GeneratedValue

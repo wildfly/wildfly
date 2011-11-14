@@ -44,7 +44,6 @@ import org.junit.BeforeClass;
  * @author Strong Liu
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-2612] BasicEnversTestCase seems to corrupt JAXR database")
 public class BasicEnversTestCase {
 	private static final String ARCHIVE_NAME = "jpa_BasicEnversTestCase";
 
