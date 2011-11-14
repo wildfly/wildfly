@@ -55,19 +55,25 @@ public class Util {
     public static final String NAME = "name";
     public static final String OPERATION = "operation";
     public static final String OPERATION_HEADERS = "operation-headers";
+    public static final String OUTCOME = "outcome";
     public static final String PROFILE = "profile";
+    public static final String READ_CHILDREN_NAMES = "read-children-names";
     public static final String READ_CHILDREN_TYPES = "read-children-types";
     public static final String READ_ONLY = "read-only";
     public static final String READ_OPERATION_DESCRIPTION = "read-operation-description";
     public static final String READ_OPERATION_NAMES = "read-operation-names";
     public static final String READ_WRITE = "read-write";
     public static final String REQUEST_PROPERTIES = "request-properties";
+    public static final String READ_RESOURCE = "read-resource";
     public static final String READ_RESOURCE_DESCRIPTION = "read-resource-description";
     public static final String RESULT = "result";
     public static final String ROLLOUT_PLAN = "rollout-plan";
     public static final String RUNTIME_NAME = "runtime-name";
     public static final String SERVER_GROUP = "server-group";
+    public static final String STEP_1 = "step-1";
+    public static final String STEP_2 = "step-2";
     public static final String STEPS = "steps";
+    public static final String SUCCESS = "success";
     public static final String TYPE = "type";
     public static final String VALUE = "value";
     public static final String WRITE_ATTRIBUTE = "write-attribute";
@@ -78,8 +84,7 @@ public class Util {
 
     public static boolean isSuccess(ModelNode operationResult) {
         if(operationResult != null) {
-            ModelNode outcome = operationResult.get("outcome");
-            return outcome != null && outcome.asString().equals("success");
+            return operationResult.hasDefined(Util.OUTCOME) && operationResult.get(Util.OUTCOME).asString().equals(Util.SUCCESS);
         }
         return false;
     }
@@ -96,13 +101,11 @@ public class Util {
     }
 
     public static List<String> getList(ModelNode operationResult) {
-        if(!operationResult.hasDefined("result"))
+        if(!operationResult.hasDefined(Util.RESULT))
             return Collections.emptyList();
-
-        List<ModelNode> nodeList = operationResult.get("result").asList();
+        List<ModelNode> nodeList = operationResult.get(Util.RESULT).asList();
         if(nodeList.isEmpty())
             return Collections.emptyList();
-
         List<String> list = new ArrayList<String>(nodeList.size());
         for(ModelNode node : nodeList) {
             list.add(node.asString());
@@ -356,7 +359,7 @@ public class Util {
         ModelNode request;
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(address);
         try {
-            builder.setOperationName("read-children-types");
+            builder.setOperationName(Util.READ_CHILDREN_TYPES);
             request = builder.buildRequest();
         } catch (OperationFormatException e1) {
             throw new IllegalStateException("Failed to build operation", e1);
