@@ -43,7 +43,7 @@ interface NetworkMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(value = "cannot change value while the socket is bound.")
+    @Message(id = 15300, value = "cannot change value while the socket is bound.")
     IllegalStateException cannotChangeWhileBound();
 
     /**
@@ -53,6 +53,6 @@ interface NetworkMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(value = "no multicast binding: %s")
+    @Message(id = 15301, value = "no multicast binding: %s")
     IllegalStateException noMulticastBinding(String name);
 }

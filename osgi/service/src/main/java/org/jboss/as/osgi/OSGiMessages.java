@@ -51,7 +51,7 @@ public interface OSGiMessages {
      *
      * @return the message.
      */
-    @Message(value = "Cannot create bundle deployment from: %s")
+    @Message(id = 11940, value = "Cannot create bundle deployment from: %s")
     String cannotCreateBundleDeployment(DeploymentUnit deploymentUnit);
 
     /**
@@ -61,7 +61,7 @@ public interface OSGiMessages {
      *
      * @return the message.
      */
-    @Message(value = "Cannot deploy bundle: %s")
+    @Message(id = 11941, value = "Cannot deploy bundle: %s")
     String cannotDeployBundle(Deployment deployment);
 
     /**
@@ -71,7 +71,7 @@ public interface OSGiMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(value = "Cannot find bundles directory: %s")
+    @Message(id = 11942, value = "Cannot find bundles directory: %s")
     IllegalArgumentException cannotFindBundleDir(File dir);
 
     /**
@@ -81,7 +81,7 @@ public interface OSGiMessages {
      *
      * @return the message.
      */
-    @Message(value = "Cannot parse: %s")
+    @Message(id = 11943, value = "Cannot parse: %s")
     String cannotParse(VirtualFile file);
 
     /**
@@ -89,7 +89,7 @@ public interface OSGiMessages {
      *
      * @return the message.
      */
-    @Message(value = "Failed to create auto install list")
+    @Message(id = 11944, value = "Failed to create auto install list")
     String failedToCreateAutoInstallList();
 
     /**
@@ -97,7 +97,7 @@ public interface OSGiMessages {
      *
      * @return the message.
      */
-    @Message(value = "Failed to create Framework services")
+    @Message(id = 11945, value = "Failed to create Framework services")
     String failedToCreateFrameworkServices();
 
     /**
@@ -107,7 +107,7 @@ public interface OSGiMessages {
      *
      * @return the message.
      */
-    @Message(value = "Failed to install deployment: %s")
+    @Message(id = 11946, value = "Failed to install deployment: %s")
     String failedToInstallDeployment(Deployment deployment);
 
     /**
@@ -117,7 +117,7 @@ public interface OSGiMessages {
      *
      * @return the message.
      */
-    @Message(value = "Failed to register module: %s")
+    @Message(id = 11947, value = "Failed to register module: %s")
     String failedToRegisterModule(Module module);
 
     /**
@@ -127,7 +127,7 @@ public interface OSGiMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(value = "%s is null")
+    @Message(id = 11948, value = "%s is null")
     IllegalArgumentException nullVar(String varName);
 
     /**
@@ -135,7 +135,7 @@ public interface OSGiMessages {
      *
      * @return the message.
      */
-    @Message(value = "OSGi subsystem not active")
+    @Message(id = 11949, value = "OSGi subsystem not active")
     String osgiSubsystemNotActive();
 
     /**
@@ -145,7 +145,7 @@ public interface OSGiMessages {
      *
      * @return the message.
      */
-    @Message(value = "Property %s already exists")
+    @Message(id = 11950, value = "Property %s already exists")
     String propertyAlreadyExists(String name);
 
     /**
@@ -153,6 +153,6 @@ public interface OSGiMessages {
      *
      * @return the message.
      */
-    @Message(value = "Service not available")
+    @Message(id = 11951, value = "Service not available")
     String serviceNotAvailable();
 }

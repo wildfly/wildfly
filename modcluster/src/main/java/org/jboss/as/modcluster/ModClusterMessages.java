@@ -47,7 +47,7 @@ interface ModClusterMessages {
      *
      * @return the message.
      */
-    @Message(value = "A class attribute is needed for %s")
+    @Message(id = 11730, value = "A class attribute is needed for %s")
     String classAttributeRequired(String attributeName);
 
     /**
@@ -55,7 +55,7 @@ interface ModClusterMessages {
      *
      * @return the message.
      */
-    @Message(value = "need context and host")
+    @Message(id = 11731, value = "need context and host")
     String needContextAndHost();
 
     /**
@@ -66,6 +66,6 @@ interface ModClusterMessages {
      *
      * @return the message.
      */
-    @Message(value = "A type attribute is needed for %s")
+    @Message(id = 11732, value = "A type attribute is needed for %s")
     String typeAttributeRequired(String attributeName);
 }
