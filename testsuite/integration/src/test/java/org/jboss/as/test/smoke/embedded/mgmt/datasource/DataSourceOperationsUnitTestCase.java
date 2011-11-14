@@ -66,6 +66,12 @@ import org.jboss.staxmapper.XMLMapper;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
+import org.jboss.as.test.smoke.modular.utils.PollingUtils;
+import org.jboss.as.test.smoke.embedded.demos.fakejndi.FakeJndi;
+import org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource;
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
 
 
 /**
@@ -88,7 +94,8 @@ public class DataSourceOperationsUnitTestCase {
 
     @Deployment
     public static Archive<?> getDeployment() {
-        return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
+    	//TODO Don't do this FakeJndi stuff once we have remote JNDI working
+    	return ShrinkWrapUtils.createJavaArchive("demos/fakejndi.sar", FakeJndi.class.getPackage());
     }
 
     // [ARQ-458] @Before not called with @RunAsClient
@@ -532,6 +539,7 @@ public class DataSourceOperationsUnitTestCase {
     public void testAddXaDsWithProperties() throws Exception {
 
         final String xaDs = "MyNewXaDs";
+        final String xaDsJndi = "java:jboss/xa-datasources/" + xaDs;
         final ModelNode address = new ModelNode();
         address.add("subsystem", "datasources");
         address.add("xa-data-source", xaDs);
@@ -542,9 +550,9 @@ public class DataSourceOperationsUnitTestCase {
         operation.get(OP_ADDR).set(address);
 
         operation.get("name").set(xaDs);
-        operation.get("jndi-name").set("java:jboss/xa-datasources/" + xaDs);
+        operation.get("jndi-name").set(xaDsJndi);
         operation.get("driver-name").set("h2");
-
+        operation.get("xa-datasource-class").set("org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource");
         operation.get("pool-name").set(xaDs + "_Pool");
         operation.get("user-name").set("sa");
         operation.get("password").set("sa");
@@ -576,11 +584,31 @@ public class DataSourceOperationsUnitTestCase {
 
         final Map<String, ModelNode> parseChildren = getChildren(newList.get(1));
         Assert.assertFalse(parseChildren.isEmpty());
-        Assert.assertEquals("java:jboss/xa-datasources/" + xaDs, parseChildren.get("jndi-name").asString());
-
+        Assert.assertEquals(xaDsJndi, parseChildren.get("jndi-name").asString());
+        
         remove(address);
+        
+        ModifiableXaDataSource jxaDS = null;
+    	try{
+        	jxaDS = lookup(xaDsJndi ,ModifiableXaDataSource .class);
+        	
+    		Assert.fail("found datasource after it was unbounded");
+        }
+        catch (Exception e){
+        	// must be thrown NameNotFound exception - datasource is unbounded	
+        	
+        }
     }
-
+    private static <T> T lookup(String name, Class<T> expected) throws Exception {
+        //TODO Don't do this FakeJndi stuff once we have remote JNDI working
+    	
+        MBeanServerConnectionProvider provider = MBeanServerConnectionProvider.defaultProvider();
+        MBeanServerConnection mbeanServer = provider.getConnection();
+        ObjectName objectName = new ObjectName("jboss:name=test,type=fakejndi");
+        PollingUtils.retryWithTimeout(10000, new PollingUtils.WaitForMBeanTask(mbeanServer, objectName));
+        Object o = mbeanServer.invoke(objectName, "lookup", new Object[] {name}, new String[] {"java.lang.String"});
+        return expected.cast(o);
+    }
     public List<ModelNode> marshalAndReparseDsResources(final String childType) throws Exception {
 
         final ModelNode address = new ModelNode();
