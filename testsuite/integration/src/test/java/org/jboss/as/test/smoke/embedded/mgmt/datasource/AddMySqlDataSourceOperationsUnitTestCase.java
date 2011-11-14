@@ -104,7 +104,7 @@ public class AddMySqlDataSourceOperationsUnitTestCase {
 
         final ModelNode address = new ModelNode();
         address.add("subsystem", "datasources");
-        address.add("data-source", "MySqlDs");
+        address.add("data-source", "java:jboss/datasources/MySqlDs");
         address.protect();
 
         final ModelNode operation = new ModelNode();

@@ -71,6 +71,9 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();
         final String jndiName = operation.hasDefined(JNDINAME.getName()) ? operation.get(JNDINAME.getName()).asString() : dsName;
 
+        if (!dsName.equals(jndiName)) {
+            throw new OperationFailedException((new ModelNode()).set("Resource name and jndi-name cannot be different for datasources"));
+        }
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
@@ -82,7 +85,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
         AbstractDataSourceService dataSourceService = createDataSourceService(dsName);
 
-        final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(dsName);
+        final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
         final ServiceBuilder<?> dataSourceServiceBuilder = serviceTarget
                 .addService(dataSourceServiceName, dataSourceService)
                 .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
