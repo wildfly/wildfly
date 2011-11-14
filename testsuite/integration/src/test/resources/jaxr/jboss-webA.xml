@@ -7,6 +7,6 @@
 <jboss-web>
     <resource-ref>
         <res-ref-name>eis/JAXR</res-ref-name>
-        <jndi-name>java:/jaxr/ConnectionFactory</jndi-name>
+        <jndi-name>java:jboss/jaxr/ConnectionFactory</jndi-name>
     </resource-ref>
 </jboss-web>
