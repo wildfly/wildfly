@@ -153,7 +153,7 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jacorb:1.1"/>
         <subsystem xmlns="urn:jboss:domain:jaxr:1.0">
-            <connection-factory jndi-name="java:/jaxr/ConnectionFactory"/>
+            <connection-factory jndi-name="java:jboss/jaxr/ConnectionFactory"/>
             <datasource jndi-name="java:jboss/datasources/ExampleDS"/>
             <flags drop-on-start="true" create-on-start="true" drop-on-stop="false"/>
         </subsystem>
