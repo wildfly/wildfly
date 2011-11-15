@@ -22,7 +22,9 @@
 package org.jboss.as.cmp.jdbc.bridge;
 
 import java.lang.reflect.Field;
+
 import javax.ejb.EJBException;
+
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.JDBCContext;
 import org.jboss.as.cmp.jdbc.JDBCStoreManager;
@@ -69,7 +71,7 @@ public class JDBCCMP1xFieldBridge extends JDBCAbstractCMPFieldBridge {
         }
 
         try {
-            return field.get(ctx.getComponent().getCache().get(ctx.getPrimaryKey()));
+            return field.get(ctx.getInstance());
         } catch (Exception e) {
             // Non recoverable internal exception
             throw new EJBException("Internal error getting instance field " +
@@ -79,7 +81,7 @@ public class JDBCCMP1xFieldBridge extends JDBCAbstractCMPFieldBridge {
 
     public void setInstanceValue(CmpEntityBeanContext ctx, Object value) {
         try {
-            field.set(ctx.getComponent().getCache().get(ctx.getPrimaryKey()), value);
+            field.set(ctx.getInstance(), value);
             FieldState fieldState = getFieldState(ctx);
             fieldState.setLoaded();
             fieldState.setCheckDirty();
