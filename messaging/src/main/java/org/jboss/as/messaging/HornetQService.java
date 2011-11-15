@@ -3,6 +3,8 @@ package org.jboss.as.messaging;
 import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -117,12 +119,23 @@ class HornetQService implements Service<HornetQServer> {
                     Object socketRef = tc.getParams().remove(SOCKET_REF);
                     if (socketRef != null) {
                         String name = socketRef.toString();
+                        String host;
+                        int port;
                         OutboundSocketBinding binding = outboundSocketBindings.get(name);
                         if (binding == null) {
-                            throw MESSAGES.failedToFindConnectorSocketBinding(tc.getName());
+                            final SocketBinding socketBinding = socketBindings.get(name);
+                            if (socketBinding == null) {
+                                throw MESSAGES.failedToFindConnectorSocketBinding(tc.getName());
+                            }
+                            InetSocketAddress sa = socketBinding.getSocketAddress();
+                            host = sa.getAddress().getHostName();
+                            port = sa.getPort();
+                        } else {
+                            host = binding.getDestinationAddress().getHostName();
+                            port = binding.getDestinationPort();
                         }
-                        tc.getParams().put(HOST, binding.getDestinationAddress().getHostName());
-                        tc.getParams().put(PORT, "" + binding.getDestinationPort());
+                        tc.getParams().put(HOST, host);
+                        tc.getParams().put(PORT, String.valueOf(port));
                     }
                 }
             }
