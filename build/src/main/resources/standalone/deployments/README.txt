@@ -113,7 +113,7 @@ Notes" below.
 
 A) Add new zipped content and deploy it:
 
-1. cp target/example.war/ $AS/standalone/deployments
+1. cp target/example.war $AS/standalone/deployments
 2. (Manual mode only) touch $AS/standalone/deployments/example.war.dodeploy
 
 B) Add new unzipped content and deploy it:
