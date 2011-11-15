@@ -24,9 +24,11 @@ package org.jboss.as.cmp.component;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.ejb.EntityBean;
-import org.jboss.classfilewriter.ClassMethod;
+
 import org.jboss.invocation.proxy.MethodBodyCreator;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.invocation.proxy.ProxyConfiguration;
@@ -44,9 +46,11 @@ public class CmpProxyFactory extends ProxyFactory<EntityBean> {
         proxyConfiguration.setClassLoader(beanClass.getClassLoader());
         proxyConfiguration.setProtectionDomain(beanClass.getProtectionDomain());
         proxyConfiguration.setSuperClass(beanClass);
-        if (viewClasses != null) for (Class<?> viewClass : viewClasses) {
-            if (viewClass != null) {
-                proxyConfiguration.addAdditionalInterface(viewClass);
+        if (viewClasses != null) {
+            for (final Class<?> viewClass : viewClasses) {
+                if (viewClass != null) {
+                    proxyConfiguration.addAdditionalInterface(viewClass);
+                }
             }
         }
         proxyConfiguration.addAdditionalInterface(CmpProxy.class);
@@ -61,45 +65,24 @@ public class CmpProxyFactory extends ProxyFactory<EntityBean> {
     }
 
     protected boolean overrideMethod(final Method method, final MethodIdentifier identifier, final MethodBodyCreator creator) {
-        final boolean fromComponent = method.getDeclaringClass().equals(beanClass);
-        final boolean shouldOverride = fromComponent ? Modifier.isAbstract(method.getModifiers()) : !foundOnComponent(method);
-        return shouldOverride && super.overrideMethod(method, identifier, creator);
-    }
-
-    protected boolean overrideMethod(final ClassMethod method, MethodIdentifier identifier, MethodBodyCreator creator) {
-        final boolean fromComponent = method.getClassFile().getName().equals(beanClass.getName());
-        final boolean shouldOverride = fromComponent ? Modifier.isAbstract(method.getAccessFlags()) : !foundOnComponent(method);
-        return shouldOverride && super.overrideMethod(method, identifier, creator);
-    }
-
-    protected boolean foundOnComponent(final Method method) {
-        return foundOnComponent(method.getName(), method.getParameterTypes());
-    }
-
-    protected boolean foundOnComponent(final ClassMethod method) {
-        final String[] paramTypeNames = method.getParameters();
-        final Class<?>[] paramTypes = new Class<?>[paramTypeNames.length];
-
-        for (int i = 0; i < paramTypeNames.length; i++) {
-            try {
-                paramTypes[i] = beanClass.getClassLoader().loadClass(paramTypeNames[i]);
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException("Failed to load param class for method: " + method, e);
+        Class<?> c = beanClass;
+        boolean override = true;
+        boolean found = false;
+        while (c != null) {
+            for (final Method m : c.getDeclaredMethods()) {
+                if (m.getName().equals(method.getName()) &&
+                        m.getReturnType().equals(method.getReturnType()) &&
+                        Arrays.equals(m.getParameterTypes(), method.getParameterTypes())) {
+                    override = Modifier.isAbstract(m.getModifiers());
+                    found = true;
+                    break;
+                }
             }
-        }
-        return foundOnComponent(method.getName(), paramTypes);
-    }
-
-    protected boolean foundOnComponent(final String methodName, final Class<?>[] paramTypes) {
-        Class<?> current = beanClass;
-        while (current != null) {
-            try {
-                beanClass.getDeclaredMethod(methodName, paramTypes);
-                return true;
-            } catch (NoSuchMethodException ignored) {
+            if (found) {
+                break;
             }
-            current = current.getSuperclass();
+            c = c.getSuperclass();
         }
-        return false;
+        return override && super.overrideMethod(method, identifier, creator);
     }
 }
