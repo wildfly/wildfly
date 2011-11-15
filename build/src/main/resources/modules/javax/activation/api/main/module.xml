@@ -28,6 +28,7 @@
         <module name="javax.mail.api">
             <imports><include path="META-INF"/></imports>
         </module>
+        <module name="com.sun.xml.messaging.saaj"/>
         <module name="org.jboss.ws.native.jbossws-native-core"/>
     </dependencies>
 
