@@ -83,7 +83,7 @@ echo.
 
 :RESTART
 "%JAVA%" %JAVA_OPTS% ^
- -Dorg.jboss.boot.log.file="%JBOSS_HOME%\process-controller\log\boot.log" ^
+ -Dorg.jboss.boot.log.file="%JBOSS_HOME%\domain\log\process-controller\boot.log" ^
  -Dlogging.configuration="file:%JBOSS_HOME%/domain/configuration/logging.properties" ^
     -jar "%RUNJAR%" ^
     -mp "%JBOSS_HOME%\modules" ^
