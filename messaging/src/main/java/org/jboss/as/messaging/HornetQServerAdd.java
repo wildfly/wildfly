@@ -236,7 +236,17 @@ class HornetQServerAdd implements OperationStepHandler {
                 TransportConfigOperationHandlers.processConnectors(configuration, model, outboundSocketBindings);
                 for (final String outboundSocketBinding : outboundSocketBindings) {
                     final ServiceName outboundSocketName = OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(outboundSocketBinding);
-                    serviceBuilder.addDependency(outboundSocketName, OutboundSocketBinding.class, hqService.getOutboundSocketBindingInjector(outboundSocketBinding));
+                    // Optional dependency so it won't fail if the user used a ref to socket-binding instead of
+                    // outgoing-socket-binding
+                    serviceBuilder.addDependency(DependencyType.OPTIONAL, outboundSocketName, OutboundSocketBinding.class,
+                            hqService.getOutboundSocketBindingInjector(outboundSocketBinding));
+                    if (!socketBindings.contains(outboundSocketBinding)) {
+                        // Add a dependency on the regular socket binding as well so users don't have to use
+                        // outgoing-socket-binding to configure a ref to the local server socket
+                        final ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(outboundSocketBinding);
+                        serviceBuilder.addDependency(DependencyType.OPTIONAL, socketName, SocketBinding.class,
+                                hqService.getSocketBindingInjector(outboundSocketBinding));
+                    }
                 }
 
                 final List<BroadcastGroupConfiguration> broadcastGroupConfigurations = configuration.getBroadcastGroupConfigurations();
