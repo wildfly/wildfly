@@ -22,9 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
@@ -36,6 +33,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+
+import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * An abstract base component instance.
@@ -110,7 +110,7 @@ public class BasicComponentInstance implements ComponentInstance {
     public void destroy() {
         if (doneUpdater.compareAndSet(this, 0, 1)) try {
             final InterceptorContext interceptorContext = prepareInterceptorContext();
-            interceptorContext.setTarget(instanceReference.get());
+            interceptorContext.setTarget(instanceReference.get().getInstance());
             preDestroy.processInvocation(interceptorContext);
         } catch (Exception e) {
             ROOT_LOGGER.componentDestroyFailure(e, this);
