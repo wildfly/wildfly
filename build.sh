@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ### ====================================================================== ###
 ##                                                                          ##
 ##  This is the main entry point for the build system.                      ##
@@ -166,6 +166,8 @@ main() {
     for param in $@ ; do
         case $param in
             -DallTests)  TESTS=$ALL_TESTS ;;
+            # Only show the mvn command. Testsuite debugging purposes.
+            -DonlyShowMvnCommand) ONLY_SHOW_MVN_COMMAND=true;;
             -*)      ADDIT_PARAMS="$ADDIT_PARAMS $param";;
             clean)   MVN_GOAL="$MVN_GOAL$param ";;
             test)    MVN_GOAL="$MVN_GOAL$param ";;
@@ -184,6 +186,7 @@ main() {
     export MVN MAVEN_HOME MVN_OPTS MVN_GOAL
 
     echo "$MVN $MVN_OPTIONS $MVN_GOAL $ADDIT_PARAMS"
+    if [ "true" == "$ONLY_SHOW_MVN_COMMAND" ] ; then exit; fi
 
     #  Execute in debug mode, or simply execute.
     if [ "x$MVN_DEBUG" != "x" ]; then
