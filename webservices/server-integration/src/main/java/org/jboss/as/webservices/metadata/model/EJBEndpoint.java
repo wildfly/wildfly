@@ -21,13 +21,11 @@
  */
 package org.jboss.as.webservices.metadata.model;
 
-import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
-import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
-import org.jboss.jandex.DotName;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -37,14 +35,20 @@ public final class EJBEndpoint extends AbstractEndpoint {
 
    public static final String EJB_COMPONENT_VIEW_NAME = EJBEndpoint.class.getPackage().getName() + "EjbComponentViewName";
    private final SessionBeanComponentDescription ejbMD;
-   private final ClassInfo classInfo;
    private final String viewName;
+   private final Set<String> securityRoles;
+   private final String authMethod;
+   private final boolean secureWsdlAccess;
+   private final String transportGuarantee;
 
-   public EJBEndpoint(final SessionBeanComponentDescription ejbMD, final ClassInfo classInfo, final String viewName) {
+   public EJBEndpoint(final SessionBeanComponentDescription ejbMD, final String viewName, final Set<String> securityRoles, final String authMethod, final boolean secureWsdlAccess, final String transportGuarantee) {
        super(ejbMD.getComponentName(), ejbMD.getComponentClassName());
        this.ejbMD = ejbMD;
-       this.classInfo = classInfo;
        this.viewName = viewName;
+       this.securityRoles = securityRoles;
+       this.authMethod = authMethod;
+       this.secureWsdlAccess = secureWsdlAccess;
+       this.transportGuarantee = transportGuarantee;
    }
 
    public String getComponentViewName() {
@@ -59,13 +63,24 @@ public final class EJBEndpoint extends AbstractEndpoint {
        return ejbMD.getDeploymentDescriptorEnvironment();
    }
 
-   public AnnotationInstance getAnnotation(final DotName annotationType) {
-       // TODO: still needed?
-       List<AnnotationInstance> list = classInfo.annotations().get(annotationType);
-       if (list != null) {
-           return list.get(0);
-       }
-       return null;
+   public String getSecurityDomain() {
+       return ejbMD.getSecurityDomain();
+   }
+
+   public Set<String> getSecurityRoles() {
+       return securityRoles;
+   }
+
+   public String getAuthMethod() {
+       return authMethod;
+   }
+
+   public boolean isSecureWsdlAccess() {
+       return secureWsdlAccess;
+   }
+
+   public String getTransportGuarantee() {
+       return transportGuarantee;
    }
 
 }
