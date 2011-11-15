@@ -53,5 +53,6 @@
         <module name="org.apache.neethi" />
         <module name="org.jboss.logging" />
         <module name="org.springframework.spring" optional="true" />
+        <module name="javax.wsdl4j.api" />
     </dependencies>
 </module>
