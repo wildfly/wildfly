@@ -42,7 +42,7 @@ class HornetQService implements Service<HornetQServer> {
     /** */
     private static final String HOST = "host";
     private static final String PORT = "port";
-    private static final String LOGGING_FACTORY = "org.jboss.as.messaging.HornetQLoggerFactory";
+    private static final String LOGGING_FACTORY = "org.hornetq.integration.jboss.logging.AS7HornetQLoggerFactory";
 
     /**
      * The name of the SocketBinding reference to use for HOST/PORT

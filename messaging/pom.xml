@@ -82,6 +82,11 @@
 
         <dependency>
             <groupId>org.hornetq</groupId>
+            <artifactId>hornetq-jboss-as-integration</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hornetq</groupId>
             <artifactId>hornetq-ra</artifactId>
         </dependency>
 
@@ -99,6 +104,11 @@
 	        <groupId>org.jboss.as</groupId>
 	        <artifactId>jboss-as-network</artifactId>
 	    </dependency>
+
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-transaction-spi</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
