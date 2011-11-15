@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.StaticManagedObject;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -44,7 +46,7 @@ public final class FixedInjectionSource extends InjectionSource {
      */
     public FixedInjectionSource(final Object value) {
         if (value == null) {
-            throw new IllegalArgumentException("value is null");
+            throw MESSAGES.nullVar("value");
         }
         managedReferenceFactory = new StaticManagedObject(value);
         this.value = value;

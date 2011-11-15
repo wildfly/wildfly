@@ -24,6 +24,7 @@ package org.jboss.as.ee.component;
 
 import static org.jboss.as.server.deployment.Attachments.MODULE;
 import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 import java.lang.reflect.Field;
 
@@ -67,7 +68,7 @@ public final class FieldInjectionTarget extends InjectionTarget {
         }
         final Field field = classIndex.getField(name);
         if (field == null) {
-            throw new DeploymentUnitProcessingException("No matching field found for '" + name + "'");
+            throw MESSAGES.fieldNotFound(name);
         }
         return new ManagedReferenceFieldInjectionInterceptorFactory(targetContextKey, valueContextKey, factoryValue, field, optional);
     }

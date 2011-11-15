@@ -71,6 +71,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 
 import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * A description of a generic Java EE component.  The description is pre-classloading so it references everything by name.
@@ -134,16 +135,16 @@ public class ComponentDescription {
     public ComponentDescription(final String componentName, final String componentClassName, final EEModuleDescription moduleDescription, final ServiceName deploymentUnitServiceName) {
         this.moduleDescription = moduleDescription;
         if (componentName == null) {
-            throw new IllegalArgumentException("name is null");
+            throw MESSAGES.nullVar("name");
         }
         if (componentClassName == null) {
-            throw new IllegalArgumentException("className is null");
+            throw MESSAGES.nullVar("componentClassName");
         }
         if (moduleDescription == null) {
-            throw new IllegalArgumentException("moduleName is null");
+            throw MESSAGES.nullVar("moduleDescription");
         }
         if (deploymentUnitServiceName == null) {
-            throw new IllegalArgumentException("deploymentUnitServiceName is null");
+            throw MESSAGES.nullVar("deploymentUnitServiceName");
         }
         serviceName = deploymentUnitServiceName.append("component").append(componentName);
         this.componentName = componentName;
@@ -424,7 +425,7 @@ public class ComponentDescription {
      */
     public void setNamingMode(final ComponentNamingMode namingMode) {
         if (namingMode == null) {
-            throw new IllegalArgumentException("namingMode is null");
+            throw MESSAGES.nullVar("namingMode");
         }
         this.namingMode = namingMode;
     }
@@ -445,10 +446,10 @@ public class ComponentDescription {
      */
     public void addDependency(ServiceName serviceName, ServiceBuilder.DependencyType type) {
         if (serviceName == null) {
-            throw new IllegalArgumentException("serviceName is null");
+            throw MESSAGES.nullVar("serviceName");
         }
         if (type == null) {
-            throw new IllegalArgumentException("type is null");
+            throw MESSAGES.nullVar("type");
         }
         final Map<ServiceName, ServiceBuilder.DependencyType> dependencies = this.dependencies;
         final ServiceBuilder.DependencyType dependencyType = dependencies.get(serviceName);
@@ -586,7 +587,7 @@ public class ComponentDescription {
                 //use the default constructor if no instanceFactory has been set
                 final Constructor<Object> constructor = (Constructor<Object>) componentClassIndex.getConstructor(EMPTY_CLASS_ARRAY);
                 if (constructor == null) {
-                    throw new DeploymentUnitProcessingException("Could not find default constructor for " + configuration.getComponentClass());
+                    throw MESSAGES.defaultConstructorNotFound(configuration.getComponentClass());
                 }
                 ValueManagedReferenceFactory factory = new ValueManagedReferenceFactory(new ConstructedValue<Object>(constructor, Collections.<Value<?>>emptyList()));
                 instantiators.addFirst(new ManagedReferenceInterceptorFactory(factory, instanceKey));
@@ -614,7 +615,7 @@ public class ComponentDescription {
                 try {
                     interceptorClass = classIndex.classIndex(interceptorClassName);
                 } catch (ClassNotFoundException e) {
-                    throw new RuntimeException("Could not load interceptor class " + interceptorClassName, e);
+                    throw MESSAGES.cannotLoadInterceptor(e, interceptorClassName);
                 }
 
 
@@ -624,7 +625,7 @@ public class ComponentDescription {
                 final ClassReflectionIndex<?> interceptorIndex = deploymentReflectionIndex.getClassIndex(interceptorClass.getModuleClass());
                 final Constructor<?> constructor = interceptorIndex.getConstructor(EMPTY_CLASS_ARRAY);
                 if (constructor == null) {
-                    throw new DeploymentUnitProcessingException("No default constructor for interceptor class " + interceptorClassName + " on component " + configuration.getComponentClass());
+                    throw MESSAGES.defaultConstructorNotFoundOnComponent(interceptorClassName, configuration.getComponentClass());
                 }
 
 
@@ -888,7 +889,7 @@ public class ComponentDescription {
                 try {
                     viewClass = module.getClassLoader().loadClass(view.getViewClassName());
                 } catch (ClassNotFoundException e) {
-                    throw new DeploymentUnitProcessingException("Could not load view class " + view.getViewClassName() + " for component " + configuration, e);
+                    throw MESSAGES.cannotLoadViewClass(e, view.getViewClassName(), configuration);
                 }
                 final ViewConfiguration viewConfiguration;
 

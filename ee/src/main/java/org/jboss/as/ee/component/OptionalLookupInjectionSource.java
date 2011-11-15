@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -50,7 +52,7 @@ public final class OptionalLookupInjectionSource extends InjectionSource {
 
     public OptionalLookupInjectionSource(final String lookupName) {
         if (lookupName == null) {
-            throw new IllegalArgumentException("lookupName is null");
+            throw MESSAGES.nullVar("lookupName");
         }
         this.lookupName = lookupName;
     }

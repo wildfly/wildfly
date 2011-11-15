@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.structure;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -74,7 +76,7 @@ public class JBossAppMetaDataParsingProcessor implements DeploymentUnitProcessor
                 deploymentUnit.putAttachment(Attachments.JBOSS_APP_METADATA, appMetaData);
             }
         } catch (Exception e) {
-            throw new DeploymentUnitProcessingException("Failed to parse " + applicationXmlFile, e);
+            throw MESSAGES.failedToParse(e, applicationXmlFile);
         } finally {
             VFSUtils.safeClose(inputStream);
         }

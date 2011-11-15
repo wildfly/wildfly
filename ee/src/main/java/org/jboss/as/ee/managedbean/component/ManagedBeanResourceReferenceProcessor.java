@@ -22,6 +22,9 @@
 
 package org.jboss.as.ee.managedbean.component;
 
+import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import org.jboss.as.ee.component.ComponentTypeInjectionSource;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -30,20 +33,17 @@ import org.jboss.as.ee.component.InjectionTarget;
 import org.jboss.as.ee.component.deployers.EEResourceReferenceProcessor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.logging.Logger;
 
 /**
  * User: jpai
  */
 public class ManagedBeanResourceReferenceProcessor implements EEResourceReferenceProcessor {
 
-    private static final Logger logger = Logger.getLogger(ManagedBeanResourceReferenceProcessor.class);
-
     private final String managedBeanClassName;
 
     public ManagedBeanResourceReferenceProcessor(final String managedBeanClassName) {
         if (managedBeanClassName == null || managedBeanClassName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Managed bean classname cannot be null or empty: " + managedBeanClassName);
+            throw MESSAGES.nullOrEmptyManagedBeanClassName();
         }
         this.managedBeanClassName = managedBeanClassName;
     }
@@ -55,7 +55,7 @@ public class ManagedBeanResourceReferenceProcessor implements EEResourceReferenc
 
     @Override
     public InjectionSource getResourceReferenceBindingSource(DeploymentPhaseContext phaseContext, EEModuleDescription eeModuleDescription, EEModuleClassDescription classDescription, String resourceReferenceType, String localContextName, InjectionTarget injectionTarget) throws DeploymentUnitProcessingException {
-        logger.debug("Processing @Resource of type: " + this.managedBeanClassName + " for ENC name: " + localContextName);
+        ROOT_LOGGER.debugf("Processing @Resource of type: %s for ENC name: %s", this.managedBeanClassName, localContextName);
         // ComponentType binding source for managed beans
         final InjectionSource bindingSource = new ComponentTypeInjectionSource(this.managedBeanClassName);
         return bindingSource;

@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -70,7 +72,7 @@ public final class EEModuleClassDescription {
 
     public void setInterceptorClassDescription(final InterceptorClassDescription interceptorClassDescription) {
         if(interceptorClassDescription == null) {
-            throw new IllegalArgumentException("InterceptorClassDescription cannot be null");
+            throw MESSAGES.nullVar("interceptorClassDescription");
         }
         this.interceptorClassDescription = interceptorClassDescription;
     }

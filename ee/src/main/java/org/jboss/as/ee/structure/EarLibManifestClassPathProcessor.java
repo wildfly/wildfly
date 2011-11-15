@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.structure;
 
+import static org.jboss.as.ee.EeLogger.SERVER_DEPLOYMENT_LOGGER;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -33,7 +35,6 @@ import org.jboss.as.server.deployment.module.AdditionalModuleProcessor;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
-import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.vfs.VirtualFile;
 
@@ -53,8 +54,6 @@ import java.util.jar.Manifest;
  * @author Stuart Douglas
  */
 public final class EarLibManifestClassPathProcessor implements DeploymentUnitProcessor {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment");
 
     private static final String[] EMPTY_STRING_ARRAY = {};
 
@@ -89,22 +88,21 @@ public final class EarLibManifestClassPathProcessor implements DeploymentUnitPro
             for (String item : items) {
                 final VirtualFile classPathFile = resourceRoot.getRoot().getParent().getChild(item);
                 if (!classPathFile.exists()) {
-                    log.warnf("Class Path entry %s in %s not found. ", item, resourceRoot.getRoot());
+                    SERVER_DEPLOYMENT_LOGGER.classPathEntryNotFound(item, resourceRoot.getRoot());
                 }
                 else if (isInside(classPathFile, toplevelRoot)) {
                     if (!files.containsKey(classPathFile)) {
-                        log.warnf("Class Path entry %s in %s does not point to a valid jar for a Class-Path reference.",item,resourceRoot.getRoot());
+                        SERVER_DEPLOYMENT_LOGGER.classPathEntryNotAJar(item, resourceRoot.getRoot());
                     } else {
                         final ResourceRoot target = files.get(classPathFile);
                         if (SubDeploymentMarker.isSubDeployment(target)) {
                             // for now we do not allow ear Class-Path references to subdeployments
-                            log.warnf("Class Path entry  in "
-                                    + resourceRoot.getRoot() + "  may not point to a sub deployment.");
+                            SERVER_DEPLOYMENT_LOGGER.classPathEntryNotASubDeployment(resourceRoot.getRoot());
                         } else if (!ModuleRootMarker.isModuleRoot(target)) {
                             // otherwise just add it to the lib dir
                             ModuleRootMarker.mark(target);
                             libResourceRoots.push(target);
-                            log.debugf("Resource %s added to logical lib directory due to Class-Path entry in %s",
+                            SERVER_DEPLOYMENT_LOGGER.debugf("Resource %s added to logical lib directory due to Class-Path entry in %s",
                                     classPathFile, target.getRoot());
                         }
                         // otherwise it is already part of lib, so we leave it alone for now
@@ -112,9 +110,9 @@ public final class EarLibManifestClassPathProcessor implements DeploymentUnitPro
                 } else if(item.startsWith("/")) {
                     ModuleIdentifier moduleIdentifier = externalModuleService.addExternalModule(item);
                     deploymentUnit.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, moduleIdentifier);
-                    log.debugf("Resource %s added as external jar %s", classPathFile, resourceRoot.getRoot());
+                    SERVER_DEPLOYMENT_LOGGER.debugf("Resource %s added as external jar %s", classPathFile, resourceRoot.getRoot());
                 } else {
-                    log.warnf("Class Path entry %s in %s does not point to a valid jar for a Class-Path reference.",item,resourceRoot.getRoot());
+                    SERVER_DEPLOYMENT_LOGGER.classPathEntryNotAJar(item, resourceRoot.getRoot());
                 }
             }
         }

@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.component.deployers;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -87,7 +89,7 @@ public class InterceptorsAnnotationParsingProcessor implements DeploymentUnitPro
         } else if (target instanceof ClassInfo) {
             processClassInterceptor(eeModuleDescription, ClassInfo.class.cast(target), annotation, index);
         } else {
-            throw new DeploymentUnitProcessingException("@Interceptors annotation is only allowed on methods and classes");
+            throw MESSAGES.classOrMethodOnlyAnnotation(annotation.name());
         }
     }
 
@@ -119,7 +121,7 @@ public class InterceptorsAnnotationParsingProcessor implements DeploymentUnitPro
         } else if (target instanceof ClassInfo) {
             processClassExcludeDefault(eeModuleDescription, ClassInfo.class.cast(target), index);
         } else {
-            throw new DeploymentUnitProcessingException("@ExcludeDefaultInterceptors annotation is only allowed on methods and classes");
+            throw MESSAGES.classOrMethodOnlyAnnotation(annotation.name());
         }
     }
 
@@ -146,7 +148,7 @@ public class InterceptorsAnnotationParsingProcessor implements DeploymentUnitPro
                 component.excludeClassInterceptors(methodIdentifierFromMethodInfo(methodInfo));
             }
         } else {
-            throw new DeploymentUnitProcessingException("@ExcludeDefaultInterceptors annotation is only allowed on methods");
+            throw MESSAGES.methodOnlyAnnotation(annotation.name());
         }
     }
 

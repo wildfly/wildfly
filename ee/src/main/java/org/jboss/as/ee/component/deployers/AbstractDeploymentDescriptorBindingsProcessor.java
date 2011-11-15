@@ -22,6 +22,7 @@
 package org.jboss.as.ee.component.deployers;
 
 import static org.jboss.as.ee.utils.InjectionUtils.getInjectionTarget;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
 import static org.jboss.as.server.deployment.Attachments.OSGI_MANIFEST;
 
 import java.lang.reflect.AccessibleObject;
@@ -147,7 +148,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
                             }
                         }
                         if (!ok) {
-                            throw new DeploymentUnitProcessingException("Injection target " + injectionTarget.getInjectionTargetName() + " on class " + injectionTarget.getInjectionTargetClass() + " is not compatible with the type of injection: " + classType);
+                            throw MESSAGES.invalidInjectionTarget(injectionTarget.getInjectionTargetName(), injectionTarget.getInjectionTargetClass(), classType);
                         }
                         classType = injectionTargetType;
                     }

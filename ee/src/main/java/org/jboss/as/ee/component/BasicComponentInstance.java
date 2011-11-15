@@ -22,6 +22,9 @@
 
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,7 +36,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.logging.Logger;
 
 /**
  * An abstract base component instance.
@@ -43,8 +45,6 @@ import org.jboss.logging.Logger;
 public class BasicComponentInstance implements ComponentInstance {
 
     private static final long serialVersionUID = -8099216228976950066L;
-
-    private static final Logger log = Logger.getLogger(BasicComponentInstance.class);
 
     public static final Object INSTANCE_KEY = new Object();
 
@@ -92,7 +92,7 @@ public class BasicComponentInstance implements ComponentInstance {
     public Interceptor getInterceptor(final Method method) throws IllegalStateException {
         Interceptor interceptor = methodMap.get(method);
         if (interceptor == null) {
-            throw new IllegalStateException("Method does not exist " + method);
+            throw MESSAGES.methodNotFound(method);
         }
         return interceptor;
     }
@@ -113,7 +113,7 @@ public class BasicComponentInstance implements ComponentInstance {
             interceptorContext.setTarget(instanceReference.get());
             preDestroy.processInvocation(interceptorContext);
         } catch (Exception e) {
-            log.warn("Failed to destroy component instance " + this, e);
+            ROOT_LOGGER.componentDestroyFailure(e, this);
         } finally {
             component.finishDestroy();
         }

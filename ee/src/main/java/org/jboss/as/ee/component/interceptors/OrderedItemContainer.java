@@ -29,6 +29,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import static java.lang.Integer.toHexString;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * Container for an ordered list of object. Objects are added to the container, and can be sorted and
@@ -47,14 +48,14 @@ public class OrderedItemContainer<T> {
 
     public void add(final T item, int priority) {
         if(sortedItems != null) {
-            throw new IllegalStateException("Cannot add any more items once getSortedItems() has been called");
+            throw MESSAGES.cannotAddMoreItems();
         }
         if(item == null) {
-            throw new IllegalArgumentException("item cannot be null");
+            throw MESSAGES.nullVar("item");
         }
         final T current = items.get(priority);
         if (current != null) {
-            throw new IllegalArgumentException("AS7-1042: can't add " + item + ", priority 0x" + toHexString(priority) + " is already taken by " + current);
+            throw MESSAGES.priorityAlreadyExists(item, toHexString(priority), current);
         }
         items.put(priority, item);
     }

@@ -33,6 +33,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 import java.util.Collections;
 import java.util.EnumSet;
@@ -242,7 +243,7 @@ public class EeExtension implements Extension {
 
             final String value = reader.getElementText();
             if (value == null || value.trim().isEmpty()) {
-                throw new XMLStreamException("Invalid value: " + value + " for '" + Element.EAR_SUBDEPLOYMENTS_ISOLATED + "' element", reader.getLocation());
+                throw MESSAGES.invalidValue(value, Element.EAR_SUBDEPLOYMENTS_ISOLATED.getLocalName(), reader.getLocation());
             }
             return value.trim();
         }

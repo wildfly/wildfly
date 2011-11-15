@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.component.deployers;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -34,21 +36,21 @@ public class EEResourceReferenceProcessorRegistry {
 
     public static void registerResourceReferenceProcessor(final EEResourceReferenceProcessor resourceReferenceProcessor) {
         if (resourceReferenceProcessor == null) {
-            throw new IllegalArgumentException("Cannot register a null resource reference processor");
+            throw MESSAGES.nullResourceReference();
         }
         final String resourceReferenceType = resourceReferenceProcessor.getResourceReferenceType();
         if (resourceReferenceType == null || resourceReferenceType.trim().isEmpty()) {
-            throw new IllegalArgumentException("Resource reference type of resource reference processor cannot be null or empty");
+            throw MESSAGES.nullOrEmptyResourceReferenceType();
         }
         resourceReferenceProcessors.put(resourceReferenceType, resourceReferenceProcessor);
     }
 
     public static void unregisterResourceReferenceProcessor(final String resourceReferenceType) {
         if (resourceReferenceType == null || resourceReferenceType.trim().isEmpty()) {
-            throw new IllegalArgumentException("Resource reference type of resource reference processor cannot be null or empty");
+            throw MESSAGES.nullOrEmptyResourceReferenceType();
         }
         if (!resourceReferenceProcessors.containsKey(resourceReferenceType)) {
-            throw new IllegalArgumentException("Resource reference for type: " + resourceReferenceType + " is not registered. Cannot unregister");
+            throw MESSAGES.resourceReferenceNotRegistered(resourceReferenceType);
         }
         resourceReferenceProcessors.remove(resourceReferenceType);
     }

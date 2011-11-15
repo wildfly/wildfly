@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * @author John Bailey
@@ -98,7 +99,7 @@ public class EEJndiViewExtension implements JndiViewExtension, Service<Void> {
                     try {
                         context.addEntries(deploymentNode.get("java:app"), new NamingContext(appStore, null));
                     } catch (NamingException e) {
-                        throw new OperationFailedException(e, new ModelNode().set("Failed to read java:app entries for application [" + appName + "]"));
+                        throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToRead("java:app", appName)));
                     }
                 }
 
@@ -141,7 +142,7 @@ public class EEJndiViewExtension implements JndiViewExtension, Service<Void> {
             try {
                 context.addEntries(moduleNode.get("java:module"), new NamingContext(moduleStore, null));
             } catch (NamingException e) {
-                throw new OperationFailedException(e, new ModelNode().set("Failed to read java:module entries for module [" + appName + ", " + moduleName + "]"));
+                throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToRead("java:module", appName, moduleName)));
             }
 
             final Collection<ComponentDescription> componentDescriptions = moduleDescription.getComponentDescriptions();
@@ -155,7 +156,7 @@ public class EEJndiViewExtension implements JndiViewExtension, Service<Void> {
                     try {
                         context.addEntries(componentNode.get("java:comp"), new NamingContext(compStore, null));
                     } catch (NamingException e) {
-                        throw new OperationFailedException(e, new ModelNode().set("Failed to read java:comp entries for component [" + appName + ", " + moduleName + ", " + componentName + "]"));
+                        throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToRead("java:comp", appName, moduleName, componentName)));
                     }
                 }
             }

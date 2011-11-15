@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -79,7 +81,7 @@ public final class EEModuleDescription {
      */
     public EEModuleClassDescription addOrGetLocalClassDescription(final String className) {
         if (className == null) {
-            throw new IllegalArgumentException("Name cannot be null");
+            throw MESSAGES.nullVar("name");
         }
         EEModuleClassDescription ret = classDescriptions.get(className);
         if (ret == null) {
@@ -116,13 +118,13 @@ public final class EEModuleDescription {
         final String componentName = description.getComponentName();
         final String componentClassName = description.getComponentClassName();
         if (componentName == null) {
-            throw new IllegalArgumentException("componentName is null");
+            throw MESSAGES.nullVar("componentName");
         }
         if (componentClassName == null) {
-            throw new IllegalArgumentException("componentClassName is null");
+            throw MESSAGES.nullVar("componentClassName");
         }
         if (componentsByName.containsKey(componentName)) {
-            throw new IllegalArgumentException("A component named '" + componentName + "' is already defined in this module");
+            throw MESSAGES.componentAlreadyDefined(componentName);
         }
         componentsByName.put(componentName, description);
         List<ComponentDescription> list = componentsByClassName.get(componentClassName);
@@ -182,7 +184,7 @@ public final class EEModuleDescription {
 
     public void setDistinctName(String distinctName) {
         if (distinctName == null) {
-            throw new IllegalArgumentException("Distinct name cannot be null");
+            throw MESSAGES.nullVar("distinctName");
         }
         this.distinctName = distinctName;
     }

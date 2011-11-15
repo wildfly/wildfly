@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.utils;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -47,7 +49,7 @@ public final class InjectionUtils {
         try {
             injectionTargetClass = classLoader.loadClass(injectionTargetClassName);
         } catch (ClassNotFoundException e) {
-            throw new DeploymentUnitProcessingException("Could not load " + injectionTargetClassName + " referenced in env-entry injection point ", e);
+            throw MESSAGES.cannotLoad(e, injectionTargetClassName);
         }
         final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(injectionTargetClass);
         String methodName = "set" + injectionTargetName.substring(0, 1).toUpperCase() + injectionTargetName.substring(1);
@@ -64,7 +66,7 @@ public final class InjectionUtils {
                         continue;
                     }
                     if (methodFound) {
-                        throw new DeploymentUnitProcessingException("Two setter methods for " + injectionTargetName + " on class " + injectionTargetClassName + " found when applying <injection-target> for env-entry");
+                        throw MESSAGES.multipleSetterMethodsFound(injectionTargetName, injectionTargetClassName);
                     }
                     methodFound = true;
                     method = m;
@@ -83,7 +85,7 @@ public final class InjectionUtils {
             }
         }
         if (field == null && method == null) {
-            throw new DeploymentUnitProcessingException("Could not resolve injection point " + injectionTargetName + " on class " + injectionTargetClassName + " specified in web.xml");
+            throw MESSAGES.cannotResolveInjectionPoint(injectionTargetName, injectionTargetClassName);
         }
 
         return field != null ? field : method;

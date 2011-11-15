@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * An injection source which injects a component based upon its type.
@@ -52,11 +53,11 @@ public final class ComponentTypeInjectionSource extends InjectionSource {
         final Set<ViewDescription> componentsForViewName = applicationDescription.getComponentsForViewName(typeName);
         final Iterator<ViewDescription> iterator = componentsForViewName.iterator();
         if (!iterator.hasNext()) {
-            throw new DeploymentUnitProcessingException("No component found for type '" + typeName + "'");
+            throw MESSAGES.componentNotFound(typeName);
         }
         final ViewDescription description = iterator.next();
         if (iterator.hasNext()) {
-            throw new DeploymentUnitProcessingException("Multiple components found for type '" + typeName + "'");
+            throw MESSAGES.multipleComponentsFound(typeName);
         }
 
         //TODO: should ComponentView also be a managed reference factory?
