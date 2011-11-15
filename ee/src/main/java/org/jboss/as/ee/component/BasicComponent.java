@@ -22,6 +22,7 @@
 
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -95,7 +96,7 @@ public class BasicComponent implements Component {
             // Block until successful start
             synchronized (this) {
                 if (stopping.get()) {
-                    throw new IllegalStateException("Component is stopped");
+                    throw MESSAGES.componentIsStopped();
                 }
                 while (!gate) {
                     // TODO: check for failure condition
@@ -103,7 +104,7 @@ public class BasicComponent implements Component {
                         wait();
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
-                        throw new IllegalStateException("Component not available (interrupted)");
+                        throw MESSAGES.componentNotAvailable();
                     }
                 }
             }
@@ -153,7 +154,7 @@ public class BasicComponent implements Component {
         try {
             componentInstancePostConstructInterceptor.processInvocation(interceptorContext);
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to construct component instance", e);
+            throw MESSAGES.componentConstructionFailure(e);
         }
         // return the component instance
         return basicComponentInstance;

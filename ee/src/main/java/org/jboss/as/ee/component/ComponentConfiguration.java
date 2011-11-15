@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -344,7 +346,7 @@ public class ComponentConfiguration {
      */
     public void setComponentCreateServiceFactory(final ComponentCreateServiceFactory componentCreateServiceFactory) {
         if (componentCreateServiceFactory == null) {
-            throw new IllegalArgumentException("componentCreateServiceFactory is null");
+            throw MESSAGES.nullVar("componentCreateServiceFactory");
         }
         this.componentCreateServiceFactory = componentCreateServiceFactory;
     }

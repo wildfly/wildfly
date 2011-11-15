@@ -37,6 +37,7 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Iterator;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
 import static org.jboss.as.server.deployment.Attachments.MODULE;
 import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
@@ -75,14 +76,11 @@ public final class MethodInjectionTarget extends InjectionTarget {
         }
         Iterator<Method> iterator = methods.iterator();
         if (!iterator.hasNext()) {
-            throw new DeploymentUnitProcessingException("No matching method found for method " + name +
-                    "(" + paramType + ")" +
-                    " on " + className);
+            throw MESSAGES.methodNotFound(name, paramType, className);
         }
         Method method = iterator.next();
         if (iterator.hasNext()) {
-            throw new DeploymentUnitProcessingException("More than one matching method found for method '" + name + "(" + paramType + ")" +
-                    " on " + className);
+            throw MESSAGES.multipleMethodsFound(name, paramType, className);
         }
         return new ManagedReferenceMethodInjectionInterceptorFactory(targetContextKey, valueContextKey, factoryValue, method, optional);
     }

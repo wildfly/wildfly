@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -92,7 +93,7 @@ public class GlobalModulesDefinition extends ListAttributeDefinition {
     @Override
     protected void addValueTypeDescription(ModelNode node, ResourceBundle bundle) {
         // This method being used indicates a misuse of this class
-        throw new UnsupportedOperationException("Use the ResourceDescriptionResolver variant");
+        throw MESSAGES.resourceDescriptionResolverError();
     }
 
     @Override

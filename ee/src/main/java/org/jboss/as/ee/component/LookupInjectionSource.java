@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -38,7 +40,7 @@ public final class LookupInjectionSource extends InjectionSource {
 
     public LookupInjectionSource(final String lookupName) {
         if (lookupName == null) {
-            throw new IllegalArgumentException("lookupName is null");
+            throw MESSAGES.nullVar("lookupName");
         }
         this.lookupName = lookupName;
     }

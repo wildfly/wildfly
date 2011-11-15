@@ -21,12 +21,13 @@
  */
 package org.jboss.as.ee.metadata;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.proxy.MethodIdentifier;
-import org.jboss.logging.Logger;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -45,8 +46,6 @@ import java.util.Set;
  * @author Stuart Douglas
  */
 public class MethodAnnotationAggregator {
-
-    private static final Logger logger = Logger.getLogger(MethodAnnotationAggregator.class);
 
     public static <A extends Annotation, T> RuntimeAnnotationInformation<T> runtimeAnnotationInformation(final Class<?> componentClass, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex index, final Class<A> annotationType) {
         final HashSet<MethodIdentifier> methodIdentifiers = new HashSet<MethodIdentifier>();
@@ -78,7 +77,7 @@ public class MethodAnnotationAggregator {
                         } else {
                             //this should not happen
                             //but if it does, we give some info
-                            throw new RuntimeException("Could not resolve method " + entry.getKey() + " on class " + c + " with annotations " + entry.getValue());
+                            throw MESSAGES.cannotResolveMethod(entry.getKey(), c, entry.getValue());
                         }
                     }
                 }

@@ -22,6 +22,9 @@
 
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,7 +41,6 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.invocation.proxy.ProxyFactory;
-import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -51,7 +53,6 @@ import org.jboss.msc.value.InjectedValue;
  */
 public final class ViewService implements Service<ComponentView> {
 
-    private static final Logger logger = Logger.getLogger(ViewService.class);
     private final InjectedValue<Component> componentInjector = new InjectedValue<Component>();
     private final Map<Method, InterceptorFactory> viewInterceptorFactories;
     private final Map<Method, InterceptorFactory> clientInterceptorFactories;
@@ -179,7 +180,7 @@ public final class ViewService implements Service<ComponentView> {
         public Method getMethod(final String name, final String descriptor) {
             Method method = this.methods.get(new MethodDescription(name, descriptor));
             if (method == null) {
-                throw new IllegalArgumentException("Could not find method " + name + " " + descriptor + " on view " + viewClass + " of " + component.getComponentClass());
+                throw MESSAGES.viewMethodNotFound(name, descriptor, viewClass, component.getComponentClass());
             }
             return method;
         }
@@ -267,7 +268,7 @@ public final class ViewService implements Service<ComponentView> {
                 clientPostConstructInterceptor.processInvocation(context);
             } catch (Exception e) {
                 // TODO: What is the best exception type to throw here?
-                throw new RuntimeException("Failed to instantiate component view", e);
+                throw MESSAGES.componentViewConstructionFailure(e);
             }
             return new ManagedReference() {
 
@@ -279,7 +280,7 @@ public final class ViewService implements Service<ComponentView> {
                         interceptorContext.putPrivateData(Component.class, component);
                         clientPreDestroyInterceptor.processInvocation(interceptorContext);
                     } catch (Exception e) {
-                        logger.warn("Exception while invoking pre-destroy interceptor for component class: " + component.getComponentClass(), e);
+                        ROOT_LOGGER.preDestroyInterceptorFailure(e, component.getComponentClass());
                     }
                 }
 

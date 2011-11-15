@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 /**
  * A binding into JNDI.  This class contains the mechanism to construct the binding service.  In particular
  * it represents <b>only</b> the description of the binding; it does not represent injection or any other parameters
@@ -42,10 +44,10 @@ public final class BindingConfiguration {
      */
     public BindingConfiguration(final String name, final InjectionSource source) {
         if (name == null) {
-            throw new IllegalArgumentException("Name cannot be null while constructing " + this.getClass().getName());
+            throw MESSAGES.nullVar("name");
         }
         if (source == null) {
-            throw new IllegalArgumentException("Source cannot be null while constructing " + this.getClass().getName());
+            throw MESSAGES.nullVar("source");
         }
         this.name = name;
         this.source = source;

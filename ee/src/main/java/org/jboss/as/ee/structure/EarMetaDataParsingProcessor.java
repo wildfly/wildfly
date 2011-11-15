@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.structure;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -77,7 +79,7 @@ public class EarMetaDataParsingProcessor implements DeploymentUnitProcessor {
                 }
             }
         } catch (Exception e) {
-            throw new DeploymentUnitProcessingException("Failed to parse " + applicationXmlFile, e);
+            throw MESSAGES.failedToParse(e, applicationXmlFile);
         } finally {
             VFSUtils.safeClose(inputStream);
         }

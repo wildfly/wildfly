@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Map;
@@ -96,7 +98,7 @@ final class ManagedReferenceFieldInjectionInterceptorFactory implements Intercep
             } else {
                 target = targetReference.get().getInstance();
                 if (target == null) {
-                    throw new IllegalStateException("No injection target found");
+                    throw MESSAGES.injectionTargetNotFound();
                 }
             }
             final ManagedReference reference = factory.getReference();

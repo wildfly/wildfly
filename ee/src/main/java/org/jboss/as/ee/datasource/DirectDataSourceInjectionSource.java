@@ -22,6 +22,9 @@
 
 package org.jboss.as.ee.datasource;
 
+import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
@@ -33,7 +36,6 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.invocation.proxy.ProxyConfiguration;
 import org.jboss.invocation.proxy.ProxyFactory;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
@@ -56,8 +58,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Jason T. Greene
  */
 public class DirectDataSourceInjectionSource extends InjectionSource {
-
-    private static final Logger logger = Logger.getLogger(DirectDataSourceInjectionSource.class);
 
     public static final ServiceName JBOSS_TXN = ServiceName.JBOSS.append("txn");
     public static final ServiceName JBOSS_TXN_TRANSACTION_MANAGER = JBOSS_TXN.append("TransactionManager");
@@ -121,7 +121,7 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
             classIndex = deploymentReflectionIndex.getClassIndex(clazz);
             Constructor<?> ctor = classIndex.getConstructor(NO_CLASSES);
             if (ctor == null) {
-                throw new DeploymentUnitProcessingException("Could not found no-arg constructor for @DataSourceDefinition class " + className);
+                throw MESSAGES.defaultConstructorNotFound("@DataSourceDefinition", className);
             }
             object = ctor.newInstance();
 
@@ -133,7 +133,7 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
                 final ServiceController<?> syncController = phaseContext.getServiceRegistry().getService(JBOSS_TXN_SYNCHRONIZATION_REGISTRY);
                 final ServiceController<?> managerController = phaseContext.getServiceRegistry().getService(JBOSS_TXN_TRANSACTION_MANAGER);
                 if (syncController == null || managerController == null) {
-                    logger.warn("Transactional datasource " + className + " will not be enlisted in the transaction as the transaction subsystem is not available");
+                    ROOT_LOGGER.transactionSubsystemNotAvailable(className);
                 } else {
                     try {
                         final TransactionSynchronizationRegistry transactionSynchronizationRegistry = (TransactionSynchronizationRegistry) syncController.getValue();
@@ -147,7 +147,7 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
                         ProxyFactory<?> proxyFactory = new ProxyFactory(proxyConfiguration);
                         object = proxyFactory.newInstance(new DataSourceTransactionProxyHandler(object, transactionManager, transactionSynchronizationRegistry));
                     } catch (Exception e) {
-                        logger.warn("Transactional datasource " + className + " could not be proxied and will not be enlisted in transactions automatically", e);
+                        ROOT_LOGGER.cannotProxyTransactionalDatasource(e, className);
                     }
                 }
             }
@@ -196,14 +196,13 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
         final Method setterMethod = ClassReflectionIndexUtil.findMethod(deploymentReflectionIndex, clazz, methodIdentifier);
         if (setterMethod == null) {
             // just log a WARN message
-            logger.warn("Ignoring property " + name + " due to missing setter method: " + methodName + "("
-                    + paramType.getName() + ") on datasource class: " + clazz.getName());
+            ROOT_LOGGER.ignoringProperty(name, methodName, paramType.getName(), clazz.getName());
             return;
         }
         try {
             setterMethod.invoke(object, value);
         } catch (Exception e) {
-            throw new RuntimeException("Could not set property " + name + " on datasource class " + clazz.getName(), e);
+            throw MESSAGES.cannotSetProperty(e, name, clazz.getName());
         }
     }
 

@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ee.utils;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -182,17 +183,17 @@ public class DescriptorUtils {
      */
     public static String validateDescriptor(String descriptor) {
         if (descriptor.length() == 0) {
-            throw new RuntimeException("descriptors may not be empty");
+            throw MESSAGES.cannotBeEmpty("descriptors");
         }
         if (descriptor.length() > 1) {
             if (descriptor.startsWith("L")) {
                 if (!descriptor.endsWith(";")) {
-                    throw new RuntimeException(descriptor + " is not a valid descriptor");
+                    throw MESSAGES.invalidDescriptor(descriptor);
                 }
             } else if (descriptor.startsWith("[")) {
 
             } else {
-                throw new RuntimeException(descriptor + " is not a valid descriptor");
+                    throw MESSAGES.invalidDescriptor(descriptor);
             }
         } else {
             char type = descriptor.charAt(0);
@@ -208,7 +209,7 @@ public class DescriptorUtils {
                 case 'C':
                     break;
                 default:
-                    throw new RuntimeException(descriptor + " is not a valid descriptor");
+                    throw MESSAGES.invalidDescriptor(descriptor);
             }
         }
         return descriptor;

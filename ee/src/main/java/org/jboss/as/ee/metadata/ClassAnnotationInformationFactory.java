@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ee.metadata;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.jandex.AnnotationInstance;
@@ -102,7 +104,7 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
             } else if (instance.target() instanceof MethodParameterInfo) {
                 //ignore for now
             } else {
-                throw new RuntimeException("Unknown AnnotationTarget type: " + instance.target());
+                throw MESSAGES.unknownAnnotationTargetType(instance.target());
             }
         }
 
@@ -176,7 +178,7 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
         } else if (annotationTarget instanceof MethodParameterInfo) {
             return ((MethodParameterInfo) annotationTarget).method().declaringClass();
         } else {
-            throw new RuntimeException("Unknown AnnotationTarget type: " + annotationTarget);
+            throw MESSAGES.unknownAnnotationTargetType(annotationTarget);
         }
     }
 

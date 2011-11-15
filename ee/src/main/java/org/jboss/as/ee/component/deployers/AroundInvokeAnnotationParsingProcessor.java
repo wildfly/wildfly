@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.component.deployers;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.util.List;
 
 import javax.interceptor.AroundInvoke;
@@ -68,9 +70,9 @@ public class AroundInvokeAnnotationParsingProcessor implements DeploymentUnitPro
     public void undeploy(final DeploymentUnit context) {
     }
 
-    private void processAroundInvoke(final EEModuleDescription eeModuleDescription, final AnnotationTarget target) {
+    private void processAroundInvoke(final EEModuleDescription eeModuleDescription, final AnnotationTarget target) throws DeploymentUnitProcessingException {
         if (!(target instanceof MethodInfo)) {
-            throw new IllegalArgumentException("@AroundInvoke is only valid on method targets.");
+            throw MESSAGES.methodOnlyAnnotation(AROUND_INVOKE_ANNOTATION_NAME);
         }
         final MethodInfo methodInfo = MethodInfo.class.cast(target);
         final ClassInfo classInfo = methodInfo.declaringClass();
@@ -86,17 +88,17 @@ public class AroundInvokeAnnotationParsingProcessor implements DeploymentUnitPro
         final Type[] args = methodInfo.args();
         switch (args.length) {
             case 0:
-                throw new IllegalArgumentException("Invalid argument signature.  Methods annotated with " + AROUND_INVOKE_ANNOTATION_NAME + " must have a single InvocationContext argument.");
+                throw new IllegalArgumentException(MESSAGES.invalidSignature(methodInfo.name(), AROUND_INVOKE_ANNOTATION_NAME, classInfo.name(), "Object methodName(InvocationContext ctx)"));
             case 1:
                 if (!InvocationContext.class.getName().equals(args[0].name().toString())) {
-                    throw new IllegalArgumentException("Invalid argument type.  Methods annotated with " + AROUND_INVOKE_ANNOTATION_NAME + " must have a single InvocationContext argument.");
+                    throw new IllegalArgumentException(MESSAGES.invalidSignature(methodInfo.name(), AROUND_INVOKE_ANNOTATION_NAME, classInfo.name(), "Object methodName(InvocationContext ctx)"));
                 }
                 break;
             default:
-                throw new IllegalArgumentException("Invalid number of arguments for method " + methodInfo.name() + " annotated with " + AROUND_INVOKE_ANNOTATION_NAME + " on class " + classInfo.name());
+                throw new IllegalArgumentException(MESSAGES.invalidNumberOfArguments(methodInfo.name(), AROUND_INVOKE_ANNOTATION_NAME, classInfo.name()));
         }
         if (!methodInfo.returnType().name().toString().equals(Object.class.getName())) {
-            throw new IllegalArgumentException("@AroundInvoke methods must have an Object return type for " + methodInfo.name() + " annotated with " + AROUND_INVOKE_ANNOTATION_NAME + " on class " + classInfo.name());
+            throw MESSAGES.invalidReturnType(Object.class.getName(), methodInfo.name(), AROUND_INVOKE_ANNOTATION_NAME, classInfo.name());
         }
     }
 }

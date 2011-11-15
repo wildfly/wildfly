@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.datasource;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -70,8 +72,7 @@ public class DataSourceDefinitionAnnotationParser implements DeploymentUnitProce
             for (AnnotationInstance annotation : datasourceDefinitions) {
                 final AnnotationTarget target = annotation.target();
                 if (target instanceof ClassInfo == false) {
-                    throw new DeploymentUnitProcessingException("@DataSourceDefinitions can only be applied " +
-                            "on class. " + target + " is not a class");
+                    throw MESSAGES.classOnlyAnnotation("@DataSourceDefinitions", target);
                 }
                 // get the nested @DataSourceDefinition out of the outer @DataSourceDefinitions
                 List<AnnotationInstance> datasources = this.getNestedDataSourceAnnotations(annotation);
@@ -89,8 +90,7 @@ public class DataSourceDefinitionAnnotationParser implements DeploymentUnitProce
             for (AnnotationInstance datasource : datasources) {
                 final AnnotationTarget target = datasource.target();
                 if (target instanceof ClassInfo == false) {
-                    throw new DeploymentUnitProcessingException("@DataSourceDefinition can only be applied " +
-                            "on class. " + target + " is not a class");
+                    throw MESSAGES.classOnlyAnnotation("@DataSourceDefinition", target);
                 }
                 // create binding configurations out of it
                 this.processDataSourceDefinition(eeModuleDescription, datasource, (ClassInfo) target, applicationClasses);
@@ -114,7 +114,7 @@ public class DataSourceDefinitionAnnotationParser implements DeploymentUnitProce
 
         final AnnotationValue nameValue = datasourceAnnotation.value("name");
         if (nameValue == null || nameValue.asString().isEmpty()) {
-            throw new IllegalArgumentException("@DataSourceDefinition annotations must provide a name.");
+            throw MESSAGES.annotationAttributeMissing("@DataSourceDefinition", "name");
         }
         String name = nameValue.asString();
         // if the name doesn't have a namespace then it defaults to java:comp/env
@@ -124,7 +124,7 @@ public class DataSourceDefinitionAnnotationParser implements DeploymentUnitProce
 
         final AnnotationValue classValue = datasourceAnnotation.value("className");
         if (classValue == null || classValue.asString().equals(Object.class.getName())) {
-            throw new IllegalArgumentException("@DataSourceDefinition annotations must provide a driver class name.");
+            throw MESSAGES.annotationAttributeMissing("@DataSourceDefinition", "className");
         }
 
         final String type = classValue.asString();

@@ -30,7 +30,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
-import org.jboss.logging.Logger;
 
 /**
  * {@link DeploymentUnitProcessor} responsible for setting the default ear subdeployments isolation for each .ear
@@ -45,8 +44,6 @@ import org.jboss.logging.Logger;
  * User: Jaikiran Pai
  */
 public class DefaultEarSubDeploymentsIsolationProcessor implements DeploymentUnitProcessor {
-
-    private static final Logger logger = Logger.getLogger(DefaultEarSubDeploymentsIsolationProcessor.class);
 
     private volatile boolean earSubDeploymentsIsolated;
 

@@ -21,6 +21,9 @@
  */
 package org.jboss.as.ee.component.deployers;
 
+import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -38,7 +41,6 @@ import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.spec.EnvironmentEntriesMetaData;
 import org.jboss.metadata.javaee.spec.EnvironmentEntryMetaData;
 import org.jboss.metadata.javaee.spec.MessageDestinationReferenceMetaData;
@@ -54,8 +56,6 @@ import org.jboss.metadata.javaee.spec.ResourceReferencesMetaData;
  * @author Stuart Douglas
  */
 public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBindingsProcessor {
-
-    private static final Logger logger = Logger.getLogger(ResourceReferenceProcessor.class);
 
 
     @Override
@@ -86,7 +86,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                 try {
                     classType = classLoader.loadClass(resourceEnvRef.getType());
                 } catch (ClassNotFoundException e) {
-                    throw new DeploymentUnitProcessingException("Could not load " + resourceEnvRef.getType() + " referenced in env-entry ", e);
+                    throw MESSAGES.cannotLoad(e, resourceEnvRef.getType());
                 }
             }
             // our injection (source) comes from the local (ENC) lookup, no matter what.
@@ -98,7 +98,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                 bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(resourceEnvRef.getLookupName()));
             } else {
                 if (classType == null) {
-                    throw new DeploymentUnitProcessingException("Could not determine type for resource-env-ref " + name);
+                    throw MESSAGES.cannotDetermineType(name);
                 }
                 //check if it is a well known type
                 final String lookup = ResourceInjectionAnnotationParsingProcessor.FIXED_LOCATIONS.get(classType.getName());
@@ -107,7 +107,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                 } else {
                     //TODO: how are we going to handle these? Previously they would have been handled by jboss-*.xml
                     if (resourceEnvRef.getResourceEnvRefName().startsWith("java:")) {
-                        logger.warnf("Could not resolve resource-env-ref %s", name);
+                        ROOT_LOGGER.cannotResolve("resource-env-ref", name);
                         continue;
                     } else {
                         bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource("java:jboss/resources/" + resourceEnvRef.getResourceEnvRefName()));
@@ -138,7 +138,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                 try {
                     classType = classLoader.loadClass(resourceRef.getType());
                 } catch (ClassNotFoundException e) {
-                    throw new DeploymentUnitProcessingException("Could not load " + resourceRef.getType() + " referenced in env-entry ", e);
+                    throw MESSAGES.cannotLoad(e, resourceRef.getType());
                 }
             }
 
@@ -154,18 +154,18 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                     try {
                         bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(new URI(resourceRef.getResUrl())));
                     } catch (URISyntaxException e) {
-                        throw new DeploymentUnitProcessingException("Unable to parse resource-ref URI: " + resourceRef.getResUrl(), e);
+                        throw MESSAGES.cannotParseResourceRefUri(e, resourceRef.getResUrl());
                     }
                 } else {
                     try {
                         bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(new URL(resourceRef.getResUrl())));
                     } catch (MalformedURLException e) {
-                        throw new DeploymentUnitProcessingException("Unable to parse resource-ref URL: " + resourceRef.getResUrl(), e);
+                        throw MESSAGES.cannotParseResourceRefUri(e, resourceRef.getResUrl());
                     }
                 }
             } else {
                 if (classType == null) {
-                    throw new DeploymentUnitProcessingException("Could not determine type for resource-ref " + name);
+                    throw MESSAGES.cannotDetermineType(name);
                 }
                 //check if it is a well known type
                 final String lookup = ResourceInjectionAnnotationParsingProcessor.FIXED_LOCATIONS.get(classType.getName());
@@ -175,7 +175,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                     bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource("java:jboss/resources/" + resourceRef.getResourceRefName()));
                 } else {
                     //if we cannot resolve it just log
-                    logger.warnf("Could not resolve resource-ref %s", name);
+                    ROOT_LOGGER.cannotResolve("resource-env-ref", name);
                     continue;
                 }
             }
@@ -203,13 +203,13 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                 try {
                     classType = this.loadClass(envEntry.getType(), classLoader);
                 } catch (ClassNotFoundException e) {
-                    throw new DeploymentUnitProcessingException("Could not load " + envEntry.getType() + " referenced in env-entry ", e);
+                    throw MESSAGES.cannotLoad(e, envEntry.getType());
                 }
             }
             final String value = envEntry.getValue();
             final String lookup = envEntry.getLookupName();
             if (!isEmpty(value) && !isEmpty(lookup)) {
-                throw new DeploymentUnitProcessingException("Cannot specify both a <env-entry-value> and a <lookup-name> in an environemnt entry.");
+                throw MESSAGES.cannotSpecifyBoth("<env-entry-value>", "<lookup-name>");
             } else if (isEmpty(lookup) && isEmpty(value)) {
                 //if no value is provided then it is not an error
                 //this reference should simply be ignored
@@ -221,7 +221,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
             LookupInjectionSource injectionSource = new LookupInjectionSource(name);
             classType = processInjectionTargets(moduleDescription, componentDescription, applicationClasses, injectionSource, classLoader, deploymentReflectionIndex, envEntry, classType);
             if (classType == null) {
-                throw new DeploymentUnitProcessingException("Could not determine type for <env-entry> " + name + " please specify the <env-entry-type>.");
+                throw MESSAGES.cannotDetermineType("<env-entry>", name, "<env-entry-type>");
             }
 
 
@@ -247,19 +247,19 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                 bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(Boolean.valueOf(value)));
             } else if (type.equals(Character.class.getName()) || type.equals("char")) {
                 if (value.length() != 1) {
-                    throw new DeploymentUnitProcessingException("env-entry of type java.lang.Character is not exactly one character long " + value);
+                    throw MESSAGES.invalidCharacterLength("env-entry", value);
                 }
                 bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(value.charAt(0)));
             } else if (type.equals(Class.class.getName())) {
                 try {
                     bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(classLoader.loadClass(value)));
                 } catch (ClassNotFoundException e) {
-                    throw new DeploymentUnitProcessingException("Could not load class " + value + " specified in env-entry");
+                    throw MESSAGES.cannotLoad(value);
                 }
             } else if (classType.isEnum() || (classType.getEnclosingClass() != null && classType.getEnclosingClass().isEnum())) {
                 bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(Enum.valueOf((Class) classType, value)));
             } else {
-                throw new DeploymentUnitProcessingException("Unkown env-entry type " + type);
+                throw MESSAGES.unknownElementType("env-entry", type);
             }
             bindings.add(bindingConfiguration);
         }
@@ -287,7 +287,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                 try {
                     classType = classLoader.loadClass(messageRef.getType());
                 } catch (ClassNotFoundException e) {
-                    throw new DeploymentUnitProcessingException("Could not load " + messageRef.getType() + " referenced in env-entry ", e);
+                    throw MESSAGES.cannotLoad(e, messageRef.getType());
                 }
             }
             // our injection (source) comes from the local (ENC) lookup, no matter what.
@@ -302,7 +302,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                 bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(messageRef.getMappedName()));
                 bindings.add(bindingConfiguration);
             } else {
-                logger.warn("Could not resolve message-destination-ref " + name);
+                ROOT_LOGGER.cannotResolve("message-destination-ref", name);
             }
         }
         return bindings;
@@ -320,7 +320,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
 
     private Class<?> loadClass(String className, ClassLoader cl) throws ClassNotFoundException {
         if (className == null || className.trim().isEmpty()) {
-            throw new IllegalArgumentException("Classname cannot be null or empty: " + className);
+            throw MESSAGES.cannotBeNullOrEmpty("Classname", className);
         }
         if (className.equals(void.class.getName())) {
             return void.class;

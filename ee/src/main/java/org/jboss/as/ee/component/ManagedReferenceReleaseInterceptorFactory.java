@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.naming.ManagedReference;
@@ -46,7 +48,7 @@ class ManagedReferenceReleaseInterceptorFactory implements InterceptorFactory {
      */
     public ManagedReferenceReleaseInterceptorFactory(final Object contextKey) {
         if (contextKey == null) {
-            throw new IllegalArgumentException("contextKey is null");
+            throw MESSAGES.nullVar("contextKey");
         }
         this.contextKey = contextKey;
     }
@@ -75,7 +77,7 @@ class ManagedReferenceReleaseInterceptorFactory implements InterceptorFactory {
          */
         public ManagedReferenceReleaseInterceptor(final AtomicReference<ManagedReference> referenceReference) {
             if (referenceReference == null) {
-                throw new IllegalArgumentException("referenceReference is null");
+                throw MESSAGES.nullVar("referenceReference");
             }
             this.referenceReference = referenceReference;
         }

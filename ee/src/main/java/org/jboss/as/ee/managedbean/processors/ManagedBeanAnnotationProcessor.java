@@ -22,6 +22,9 @@
 
 package org.jboss.as.ee.managedbean.processors;
 
+import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
@@ -52,7 +55,6 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-import org.jboss.logging.Logger;
 
 /**
  * Deployment unit processor responsible for scanning a deployment to find classes with {@code javax.annotation.ManagedBean} annotations.
@@ -63,8 +65,6 @@ import org.jboss.logging.Logger;
 public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
 
     static final DotName MANAGED_BEAN_ANNOTATION_NAME = DotName.createSimple(ManagedBean.class.getName());
-
-    private static final Logger logger = Logger.getLogger(ManagedBeanAnnotationProcessor.class);
 
     /**
      * Check the deployment annotation index for all classes with the @ManagedBean annotation.  For each class with the
@@ -90,7 +90,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         for (AnnotationInstance instance : instances) {
             AnnotationTarget target = instance.target();
             if (!(target instanceof ClassInfo)) {
-                throw new DeploymentUnitProcessingException("The ManagedBean annotation is only allowed at the class level: " + target);
+                throw MESSAGES.classOnlyAnnotation("@ManagedBean", target);
             }
             final ClassInfo classInfo = (ClassInfo) target;
             // skip if it's not a valid managed bean class
@@ -141,14 +141,12 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         final String className = managedBeanClass.name().toString();
         // must *not* be a interface
         if (Modifier.isInterface(flags)) {
-            logger.warn("[Managed Bean spec, section MB.2.1.1] Managed bean implementation class MUST NOT be a interface - "
-                    + className + " is an interface, hence won't be considered as a managed bean");
+            ROOT_LOGGER.invalidManagedBeanInterface("MB.2.1.1", className);
             return false;
         }
         // bean class must *not* be abstract or final
         if (Modifier.isAbstract(flags) || Modifier.isFinal(flags)) {
-            logger.warn("[Managed Bean spec, section MB.2.1.1] Managed bean implementation class MUST NOT be abstract or final - "
-                    + className + " won't be considered as a managed bean, since it doesn't meet that requirement");
+            ROOT_LOGGER.invalidManagedBeanAbstractOrFinal("MB.2.1.1", className);
             return false;
         }
         // valid class

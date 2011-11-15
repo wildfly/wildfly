@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
@@ -100,7 +102,7 @@ public class BasicComponentCreateService implements Service<Component> {
     public synchronized Component getValue() throws IllegalStateException, IllegalArgumentException {
         Component component = this.component;
         if (component == null) {
-            throw new IllegalStateException("Service not started");
+            throw MESSAGES.serviceNotStarted();
         }
         return component;
     }

@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.structure;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -174,8 +176,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
 
                     final VirtualFile moduleFile = virtualFile.getChild(module.getFileName());
                     if (!moduleFile.exists()) {
-                        throw new DeploymentUnitProcessingException("Unable to process modules in application.xml for EAR ["
-                                + virtualFile + "], module file " + module.getFileName() + " not found");
+                        throw MESSAGES.cannotProcessEarModule(virtualFile, module.getFileName());
                     }
 
 
@@ -194,7 +195,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                     if (alternativeDD != null && alternativeDD.trim().length() > 0) {
                         final VirtualFile alternateDeploymentDescriptor = deploymentRoot.getRoot().getChild(alternativeDD);
                         if (!alternateDeploymentDescriptor.exists()) {
-                            throw new DeploymentUnitProcessingException("Could not find alternate deployment descriptor " + alternateDeploymentDescriptor + " specified for " + moduleFile);
+                            throw MESSAGES.alternateDeploymentDescriptor(alternateDeploymentDescriptor, moduleFile);
                         }
                         switch (module.getType()) {
                             case Client:
@@ -225,7 +226,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
             }
 
         } catch (IOException e) {
-            throw new DeploymentUnitProcessingException("Failed to process children for EAR [" + virtualFile + "]", e);
+            throw MESSAGES.failedToProcessChild(e, virtualFile);
         }
     }
 

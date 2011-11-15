@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.subsystem;
 
+import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
+
 import java.util.List;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
@@ -67,7 +69,6 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 
 /**
@@ -77,8 +78,6 @@ import org.jboss.msc.service.ServiceController;
  * @author Emanuel Muckenhuber
  */
 public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
-
-    private static final Logger logger = Logger.getLogger("org.jboss.as.ee");
 
     private final DefaultEarSubDeploymentsIsolationProcessor isolationProcessor;
     private final GlobalModuleDependencyProcessor moduleDependencyProcessor;
@@ -115,7 +114,7 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 moduleDependencyProcessor.setGlobalModules(globalModules);
                 isolationProcessor.setEarSubDeploymentsIsolated(earSubDeploymentsIsolated);
 
-                logger.info("Activating EE subsystem");
+                ROOT_LOGGER.debug("Activating EE subsystem");
                 processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_DEPLOYMENT_INIT, new EarInitializationProcessor());
                 processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_APP_XML_PARSE, new EarMetaDataParsingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_JBOSS_APP_XML_PARSE, new JBossAppMetaDataParsingProcessor());
