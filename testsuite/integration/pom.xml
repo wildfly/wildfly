@@ -99,12 +99,16 @@
     <name>JBoss Application Server Test Suite: Integration Tests</name>
 
     <properties>
+        <!-- Current module's directory. Will automatically pick up sub-module's basedir. -->
+        <jbossas.ts.module.dir>${basedir}</jbossas.ts.module.dir>
+        <!-- Integration module's directory. To be overriden in sub-modules. -->
         <jbossas.ts.integ.dir>${basedir}</jbossas.ts.integ.dir>
         <!-- This project's testsuite dir. To be changed for every submodule (until we figure out how to do it automatically). -->
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <!-- This project's root dir. -->
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <server.jvm.args.dirs>
+            -Djbossas.ts.module.dir=${jbossas.ts.module.dir}
             -Djbossas.ts.integ.dir=${jbossas.ts.integ.dir}
             -Djbossas.ts.dir=${jbossas.ts.dir}
             -Djbossas.project.dir=${jbossas.project.dir}
@@ -188,9 +192,12 @@
                         <node1>${node1}</node1>
                         <udpGroup>${udpGroup}</udpGroup>
 
+                        <jbossas.ts.module.dir>${jbossas.ts.module.dir}</jbossas.ts.module.dir>
                         <jbossas.ts.integ.dir>${jbossas.ts.integ.dir}</jbossas.ts.integ.dir>
                         <jbossas.ts.dir>${jbossas.ts.dir}</jbossas.ts.dir>
                         <jbossas.project.dir>${jbossas.project.dir}</jbossas.project.dir>
+                        <jboss.dist>${jboss.dist}</jboss.dist>
+                        <!-- <jboss.inst>${jbossas.ts.module.dir}/target/jbossas</jboss.inst>  Only to be specified for single-node test groups. -->
 
                         <!--
                             Used in arquillian.xml - arguments for all JBoss AS instances.
@@ -585,6 +592,7 @@
                                         <arquillian.xml>arquillian.xml</arquillian.xml>
                                         <arquillian.launch>jboss</arquillian.launch>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                                        <jboss.inst>${jbossas.ts.module.dir}/target/jbossas</jboss.inst>
                                     </systemPropertyVariables>
 
                                     <additionalClasspathElements>
@@ -699,9 +707,8 @@
                                     <systemPropertyVariables>
                                         <arquillian.xml>smoke-arquillian.xml</arquillian.xml>
                                         <arquillian.launch>jboss</arquillian.launch>
-
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
-                                        <!-- Use combine.children="append" to pick up parent properties automatically. -->
+                                        <jboss.inst>${jbossas.ts.module.dir}/target/jbossas</jboss.inst>
                                     </systemPropertyVariables>
 
                                     <!-- Access to resources for clustering tests. -->
