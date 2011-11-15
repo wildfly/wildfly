@@ -22,7 +22,6 @@
 package org.jboss.as.cli.handlers;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -39,6 +38,7 @@ import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.OperationRequestAddress.Node;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
+import org.jboss.as.cli.util.SimpleTable;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -71,6 +71,8 @@ public class LsHandler extends CommandHandlerWithHelp {
         if (nodePath != null) {
             address = new DefaultOperationRequestAddress(ctx.getPrefix());
             CommandLineParser.CallbackHandler handler = new DefaultCallbackHandler(address);
+
+            // this is for correct parsing of escaped characters
             nodePath = ctx.getArgumentsString();
             if(l.isPresent(parsedCmd)) {
                 nodePath = nodePath.trim();
@@ -90,7 +92,7 @@ public class LsHandler extends CommandHandlerWithHelp {
             address = new DefaultOperationRequestAddress(ctx.getPrefix());
         }
 
-        final List<String> names;
+        List<String> names = null;
         if(address.endsOnType()) {
             final String type = address.getNodeType();
             address.toParentNode();
@@ -143,24 +145,68 @@ public class LsHandler extends CommandHandlerWithHelp {
                 steps.add(resourceRequest);
             }
 
-            List<String> result = null;
+            if(l.isPresent(parsedCmd)) {
+                final ModelNode request = new ModelNode();
+                request.get(Util.OPERATION).set(Util.READ_RESOURCE_DESCRIPTION);
+                final ModelNode addressNode = request.get(Util.ADDRESS);
+                if (address.isEmpty()) {
+                    addressNode.setEmptyList();
+                } else {
+                    Iterator<Node> iterator = address.iterator();
+                    while (iterator.hasNext()) {
+                        OperationRequestAddress.Node node = iterator.next();
+                        if (node.getName() != null) {
+                            addressNode.add(node.getType(), node.getName());
+                        } else if (iterator.hasNext()) {
+                            throw new OperationFormatException("Expected a node name for type '" + node.getType()
+                                    + "' in path '" + ctx.getPrefixFormatter().format(address) + "'");
+                        }
+                    }
+                }
+                steps.add(request);
+            }
+
             try {
                 ModelNode outcome = ctx.getModelControllerClient().execute(composite);
                 if(Util.isSuccess(outcome)) {
                     if(outcome.hasDefined(Util.RESULT)) {
                         ModelNode resultNode = outcome.get(Util.RESULT);
+
+                        ModelNode attrDescriptions = null;
+                        ModelNode childDescriptions = null;
+                        if(resultNode.hasDefined(Util.STEP_3)) {
+                            final ModelNode stepOutcome = resultNode.get(Util.STEP_3);
+                            if(Util.isSuccess(stepOutcome)) {
+                                if(stepOutcome.hasDefined(Util.RESULT)) {
+                                    final ModelNode descrResult = stepOutcome.get(Util.RESULT);
+                                    if(descrResult.hasDefined(Util.ATTRIBUTES)) {
+                                        attrDescriptions = descrResult.get(Util.ATTRIBUTES);
+                                    }
+                                    if(descrResult.hasDefined(Util.CHILDREN)) {
+                                        childDescriptions = descrResult.get(Util.CHILDREN);
+                                    }
+                                } else {
+                                    ctx.printLine("Result is not available for read-resource-description request: " + outcome);
+                                }
+                            } else {
+                                ctx.printLine("Failed to get resource description: " + outcome);
+                            }
+                        }
+
+                        List<String> typeNames = null;
                         if(resultNode.hasDefined(Util.STEP_1)) {
                             ModelNode typesOutcome = resultNode.get(Util.STEP_1);
                             if(Util.isSuccess(typesOutcome)) {
                                 if(typesOutcome.hasDefined(Util.RESULT)) {
                                     final ModelNode resourceResult = typesOutcome.get(Util.RESULT);
-                                    final List<Property> props = resourceResult.asPropertyList();
-                                    if (!props.isEmpty()) {
-                                        result = new ArrayList<String>();
-                                        for (Property prop : props) {
-                                            if(result == null || !result.contains(prop.getName())) {
-                                                result.add(prop.getName());
-                                            }
+                                    final List<ModelNode> types = resourceResult.asList();
+                                    if (!types.isEmpty()) {
+                                        typeNames = new ArrayList<String>();
+                                        for (ModelNode type : types) {
+                                            typeNames.add(type.asString());
+                                        }
+                                        if(childDescriptions == null && attrDescriptions == null) {
+                                            names = typeNames;
                                         }
                                     }
                                 } else {
@@ -172,6 +218,7 @@ public class LsHandler extends CommandHandlerWithHelp {
                         } else {
                             ctx.printLine("The result for children type names is not available: " + outcome);
                         }
+
                         if(resultNode.hasDefined(Util.STEP_2)) {
                             ModelNode resourceOutcome = resultNode.get(Util.STEP_2);
                             if(Util.isSuccess(resourceOutcome)) {
@@ -179,24 +226,65 @@ public class LsHandler extends CommandHandlerWithHelp {
                                     final ModelNode resourceResult = resourceOutcome.get(Util.RESULT);
                                     final List<Property> props = resourceResult.asPropertyList();
                                     if (!props.isEmpty()) {
-                                        final List<String> attrs = new ArrayList<String>();
+                                        // potentially, allowed and default values
+                                        SimpleTable attrTable = attrDescriptions == null ? null :
+                                            new SimpleTable(new String[]{"ATTR NAME", "VALUE", "TYPE", "NILLABLE", "REQUIRED", "ACCESS", "EXPR", "RESTART", "STORAGE"});
+                                        SimpleTable childrenTable = childDescriptions == null ? null :
+                                            new SimpleTable(new String[]{"CHILD NAME", "MIN-OCCURS", "MAX-OCCURS"});
+                                        if(typeNames == null && attrTable == null && childrenTable == null) {
+                                            typeNames = new ArrayList<String>();
+                                        }
+
                                         for (Property prop : props) {
                                             final StringBuilder buf = new StringBuilder();
-                                            if(result == null || !result.contains(prop.getName())) {
-                                                buf.append(prop.getName());
-                                                buf.append('=');
-                                                buf.append(prop.getValue().asString());
+                                            if(typeNames == null || !typeNames.contains(prop.getName())) {
+                                                if(attrDescriptions == null) {
+                                                    buf.append(prop.getName());
+                                                    buf.append('=');
+                                                    buf.append(prop.getValue().asString());
 // TODO the value should be formatted nicer but the current fomatter uses new lines for complex value which doesn't work here
-//                                                final ModelNode value = prop.getValue();
-//                                                ModelNodeFormatter.Factory.forType(value.getType()).format(buf, 0, value);
-                                                attrs.add(buf.toString());
-                                                buf.setLength(0);
+//                                                    final ModelNode value = prop.getValue();
+//                                                    ModelNodeFormatter.Factory.forType(value.getType()).format(buf, 0, value);
+                                                    typeNames.add(buf.toString());
+                                                    buf.setLength(0);
+                                                } else {
+                                                    if(attrDescriptions.hasDefined(prop.getName())) {
+                                                        final ModelNode attrDescr = attrDescriptions.get(prop.getName());
+                                                        attrTable.addLine(new String[]{prop.getName(),
+                                                                prop.getValue().asString(),
+                                                                getAsString(attrDescr, Util.TYPE),
+                                                                getAsString(attrDescr, Util.NILLABLE),
+                                                                getAsString(attrDescr, Util.REQUIRED),
+                                                                getAsString(attrDescr, Util.ACCESS_TYPE),
+                                                                getAsString(attrDescr, Util.EXPRESSIONS_ALLOWED),
+                                                                getAsString(attrDescr, Util.RESTART_REQUIRED),
+                                                                getAsString(attrDescr, Util.STORAGE)
+                                                                });
+                                                    } else {
+                                                        attrTable.addLine(new String[]{prop.getName(),
+                                                                prop.getValue().asString(),
+                                                                "n/a", "n/a", "n/a", "n/a", "n/a", "n/a"
+                                                            });
+                                                    }
+                                                }
+                                            } else if(childDescriptions != null) {
+                                                if(childDescriptions.hasDefined(prop.getName())) {
+                                                    final ModelNode childDescr = attrDescriptions.get(prop.getName());
+                                                    childrenTable.addLine(new String[]{prop.getName(),
+                                                            getAsString(childDescr, Util.MIN_OCCURS),
+                                                            getAsString(childDescr, Util.MAX_OCCURS)
+                                                            });
+                                                } else {
+                                                    attrTable.addLine(new String[]{prop.getName(), "n/a", "n/a"});
+                                                }
                                             }
                                         }
-                                        if(result == null) {
-                                            result = attrs;
-                                        } else {
-                                            result.addAll(attrs);
+
+                                        if(childrenTable != null && !childrenTable.isEmpty()) {
+                                            ctx.printLine(childrenTable.toString());
+                                        }
+                                        if(attrTable != null && !attrTable.isEmpty()) {
+                                            ctx.printLine(attrTable.toString());
                                         }
                                     }
                                 } else {
@@ -214,9 +302,26 @@ public class LsHandler extends CommandHandlerWithHelp {
                 }
             } catch (Exception e) {
             }
-            names = result == null ? Collections.<String>emptyList() : result;
         }
 
-        printList(ctx, names, l.isPresent(parsedCmd));
+        if(names != null) {
+            printList(ctx, names, l.isPresent(parsedCmd));
+        }
+    }
+
+    protected String getAsString(final ModelNode attrDescr, String name) {
+        if(attrDescr == null) {
+            return "n/a";
+        }
+        return attrDescr.has(name) ? attrDescr.get(name).asString() : "n/a";
+    }
+
+    public static void main(String[] args) throws Exception {
+
+        //System.out.printf("%-8s %-11s %-8s %-11s", "name", "type", "required", "access-type");
+        SimpleTable t = new SimpleTable(new String[]{"NAME", "TYPE", "REQUIRED", "ACCESS-TYPE", "VALUE"});
+        t.addLine(new String[]{"name1", "big_integer", "true", "read-write", "12"});
+        t.addLine(new String[]{"some name", "int", "false", "read-only", null});
+        System.out.println(t.toString());
     }
 }
