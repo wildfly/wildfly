@@ -114,7 +114,7 @@
                                         <additionalClasspathElement>${jbossas.ts.integ.dir}/src/test/resources/iiop</additionalClasspathElement>
                                     </additionalClasspathElements>
 
-                                    <reportNameSuffix>tests-iiop-multi-node</reportNameSuffix>
+                                    <!--<reportNameSuffix>tests-iiop-multi-node</reportNameSuffix>-->
                                 </configuration>
                             </execution>
 
