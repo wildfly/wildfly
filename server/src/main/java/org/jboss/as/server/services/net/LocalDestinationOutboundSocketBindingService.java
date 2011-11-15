@@ -46,7 +46,7 @@ public class LocalDestinationOutboundSocketBindingService extends OutboundSocket
     @Override
     protected synchronized InetAddress getDestinationAddress() {
         final SocketBinding localDestinationSocketBinding = this.localDestinationSocketBindingInjectedValue.getValue();
-        return localDestinationSocketBinding.getAddress();
+        return localDestinationSocketBinding.getSocketAddress().getAddress();
     }
 
     @Override

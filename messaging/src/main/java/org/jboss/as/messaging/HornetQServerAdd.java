@@ -113,6 +113,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.messaging.jms.JMSService;
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
@@ -225,11 +226,17 @@ class HornetQServerAdd implements OperationStepHandler {
                 // Process acceptors and connectors
                 final Set<String> socketBindings = new HashSet<String>();
                 TransportConfigOperationHandlers.processAcceptors(configuration, model, socketBindings);
-                TransportConfigOperationHandlers.processConnectors(configuration, model, socketBindings);
 
                 for (final String socketBinding : socketBindings) {
                     final ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(socketBinding);
                     serviceBuilder.addDependency(socketName, SocketBinding.class, hqService.getSocketBindingInjector(socketBinding));
+                }
+
+                final Set<String> outboundSocketBindings = new HashSet<String>();
+                TransportConfigOperationHandlers.processConnectors(configuration, model, outboundSocketBindings);
+                for (final String outboundSocketBinding : outboundSocketBindings) {
+                    final ServiceName outboundSocketName = OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(outboundSocketBinding);
+                    serviceBuilder.addDependency(outboundSocketName, OutboundSocketBinding.class, hqService.getOutboundSocketBindingInjector(outboundSocketBinding));
                 }
 
                 final List<BroadcastGroupConfiguration> broadcastGroupConfigurations = configuration.getBroadcastGroupConfigurations();

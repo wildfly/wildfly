@@ -234,8 +234,8 @@
                 <persistence-enabled>false</persistence-enabled>
 
                 <connectors>
-                    <netty-connector name="netty" socket-binding="messaging"/>
-                    <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
+                    <netty-connector name="netty" socket-binding="messaging-client"/>
+                    <netty-connector name="netty-throughput" socket-binding="messaging-throughput-client">
                         <param key="batch-delay" value="50"/>
                     </netty-connector>
                     <in-vm-connector name="in-vm" server-id="0"/>
@@ -442,6 +442,12 @@
         <socket-binding name="remoting" port="4447"/>
         <socket-binding name="txn-recovery-environment" port="4712"/>
         <socket-binding name="txn-status-manager" port="4713"/>
+        <outbound-socket-binding name="messaging-client">
+            <local-destination socket-binding-ref="messaging"/>
+        </outbound-socket-binding>
+        <outbound-socket-binding name="messaging-throughput-client">
+            <local-destination socket-binding-ref="messaging-throughput"/>
+        </outbound-socket-binding>
     </socket-binding-group>
 
 </server>
