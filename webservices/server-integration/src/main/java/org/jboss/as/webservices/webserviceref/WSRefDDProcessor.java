@@ -67,7 +67,7 @@ public final class WSRefDDProcessor extends AbstractDeploymentDescriptorBindings
 
         final List<BindingConfiguration> bindingDescriptions = new LinkedList<BindingConfiguration>();
         for (final ServiceReferenceMetaData serviceRefMD : serviceRefsMD) {
-            final UnifiedServiceRefMetaData serviceRefUMDM = getServiceRef(unit, serviceRefMD);
+            final UnifiedServiceRefMetaData serviceRefUMDM = getServiceRef(unit, componentDescription, serviceRefMD);
             final WSRefValueSource valueSource = new WSRefValueSource(serviceRefUMDM);
             final BindingConfiguration bindingConfiguration = new BindingConfiguration(serviceRefUMDM.getServiceRefName(), valueSource);
             bindingDescriptions.add(bindingConfiguration);
@@ -78,15 +78,34 @@ public final class WSRefDDProcessor extends AbstractDeploymentDescriptorBindings
         return bindingDescriptions;
     }
 
-    private static UnifiedServiceRefMetaData getServiceRef(final DeploymentUnit unit, final ServiceReferenceMetaData serviceRefMD) throws DeploymentUnitProcessingException {
+    private static UnifiedServiceRefMetaData getServiceRef(final DeploymentUnit unit, final ComponentDescription componentDescription, final ServiceReferenceMetaData serviceRefMD) throws DeploymentUnitProcessingException {
         // construct service ref
         final UnifiedServiceRefMetaData serviceRefUMDM = new UnifiedServiceRefMetaData(getUnifiedVirtualFile(unit));
         translate(serviceRefMD, serviceRefUMDM);
         processWSFeatures(unit, serviceRefMD.getInjectionTargets(), serviceRefUMDM);
         // register it
         final WSReferences wsRefRegistry = getWSRefRegistry(unit);
-        wsRefRegistry.add(serviceRefMD.getName(), serviceRefUMDM);
+        final String serviceRefName = getServiceRefName(componentDescription, serviceRefMD);
+        serviceRefUMDM.setServiceRefName(serviceRefName);
+        final String cacheKey = getCacheKey(componentDescription, serviceRefUMDM);
+        wsRefRegistry.add(cacheKey, serviceRefUMDM);
         return serviceRefUMDM;
+    }
+
+    private static String getServiceRefName(final ComponentDescription componentDescription, final ServiceReferenceMetaData serviceRefMD) {
+        if (componentDescription == null) {
+            return serviceRefMD.getName();
+        } else {
+            return componentDescription.getComponentClassName() + "/" + serviceRefMD.getName();
+        }
+    }
+
+    private static String getCacheKey(final ComponentDescription componentDescription, final UnifiedServiceRefMetaData serviceRefUMMD) {
+        if (componentDescription == null) {
+            return serviceRefUMMD.getServiceRefName();
+        } else {
+            return componentDescription.getComponentName() + "/" + serviceRefUMMD.getServiceRefName();
+        }
     }
 
     private static void processWSFeatures(final DeploymentUnit unit, final Set<ResourceInjectionTargetMetaData> injectionTargets, final UnifiedServiceRefMetaData serviceRefUMDM) throws DeploymentUnitProcessingException {

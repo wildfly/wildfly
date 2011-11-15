@@ -36,6 +36,7 @@ import javax.xml.ws.Service;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.FieldInjectionTarget;
@@ -44,6 +45,7 @@ import org.jboss.as.ee.component.InjectionTarget;
 import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.ee.component.MethodInjectionTarget;
 import org.jboss.as.ee.component.ResourceInjectionConfiguration;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -133,22 +135,45 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
     }
 
     private static void processRef(final DeploymentUnit unit, final String type, final WSRefAnnotationWrapper annotation, final ClassInfo classInfo, final InjectionTarget injectionTarget, final String bindingName) throws DeploymentUnitProcessingException {
-        final UnifiedServiceRefMetaData serviceRefUMDM = getServiceRef(unit, bindingName);
-        initServiceRef(unit, serviceRefUMDM, type, annotation);
-        processWSFeatures(unit, serviceRefUMDM, injectionTarget, classInfo);
-
-        // TODO: class hierarchies? shared bindings?
+        boolean isEJB = false;
         final EEModuleDescription moduleDescription = unit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-        final EEModuleClassDescription classDescription = moduleDescription.addOrGetLocalClassDescription(classInfo.name().toString());
-        // Create the binding from whence our injection comes.
-        final InjectionSource serviceRefSource = new WSRefValueSource(serviceRefUMDM);
-        final BindingConfiguration bindingConfiguration = new BindingConfiguration(bindingName, serviceRefSource);
-        classDescription.getBindingConfigurations().add(bindingConfiguration);
-        // our injection comes from the local lookup, no matter what.
-        final ResourceInjectionConfiguration injectionConfiguration = injectionTarget != null ?
-            new ResourceInjectionConfiguration(injectionTarget, new LookupInjectionSource(bindingName)) : null;
-        if (injectionConfiguration != null) {
-            classDescription.addResourceInjection(injectionConfiguration);
+        final String componentClassName = classInfo.name().toString();
+        for (final ComponentDescription componentDescription : moduleDescription.getComponentsByClassName(componentClassName)) {
+            if (componentDescription instanceof SessionBeanComponentDescription) {
+                isEJB = true;
+
+                final UnifiedServiceRefMetaData serviceRefUMDM = getServiceRef(unit, componentDescription, bindingName);
+                initServiceRef(unit, serviceRefUMDM, type, annotation);
+                processWSFeatures(unit, serviceRefUMDM, injectionTarget, classInfo);
+
+                // Create the binding from whence our injection comes.
+                final InjectionSource serviceRefSource = new WSRefValueSource(serviceRefUMDM);
+                final BindingConfiguration bindingConfiguration = new BindingConfiguration(bindingName, serviceRefSource);
+                componentDescription.getBindingConfigurations().add(bindingConfiguration);
+                // our injection comes from the local lookup, no matter what.
+                final ResourceInjectionConfiguration injectionConfiguration = injectionTarget != null ? new ResourceInjectionConfiguration(injectionTarget, new LookupInjectionSource(bindingName)) : null;
+                if (injectionConfiguration != null) {
+                    componentDescription.addResourceInjection(injectionConfiguration);
+                }
+            }
+        }
+        if (!isEJB) {
+            final UnifiedServiceRefMetaData serviceRefUMDM = getServiceRef(unit, null, bindingName);
+            initServiceRef(unit, serviceRefUMDM, type, annotation);
+            processWSFeatures(unit, serviceRefUMDM, injectionTarget, classInfo);
+
+            // TODO: class hierarchies? shared bindings?
+            final EEModuleClassDescription classDescription = moduleDescription.addOrGetLocalClassDescription(classInfo.name().toString());
+            // Create the binding from whence our injection comes.
+            final InjectionSource serviceRefSource = new WSRefValueSource(serviceRefUMDM);
+            final BindingConfiguration bindingConfiguration = new BindingConfiguration(bindingName, serviceRefSource);
+            classDescription.getBindingConfigurations().add(bindingConfiguration);
+            // our injection comes from the local lookup, no matter what.
+            final ResourceInjectionConfiguration injectionConfiguration = injectionTarget != null ?
+                new ResourceInjectionConfiguration(injectionTarget, new LookupInjectionSource(bindingName)) : null;
+            if (injectionConfiguration != null) {
+                classDescription.addResourceInjection(injectionConfiguration);
+            }
         }
     }
 
@@ -162,15 +187,24 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private static UnifiedServiceRefMetaData getServiceRef(final DeploymentUnit unit, final String name) {
+    private static UnifiedServiceRefMetaData getServiceRef(final DeploymentUnit unit, final ComponentDescription componentDescription, final String serviceRefName) {
         final WSReferences wsRefRegistry = getWSRefRegistry(unit);
-        UnifiedServiceRefMetaData serviceRefUMDM = wsRefRegistry.get(name);
+        final String cacheKey = getCacheKey(componentDescription, serviceRefName);
+        UnifiedServiceRefMetaData serviceRefUMDM = wsRefRegistry.get(cacheKey);
         if (serviceRefUMDM == null) {
             serviceRefUMDM = new UnifiedServiceRefMetaData(getUnifiedVirtualFile(unit));
-            serviceRefUMDM.setServiceRefName(name);
-            wsRefRegistry.add(name, serviceRefUMDM);
+            serviceRefUMDM.setServiceRefName(serviceRefName);
+            wsRefRegistry.add(cacheKey, serviceRefUMDM);
         }
         return serviceRefUMDM;
+    }
+
+    private static String getCacheKey(final ComponentDescription componentDescription, final String serviceRefName) {
+        if (componentDescription == null) {
+            return serviceRefName;
+        } else {
+            return componentDescription.getComponentName() + "/" + serviceRefName;
+        }
     }
 
     private static void processInjectionTarget(final DeploymentUnit unit, final UnifiedServiceRefMetaData serviceRefUMDM, final ClassInfo classInfo) throws DeploymentUnitProcessingException {
