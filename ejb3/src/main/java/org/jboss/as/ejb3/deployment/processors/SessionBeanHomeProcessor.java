@@ -37,15 +37,18 @@ import org.jboss.as.ee.component.deployers.AbstractComponentConfigProcessor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
+import org.jboss.as.ejb3.component.interceptors.EjbMetadataInterceptorFactory;
+import org.jboss.as.ejb3.component.interceptors.SessionBeanHomeInterceptorFactory;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
-import org.jboss.as.ejb3.component.session.SessionBeanHomeInterceptorFactory;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
+import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.msc.service.ServiceBuilder;
 
@@ -86,9 +89,11 @@ public class SessionBeanHomeProcessor extends AbstractComponentConfigProcessor {
                 configuration.addClientPostConstructInterceptor(org.jboss.invocation.Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ClientPostConstruct.TERMINAL_INTERCEPTOR);
                 configuration.addClientPreDestroyInterceptor(org.jboss.invocation.Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ClientPreDestroy.TERMINAL_INTERCEPTOR);
 
+                final DeploymentClassIndex classIndex = phaseContext.getDeploymentUnit().getAttachment(Attachments.CLASS_INDEX);
+
                 //loop over methods looking for create methods:
-                final ClassReflectionIndex<?> classIndex = reflectionIndex.getClassIndex(configuration.getViewClass());
-                for (Method method : classIndex.getMethods()) {
+                final ClassReflectionIndex<?> index = reflectionIndex.getClassIndex(configuration.getViewClass());
+                for (Method method : index.getMethods()) {
                     if (method.getName().startsWith("create")) {
                         //we have a create method
                         if(ejbObjectView == null) {
@@ -103,6 +108,27 @@ public class SessionBeanHomeProcessor extends AbstractComponentConfigProcessor {
                             @Override
                             public void configureDependency(final ServiceBuilder<?> serviceBuilder, final ComponentStartService service) throws DeploymentUnitProcessingException {
                                 serviceBuilder.addDependency(createdView.getServiceName(), ComponentView.class, factory.getViewToCreate());
+                            }
+                        });
+                        //add the interceptor
+                        configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
+                        configuration.addViewInterceptor(method, factory, InterceptorOrder.View.HOME_CREATE_INTERCEPTOR);
+
+                    } else if(method.getName().equals("getEJBMetaData") && method.getParameterTypes().length == 0) {
+
+                         final Class<?> ejbObjectClass;
+                        try {
+                            ejbObjectClass = classIndex.classIndex(ejbObjectView.getViewClassName()).getModuleClass();
+                        } catch (ClassNotFoundException e) {
+                            throw new DeploymentUnitProcessingException("Could not load view class for " + componentDescription.getComponentName(), e);
+                        }
+                        final EjbMetadataInterceptorFactory factory = new EjbMetadataInterceptorFactory(ejbObjectClass, configuration.getViewClass(), null, true, componentDescription instanceof StatelessComponentDescription);
+
+                        //add a dependency on the view to create
+                        componentConfiguration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
+                            @Override
+                            public void configureDependency(final ServiceBuilder<?> serviceBuilder, final ComponentStartService service) throws DeploymentUnitProcessingException {
+                                serviceBuilder.addDependency(configuration.getViewServiceName(), ComponentView.class, factory.getHomeView());
                             }
                         });
                         //add the interceptor

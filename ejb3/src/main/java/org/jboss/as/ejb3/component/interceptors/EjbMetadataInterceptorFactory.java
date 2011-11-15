@@ -19,12 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.component.session;
+package org.jboss.as.ejb3.component.interceptors;
 
-import java.lang.reflect.Method;
+import javax.ejb.EJBHome;
 
 import org.jboss.as.ee.component.ComponentView;
-import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.ejb3.component.EJBMetaDataImp;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
@@ -32,26 +32,26 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * Interceptor that handles home views for session beans
+ * Interceptor that handles the EJB metadata
  *
  * @author Stuart Douglas
  */
-public class SessionBeanHomeInterceptorFactory implements InterceptorFactory {
+public class EjbMetadataInterceptorFactory implements InterceptorFactory {
 
-    private final InjectedValue<ComponentView> viewToCreate = new InjectedValue<ComponentView>();
+    private final InjectedValue<ComponentView> homeView = new InjectedValue<ComponentView>();
 
-    //TODO: there has to be a better way to pass this into the create interceptor chain
-    public static final ThreadLocal<Method> INIT_METHOD = new ThreadLocal<Method>();
+    private final Class<?> remoteClass;
+    private final Class<?> homeClass;
+    private final Class<?> pkClass;
+    private final boolean session;
+    private final boolean stateless;
 
-    public static final ThreadLocal<Object[]> INIT_PARAMETERS = new ThreadLocal<Object[]>();
-
-    /**
-     * The init method to invoke on the SFSB
-     */
-    private final Method method;
-
-    public SessionBeanHomeInterceptorFactory(final Method method) {
-        this.method = method;
+    public EjbMetadataInterceptorFactory(final Class<?> remoteClass, final Class<?> homeClass, final Class<?> pkClass, final boolean session, final boolean stateless) {
+        this.remoteClass = remoteClass;
+        this.homeClass = homeClass;
+        this.pkClass = pkClass;
+        this.session = session;
+        this.stateless = stateless;
     }
 
     @Override
@@ -59,21 +59,12 @@ public class SessionBeanHomeInterceptorFactory implements InterceptorFactory {
         return new Interceptor() {
             @Override
             public Object processInvocation(final InterceptorContext context) throws Exception {
-                final ComponentView view = viewToCreate.getValue();
-                try {
-                    INIT_METHOD.set(method);
-                    INIT_PARAMETERS.set(context.getParameters());
-                    final ManagedReference instance = view.createInstance();
-                    return instance.getInstance();
-                } finally {
-                    INIT_METHOD.remove();
-                    INIT_PARAMETERS.remove();
-                }
+                return new EJBMetaDataImp(remoteClass, homeClass, pkClass, session, stateless, (EJBHome) homeView.getValue().createInstance().getInstance());
             }
         };
     }
 
-    public InjectedValue<ComponentView> getViewToCreate() {
-        return viewToCreate;
+    public InjectedValue<ComponentView> getHomeView() {
+        return homeView;
     }
 }

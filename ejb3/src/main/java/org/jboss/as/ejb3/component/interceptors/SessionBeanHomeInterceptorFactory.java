@@ -19,44 +19,61 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.component.stateful;
+package org.jboss.as.ejb3.component.interceptors;
 
-import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
-import org.jboss.as.ejb3.component.interceptors.SessionBeanHomeInterceptorFactory;
+import java.lang.reflect.Method;
+
+import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-
-import java.lang.reflect.Method;
+import org.jboss.msc.value.InjectedValue;
 
 /**
- * Interceptor factory for SFSB's that invokes the ejbCreate method. This interceptor
- * is only used when a component is created via a home interface method.
+ * Interceptor that handles home views for session beans
  *
  * @author Stuart Douglas
  */
-public class StatefulInitMethodInterceptorFactory implements InterceptorFactory {
+public class SessionBeanHomeInterceptorFactory implements InterceptorFactory {
 
-    public static final InterceptorFactory INSTANCE = new StatefulInitMethodInterceptorFactory();
+    private final InjectedValue<ComponentView> viewToCreate = new InjectedValue<ComponentView>();
 
-    private StatefulInitMethodInterceptorFactory() {
+    //TODO: there has to be a better way to pass this into the create interceptor chain
+    public static final ThreadLocal<Method> INIT_METHOD = new ThreadLocal<Method>();
 
+    public static final ThreadLocal<Object[]> INIT_PARAMETERS = new ThreadLocal<Object[]>();
+
+    /**
+     * The init method to invoke on the SFSB
+     */
+    private final Method method;
+
+    public SessionBeanHomeInterceptorFactory(final Method method) {
+        this.method = method;
     }
-
 
     @Override
     public Interceptor create(final InterceptorFactoryContext context) {
-        final Method method = SessionBeanHomeInterceptorFactory.INIT_METHOD.get();
-        final Object[] params = SessionBeanHomeInterceptorFactory.INIT_PARAMETERS.get();
-        return new AbstractEJBInterceptor() {
+        return new Interceptor() {
             @Override
             public Object processInvocation(final InterceptorContext context) throws Exception {
-                if (method != null) {
-                    method.invoke(context.getTarget(), params);
+                final ComponentView view = viewToCreate.getValue();
+                try {
+                    INIT_METHOD.set(method);
+                    INIT_PARAMETERS.set(context.getParameters());
+                    final ManagedReference instance = view.createInstance();
+                    return instance.getInstance();
+                } finally {
+                    INIT_METHOD.remove();
+                    INIT_PARAMETERS.remove();
                 }
-                return context.proceed();
             }
         };
+    }
+
+    public InjectedValue<ComponentView> getViewToCreate() {
+        return viewToCreate;
     }
 }

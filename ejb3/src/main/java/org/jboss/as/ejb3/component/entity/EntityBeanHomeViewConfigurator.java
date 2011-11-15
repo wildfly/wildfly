@@ -25,6 +25,7 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 
 import javax.ejb.Handle;
+
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentStartService;
 import org.jboss.as.ee.component.ComponentView;
@@ -33,7 +34,6 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
-import org.jboss.as.ejb3.component.interceptors.ComponentTypeIdentityInterceptorFactory;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.EjbHomeViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
@@ -42,11 +42,14 @@ import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanHomeFinderInter
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanHomeMethodInterceptorFactory;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanHomeRemoveByHandleInterceptorFactory;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanHomeRemoveInterceptorFactory;
+import org.jboss.as.ejb3.component.interceptors.ComponentTypeIdentityInterceptorFactory;
+import org.jboss.as.ejb3.component.interceptors.EjbMetadataInterceptorFactory;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
+import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.metadata.ejb.spec.PersistenceType;
@@ -72,6 +75,8 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
 
         final EntityBeanComponentDescription componentDescription = (EntityBeanComponentDescription) componentConfiguration.getComponentDescription();
         final EJBViewDescription createdView = localHome ? componentDescription.getEjbLocalView() : componentDescription.getEjbRemoteView();
+
+        final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(Attachments.CLASS_INDEX);
 
         for (final Method method : configuration.getProxyFactory().getCachedMethods()) {
 
@@ -119,7 +124,27 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
             } else if (method.getName().equals("remove") && method.getParameterTypes().length == 1 && method.getParameterTypes()[0] == Handle.class) {
                 configuration.addViewInterceptor(method, EntityBeanHomeRemoveByHandleInterceptorFactory.INSTANCE, InterceptorOrder.View.COMPONENT_DISPATCHER);
             } else if (method.getName().equals("getEJBMetaData") && method.getParameterTypes().length == 0) {
-                // TODO: impl
+
+                final Class<?> ejbObjectClass;
+                final Class<?> pkClass;
+                try {
+                    ejbObjectClass = classIndex.classIndex(createdView.getViewClassName()).getModuleClass();
+                    pkClass = classIndex.classIndex(componentDescription.getPrimaryKeyType()).getModuleClass();
+                } catch (ClassNotFoundException e) {
+                    throw new DeploymentUnitProcessingException("Could not load view class for " + componentDescription.getComponentName(), e);
+                }
+                final EjbMetadataInterceptorFactory factory = new EjbMetadataInterceptorFactory(ejbObjectClass, configuration.getViewClass(), pkClass, false, false);
+
+                //add a dependency on the view to create
+                componentConfiguration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
+                    @Override
+                    public void configureDependency(final ServiceBuilder<?> serviceBuilder, final ComponentStartService service) throws DeploymentUnitProcessingException {
+                        serviceBuilder.addDependency(configuration.getViewServiceName(), ComponentView.class, factory.getHomeView());
+                    }
+                });
+                //add the interceptor
+                configuration.addViewInterceptor(method, factory, InterceptorOrder.View.HOME_CREATE_INTERCEPTOR);
+
             } else if (method.getName().equals("getHomeHandle") && method.getParameterTypes().length == 0) {
                 // TODO: impl
             } else {

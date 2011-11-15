@@ -22,8 +22,8 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
-import static org.jboss.as.ejb3.deployment.EjbDeploymentMarker.isEjbDeployment;
-
+import org.jboss.as.ee.structure.DeploymentType;
+import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -34,6 +34,8 @@ import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
+
+import static org.jboss.as.ejb3.deployment.EjbDeploymentMarker.isEjbDeployment;
 
 /**
  * Responsible for adding appropriate Java EE {@link org.jboss.as.server.deployment.module.ModuleDependency module dependencies}
@@ -78,7 +80,8 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_CLIENT, false, false, false));
 
         // fetch the EjbJarMetaData
-        if (!isEjbDeployment(deploymentUnit)) {
+        //TODO: remove the app client bit after the next EJB release
+        if (!isEjbDeployment(deploymentUnit) && !DeploymentTypeMarker.isType(DeploymentType.APPLICATION_CLIENT, deploymentUnit)) {
             // nothing to do
             return;
         }

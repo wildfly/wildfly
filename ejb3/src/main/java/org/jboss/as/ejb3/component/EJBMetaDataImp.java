@@ -19,15 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.iiop;
+package org.jboss.as.ejb3.component;
+
+import java.io.Serializable;
 
 import javax.ejb.EJBHome;
 import javax.ejb.EJBMetaData;
-import java.io.Serializable;
 
 /**
  * An implementation of the EJBMetaData interface which allows a
  * client to obtain the enterprise Bean's meta-data information.
+ *
+ * TODO: remove this on next EJB client release
  *
  * @author Rickard ???berg (rickard.oberg@telkel.com)
  * @author <a href="mailto:marc.fleury@telkel.com">Marc Fleury</a>
@@ -35,7 +38,7 @@ import java.io.Serializable;
  * @author <a href="mailto:reverbel@ime.usp.br">Francisco Reverbel</a>
  * @author Stuart Douglas
  */
-public class EJBMetaDataImplIIOP implements EJBMetaData, Serializable {
+public class EJBMetaDataImp implements EJBMetaData, Serializable {
     private final Class remoteClass;
 
     private final Class homeClass;
@@ -48,8 +51,8 @@ public class EJBMetaDataImplIIOP implements EJBMetaData, Serializable {
 
     private final EJBHome home;
 
-    public EJBMetaDataImplIIOP(Class remoteClass, Class homeClass, Class pkClass, boolean session,
-                               boolean statelessSession, EJBHome home) {
+    public EJBMetaDataImp(final Class remoteClass, final Class homeClass, final Class pkClass, final boolean session,
+                          final boolean statelessSession, final EJBHome home) {
         this.remoteClass = remoteClass;
         this.homeClass = homeClass;
         this.pkClass = pkClass;

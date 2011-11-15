@@ -33,6 +33,7 @@ import org.jacorb.ssl.SSLPolicyValue;
 import org.jacorb.ssl.SSLPolicyValueHelper;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.component.EJBMetaDataImp;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
@@ -143,7 +144,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
     /**
      * <code>EJBMetaData</code> the enterprise bean in the container.
      */
-    private EJBMetaDataImplIIOP ejbMetaData;
+    private EJBMetaDataImp ejbMetaData;
 
     /**
      * Mapping from bean methods to <code>SkeletonStrategy</code> instances.
@@ -333,16 +334,16 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
                 beanServantRegistry = poaRegistry.getValue().getRegistryWithPersistentPOAPerServant();
                 final EntityBeanComponent entityBeanComponent = (EntityBeanComponent) component;
                 final Class pkClass = entityBeanComponent.getPrimaryKeyClass();
-                ejbMetaData = new EJBMetaDataImplIIOP(entityBeanComponent.getRemoteClass(), entityBeanComponent.getHomeClass(), pkClass, false, false, ejbHome);
+                ejbMetaData = new EJBMetaDataImp(entityBeanComponent.getRemoteClass(), entityBeanComponent.getHomeClass(), pkClass, false, false, ejbHome);
             } else {
                 // This is a session bean (lifespan: transient)
                 beanServantRegistry = poaRegistry.getValue().getRegistryWithTransientPOAPerServant();
                 if (component instanceof StatelessSessionComponent) {
                     // Stateless session bean
-                    ejbMetaData = new EJBMetaDataImplIIOP(remoteView.getValue().getViewClass(), homeView.getValue().getViewClass(), null, true, true, ejbHome);
+                    ejbMetaData = new EJBMetaDataImp(remoteView.getValue().getViewClass(), homeView.getValue().getViewClass(), null, true, true, ejbHome);
                 } else {
                     // Stateful session bean
-                    ejbMetaData = new EJBMetaDataImplIIOP(remoteView.getValue().getViewClass(), homeView.getValue().getViewClass(), null, true, false, ejbHome);
+                    ejbMetaData = new EJBMetaDataImp(remoteView.getValue().getViewClass(), homeView.getValue().getViewClass(), null, true, false, ejbHome);
                 }
             }
 
