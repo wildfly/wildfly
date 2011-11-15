@@ -75,18 +75,20 @@ class JAXRWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
 
     static void applyUpdateToConfig(String attributeName, ModelNode attributeValue) {
         JAXRConfiguration config = JAXRConfiguration.INSTANCE;
-        if (attributeName.equals(ModelConstants.CONNECTIONFACTORY)) {
-            config.setConnectionFactoryBinding(attributeValue.asString());
-        } else if (attributeName.equals(ModelConstants.DATASOURCE)) {
-            config.setDataSourceBinding(attributeValue.asString());
-        } else if (attributeName.equals(ModelConstants.DROPONSTART)) {
-            config.setDropOnStart(attributeValue.asBoolean());
-        } else if (attributeName.equals(ModelConstants.CREATEONSTART)) {
-            config.setCreateOnStart(attributeValue.asBoolean());
-        } else if (attributeName.equals(ModelConstants.DROPONSTOP)) {
-            config.setDropOnStop(attributeValue.asBoolean());
-        } else {
-            throw new IllegalArgumentException("Invalid attribute name: " + attributeName);
+        if (attributeValue.isDefined()) {
+            if (attributeName.equals(ModelConstants.CONNECTIONFACTORY)) {
+                config.setConnectionFactoryBinding(attributeValue.asString());
+            } else if (attributeName.equals(ModelConstants.DATASOURCE)) {
+                config.setDataSourceBinding(attributeValue.asString());
+            } else if (attributeName.equals(ModelConstants.DROPONSTART)) {
+                config.setDropOnStart(attributeValue.asBoolean());
+            } else if (attributeName.equals(ModelConstants.CREATEONSTART)) {
+                config.setCreateOnStart(attributeValue.asBoolean());
+            } else if (attributeName.equals(ModelConstants.DROPONSTOP)) {
+                config.setDropOnStop(attributeValue.asBoolean());
+            } else {
+                throw new IllegalArgumentException("Invalid attribute name: " + attributeName);
+            }
         }
     }
 
