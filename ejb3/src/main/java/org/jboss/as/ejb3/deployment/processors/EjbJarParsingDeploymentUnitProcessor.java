@@ -48,11 +48,9 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.logging.Logger;
-import org.jboss.metadata.ejb.jboss.ejb3.JBossEjb31MetaData;
 import org.jboss.metadata.ejb.parser.jboss.ejb3.JBossEjb3MetaDataParser;
 import org.jboss.metadata.ejb.parser.spec.AbstractMetaDataParser;
 import org.jboss.metadata.ejb.parser.spec.EjbJarMetaDataParser;
-import org.jboss.metadata.ejb.spec.EjbJar31MetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.parser.util.MetaDataElementParser;
 import org.jboss.vfs.VirtualFile;
@@ -112,7 +110,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
 
         final EjbJarMetaData ejbJarMetaData;
         final EjbJarMetaData specMetaData = parseEjbJarXml(deploymentUnit);
-        final JBossEjb31MetaData jbossMetaData = parseJBossEjb3Xml(deploymentUnit);
+        final EjbJarMetaData jbossMetaData = parseJBossEjb3Xml(deploymentUnit);
         if (specMetaData == null) {
             if (jbossMetaData == null)
                 return;
@@ -134,15 +132,13 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         // attach the EjbJarMetaData to the deployment unit
         deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA, ejbJarMetaData);
 
-        if (ejbJarMetaData instanceof EjbJar31MetaData) {
-            EjbJar31MetaData ejbJar31MetaData = (EjbJar31MetaData) ejbJarMetaData;
-            if (ejbJar31MetaData.getModuleName() != null) {
-                eeModuleDescription.setModuleName(ejbJar31MetaData.getModuleName());
-            }
-            if (ejbJar31MetaData.isMetadataComplete()) {
-                MetadataCompleteMarker.setMetadataComplete(deploymentUnit, true);
-            }
-        } else if (!ejbJarMetaData.isEJB3x()) {
+        if (ejbJarMetaData.getModuleName() != null) {
+            eeModuleDescription.setModuleName(ejbJarMetaData.getModuleName());
+        }
+        if (ejbJarMetaData.isMetadataComplete()) {
+            MetadataCompleteMarker.setMetadataComplete(deploymentUnit, true);
+        }
+        if (!ejbJarMetaData.isEJB3x()) {
             //EJB spec 20.5.1, we do not process annotations for older deployments
             MetadataCompleteMarker.setMetadataComplete(deploymentUnit, true);
         }
@@ -248,7 +244,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         }
     }
 
-    private static JBossEjb31MetaData parseJBossEjb3Xml(final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
+    private static EjbJarMetaData parseJBossEjb3Xml(final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
         final VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
 
         // Locate the descriptor
@@ -268,7 +264,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
             parsers.put("urn:security", new EJBBoundSecurityMetaDataParser());
             parsers.put("urn:security-role", new SecurityRoleMetaDataParser());
             final JBossEjb3MetaDataParser parser = new JBossEjb3MetaDataParser(parsers);
-            final JBossEjb31MetaData ejbJarMetaData = parser.parse(reader, dtdInfo);
+            final EjbJarMetaData ejbJarMetaData = parser.parse(reader, dtdInfo);
             return ejbJarMetaData;
         } catch (XMLStreamException xmlse) {
             throw new DeploymentUnitProcessingException("Exception while parsing " + JBOSS_EJB3_XML + ": " + descriptor.getPathName(), xmlse);

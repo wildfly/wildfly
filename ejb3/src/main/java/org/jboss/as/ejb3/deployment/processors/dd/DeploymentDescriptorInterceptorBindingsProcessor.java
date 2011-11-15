@@ -43,7 +43,6 @@ import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.logging.Logger;
-import org.jboss.metadata.ejb.spec.EjbJar3xMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.ejb.spec.InterceptorBindingMetaData;
 import org.jboss.metadata.ejb.spec.InterceptorMetaData;
@@ -64,20 +63,16 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final EjbJarMetaData ejbJarMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
+        final EjbJarMetaData metaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         final DeploymentReflectionIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
 
 
-        if (ejbJarMetaData == null) {
-            return;
-        }
-        if (!(ejbJarMetaData instanceof EjbJar3xMetaData)) {
+        if (metaData == null) {
             return;
         }
 
-        final EjbJar3xMetaData metaData = (EjbJar3xMetaData) ejbJarMetaData;
         if (metaData.getAssemblyDescriptor() == null) {
             return;
         }

@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.deployment.processors.entity;
 
 import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.deployment.processors.EJBComponentDescriptionFactory;
@@ -81,6 +82,7 @@ public class EntityBeanComponentDescriptionFactory extends EJBComponentDescripti
         mark(deploymentUnit);
 
         final EntityBeanComponentDescription description = createDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName());
+        description.setDeploymentDescriptorEnvironment(new DeploymentDescriptorEnvironment("java:comp/env/", entity));
 
         // add it to the ejb jar description
         if (appclient) {

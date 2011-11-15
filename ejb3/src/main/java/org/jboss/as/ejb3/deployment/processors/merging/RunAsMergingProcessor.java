@@ -35,7 +35,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.ejb3.annotation.RunAsPrincipal;
-import org.jboss.metadata.ejb.jboss.ejb3.JBossEjb31MetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.ejb.spec.SecurityIdentityMetaData;
 import org.jboss.metadata.javaee.spec.RunAsMetaData;
@@ -57,8 +56,8 @@ public class RunAsMergingProcessor extends AbstractMergingProcessor<EJBComponent
 
     @Override
     protected void handleAnnotations(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses,
-            final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass,
-            final EJBComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
+                                     final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass,
+                                     final EJBComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
         final EEModuleClassDescription clazz = applicationClasses.getClassByName(componentClass.getName());
         // we only care about annotations on the bean class itself
         if (clazz == null) {
@@ -84,8 +83,8 @@ public class RunAsMergingProcessor extends AbstractMergingProcessor<EJBComponent
 
     @Override
     protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit,
-            final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass,
-            final EJBComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
+                                              final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass,
+                                              final EJBComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
         if (componentConfiguration.getDescriptorData() != null) {
             final SecurityIdentityMetaData identity = componentConfiguration.getDescriptorData().getSecurityIdentity();
 
@@ -102,11 +101,9 @@ public class RunAsMergingProcessor extends AbstractMergingProcessor<EJBComponent
         if (componentConfiguration.getRunAs() != null) {
             String principal = null;
             String globalRunAsPrincipal = null;
-            EjbJarMetaData ejbJarMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
-            if (ejbJarMetaData instanceof JBossEjb31MetaData) {
-                JBossEjb31MetaData jbossMetaData = JBossEjb31MetaData.class.cast(ejbJarMetaData);
-                List<EJBBoundSecurityMetaData> securityMetaDatas = jbossMetaData.getAssemblyDescriptor().getAny(
-                        EJBBoundSecurityMetaData.class);
+            EjbJarMetaData jbossMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
+            if (jbossMetaData != null) {
+                List<EJBBoundSecurityMetaData> securityMetaDatas = jbossMetaData.getAssemblyDescriptor().getAny(EJBBoundSecurityMetaData.class);
                 if (securityMetaDatas != null) {
                     for (EJBBoundSecurityMetaData securityMetaData : securityMetaDatas) {
                         if (securityMetaData.getEjbName().equals(componentConfiguration.getComponentName())) {
@@ -130,13 +127,13 @@ public class RunAsMergingProcessor extends AbstractMergingProcessor<EJBComponent
                     }
                 }
                 componentConfiguration.setSecurityRoles(securityRoles);
+                if (principal != null)
+                    componentConfiguration.setRunAsPrincipal(principal);
+                else if (globalRunAsPrincipal != null)
+                    componentConfiguration.setRunAsPrincipal(globalRunAsPrincipal);
+                else
+                    componentConfiguration.setRunAsPrincipal(DEFAULT_RUN_AS_PRINCIPAL);
             }
-            if (principal != null)
-                componentConfiguration.setRunAsPrincipal(principal);
-            else if (globalRunAsPrincipal != null)
-                componentConfiguration.setRunAsPrincipal(globalRunAsPrincipal);
-            else
-                componentConfiguration.setRunAsPrincipal(DEFAULT_RUN_AS_PRINCIPAL);
         }
     }
 }

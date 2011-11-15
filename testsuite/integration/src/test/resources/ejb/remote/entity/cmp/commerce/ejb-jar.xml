@@ -113,13 +113,6 @@
                 <remote>org.jboss.as.test.integration.ejb.remote.entity.cmp.commerce.User</remote>
                 <ejb-link>UserEJB</ejb-link>
             </ejb-ref>
-            <ejb-local-ref>
-                <ejb-ref-name>ejb/UserLocal</ejb-ref-name>
-                <ejb-ref-type>Entity</ejb-ref-type>
-                <local-home>org.jboss.as.test.integration.ejb.remote.entity.cmp.commerce.UserLocalHome</local-home>
-                <local>org.jboss.as.test.integration.ejb.remote.entity.cmp.commerce.UserLocal</local>
-                <ejb-link>UserEJB</ejb-link>
-            </ejb-local-ref>
             <query>
                 <description>
                     Find all Customers

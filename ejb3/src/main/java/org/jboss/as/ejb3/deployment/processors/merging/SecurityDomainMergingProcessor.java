@@ -34,8 +34,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.ejb3.annotation.SecurityDomain;
 import org.jboss.logging.Logger;
-import org.jboss.metadata.ejb.jboss.ejb3.JBossAssemblyDescriptorMetaData;
-import org.jboss.metadata.ejb.jboss.ejb3.JBossEjb31MetaData;
+import org.jboss.metadata.ejb.spec.AssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 
 /**
@@ -72,14 +71,13 @@ public class SecurityDomainMergingProcessor extends AbstractMergingProcessor<EJB
     protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final EJBComponentDescription description) throws DeploymentUnitProcessingException {
         String securityDomain = null;
         String globalSecurityDomain = null;
-        EjbJarMetaData ejbJarMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
-        if (ejbJarMetaData instanceof JBossEjb31MetaData) {
-            JBossEjb31MetaData jbossMetaData = JBossEjb31MetaData.class.cast(ejbJarMetaData);
-            JBossAssemblyDescriptorMetaData assemblyMetadata = jbossMetaData.getAssemblyDescriptor();
-            if(assemblyMetadata != null){
-                List<EJBBoundSecurityMetaData> securityMetaDatas = assemblyMetadata.getAny(EJBBoundSecurityMetaData.class);
+        final EjbJarMetaData ejbJarMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
+        if (ejbJarMetaData != null) {
+            final AssemblyDescriptorMetaData assemblyMetadata = ejbJarMetaData.getAssemblyDescriptor();
+            if (assemblyMetadata != null) {
+                final List<EJBBoundSecurityMetaData> securityMetaDatas = assemblyMetadata.getAny(EJBBoundSecurityMetaData.class);
                 if (securityMetaDatas != null) {
-                    for (EJBBoundSecurityMetaData securityMetaData : securityMetaDatas) {
+                    for (final EJBBoundSecurityMetaData securityMetaData : securityMetaDatas) {
                         if (securityMetaData.getEjbName().equals(description.getComponentName())) {
                             securityDomain = securityMetaData.getSecurityDomain();
                             break;
