@@ -70,6 +70,7 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.util.UnreachableStatementException;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -130,6 +131,7 @@ public class EnterpriseDeploymentTestCase {
     }
 
     @Test
+		@Ignore("AS7-2631")
     public void testDistributeEjbApp() throws Exception {
         ProgressObject progress = jsr88Deploy(getEjbArchive());
         TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
@@ -142,6 +144,7 @@ public class EnterpriseDeploymentTestCase {
     }
 
     @Test
+		@Ignore("AS7-2631")
     public void testDistributeEARApp() throws Exception {
         ProgressObject progress = jsr88Deploy(getEarArchive());
         TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
@@ -161,6 +164,7 @@ public class EnterpriseDeploymentTestCase {
     }
 
     @Test
+		@Ignore("AS7-2631")
     public void testListAvailableModules() throws Exception {
         DeploymentManager manager = getDeploymentManager();
         Target[] targets = manager.getTargets();
