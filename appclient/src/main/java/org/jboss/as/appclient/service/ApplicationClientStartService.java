@@ -159,9 +159,11 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
 
     @Override
     public synchronized void stop(final StopContext context) {
+        if(instance != null) {
+            instance.destroy();
+        }
         thread.interrupt();
         thread = null;
-        instance.destroy();
     }
 
     @Override
