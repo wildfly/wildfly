@@ -129,7 +129,7 @@
                                         <additionalClasspathElement>${project.basedir}/../src/test/resources/smoke</additionalClasspathElement>
                                     </additionalClasspathElements>
 
-                                    <reportNameSuffix>tests-smoke-default</reportNameSuffix>
+                                    <!--<reportNameSuffix>tests-smoke-default</reportNameSuffix>-->
                                 </configuration>
                             </execution>
 
