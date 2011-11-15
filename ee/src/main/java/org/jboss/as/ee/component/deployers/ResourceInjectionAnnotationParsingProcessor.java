@@ -22,8 +22,6 @@
 
 package org.jboss.as.ee.component.deployers;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,6 +59,8 @@ import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.modules.Module;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 /**
  * Deployment processor responsible for analyzing each attached {@link org.jboss.as.ee.component.ComponentDescription} instance to configure
  * required resource injection configurations.
@@ -86,6 +86,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         locations.put(ValidatorFactory.class.getName(), "java:comp/ValidatorFactory");
         locations.put("javax.ejb.EJBContext", "java:comp/EJBContext");
         locations.put("javax.ejb.SessionContext", "java:comp/EJBContext");
+        locations.put("javax.ejb.MessageDrivenContext", "java:comp/EJBContext");
         locations.put("javax.ejb.TimerService", "java:comp/TimerService");
         locations.put("org.osgi.framework.BundleContext", "java:comp/BundleContext");
         locations.put("org.omg.CORBA.ORB", "java:comp/ORB");
