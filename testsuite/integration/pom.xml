@@ -108,6 +108,7 @@
             -Djbossas.ts.integ.dir=${jbossas.ts.integ.dir}
             -Djbossas.ts.dir=${jbossas.ts.dir}
             -Djbossas.project.dir=${jbossas.project.dir}
+            -Djboss.dist=${jboss.dist}
         </server.jvm.args.dirs>
         
         <!-- Used to provide an absolute location for the distribution under test. -->
