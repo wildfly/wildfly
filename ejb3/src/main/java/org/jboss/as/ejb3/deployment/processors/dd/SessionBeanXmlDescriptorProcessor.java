@@ -77,28 +77,24 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
 
         final String beanName = sessionBean.getName();
 
-        final ComponentDescription bean = moduleDescription.getComponentByName(beanName);
-        if(!(bean instanceof SessionBeanComponentDescription)) {
+        ComponentDescription bean = moduleDescription.getComponentByName(beanName);
+        if (appclient) {
+            if (bean == null) {
+                for (final ComponentDescription component : deploymentUnit.getAttachmentList(Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS)) {
+                    if (component.getComponentName().equals(beanName)) {
+                        bean = component;
+                        break;
+                    }
+                }
+            }
+        }
+        if (!(bean instanceof SessionBeanComponentDescription)) {
             //TODO: this is a hack to deal with descriptor merging
             //if this is a GenericBeanMetadata it may actually represent an MDB
             return;
         }
 
         SessionBeanComponentDescription sessionBeanDescription = (SessionBeanComponentDescription) bean;
-
-        if (appclient) {
-            if (sessionBeanDescription == null) {
-                for (final ComponentDescription component : deploymentUnit.getAttachmentList(Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS)) {
-                    if (component.getComponentName().equals(beanName)) {
-                        sessionBeanDescription = (SessionBeanComponentDescription) component;
-                        break;
-                    }
-                }
-            }
-        }
-        if (sessionBeanDescription == null) {
-            throw new DeploymentUnitProcessingException("Could not find session bean with name " + beanName);
-        }
 
         sessionBeanDescription.setDeploymentDescriptorEnvironment(new DeploymentDescriptorEnvironment("java:comp/env/", sessionBean));
 
@@ -131,7 +127,6 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
             this.processSessionBean31((SessionBean31MetaData) sessionBean, sessionBeanDescription);
         }
     }
-
 
 
     private void processSessionBean31(final SessionBean31MetaData sessionBean31MetaData, final SessionBeanComponentDescription sessionBeanComponentDescription) {
