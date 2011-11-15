@@ -139,7 +139,7 @@
                                         <additionalClasspathElement>${jbossas.ts.integ.dir}/src/test/resources/clustering</additionalClasspathElement>
                                     </additionalClasspathElements>
 
-                                    <reportNameSuffix>tests-clustering-multi-node</reportNameSuffix>
+                                    <!--<reportNameSuffix>tests-clustering-multi-node</reportNameSuffix>-->
                                 </configuration>
                             </execution>
 

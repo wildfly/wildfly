@@ -113,7 +113,7 @@
                                         <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
                                     </additionalClasspathElements>
 
-                                    <reportNameSuffix>tests-basic-integration-default</reportNameSuffix>
+                                    <!--<reportNameSuffix>tests-basic-integration-default</reportNameSuffix>-->
                                 </configuration>
                             </execution>
                             <!-- The second run tests rely on restoring timer services setup in the first run of tests. -->
