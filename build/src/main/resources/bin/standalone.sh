@@ -120,6 +120,9 @@ if $cygwin; then
     MODULEPATH=`cygpath --path --windows "$MODULEPATH"`
 fi
 
+# Export the JAVA_OPTS so they can be read in the system environment
+export JAVA_OPTS
+
 # Display our environment
 echo "========================================================================="
 echo ""
@@ -192,7 +195,7 @@ while true; do
       fi
       if [ "x$JBOSS_PIDFILE" != "x" ]; then
             grep "$JBOSS_PID" $JBOSS_PIDFILE && rm $JBOSS_PIDFILE
-      fi 
+      fi
    fi
    if [ "$JBOSS_STATUS" -eq 10 ]; then
       echo "Restarting JBoss..."
