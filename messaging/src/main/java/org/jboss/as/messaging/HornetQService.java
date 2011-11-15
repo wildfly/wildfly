@@ -19,6 +19,7 @@ import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.impl.HornetQServerImpl;
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.inject.MapInjector;
@@ -52,6 +53,7 @@ class HornetQService implements Service<HornetQServer> {
     private HornetQServer server;
     private Map<String, String> paths = new HashMap<String, String>();
     private Map<String, SocketBinding> socketBindings = new HashMap<String, SocketBinding>();
+    private Map<String, OutboundSocketBinding> outboundSocketBindings = new HashMap<String, OutboundSocketBinding>();
     private Map<String, SocketBinding> groupBindings = new HashMap<String, SocketBinding>();
     private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
 
@@ -61,6 +63,10 @@ class HornetQService implements Service<HornetQServer> {
 
     Injector<SocketBinding> getSocketBindingInjector(String name) {
         return new MapInjector<String, SocketBinding>(socketBindings, name);
+    }
+
+    Injector<OutboundSocketBinding> getOutboundSocketBindingInjector(String name) {
+        return new MapInjector<String, OutboundSocketBinding>(outboundSocketBindings, name);
     }
 
     Injector<SocketBinding> getGroupBindingInjector(String name) {
@@ -111,12 +117,12 @@ class HornetQService implements Service<HornetQServer> {
                     Object socketRef = tc.getParams().remove(SOCKET_REF);
                     if (socketRef != null) {
                         String name = socketRef.toString();
-                        SocketBinding binding = socketBindings.get(name);
+                        OutboundSocketBinding binding = outboundSocketBindings.get(name);
                         if (binding == null) {
                             throw MESSAGES.failedToFindConnectorSocketBinding(tc.getName());
                         }
-                        tc.getParams().put(HOST, binding.getSocketAddress().getHostName());
-                        tc.getParams().put(PORT, "" + binding.getSocketAddress().getPort());
+                        tc.getParams().put(HOST, binding.getDestinationAddress().getHostName());
+                        tc.getParams().put(PORT, "" + binding.getDestinationPort());
                     }
                 }
             }

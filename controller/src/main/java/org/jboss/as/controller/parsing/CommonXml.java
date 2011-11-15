@@ -2335,8 +2335,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     this.parseLocalDestinationOutboundSocketBinding(reader, outboundSocketBindingName, outboundSocketBindingAddOperation);
                     // set the address of the add operation
                     // /socket-binding-group=<groupname>/local-destination-outbound-socket-binding=<outboundSocketBindingName>
-                    final PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, socketBindingGroupName), PathElement.pathElement(LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING, outboundSocketBindingName));
-                    outboundSocketBindingAddOperation.get(OP_ADDR).set(addr.toModelNode());
+                    final ModelNode addr = address.clone().add(LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING, outboundSocketBindingName);
+                    outboundSocketBindingAddOperation.get(OP_ADDR).set(addr);
                     break;
                 }
                 case REMOTE_DESTINATION: {
@@ -2349,8 +2349,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     // parse the remote destination outbound socket binding
                     this.parseRemoteDestinationOutboundSocketBinding(reader, outboundSocketBindingName, outboundSocketBindingAddOperation);
                     // /socket-binding-group=<groupname>/remote-destination-outbound-socket-binding=<outboundSocketBindingName>
-                    final PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, socketBindingGroupName), PathElement.pathElement(REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING, outboundSocketBindingName));
-                    outboundSocketBindingAddOperation.get(OP_ADDR).set(addr.toModelNode());
+                    final ModelNode addr = address.clone().add(REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING, outboundSocketBindingName);
+                    outboundSocketBindingAddOperation.get(OP_ADDR).set(addr);
                     break;
                 }
                 default: {
