@@ -25,6 +25,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.Enumeration;
+import java.util.Properties;
 import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -172,28 +174,37 @@ public class AppClientWrapper implements Runnable {
         } else {
             appClientArg = archiveOnDisk.getAbsolutePath() + "#" + clientArchiveName;
         }
-        //TODO: this seems dodgy
-        final File targetDir = new File("../../build/target");
-        if ((!targetDir.exists()) || (!targetDir.isDirectory())) throw new Exception("Missing AS target directory.");
-        final String[] children = targetDir.list();
-        String asDir = null;
-        for (final String child : children) {
-            if (child.startsWith("jboss-as")) {
-                asDir = child;
-                break;
-            }
+        
+        // TODO: Move to a self-test.
+        System.out.println("*** System properties: ***");
+        Properties props = System.getProperties();
+        //props.list( System.out );
+        Enumeration en = props.propertyNames();
+        while( en.hasMoreElements() ){
+            String name = (String) en.nextElement();
+            System.out.println( "\t" + name + " = " + System.getProperty(name) );
         }
-        if (asDir == null) throw new Exception("Missing AS target directory.");
+        
+        
+        // TODO: Move to a shared testsuite lib.
+        String asDist = System.getProperty("jboss.dist");
+        if( asDist == null ) throw new Exception("'jboss.dist' property is not set.");
+        if( ! new File(asDist).exists() ) throw new Exception("AS dir from 'jboss.dist' doesn't exist: " + asDist + " user.dir: " + System.getProperty("user.dir"));
 
-        appClientCommand = "java " +
-                "-Djboss.modules.dir=../../build/target/" + asDir + "/modules " +
-                "-Djline.WindowsTerminal.directConsole=false " +
-                "-jar ./target/jbossas/jboss-modules.jar " +
-                "-mp ../../build/target/" + asDir + "/modules " +
-                "-logmodule org.jboss.logmanager  org.jboss.as.appclient " +
-                "-Djboss.server.base.dir=target/jbossas/appclient " +
-                "-Djboss.home.dir=target/jbossas " +
-                appClientArg + " " + args;
+        // TODO: Move to a shared testsuite lib.
+        String asInst = System.getProperty("jboss.inst");
+        if( asInst == null ) throw new Exception("'jboss.inst' property is not set. Perhaps this test is in a multi-node tests group but runs outside container?");
+        if( ! new File(asInst).exists() ) throw new Exception("AS dir from 'jboss.inst' doesn't exist: " + asInst + " user.dir: " + System.getProperty("user.dir"));
+
+        appClientCommand = "java" +
+                " -Djboss.modules.dir="+ asDist + "/modules" +
+                " -Djline.WindowsTerminal.directConsole=false" +
+                " -jar "+ asDist + "/jboss-modules.jar" +
+                " -mp "+ asDist + "/modules" +
+                " -logmodule org.jboss.logmanager org.jboss.as.appclient" +
+                " -Djboss.server.base.dir="+ asInst + "/appclient" +
+                " -Djboss.home.dir="+ asInst + 
+                " " +appClientArg + " " + args;
         return appClientCommand;
     }
 
