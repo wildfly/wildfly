@@ -74,15 +74,30 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
     }
 
     protected void afterBegin() {
-        execute(afterBegin, getComponent().getAfterBeginMethod());
+        CurrentSynchronizationCallback.set(CurrentSynchronizationCallback.CallbackType.AFTER_BEGIN);
+        try {
+            execute(afterBegin, getComponent().getAfterBeginMethod());
+        } finally {
+            CurrentSynchronizationCallback.clear();
+        }
     }
 
     protected void afterCompletion(boolean committed) {
-        execute(afterCompletion, getComponent().getAfterCompletionMethod(), committed);
+        CurrentSynchronizationCallback.set(CurrentSynchronizationCallback.CallbackType.AFTER_COMPLETION);
+        try {
+            execute(afterCompletion, getComponent().getAfterCompletionMethod(), committed);
+        } finally {
+            CurrentSynchronizationCallback.clear();
+        }
     }
 
     protected void beforeCompletion() {
-        execute(beforeCompletion, getComponent().getBeforeCompletionMethod());
+        CurrentSynchronizationCallback.set(CurrentSynchronizationCallback.CallbackType.BEFORE_COMPLETION);
+        try {
+            execute(beforeCompletion, getComponent().getBeforeCompletionMethod());
+        } finally {
+            CurrentSynchronizationCallback.clear();
+        }
     }
 
     protected void discard() {

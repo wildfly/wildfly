@@ -41,6 +41,7 @@ import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 
+import org.jboss.as.ejb3.component.stateful.CurrentSynchronizationCallback;
 import org.jboss.as.ejb3.timerservice.persistence.TimerEntity;
 import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
 import org.jboss.logging.Logger;
@@ -145,7 +146,8 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
                 return;
             }
             if (status == Status.STATUS_NO_TRANSACTION ||
-                    status == Status.STATUS_UNKNOWN) {
+                    status == Status.STATUS_UNKNOWN || isBeforeCompletion()
+                    || status == Status.STATUS_COMMITTED) {
                 try {
                     lock.lock();
                     Map<String, TimerEntity> map = getTimers(timerEntity.getTimedObjectId());
@@ -162,6 +164,13 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         }
     }
 
+    private boolean isBeforeCompletion() {
+        final CurrentSynchronizationCallback.CallbackType type = CurrentSynchronizationCallback.get();
+        if(type != null) {
+            return type == CurrentSynchronizationCallback.CallbackType.BEFORE_COMPLETION;
+        }
+        return false;
+    }
 
     @Override
     public TimerEntity loadTimer(final String id, final String timedObjectId) {

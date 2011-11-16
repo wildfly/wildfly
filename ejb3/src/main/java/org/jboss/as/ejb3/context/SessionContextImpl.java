@@ -108,6 +108,9 @@ public class SessionContextImpl extends EJBContextImpl implements SessionContext
         if (lifecycleCallback && !DependencyInjectionCompleteMarker.isDependencyInjectionComplete(invocation)) {
             throw new IllegalStateException("getTimerService() is not allowed while dependency injection is in progress");
         }
+        if (stateful) {
+            throw new IllegalStateException("getTimerService() is not allowed from stateful beans");
+        }
         return super.getTimerService();
     }
 
@@ -123,24 +126,20 @@ public class SessionContextImpl extends EJBContextImpl implements SessionContext
 
     @Override
     public boolean isCallerInRole(final String roleName) {
-        if (!stateful) {
-            final InterceptorContext invocation = CurrentInvocationContext.get();
-            final boolean lifecycleCallback = invocation.getMethod() == null;
-            if (lifecycleCallback) {
-                throw new IllegalStateException("isCallerInRole is not allowed in lifecycle methods of stateless session beans");
-            }
+        final InterceptorContext invocation = CurrentInvocationContext.get();
+        final boolean lifecycleCallback = invocation.getMethod() == null;
+        if (lifecycleCallback && (!stateful || !DependencyInjectionCompleteMarker.isDependencyInjectionComplete(invocation))) {
+            throw new IllegalStateException("isCallerInRole is not allowed in lifecycle methods of stateless session beans");
         }
         return super.isCallerInRole(roleName);
     }
 
     @Override
     public Principal getCallerPrincipal() {
-        if (!stateful) {
-            final InterceptorContext invocation = CurrentInvocationContext.get();
-            final boolean lifecycleCallback = invocation.getMethod() == null;
-            if (lifecycleCallback) {
-                throw new IllegalStateException("getCallerPrincipal is not allowed in lifecycle methods of stateless session beans");
-            }
+        final InterceptorContext invocation = CurrentInvocationContext.get();
+        final boolean lifecycleCallback = invocation.getMethod() == null;
+        if (lifecycleCallback && (!stateful || !DependencyInjectionCompleteMarker.isDependencyInjectionComplete(invocation))) {
+            throw new IllegalStateException("getCallerPrincipal is not allowed in lifecycle methods of stateless session beans");
         }
         return super.getCallerPrincipal();
     }

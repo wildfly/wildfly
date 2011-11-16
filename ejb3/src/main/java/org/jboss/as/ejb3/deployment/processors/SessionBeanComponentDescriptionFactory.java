@@ -243,9 +243,14 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
                     return;
                 }
             }
-            throw new DeploymentUnitProcessingException("Unknown session-type for session bean: " + sessionBean.getName() + " in deployment unit: " + deploymentUnit);
         }
         final SessionType sessionType = sessionBean.getSessionType();
+
+        if(sessionType == null) {
+
+        }
+
+
         if(sessionType == null && sessionBean instanceof GenericBeanMetaData) {
             //TODO: this is a hack
             return;

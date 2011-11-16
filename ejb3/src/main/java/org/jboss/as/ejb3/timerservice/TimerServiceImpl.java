@@ -57,6 +57,7 @@ import javax.transaction.TransactionManager;
 
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.singleton.SingletonComponent;
+import org.jboss.as.ejb3.component.stateful.CurrentSynchronizationCallback;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.timerservice.persistence.CalendarTimerEntity;
 import org.jboss.as.ejb3.timerservice.persistence.TimeoutMethod;
@@ -142,7 +143,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
     /**
      * Creates a {@link TimerServiceImpl}
-     *
      *
      * @param autoTimers
      * @param serviceName
@@ -690,9 +690,17 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      */
     protected void registerTimerWithTx(TimerImpl timer) {
         // get the current transaction
-        Transaction tx = this.getTransaction();
+        final Transaction tx = this.getTransaction();
         if (tx != null) {
+
             try {
+                int status = tx.getStatus();
+                if (status == Status.STATUS_MARKED_ROLLBACK || status == Status.STATUS_ROLLEDBACK ||
+                        status == Status.STATUS_ROLLING_BACK || status == Status.STATUS_NO_TRANSACTION ||
+                        status == Status.STATUS_UNKNOWN || status == Status.STATUS_COMMITTED
+                        || isBeforeCompletion()) {
+                    return;
+                }
                 // register for lifecycle events of transaction
                 tx.registerSynchronization(new TimerCreationTransactionSynchronization(timer));
             } catch (RollbackException e) {
@@ -702,6 +710,14 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 throw new EJBException(e);
             }
         }
+    }
+
+    private boolean isBeforeCompletion() {
+        final CurrentSynchronizationCallback.CallbackType type = CurrentSynchronizationCallback.get();
+        if (type != null) {
+            return type == CurrentSynchronizationCallback.CallbackType.BEFORE_COMPLETION;
+        }
+        return false;
     }
 
     /**
@@ -746,11 +762,8 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      * @return
      */
     protected boolean isLifecycleCallbackInvocation() {
-        InterceptorContext currentInvocationContext = null;
-        try {
-            currentInvocationContext = CurrentInvocationContext.get();
-        } catch (IllegalStateException ise) {
-            // no context info available so return false
+        final InterceptorContext currentInvocationContext = CurrentInvocationContext.get();
+        if(currentInvocationContext == null) {
             return false;
         }
         // If the method in current invocation context is null,
@@ -826,7 +839,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         }
 
         final TimerEntity timerEntity = timerPersistence.getValue().loadTimer(id, timedObjectId);
-        if(timerEntity == null) {
+        if (timerEntity == null) {
             throw new NoSuchObjectLocalException("Could not load timer with id " + id);
         }
         if (timerEntity.isCalendarTimer()) {
@@ -1112,7 +1125,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         @Override
         public void run() {
             final ExecutorService executor = executorServiceInjectedValue.getOptionalValue();
-            if(executor != null) {
+            if (executor != null) {
                 executor.submit(delegate);
             }
         }

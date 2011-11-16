@@ -39,9 +39,13 @@ import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.Transaction;
 
+import org.jboss.as.ee.component.Component;
+import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
+import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.timerservice.persistence.TimerEntity;
 import org.jboss.as.ejb3.timerservice.task.TimerTask;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
+import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
 
 /**
@@ -497,6 +501,14 @@ public class TimerImpl implements Timer {
             throw new NoSuchObjectLocalException("Timer has expired");
         if (timerState == TimerState.CANCELED)
             throw new NoSuchObjectLocalException("Timer was canceled");
+        final InterceptorContext ctx = CurrentInvocationContext.get();
+        if(ctx != null) {
+            if(ctx.getPrivateData(Component.class) instanceof StatefulSessionComponent) {
+                if(ctx.getMethod() == null) {
+                    throw new IllegalStateException("Timer methods may not be invoked from lifecycle methods of a stateful session bean");
+                }
+            }
+        }
     }
 
     /**

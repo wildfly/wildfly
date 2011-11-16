@@ -22,7 +22,6 @@
 package org.jboss.as.appclient.service;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -128,11 +127,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                                         }
                                         NamespaceContextSelector.popCurrentSelector();
                                     }
-                                } catch (InvocationTargetException e) {
-                                    ROOT_LOGGER.caughtException(e.getTargetException(), e.getTargetException());
-                                } catch (IllegalAccessException e) {
-                                    ROOT_LOGGER.exceptionRunningAppClient(e, e.getClass().getSimpleName());
-                                } catch (InterruptedException e) {
+                                }  catch (Exception e) {
                                     ROOT_LOGGER.exceptionRunningAppClient(e, e.getClass().getSimpleName());
                                 } finally {
                                     SecurityActions.setContextClassLoader(oldTccl);

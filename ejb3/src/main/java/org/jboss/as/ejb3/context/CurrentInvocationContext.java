@@ -34,8 +34,6 @@ public class CurrentInvocationContext {
 
     public static InterceptorContext get() {
         InterceptorContext current = stack.get();
-        if (current == null)
-            throw new IllegalStateException("No current invocation context available");
         return current;
     }
 
