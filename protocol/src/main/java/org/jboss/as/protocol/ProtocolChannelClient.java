@@ -28,7 +28,10 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Executor;
@@ -49,6 +52,9 @@ import org.xnio.IoFuture;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 import org.xnio.Options;
+import org.xnio.Property;
+import org.xnio.Sequence;
+import org.xnio.OptionMap.Builder;
 
 /**
  * This class is not thread safe and should only be used by one thread
@@ -96,15 +102,29 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
 
 
     public Connection connect(CallbackHandler handler) throws IOException {
+        return connect(handler, null);
+    }
+
+    public Connection connect(CallbackHandler handler, Map<String, String> saslOptions) throws IOException {
         if (connection != null) {
             throw MESSAGES.alreadyConnected();
         }
 
         // TODO - do we need better way to decide this?
-        OptionMap map = OptionMap.create(SASL_POLICY_NOANONYMOUS, Boolean.FALSE);
+        Builder builder = OptionMap.builder();
+        builder.set(SASL_POLICY_NOANONYMOUS, Boolean.FALSE);
+        if (saslOptions != null) {
+            List<Property> tempProperties = new ArrayList<Property>(saslOptions.size());
+            for (String currentKey : saslOptions.keySet()) {
+                tempProperties.add(Property.of(currentKey, saslOptions.get(currentKey)));
+            }
+
+            builder.set(Options.SASL_PROPERTIES, Sequence.of(tempProperties));
+        }
+
         CallbackHandler actualHandler = handler != null ? handler : new AnonymousCallbackHandler();
         WrapperCallbackHandler wrapperHandler = new WrapperCallbackHandler(actualHandler);
-        IoFuture<Connection> future = endpoint.connect(uri, map, wrapperHandler);
+        IoFuture<Connection> future = endpoint.connect(uri, builder.getMap(), wrapperHandler);
         try {
             this.connection = future.get();
         } catch (CancellationException e) {

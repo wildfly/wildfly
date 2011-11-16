@@ -29,6 +29,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.Provider;
 import java.security.Security;
+import java.util.Map;
 
 import javax.security.auth.callback.CallbackHandler;
 
@@ -54,8 +55,9 @@ public abstract class ManagementClientChannelStrategy {
 
     public static ManagementClientChannelStrategy create(String hostName, int port, final Endpoint endpoint,
                                                          final ManagementOperationHandler handler,
-                                                         final CallbackHandler cbHandler) throws URISyntaxException, IOException {
-        return new Establishing(hostName, port, endpoint, handler, cbHandler);
+                                                         final CallbackHandler cbHandler,
+                                                         final Map<String, String> saslOptions) throws URISyntaxException, IOException {
+        return new Establishing(hostName, port, endpoint, handler, cbHandler, saslOptions);
     }
 
     private static class Existing extends ManagementClientChannelStrategy {
@@ -85,14 +87,17 @@ public abstract class ManagementClientChannelStrategy {
         private volatile ProtocolChannelClient<ManagementChannel> client;
         private volatile ManagementChannel channel;
         private final CallbackHandler callbackHandler;
+        private final Map<String,String> saslOptions;
 
         public Establishing(final String hostName, final int port, final Endpoint endpoint,
-                            final ManagementOperationHandler handler, final CallbackHandler callbackHandler) {
+                            final ManagementOperationHandler handler, final CallbackHandler callbackHandler,
+                            final Map<String, String> saslOptions) {
             this.hostName = hostName;
             this.port = port;
             this.endpoint = endpoint;
             this.handler = handler;
             this.callbackHandler = callbackHandler;
+            this.saslOptions = saslOptions;
         }
 
         @Override
@@ -120,7 +125,7 @@ public abstract class ManagementClientChannelStrategy {
             boolean ok = false;
             try {
                 try {
-                    client.connect(callbackHandler);
+                    client.connect(callbackHandler, saslOptions);
                 } catch (ConnectException e) {
                     throw e;
                 }
