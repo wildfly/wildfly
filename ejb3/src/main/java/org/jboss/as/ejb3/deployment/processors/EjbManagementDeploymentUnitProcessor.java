@@ -22,32 +22,29 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
-import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
-import static org.jboss.as.server.deployment.Attachments.MODULE;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleConfiguration;
-import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.subsystem.EJB3Extension;
 import org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentRuntimeHandler;
 import org.jboss.as.ejb3.subsystem.deployment.EJBComponentType;
-import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.ejb3.subsystem.deployment.InstalledComponent;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.logging.Logger;
-import org.jboss.modules.Module;
+
+import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
 
 /**
  * {@link Phase#INSTALL} processor that adds management resources describing EJB components.
@@ -86,23 +83,16 @@ public class EjbManagementDeploymentUnitProcessor implements DeploymentUnitProce
 
     @Override
     public void undeploy(DeploymentUnit deploymentUnit) {
-        final EEModuleConfiguration moduleDescription = deploymentUnit.getAttachment(EE_MODULE_CONFIGURATION);
-        if (moduleDescription == null) {
-            // Nothing to do
-            return;
-        }
+
         if (deploymentUnit.getParent() != null && deploymentUnit.getParent().getParent() != null) {
             // We only expose management resources 2 levels deep
             return;
         }
 
         // Iterate through each component, installing it into the container
-        for (ComponentConfiguration configuration : moduleDescription.getComponentConfigurations()) {
+        for (final InstalledComponent configuration : deploymentUnit.getAttachmentList(EjbDeploymentAttachmentKeys.MANAGED_COMPONENTS)) {
             try {
-                ComponentDescription componentDescription = configuration.getComponentDescription();
-                if (componentDescription instanceof EJBComponentDescription) {
-                    uninstallManagementResource(configuration, deploymentUnit);
-                }
+                uninstallManagementResource(configuration);
             } catch (RuntimeException e) {
                 log.error(String.format("Failed to remove management resources for %s -- %s", configuration, e));
             }
@@ -110,19 +100,16 @@ public class EjbManagementDeploymentUnitProcessor implements DeploymentUnitProce
     }
 
     private void installManagementResource(ComponentConfiguration configuration, DeploymentUnit deploymentUnit) {
-        EJBComponentType type = EJBComponentType.getComponentType(configuration);
+        final EJBComponentType type = EJBComponentType.getComponentType(configuration);
         PathAddress addr = getComponentAddress(type, configuration, deploymentUnit);
         final AbstractEJBComponentRuntimeHandler handler = type.getRuntimeHandler();
         handler.registerComponent(addr, configuration);
-
+        deploymentUnit.addToAttachmentList(EjbDeploymentAttachmentKeys.MANAGED_COMPONENTS, new InstalledComponent(type, addr));
         deploymentUnit.createDeploymentSubModel(EJB3Extension.SUBSYSTEM_NAME, addr.getLastElement());
     }
 
-    private void uninstallManagementResource(ComponentConfiguration configuration, DeploymentUnit deploymentUnit) {
-        EJBComponentType type = EJBComponentType.getComponentType(configuration);
-        PathAddress addr = getComponentAddress(type, configuration, deploymentUnit);
-        final AbstractEJBComponentRuntimeHandler handler = type.getRuntimeHandler();
-        handler.unregisterComponent(addr);
+    private void uninstallManagementResource(final InstalledComponent component) {
+        component.getType().getRuntimeHandler().unregisterComponent(component.getAddress());
     }
 
     private static PathAddress getComponentAddress(EJBComponentType type, ComponentConfiguration configuration, DeploymentUnit deploymentUnit) {
