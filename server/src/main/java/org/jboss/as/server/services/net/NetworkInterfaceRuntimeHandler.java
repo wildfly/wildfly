@@ -57,7 +57,7 @@ public class NetworkInterfaceRuntimeHandler implements OperationStepHandler {
             @Override
             public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                 final ServiceController<?> controller = context.getServiceRegistry(false).getService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName));
-                if(controller != null) {
+                if(controller != null && controller.getState() == ServiceController.State.UP) {
                     final NetworkInterfaceBinding binding = NetworkInterfaceBinding.class.cast(controller.getValue());
                     final InetAddress address = binding.getAddress();
                     final ModelNode result = new ModelNode();
