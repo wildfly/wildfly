@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.context;
 
+import java.security.Principal;
+
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.ejb.SessionContext;
@@ -114,5 +116,25 @@ public class SessionContextImpl extends EJBContextImpl implements SessionContext
             throw new IllegalStateException("getTimerService() is not allowed while dependency injection is in progress");
         }
         return getComponent().getUserTransaction();
+    }
+
+    @Override
+    public boolean isCallerInRole(final String roleName) {
+        final InterceptorContext invocation = CurrentInvocationContext.get();
+        final boolean lifecycleCallback = invocation.getMethod() == null;
+        if (lifecycleCallback) {
+            throw new IllegalStateException("isCallerInRole is not allowed in lifecycle methods of stateless session beans");
+        }
+        return super.isCallerInRole(roleName);
+    }
+
+    @Override
+    public Principal getCallerPrincipal() {
+        final InterceptorContext invocation = CurrentInvocationContext.get();
+        final boolean lifecycleCallback = invocation.getMethod() == null;
+        if (lifecycleCallback) {
+            throw new IllegalStateException("getCallerPrincipal is not allowed in lifecycle methods of stateless session beans");
+        }
+        return super.getCallerPrincipal();
     }
 }
