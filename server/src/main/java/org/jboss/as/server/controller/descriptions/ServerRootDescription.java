@@ -63,6 +63,7 @@ import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.operations.ServerRestartRequiredHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -206,6 +207,17 @@ public class ServerRootDescription {
         node.get(DESCRIPTION).set(bundle.getString("dump-services"));
         node.get(REQUEST_PROPERTIES).setEmptyObject();
         node.get(REPLY_PROPERTIES, TYPE).set(ModelType.STRING);
+        return node;
+    }
+
+     public static ModelNode getRestartRequiredDescription(final Locale locale) {
+        ResourceBundle bundle = getResourceBundle(locale);
+
+        ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(ServerRestartRequiredHandler.OPERATION_NAME);
+        node.get(DESCRIPTION).set(bundle.getString("restart-required"));
+        node.get(REQUEST_PROPERTIES).setEmptyObject();
+        node.get(REPLY_PROPERTIES).setEmptyObject();
         return node;
     }
 
