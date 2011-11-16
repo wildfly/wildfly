@@ -25,6 +25,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -38,9 +39,8 @@ import static org.jboss.as.controller.ControllerLogger.SERVER_MANAGEMENT_LOGGER;
  * Service used to create operation handlers per incoming channel
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
-public abstract class AbstractModelControllerOperationHandlerFactoryService<T extends AbstractModelControllerOperationHandler> implements Service<ManagementOperationHandlerFactory>, ManagementOperationHandlerFactory{
+public abstract class AbstractModelControllerOperationHandlerFactoryService implements Service<AbstractModelControllerOperationHandlerFactoryService>, ManagementChannelInitialization {
 
     public static final ServiceName OPERATION_HANDLER_NAME_SUFFIX = ServiceName.of("operation", "handler");
 
@@ -70,7 +70,7 @@ public abstract class AbstractModelControllerOperationHandlerFactoryService<T ex
 
     /** {@inheritDoc} */
     @Override
-    public ManagementOperationHandlerFactory getValue() throws IllegalStateException {
+    public AbstractModelControllerOperationHandlerFactoryService getValue() throws IllegalStateException {
         return this;
     }
 

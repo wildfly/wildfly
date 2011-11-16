@@ -23,12 +23,26 @@ package org.jboss.as.protocol.mgmt.support;
 
 import java.io.DataInput;
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
+import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
+import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
-import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
+import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
+import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
+import org.jboss.as.protocol.mgmt.ManagementProtocolHeader;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
+import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
-import org.jboss.as.protocol.mgmt.ManagementResponseHandler;
+import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
+import org.jboss.as.protocol.mgmt.ProtocolUtils;
+import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.CloseHandler;
+import org.jboss.threads.AsyncFuture;
 
 
 /**
@@ -42,8 +56,9 @@ public class SimpleHandlers {
     public static final byte REQUEST_WITH_NO_HANDLER = 103;
     public static final byte REQUEST_WITH_BAD_READ = 104;
     public static final byte REQUEST_WITH_BAD_WRITE = 105;
+    public static final byte REQUEST_WITH_NO_RESPONSE = 106;
 
-    public static class Request extends ManagementRequest<Integer>{
+    public static class Request extends AbstractManagementRequest<Integer, Void> {
         final int sentData;
         final byte requestCode;
 
@@ -53,80 +68,160 @@ public class SimpleHandlers {
         }
 
         @Override
-        protected byte getRequestCode() {
-            return requestCode;
-        }
-
-        @Override
-        protected void writeRequest(int protocolVersion, FlushableDataOutput output) throws IOException {
-            //System.out.println("Writing request");
+        protected void sendRequest(ActiveOperation.ResultHandler<Integer> resultHandler, ManagementRequestContext<Void> context, FlushableDataOutput output) throws IOException {
             output.writeInt(sentData);
         }
 
         @Override
-        protected ManagementResponseHandler<Integer> getResponseHandler() {
-            return new ManagementResponseHandler<Integer>() {
-                protected Integer readResponse(DataInput input) throws IOException {
-                    int i = input.readInt();
-                    return i;
+        public byte getOperationType() {
+            return requestCode;
+        }
+
+        @Override
+        public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Integer> resultHandler, ManagementRequestContext<Void> context) throws IOException {
+            resultHandler.done(input.readInt());
+        }
+    }
+
+    public static class OperationHandler extends AbstractMessageHandler<Void, Void> {
+
+        public OperationHandler() {
+            super(Executors.newCachedThreadPool());
+        }
+
+        @Override
+        protected ManagementRequestHeader validateRequest(ManagementProtocolHeader header) throws IOException {
+            ManagementRequestHeader request = super.validateRequest(header);
+            super.registerActiveOperation(request.getBatchId(), null);
+            return request;
+        }
+
+        @Override
+        protected ManagementRequestHandler<Void, Void> getRequestHandler(byte operationType) {
+            switch (operationType) {
+                case SIMPLE_REQUEST:
+                    return new RequestHandler();
+                case REQUEST_WITH_BAD_READ:
+                    return new BadReadRequestHandler();
+                case REQUEST_WITH_BAD_WRITE:
+                    return new BadWriteRequestHandler();
+                case REQUEST_WITH_NO_RESPONSE:
+                    return new NoResponseHandler();
+                case REQUEST_WITH_NO_HANDLER:
+                    //No handler for this
+                default:
+                    return super.getRequestHandler(operationType);
                 }
-            };
         }
     }
 
-    public static class OperationHandler implements ManagementOperationHandler {
+    private abstract static class AbstractHandler implements ManagementRequestHandler<Void, Void> {
+
+        abstract int readRequest(DataInput input) throws IOException;
+        abstract void writeResponse(final FlushableDataOutput output, int data) throws IOException;
 
         @Override
-        public ManagementRequestHandler getRequestHandler(byte id) {
-            switch (id) {
-            case SIMPLE_REQUEST:
-                return new RequestHandler();
-            case REQUEST_WITH_BAD_READ:
-                return new BadReadRequestHandler();
-            case REQUEST_WITH_BAD_WRITE:
-                return new BadWriteRequestHandler();
-            case REQUEST_WITH_NO_HANDLER:
-                //No handler for this
-            default:
-                return null;
+        public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<Void> resultHandler,
+                                  final ManagementRequestContext<Void> context) throws IOException {
 
-            }
+            final int data = readRequest(input);
+            context.executeAsync(new ManagementRequestContext.AsyncTask<Void>() {
+                @Override
+                public void execute(ManagementRequestContext<Void> context) throws Exception {
+                    ProtocolUtils.writeResponse(new ProtocolUtils.ResponseWriter() {
+                        @Override
+                        public void write(final FlushableDataOutput output) throws IOException {
+                            writeResponse(output, data);
+                        }
+                    }, context);
+                    resultHandler.done(null);
+                }
+            });
         }
     }
 
-    public static class RequestHandler extends ManagementRequestHandler {
-        int data;
+    public static class RequestHandler extends AbstractHandler {
+
 
         @Override
-        public void readRequest(DataInput input) throws IOException {
-            data = input.readInt();
+        public int readRequest(DataInput input) throws IOException {
+            return input.readInt();
         }
 
         @Override
-        public void writeResponse(FlushableDataOutput output) throws IOException {
+        public void writeResponse(FlushableDataOutput output, int data) throws IOException {
             output.writeInt(data * 2);
         }
     }
 
-    public static class BadReadRequestHandler extends ManagementRequestHandler {
+    public static class BadReadRequestHandler extends AbstractHandler {
 
         @Override
-        public void readRequest(DataInput input) throws IOException {
+        public int readRequest(DataInput input) throws IOException {
             throw new IOException("BadReadRequest");
+        }
+
+        @Override
+        void writeResponse(FlushableDataOutput output, int data) throws IOException {
+            throw new IllegalStateException();
         }
     }
 
-    public static class BadWriteRequestHandler extends ManagementRequestHandler {
+    public static class BadWriteRequestHandler extends AbstractHandler {
 
         @Override
-        public void readRequest(DataInput input) throws IOException {
-            int data = input.readInt();
+        public int readRequest(DataInput input) throws IOException {
+            return input.readInt();
         }
 
         @Override
-        public void writeResponse(FlushableDataOutput output) throws IOException {
+        public void writeResponse(FlushableDataOutput output, int data) throws IOException {
             throw new IOException("BadWriteRequest");
         }
+    }
+
+    public static class NoResponseHandler implements ManagementRequestHandler<Void, Void> {
+        @Override
+        public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Void> voidResultHandler, ManagementRequestContext<Void> voidManagementRequestContext) throws IOException {
+            input.readInt();
+        }
+    }
+
+    public static class SimpleClient extends AbstractMessageHandler<Integer, Void> {
+
+        private final Channel channel;
+        SimpleClient(final Channel channel, final ExecutorService executorService) {
+            super(executorService);
+            this.channel = channel;
+        }
+
+        public Integer executeForResult(ManagementRequest<Integer, Void> request) throws ExecutionException, InterruptedException {
+            return execute(request).get();
+        }
+
+        public AsyncFuture<Integer> execute(ManagementRequest<Integer, Void> request) {
+            final ActiveOperation<Integer, Void> support = super.registerActiveOperation(null);
+            return super.executeRequest(request, channel, support);
+        }
+
+        public static SimpleClient create(final ManagementChannel channel, final ExecutorService executorService) {
+            final SimpleClient client = new SimpleClient(channel, executorService);
+            channel.setReceiver(ManagementChannelReceiver.createDelegating(client));
+            channel.addCloseHandler(new CloseHandler<Channel>() {
+                @Override
+                public void handleClose(Channel closed, IOException exception) {
+                    client.shutdown();
+                }
+            });
+            channel.startReceiving();
+            return client;
+        }
+
+        public static SimpleClient create(final RemotingChannelPairSetup setup) {
+            final ManagementChannel channel = setup.getClientChannel();
+            return create(channel, setup.getExecutorService());
+        }
+
     }
 
 }

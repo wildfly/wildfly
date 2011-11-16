@@ -20,7 +20,7 @@ package org.jboss.as.domain.controller;
 
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
-import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
+import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
 
 /**
  *
@@ -64,7 +64,7 @@ public interface UnregisteredHostChannelRegistry {
          *
          * @param handler the operation handler
          */
-        void proxyCreated(ManagementOperationHandler handler);
+        void proxyCreated(ManagementMessageHandler handler);
     }
 
 }

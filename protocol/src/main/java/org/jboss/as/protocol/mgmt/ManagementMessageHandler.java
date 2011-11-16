@@ -22,12 +22,29 @@
 
 package org.jboss.as.protocol.mgmt;
 
+import org.jboss.remoting3.Channel;
+
+import java.io.DataInput;
+import java.io.IOException;
+
 /**
- * A local handler for responses to a management request.
- *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Emanuel Muckenhuber
  */
-public interface ManagementResponseHandler<T, A> extends ManagementRequestHandler<T, A> {
+public interface ManagementMessageHandler {
+
+    /**
+     * Handle a message on the channel.
+     *
+     * @param channel the channel
+     * @param input the data input
+     * @param header the header
+     * @throws IOException
+     */
+    void handleMessage(Channel channel, DataInput input, ManagementProtocolHeader header) throws IOException;
+
+    /**
+     * Shutdown all active operations.
+     */
+    void shutdown();
 
 }

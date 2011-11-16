@@ -20,14 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.protocol.mgmt;
+package org.jboss.as.protocol.mgmt.support;
+
+import org.jboss.as.protocol.mgmt.ManagementChannel;
+import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.CloseHandler;
+import org.jboss.remoting3.HandleableCloseable;
 
 /**
- * A local handler for responses to a management request.
- *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Emanuel Muckenhuber
  */
-public interface ManagementResponseHandler<T, A> extends ManagementRequestHandler<T, A> {
+public interface ManagementChannelInitialization {
+
+    /**
+     * Initialize the management channel, before receiving request.
+     *
+     * @param channel
+     */
+    Channel.Key initialize(ManagementChannel channel);
 
 }

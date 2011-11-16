@@ -26,7 +26,7 @@ import java.util.Map;
 
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
-import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
+import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
 
 /**
  * @author Emanuel Muckenhuber
@@ -39,6 +39,6 @@ public interface ManagedServerLifecycleCallback {
     void processInventory(Map<String, ProcessInfo> processInfos);
 
     interface ProxyCreatedCallback {
-        void proxyOperationHandlerCreated(ManagementOperationHandler handler);
+        void proxyOperationHandlerCreated(ManagementMessageHandler receiver);
     }
 }

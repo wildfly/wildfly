@@ -32,8 +32,16 @@ import java.util.Set;
 public interface ManagementBatchIdManager {
 
     /**
+     * Block a given batch id, when using shared transports.
+     *
+     * @param id the id
+     * @return true if this did not already contain the id
+     */
+    boolean lockBatchId(int id);
+
+    /**
      * Creates a batch id. Once the batch has completed
-     * {@link free} must be called.
+     * {@link ManagementBatchIdManager#freeBatchId} must be called.
      *
      * @return the created batch id
      */
@@ -42,10 +50,9 @@ public interface ManagementBatchIdManager {
     /**
      * Frees a batch id.
      *
-     * @param the batch id to be freed.
+     * @param id the batch id to be freed.
      */
     void freeBatchId(int id);
-
 
     /**
      * Default implementation of ManagementBatchIdManager that generates unique
@@ -54,6 +61,11 @@ public interface ManagementBatchIdManager {
     ManagementBatchIdManager DEFAULT = new ManagementBatchIdManager() {
 
         Set<Integer> ids = new HashSet<Integer>();
+
+        @Override
+        public synchronized boolean lockBatchId(int id) {
+            return ids.add(id);
+        }
 
         @Override
         public synchronized int createBatchId() {

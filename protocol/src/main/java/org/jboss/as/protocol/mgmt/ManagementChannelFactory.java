@@ -28,20 +28,16 @@ import org.jboss.remoting3.Channel;
  */
 public class ManagementChannelFactory extends ProtocolChannelFactory <ManagementChannel> {
 
-    private final ManagementOperationHandler operationHandler;
+    private final Channel.Receiver receiver;
 
-    public ManagementChannelFactory() {
-        this(null);
-    }
-
-    public ManagementChannelFactory(ManagementOperationHandler operationHandler) {
-        this.operationHandler = operationHandler;
+    public ManagementChannelFactory(Channel.Receiver receiver) {
+        this.receiver = receiver;
     }
 
     public ManagementChannel create(String name, Channel channel) {
         ManagementChannel createdChannel = new ManagementChannel(name, channel);
-        if (operationHandler != null) {
-            createdChannel.setOperationHandler(operationHandler);
+        if(receiver != null) {
+            createdChannel.setReceiver(receiver);
         }
         return createdChannel;
     }

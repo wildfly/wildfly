@@ -29,13 +29,13 @@ import java.io.IOException;
 import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
 
 /**
- * DomainClientProtocol header used for management operation responses. Provides the default header fields from
+ * ManagementProtocol header used for management operation responses. Provides the default header fields from
  * {@link ManagementProtocolHeader}.
  *
  * @author John Bailey
  * @author Kabir Khan
  */
-class ManagementResponseHeader extends ManagementProtocolHeader {
+public class ManagementResponseHeader extends ManagementProtocolHeader {
     private int responseId;
     private String error;
 
@@ -100,7 +100,22 @@ class ManagementResponseHeader extends ManagementProtocolHeader {
     }
 
     @Override
-    byte getType() {
+    public byte getType() {
         return ManagementProtocol.TYPE_RESPONSE;
     }
+
+    public static ManagementResponseHeader create(final ManagementProtocolHeader header) {
+        return create(ManagementRequestHeader.class.cast(header));
+    }
+
+    public static ManagementResponseHeader create(final ManagementRequestHeader header) {
+        final int workingVersion = Math.min(ManagementProtocol.VERSION, header.getVersion());
+        return new ManagementResponseHeader(workingVersion, header.getRequestId(), null);
+    }
+
+    public static ManagementResponseHeader create(final ManagementRequestHeader header, Exception error) {
+        final int workingVersion = Math.min(ManagementProtocol.VERSION, header.getVersion());
+        return new ManagementResponseHeader(workingVersion, header.getRequestId(), error != null ? error.getMessage() : null);
+    }
+
 }

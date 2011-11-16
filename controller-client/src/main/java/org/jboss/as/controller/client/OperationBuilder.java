@@ -55,6 +55,9 @@ public class OperationBuilder {
      * @return a builder than can be used to continue building the operation
      */
     public OperationBuilder addInputStream(InputStream in) {
+        if(in == null) {
+            throw new IllegalArgumentException("null input stream");
+        }
         if (inputStreams == null) {
             inputStreams = new ArrayList<InputStream>();
         }
@@ -80,4 +83,15 @@ public class OperationBuilder {
     public Operation build() {
         return new OperationImpl(operation, inputStreams);
     }
+
+    /**
+     * Create an operation builder.
+     *
+     * @param operation the operation
+     * @return the builder
+     */
+    public static OperationBuilder create(final ModelNode operation) {
+        return new OperationBuilder(operation);
+    }
+
 }
