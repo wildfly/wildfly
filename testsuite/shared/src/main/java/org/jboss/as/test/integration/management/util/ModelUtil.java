@@ -36,5 +36,30 @@ public class ModelUtil {
         for (ModelNode n : node.asList()) ret.add(n.asString());
         return ret;
     }
+ 
+    public static ModelNode createCompositeNode(ModelNode[] steps) {
+        ModelNode comp = new ModelNode();
+        comp.get("operation").set("composite");
+        for(ModelNode step : steps) {
+            comp.get("steps").add(step);
+        }
+        return comp;
+    }
+
+    public static ModelNode createOpNode(String address, String operation) {
+        ModelNode op = new ModelNode();
+
+        // set address
+        ModelNode list = op.get("address").setEmptyList();
+        if (address != null) {
+            String [] pathSegments = address.split("/");
+            for (String segment : pathSegments) {
+                String[] elements = segment.split("=");
+                list.add(elements[0], elements[1]);
+            }
+        }
+        op.get("operation").set(operation);
+        return op;
+    }
     
 }

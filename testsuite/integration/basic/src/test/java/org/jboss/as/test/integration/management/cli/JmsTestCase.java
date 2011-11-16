@@ -30,7 +30,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * TODO add/remove-jms-topic/queue/cf commands are deprecated and shouldn't be used.
  *
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
@@ -58,19 +57,19 @@ public class JmsTestCase extends AbstractCliTestBase {
         assertFalse(ls.contains("testJmsQueue"));              
         
         // create queue
-        cli.sendLine("add-jms-queue --name=testJmsQueue");
+        cli.sendLine("jms-queue add --queue-address=testJmsQueue --entries=testJmsQueue");
 
         // check it is listed
         cli.sendLine("cd /subsystem=messaging/hornetq-server=default/jms-queue");
         cli.sendLine("ls");        
         ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
-        assertTrue(ls.contains("testJmsQueue"));              
+        assertTrue(ls.contains("testJmsQueue"));            
     }
 
     private void testRemoveJmsQueue() throws Exception {
 
         // create queue
-        cli.sendLine("remove-jms-queue --name=testJmsQueue");
+        cli.sendLine("jms-queue remove --queue-address=testJmsQueue");
 
         // check it is listed
         cli.sendLine("cd /subsystem=messaging/hornetq-server=default/jms-queue");
@@ -87,9 +86,9 @@ public class JmsTestCase extends AbstractCliTestBase {
         String ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         assertFalse(ls.contains("testJmsTopic"));              
         
-        // create queue
-        cli.sendLine("add-jms-topic --name=testJmsTopic");
-
+        // create topic
+        cli.sendLine("jms-topic add --topic-address=testJmsTopic --entries=testJmsTopic");
+        
         // check it is listed
         cli.sendLine("cd /subsystem=messaging/hornetq-server=default/jms-topic");
         cli.sendLine("ls");        
@@ -100,7 +99,7 @@ public class JmsTestCase extends AbstractCliTestBase {
     private void testRemoveJmsTopic() throws Exception {
 
         // create queue
-        cli.sendLine("remove-jms-topic --name=testJmsTopic");
+        cli.sendLine("jms-topic remove --topic-address=testJmsTopic");
 
         // check it is listed
         cli.sendLine("cd /subsystem=messaging/hornetq-server=default/jms-topic");
