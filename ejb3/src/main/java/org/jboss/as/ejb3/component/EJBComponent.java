@@ -217,12 +217,18 @@ public abstract class EJBComponent extends BasicComponent {
     }
 
     public Class<?> getEjbObjectType() {
+        if(ejbObject == null) {
+            return null;
+        }
         final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(ejbObject);
         final ComponentView view = (ComponentView) serviceController.getValue();
         return view.getViewClass();
     }
 
     public Class<?> getEjbLocalObjectType() {
+        if(ejbLocalObject == null) {
+            return null;
+        }
         final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(ejbLocalObject);
         final ComponentView view = (ComponentView) serviceController.getValue();
         return view.getViewClass();
