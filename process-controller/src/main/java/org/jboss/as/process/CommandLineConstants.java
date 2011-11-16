@@ -74,7 +74,7 @@ public class CommandLineConstants {
     public static final String DOMAIN_CONFIG = "--domain-config";
     public static final String SHORT_DOMAIN_CONFIG = "-c";
 
-    /** Passed in to a HC to choose the domain.xml file */
+    /** Passed in to a HC to choose the host.xml file */
     public static final String OLD_HOST_CONFIG = "-host-config";
     public static final String HOST_CONFIG = "--host-config";
 
