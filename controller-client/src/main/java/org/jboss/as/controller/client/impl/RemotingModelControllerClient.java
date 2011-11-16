@@ -24,14 +24,19 @@ package org.jboss.as.controller.client.impl;
 
 import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
 
+import java.io.DataInput;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Map;
+import java.util.concurrent.Executors;
 
 import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
+import org.jboss.as.protocol.mgmt.ManagementProtocolHeader;
+import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.Remoting;
 import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
@@ -55,6 +60,7 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
 
 
     public RemotingModelControllerClient(String hostName, int port, final CallbackHandler callbackHandler, final Map<String, String> saslOptions) {
+        super(Executors.newCachedThreadPool()); // TODO
         this.hostName = hostName;
         this.port = port;
         this.callbackHandler = callbackHandler;
@@ -69,12 +75,12 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
                 endpoint.close();
                 endpoint = null;
             }
+            super.shutdown();
         }
-        super.close();
     }
 
     @Override
-    protected synchronized ManagementClientChannelStrategy getClientChannelStrategy() throws URISyntaxException, IOException {
+    protected synchronized ManagementClientChannelStrategy getClientChannelStrategy() throws IOException {
         if (closed) {
             throw MESSAGES.objectIsClosed( ModelControllerClient.class.getSimpleName());
         }
@@ -82,7 +88,12 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
             endpoint = Remoting.createEndpoint("management-client", OptionMap.EMPTY);
 
             endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
-            strategy = ManagementClientChannelStrategy.create(hostName, port, endpoint, this, callbackHandler, saslOptions);
+            strategy = ManagementClientChannelStrategy.create(hostName, port, endpoint, new ManagementClientChannelStrategy.ChannelReceiverFactory() {
+                @Override
+                public Channel.Receiver createReceiver() {
+                    return ManagementChannelReceiver.createDelegating(RemotingModelControllerClient.this);
+                }
+            }, callbackHandler, saslOptions);
         }
         return strategy;
     }

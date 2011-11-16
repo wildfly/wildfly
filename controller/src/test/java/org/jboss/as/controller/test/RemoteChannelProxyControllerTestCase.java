@@ -29,7 +29,12 @@ import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
 import org.jboss.as.controller.support.RemoteChannelPairSetup;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
+import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.CloseHandler;
 import org.junit.After;
+
+import java.io.IOException;
+import java.util.concurrent.Executors;
 
 /**
  *
@@ -48,22 +53,26 @@ public class RemoteChannelProxyControllerTestCase extends AbstractProxyControlle
 
     @Override
     protected ProxyController createProxyController(final ModelController proxiedController, final PathAddress proxyNodeAddress) {
+        TransactionalModelControllerOperationHandler operationHandler = new TransactionalModelControllerOperationHandler(proxiedController, Executors.newCachedThreadPool());
         try {
             channels = new RemoteChannelPairSetup();
-            channels.setupRemoting();
+            channels.setupRemoting(operationHandler);
             channels.startChannels();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        ManagementChannel serverChannel = channels.getServerChannel();
-        ManagementChannel clientChannel = channels.getClientChannel();
+
+        final ManagementChannel clientChannel = channels.getClientChannel();
+
+        final RemoteProxyController proxyController = RemoteProxyController.create(channels.getExecutorService(), proxyNodeAddress, ProxyOperationAddressTranslator.SERVER, channels.getClientChannel());
+        clientChannel.setReceiver(proxyController);
+        clientChannel.addCloseHandler(new CloseHandler<Channel>() {
+            @Override
+            public void handleClose(Channel closed, IOException exception) {
+                proxyController.shutdown();
+            }
+        });
         clientChannel.startReceiving();
-
-        TransactionalModelControllerOperationHandler operationHandler = new TransactionalModelControllerOperationHandler(channels.getExecutorService(), proxiedController);
-        serverChannel.setOperationHandler(operationHandler);
-
-        RemoteProxyController proxyController = RemoteProxyController.create(channels.getExecutorService(), proxyNodeAddress, ProxyOperationAddressTranslator.SERVER, channels.getClientChannel());
-        clientChannel.setOperationHandler(proxyController);
 
         return proxyController;
     }

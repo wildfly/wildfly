@@ -28,7 +28,7 @@ import java.io.UTFDataFormatException;
 import java.net.ConnectException;
 import java.net.URI;
 
-import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
+import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
@@ -148,7 +148,7 @@ public interface ProtocolMessages {
      *
      * @return an {@link IOException} for the error.
      */
-    @Message(id = 12151, value = "Invalid byte token.  Expecting '%s' received '%s'")
+    @Message(id = 12151, value = "Invalid byte token.  Expecting '%d' received '%d'")
     IOException invalidByteToken(int expected, byte actual);
 
     /**
@@ -269,7 +269,7 @@ public interface ProtocolMessages {
      * @return an {@link IOException} for the error.
      */
     @Message(id = 12163, value = "No request handler found with id %s in operation handler %s")
-    IOException requestHandlerIdNotFound(byte id, ManagementOperationHandler operationHandler);
+    IOException requestHandlerIdNotFound(byte id, AbstractMessageHandler operationHandler);
 
     /**
      * Creates an exception indicating the response handler has already been registered for the request.

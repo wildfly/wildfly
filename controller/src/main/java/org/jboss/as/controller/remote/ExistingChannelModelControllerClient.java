@@ -25,6 +25,9 @@ import org.jboss.as.controller.client.impl.AbstractModelControllerClient;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 
+import java.io.IOException;
+import java.util.concurrent.Executors;
+
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -34,11 +37,17 @@ public class ExistingChannelModelControllerClient extends AbstractModelControlle
     private final ManagementChannel channel;
 
     public ExistingChannelModelControllerClient(final ManagementChannel channel) {
+        super(Executors.newCachedThreadPool()); // TODO
         this.channel = channel;
     }
 
     @Override
     protected ManagementClientChannelStrategy getClientChannelStrategy() {
         return ManagementClientChannelStrategy.create(channel);
+    }
+
+    @Override
+    public void close() throws IOException {
+        super.shutdown();
     }
 }

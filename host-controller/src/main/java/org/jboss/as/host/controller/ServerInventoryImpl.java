@@ -56,7 +56,7 @@ import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
-import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
+import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
 import org.jboss.as.server.ServerState;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -292,8 +292,8 @@ public class ServerInventoryImpl implements ServerInventory {
                     PathAddress.pathAddress(PathElement.pathElement(HOST, domainController.getLocalHostInfo().getLocalHostName()), element),
                     ProxyOperationAddressTranslator.SERVER,
                     channel);
-            if (callback != null && serverController instanceof ManagementOperationHandler) {
-                callback.proxyOperationHandlerCreated((ManagementOperationHandler)serverController);
+            if (callback != null && serverController instanceof ManagementMessageHandler) {
+                callback.proxyOperationHandlerCreated((ManagementMessageHandler)serverController);
             }
             domainController.registerRunningServer(serverController);
 
