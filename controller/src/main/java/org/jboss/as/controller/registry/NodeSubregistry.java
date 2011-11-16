@@ -206,8 +206,10 @@ final class NodeSubregistry {
         final Map<String, AbstractResourceRegistration> snapshot = childRegistries;
         AbstractResourceRegistration childRegistry = snapshot.get(child);
         if (childRegistry == null) {
-            //Don't handle '*' for now
-            return null;
+            childRegistry = snapshot.get("*");
+            if (childRegistry == null) {
+                return null;
+            }
         }
         return childRegistry.getProxyController(iterator);
     }
@@ -229,8 +231,10 @@ final class NodeSubregistry {
         if (child != null) {
             AbstractResourceRegistration childRegistry = snapshot.get(child);
             if (childRegistry == null) {
-                //Don't handle '*' for now
-                return;
+                childRegistry = snapshot.get("*");
+                if (childRegistry == null) {
+                    return;
+                }
             }
             childRegistry.getProxyControllers(iterator, controllers);
         } else {
