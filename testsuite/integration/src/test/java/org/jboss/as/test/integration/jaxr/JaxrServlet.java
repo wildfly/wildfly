@@ -46,14 +46,23 @@ public class JaxrServlet extends HttpServlet
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+        String method = req.getParameter("method");
         PrintWriter writer = res.getWriter();
         try {
-            String lookup = "java:comp/env/eis/JAXR";
-            InitialContext context = new InitialContext();
-            ConnectionFactory factory = (ConnectionFactory) context.lookup(lookup);
-            log.infof("ConnectionFactory at '%s' => %s", lookup, factory);
+            ConnectionFactory factory;
+            if ("lookup".equals(method)) {
+                String lookup = "java:comp/env/eis/JAXR";
+                InitialContext context = new InitialContext();
+                factory = (ConnectionFactory) context.lookup(lookup);
+            }
+            else if ("new".equals(method)) {
+                factory = ConnectionFactory.newInstance();
+            } else {
+                throw new IllegalArgumentException("Invalid method: " + method);
+            }
+            log.infof("ConnectionFactory at '%s' => %s", method, factory);
             writer.println(factory.getClass().getName());
-        } catch (NamingException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace(writer);
         } finally {
             writer.close();

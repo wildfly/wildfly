@@ -28,6 +28,7 @@ import org.jboss.as.test.HttpTestSupport;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -51,9 +52,32 @@ public class JaxrConnectionFactoryBindingTestCase
     }
 
     @Test
-    public void testJNDIBinding() throws Exception
+    public void testConnectionFactoryLookup() throws Exception
     {
-        String response = HttpTestSupport.getHttpResponse("localhost", 8080, "/jaxr-connection-test");
+        String reqpath = "/jaxr-connection-test?method=lookup";
+        String response = HttpTestSupport.getHttpResponse("localhost", 8080, reqpath);
+        Assert.assertEquals("org.apache.ws.scout.registry.ConnectionFactoryImpl", response);
+    }
+
+    /*
+    Add this to the configuration to make the following test work
+
+    <system-properties>
+        <property name="javax.xml.registry.ConnectionFactoryClass" value="org.apache.ws.scout.registry.ConnectionFactoryImpl"/>
+    </system-properties>
+
+	<subsystem xmlns="urn:jboss:domain:ee:1.0">
+	  <global-modules>
+	    <module name="org.apache.ws.scout" slot="main" />
+	  </global-modules>
+	</subsystem>
+    */
+    //@Test
+    @Ignore("ConnectionFactory.newInstance() not supported by default")
+    public void testConnectionFactoryNewInstance() throws Exception
+    {
+        String reqpath = "/jaxr-connection-test?method=new";
+        String response = HttpTestSupport.getHttpResponse("localhost", 8080, reqpath);
         Assert.assertEquals("org.apache.ws.scout.registry.ConnectionFactoryImpl", response);
     }
 }
