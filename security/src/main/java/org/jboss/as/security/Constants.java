@@ -74,6 +74,7 @@ public interface Constants {
     String MAPPING_MANAGER_CLASS_NAME = "mapping-manager-class-name";
     String MAPPING_MODULE = "mapping-module";
     String MAPPING_MODULES = "mapping-modules";
+    String MODULE = "module";
     String MODULE_OPTIONS = "module-options";
     String NAME = "name";
     String OPTIONAL = "optional";
