@@ -33,7 +33,6 @@ import javax.xml.stream.XMLStreamWriter;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.ParametersOfValidator;
@@ -56,6 +55,7 @@ public class MappingModulesAttributeDefinition extends ListAttributeDefinition {
         final ParametersValidator delegate = new ParametersValidator();
         delegate.registerValidator(CODE, new StringLengthValidator(1));
         delegate.registerValidator(Constants.TYPE, new StringLengthValidator(1));
+        delegate.registerValidator(Constants.MODULE, new StringLengthValidator(1,true));
         delegate.registerValidator(Constants.MODULE_OPTIONS, new ModelTypeValidator(ModelType.OBJECT, true));
 
         validator = new ParametersOfValidator(delegate);
