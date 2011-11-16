@@ -1277,7 +1277,7 @@ public interface ControllerMessages {
      * @return a {@link RequestProcessingException} for the error.
      */
     @Message(id = 14736, value = "No active tx found for id %d")
-    RequestProcessingException noActiveTransaction(int id);
+    RuntimeException noActiveTransaction(int id);
 
     /**
      * A message indicating there is no child registry for the child, represented by the {@code childType} and

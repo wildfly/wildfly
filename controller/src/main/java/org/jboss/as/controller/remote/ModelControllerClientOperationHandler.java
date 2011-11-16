@@ -22,183 +22,140 @@
 package org.jboss.as.controller.remote;
 
 import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 
 import java.io.DataInput;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.ProxyController;
-import org.jboss.as.controller.client.OperationAttachments;
-import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
+import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
+import org.jboss.as.protocol.mgmt.ManagementProtocol;
+import org.jboss.as.protocol.mgmt.ManagementProtocolHeader;
+import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
-import org.jboss.as.protocol.mgmt.RequestProcessingException;
+import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
+import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.dmr.ModelNode;
-import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.CloseHandler;
-import org.jboss.remoting3.HandleableCloseable.Key;
+import org.jboss.remoting3.MessageOutputStream;
 
 /**
  * Operation handlers for the remote implementation of {@link org.jboss.as.controller.client.ModelControllerClient}
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
-public class ModelControllerClientOperationHandler extends AbstractModelControllerOperationHandler {
+public class ModelControllerClientOperationHandler extends AbstractModelControllerOperationHandler<ModelNode, Void> {
 
-    private final Map<Integer, Thread> asynchRequests = Collections.synchronizedMap(new HashMap<Integer, Thread>());
+    private final ModelController controller;
 
-    /**
-     * @param executorService executor to use to execute requests from this operation handler to the initiator
-     * @param controller the target controller
-     */
-    public ModelControllerClientOperationHandler(final ExecutorService executorService, final ModelController controller) {
-        super(executorService, controller);
+    public ModelControllerClientOperationHandler(final ModelController controller, final ExecutorService executorService) {
+        super(executorService);
+        this.controller = controller;
     }
 
-    /** {@inheritDoc} */
     @Override
-    public ManagementRequestHandler getRequestHandler(final byte id) {
-        if (id == ModelControllerProtocol.EXECUTE_CLIENT_REQUEST) {
-            return new ExecuteRequestHandler(false);
-        } else if (id == ModelControllerProtocol.EXECUTE_ASYNC_CLIENT_REQUEST) {
-            return new ExecuteRequestHandler(true);
-        } else if (id == ModelControllerProtocol.CANCEL_ASYNC_REQUEST) {
-            return new CancelAsyncRequestHandler();
+    protected ManagementRequestHeader validateRequest(ManagementProtocolHeader header) throws IOException {
+        final ManagementRequestHeader request =  super.validateRequest(header);
+        if(request.getOperationId() == ModelControllerProtocol.EXECUTE_ASYNC_CLIENT_REQUEST
+                || request.getOperationId() == ModelControllerProtocol.EXECUTE_CLIENT_REQUEST) {
+            // Initialize a new request context
+            super.registerActiveOperation(request.getBatchId(), null);
         }
-        return null;
+        return request;
     }
 
-    /**
-     * Handles incoming {@link RemoteProxyController#execute(ModelNode, OperationMessageHandler, ProxyController.ProxyOperationControl, OperationAttachments)}
-     * requests from the remote proxy controller and forwards them to the target model controller
-     */
-    private class ExecuteRequestHandler extends ManagementRequestHandler {
-        private final boolean asynch;
-        private ModelNode operation = new ModelNode();
-        private int batchId;
-        private int attachmentsLength;
-        private ModelNode result;
-
-        public ExecuteRequestHandler(boolean asynch) {
-            this.asynch = asynch;
+    @Override
+    protected ManagementRequestHandler<ModelNode, Void> getRequestHandler(byte operationType) {
+        switch(operationType) {
+            case ModelControllerProtocol.EXECUTE_ASYNC_CLIENT_REQUEST:
+            case ModelControllerProtocol.EXECUTE_CLIENT_REQUEST:
+                return new ExecuteRequestHandler();
+            case ModelControllerProtocol.CANCEL_ASYNC_REQUEST:
+                return new CancelAsyncRequestHandler();
         }
+        return super.getRequestHandler(operationType);
+    }
+
+    class ExecuteRequestHandler implements ManagementRequestHandler<ModelNode, Void> {
 
         @Override
-        protected void readRequest(final DataInput input) throws IOException {
-            batchId = getHeader().getBatchId();
+        public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<ModelNode> resultHandler, final ManagementRequestContext<Void> context) throws IOException {
+            final ModelNode operation = new ModelNode();
             ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_OPERATION);
             operation.readExternal(input);
             ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
-            attachmentsLength = input.readInt();
-        }
+            final int attachmentsLength = input.readInt();
+            context.executeAsync(new ManagementRequestContext.AsyncTask<Void>() {
+                @Override
+                public void execute(final ManagementRequestContext<Void> context) throws Exception {
+                    final ManagementResponseHeader response = ManagementResponseHeader.create(context.getRequestHeader());
+                    final ModelNode result = doExecute(operation, attachmentsLength, context);
 
-        protected void processRequest() throws RequestProcessingException {
-            if (!asynch) {
-                doProcessRequest();
-            } else {
-                //Do asynchrounous invocations in a separate thread to avoid interruption of the thread
-                //if cancelled filtering up to the NIO layer which results in ClosedByInterruptException
-                //which closes the channel
-                Future<Void> future = executorService.submit(new Callable<Void>() {
-                    public Void call() throws Exception {
-                        doProcessRequest();
-                        return null;
+                    final FlushableDataOutput output = context.writeMessage(response);
+                    try {
+                        output.write(ModelControllerProtocol.PARAM_RESPONSE);
+                        result.writeExternal(output);
+                        output.writeByte(ManagementProtocol.RESPONSE_END);
+                        output.close();
+                    } finally {
+                        StreamUtils.safeClose(output);
                     }
-                });
-                try {
-                    future.get();
-                } catch (ExecutionException e) {
-                    Throwable cause = e.getCause();
-                    if (cause instanceof RequestProcessingException) {
-                        throw (RequestProcessingException)cause;
-                    }
-                    if (cause instanceof RuntimeException) {
-                        throw (RuntimeException)cause;
-                    }
-                    throw new RequestProcessingException(cause);
-                } catch (InterruptedException e) {
-                    Thread t = asynchRequests.get(batchId);
-                    if (t != null) {
-                        t.interrupt();
-                    }
-                    Thread.currentThread().interrupt();
-                    throw MESSAGES.asynchOperationThreadInterrupted();
-                }
-            }
-        }
-
-        private void doProcessRequest() {
-            final Key closeKey = getChannel().addCloseHandler(new CloseHandler<Channel>() {
-                public void handleClose(final Channel closed, final IOException exception) {
-                    asynchRequests.remove(getHeader().getBatchId());
+                    resultHandler.done(result);
                 }
             });
-            OperationAttachmentsProxy attachmentsProxy = new OperationAttachmentsProxy(getChannel(), batchId, attachmentsLength);
+        }
+
+        protected ModelNode doExecute(final ModelNode operation, final int attachmentsLength, final ManagementRequestContext<Void> context) {
+            final ManagementRequestHeader header = ManagementRequestHeader.class.cast(context.getRequestHeader());
+            final int batchId = header.getBatchId();
+            final ModelNode result = new ModelNode();
+            final AbstractModelControllerOperationHandler.OperationAttachmentsProxy attachmentsProxy = new AbstractModelControllerOperationHandler.OperationAttachmentsProxy(context.getChannel(), batchId, attachmentsLength);
             try {
-                try {
-                    ROOT_LOGGER.tracef("Executing client request %d(%d)", batchId, getHeader().getRequestId());
-                    if (asynch) {
-                        //register the cancel handler
-                        asynchRequests.put(batchId, Thread.currentThread());
-                    }
-                    result = controller.execute(
-                            operation,
-                            new OperationMessageHandlerProxy(getChannel(), batchId),
-                            ModelController.OperationTransactionControl.COMMIT,
-                            attachmentsProxy);
-                } catch (Exception e) {
-                    final ModelNode failure = new ModelNode();
-                    failure.get(OUTCOME).set(FAILED);
-                    failure.get(FAILURE_DESCRIPTION).set(e.getClass().getName() + ":" + e.getMessage());
-                    result = failure;
-                    attachmentsProxy.shutdown(e);
-                } finally {
-                    ROOT_LOGGER.tracef("Executed client request %d", batchId);
-                }
+                ROOT_LOGGER.tracef("Executing client request %d(%d)", batchId, header.getRequestId());
+                result.set(controller.execute(
+                        operation,
+                        new AbstractModelControllerOperationHandler.OperationMessageHandlerProxy(context.getChannel(), batchId),
+                        ModelController.OperationTransactionControl.COMMIT,
+                        attachmentsProxy));
+            } catch (Exception e) {
+                final ModelNode failure = new ModelNode();
+                failure.get(OUTCOME).set(FAILED);
+                failure.get(FAILURE_DESCRIPTION).set(e.getClass().getName() + ":" + e.getMessage());
+                result.set(failure);
+                attachmentsProxy.shutdown(e);
             } finally {
-                if (asynch) {
-                    asynchRequests.remove(batchId);
+                ROOT_LOGGER.tracef("Executed client request %d", batchId);
+            }
+            return result;
+        }
+
+    }
+
+    private class CancelAsyncRequestHandler implements ManagementRequestHandler<ModelNode, Void> {
+
+        @Override
+        public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<ModelNode> resultHandler, final ManagementRequestContext<Void> context) throws IOException {
+            context.executeAsync(new ManagementRequestContext.AsyncTask<Void>() {
+                @Override
+                public void execute(ManagementRequestContext<Void> context) throws Exception {
+                    final ManagementResponseHeader response = ManagementResponseHeader.create(context.getRequestHeader());
+                    final FlushableDataOutput output = context.writeMessage(response);
+                    try {
+                        output.writeByte(ManagementProtocol.RESPONSE_END);
+                        output.close();
+                    } finally {
+                        StreamUtils.safeClose(output);
+                    }
                 }
-                closeKey.remove();
-            }
-        }
-
-        @Override
-        protected void writeResponse(final FlushableDataOutput output) throws IOException {
-            output.write(ModelControllerProtocol.PARAM_RESPONSE);
-            result.writeExternal(output);
+            });
+            resultHandler.cancel();
         }
     }
 
-    private class CancelAsyncRequestHandler extends ManagementRequestHandler {
-        private int batchId;
-        @Override
-        protected void readRequest(DataInput input) throws IOException {
-            batchId = getHeader().getBatchId();
-        }
-
-        protected void processRequest() throws RequestProcessingException {
-            Thread t = asynchRequests.get(batchId);
-            if (t != null) {
-                t.interrupt();
-            }
-            else {
-                throw MESSAGES.asynchRequestNotFound(batchId);
-            }
-        }
-    }
 }

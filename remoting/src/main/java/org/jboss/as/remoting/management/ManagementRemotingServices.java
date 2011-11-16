@@ -23,6 +23,7 @@
 package org.jboss.as.remoting.management;
 
 
+import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
 import static org.jboss.msc.service.ServiceController.Mode.ACTIVE;
 
 import java.util.List;
@@ -31,7 +32,6 @@ import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.remote.AbstractModelControllerOperationHandlerFactoryService;
-import org.jboss.as.controller.remote.ManagementOperationHandlerFactory;
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFactoryService;
 import org.jboss.as.remoting.EndpointService;
 import org.jboss.as.remoting.RemotingServices;
@@ -162,7 +162,7 @@ public final class ManagementRemotingServices extends RemotingServices {
         ManagementChannelOpenListenerService channelOpenListenerService = new ManagementChannelOpenListenerService(channelName, OptionMap.EMPTY);
         ServiceBuilder<?> builder = serviceTarget.addService(channelOpenListenerService.getServiceName(endpointName), channelOpenListenerService)
                 .addDependency(endpointName, Endpoint.class, channelOpenListenerService.getEndpointInjector())
-                .addDependency(operationHandlerName, ManagementOperationHandlerFactory.class, channelOpenListenerService.getOperationHandlerInjector())
+                .addDependency(operationHandlerName, ManagementChannelInitialization.class, channelOpenListenerService.getOperationHandlerInjector())
                 .setInitialMode(ACTIVE);
         addController(newControllers, verificationHandler, builder);
     }
@@ -183,7 +183,7 @@ public final class ManagementRemotingServices extends RemotingServices {
     public static void installManagementChannelServices(
             final ServiceTarget serviceTarget,
             final ServiceName endpointName,
-            final AbstractModelControllerOperationHandlerFactoryService<?> operationHandlerService,
+            final AbstractModelControllerOperationHandlerFactoryService operationHandlerService,
             final ServiceName modelControllerName,
             final String channelName,
             final ServiceVerificationHandler verificationHandler,

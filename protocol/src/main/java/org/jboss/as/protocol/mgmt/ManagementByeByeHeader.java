@@ -32,7 +32,7 @@ public class ManagementByeByeHeader extends ManagementProtocolHeader {
     }
 
     @Override
-    byte getType() {
+    public byte getType() {
         return ManagementProtocol.TYPE_BYE_BYE;
     }
 

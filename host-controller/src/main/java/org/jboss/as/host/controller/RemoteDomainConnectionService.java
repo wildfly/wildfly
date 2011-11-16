@@ -22,6 +22,7 @@
 
 package org.jboss.as.host.controller;
 
+import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
 import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
 
 import java.io.BufferedOutputStream;
@@ -47,7 +48,6 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.ExistingChannelModelControllerClient;
-import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.operations.SlaveRegistrationError;
 import org.jboss.as.domain.controller.operations.SlaveRegistrationError.ErrorCode;
@@ -57,12 +57,14 @@ import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.host.controller.mgmt.DomainControllerProtocol;
 import org.jboss.as.process.protocol.Connection.ClosedCallback;
 import org.jboss.as.protocol.ProtocolChannelClient;
+import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
+import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
+import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementChannelFactory;
-import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
-import org.jboss.as.protocol.mgmt.ManagementRequest;
-import org.jboss.as.protocol.mgmt.ManagementResponseHandler;
+import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
+import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -100,10 +102,9 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     private volatile ProtocolChannelClient<ManagementChannel> channelClient;
     /** Used to invoke ModelController ops on the master */
     private volatile ModelControllerClient masterProxy;
-    /** Handler for transactional operations */
-    private volatile TransactionalModelControllerOperationHandler txOperationHandler;
     private final AtomicBoolean shutdown = new AtomicBoolean();
     private volatile ManagementChannel channel;
+    private volatile AbstractMessageHandler handler;
     private final ExecutorService executor = Executors.newCachedThreadPool();
     private final AtomicBoolean connected = new AtomicBoolean(false);
     private final AtomicBoolean registered = new AtomicBoolean(false);
@@ -198,7 +199,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 //            this.channelClient = null;
 //        }
 
-        txOperationHandler = new TransactionalModelControllerOperationHandler(executor, controller);
+        // txOperationHandler = new TransactionalModelControllerOperationHandler(executor, controller);
         ProtocolChannelClient<ManagementChannel> client;
         ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
         //Reusing the endpoint here after a disconnect does not seem to work once something has gone down, so try our own
@@ -206,9 +207,11 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         configuration.setEndpointName("endpoint");
         configuration.setUriScheme("remote");
 
+        this.handler = new TransactionalModelControllerOperationHandler(controller, executor);
+
         try {
             configuration.setUri(new URI("remote://" + host.getHostAddress() + ":" + port));
-            configuration.setChannelFactory(new ManagementChannelFactory(txOperationHandler));
+            configuration.setChannelFactory(new ManagementChannelFactory(ManagementChannelReceiver.createDelegating(this.handler)));
             client = ProtocolChannelClient.create(configuration);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -243,7 +246,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 
         SlaveRegistrationError error = null;
         try {
-            error = new RegisterModelControllerRequest().executeForResult(executor, ManagementClientChannelStrategy.create(channel));
+            error = new RegisterModelControllerRequest().executeForResult(handler, channel, null);
         } catch (Exception e) {
             log.warnf("Error retrieving domain model from remote domain controller %s:%d: %s", host.getHostAddress(), port, e.getMessage());
             throw new IllegalStateException(e);
@@ -264,7 +267,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             return;
         }
         try {
-            new UnregisterModelControllerRequest().executeForResult(executor, ManagementClientChannelStrategy.create(channel));
+            new UnregisterModelControllerRequest().executeForResult(handler, channel, null);
             registered.set(false);
         } catch (Exception e) {
             log.debugf(e, "Error unregistering from master");
@@ -338,6 +341,12 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             return;
         }
 
+        final AbstractMessageHandler handler = this.handler;
+        if(handler != null) {
+            // discard all active operations
+            handler.shutdown();
+        }
+
         if (!shutdown.get()) {
             //The remote host went down, try reconnecting
             new Thread(new Runnable() {
@@ -375,59 +384,52 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         return this;
     }
 
-    private abstract class RegistryRequest<T> extends ManagementRequest<T>{
+    private abstract class RegistryRequest<T> extends AbstractManagementRequest<T, Void> {
 
     }
 
     private class RegisterModelControllerRequest extends RegistryRequest<SlaveRegistrationError> {
 
-        RegisterModelControllerRequest() {
-        }
-
         @Override
-        protected byte getRequestCode() {
+        public byte getOperationType() {
             return DomainControllerProtocol.REGISTER_HOST_CONTROLLER_REQUEST;
         }
 
-        /** {@inheritDoc} */
         @Override
-        protected void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
+        protected void sendRequest(ActiveOperation.ResultHandler<SlaveRegistrationError> resultHandler, ManagementRequestContext<Void> voidManagementRequestContext, FlushableDataOutput output) throws IOException {
             output.write(DomainControllerProtocol.PARAM_HOST_ID);
             output.writeUTF(name);
         }
 
-        protected ManagementResponseHandler<SlaveRegistrationError> getResponseHandler() {
-            return new ManagementResponseHandler<SlaveRegistrationError>() {
-                @Override
-                protected SlaveRegistrationError readResponse(DataInput input) throws IOException {
-                    byte status = input.readByte();
-                    if (status == DomainControllerProtocol.PARAM_OK) {
-                        return null;
-                    } else {
-                        //return input.readUTF();
-                        return SlaveRegistrationError.parse(input.readUTF());
-                    }
-                }
-            };
+        @Override
+        public void handleRequest(DataInput input, ActiveOperation.ResultHandler<SlaveRegistrationError> resultHandler, ManagementRequestContext<Void> voidManagementRequestContext) throws IOException {
+            byte status = input.readByte();
+            if (status == DomainControllerProtocol.PARAM_OK) {
+                resultHandler.done(null);
+            } else {
+                resultHandler.done(SlaveRegistrationError.parse(input.readUTF()));
+            }
         }
     }
 
     private class UnregisterModelControllerRequest extends RegistryRequest<Void> {
+
         @Override
-        protected byte getRequestCode() {
+        public byte getOperationType() {
             return DomainControllerProtocol.UNREGISTER_HOST_CONTROLLER_REQUEST;
         }
 
-        /** {@inheritDoc} */
         @Override
-        protected void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
+        protected void sendRequest(ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<Void> voidManagementRequestContext, FlushableDataOutput output) throws IOException {
             output.write(DomainControllerProtocol.PARAM_HOST_ID);
             output.writeUTF(name);
         }
 
-        protected ManagementResponseHandler<Void> getResponseHandler() {
-            return ManagementResponseHandler.EMPTY_RESPONSE;
+        @Override
+        public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<Void> voidManagementRequestContext) throws IOException {
+            resultHandler.done(null);
         }
+
     }
 
     private class GetFileRequest extends RegistryRequest<File> {
@@ -442,96 +444,94 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         }
 
         @Override
-        public final byte getRequestCode() {
+        public byte getOperationType() {
             return DomainControllerProtocol.GET_FILE_REQUEST;
         }
 
         @Override
-        protected final void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
-            super.writeRequest(protocolVersion, output);
-            log.debugf("Requesting files for path %s", filePath);
+        protected void sendRequest(ActiveOperation.ResultHandler<File> resultHandler, ManagementRequestContext<Void> context, FlushableDataOutput output) throws IOException {
+            output.write(DomainControllerProtocol.PARAM_HOST_ID);
+            output.writeUTF(name);
             output.writeByte(DomainControllerProtocol.PARAM_ROOT_ID);
             output.writeByte(rootId);
             output.writeByte(DomainControllerProtocol.PARAM_FILE_PATH);
             output.writeUTF(filePath);
+            log.debugf("Requesting files for path %s", filePath);
         }
 
-        protected ManagementResponseHandler<File> getResponseHandler() {
-            return new ManagementResponseHandler<File>() {
-                @Override
-                protected final File readResponse(final DataInput input) throws IOException {
-                    final File localPath;
-                    switch (rootId) {
-                        case DomainControllerProtocol.PARAM_ROOT_ID_FILE: {
-                            localPath = localFileRepository.getFile(filePath);
-                            break;
-                        }
-                        case DomainControllerProtocol.PARAM_ROOT_ID_CONFIGURATION: {
-                            localPath = localFileRepository.getConfigurationFile(filePath);
-                            break;
-                        }
-                        case DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT: {
-                            byte[] hash = HashUtil.hexStringToByteArray(filePath);
-                            localPath = localFileRepository.getDeploymentRoot(hash);
-                            break;
-                        }
-                        default: {
-                            localPath = null;
-                        }
-                    }
-                    expectHeader(input, DomainControllerProtocol.PARAM_NUM_FILES);
-                    int numFiles = input.readInt();
-                    log.debugf("Received %d files for %s", numFiles, localPath);
-                    switch (numFiles) {
-                        case -1: { // Not found on DC
-                            break;
-                        }
-                        case 0: { // Found on DC, but was an empty dir
-                            if (!localPath.mkdirs()) {
-                                throw new IOException("Unable to create local directory: " + localPath);
-                            }
-                            break;
-                        }
-                        default: { // Found on DC
-                            for (int i = 0; i < numFiles; i++) {
-                                expectHeader(input, DomainControllerProtocol.FILE_START);
-                                expectHeader(input, DomainControllerProtocol.PARAM_FILE_PATH);
-                                final String path = input.readUTF();
-                                expectHeader(input, DomainControllerProtocol.PARAM_FILE_SIZE);
-                                final long length = input.readLong();
-                                log.debugf("Received file [%s] of length %d", path, length);
-                                final File file = new File(localPath, path);
-                                if (!file.getParentFile().exists() && !file.getParentFile().mkdirs()) {
-                                    throw new IOException("Unable to create local directory " + localPath.getParent());
-                                }
-                                long totalRead = 0;
-                                OutputStream fileOut = null;
-                                try {
-                                    fileOut = new BufferedOutputStream(new FileOutputStream(file));
-                                    final byte[] buffer = new byte[8192];
-                                    while (totalRead < length) {
-                                        int len = Math.min((int) (length - totalRead), buffer.length);
-                                        input.readFully(buffer, 0, len);
-                                        fileOut.write(buffer, 0, len);
-                                        totalRead += len;
-                                    }
-                                } finally {
-                                    if (fileOut != null) {
-                                        fileOut.close();
-                                    }
-                                }
-                                if (totalRead != length) {
-                                    throw new IOException("Did not read the entire file. Missing: " + (length - totalRead));
-                                }
-
-                                expectHeader(input, DomainControllerProtocol.FILE_END);
-                            }
-                        }
-                    }
-                    return localPath;
+        @Override
+        public void handleRequest(DataInput input, ActiveOperation.ResultHandler<File> resultHandler, ManagementRequestContext<Void> context) throws IOException {
+            final File localPath;
+            switch (rootId) {
+                case DomainControllerProtocol.PARAM_ROOT_ID_FILE: {
+                    localPath = localFileRepository.getFile(filePath);
+                    break;
                 }
-            };
+                case DomainControllerProtocol.PARAM_ROOT_ID_CONFIGURATION: {
+                    localPath = localFileRepository.getConfigurationFile(filePath);
+                    break;
+                }
+                case DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT: {
+                    byte[] hash = HashUtil.hexStringToByteArray(filePath);
+                    localPath = localFileRepository.getDeploymentRoot(hash);
+                    break;
+                }
+                default: {
+                    localPath = null;
+                }
+            }
+            expectHeader(input, DomainControllerProtocol.PARAM_NUM_FILES);
+            int numFiles = input.readInt();
+            log.debugf("Received %d files for %s", numFiles, localPath);
+            switch (numFiles) {
+                case -1: { // Not found on DC
+                    break;
+                }
+                case 0: { // Found on DC, but was an empty dir
+                    if (!localPath.mkdirs()) {
+                        throw new IOException("Unable to create local directory: " + localPath);
+                    }
+                    break;
+                }
+                default: { // Found on DC
+                    for (int i = 0; i < numFiles; i++) {
+                        expectHeader(input, DomainControllerProtocol.FILE_START);
+                        expectHeader(input, DomainControllerProtocol.PARAM_FILE_PATH);
+                        final String path = input.readUTF();
+                        expectHeader(input, DomainControllerProtocol.PARAM_FILE_SIZE);
+                        final long length = input.readLong();
+                        log.debugf("Received file [%s] of length %d", path, length);
+                        final File file = new File(localPath, path);
+                        if (!file.getParentFile().exists() && !file.getParentFile().mkdirs()) {
+                            throw new IOException("Unable to create local directory " + localPath.getParent());
+                        }
+                        long totalRead = 0;
+                        OutputStream fileOut = null;
+                        try {
+                            fileOut = new BufferedOutputStream(new FileOutputStream(file));
+                            final byte[] buffer = new byte[8192];
+                            while (totalRead < length) {
+                                int len = Math.min((int) (length - totalRead), buffer.length);
+                                input.readFully(buffer, 0, len);
+                                fileOut.write(buffer, 0, len);
+                                totalRead += len;
+                            }
+                        } finally {
+                            if (fileOut != null) {
+                                fileOut.close();
+                            }
+                        }
+                        if (totalRead != length) {
+                            throw new IOException("Did not read the entire file. Missing: " + (length - totalRead));
+                        }
+
+                        expectHeader(input, DomainControllerProtocol.FILE_END);
+                    }
+                }
+            }
+            resultHandler.done(localPath);
         }
+
     }
 
     static class RemoteFileRepository implements FileRepository {
@@ -580,7 +580,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     private RemoteFileRepositoryExecutor remoteFileRepositoryExecutor = new RemoteFileRepositoryExecutor() {
         public File getFile(final String relativePath, final byte repoId, FileRepository localFileRepository) {
             try {
-                return new GetFileRequest(repoId, relativePath, localFileRepository).executeForResult(executor, ManagementClientChannelStrategy.create(channel));
+                return new GetFileRequest(repoId, relativePath, localFileRepository).executeForResult(handler, channel, null);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to get file from remote repository", e);
             }
@@ -605,4 +605,5 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         }
 
     }
+
 }

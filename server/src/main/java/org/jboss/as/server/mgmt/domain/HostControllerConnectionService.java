@@ -86,7 +86,7 @@ public class HostControllerConnectionService implements Service<ManagementChanne
             ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
             configuration.setEndpoint(endpointInjector.getValue());
             configuration.setUri(new URI("remote://" + hcAddressInjector.getValue().getHostName() + ":" + hcAddressInjector.getValue().getPort()));
-            configuration.setChannelFactory(new ManagementChannelFactory());
+            configuration.setChannelFactory(new ManagementChannelFactory(null));
             client = ProtocolChannelClient.create(configuration);
         } catch (Exception e) {
             throw new StartException(e);
@@ -95,7 +95,7 @@ public class HostControllerConnectionService implements Service<ManagementChanne
         try {
             client.connect(new ClientCallbackHandler());
             channel = client.openChannel(ManagementRemotingServices.SERVER_CHANNEL);
-            channel.startReceiving();
+            // channel.startReceiving();
         } catch (IOException e) {
             throw new StartException("Failed to start remote Host Controller connection", e);
         }

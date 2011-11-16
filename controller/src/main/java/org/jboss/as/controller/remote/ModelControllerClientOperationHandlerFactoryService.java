@@ -22,16 +22,35 @@
 package org.jboss.as.controller.remote;
 
 
+import org.jboss.as.protocol.mgmt.ManagementChannel;
+import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
+import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
+import org.jboss.as.protocol.mgmt.ManagementProtocolHeader;
+import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.CloseHandler;
+import org.jboss.remoting3.HandleableCloseable;
+
+import java.io.DataInput;
+import java.io.IOException;
+
 /**
  * Service used to create a new client protocol operation handler per channel
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
-public class ModelControllerClientOperationHandlerFactoryService extends AbstractModelControllerOperationHandlerFactoryService<ModelControllerClientOperationHandler> {
+public class ModelControllerClientOperationHandlerFactoryService extends AbstractModelControllerOperationHandlerFactoryService {
 
     @Override
-    public ModelControllerClientOperationHandler createOperationHandler() {
-        return new ModelControllerClientOperationHandler(getExecutor(), getController());
+    public HandleableCloseable.Key initialize(ManagementChannel channel) {
+        final ManagementMessageHandler handler = new ModelControllerClientOperationHandler(getController(), getExecutor());
+        final Channel.Receiver receiver = ManagementChannelReceiver.createDelegating(handler);
+        channel.setReceiver(receiver);
+        return channel.addCloseHandler(new CloseHandler<Channel>() {
+            @Override
+            public void handleClose(Channel closed, IOException exception) {
+                handler.shutdown();
+            }
+        });
     }
+
 }

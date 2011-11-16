@@ -34,6 +34,8 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementChannelFactory;
+import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
+import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.OpenListener;
 import org.jboss.remoting3.security.PasswordClientCallbackHandler;
@@ -75,12 +77,11 @@ public class RemoteChannelPairSetup {
         return executorService;
     }
 
-    public void setupRemoting() throws IOException {
+    public void setupRemoting(final ManagementMessageHandler handler) throws IOException {
         //executorService = Executors.newCachedThreadPool();
         ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("Remoting"), Boolean.FALSE, null, "Remoting %f thread %t", null, null, AccessController.getContext());
         QueueExecutor executor = new QueueExecutor(EXECUTOR_MAX_THREADS / 4 + 1, EXECUTOR_MAX_THREADS, EXECUTOR_KEEP_ALIVE_TIME, TimeUnit.MILLISECONDS, 500, threadFactory, true, null);
         executorService = executor;
-
 
         ChannelServer.Configuration configuration = new ChannelServer.Configuration();
         configuration.setEndpointName(ENDPOINT_NAME);
@@ -97,7 +98,7 @@ public class RemoteChannelPairSetup {
 
             @Override
             public void channelOpened(Channel channel) {
-                serverChannel = new ManagementChannelFactory().create(TEST_CHANNEL, channel);
+                serverChannel = new ManagementChannelFactory(ManagementChannelReceiver.createDelegating(handler)).create(TEST_CHANNEL, channel);
                 serverChannel.startReceiving();
                 clientConnectedLatch.countDown();
             }
@@ -109,7 +110,7 @@ public class RemoteChannelPairSetup {
         configuration.setEndpointName(ENDPOINT_NAME);
         configuration.setUriScheme(URI_SCHEME);
         configuration.setUri(new URI("" + URI_SCHEME + "://127.0.0.1:" + PORT + ""));
-        configuration.setChannelFactory(new ManagementChannelFactory());
+        configuration.setChannelFactory(new ManagementChannelFactory(null));
 
         ProtocolChannelClient <ManagementChannel>client = ProtocolChannelClient.create(configuration);
         client.connect(new PasswordClientCallbackHandler("bob",configuration.getEndpointName(),"pass".toCharArray()));

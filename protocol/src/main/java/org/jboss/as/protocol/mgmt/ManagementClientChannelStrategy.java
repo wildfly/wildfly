@@ -24,12 +24,12 @@ package org.jboss.as.protocol.mgmt;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Map;
 
 import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.protocol.ProtocolChannelClient;
+import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Endpoint;
 import org.xnio.IoUtils;
 
@@ -44,15 +44,19 @@ public abstract class ManagementClientChannelStrategy {
 
     public abstract void requestDone();
 
+    public static synchronized ManagementClientChannelStrategy create(final Channel channel) {
+        return new Existing(new ManagementChannel("no clue", channel));
+    }
+
     public static synchronized ManagementClientChannelStrategy create(final ManagementChannel channel) {
         return new Existing(channel);
     }
 
     public static ManagementClientChannelStrategy create(String hostName, int port, final Endpoint endpoint,
-                                                         final ManagementOperationHandler handler,
+                                                         final ChannelReceiverFactory receiverFactory,
                                                          final CallbackHandler cbHandler,
-                                                         final Map<String, String> saslOptions) throws URISyntaxException, IOException {
-        return new Establishing(hostName, port, endpoint, handler, cbHandler, saslOptions);
+                                                         final Map<String, String> saslOptions) throws IOException {
+        return new Establishing(hostName, port, endpoint, receiverFactory, cbHandler, saslOptions);
     }
 
     private static class Existing extends ManagementClientChannelStrategy {
@@ -77,19 +81,19 @@ public abstract class ManagementClientChannelStrategy {
         private final Endpoint endpoint;
         private final String hostName;
         private final int port;
-        private final ManagementOperationHandler handler;
+        private final ChannelReceiverFactory receiverFactory;
         private volatile ProtocolChannelClient<ManagementChannel> client;
         private volatile ManagementChannel channel;
         private final CallbackHandler callbackHandler;
         private final Map<String,String> saslOptions;
 
         public Establishing(final String hostName, final int port, final Endpoint endpoint,
-                            final ManagementOperationHandler handler, final CallbackHandler callbackHandler,
+                            final ChannelReceiverFactory receiverFactory, final CallbackHandler callbackHandler,
                             final Map<String, String> saslOptions) {
             this.hostName = hostName;
             this.port = port;
             this.endpoint = endpoint;
-            this.handler = handler;
+            this.receiverFactory = receiverFactory;
             this.callbackHandler = callbackHandler;
             this.saslOptions = saslOptions;
         }
@@ -101,7 +105,7 @@ public abstract class ManagementClientChannelStrategy {
             try {
                 configuration.setEndpoint(endpoint);
                 configuration.setUri(new URI("remote://" + hostName +  ":" + port));
-                configuration.setChannelFactory(new ManagementChannelFactory());
+                configuration.setChannelFactory(new ManagementChannelFactory(receiverFactory.createReceiver()));
                 client = ProtocolChannelClient.create(configuration);
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -115,7 +119,6 @@ public abstract class ManagementClientChannelStrategy {
                     throw e;
                 }
                 channel = client.openChannel("management");
-                channel.setOperationHandler(handler);
                 channel.startReceiving();
                 ok = true;
             } finally {
@@ -132,4 +135,11 @@ public abstract class ManagementClientChannelStrategy {
             IoUtils.safeClose(client);
         }
     }
+
+    public interface ChannelReceiverFactory {
+
+        Channel.Receiver createReceiver();
+
+    }
+
 }

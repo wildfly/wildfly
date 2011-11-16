@@ -34,9 +34,11 @@ import junit.framework.Assert;
 
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.mgmt.support.ChannelServer;
+import org.jboss.as.protocol.mgmt.support.SimpleHandlers;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.OpenListener;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xnio.IoUtils;
 
@@ -49,9 +51,10 @@ public class CloseChannels {
 
 
     @Test
+    @Ignore
     public void testChannelClose() throws Exception {
-        ExecutorService executor = Executors.newCachedThreadPool();
-        ChannelServer.Configuration serverConfig = new ChannelServer.Configuration();
+        final ExecutorService executor = Executors.newCachedThreadPool();
+        final ChannelServer.Configuration serverConfig = new ChannelServer.Configuration();
         serverConfig.setBindAddress(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 6999));
         serverConfig.setEndpointName("Test");
         serverConfig.setUriScheme("testing");
@@ -66,28 +69,35 @@ public class CloseChannels {
             @Override
             public void channelOpened(Channel channel) {
                 System.out.println("Opened channel");
-                final ManagementChannel protocolChannel = new ManagementChannelFactory(new ManagementOperationHandler() {
+                final AbstractMessageHandler<Integer, Void> handler = new AbstractMessageHandler<Integer, Void>(executor) {
+
                     @Override
-                    public ManagementRequestHandler getRequestHandler(byte id) {
-                        return new ManagementRequestHandler() {
-                            int i;
+                    protected ManagementRequestHandler<Integer, Void> getRequestHandler(byte operationType) {
+                        return new ManagementRequestHandler<Integer, Void>() {
                             @Override
-                            protected void readRequest(DataInput input) throws IOException {
+                            public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Integer> resultHandler, ManagementRequestContext<Void> context) throws IOException {
                                 System.out.println("Reading request");
                                 ProtocolUtils.expectHeader(input, 11);
-                                i = input.readInt();
+                                final int i = input.readInt();
+                                context.executeAsync(new ManagementRequestContext.AsyncTask<Void>() {
+                                    @Override
+                                    public void execute(ManagementRequestContext<Void> context) throws Exception {
+                                        ProtocolUtils.writeResponse(new ProtocolUtils.ResponseWriter() {
+                                            @Override
+                                            public void write(final FlushableDataOutput output) throws IOException {
+                                                System.out.println("Writing response " + i);
+                                                output.write(22);
+                                                output.writeInt(i);
+                                            }
+                                        }, context);
+                                    }
+                                });
                             }
-
-                            @Override
-                            protected void writeResponse(FlushableDataOutput output) throws IOException {
-                                System.out.println("Writing response " + i);
-                                output.write(22);
-                                output.writeInt(i);
-                            }
-
                         };
                     }
-                }).create("channel", channel);
+                };
+
+                final ManagementChannel protocolChannel = new ManagementChannelFactory(ManagementChannelReceiver.createDelegating(handler)).create("channel", channel);
                 protocolChannel.startReceiving();
                 channel.addCloseHandler(new CloseHandler<Channel>() {
                     public void handleClose(final Channel closed, final IOException exception) {
@@ -98,54 +108,49 @@ public class CloseChannels {
         });
         try {
 
-
             for (int i = 0 ; i < 1000 ; i++) {
                 ProtocolChannelClient.Configuration<ManagementChannel> clientConfig = new ProtocolChannelClient.Configuration<ManagementChannel>();
                 clientConfig.setEndpointName("Test");
                 clientConfig.setUri(new URI("testing://127.0.0.1:6999"));
                 clientConfig.setUriScheme("testing");
-                clientConfig.setChannelFactory(new ManagementChannelFactory());
-                ProtocolChannelClient<ManagementChannel> client = ProtocolChannelClient.create(clientConfig);
+                clientConfig.setChannelFactory(new ManagementChannelFactory(null));
+                ProtocolChannelClient<ManagementChannel> protocolClient = ProtocolChannelClient.create(clientConfig);
                 final int val = i;
-                client.connect(null); // TODO - FIXME
+                protocolClient.connect(null); // TODO - FIXME
                 System.out.println("Opening channel");
-                final ManagementChannel clientChannel = client.openChannel("channel");
+                final ManagementChannel clientChannel = protocolClient.openChannel("channel");
                 clientChannel.addCloseHandler(new CloseHandler<Channel>() {
                     public void handleClose(final Channel closed, final IOException exception) {
                         System.out.println("client close handler");
                     }
                 });
-                clientChannel.startReceiving();
+                final SimpleHandlers.SimpleClient client = SimpleHandlers.SimpleClient.create(clientChannel, executor);
                 try {
-                    int result = new ManagementRequest<Integer>() {
+                    final ManagementRequest<Integer, Void> request = new AbstractManagementRequest<Integer, Void>() {
+
                         @Override
-                        protected byte getRequestCode() {
+                        public byte getOperationType() {
                             return 66; //Doesn't matter in this case
                         }
 
                         @Override
-                        protected void writeRequest(int protocolVersion, FlushableDataOutput output) throws IOException {
+                        protected void sendRequest(ActiveOperation.ResultHandler<Integer> resultHandler, ManagementRequestContext<Void> context, FlushableDataOutput output) throws IOException {
                             System.out.println("Writing request");
                             output.write(11);
                             output.writeInt(val);
                         }
 
-                        protected ManagementResponseHandler<Integer> getResponseHandler() {
-                            return new ManagementResponseHandler<Integer>() {
-
-                                @Override
-                                protected Integer readResponse(DataInput input) throws IOException {
-                                    System.out.println("Reading response");
-                                    ProtocolUtils.expectHeader(input, 22);
-                                    return input.readInt();
-                                }
-                            };
+                        @Override
+                        public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Integer> resultHandler, ManagementRequestContext<Void> voidManagementRequestContext) throws IOException {
+                            System.out.println("Reading response");
+                            ProtocolUtils.expectHeader(input, 22);
+                            resultHandler.done(input.readInt());
                         }
-
-                    }.executeForResult(executor, ManagementClientChannelStrategy.create(clientChannel));
+                    };
+                    int result = client.executeForResult(request);
                     Assert.assertEquals(val, result);
                 } finally {
-                    IoUtils.safeClose(client);
+                    IoUtils.safeClose(protocolClient);
                 }
             }
         } finally {
@@ -155,4 +160,6 @@ public class CloseChannels {
             executor.shutdownNow();
         }
     }
+
+
 }

@@ -22,31 +22,69 @@
 
 package org.jboss.as.protocol.mgmt;
 
+import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.MessageOutputStream;
+
 import java.io.IOException;
 
 /**
- * A management request.
+ * The context for handling request.
  *
- * @author John Bailey
- * @author Kabir Khan
  * @author Emanuel Muckenhuber
  */
-public interface ManagementRequest<T, A> extends ManagementResponseHandler<T, A> {
+public interface ManagementRequestContext<A> {
 
     /**
-     * The operation type.
+     * Get the current batch id for this operation.
      *
-     * @return the operation type
+     * @return the batch id
      */
-    byte getOperationType();
+    Integer getOperationId();
 
     /**
-     * Send the request.
+     * Get the attachment.
      *
-     * @param resultHandler the result handler
-     * @param context the request context
-     * @throws IOException for any error
+     * @return the attachment
      */
-    void sendRequest(ActiveOperation.ResultHandler<T> resultHandler, ManagementRequestContext<A> context) throws IOException;
+    A getAttachment();
 
+    /**
+     * Get the underlying channel.
+     *
+     * @return the channel
+     */
+    Channel getChannel();
+
+    /**
+     * Get the protocol header.
+     *
+     * @return the protocol header
+     */
+    ManagementProtocolHeader getRequestHeader();
+
+    /**
+     * Execute async.
+     *
+     * @param task the task
+     */
+    void executeAsync(final AsyncTask<A> task);
+
+    /**
+     * Write a new message.
+     *
+     * @param header the protocol header
+     * @return the message output stream
+     */
+    FlushableDataOutput writeMessage(final ManagementProtocolHeader header) throws IOException;
+
+    interface AsyncTask<A> {
+
+        /**
+         * Execute the task.
+         *
+         * @throws Exception
+         */
+        void execute(final ManagementRequestContext<A> context) throws Exception;
+
+    }
 }
