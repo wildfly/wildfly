@@ -103,7 +103,7 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
                     }
                 });
                 //add the interceptor
-                configuration.addViewInterceptor(method, factory, InterceptorOrder.View.HOME_CREATE_INTERCEPTOR);
+                configuration.addViewInterceptor(method, factory, InterceptorOrder.View.HOME_METHOD_INTERCEPTOR);
 
             } else if (method.getName().startsWith("find")) {
                 final Method ejbFind = resolveEjbFinderMethod(componentConfiguration.getComponentClass(), deploymentReflectionIndex, method, componentConfiguration.getComponentName(), componentDescription.getPersistenceType());
@@ -143,7 +143,7 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
                     }
                 });
                 //add the interceptor
-                configuration.addViewInterceptor(method, factory, InterceptorOrder.View.HOME_CREATE_INTERCEPTOR);
+                configuration.addViewInterceptor(method, factory, InterceptorOrder.View.HOME_METHOD_INTERCEPTOR);
 
             } else if (method.getName().equals("getHomeHandle") && method.getParameterTypes().length == 0) {
                 // TODO: impl

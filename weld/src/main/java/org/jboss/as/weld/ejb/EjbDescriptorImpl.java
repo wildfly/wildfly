@@ -21,6 +21,14 @@
  */
 package org.jboss.as.weld.ejb;
 
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
@@ -34,14 +42,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.weld.ejb.spi.BusinessInterfaceDescriptor;
 import org.jboss.weld.ejb.spi.EjbDescriptor;
 import org.jboss.weld.resources.spi.ResourceLoader;
-
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Implementation of EjbDescriptor
@@ -85,7 +85,7 @@ public class EjbDescriptorImpl<T> implements EjbDescriptor<T> {
         }
         if(componentDescription instanceof StatefulComponentDescription) {
             Set<Method> removeMethods = new HashSet<Method>();
-            final Set<StatefulComponentDescription.StatefulRemoveMethod> methods = ((StatefulComponentDescription) componentDescription).getRemoveMethods();
+            final Collection<StatefulComponentDescription.StatefulRemoveMethod> methods = ((StatefulComponentDescription) componentDescription).getRemoveMethods();
             for(final StatefulComponentDescription.StatefulRemoveMethod method : methods) {
                 Class<?> c = ejbClass;
                 while (c != null && c != Object.class) {

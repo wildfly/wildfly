@@ -21,7 +21,16 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
+import java.rmi.NoSuchObjectException;
+import java.rmi.RemoteException;
+
+import javax.ejb.ConcurrentAccessException;
+import javax.ejb.ConcurrentAccessTimeoutException;
+import javax.ejb.NoSuchEJBException;
+import javax.ejb.NoSuchObjectLocalException;
+
 import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.Interceptor;
@@ -29,10 +38,6 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.logging.Logger;
-
-import javax.ejb.ConcurrentAccessException;
-import javax.ejb.ConcurrentAccessTimeoutException;
-import java.rmi.RemoteException;
 
 /**
  * Associate the proper component instance to the invocation based on the passed in session identifier.
@@ -55,6 +60,16 @@ public class StatefulComponentInstanceInterceptor extends AbstractEJBInterceptor
         }
         log.debug("Looking for stateful component instance with session id: " + sessionId);
         StatefulSessionComponentInstance instance = component.getCache().get(sessionId);
+        if(instance == null) {
+            final ComponentView view = context.getPrivateData(ComponentView.class);
+            if(view.getViewClass() == component.getEjbLocalObjectType()) {
+                throw new NoSuchObjectLocalException("Could not find SFSB " + component.getComponentName() + " with " + sessionId);
+            } else if(view.getViewClass() == component.getEjbObjectType()) {
+                throw new NoSuchObjectException("Could not find SFSB " + component.getComponentName() + " with " + sessionId);
+            } else {
+                throw new NoSuchEJBException("Could not find SFSB " + component.getComponentName() + " with " + sessionId);
+            }
+        }
         try {
             context.putPrivateData(ComponentInstance.class, instance);
             return context.proceed();
