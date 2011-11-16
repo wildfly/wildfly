@@ -178,19 +178,32 @@
             <xs:choice minOccurs="0">
                 <xs:element name="store" type="tns:custom-store">
                     <xs:annotation>
-                        <xs:documentation></xs:documentation>
+                        <xs:documentation>Defines a custom cache store.</xs:documentation>
                     </xs:annotation>
                 </xs:element>
                 <xs:element name="file-store" type="tns:file-store">
                     <xs:annotation>
-                        <xs:documentation></xs:documentation>
+                        <xs:documentation>Defines a file-based cache store.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="jdbc-store" type="tns:jdbc-store">
+                    <xs:annotation>
+                        <xs:documentation>Defines a database cache store accessed via JDBC.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="remote-store" type="tns:remote-store">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Defines a remote cache store accessed via HotRod.
+                            Nested properties will be treated as HotRod client properties.
+                        </xs:documentation>
                     </xs:annotation>
                 </xs:element>
             </xs:choice>
         </xs:sequence>
         <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
-                <xs:documentation></xs:documentation>
+                <xs:documentation>Uniquely identifies this cache within its cache container.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="start" type="tns:controller-mode" default="LAZY">
@@ -427,13 +440,170 @@
                 <xs:attribute name="path" type="xs:string">
                     <xs:annotation>
                         <xs:documentation>
-                            The path within ""relative-to" in which to store the cache state.
+                            The path within "relative-to" in which to store the cache state.
                             If undefined, the path defaults to the cache container name.
                         </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
             </xs:extension>
         </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="remote-store">
+        <xs:complexContent>
+            <xs:extension base="tns:store">
+                <xs:sequence>
+                    <xs:element name="remote-server" type="tns:remote-server" minOccurs="1" maxOccurs="unbounded"/>
+                </xs:sequence>
+                <xs:attribute name="cache" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>The name of the remote cache.  If undefined, the default cache will be used.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="socket-timeout" type="xs:long" default="60000">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Enable/disable SO_TIMEOUT on socket connections to remote Hot Rod servers with the specified timeout, in milliseconds.
+                            A timeout of zero is interpreted as an infinite timeout.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="tcp-no-delay" type="xs:boolean" default="true">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Enable/disable TCP_NODELAY on socket connections to remote Hot Rod servers.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="remote-server">
+       <xs:attribute name="outbound-socket-binding"/>
+    </xs:complexType>
+
+    <xs:complexType name="jdbc-store">
+        <xs:complexContent>
+            <xs:extension base="tns:store">
+                <xs:sequence>
+                    <xs:element name="bucket-table" type="tns:bucket-table" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Defines the table used to store cache buckets.
+                                If an entry-table is also defined, a mixed-mode cache store will be used.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="entry-table" type="tns:entry-table" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Defines the table used to store cache entries.
+                                If a bucket-table is also defined, a mixed-mode cache store will be used.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+                <xs:attribute name="datasource" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>Defines the jndi name of the datasource.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="entry-table">
+        <xs:complexContent>
+            <xs:extension base="tns:table">
+                <xs:attribute name="prefix" type="xs:string" default="ispn_entry">
+                    <xs:annotation>
+                        <xs:documentation>Defines the prefix prepended to the cache name used when composing the name of the cache entry table.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="bucket-table">
+        <xs:complexContent>
+            <xs:extension base="tns:table">
+                <xs:attribute name="prefix" type="xs:string" default="ispn_bucket">
+                    <xs:annotation>
+                        <xs:documentation>Defines the prefix prepended to the cache name used when composing the name of the cache bucket table.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="table">
+        <xs:sequence>
+            <xs:element name="id-column" type="tns:id-column" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Defines the column in which to store the cache key or bucket id.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="data-column" type="tns:data-column" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Defines the column in which to store the cache entry or bucket.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="timestamp-column" type="tns:timestamp-column" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Defines the column in which to store the timestamp of the cache entry or bucket.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="fetch-size" type="xs:int" default="100">
+            <xs:annotation>
+                <xs:documentation>The fetch size used when querying from this table.  Used to avoid heap memory exhaustion when query is large.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="batch-size" type="xs:int" default="100">
+            <xs:annotation>
+                <xs:documentation>The statement batch size used when modifying this table.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="id-column">
+        <xs:attribute name="name" type="xs:string" default="id">
+            <xs:annotation>
+                <xs:documentation>The name of the column used to store the cache key or bucket id.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="type" type="xs:string" default="VARCHAR">
+            <xs:annotation>
+                <xs:documentation>The type of the column used to store the cache key or bucket id.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="data-column">
+        <xs:attribute name="name" type="xs:string" default="datum">
+            <xs:annotation>
+                <xs:documentation>The name of the column used to store the cache entry or bucket.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="type" type="xs:string" default="BINARY">
+            <xs:annotation>
+                <xs:documentation>The type of the column used to store the cache entry or bucket.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="timestamp-column">
+        <xs:attribute name="name" type="xs:string" default="version">
+            <xs:annotation>
+                <xs:documentation>The name of the column used to store the cache entry or bucket timestamp.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="type" type="xs:string" default="BIGINT">
+            <xs:annotation>
+                <xs:documentation>The type of the column used to store the cache entry or bucket timestamp.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="state-transfer">

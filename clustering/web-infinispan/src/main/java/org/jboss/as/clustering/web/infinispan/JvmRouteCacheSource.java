@@ -46,9 +46,11 @@ public class JvmRouteCacheSource implements CacheSource {
     public <K, V> Cache<K, V> getCache(ServiceRegistry registry, LocalDistributableSessionManager manager) {
         EmbeddedCacheManager container = (EmbeddedCacheManager) registry.getRequiredService(this.provider.getServiceName(manager.getReplicationConfig())).getValue();
         String cacheName = manager.getEngineName();
-        if (!container.cacheExists(cacheName)) {
-            container.defineConfiguration(manager.getEngineName(), CacheContainer.DEFAULT_CACHE_NAME, new Configuration());
+        synchronized (cacheName) {
+            if (!container.cacheExists(cacheName)) {
+                container.defineConfiguration(cacheName, CacheContainer.DEFAULT_CACHE_NAME, new Configuration());
+            }
         }
-        return container.getCache(manager.getEngineName());
+        return container.getCache(cacheName);
     }
 }

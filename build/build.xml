@@ -301,6 +301,10 @@
 
         <module-def name="org.apache.commons.logging"/>
 
+        <module-def name="org.apache.commons.pool">
+            <maven-resource group="commons-pool" artifact="commons-pool"/>
+        </module-def>
+
         <module-def name="org.apache.cxf">
             <maven-resource group="org.apache.cxf" artifact="cxf-api"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-common-utilities"/>
@@ -427,8 +431,28 @@
             <maven-resource group="org.hornetq" artifact="hornetq-ra"/>
         </module-def>
 
+        <module-def name="org.infinispan.api">
+            <maven-resource group="org.infinispan" artifact="infinispan-api"/>
+        </module-def>
+
+        <module-def name="org.infinispan.commons">
+            <maven-resource group="org.infinispan" artifact="infinispan-commons"/>
+        </module-def>
+
         <module-def name="org.infinispan">
             <maven-resource group="org.infinispan" artifact="infinispan-core"/>
+        </module-def>
+
+        <module-def name="org.infinispan.cachestore.jdbc">
+            <maven-resource group="org.infinispan" artifact="infinispan-cachestore-jdbc"/>
+        </module-def>
+
+        <module-def name="org.infinispan.cachestore.remote">
+            <maven-resource group="org.infinispan" artifact="infinispan-cachestore-remote"/>
+        </module-def>
+
+        <module-def name="org.infinispan.client.hotrod">
+            <maven-resource group="org.infinispan" artifact="infinispan-client-hotrod"/>
         </module-def>
 
         <module-def name="org.jacorb">

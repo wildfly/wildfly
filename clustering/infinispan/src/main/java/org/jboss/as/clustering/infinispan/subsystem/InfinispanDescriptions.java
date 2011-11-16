@@ -22,6 +22,12 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
+
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -46,6 +52,11 @@ public class InfinispanDescriptions {
         description.get(ModelDescriptionConstants.HEAD_COMMENT_ALLOWED).set(true);
         description.get(ModelDescriptionConstants.TAIL_COMMENT_ALLOWED).set(true);
         description.get(ModelDescriptionConstants.NAMESPACE).set(Namespace.CURRENT.getUri());
+
+        description.get(CHILDREN, ModelKeys.CACHE_CONTAINER, DESCRIPTION).set(resources.getString("infinispan.container"));
+        description.get(CHILDREN, ModelKeys.CACHE_CONTAINER, MIN_OCCURS).set(1);
+        description.get(CHILDREN, ModelKeys.CACHE_CONTAINER, MAX_OCCURS).set(Integer.MAX_VALUE);
+        description.get(CHILDREN, ModelKeys.CACHE_CONTAINER, MODEL_DESCRIPTION).setEmptyObject();
         return description;
     }
 
@@ -75,30 +86,24 @@ public class InfinispanDescriptions {
     static ModelNode getCacheContainerAddDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
         ModelNode description = createCacheContainerOperationDescription(ModelDescriptionConstants.ADD, resources);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.DEFAULT_CACHE, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.DEFAULT_CACHE, ModelDescriptionConstants.DESCRIPTION).set(resources.getString("infinispan.container.default-cache"));
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.LISTENER_EXECUTOR, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.LISTENER_EXECUTOR, ModelDescriptionConstants.DESCRIPTION).set(resources.getString("infinispan.container.listener-executor"));
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.LISTENER_EXECUTOR, ModelDescriptionConstants.REQUIRED).set(false);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.EVICTION_EXECUTOR, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.EVICTION_EXECUTOR, ModelDescriptionConstants.DESCRIPTION).set(resources.getString("infinispan.container.eviction-executor"));
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.EVICTION_EXECUTOR, ModelDescriptionConstants.REQUIRED).set(false);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.REPLICATION_QUEUE_EXECUTOR, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.REPLICATION_QUEUE_EXECUTOR, ModelDescriptionConstants.DESCRIPTION).set(resources.getString("infinispan.container.replication-queue-executor"));
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.REPLICATION_QUEUE_EXECUTOR, ModelDescriptionConstants.REQUIRED).set(false);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.JNDI_NAME, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.JNDI_NAME, ModelDescriptionConstants.DESCRIPTION).set(resources.getString("infinispan.container.jndi-name"));
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.JNDI_NAME, ModelDescriptionConstants.REQUIRED).set(false);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.ALIAS, ModelDescriptionConstants.TYPE).set(ModelType.LIST);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.ALIAS, ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.ALIAS, ModelDescriptionConstants.DESCRIPTION).set(resources.getString("infinispan.container.alias"));
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.ALIAS, ModelDescriptionConstants.REQUIRED).set(false);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.TRANSPORT, ModelDescriptionConstants.TYPE).set(ModelType.OBJECT);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.TRANSPORT, ModelDescriptionConstants.DESCRIPTION).set(resources.getString("infinispan.container.transport"));
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.TRANSPORT, ModelDescriptionConstants.REQUIRED).set(false);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.CACHE, ModelDescriptionConstants.TYPE).set(ModelType.LIST);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.CACHE, ModelDescriptionConstants.VALUE_TYPE).set(ModelType.OBJECT);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.CACHE, ModelDescriptionConstants.DESCRIPTION).set(resources.getString("infinispan.container.cache"));
+        ModelNode requestProperties = description.get(ModelDescriptionConstants.REQUEST_PROPERTIES);
+        addNode(requestProperties, ModelKeys.DEFAULT_CACHE, resources.getString("infinispan.container.default-cache"), ModelType.STRING, true);
+        addNode(requestProperties, ModelKeys.LISTENER_EXECUTOR, resources.getString("infinispan.container.listener-executor"), ModelType.STRING, false);
+        addNode(requestProperties, ModelKeys.EVICTION_EXECUTOR, resources.getString("infinispan.container.eviction-executor"), ModelType.STRING, false);
+        addNode(requestProperties, ModelKeys.REPLICATION_QUEUE_EXECUTOR, resources.getString("infinispan.container.replication-queue-executor"), ModelType.STRING, false);
+        addNode(requestProperties, ModelKeys.JNDI_NAME, resources.getString("infinispan.container.jndi-name"), ModelType.STRING, false);
+        addNode(requestProperties, ModelKeys.ALIAS, resources.getString("infinispan.container.alias"), ModelType.LIST, false).get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
+
+        ModelNode transport = addNode(requestProperties, ModelKeys.TRANSPORT, resources.getString("infinispan.container.transport"), ModelType.OBJECT, false).get(ModelDescriptionConstants.VALUE_TYPE);
+        addNode(transport, ModelKeys.SITE, resources.getString("infinispan.container.transport.site"), ModelType.STRING, false);
+        addNode(transport, ModelKeys.RACK, resources.getString("infinispan.container.transport.rack"), ModelType.STRING, false);
+        addNode(transport, ModelKeys.MACHINE, resources.getString("infinispan.container.transport.machine"), ModelType.STRING, false);
+        addNode(transport, ModelKeys.SITE, resources.getString("infinispan.container.transport.site"), ModelType.STRING, false);
+        addNode(transport, ModelKeys.EXECUTOR, resources.getString("infinispan.container.transport.executor"), ModelType.STRING, false);
+        addNode(transport, ModelKeys.LOCK_TIMEOUT, resources.getString("infinispan.container.transport.lock-timeout"), ModelType.LONG, false);
+
+        addNode(requestProperties, ModelKeys.CACHE, resources.getString("infinispan.container.cache"), ModelType.LIST, false).get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.OBJECT);
+
         return description;
     }
 
@@ -132,5 +137,15 @@ public class InfinispanDescriptions {
 
     private static ModelNode createCacheContainerOperationDescription(String operation, ResourceBundle resources) {
         return createOperationDescription(operation, resources, "infinispan.container." + operation);
+    }
+
+    private static ModelNode addNode(ModelNode parent, String attribute, String description,
+             ModelType type, boolean required) {
+       ModelNode node = parent.get(attribute);
+       node.get(ModelDescriptionConstants.DESCRIPTION).set(description);
+       node.get(ModelDescriptionConstants.TYPE).set(type);
+       node.get(ModelDescriptionConstants.REQUIRED).set(required);
+
+       return node;
     }
 }
