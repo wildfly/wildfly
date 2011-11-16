@@ -100,7 +100,7 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
                 ApplicationClientMetaData data = new ApplicationClientMetaDataParser().parse(getXMLStreamReader(is));
                 return data;
             } catch (XMLStreamException e) {
-                throw MESSAGES.failedToParseXml(descriptor, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber());
+                throw MESSAGES.failedToParseXml(e, descriptor, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber());
             } catch (IOException e) {
                 throw new DeploymentUnitProcessingException("Failed to parse " + descriptor, e);
             } finally {
@@ -127,7 +127,7 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
                 JBossClientMetaData data = new JBossClientMetaDataParser().parse(getXMLStreamReader(is));
                 return data;
             } catch (XMLStreamException e) {
-                throw MESSAGES.failedToParseXml(appXml, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber());
+                throw MESSAGES.failedToParseXml(e, appXml, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber());
 
             } catch (IOException e) {
                 throw MESSAGES.failedToParseXml(e, appXml);

@@ -244,7 +244,7 @@ public interface AppClientMessages {
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
     @Message(id = 14432, value = "Failed to parse %s at [%d,%d]")
-    DeploymentUnitProcessingException failedToParseXml(VirtualFile appXml, int lineNumber, int columnNumber);
+    DeploymentUnitProcessingException failedToParseXml(@Cause Throwable cause, VirtualFile appXml, int lineNumber, int columnNumber);
 
     /**
      * A message indicating the URL in the argument was malformed.
