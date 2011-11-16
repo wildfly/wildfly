@@ -51,6 +51,7 @@ import org.jboss.dmr.Property;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -121,6 +122,7 @@ public class ServerManagementTestCase {
 
     }
 
+    @Ignore("AS7-2653")
     @Test
     public void testAddAndRemoveServer() throws Exception {
         final DomainClient client = domainSlaveLifecycleUtil.getDomainClient();
