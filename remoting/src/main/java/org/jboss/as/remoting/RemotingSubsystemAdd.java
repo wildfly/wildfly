@@ -28,10 +28,13 @@ import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.xnio.OptionMap;
+import org.xnio.Options;
 
 /**
  * Add operation handler for the remoting subsystem.
@@ -46,21 +49,46 @@ class RemotingSubsystemAdd extends AbstractAddStepHandler {
     private RemotingSubsystemAdd() {
     }
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         // initialize the connectors
         model.get(CONNECTOR);
+        RemotingSubsystemRootResource.WORKER_READ_THREADS.validateAndSet(operation, model);
+        RemotingSubsystemRootResource.WORKER_TASK_CORE_THREADS.validateAndSet(operation, model);
+        RemotingSubsystemRootResource.WORKER_TASK_KEEPALIVE.validateAndSet(operation, model);
+        RemotingSubsystemRootResource.WORKER_TASK_LIMIT.validateAndSet(operation, model);
+        RemotingSubsystemRootResource.WORKER_TASK_MAX_THREADS.validateAndSet(operation, model);
+        RemotingSubsystemRootResource.WORKER_WRITE_THREADS.validateAndSet(operation, model);
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        launchServices(context, model, verificationHandler, newControllers);
+    }
+
+    void launchServices(OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         // create endpoint
         final EndpointService endpointService = new EndpointService(RemotingExtension.NODE_NAME, EndpointService.EndpointType.SUBSYSTEM);
         // todo configure option map
-        endpointService.setOptionMap(OptionMap.EMPTY);
+        final OptionMap map = OptionMap.builder()
+                .set(Options.WORKER_READ_THREADS, RemotingSubsystemRootResource.WORKER_READ_THREADS.resolveModelAttribute(context, model).asInt())
+                .set(Options.WORKER_TASK_CORE_THREADS, RemotingSubsystemRootResource.WORKER_TASK_CORE_THREADS.resolveModelAttribute(context, model).asInt())
+                .set(Options.WORKER_TASK_KEEPALIVE, RemotingSubsystemRootResource.WORKER_TASK_KEEPALIVE.resolveModelAttribute(context, model).asInt())
+                .set(Options.WORKER_TASK_LIMIT, RemotingSubsystemRootResource.WORKER_TASK_LIMIT.resolveModelAttribute(context, model).asInt())
+                .set(Options.WORKER_TASK_MAX_THREADS, RemotingSubsystemRootResource.WORKER_TASK_MAX_THREADS.resolveModelAttribute(context, model).asInt())
+                .set(Options.WORKER_WRITE_THREADS, RemotingSubsystemRootResource.WORKER_WRITE_THREADS.resolveModelAttribute(context, model).asInt())
+                .set(Options.WORKER_READ_THREADS, RemotingSubsystemRootResource.WORKER_READ_THREADS.resolveModelAttribute(context, model).asInt())
+                .getMap();
+        endpointService.setOptionMap(map);
 
-        newControllers.add(context
-                .getServiceTarget()
-                .addService(RemotingServices.SUBSYSTEM_ENDPOINT, endpointService)
-                .addListener(verificationHandler)
-                .install());
+        ServiceBuilder<?> builder = context.getServiceTarget()
+                .addService(RemotingServices.SUBSYSTEM_ENDPOINT, endpointService);
+
+        if (verificationHandler != null) {
+            builder.addListener(verificationHandler);
+        }
+
+        ServiceController<?> controller = builder.install();
+        if (newControllers != null) {
+            newControllers.add(controller);
+        }
     }
 }

@@ -53,7 +53,7 @@ public class NativeManagementRemoveHandler extends AbstractRemoveStepHandler {
         // Remove management Connector
         final ModelNode portNode = NativeManagementResourceDefinition.NATIVE_PORT.resolveModelAttribute(context, model);
         int port = portNode.isDefined() ? portNode.asInt() : 0;
-        ManagementRemotingServices.removeConnectorServices(context, ManagementRemotingServices.MANAGEMENT_CONNECTOR, port);
+        ManagementRemotingServices.removeConnectorServices(context, ManagementRemotingServices.MANAGEMENT_CONNECTOR);
 
         // Remove endpoint
         context.removeService(endpointName);

@@ -27,6 +27,7 @@ import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.msc.value.InjectedValue;
+import org.xnio.OptionMap;
 
 /**
  * {@link AbstractStreamServerService} that uses an injected socket binding.
@@ -37,7 +38,8 @@ public class InjectedSocketBindingStreamServerService extends AbstractStreamServ
 
     private final InjectedValue<SocketBinding> socketBindingValue = new InjectedValue<SocketBinding>();
 
-    public InjectedSocketBindingStreamServerService() {
+    public InjectedSocketBindingStreamServerService(final OptionMap connectorPropertiesOptionMap) {
+        super(connectorPropertiesOptionMap);
     }
 
     public InjectedValue<SocketBinding> getSocketBindingInjector(){

@@ -56,11 +56,13 @@ public abstract class AbstractStreamServerService implements Service<AcceptingCh
     private final InjectedValue<OptionMap> optionMapInjectedValue = new InjectedValue<OptionMap>();
     private final InjectedValue<Endpoint> endpointValue = new InjectedValue<Endpoint>();
     private final InjectedValue<SocketBindingManager> socketBindingManagerValue = new InjectedValue<SocketBindingManager>();
+    private final OptionMap connectorPropertiesOptionMap;
 
     private volatile AcceptingChannel<? extends ConnectedStreamChannel> streamServer;
     private volatile ManagedBinding managedBinding;
 
-    AbstractStreamServerService() {
+    AbstractStreamServerService(final OptionMap connectorPropertiesOptionMap) {
+        this.connectorPropertiesOptionMap = connectorPropertiesOptionMap;
     }
 
     @Override
@@ -94,8 +96,12 @@ public abstract class AbstractStreamServerService implements Service<AcceptingCh
         try {
             NetworkServerProvider networkServerProvider = endpointValue.getValue().getConnectionProviderInterface("remote", NetworkServerProvider.class);
             ServerAuthenticationProvider sap = authenticationProviderValue.getValue();
-            OptionMap options = optionMapInjectedValue.getValue();
-            streamServer = networkServerProvider.createServer(getSocketAddress(), options, sap, null);
+            OptionMap.Builder builder = OptionMap.builder();
+            if (connectorPropertiesOptionMap != null) {
+                builder.addAll(connectorPropertiesOptionMap);
+            }
+            builder.addAll(optionMapInjectedValue.getValue());
+            streamServer = networkServerProvider.createServer(getSocketAddress(), builder.getMap(), sap, null);
             SocketBindingManager sbm = socketBindingManagerValue.getOptionalValue();
             if (sbm != null) {
                 managedBinding = registerSocketBinding(sbm);

@@ -1,0 +1,14 @@
+<subsystem xmlns="urn:jboss:domain:remoting:1.0"
+    worker-read-threads="5"
+    worker-task-core-threads="6"
+    worker-task-keepalive="7"
+    worker-task-limit="8"
+    worker-task-max-threads="9"
+    worker-write-threads="10"
+>
+    <connector name="test-connector" socket-binding="test">
+      <properties>
+         <property name="WORKER_ACCEPT_THREADS" value="1"/>
+      </properties>
+    </connector>
+</subsystem>

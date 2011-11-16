@@ -41,12 +41,12 @@ public class SaslPolicyAdd extends AbstractAddStepHandler {
     static final SaslPolicyAdd INSTANCE = new SaslPolicyAdd();
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException{
-        SaslPolicyResource.FORWARD_SECRECY_ATTRIBUTE.validateAndSet(operation, model);
-        SaslPolicyResource.NO_ACTIVE_ATTRIBUTE.validateAndSet(operation, model);
-        SaslPolicyResource.NO_ANONYMOUS_ATTRIBUTE.validateAndSet(operation, model);
-        SaslPolicyResource.NO_DICTIONARY_ATTRIBUTE.validateAndSet(operation, model);
-        SaslPolicyResource.NO_PLAIN_TEXT_ATTRIBUTE.validateAndSet(operation, model);
-        SaslPolicyResource.PASS_CREDENTIALS_ATTRIBUTE.validateAndSet(operation, model);
+        SaslPolicyResource.FORWARD_SECRECY.validateAndSet(operation, model);
+        SaslPolicyResource.NO_ACTIVE.validateAndSet(operation, model);
+        SaslPolicyResource.NO_ANONYMOUS.validateAndSet(operation, model);
+        SaslPolicyResource.NO_DICTIONARY.validateAndSet(operation, model);
+        SaslPolicyResource.NO_PLAIN_TEXT.validateAndSet(operation, model);
+        SaslPolicyResource.PASS_CREDENTIALS.validateAndSet(operation, model);
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {

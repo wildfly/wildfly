@@ -21,9 +21,7 @@
 */
 package org.jboss.as.remoting;
 
-import static org.jboss.as.remoting.CommonAttributes.AUTHENTICATION_PROVIDER;
 import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
-import static org.jboss.as.remoting.CommonAttributes.SOCKET_BINDING;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -39,8 +37,8 @@ public class ConnectorResource extends SimpleResourceDefinition {
 
     static final ConnectorResource INSTANCE = new ConnectorResource();
 
-    static final SimpleAttributeDefinition SOCKET_BINDING_ATTRIBUTE = new SimpleAttributeDefinition(SOCKET_BINDING, ModelType.STRING, false);
-    static final SimpleAttributeDefinition AUTHENTICATION_PROVIER_ATTRIBUTE = new NamedValueAttributeDefinition(AUTHENTICATION_PROVIDER, Attribute.NAME, null, ModelType.STRING, true);
+    static final SimpleAttributeDefinition AUTHENTICATION_PROVIDER = new NamedValueAttributeDefinition(CommonAttributes.AUTHENTICATION_PROVIDER, Attribute.NAME, null, ModelType.STRING, true);
+    static final SimpleAttributeDefinition SOCKET_BINDING = new SimpleAttributeDefinition(CommonAttributes.SOCKET_BINDING, ModelType.STRING, false);
 
     private ConnectorResource() {
         super(PathElement.pathElement(CommonAttributes.CONNECTOR),
@@ -51,9 +49,7 @@ public class ConnectorResource extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadOnlyAttribute(SOCKET_BINDING_ATTRIBUTE, null);
-        resourceRegistration.registerReadOnlyAttribute(AUTHENTICATION_PROVIER_ATTRIBUTE, null);
+        resourceRegistration.registerReadOnlyAttribute(AUTHENTICATION_PROVIDER, null);
+        resourceRegistration.registerReadOnlyAttribute(SOCKET_BINDING, null);
     }
-
-
 }

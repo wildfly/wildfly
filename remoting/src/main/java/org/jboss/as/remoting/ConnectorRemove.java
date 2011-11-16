@@ -42,7 +42,7 @@ public class ConnectorRemove extends AbstractRemoveStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        context.removeService(RemotingServices.connectorServiceName(name));
+        RemotingServices.removeConnectorServices(context, name);
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {

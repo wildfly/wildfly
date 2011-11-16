@@ -32,9 +32,14 @@ public enum Attribute {
     UNKNOWN(null),
     /* Remoting 1.0 attributes, in alpha order */
     NAME("name"),
-    SOCKET_BINDING("socket-binding"),
-    THREAD_POOL("thread-pool"),
-    VALUE("value"),
+    SOCKET_BINDING(CommonAttributes.SOCKET_BINDING),
+    VALUE(CommonAttributes.VALUE),
+    WORKER_READ_THREADS(CommonAttributes.WORKER_READ_THREADS),
+    WORKER_TASK_CORE_THREADS(CommonAttributes.WORKER_TASK_CORE_THREADS),
+    WORKER_TASK_KEEPALIVE(CommonAttributes.WORKER_TASK_KEEPALIVE),
+    WORKER_TASK_LIMIT(CommonAttributes.WORKER_TASK_LIMIT),
+    WORKER_TASK_MAX_THREADS(CommonAttributes.WORKER_TASK_MAX_THREADS),
+    WORKER_WRITE_THREADS(CommonAttributes.WORKER_WRITE_THREADS)
     ;
     private final String name;
 
