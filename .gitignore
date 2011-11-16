@@ -16,6 +16,7 @@ target
 # ignore NetBeans files
 nbactions.xml
 nb-configuration.xml
+catalog.xml
 #
 maven-ant-tasks.jar
 test-output
