@@ -22,13 +22,10 @@
 package org.jboss.as.test.integration.management.api.security;
 
 import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
-import java.io.PrintWriter;
 import org.jboss.as.test.integration.management.cli.GlobalOpsTestCase;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -38,6 +35,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.as.test.integration.management.util.SecuredServlet;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
@@ -48,6 +46,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.junit.Assert.*;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+
 
 /**
  *
@@ -88,19 +88,21 @@ public class SecurityDomainTestCase extends AbstractMgmtTestBase {
     }
 
     @Test
-    @Ignore("AS7-2602")
     public void testAddRemoveSecurityDomain(@ArquillianResource Deployer deployer) throws Exception {
 
-        // specify login module options
+        
+        // add security domain
+        ModelNode addOp = createOpNode("subsystem=security/security-domain=test", "add");
+
+        // setup lospecify login module options
+        ModelNode addLoginModuleOp = createOpNode("subsystem=security/security-domain=test/authentication=classic", "add");
         ModelNode loginModule = new ModelNode();
         loginModule.get("code").set("Simple");
         loginModule.get("flag").set("required");
-
-        // add security domain
-        ModelNode op = createOpNode("subsystem=security/security-domain=test", "add");
-        op.get("authentication").add(loginModule);
-        executeOperation(op);
-
+        addLoginModuleOp.get("login-modules").add(loginModule);
+        
+        executeOperation(ModelUtil.createCompositeNode(new ModelNode[] {addOp, addLoginModuleOp}));
+        
         // deploy secured servlet
         deployer.deploy("secured-servlet");
 
@@ -126,7 +128,7 @@ public class SecurityDomainTestCase extends AbstractMgmtTestBase {
 
 
         // remove security domain
-        op = createOpNode("subsystem=security/security-domain=test", "remove");
+        ModelNode op = createOpNode("subsystem=security/security-domain=test", "remove");
         executeOperation(op);
 
         // check that the security domain is removed

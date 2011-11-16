@@ -52,6 +52,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.util.WebUtil;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -59,6 +60,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.junit.Assert.*;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+
 
 /**
  *
@@ -209,7 +212,7 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
         // check that the connector is not live
         String cURL = Connector.HTTP.getScheme() + "://" + url.getHost() + ":8181";
 
-        assertTrue("Connector not removed.", testRequestFail(cURL));
+        assertFalse("Connector not removed.", WebUtil.testHttpURL(cURL));
 
         // execute and rollback remove socket binding
         ModelNode removeSocketOp = getRemoveSocketBindingOp(Connector.HTTP);
@@ -268,7 +271,7 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
         // check that the connector is not live
         String cURL = conn.getScheme() + "://" + url.getHost() + ":8181";
 
-        assertTrue("Connector not removed.", testRequestFail(cURL));
+        assertFalse("Connector not removed.", WebUtil.testHttpURL(cURL));
 
         // remove socket binding
         op = getRemoveSocketBindingOp(conn);

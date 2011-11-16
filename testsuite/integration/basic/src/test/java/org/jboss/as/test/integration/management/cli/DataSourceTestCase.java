@@ -38,7 +38,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * TODO add/remove/modify-data-source commands are deprecated and shouldn't be used
  *
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
@@ -59,24 +58,22 @@ public class DataSourceTestCase extends AbstractCliTestBase {
 
     @Test
     public void testDataSource() throws Exception {
-        testAddDataSource();
-        testModifyDataSource();
+        testAddDataSource();       
+        // testModifyDataSource();
         testRemoveDataSource();
     }
 
     @Test
-    public void testXaDataSource() throws Exception {
-        /*
+    public void testXaDataSource() throws Exception {        
         testAddXaDataSource();
-        testModifyXaDataSource();
-        testRemoveXaDataSource();
-         */
+        // testModifyXaDataSource();
+        testRemoveXaDataSource();         
     }
 
     private void testAddDataSource() throws Exception {
 
         // add data source
-        cli.sendLine("add-data-source --jndi-name=java:jboss/datasources/TestDS --driver-name=h2 --pool-name=TestDS --connection-url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+        cli.sendLine("data-source add --jndi-name=java:jboss/datasources/TestDS --driver-name=h2 --connection-url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
 
         // check the data source is listed
         cli.sendLine("cd /subsystem=datasources/data-source");
@@ -92,7 +89,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
     private void testRemoveDataSource() throws Exception {
 
         // remove data source
-        cli.sendLine("remove-data-source --name=java:jboss/datasources/TestDS");
+        cli.sendLine("data-source remove --jndi-name=java:jboss/datasources/TestDS");
 
         //check the data source is not listed
         cli.sendLine("cd /subsystem=datasources/data-source");
@@ -103,7 +100,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
     }
 
     private void testModifyDataSource() throws Exception {
-        StringBuilder cmd = new StringBuilder("modify-data-source --jndi-name=java:jboss/datasources/TestDS");
+        StringBuilder cmd = new StringBuilder("data-source modify --jndi-name=java:jboss/datasources/TestDS");
         for (String[] props : DS_PROPS) {
             cmd.append(" --");
             cmd.append(props[0]);
@@ -125,26 +122,26 @@ public class DataSourceTestCase extends AbstractCliTestBase {
     private void testAddXaDataSource() throws Exception {
 
         // add data source
-        cli.sendLine("add-data-source --jndi-name=java:jboss/datasources/TestDS --driver-name=h2 --pool-name=TestDS --connection-url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+        cli.sendLine("xa-data-source add --jndi-name=java:jboss/datasources/TestXADS --driver-name=h2");
 
         //check the data source is listed
-        cli.sendLine("cd /subsystem=datasources/data-source");
+        cli.sendLine("cd /subsystem=datasources/xa-data-source");
         cli.sendLine("ls");
         String ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
-        assertTrue(ls.contains("java:jboss/datasources/TestDS"));
+        assertTrue(ls.contains("java:jboss/datasources/TestXADS"));
 
     }
 
     private void testRemoveXaDataSource() throws Exception {
 
         // remove data source
-        cli.sendLine("remove-data-source --name=java:jboss/datasources/TestDS");
+        cli.sendLine("xa-data-source remove --jndi-name=java:jboss/datasources/TestXADS");
 
         //check the data source is not listed
-        cli.sendLine("cd /subsystem=datasources/data-source");
+        cli.sendLine("cd /subsystem=datasources/xa-data-source");
         cli.sendLine("ls");
         String ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
-        assertFalse(ls.contains("java:jboss/datasources/TestDS"));
+        assertFalse(ls.contains("java:jboss/datasources/TestXADS"));
 
     }
 
@@ -157,7 +154,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
             cmd.append(props[1]);
         }
         cli.sendLine(cmd.toString());
-
+        
         // check that datasource was modified
         cli.sendLine("/subsystem=datasources/data-source=java\\:jboss\\/datasources\\/TestDS:read-resource(recursive=true)");       
         CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
