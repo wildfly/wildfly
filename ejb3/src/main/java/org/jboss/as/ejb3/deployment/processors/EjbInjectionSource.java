@@ -22,8 +22,6 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
-import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
-
 import java.util.Set;
 
 import org.jboss.as.ee.component.ComponentView;
@@ -46,6 +44,8 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
+import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
+
 /**
  * Implementation of {@link InjectionSource} responsible for finding a specific bean instance with a bean name and interface.
  *
@@ -58,6 +58,7 @@ public class EjbInjectionSource extends InjectionSource {
     private volatile ServiceName resolvedViewName;
     private volatile RemoteViewManagedReferenceFactory remoteFactory;
     private volatile String error = null;
+    private volatile boolean resolved = false;
 
     public EjbInjectionSource(final String beanName, final String typeName) {
         this.beanName = beanName;
@@ -70,10 +71,11 @@ public class EjbInjectionSource extends InjectionSource {
     }
 
     public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
-        if(error != null) {
+        resolve(phaseContext);
+        if (error != null) {
             throw new DeploymentUnitProcessingException(error);
         }
-        if(remoteFactory != null) {
+        if (remoteFactory != null) {
             //because we are using the ejb: lookup namespace we do not need a dependency
             injector.inject(remoteFactory);
         } else {
@@ -82,33 +84,36 @@ public class EjbInjectionSource extends InjectionSource {
 
     }
 
-    public void resolve(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final Set<ViewDescription> componentsForViewName = getViews(phaseContext);
-        //we cannot be sure that this injection will actually be used, so we wait until getResourceValue is called to throw an exception
-        if (componentsForViewName.isEmpty()) {
-            error = "No component found for type '" + typeName + "' with name " + beanName;
-            return ;
-        }
-        if (componentsForViewName.size() > 1) {
-            error = "More than 1 component found for type '" + typeName + "' and bean name " + beanName;
-            return ;
-        }
-        ViewDescription description = componentsForViewName.iterator().next();
-        if(description instanceof EJBViewDescription) {
-            final EJBViewDescription ejbViewDescription =(EJBViewDescription)description;
-            //for remote interfaces we do not want to use a normal binding
-            //we need to bind the remote proxy factory into JNDI instead to get the correct behaviour
-
-            if(ejbViewDescription.getMethodIntf() == MethodIntf.REMOTE || ejbViewDescription.getMethodIntf() == MethodIntf.HOME) {
-                final EJBComponentDescription componentDescription = (EJBComponentDescription) description.getComponentDescription();
-                final EEModuleDescription moduleDescription = componentDescription.getModuleDescription();
-                final String earApplicationName = moduleDescription.getEarApplicationName();
-                remoteFactory = new RemoteViewManagedReferenceFactory(earApplicationName, moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), description.getViewClassName(), componentDescription.isStateful());
+    private void resolve(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        if (!resolved) {
+            final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+            final Set<ViewDescription> componentsForViewName = getViews(phaseContext);
+            //we cannot be sure that this injection will actually be used, so we wait until getResourceValue is called to throw an exception
+            if (componentsForViewName.isEmpty()) {
+                error = "No component found for type '" + typeName + "' with name " + beanName;
+                return;
             }
+            if (componentsForViewName.size() > 1) {
+                error = "More than 1 component found for type '" + typeName + "' and bean name " + beanName;
+                return;
+            }
+            ViewDescription description = componentsForViewName.iterator().next();
+            if (description instanceof EJBViewDescription) {
+                final EJBViewDescription ejbViewDescription = (EJBViewDescription) description;
+                //for remote interfaces we do not want to use a normal binding
+                //we need to bind the remote proxy factory into JNDI instead to get the correct behaviour
+
+                if (ejbViewDescription.getMethodIntf() == MethodIntf.REMOTE || ejbViewDescription.getMethodIntf() == MethodIntf.HOME) {
+                    final EJBComponentDescription componentDescription = (EJBComponentDescription) description.getComponentDescription();
+                    final EEModuleDescription moduleDescription = componentDescription.getModuleDescription();
+                    final String earApplicationName = moduleDescription.getEarApplicationName();
+                    remoteFactory = new RemoteViewManagedReferenceFactory(earApplicationName, moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), description.getViewClassName(), componentDescription.isStateful());
+                }
+            }
+            ServiceName serviceName = description.getServiceName();
+            resolvedViewName = serviceName;
+            resolved = true;
         }
-        ServiceName serviceName = description.getServiceName();
-        resolvedViewName = serviceName;
     }
 
     private Set<ViewDescription> getViews(final DeploymentPhaseContext phaseContext) {
@@ -130,11 +135,11 @@ public class EjbInjectionSource extends InjectionSource {
 
         if (!(o instanceof EjbInjectionSource))
             return false;
-        if(error != null) {
+        if (error != null) {
             //we can't do a real equals comparison in this case, so throw the original error
             throw new RuntimeException(error);
         }
-        if(resolvedViewName == null) {
+        if (resolvedViewName == null) {
             throw new RuntimeException("Error equals() cannot be called before resolve()");
         }
 

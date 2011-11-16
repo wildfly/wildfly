@@ -131,4 +131,5 @@ public class EJBViewDescription extends ViewDescription {
     public boolean isEjb2xView() {
         return ejb2xView;
     }
+
 }

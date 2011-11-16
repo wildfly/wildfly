@@ -57,7 +57,9 @@ public class RemoteViewInjectionSource extends InjectionSource {
      * {@inheritDoc}
      */
     public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
-        serviceBuilder.addDependency(serviceName);
+        if(serviceName != null) {
+            serviceBuilder.addDependency(serviceName);
+        }
         injector.inject(new RemoteViewManagedReferenceFactory(appName, moduleName, distinctName, beanName, viewClass, stateful));
     }
 

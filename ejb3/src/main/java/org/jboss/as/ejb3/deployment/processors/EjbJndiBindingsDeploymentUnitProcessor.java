@@ -25,14 +25,17 @@ package org.jboss.as.ejb3.deployment.processors;
 import java.util.Collection;
 
 import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
+import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
+import org.jboss.as.ejb3.remote.RemoteViewInjectionSource;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -52,6 +55,12 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
      */
     private static final Logger logger = Logger.getLogger(EjbJndiBindingsDeploymentUnitProcessor.class);
 
+    private final boolean appclient;
+
+    public EjbJndiBindingsDeploymentUnitProcessor(final boolean appclient) {
+        this.appclient = appclient;
+    }
+
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -62,13 +71,17 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
 
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final Collection<ComponentDescription> componentDescriptions = eeModuleDescription.getComponentDescriptions();
-        if (componentDescriptions == null || componentDescriptions.isEmpty()) {
-            return;
+        if (componentDescriptions != null) {
+            for (ComponentDescription componentDescription : componentDescriptions) {
+                // process only EJB session beans
+                if (componentDescription instanceof SessionBeanComponentDescription || componentDescription instanceof EntityBeanComponentDescription) {
+                    this.setupJNDIBindings((EJBComponentDescription) componentDescription, deploymentUnit);
+                }
+            }
         }
-        for (ComponentDescription componentDescription : componentDescriptions) {
-            // process only EJB session beans
-            if (componentDescription instanceof SessionBeanComponentDescription || componentDescription instanceof EntityBeanComponentDescription) {
-                this.setupJNDIBindings((EJBComponentDescription) componentDescription, deploymentUnit);
+        if (appclient) {
+            for (final ComponentDescription component : deploymentUnit.getAttachmentList(Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS)) {
+                this.setupJNDIBindings((EJBComponentDescription) component, deploymentUnit);
             }
         }
     }
@@ -103,23 +116,26 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
         EJBViewDescription ejbViewDescription = null;
         for (ViewDescription viewDescription : views) {
             ejbViewDescription = (EJBViewDescription) viewDescription;
+            if (appclient && ejbViewDescription.getMethodIntf() != MethodIntf.REMOTE && ejbViewDescription.getMethodIntf() != MethodIntf.HOME) {
+                continue;
+            }
             if (!ejbViewDescription.hasJNDIBindings()) continue;
 
             final String viewClassName = ejbViewDescription.getViewClassName();
 
             // java:global bindings
             final String globalJNDIName = globalJNDIBaseName + "!" + viewClassName;
-            registerBinding(viewDescription, globalJNDIName);
+            registerBinding(sessionBean, viewDescription, globalJNDIName);
             logBinding(jndiBindingsLogMessage, globalJNDIName);
 
             // java:app bindings
             final String appJNDIName = appJNDIBaseName + "!" + viewClassName;
-            registerBinding(viewDescription, appJNDIName);
+            registerBinding(sessionBean, viewDescription, appJNDIName);
             logBinding(jndiBindingsLogMessage, appJNDIName);
 
             // java:module bindings
             final String moduleJNDIName = moduleJNDIBaseName + "!" + viewClassName;
-            registerBinding(viewDescription, moduleJNDIName);
+            registerBinding(sessionBean, viewDescription, moduleJNDIName);
             logBinding(jndiBindingsLogMessage, moduleJNDIName);
         }
 
@@ -137,15 +153,15 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
             if (ejbViewDescription.hasJNDIBindings()) {
 
                 // java:global binding
-                registerBinding(viewDescription, globalJNDIBaseName);
+                registerBinding(sessionBean, viewDescription, globalJNDIBaseName);
                 logBinding(jndiBindingsLogMessage, globalJNDIBaseName);
 
                 // java:app binding
-                registerBinding(viewDescription, appJNDIBaseName);
+                registerBinding(sessionBean, viewDescription, appJNDIBaseName);
                 logBinding(jndiBindingsLogMessage, appJNDIBaseName);
 
                 // java:module binding
-                registerBinding(viewDescription, moduleJNDIBaseName);
+                registerBinding(sessionBean, viewDescription, moduleJNDIBaseName);
                 logBinding(jndiBindingsLogMessage, moduleJNDIBaseName);
             }
         }
@@ -154,8 +170,13 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
         logger.info(jndiBindingsLogMessage);
     }
 
-    private void registerBinding(final ViewDescription viewDescription, final String jndiName) {
-        viewDescription.getBindingNames().add(jndiName);
+    private void registerBinding(final EJBComponentDescription componentDescription, final ViewDescription viewDescription, final String jndiName) {
+        if (appclient) {
+            final EEModuleDescription moduleDescription = componentDescription.getModuleDescription();
+            moduleDescription.getBindingConfigurations().add(new BindingConfiguration(jndiName, new RemoteViewInjectionSource(null, moduleDescription.getApplicationName(), moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), viewDescription.getViewClassName(), componentDescription.isStateful())));
+        } else {
+            viewDescription.getBindingNames().add(jndiName);
+        }
     }
 
     private void logBinding(final StringBuilder jndiBindingsLogMessage, final String jndiName) {
