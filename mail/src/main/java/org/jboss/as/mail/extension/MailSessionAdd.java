@@ -12,6 +12,8 @@ import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
+import org.jboss.as.network.OutboundSocketBinding;
+import org.jboss.as.server.services.net.OutboundSocketBindingService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -29,8 +31,6 @@ public class MailSessionAdd extends AbstractAddStepHandler {
 
     static final MailSessionAdd INSTANCE = new MailSessionAdd();
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("mail-session");
-
-    private final Logger log = Logger.getLogger(MailSessionAdd.class);
 
     private MailSessionAdd() {
     }
@@ -85,9 +85,13 @@ public class MailSessionAdd extends AbstractAddStepHandler {
         final String jndiName = Util.getJndiName(operation);
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
-        final MailSessionService service = createMailSessionService(context, operation);
+        final MailSessionConfig config = Util.from(context, operation);
+        final MailSessionService service = new MailSessionService(config);
         final ServiceName serviceName = SERVICE_NAME_BASE.append(jndiName);
         final ServiceBuilder<?> mailSessionBuilder = serviceTarget.addService(serviceName, service);
+        addOutboundSocketDependency(service, mailSessionBuilder, config.getImapServer());
+        addOutboundSocketDependency(service, mailSessionBuilder, config.getPop3Server());
+        addOutboundSocketDependency(service, mailSessionBuilder, config.getSmtpServer());
 
         final ManagedReferenceFactory valueManagedReferenceFactory = new ManagedReferenceFactory() {
 
@@ -105,15 +109,15 @@ public class MailSessionAdd extends AbstractAddStepHandler {
                     public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
                         switch (transition) {
                             case STARTING_to_UP: {
-                                log.infof("Bound mail session [%s]", jndiName);
+                                MailLogger.ROOT_LOGGER.boundMailSession(jndiName);
                                 break;
                             }
                             case START_REQUESTED_to_DOWN: {
-                                log.infof("Unbound mail session [%s]", jndiName);
+                                MailLogger.ROOT_LOGGER.unboundMailSession(jndiName);
                                 break;
                             }
                             case REMOVING_to_REMOVED: {
-                                log.debugf("Removed mail session [%s]", jndiName);
+                                MailLogger.ROOT_LOGGER.removedMailSession(jndiName);
                                 break;
                             }
                         }
@@ -130,8 +134,11 @@ public class MailSessionAdd extends AbstractAddStepHandler {
 
     }
 
-    protected MailSessionService createMailSessionService(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-        final MailSessionConfig config = Util.from(context, operation);
-        return new MailSessionService(config);
+    private void addOutboundSocketDependency(MailSessionService service, ServiceBuilder<?> mailSessionBuilder, MailSessionServer server) {
+        if (server != null) {
+            final String ref = server.getOutgoingSocketBinding();
+            mailSessionBuilder.addDependency(OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(ref),
+                    OutboundSocketBinding.class, service.getSocketBindingInjector(ref));
+        }
     }
 }

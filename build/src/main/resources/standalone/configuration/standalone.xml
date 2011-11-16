@@ -222,7 +222,7 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:mail:1.0">
             <mail-session jndi-name="java:jboss/mail/Default">
-                <smtp-server address="localhost" port="25"/>
+                <smtp-server outbound-socket-binding-ref="mail-smtp"/>
             </mail-session>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:messaging:1.1">
@@ -447,6 +447,9 @@
         </outbound-socket-binding>
         <outbound-socket-binding name="messaging-throughput-client">
             <local-destination socket-binding-ref="messaging-throughput"/>
+        </outbound-socket-binding>
+        <outbound-socket-binding name="mail-smtp">
+            <remote-destination host="localhost" port="25"/>
         </outbound-socket-binding>
     </socket-binding-group>
 

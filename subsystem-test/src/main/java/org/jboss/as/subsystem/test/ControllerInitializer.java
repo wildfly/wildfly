@@ -71,6 +71,9 @@ import org.jboss.as.server.services.net.BindingMulticastAddressHandler;
 import org.jboss.as.server.services.net.BindingMulticastPortHandler;
 import org.jboss.as.server.services.net.BindingPortHandler;
 import org.jboss.as.server.services.net.BindingRemoveHandler;
+import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingResourceDefinition;
+import org.jboss.as.server.services.net.OutboundSocketBindingResourceDefinition;
+import org.jboss.as.server.services.net.RemoteDestinationOutboundSocketBindingResourceDefinition;
 import org.jboss.as.server.services.net.SocketBindingResourceDefinition;
 import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceRemoveHandler;
@@ -221,6 +224,10 @@ public class ControllerInitializer {
         // Sockets
         ManagementResourceRegistration socketGroup = rootRegistration.registerSubModel(new SocketBindingGroupResourceDefinition(BindingGroupAddHandler.INSTANCE, SocketBindingGroupRemoveHandler.INSTANCE, false));
         socketGroup.registerSubModel(SocketBindingResourceDefinition.INSTANCE);
+        // client-socket-binding (for remote destination)
+        socketGroup.registerSubModel(RemoteDestinationOutboundSocketBindingResourceDefinition.INSTANCE);
+        // client-socket-binding (for local destination)
+        socketGroup.registerSubModel(LocalDestinationOutboundSocketBindingResourceDefinition.INSTANCE);
     }
 
     /**

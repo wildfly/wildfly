@@ -2,39 +2,63 @@ package org.jboss.as.mail.extension;
 
 
 import junit.framework.Assert;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.operations.common.InterfaceAddHandler;
+import org.jboss.as.controller.operations.common.SocketBindingGroupRemoveHandler;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
+import org.jboss.as.server.services.net.BindingGroupAddHandler;
+import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingResourceDefinition;
+import org.jboss.as.server.services.net.RemoteDestinationOutboundSocketBindingResourceDefinition;
+import org.jboss.as.server.services.net.SocketBindingResourceDefinition;
+import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceTarget;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INET_ADDRESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class SubsystemParsingTestCase extends AbstractSubsystemTest {
+public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
     private String SUBSYSTEM_XML =
             " <subsystem xmlns=\"urn:jboss:domain:mail:1.0\">\n" +
                     "            <mail-session jndi-name=\"java:/Mail\" >\n" +
-                    "                <smtp-server address=\"localhost\" port=\"9999\">\n" +
+                    "                <smtp-server outbound-socket-binding-ref=\"mail-smtp\">\n" +
                     "                       <login name=\"nobody\" password=\"pass\"/>\n" +
                     "                </smtp-server>\n" +
-                    "                <pop3-server address=\"example.com\" port=\"1234\"/>\n" +
-                    "                <imap-server address=\"example.com\" port=\"432\">\n" +
+                    "                <pop3-server outbound-socket-binding-ref=\"mail-pop3\"/>\n" +
+                    "                <imap-server outbound-socket-binding-ref=\"mail-imap\">\n" +
                     "                    <login name=\"nobody\" password=\"pass\"/>\n" +
                     "                </imap-server>\n" +
                     "           </mail-session>\n" +
                     "            <mail-session jndi-name=\"java:jboss/mail/Default\" >\n" +
-                    "                <smtp-server address=\"localhost\" port=\"25\"/>\n" +
+                    "                <smtp-server outbound-socket-binding-ref=\"mail-smtp\"/>\n" +
                     "            </mail-session>\n" +
                     "        </subsystem>";
     private static final Logger log = Logger.getLogger(SubsystemParsingTestCase.class);
@@ -66,69 +90,43 @@ public class SubsystemParsingTestCase extends AbstractSubsystemTest {
         Assert.assertEquals(MailExtension.SUBSYSTEM_NAME, element.getValue());
     }
 
-    /**
-     * Test that the model created from the xml looks as expected
-     */
-    @Test
-    public void testInstallIntoController() throws Exception {
-        //Parse the subsystem xml and install into the controller
-        KernelServices services = super.installInController(SUBSYSTEM_XML);
-
-        //Read the whole model and make sure it looks as expected
-        ModelNode model = services.readWholeModel();
-        Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(MailExtension.SUBSYSTEM_NAME));
+    @Override
+    protected String getSubsystemXml() throws IOException {
+        return SUBSYSTEM_XML;
     }
 
-    /**
-     * Starts a controller with a given subsystem xml and then checks that a second
-     * controller started with the xml marshalled from the first one results in the same model
-     */
-    @Test
-    public void testParseAndMarshalModel() throws Exception {
-        //Parse the subsystem xml and install into the first controller
-
-        log.info("parseAndMarshalModel");
-        KernelServices servicesA = super.installInController(SUBSYSTEM_XML);
-        log.info("servicesA: " + servicesA);
-
-        //Get the model and the persisted xml from the first controller
-        ModelNode modelA = servicesA.readWholeModel();
-        log.info("\n\nmodelA: " + modelA);
-        String marshalled = servicesA.getPersistedSubsystemXml();
-        log.info("marshaled: " + marshalled);
-        //Install the persisted xml from the first controller into a second controller
-        KernelServices servicesB = super.installInController(marshalled);
-        ModelNode modelB = servicesB.readWholeModel();
-        log.info("\n\nmodelB: " + modelB);
-
-        //Make sure the models from the two controllers are identical
-        super.compare(modelA, modelB);
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return new Initializer();
     }
 
-    /**
-     * Starts a controller with the given subsystem xml and then checks that a second
-     * controller started with the operations from its describe action results in the same model
-     */
-    @Test
-    public void testDescribeHandler() throws Exception {
-        //Parse the subsystem xml and install into the first controller
-        KernelServices servicesA = super.installInController(SUBSYSTEM_XML);
-        //Get the model and the describe operations from the first controller
-        ModelNode modelA = servicesA.readWholeModel();
-        ModelNode describeOp = new ModelNode();
-        describeOp.get(OP).set(DESCRIBE);
-        describeOp.get(OP_ADDR).set(
-                PathAddress.pathAddress(
-                        PathElement.pathElement(SUBSYSTEM, MailExtension.SUBSYSTEM_NAME)).toModelNode());
-        List<ModelNode> operations = super.checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList();
+    private class Initializer extends AdditionalInitialization {
+        @Override
+        protected ControllerInitializer createControllerInitializer() {
+            ControllerInitializer ci = new ControllerInitializer() {
 
+                @Override
+                protected void initializeSocketBindingsOperations(List<ModelNode> ops) {
 
-        //Install the describe options from the first controller into a second controller
-        KernelServices servicesB = super.installInController(operations);
-        ModelNode modelB = servicesB.readWholeModel();
+                    super.initializeSocketBindingsOperations(ops);
 
-        //Make sure the models from the two controllers are identical
-        super.compare(modelA, modelB);
+                    final String[] names = { "mail-imap", "mail-pop3", "mail-smtp"};
+                    final int[] ports = { 432, 1234, 25 };
+                    for (int i = 0; i < names.length; i++) {
+                        final ModelNode op = new ModelNode();
+                        op.get(OP).set(ADD);
+                        op.get(OP_ADDR).set(PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, SOCKET_BINDING_GROUP_NAME),
+                                PathElement.pathElement(REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING, names[i])).toModelNode());
+                        op.get(HOST).set("localhost");
+                        op.get(PORT).set(ports[i]);
+                        ops.add(op);
+                    }
+                }
+            };
 
+            // Adding a socket-binding is what triggers ControllerInitializer to set up the interface
+            // and socket-binding-group stuff we depend on TODO something less hacky
+            ci.addSocketBinding("make-framework-happy", 59999);
+            return ci;
+        }
     }
 }

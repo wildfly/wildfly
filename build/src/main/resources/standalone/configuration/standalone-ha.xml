@@ -35,6 +35,7 @@
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.jpa"/>
         <extension module="org.jboss.as.logging"/>
+        <extension module="org.jboss.as.mail"/>
         <extension module="org.jboss.as.messaging"/>
         <extension module="org.jboss.as.modcluster"/>
         <extension module="org.jboss.as.naming"/>
@@ -278,6 +279,11 @@
         <subsystem xmlns="urn:jboss:domain:jpa:1.0">
             <jpa default-datasource=""/>
         </subsystem>
+        <subsystem xmlns="urn:jboss:domain:mail:1.0">
+            <mail-session jndi-name="java:jboss/mail/Default">
+                <smtp-server outbound-socket-binding-ref="mail-smtp"/>
+            </mail-session>
+        </subsystem>
         <subsystem xmlns="urn:jboss:domain:messaging:1.1">
             <hornetq-server>
                 <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
@@ -494,6 +500,9 @@
         <socket-binding name="remoting" port="4447"/>
         <socket-binding name="txn-recovery-environment" port="4712"/>
         <socket-binding name="txn-status-manager" port="4713"/>
+        <outbound-socket-binding name="mail-smtp">
+            <remote-destination host="localhost" port="25"/>
+        </outbound-socket-binding>
     </socket-binding-group>
 </server>
 

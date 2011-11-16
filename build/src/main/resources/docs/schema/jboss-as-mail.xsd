@@ -37,8 +37,16 @@
         <xs:sequence>
             <xs:element name="login" type="login-type" maxOccurs="1" minOccurs="0"/>
         </xs:sequence>
-        <xs:attribute name="address" use="required"/>
-        <xs:attribute name="port" use="required"/>
+        <xs:attribute name="outbound-socket-binding-ref" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                    Reference to the outbound-socket-binding element in the socket-binding-group that should
+                    be used for configuring the client socket used to communicate with the mail server.
+                ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
 </xs:schema>
