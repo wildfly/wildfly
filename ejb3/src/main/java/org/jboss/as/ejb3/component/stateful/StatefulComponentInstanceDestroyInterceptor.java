@@ -52,7 +52,7 @@ public class StatefulComponentInstanceDestroyInterceptor extends AbstractEJBInte
         }
         log.debug("Looking for stateful component instance with session id: " + sessionId);
 
-        StatefulSessionComponentInstance instance = component.getCache().get(sessionId);
+        final StatefulSessionComponentInstance instance = component.getCache().get(sessionId);
         if (instance == null) {
             return null;
         }

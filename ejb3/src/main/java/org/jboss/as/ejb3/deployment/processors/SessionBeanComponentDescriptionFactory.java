@@ -232,12 +232,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
             return;
         }
 
-        final SessionType sessionType = sessionBean.getSessionType();
-        if(sessionType == null && sessionBean instanceof GenericBeanMetaData) {
-            //TODO: this is a hack
-            return;
-        }
-        if (sessionType == null) {
+        if (appclient) {
             for (final ComponentDescription component : additionalComponents) {
                 if (component.getComponentName().equals(beanName)) {
                     if (component instanceof SessionBeanComponentDescription) {
@@ -249,6 +244,11 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
                 }
             }
             throw new DeploymentUnitProcessingException("Unknown session-type for session bean: " + sessionBean.getName() + " in deployment unit: " + deploymentUnit);
+        }
+        final SessionType sessionType = sessionBean.getSessionType();
+        if(sessionType == null && sessionBean instanceof GenericBeanMetaData) {
+            //TODO: this is a hack
+            return;
         }
         final String beanClassName = sessionBean.getEjbClass();
         final SessionBeanComponentDescription sessionBeanDescription;
