@@ -14,7 +14,8 @@ public enum Attribute {
     JNDI_NAME(ModelKeys.JNDI_NAME),
     DEBUG(ModelKeys.DEBUG),
     SERVER_ADDRESS(ModelKeys.SERVER_ADDRESS),
-    SERVER_PORT(ModelKeys.SERVER_PORT);
+    SERVER_PORT(ModelKeys.SERVER_PORT),
+    OUTGOING_SOCKET_BINDING_REF(ModelKeys.OUTGOING_SOCKET_BINDING_REF);
 
     private final String name;
 
