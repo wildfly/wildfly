@@ -420,6 +420,7 @@
 
         <module-def name="org.hornetq">
             <maven-resource group="org.hornetq" artifact="hornetq-core"/>
+            <maven-resource group="org.hornetq" artifact="hornetq-jboss-as-integration"/>
             <maven-resource group="org.hornetq" artifact="hornetq-jms"/>
         </module-def>
 

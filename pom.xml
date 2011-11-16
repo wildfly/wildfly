@@ -126,7 +126,7 @@
         <version.org.hibernate.commons.annotations>4.0.0.CR2</version.org.hibernate.commons.annotations>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.1.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
         <version.org.hibernate.validator>4.2.0.Final</version.org.hibernate.validator>
-        <version.org.hornetq.hornetq-jms>2.2.7.Final</version.org.hornetq.hornetq-jms>
+        <version.org.hornetq.hornetq-jms>2.2.9.AS7.Final</version.org.hornetq.hornetq-jms>
         <version.org.infinispan>5.1.0.BETA2</version.org.infinispan>
         <version.org.javassist>3.12.1.GA</version.org.javassist>
         <version.org.jdom.jdom>1.1.2</version.org.jdom.jdom>
@@ -3025,6 +3025,12 @@
             <dependency>
                 <groupId>org.hornetq</groupId>
                 <artifactId>hornetq-core</artifactId>
+                <version>${version.org.hornetq.hornetq-jms}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hornetq</groupId>
+                <artifactId>hornetq-jboss-as-integration</artifactId>
                 <version>${version.org.hornetq.hornetq-jms}</version>
             </dependency>
 
