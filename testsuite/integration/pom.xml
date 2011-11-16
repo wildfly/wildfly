@@ -214,7 +214,6 @@
                         <jbossas.ts.dir>${jbossas.ts.dir}</jbossas.ts.dir>
                         <jbossas.project.dir>${jbossas.project.dir}</jbossas.project.dir>
                         <jboss.dist>${jboss.dist}</jboss.dist>
-                        <!-- <jboss.inst>${jbossas.ts.module.dir}/target/jbossas</jboss.inst>  Only to be specified for single-node test groups. -->
 
                         <!--
                             Used in arquillian.xml - arguments for all JBoss AS instances.
