@@ -21,9 +21,6 @@
  */
 package org.jboss.as.ee.component.deployers;
 
-import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -37,7 +34,11 @@ import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.EnvEntryInjectionSource;
+import org.jboss.as.ee.component.FixedInjectionSource;
 import org.jboss.as.ee.component.LookupInjectionSource;
+import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -49,6 +50,10 @@ import org.jboss.metadata.javaee.spec.ResourceEnvironmentReferenceMetaData;
 import org.jboss.metadata.javaee.spec.ResourceEnvironmentReferencesMetaData;
 import org.jboss.metadata.javaee.spec.ResourceReferenceMetaData;
 import org.jboss.metadata.javaee.spec.ResourceReferencesMetaData;
+import org.jboss.msc.value.ImmediateValue;
+
+import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * Deployment processor that sets up env-entry, resource-ref and resource-env-ref bindings
@@ -152,13 +157,32 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                 //
                 if (classType != null && classType.equals(URI.class)) {
                     try {
-                        bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(new URI(resourceRef.getResUrl())));
+                        //we need a newURI every time
+                        bindingConfiguration = new BindingConfiguration(name, new FixedInjectionSource(new ManagedReferenceFactory() {
+                            @Override
+                            public ManagedReference getReference() {
+                                try {
+                                    return new ValueManagedReference(new ImmediateValue(new URI(resourceRef.getResUrl())));
+                                } catch (URISyntaxException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                        }, new URI(resourceRef.getResUrl())));
                     } catch (URISyntaxException e) {
                         throw MESSAGES.cannotParseResourceRefUri(e, resourceRef.getResUrl());
                     }
                 } else {
                     try {
-                        bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(new URL(resourceRef.getResUrl())));
+                        bindingConfiguration = new BindingConfiguration(name, new FixedInjectionSource(new ManagedReferenceFactory() {
+                            @Override
+                            public ManagedReference getReference() {
+                                try {
+                                    return new ValueManagedReference(new ImmediateValue(new URL(resourceRef.getResUrl())));
+                                } catch (MalformedURLException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                        }, new URL(resourceRef.getResUrl())));
                     } catch (MalformedURLException e) {
                         throw MESSAGES.cannotParseResourceRefUri(e, resourceRef.getResUrl());
                     }

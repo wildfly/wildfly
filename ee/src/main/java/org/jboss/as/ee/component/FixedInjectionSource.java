@@ -22,10 +22,7 @@
 
 package org.jboss.as.ee.component;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.StaticManagedObject;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
@@ -42,13 +39,11 @@ public final class FixedInjectionSource extends InjectionSource {
     /**
      * Construct a new instance.
      *
-     * @param value the fixed value
+     * @param factory The managed reference factory to inject
+     * @param value the value to use for equality comparison
      */
-    public FixedInjectionSource(final Object value) {
-        if (value == null) {
-            throw MESSAGES.nullVar("value");
-        }
-        managedReferenceFactory = new StaticManagedObject(value);
+    public FixedInjectionSource(final ManagedReferenceFactory factory, final Object value) {
+        managedReferenceFactory = factory;
         this.value = value;
     }
 

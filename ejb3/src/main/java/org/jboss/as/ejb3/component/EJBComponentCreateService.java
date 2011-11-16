@@ -71,8 +71,9 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private final Method timeoutMethod;
 
     private final ServiceName ejbLocalHome;
-
     private final ServiceName ejbHome;
+    private final ServiceName ejbObject;
+    private final ServiceName ejbLocalObject;
 
 
     private final String applicationName;
@@ -150,10 +151,14 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
             viewServices.put(view.getViewClassName(), view.getServiceName());
         }
         this.viewServices = viewServices;
-        EjbHomeViewDescription localHome = ejbComponentDescription.getEjbLocalHomeView();
+        final EjbHomeViewDescription localHome = ejbComponentDescription.getEjbLocalHomeView();
         this.ejbLocalHome = localHome == null ? null : ejbComponentDescription.getEjbLocalHomeView().getServiceName();
-        EjbHomeViewDescription home = ejbComponentDescription.getEjbHomeView();
+        final EjbHomeViewDescription home = ejbComponentDescription.getEjbHomeView();
         this.ejbHome = home == null ? null : home.getServiceName();
+        final EJBViewDescription ejbObject = ejbComponentDescription.getEjbRemoteView();
+        this.ejbObject = ejbObject == null ? null : ejbObject.getServiceName();
+        final EJBViewDescription ejbLocalObject = ejbComponentDescription.getEjbLocalView();
+        this.ejbLocalObject = ejbLocalObject == null ? null : ejbLocalObject.getServiceName();
         this.applicationName = componentConfiguration.getApplicationName();
         this.earApplicationName = componentConfiguration.getComponentDescription().getModuleDescription().getEarApplicationName();
         this.moduleName = componentConfiguration.getModuleName();
@@ -235,6 +240,14 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     public ServiceName getEjbLocalHome() {
         return ejbLocalHome;
+    }
+
+    public ServiceName getEjbObject() {
+        return ejbObject;
+    }
+
+    public ServiceName getEjbLocalObject() {
+        return ejbLocalObject;
     }
 
     public String getApplicationName() {

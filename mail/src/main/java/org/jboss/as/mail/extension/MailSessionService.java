@@ -1,16 +1,17 @@
 package org.jboss.as.mail.extension;
 
 
+import java.util.Properties;
+
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.URLName;
+
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.URLName;
-import java.util.Properties;
 
 /**
  * @author Tomaz Cerar
@@ -18,7 +19,7 @@ import java.util.Properties;
  */
 public class MailSessionService implements Service<Session> {
     private static final Logger log = Logger.getLogger(MailSessionService.class);
-    private volatile Session session;
+    private volatile Properties props;
     private final MailSessionConfig config;
 
     public MailSessionService(MailSessionConfig config) {
@@ -29,9 +30,7 @@ public class MailSessionService implements Service<Session> {
 
     public void start(StartContext startContext) throws StartException {
         log.trace("start...");
-        session = Session.getDefaultInstance(getProperties());
-        setAuthentication();
-        log.trace("session is: " + session);
+        props = getProperties();
     }
 
 
@@ -77,13 +76,13 @@ public class MailSessionService implements Service<Session> {
         return props;
     }
 
-    private void setAuthentication() {
-        setAuthForServer(config.getSmtpServer(), "smtp");
-        setAuthForServer(config.getPop3Server(), "pop3");
-        setAuthForServer(config.getImapServer(), "imap");
+    private void setAuthentication(final Session session) {
+        setAuthForServer(session, config.getSmtpServer(), "smtp");
+        setAuthForServer(session, config.getPop3Server(), "pop3");
+        setAuthForServer(session, config.getImapServer(), "imap");
     }
 
-    private void setAuthForServer(final MailSessionServer server, final String protocol) {
+    private void setAuthForServer(final Session session, final MailSessionServer server, final String protocol) {
         if (server != null) {
             Credentials c = server.getCredentials();
             URLName urlName = new URLName(protocol, server.getAddress(), server.getPort(), "", c != null ? c.getUsername() : null, c != null ? c.getPassword() : null);
@@ -95,6 +94,8 @@ public class MailSessionService implements Service<Session> {
 
 
     public Session getValue() throws IllegalStateException, IllegalArgumentException {
+        final Session session = Session.getInstance(props);
+        setAuthentication(session);
         return session;
 
     }

@@ -77,6 +77,8 @@ public abstract class EJBComponent extends BasicComponent {
     private final Map<String, ServiceName> viewServices;
     private final ServiceName ejbLocalHome;
     private final ServiceName ejbHome;
+    private final ServiceName ejbObject;
+    private final ServiceName ejbLocalObject;
 
     private final TimerService timerService;
     protected final Map<Method, InterceptorFactory> timeoutInterceptors;
@@ -121,6 +123,9 @@ public abstract class EJBComponent extends BasicComponent {
         this.earApplicationName = ejbComponentCreateService.getEarApplicationName();
         this.distinctName = ejbComponentCreateService.getDistinctName();
         this.moduleName = ejbComponentCreateService.getModuleName();
+        this.ejbObject = ejbComponentCreateService.getEjbObject();
+        this.ejbLocalObject = ejbComponentCreateService.getEjbLocalObject();
+
 
         this.ejbRemoteTransactionsRepository = ejbComponentCreateService.getEJBRemoteTransactionsRepository();
     }
@@ -209,6 +214,18 @@ public abstract class EJBComponent extends BasicComponent {
         final ComponentView view = (ComponentView) serviceController.getValue();
         final String locatorAppName = earApplicationName == null ? "" : earApplicationName;
         return EJBClient.createProxy(new EJBHomeLocator<EJBHome>((Class<EJBHome>) view.getViewClass(), locatorAppName, moduleName, getComponentName(), distinctName));
+    }
+
+    public Class<?> getEjbObjectType() {
+        final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(ejbObject);
+        final ComponentView view = (ComponentView) serviceController.getValue();
+        return view.getViewClass();
+    }
+
+    public Class<?> getEjbLocalObjectType() {
+        final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(ejbLocalObject);
+        final ComponentView view = (ComponentView) serviceController.getValue();
+        return view.getViewClass();
     }
 
     public EJBLocalHome getEJBLocalHome() throws IllegalStateException {

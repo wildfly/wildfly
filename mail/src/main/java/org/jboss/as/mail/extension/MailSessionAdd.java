@@ -6,8 +6,10 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
-import org.jboss.as.naming.ValueManagedReferenceFactory;
+import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.dmr.ModelNode;
@@ -17,6 +19,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.ImmediateValue;
 
 /**
  * @author Tomaz Cerar
@@ -82,11 +85,17 @@ public class MailSessionAdd extends AbstractAddStepHandler {
         final String jndiName = Util.getJndiName(operation);
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
-        MailSessionService service = createMailSessionService(context, operation);
+        final MailSessionService service = createMailSessionService(context, operation);
         final ServiceName serviceName = SERVICE_NAME_BASE.append(jndiName);
         final ServiceBuilder<?> mailSessionBuilder = serviceTarget.addService(serviceName, service);
 
-        ValueManagedReferenceFactory valueManagedReferenceFactory = new ValueManagedReferenceFactory(service);
+        final ManagedReferenceFactory valueManagedReferenceFactory = new ManagedReferenceFactory() {
+
+            @Override
+            public ManagedReference getReference() {
+                return new ValueManagedReference(new ImmediateValue<Object>(service.getValue()));
+            }
+        };
         final ContextNames.BindInfo bindInfo =  ContextNames.bindInfoFor(jndiName);
         final BinderService binderService = new BinderService(bindInfo.getBindName());
         final ServiceBuilder<?> binderBuilder = serviceTarget

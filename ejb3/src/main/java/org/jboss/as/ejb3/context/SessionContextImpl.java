@@ -69,7 +69,10 @@ public class SessionContextImpl extends EJBContextImpl implements SessionContext
 
     public Class<?> getInvokedBusinessInterface() throws IllegalStateException {
         final InterceptorContext invocation = CurrentInvocationContext.get();
-        ComponentView view = invocation.getPrivateData(ComponentView.class);
+        final ComponentView view = invocation.getPrivateData(ComponentView.class);
+        if(view.getViewClass().equals(getComponent().getEjbObjectType()) || view.getViewClass().equals(getComponent().getEjbLocalObjectType()) ) {
+            throw new IllegalStateException("Cannot invoke getInvokedBusinessInterface when invocation occures through EjbObject or EJBLocalObject interfaces");
+        }
         return view.getViewClass();
     }
 
