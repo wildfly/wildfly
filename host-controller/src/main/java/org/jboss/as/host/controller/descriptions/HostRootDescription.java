@@ -46,6 +46,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_CODENAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
@@ -97,6 +99,18 @@ public class HostRootDescription {
         root.get(ATTRIBUTES, NAME, REQUIRED).set(false);
         root.get(ATTRIBUTES, NAME, NILLABLE).set(true);
         root.get(ATTRIBUTES, NAME, MIN_LENGTH).set(1);
+
+        root.get(ATTRIBUTES, RELEASE_VERSION, DESCRIPTION).set(bundle.getString("host.release-version"));
+        root.get(ATTRIBUTES, RELEASE_VERSION, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, RELEASE_VERSION, REQUIRED).set(true);
+        root.get(ATTRIBUTES, RELEASE_VERSION, NILLABLE).set(false);
+        root.get(ATTRIBUTES, RELEASE_VERSION, MIN_LENGTH).set(1);
+
+        root.get(ATTRIBUTES, RELEASE_CODENAME, DESCRIPTION).set(bundle.getString("host.release-codename"));
+        root.get(ATTRIBUTES, RELEASE_CODENAME, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, RELEASE_CODENAME, REQUIRED).set(true);
+        root.get(ATTRIBUTES, RELEASE_CODENAME, NILLABLE).set(false);
+        root.get(ATTRIBUTES, RELEASE_CODENAME, MIN_LENGTH).set(1);
 
         root.get(ATTRIBUTES, DOMAIN_CONTROLLER, DESCRIPTION).set(bundle.getString("host.domain-controller"));
         root.get(ATTRIBUTES, DOMAIN_CONTROLLER, TYPE).set(ModelType.OBJECT);
