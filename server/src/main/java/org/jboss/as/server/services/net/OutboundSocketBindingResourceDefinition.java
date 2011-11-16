@@ -70,7 +70,6 @@ public abstract class OutboundSocketBindingResourceDefinition extends SimpleReso
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
 
-        resourceRegistration.registerReadOnlyAttribute(NAME, null);
         resourceRegistration.registerReadWriteAttribute(SOURCE_PORT, null, new OutboundSocketBindingWriteHandler(SOURCE_PORT.getValidator(),
                 new IntRangeValidator(0, 65535, true, false), remoteDestination));
         resourceRegistration.registerReadWriteAttribute(SOURCE_INTERFACE, null, new OutboundSocketBindingWriteHandler(SOURCE_INTERFACE.getValidator(),

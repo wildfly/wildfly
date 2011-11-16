@@ -14,9 +14,6 @@ class MailSubsystemAdd extends AbstractAddStepHandler {
 
     static final MailSubsystemAdd INSTANCE = new MailSubsystemAdd();
 
-
-    private final Logger log = Logger.getLogger(MailSubsystemAdd.class);
-
     private MailSubsystemAdd() {
     }
 

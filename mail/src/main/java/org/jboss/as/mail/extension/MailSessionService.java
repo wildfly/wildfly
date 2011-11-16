@@ -1,19 +1,27 @@
 package org.jboss.as.mail.extension;
 
 
+import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.URLName;
 
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.logging.Logger;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.inject.MapInjector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 /**
+ * Service that provides a javax.mail.Session.
+ *
  * @author Tomaz Cerar
  * @created 27.7.11 0:14
  */
@@ -21,9 +29,10 @@ public class MailSessionService implements Service<Session> {
     private static final Logger log = Logger.getLogger(MailSessionService.class);
     private volatile Properties props;
     private final MailSessionConfig config;
+    private Map<String, OutboundSocketBinding> socketBindings = new HashMap<String, OutboundSocketBinding>();
 
     public MailSessionService(MailSessionConfig config) {
-        log.trace("service constructed with config: " + config);
+        log.tracef("service constructed with config: %s", config);
         this.config = config;
     }
 
@@ -36,6 +45,10 @@ public class MailSessionService implements Service<Session> {
 
     public void stop(StopContext stopContext) {
         log.trace("stop...");
+    }
+
+    Injector<OutboundSocketBinding> getSocketBindingInjector(String name) {
+        return new MapInjector<String, OutboundSocketBinding>(socketBindings, name);
     }
 
     /*
@@ -52,31 +65,35 @@ public class MailSessionService implements Service<Session> {
     mail.protocol.port      int         The port number of the mail server for the specified protocol. If not specified the protocol's default port number is used.
     mail.protocol.user      String      The user name to use when connecting to mail servers using the specified protocol. Overrides the mail.user property.
      */
-    private Properties getProperties() {
+    private Properties getProperties() throws StartException  {
         Properties props = new Properties();
 
         if (config.getSmtpServer() != null) {
             props.put("mail.transport.protocol", "smtp");
-            props.put("mail.smtp.host", config.getSmtpServer().getAddress());
-            props.put("mail.smtp.port", config.getSmtpServer().getPort());
+            InetSocketAddress socketAddress = getServerSocketAddress(config.getSmtpServer());
+            props.put(getHostKey("smtp"), socketAddress.getAddress().getHostName());
+            props.put(getPortKey("smtp"), socketAddress.getPort());
         }
         if (config.getImapServer() != null) {
-            props.put("mail.imap.host", config.getImapServer().getAddress());
-            props.put("mail.imap.port", config.getImapServer().getPort());
+            InetSocketAddress socketAddress = getServerSocketAddress(config.getImapServer());
+            props.put(getHostKey("imap"), socketAddress.getAddress().getHostName());
+            props.put(getPortKey("imap"), socketAddress.getPort());
         }
         if (config.getPop3Server() != null) {
-            props.put("mail.pop3.host", config.getPop3Server().getAddress());
-            props.put("mail.pop3.port", config.getPop3Server().getPort());
+            InetSocketAddress socketAddress = getServerSocketAddress(config.getPop3Server());
+            props.put(getHostKey("pop3"), socketAddress.getAddress().getHostName());
+            props.put(getPortKey("pop3"), socketAddress.getPort());
         }
 
         props.put("mail.debug", config.isDebug());
         //todo maybe add mail.from
 
-        log.trace("props: " + props);
+        log.tracef("props: %s", props);
+
         return props;
     }
 
-    private void setAuthentication(final Session session) {
+   private void setAuthentication(final Session session) {
         setAuthForServer(session, config.getSmtpServer(), "smtp");
         setAuthForServer(session, config.getPop3Server(), "pop3");
         setAuthForServer(session, config.getImapServer(), "imap");
@@ -84,12 +101,23 @@ public class MailSessionService implements Service<Session> {
 
     private void setAuthForServer(final Session session, final MailSessionServer server, final String protocol) {
         if (server != null) {
+            final String host = String.class.cast(props.get(getHostKey(protocol)));
+            final int port = Integer.class.cast(props.get(getPortKey(protocol)));
             Credentials c = server.getCredentials();
-            URLName urlName = new URLName(protocol, server.getAddress(), server.getPort(), "", c != null ? c.getUsername() : null, c != null ? c.getPassword() : null);
+            URLName urlName = new URLName(protocol, host, port, "", c != null ? c.getUsername() : null, c != null ? c.getPassword() : null);
             if (c != null) {
                 session.setPasswordAuthentication(urlName, new PasswordAuthentication(c.getUsername(), c.getPassword()));
             }
         }
+    }
+
+    private InetSocketAddress getServerSocketAddress(MailSessionServer server) throws StartException {
+        final String ref = server.getOutgoingSocketBinding();
+        final OutboundSocketBinding binding = socketBindings.get(ref);
+        if (ref == null) {
+            throw MailMessages.MESSAGES.outboundSocketBindingNotAvailable(ref);
+        }
+        return new InetSocketAddress(binding.getDestinationAddress(), binding.getDestinationPort());
     }
 
 
@@ -97,6 +125,13 @@ public class MailSessionService implements Service<Session> {
         final Session session = Session.getInstance(props);
         setAuthentication(session);
         return session;
+    }
 
+    private static String getHostKey(final String protocol) {
+        return new StringBuilder("mail.").append(protocol).append(".host").toString();
+    }
+
+    private static String getPortKey(final String protocol) {
+        return new StringBuilder("mail.").append(protocol).append(".port").toString();
     }
 }

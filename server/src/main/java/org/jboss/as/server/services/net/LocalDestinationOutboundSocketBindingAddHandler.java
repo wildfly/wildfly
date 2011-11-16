@@ -81,9 +81,6 @@ public class LocalDestinationOutboundSocketBindingAddHandler extends AbstractAdd
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
 
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final String outboundSocketBindingName = address.getLastElement().getValue();
-        model.get(ModelDescriptionConstants.NAME).set(outboundSocketBindingName);
         model.get(ModelDescriptionConstants.SOCKET_BINDING_REF).set(operation.get(ModelDescriptionConstants.SOCKET_BINDING_REF));
         if (operation.hasDefined(ModelDescriptionConstants.SOURCE_INTERFACE)) {
             model.get(ModelDescriptionConstants.SOURCE_INTERFACE).set(operation.get(ModelDescriptionConstants.SOURCE_INTERFACE));
@@ -101,7 +98,8 @@ public class LocalDestinationOutboundSocketBindingAddHandler extends AbstractAdd
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
                                   final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> serviceControllers) throws OperationFailedException {
 
-        final String outboundSocketName = model.get(ModelDescriptionConstants.NAME).asString();
+        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        final String outboundSocketName = address.getLastElement().getValue();
         final ServiceController<OutboundSocketBinding> outboundSocketBindingServiceController;
         try {
             outboundSocketBindingServiceController = this.installOutboundSocketBindingService(context, model, outboundSocketName);
