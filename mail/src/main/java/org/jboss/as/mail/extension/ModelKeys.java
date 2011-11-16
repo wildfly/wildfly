@@ -16,6 +16,7 @@ public class ModelKeys {
     static final String DEBUG = "debug";
     static final String SERVER_ADDRESS = "address";
     static final String SERVER_PORT = "port";
+    static final String OUTGOING_SOCKET_BINDING_REF = "outgoing-socket-binding-ref";
     static final String CREDENTIALS= "credentials";
 
 

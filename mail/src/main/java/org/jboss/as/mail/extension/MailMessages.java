@@ -22,8 +22,11 @@
 
 package org.jboss.as.mail.extension;
 
+import org.jboss.logging.Cause;
+import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
+import org.jboss.msc.service.StartException;
 
 /**
  * Date: 05.11.2011
@@ -37,4 +40,15 @@ interface MailMessages {
      * The messages
      */
     MailMessages MESSAGES = Messages.getBundle(MailMessages.class);
+
+    /**
+     * Creates an exception indicating the outgoing socket binding, represented by the {@code outgoingSocketBindingRef}
+     * parameter, could not be found.
+     *
+     * @param outgoingSocketBindingRef the name of the socket binding configuration.
+     *
+     * @return a {@link StartException} for the error.
+     */
+    @Message(id = 15450, value = "No outbound socket binding configuration '%s' is available.")
+    StartException outboundSocketBindingNotAvailable(String outgoingSocketBindingRef);
 }
