@@ -69,9 +69,9 @@ public class EjbManagementDeploymentUnitProcessor implements DeploymentUnitProce
         }
 
         // Iterate through each component, installing it into the container
-        for (ComponentConfiguration configuration : moduleDescription.getComponentConfigurations()) {
+        for (final ComponentConfiguration configuration : moduleDescription.getComponentConfigurations()) {
             try {
-                ComponentDescription componentDescription = configuration.getComponentDescription();
+                final ComponentDescription componentDescription = configuration.getComponentDescription();
                 if (componentDescription instanceof EJBComponentDescription) {
                     installManagementResource(configuration, deploymentUnit);
                 }
@@ -103,7 +103,7 @@ public class EjbManagementDeploymentUnitProcessor implements DeploymentUnitProce
         final EJBComponentType type = EJBComponentType.getComponentType(configuration);
         PathAddress addr = getComponentAddress(type, configuration, deploymentUnit);
         final AbstractEJBComponentRuntimeHandler handler = type.getRuntimeHandler();
-        handler.registerComponent(addr, configuration);
+        handler.registerComponent(addr, configuration.getComponentDescription().getStartServiceName());
         deploymentUnit.addToAttachmentList(EjbDeploymentAttachmentKeys.MANAGED_COMPONENTS, new InstalledComponent(type, addr));
         deploymentUnit.createDeploymentSubModel(EJB3Extension.SUBSYSTEM_NAME, addr.getLastElement());
     }

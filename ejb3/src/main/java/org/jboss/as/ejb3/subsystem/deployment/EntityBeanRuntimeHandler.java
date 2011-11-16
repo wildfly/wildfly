@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.subsystem.deployment;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponent;
 
@@ -42,8 +41,8 @@ public class EntityBeanRuntimeHandler extends AbstractEJBComponentRuntimeHandler
     }
 
     @Override
-    protected void executeReadAttribute(String attributeName, OperationContext context, EntityBeanComponent component, ComponentConfiguration config, PathAddress address) {
-        super.executeReadAttribute(attributeName, context, component, config, address);
+    protected void executeReadAttribute(String attributeName, OperationContext context, EntityBeanComponent component, PathAddress address) {
+        super.executeReadAttribute(attributeName, context, component,  address);
         //TODO expose the cache
     }
 }

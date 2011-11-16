@@ -22,16 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem.deployment;
 
-import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.COMPONENT_CLASS_NAME;
-import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.DECLARED_ROLES;
-import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_AVAILABLE_COUNT;
-import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_CREATE_COUNT;
-import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_CURRENT_SIZE;
-import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_MAX_SIZE;
-import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_REMOVE_COUNT;
-import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.RUN_AS_ROLE;
-import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.SECURITY_DOMAIN;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,7 +35,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
@@ -54,6 +43,16 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
+import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.COMPONENT_CLASS_NAME;
+import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.DECLARED_ROLES;
+import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_AVAILABLE_COUNT;
+import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_CREATE_COUNT;
+import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_CURRENT_SIZE;
+import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_MAX_SIZE;
+import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_REMOVE_COUNT;
+import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.RUN_AS_ROLE;
+import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.SECURITY_DOMAIN;
+
 /**
  * Base class for operation handlers that provide runtime management for {@link EJBComponent}s.
  *
@@ -61,7 +60,7 @@ import org.jboss.msc.service.ServiceRegistry;
  */
 public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent> extends AbstractRuntimeOnlyHandler {
 
-    private final Map<PathAddress, ComponentConfiguration> componentConfigs = Collections.synchronizedMap(new HashMap<PathAddress, ComponentConfiguration>());
+    private final Map<PathAddress, ServiceName> componentConfigs = Collections.synchronizedMap(new HashMap<PathAddress, ServiceName>());
 
     private final Class<T> componentClass;
     private final EJBComponentType componentType;
@@ -76,31 +75,30 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
         String opName = operation.require(ModelDescriptionConstants.OP).asString();
         boolean forWrite = isForWrite(opName);
         PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
-        ComponentConfiguration config = getComponentConfiguration(address);
-        T component = getComponent(config, address, context, forWrite);
+        final ServiceName serviceName = getComponentConfiguration(address);
+        T component = getComponent(serviceName, address, context, forWrite);
 
         if (ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION.equals(opName)) {
             final String attributeName = operation.require(ModelDescriptionConstants.NAME).asString();
-            executeReadAttribute(attributeName, context, component, config, address);
+            executeReadAttribute(attributeName, context, component,  address);
             context.completeStep();
         } else if (ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION.equals(opName)) {
             final String attributeName = operation.require(ModelDescriptionConstants.NAME).asString();
-            executeWriteAttribute(attributeName, context, operation, component, config, address);
+            executeWriteAttribute(attributeName, context, operation, component, address);
         } else {
-            executeAgainstComponent(context, operation, component, config, opName, address);
+            executeAgainstComponent(context, operation, component,  opName, address);
         }
     }
 
-    public void registerComponent(final PathAddress address, final ComponentConfiguration configuration) {
-        componentConfigs.put(address, configuration);
+    public void registerComponent(final PathAddress address, final ServiceName serviceName) {
+        componentConfigs.put(address, serviceName);
     }
 
     public void unregisterComponent(final PathAddress address) {
         componentConfigs.remove(address);
     }
 
-    protected void executeReadAttribute(String attributeName, OperationContext context, T component,
-                                        ComponentConfiguration config, PathAddress address) {
+    protected void executeReadAttribute(final String attributeName, final OperationContext context, final T component, final PathAddress address) {
         final boolean hasPool = componentType.hasPool();
         if (COMPONENT_CLASS_NAME.getName().equals(attributeName)) {
             context.getResult().set(component.getComponentName());
@@ -152,7 +150,7 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
     }
 
     protected void executeWriteAttribute(String attributeName, OperationContext context, ModelNode operation, T component,
-                                        ComponentConfiguration config, PathAddress address) throws OperationFailedException {
+                                         PathAddress address) throws OperationFailedException {
         if (componentType.hasPool() && POOL_MAX_SIZE.getName().equals(attributeName)) {
             int newSize = POOL_MAX_SIZE.resolveModelAttribute(context, operation).asInt();
             Pool<?> pool = componentType.getPool(component);
@@ -167,8 +165,7 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
         }
     }
 
-    protected void executeAgainstComponent(OperationContext context, ModelNode operation, T component,
-                                           ComponentConfiguration componentConfiguration, String opName, PathAddress address) throws OperationFailedException {
+    protected void executeAgainstComponent(OperationContext context, ModelNode operation, T component, String opName, PathAddress address) throws OperationFailedException {
         throw unknownOperation(opName);
     }
 
@@ -190,9 +187,9 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
         }
     }
 
-    private ComponentConfiguration getComponentConfiguration(final PathAddress operationAddress) throws OperationFailedException {
+    private ServiceName getComponentConfiguration(final PathAddress operationAddress) throws OperationFailedException {
 
-        List<PathElement> relativeAddress = new ArrayList<PathElement>();
+        final List<PathElement> relativeAddress = new ArrayList<PathElement>();
         for (int i = operationAddress.size() - 1; i >= 0; i--) {
             PathElement pe = operationAddress.getElement(i);
             relativeAddress.add(0, pe);
@@ -201,8 +198,8 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
             }
         }
 
-        PathAddress pa = PathAddress.pathAddress(relativeAddress);
-        ComponentConfiguration config = componentConfigs.get(pa);
+        final PathAddress pa = PathAddress.pathAddress(relativeAddress);
+        final ServiceName config = componentConfigs.get(pa);
         if (config == null) {
             throw new OperationFailedException(new ModelNode().set(String.format("No EJB component registered for address %s", operationAddress)));
         }
@@ -210,12 +207,11 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
         return config;
     }
 
-    private T getComponent(final ComponentConfiguration config, final PathAddress operationAddress,
+    private T getComponent(final ServiceName serviceName, final PathAddress operationAddress,
                            final OperationContext context, final boolean forWrite) throws OperationFailedException {
 
-        ServiceName createServiceName = config.getComponentDescription().getCreateServiceName();
         ServiceRegistry registry = context.getServiceRegistry(forWrite);
-        ServiceController<?> controller = registry.getService(createServiceName);
+        ServiceController<?> controller = registry.getService(serviceName);
         if (controller == null) {
             throw new OperationFailedException(new ModelNode().set(String.format("No EJB component is available for address %s", operationAddress)));
         }
