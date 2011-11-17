@@ -52,6 +52,16 @@
                 <module>group-iiop</module>
             </modules>
         </profile>
+        <profile>
+            <id>ts.integ.allGroups2</id>
+            <activation><property><name>ts.integration</name></property></activation>
+            <modules>
+                <module>group-smoke</module>
+                <module>group-basic</module>
+                <module>group-clust</module>
+                <module>group-iiop</module>
+            </modules>
+        </profile>
 
         <!-- -Dts.smoke -->
         <profile>
@@ -218,6 +228,12 @@
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-webservices-tests-integration</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-subsystem-test</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>

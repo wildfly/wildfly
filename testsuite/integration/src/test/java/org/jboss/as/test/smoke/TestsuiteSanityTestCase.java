@@ -15,11 +15,13 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class TestsuiteSanityTestCase {
+		
+		private static final String[] EXPECTED_PROPS = new String[]{"jbossas.ts.submodule.dir", "jbossas.ts.integ.dir", "jbossas.ts.dir", "jbossas.project.dir", "jboss.dist", "jboss.inst"};
 
 		@Test
 		public void testSystemProperties() throws Exception {
 
-				for( String var : new String[]{"jbossas.ts.module.dir", "jbossas.ts.integ.dir", "jbossas.ts.dir", "jbossas.project.dir", "jboss.dist", "jboss.inst"} ){
+				for( String var : EXPECTED_PROPS ){
 						String path = System.getProperty( var );
 						Assert.assertNotNull("Property " + var + " is not set (in container).", path);
 						System.out.println(":: " + var + " == " + path);
@@ -33,7 +35,7 @@ public class TestsuiteSanityTestCase {
 		@RunAsClient
 		public void testSystemPropertiesClient() throws Exception {
 
-				for( String var : new String[]{"jbossas.ts.module.dir", "jbossas.ts.integ.dir", "jbossas.ts.dir", "jbossas.project.dir", "jboss.dist", "jboss.inst"} ){
+				for( String var : EXPECTED_PROPS ){
 						String path = System.getProperty( var );
 						Assert.assertNotNull("Property " + var + " is not set (outside container).", path);
 						System.out.println(":: " + var + " == " + path);
