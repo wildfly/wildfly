@@ -161,7 +161,8 @@ public class ServerControllerModelUtil {
                                       final ExtensibleConfigurationPersister extensibleConfigurationPersister,
                                       final ServerEnvironment serverEnvironment,
                                       final ControlledProcessState processState,
-                                      final RuntimeVaultReader vaultReader) {
+                                      final RuntimeVaultReader vaultReader,
+                                      final boolean parallelBoot) {
         // Build up the core model registry
         root.registerReadWriteAttribute(NAME, null, new StringLengthValidatingHandler(1), AttributeAccess.Storage.CONFIGURATION);
 
@@ -296,7 +297,7 @@ public class ServerControllerModelUtil {
         // Extensions
         ManagementResourceRegistration extensions = root.registerSubModel(PathElement.pathElement(EXTENSION), CommonProviders.EXTENSION_PROVIDER);
         ExtensionContext extensionContext = new ExtensionContextImpl(root, deployments, extensibleConfigurationPersister, getProcessType(serverEnvironment));
-        ExtensionAddHandler addExtensionHandler = new ExtensionAddHandler(extensionContext);
+        ExtensionAddHandler addExtensionHandler = new ExtensionAddHandler(extensionContext, parallelBoot);
         extensions.registerOperationHandler(ExtensionAddHandler.OPERATION_NAME, addExtensionHandler, addExtensionHandler, false);
         extensions.registerOperationHandler(ExtensionRemoveHandler.OPERATION_NAME, ExtensionRemoveHandler.INSTANCE, ExtensionRemoveHandler.INSTANCE, false);
 

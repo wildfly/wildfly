@@ -188,7 +188,7 @@ public class InterleavedSubsystemTestCase {
                 public ProcessType getProcessType() {
                     throw new UnsupportedOperationException("Test should not invoke this");
                 }
-            });
+            }, false);
             this.rootRegistration = rootRegistration;
         }
 

@@ -55,15 +55,17 @@ public class ExtensionAddHandler extends AbstractAddStepHandler implements Descr
     }
 
     private final ExtensionContext extensionContext;
+    private final boolean parallelBoot;
 
     /**
      * Create the AbstractAddExtensionHandler
      */
-    public ExtensionAddHandler(final ExtensionContext extensionContext) {
+    public ExtensionAddHandler(final ExtensionContext extensionContext, final boolean parallelBoot) {
         if (extensionContext == null) {
             throw MESSAGES.nullVar("extensionContext");
         }
         this.extensionContext = extensionContext;
+        this.parallelBoot = parallelBoot;
     }
 
     protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
@@ -71,7 +73,7 @@ public class ExtensionAddHandler extends AbstractAddStepHandler implements Descr
         String module = address.getLastElement().getValue();
         resource.getModel().get(ExtensionDescription.MODULE).set(module);
 
-        if (!context.isBooting()) {
+        if (!parallelBoot || !context.isBooting()) {
             initializeExtension(module);
         }
     }

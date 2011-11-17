@@ -463,7 +463,7 @@ public class ParseAndMarshalModelsTestCase {
         final ModelController controller = createController(model, new Setup() {
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
                 ServerControllerModelUtil.updateCoreModel(model);
-                ServerControllerModelUtil.initOperations(rootRegistration, null, persister, null, null, null);
+                ServerControllerModelUtil.initOperations(rootRegistration, null, persister, null, null, null, false);
             }
         });
 
@@ -532,7 +532,7 @@ public class ParseAndMarshalModelsTestCase {
                 //Extensions
                 ManagementResourceRegistration extensions = hostRegistration.registerSubModel(PathElement.pathElement(EXTENSION), CommonProviders.EXTENSION_PROVIDER);
                 ExtensionContext extensionContext = new ExtensionContextImpl(hostRegistration, null, persister, ExtensionContext.ProcessType.STANDALONE_SERVER);
-                ExtensionAddHandler addExtensionHandler = new ExtensionAddHandler(extensionContext);
+                ExtensionAddHandler addExtensionHandler = new ExtensionAddHandler(extensionContext, false);
                 extensions.registerOperationHandler(ExtensionAddHandler.OPERATION_NAME, addExtensionHandler, addExtensionHandler, false);
 
                 // Jvms

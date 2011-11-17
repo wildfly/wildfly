@@ -227,7 +227,7 @@ public class ServerControllerUnitTestCase {
             Properties properties = new Properties();
             properties.put("jboss.home.dir", ".");
             final ServerEnvironment environment = new ServerEnvironment(properties, new HashMap<String, String>(), null, ServerEnvironment.LaunchType.DOMAIN);
-            ServerControllerModelUtil.initOperations(rootRegistration, null, persister, environment, processState, null);
+            ServerControllerModelUtil.initOperations(rootRegistration, null, persister, environment, processState, null, false);
         }
 
         @Override
