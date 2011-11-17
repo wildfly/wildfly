@@ -93,6 +93,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDCONNE
 import static org.jboss.as.connector.subsystems.datasources.Constants.WRAP_XA_RESOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCECLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTY_VALUE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_RESOURCE_TIMEOUT;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_CONNECTION_PROPERTIES_DESC;
@@ -131,6 +132,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 
 import java.util.LinkedList;
@@ -759,6 +761,19 @@ public class DataSourcesExtension implements Extension {
 
                     addOperation.get(DATASOURCE_DRIVER.getName()).set(dataSourceProp.getValue().get(DATASOURCE_DRIVER.getName()));
                     result.add(addOperation);
+
+                    if (dataSource.hasDefined(CONNECTION_PROPERTIES.getName())) {
+                        for (final Property prop : dataSource.get(CONNECTION_PROPERTIES.getName()).asPropertyList()) {
+                            final ModelNode propAdrress = address.clone();
+
+                            propAdrress.add(CONNECTION_PROPERTIES.getName(), prop.getName());
+                            final ModelNode addPropOperation = Util.getEmptyOperation(ADD, propAdrress);
+                            addPropOperation.get(CONNECTION_PROPERTIES.getName()).set(prop.getValue().get(VALUE).asString());
+                            result.add(addPropOperation);
+                        }
+
+                    }
+
                     if (! dataSource.hasDefined(ENABLED.getName()) || dataSource.get(ENABLED.getName()).asBoolean()) {
                         final ModelNode enableOperation = new ModelNode();
                         enableOperation.get(OP).set(ENABLE);
@@ -780,6 +795,18 @@ public class DataSourcesExtension implements Extension {
 
                     addOperation.get(DATASOURCE_DRIVER.getName()).set(dataSourceProp.getValue().get(DATASOURCE_DRIVER.getName()));
                     result.add(addOperation);
+
+                    if (dataSource.hasDefined(XADATASOURCE_PROPERTIES.getName())) {
+                        for (final Property prop : dataSource.get(XADATASOURCE_PROPERTIES.getName()).asPropertyList()) {
+                            final ModelNode propAdrress = address.clone();
+
+                            propAdrress.add(XADATASOURCE_PROPERTIES.getName(), prop.getName());
+                            final ModelNode addPropOperation = Util.getEmptyOperation(ADD, propAdrress);
+                            addPropOperation.get(XADATASOURCE_PROPERTY_VALUE.getName()).set(prop.getValue().get(VALUE).asString());
+                            result.add(addPropOperation);
+                        }
+
+                    }
 
                     if (! dataSource.hasDefined(ENABLED.getName()) || dataSource.get(ENABLED.getName()).asBoolean()) {
                         final ModelNode enableOperation = new ModelNode();
