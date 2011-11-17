@@ -110,10 +110,13 @@ public final class JAXRBootstrapService extends AbstractService<Void> {
                 bindJAXRConnectionFactory(context);
             }
             if (config.isDropOnStart()) {
-                runDrop();
+                log.debug("Drop juddi tables on start");
+                locateAndRunScript("juddi_drop_db.ddl");
             }
             if (config.isCreateOnStart()) {
-                runCreate();
+                log.debug("Create juddi tables on start");
+                locateAndRunScript("juddi_create_db.ddl");
+                locateAndRunScript("juddi_data.ddl");
             }
         } catch (Exception ex) {
             log.errorf(ex, "Cannot start JUDDI service");
@@ -127,7 +130,8 @@ public final class JAXRBootstrapService extends AbstractService<Void> {
             unbindJAXRConnectionFactory(context);
             if (config.isDropOnStop()) {
                 try {
-                    runDrop();
+                    log.debug("Drop juddi tables on sop");
+                    locateAndRunScript("juddi_drop_db.ddl");
                 } catch (SQLException ex) {
                     // [TODO] AS7-2572 Cannot run JAXR drop tables script on shutdown
                     log.errorf("Cannot drop JAXR tables: %s", ex);
@@ -136,18 +140,6 @@ public final class JAXRBootstrapService extends AbstractService<Void> {
         } catch (Exception ex) {
             log.errorf(ex, "Failure stopping JUDDI service");
         }
-    }
-
-    private void runDrop() throws SQLException, IOException {
-        log.debug("JAXRBootstrapService: Inside runDrop");
-        locateAndRunScript("juddi_drop_db.ddl");
-        log.debug("JAXRBootstrapService: Exit runDrop");
-    }
-
-    private void runCreate() throws SQLException, IOException {
-        log.debug("JAXRBootstrapService: Inside runCreate");
-        locateAndRunScript("juddi_create_db.ddl");
-        locateAndRunScript("juddi_data.ddl");
     }
 
     private void locateAndRunScript(String name) throws SQLException, IOException {
@@ -165,63 +157,38 @@ public final class JAXRBootstrapService extends AbstractService<Void> {
     }
 
     private void runScript(InputStream stream) throws SQLException, IOException {
-        boolean firstError = true;
         BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-        Connection connection = null;
+        Connection connection = datasource.getConnection();
+        if (connection == null) {
+            log.errorf("Cannot obtain connection");
+            return;
+        }
         try {
-            connection = datasource.getConnection();
-            if (connection == null) {
-                log.errorf("Cannot obtain connection");
-                return;
-            }
-            Statement statement = connection.createStatement();
-            try {
-                String nextStatement = "";
-                String nextLine;
-                while ((nextLine = reader.readLine()) != null) {
-                    log.debug("Statement Obtained=" + nextLine);
-                    nextLine = nextLine.trim();
-                    if (nextLine.indexOf("--") != -1)
-                        continue;
-                    int semicolon = nextLine.indexOf(";");
-                    if (semicolon != -1) {
-                        nextStatement += nextLine.substring(0, semicolon);
-                        try {
-                            log.debug("Statement to execute:" + nextStatement);
-                            statement.execute(nextStatement);
-                        } catch (SQLException e) {
-                            String err = "Could not execute a statement of juddi script::";
-
-                            if (firstError) {
-                                log.debug(err + e.getLocalizedMessage() + " " + nextStatement);
-                                log.debug("Your settings are:dropOnStart =" + config.isDropOnStart() + ";createOnStart =" + config.isCreateOnStart());
-                                log.debug("dropOnStop = " + config.isDropOnStop());
-
-                                firstError = false;
-                            }
-                        }
-                        nextStatement = nextLine.substring(semicolon + 1);
-                    } else {
-                        nextStatement += nextLine;
-                    }
+            String nextLine;
+            StringBuffer nextStatement = new StringBuffer();
+            while ((nextLine = reader.readLine()) != null) {
+                nextLine = nextLine.trim();
+                if (nextLine.startsWith("--")) {
+                    continue;
                 }
-                if (!nextStatement.equals("")) {
+                nextStatement.append(nextLine);
+                if (nextLine.endsWith(";")) {
+                    String sqlStatement = nextStatement.substring(0, nextStatement.indexOf(";"));
+                    log.debugf("Statement to execute: '%s'", sqlStatement);
                     try {
-                        log.debug("Statement to execute:" + nextStatement);
-                        statement.execute(nextStatement);
+                        Statement statement = connection.createStatement();
+                        statement.execute(sqlStatement);
+                        statement.close();
                     } catch (SQLException e) {
-                        log.debug("Could not execute last statement of a juddi init script: " + e.getLocalizedMessage());
-                        log.debug("Your settings are:dropOnStart =" + config.isDropOnStart() + ";createOnStart =" + config.isCreateOnStart());
-                        log.debug("dropOnStop = " + config.isDropOnStop());
+                        String msg = "Could not execute statement: %s";
+                        log.errorf(msg, e.getLocalizedMessage());
+                    } finally {
+                        nextStatement = new StringBuffer();
                     }
                 }
-            } finally {
-                if (statement != null)
-                    statement.close();
             }
         } finally {
-            if (connection != null)
-                connection.close();
+            connection.close();
         }
     }
 
