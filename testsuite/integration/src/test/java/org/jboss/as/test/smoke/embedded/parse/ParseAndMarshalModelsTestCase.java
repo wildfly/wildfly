@@ -724,8 +724,7 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     private File getLegacyConfigFile(String type, final String profile) {
-        File f = new File(".").getAbsoluteFile();
-        f = f.getParentFile();
+				File f = new File( System.getProperty("jbossas.ts.integ.dir") );
         Assert.assertTrue(f.exists());
         f = new File(f, "src");
         Assert.assertTrue("Not found: " + f.getPath(), f.exists());
