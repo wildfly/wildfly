@@ -71,6 +71,8 @@ public class PropertiesCallbackHandler implements Service<DomainCallbackHandler>
     private static final Class[] DIGEST_CALLBACKS = {AuthorizeCallback.class, RealmCallback.class,
             NameCallback.class, DigestHashCallback.class};
 
+    private static final String DOLLAR_LOCAL = "$local";
+
     private final Class[] supportedCallbacks;
 
     private final String realm;
@@ -240,18 +242,30 @@ public class PropertiesCallbackHandler implements Service<DomainCallbackHandler>
         return supportedCallbacks;
     }
 
+    @Override
+    public boolean isReady() {
+        Properties users;
+        try {
+            users = getUsersProperties();
+        } catch (IOException e) {
+            return false;
+        }
+        return (users.size() > 0);
+    }
+
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
         List<Callback> toRespondTo = new LinkedList<Callback>();
 
         String userName = null;
         boolean userFound = false;
 
+        Properties users = getUsersProperties();
+
         // A single pass may be sufficient but by using a two pass approach the Callbackhandler will not
         // fail if an unexpected order is encountered.
 
         // First Pass - is to double check no unsupported callbacks and to retrieve
         // information from the callbacks passing in information.
-        Properties users = getUsersProperties();
         for (Callback current : callbacks) {
 
             if (current instanceof AuthorizeCallback) {

@@ -36,13 +36,14 @@ import static org.jboss.as.domain.http.server.Constants.HTTP;
 import static org.jboss.as.domain.http.server.Constants.HTTPS;
 import static org.jboss.as.domain.http.server.Constants.INTERNAL_SERVER_ERROR;
 import static org.jboss.as.domain.http.server.Constants.METHOD_NOT_ALLOWED;
+import static org.jboss.as.domain.http.server.Constants.OK;
 import static org.jboss.as.domain.http.server.Constants.OPTIONS;
 import static org.jboss.as.domain.http.server.Constants.ORIGIN;
-import static org.jboss.as.domain.http.server.Constants.OK;
 import static org.jboss.as.domain.http.server.Constants.POST;
 import static org.jboss.as.domain.http.server.Constants.TEXT_HTML;
 import static org.jboss.as.domain.http.server.Constants.US_ASCII;
 import static org.jboss.as.domain.http.server.Constants.UTF_8;
+import static org.jboss.as.domain.http.server.ErrorHandler.ERROR_CONTEXT;
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
 
@@ -514,6 +515,7 @@ class DomainApiHandler implements ManagementHttpHandler {
             } else if (BasicAuthenticator.requiredCallbacksSupported(supportedCallbacks)) {
                 context.setAuthenticator(new BasicAuthenticator(callbackHandler, securityRealm.getName()));
             }
+            context.getFilters().add(new RealmReadinessFilter(callbackHandler, ERROR_CONTEXT));
         }
     }
 

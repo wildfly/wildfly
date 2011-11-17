@@ -20,28 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.management.security;
+package org.jboss.as.domain.http.server;
 
-import javax.security.auth.callback.CallbackHandler;
+import org.jboss.modules.ModuleLoadException;
 
 /**
- * An extension of CallbackHandler to allow the supported callbacks to be identified.
+ * A simple handler to server up error pages with initial instructions if the security realm is not sufficiently configured.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public interface DomainCallbackHandler extends CallbackHandler {
+class ErrorHandler extends ResourceHandler {
 
-    // TODO - Switch to collections to clean up how these are checked and to introduce safety to prevent the 'set' from being modified.
-    Class[] getSupportedCallbacks();
+    private static final String INDEX_HTML = "index.html";
 
-    /**
-     * Is this DomainCallbackHanler ready for handling remote requests.
-     *
-     * To be used by the HTTP interface to display an error if the administrator
-     * has not completed the set-up of their AS installation.
-     *
-     * @return indication of if this is ready for remote requests.
-     */
-    boolean isReady();
+    private static final String ERROR_MODULE = "org.jboss.as.domain-http-error-context";
+    static final String ERROR_CONTEXT = "/error";
+    private static final String DEFAULT_RESOURCE = "/" + INDEX_HTML;
+
+    ErrorHandler() throws ModuleLoadException {
+        super(ERROR_CONTEXT, DEFAULT_RESOURCE, getClassLoader(ERROR_MODULE));
+    }
 
 }

@@ -84,6 +84,11 @@ public class UserDomainCallbackHandler implements Service<UserDomainCallbackHand
         return supportedCallbacks;
     }
 
+    @Override
+    public boolean isReady() {
+        return true;
+    }
+
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
         List<Callback> toRespondTo = new LinkedList<Callback>();
 

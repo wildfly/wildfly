@@ -62,6 +62,9 @@ import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.com.sun.net.httpserver.Headers;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpServer;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 
 /**
  * A generic handler to server up resources requested using a GET request.
@@ -76,7 +79,6 @@ class ResourceHandler implements ManagementHttpHandler {
 
     private static final String EXPIRES_HEADER = "Expires";
     private static final String LAST_MODIFIED_HEADER = "Last-Modified";
-    private static final String NOCACHE_JS = ".nocache.js";
     private static final String GMT = "GMT";
     private static final String CACHE_CONTROL_HEADER = "Cache-Control";
     private static final String CONTENT_LENGTH_HEADER = "Content-Length";
@@ -153,10 +155,8 @@ class ResourceHandler implements ManagementHttpHandler {
             final Headers responseHeaders = http.getResponseHeaders();
             responseHeaders.add(CONTENT_TYPE, resolveContentType(path));
 
-            boolean skipcache = resource.endsWith(NOCACHE_JS);
-
             // provide the ability to cache GWT artifacts
-            if(!skipcache){
+            if(!skipCache(resource)){
 
                 if(System.currentTimeMillis()>lastExpiryDate) {
                     lastExpiryDate = calculateExpiryDate();
@@ -298,6 +298,17 @@ class ResourceHandler implements ManagementHttpHandler {
 
     public void stop(HttpServer httpServer) {
         httpServer.removeContext(context);
+    }
+
+    protected static ClassLoader getClassLoader(final String module) throws ModuleLoadException {
+        ModuleIdentifier id = ModuleIdentifier.fromString(module);
+        ClassLoader cl = Module.getCallerModuleLoader().loadModule(id).getClassLoader();
+
+        return cl;
+    }
+
+    protected boolean skipCache(String resource) {
+        return false;
     }
 
     class ResourceHandle {

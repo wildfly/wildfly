@@ -21,26 +21,25 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<project
-    xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
+        <artifactId>jboss-as-domain-http</artifactId>
         <version>7.1.0.Alpha2-SNAPSHOT</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-domain-http</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>jboss-as-domain-http-error-context</artifactId>
 
-    <name>JBoss Application Server: Domain HTTP Interface</name>
+    <name>JBoss Application Server: Domain HTTP Error Context</name>
 
-    <modules>
-        <module>interface</module>
-        <module>error-context</module>
-    </modules>
+    <build>
+    </build>
+
+    <dependencies>
+    </dependencies>
 </project>

@@ -162,6 +162,7 @@ public class ManagementHttpServer {
 
         try {
             managementHttpServer.addHandler(new ConsoleHandler());
+            managementHttpServer.addHandler(new ErrorHandler());
         } catch (ModuleLoadException e) {
             throw new IOException("Unable to load resource handler", e);
         }
