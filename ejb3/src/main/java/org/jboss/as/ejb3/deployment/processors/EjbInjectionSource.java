@@ -22,8 +22,6 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
-import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
-
 import java.util.Set;
 
 import org.jboss.as.ee.component.ComponentView;
@@ -45,6 +43,8 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+
+import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
 
 /**
  * Implementation of {@link InjectionSource} responsible for finding a specific bean instance with a bean name and interface.
@@ -83,9 +83,7 @@ public class EjbInjectionSource extends InjectionSource {
     }
 
     public void resolve(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final Set<ViewDescription> componentsForViewName = getViews(phaseContext);
-        //we cannot be sure that this injection will actually be used, so we wait until getResourceValue is called to throw an exception
         if (componentsForViewName.isEmpty()) {
             error = "No component found for type '" + typeName + "' with name " + beanName;
             return ;

@@ -185,6 +185,16 @@ public class ModuleSpecification extends SimpleAttachable {
         return Collections.unmodifiableList(userDependencies);
     }
 
+    /**
+     * Gets a modifiable view of the user dependencies list.
+     *
+     * @return The user dependencies
+     */
+    public List<ModuleDependency> getMutableUserDependencies() {
+        allDependencies = null;
+        return userDependencies;
+    }
+
     public void addResourceLoader(final ResourceLoaderSpec resourceLoader) {
         this.resourceLoaders.add(resourceLoader);
     }

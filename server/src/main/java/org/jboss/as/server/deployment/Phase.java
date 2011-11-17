@@ -290,9 +290,9 @@ public enum Phase {
     public static final int DEPENDENCIES_GLOBAL_MODULES                 = 0x1100;
     public static final int DEPENDENCIES_JDK                            = 0x1200;
     public static final int DEPENDENCIES_JACORB                         = 0x1300;
-    public static final int DEPENDENCIES_APPLICATION_CLIENT             = 0x1400;
     public static final int DEPENDENCIES_CMP                            = 0x1500;
-    //these must be last
+    //these must be last, and in this specific order
+    public static final int DEPENDENCIES_APPLICATION_CLIENT             = 0x1600;
     public static final int DEPENDENCIES_VISIBLE_MODULES                = 0x1700;
     public static final int DEPENDENCIES_EE_CLASS_DESCRIPTIONS          = 0x1800;
 

@@ -21,6 +21,10 @@
  */
 package org.jboss.as.appclient.deployment;
 
+import java.util.HashSet;
+import java.util.ListIterator;
+import java.util.Set;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -28,11 +32,18 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
+import org.jboss.as.server.moduleservice.ExtensionIndexService;
+import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
 /**
- * DUP that builds a module out of app client additional classes
+ * DUP that handles app client dependencies.
+ *
+ * This DUP is quite unusual, as it will also remove dependencies if they refer to
+ * dependencies that are not accisible to the application client. This allows a server
+ * side deployment to reference another module, while still allowing the app client to
+ * function when that additional deployment is not present.
  *
  * @author Stuart Douglas
  */
@@ -54,10 +65,24 @@ public class ApplicationClientDependencyProcessor implements DeploymentUnitProce
 
         moduleSpecification.addSystemDependency(new ModuleDependency(loader, CORBA_ID, false, true, true));
 
+        final Set<ModuleIdentifier> moduleIdentifiers = new HashSet<ModuleIdentifier>();
+        final DeploymentUnit top = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
 
-        Boolean activate = deploymentUnit.getAttachment(AppClientAttachments.START_APP_CLIENT);
-        if (activate == null || !activate) {
-            return;
+        moduleIdentifiers.add(top.getAttachment(Attachments.MODULE_IDENTIFIER));
+        for(final DeploymentUnit module : top.getAttachmentList(Attachments.SUB_DEPLOYMENTS)) {
+            moduleIdentifiers.add(module.getAttachment(Attachments.MODULE_IDENTIFIER));
+        }
+
+        final ListIterator<ModuleDependency> iterator = moduleSpecification.getMutableUserDependencies().listIterator();
+        while (iterator.hasNext()) {
+            final ModuleDependency dep = iterator.next();
+            final ModuleIdentifier identifier = dep.getIdentifier();
+            if(identifier.getName().startsWith(ServiceModuleLoader.MODULE_PREFIX) &&
+                   !identifier.getName().startsWith(ExtensionIndexService.MODULE_PREFIX)) {
+                if(!moduleIdentifiers.contains(identifier)) {
+                    iterator.remove();
+                }
+            }
         }
     }
 

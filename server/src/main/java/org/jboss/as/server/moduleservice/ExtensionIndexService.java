@@ -60,6 +60,7 @@ import org.jboss.vfs.VFSUtils;
  */
 public final class ExtensionIndexService implements Service<ExtensionIndex>, ExtensionIndex {
     private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment.module.extension-index");
+    public static final String MODULE_PREFIX = ServiceModuleLoader.MODULE_PREFIX + "extension.";
 
     private final File[] extensionRoots;
     private final Map<String, Set<ExtensionJar>> extensions = new HashMap<String, Set<ExtensionJar>>();
@@ -223,8 +224,7 @@ public final class ExtensionIndexService implements Service<ExtensionIndex>, Ext
     public static ModuleIdentifier moduleIdentifier(final String name, final String minSpecVersion,
             final String minImplVersion, final String requiredVendorId) {
         StringBuilder nameBuilder = new StringBuilder();
-        nameBuilder.append(ServiceModuleLoader.MODULE_PREFIX);
-        nameBuilder.append("extension.");
+        nameBuilder.append(MODULE_PREFIX);
         nameBuilder.append(name);
         if (minSpecVersion != null) {
             nameBuilder.append(".spec-");
