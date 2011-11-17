@@ -70,13 +70,15 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
     private boolean coordinatorEnableStatistics;
     private int coordinatorDefaultTimeout;
     private final boolean jts;
+    private final String nodeIdentifier;
 
     public ArjunaTransactionManagerService(final boolean coordinatorEnableStatistics, final int coordinatorDefaultTimeout,
-                                    final boolean transactionStatusManagerEnable, final boolean jts) {
+                                    final boolean transactionStatusManagerEnable, final boolean jts, final String nodeIdentifier) {
         this.coordinatorEnableStatistics = coordinatorEnableStatistics;
         this.coordinatorDefaultTimeout = coordinatorDefaultTimeout;
         this.transactionStatusManagerEnable = transactionStatusManagerEnable;
         this.jts = jts;
+        this.nodeIdentifier = nodeIdentifier;
     }
 
     @Override
@@ -84,7 +86,7 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
 
         final JTAEnvironmentBean jtaEnvironmentBean = jtaPropertyManager.getJTAEnvironmentBean();
         jtaEnvironmentBean.setLastResourceOptimisationInterfaceClassName(LastResource.class.getName());
-        jtaEnvironmentBean.setXaRecoveryNodes(Collections.singletonList("1"));
+        jtaEnvironmentBean.setXaRecoveryNodes(Collections.singletonList(nodeIdentifier));
         jtaEnvironmentBean.setXaResourceOrphanFilterClassNames(Arrays.asList(JTATransactionLogXAResourceOrphanFilter.class.getName(), JTANodeNameXAResourceOrphanFilter.class.getName()));
         jtaEnvironmentBean.setXAResourceRecordWrappingPlugin(new com.arjuna.ats.internal.jbossatx.jta.XAResourceRecordWrappingPluginImpl());
 
