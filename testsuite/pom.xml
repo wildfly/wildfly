@@ -385,8 +385,6 @@
                 </configuration>
             </plugin>
             
-            <!-- ***  Reporting  *** -->
-            
             <!-- Disable default site run. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -395,11 +393,12 @@
                 <executions><execution><id>default-site</id><phase>none</phase></execution></executions>
             </plugin>
                 
-            <!-- Run the reporting tool. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions combine.self="override">
+                    
+                    <!-- Run the reporting tool. -->
                     <execution>
                         <id>reporting</id>
                         <phase>site</phase>
@@ -418,6 +417,21 @@
                             </target>
                         </configuration>
                     </execution>
+                    
+                    <!-- Help banner. -->
+                    <execution>
+                        <id>banner</id>
+                        <phase>initialize</phase>
+                        <goals><goal>run</goal></goals>
+                        <inherited>false</inherited>
+                        <configuration>
+                            <target>
+                                <loadfile property="help.banner" srcFile="${basedir}/tools/help-banner.txt"/>
+                                <echo>${help.banner}</echo>
+                            </target>
+                        </configuration>
+                    </execution>
+                    
                 </executions>
                 <dependencies>
                     <!-- Todo: Move to <pluginManagement>. -->
