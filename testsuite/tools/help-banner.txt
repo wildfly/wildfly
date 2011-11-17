@@ -1,0 +1,26 @@
+****************************************************************************************************
+
+   JBoss Application Server Testsuite
+
+   Usage:
+
+     mvn [clean] install [-DallTests | (-Dts.<group>)+ | -Dtest=... ] [<params>]
+
+     integration-tests.sh [-DallTests | (-Dts.<group>)+ | -Dtest=... ] [<params>]
+
+   Where:
+
+         <group>  = one of smoke, basic, clust, iiop.
+
+         <params> = parameters changing the configuration like database, IP stack, etc.
+
+   Params:
+     -Dds.db=<database>          Configures the AS to use given database.
+                                 Additional properties to be provided:
+                                 -Dds.jdbc.url, -Dds.jdbc.user, -Dds.jdbc.user
+
+     -Dipv6                      Configures the testsuite to run with IPv6.
+
+     -Dtest=<test classes mask>  Runs matching tests.
+                                 The group needs to be specified to let it prepare proper AS config.
+****************************************************************************************************
