@@ -154,7 +154,7 @@
             <groupId>org.projectodd.stilts</groupId>
             <artifactId>stilts-stomplet-server-core</artifactId>
         </dependency>
-        <!-- Needed for @Resource(lookup=) -->
+        <!-- Needed for @Resource(lookup=). -->
         <dependency>
             <groupId>org.jboss.spec.javax.annotation</groupId>
             <artifactId>jboss-annotations-api_1.1_spec</artifactId>
@@ -220,7 +220,7 @@
             </plugin>
 
             <!--
-            Big complex hack just to get @Resource(lookup="foo")
+                Big complex hack just to get @Resource(lookup="foo").
             -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -251,8 +251,8 @@
                 </configuration>
             </plugin>
 
-            <!-- a build of target/jbossas which is shared by all modules -->
-            <!-- modules and bundles not copied as they are read-only (see surefire props) -->
+            <!-- A build of target/jbossas which is shared by all modules. -->
+            <!-- Modules and bundles are not copied as they are read-only (see surefire props). -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -281,7 +281,7 @@
             </plugin>
 
             <!--
-            adjust IP addresses used in server config files
+                Adjust IP addresses used in server config files.
              -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -330,8 +330,8 @@
             </plugin>
 
             <!--
-            sets general surefire system properties
-            (these can be overridden by inheriting plugin configurations)
+                Sets general surefire system properties.
+                These can be overridden by inheriting plugin configurations.
              -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -409,78 +409,46 @@
         -->
         <profile>
             <id>all-modules.module.profile</id>
-            <activation>
-                <property>
-                    <name>all-modules</name>
-                </property>
-            </activation>
+            <activation><property><name>allTests</name></property></activation>
             <modules>
-                <module>benchmark</module>
+                <module>integration</module>
                 <module>compat</module>
                 <module>domain</module>
-                <module>integration</module>
+                <module>benchmark</module>
                 <module>stress</module>
             </modules>
         </profile>
 
         <profile>
             <id>benchmark.module.profile</id>
-            <activation>
-                <property>
-                    <name>benchmark.module</name>
-                </property>
-            </activation>
-            <modules>
-                <module>benchmark</module>
-            </modules>
+            <activation><property><name>benchmark.module</name></property></activation>
+            <modules><module>benchmark</module></modules>
         </profile>
 
         <profile>
             <id>compat.module.profile</id>
-            <activation>
-                <property>
-                    <name>compat.module</name>
-                </property>
-            </activation>
-            <modules>
-                <module>compat</module>
-            </modules>
+            <activation><property><name>compat.module</name></property></activation>
+            <modules><module>compat</module></modules>
         </profile>
 
         <profile>
             <id>domain.module.profile</id>
-            <activation>
-                <property>
-                    <name>domain.module</name>
-                </property>
-            </activation>
-            <modules>
-                <module>domain</module>
-            </modules>
+            <activation><property><name>domain.module</name></property></activation>
+            <modules><module>domain</module></modules>
         </profile>
 
+        <!-- Included by default.
         <profile>
             <id>integration.module.profile</id>
-            <activation>
-                <property>
-                    <name>integration.module</name>
-                </property>
-            </activation>
-            <modules>
-                <module>integration</module>
-            </modules>
+            <activation><property><name>integration.module</name></property></activation>
+            <modules><module>integration</module></modules>
         </profile>
+        -->
 
         <profile>
             <id>stress.module.profile</id>
-            <activation>
-                <property>
-                    <name>stress.module</name>
-                </property>
-            </activation>
-            <modules>
-                <module>stress</module>
-            </modules>
+            <activation><property><name>stress.module</name></property></activation>
+            <modules><module>stress</module></modules>
         </profile>
 
         <!--
