@@ -29,11 +29,13 @@ import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 
 import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * Date: 29.08.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author Tristan Tarrant
  */
 @MessageLogger(projectCode = "JBAS")
 public interface InfinispanLogger extends ClusteringLogger {
@@ -69,4 +71,14 @@ public interface InfinispanLogger extends ClusteringLogger {
     @LogMessage(level = INFO)
     @Message(id = 10302, value = "Stopped %s cache from %s container")
     void cacheStopped(String cacheName, String containerName);
+
+
+    /**
+     * Logs a warning message indicating that the eager attribute of the transactional element
+     * is no longer valid
+     *
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 10303, value = "The 'eager' attribute specified on the 'transaction' element of a cache is no longer valid")
+    void eagerAttributeDeprecated();
 }

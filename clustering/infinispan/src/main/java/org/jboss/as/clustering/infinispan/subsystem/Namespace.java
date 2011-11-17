@@ -27,18 +27,19 @@ import java.util.Map;
 
 /**
  * @author Paul Ferraro
+ * @author Tristan Tarrant
  */
 public enum Namespace {
     // must be first
     UNKNOWN(null),
 
     INFINISPAN_1_0("urn:jboss:domain:infinispan:1.0"),
-    ;
+    INFINISPAN_1_1("urn:jboss:domain:infinispan:1.1");
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = INFINISPAN_1_0;
+    public static final Namespace CURRENT = INFINISPAN_1_1;
 
     private final String uri;
 
