@@ -174,7 +174,7 @@ public class DomainFinalResultHandler implements OperationStepHandler {
             final String serverGroup = entry.getKey().getServerGroupName();
             groupNames.add(serverGroup);
             final String hostName = entry.getKey().getHostName();
-            final String serverName = entry.getKey().getHostName();
+            final String serverName = entry.getKey().getServerName();
             if (!groupToServerMap.containsKey(serverGroup)) {
                 groupToServerMap.put(serverGroup, new TreeSet<HostServer>());
             }
