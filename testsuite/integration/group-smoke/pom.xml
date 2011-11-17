@@ -121,7 +121,7 @@
                                         <arquillian.launch>jboss</arquillian.launch>
 
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
-                                        <!-- Use combine.children="append" to pick up parent properties automatically. -->
+                                        <jboss.inst>${basedir}/target/jbossas-smoke</jboss.inst>
                                     </systemPropertyVariables>
 
                                     <!-- Access to resources for clustering tests. -->
