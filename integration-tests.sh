@@ -74,67 +74,28 @@ process_test_directives() {
   for param in $@
   do
     case $param in
-      # -DallTests runs all tests except benchmark and stress.
-      -DallTests)
-        CMD_LINE_PARAMS="$CMD_LINE_PARAMS $ALL_TESTS"
-        TESTS_SPECIFIED="Y"
-        ;;
-      # Basic tests. Includes clustering tests.
-      -Dinteg-tests)
-        CMD_LINE_PARAMS="$CMD_LINE_PARAMS $INTEGRATION_TESTS"
-        TESTS_SPECIFIED="Y"
-        ;;
-      # Clustering tests. Includes clustering tests.
-      -Dcluster-tests)
-        CMD_LINE_PARAMS="$CMD_LINE_PARAMS $CLUSTER_TESTS"
-        TESTS_SPECIFIED="Y"
-        ;;
-      # Integration tests. Includes clustering tests.
-      -Dbasic-tests)
-        CMD_LINE_PARAMS="$CMD_LINE_PARAMS $BASIC_TESTS"
-        TESTS_SPECIFIED="Y"
-        ;;
+      ## -DallTests runs all tests except benchmark and stress.
+      -DallTests)        TESTS_SPECIFIED="Y";  CMD_LINE_PARAMS="$CMD_LINE_PARAMS -DallTests";;
 
-      # Benchmark tests.
-      -Dbenchmark-tests)
-        CMD_LINE_PARAMS="$CMD_LINE_PARAMS $BENCHMARK_TESTS"
-        TESTS_SPECIFIED="Y"
-        ;;
-      # Smoke tests.
-      -Dsmoke-tests)
-        CMD_LINE_PARAMS="$CMD_LINE_PARAMS $SMOKE_TESTS"
-        TESTS_SPECIFIED="Y"
-        ;;
-      # Stress tests.
-      -Dstress-tests)
-        CMD_LINE_PARAMS="$CMD_LINE_PARAMS $STRESS_TESTS"
-        TESTS_SPECIFIED="Y"
-        ;;
-      # Domain tests
-      -Ddomain-tests)
-        CMD_LINE_PARAMS="$CMD_LINE_PARAMS $DOMAIN_TESTS"
-        TESTS_SPECIFIED="Y"
-        ;;
-      # Compat tests
-      -Dcompat-tests)
-        CMD_LINE_PARAMS="$CMD_LINE_PARAMS $COMPAT_TESTS"
-        TESTS_SPECIFIED="Y"
-        ;;
-      # Don't run smoke tests if a single test is specified.
-      -Dtest=*)
-        CMD_LINE_PARAMS="$CMD_LINE_PARAMS $param" # -DfailIfNoTests=false
-        TESTS_SPECIFIED="Y"
-        ;;
-      # Collect Maven goals.
+      -Dinteg-tests)     TESTS_SPECIFIED="Y";  CMD_LINE_PARAMS="$CMD_LINE_PARAMS $INTEGRATION_TESTS";;
+      -Dcluster-tests)   TESTS_SPECIFIED="Y";  CMD_LINE_PARAMS="$CMD_LINE_PARAMS $CLUSTER_TESTS";;
+      -Dsmoke-tests)     TESTS_SPECIFIED="Y";  CMD_LINE_PARAMS="$CMD_LINE_PARAMS $SMOKE_TESTS";;
+      -Dbasic-tests)     TESTS_SPECIFIED="Y";  CMD_LINE_PARAMS="$CMD_LINE_PARAMS $BASIC_TESTS";;
+      -Ddomain-tests)    TESTS_SPECIFIED="Y";  CMD_LINE_PARAMS="$CMD_LINE_PARAMS $DOMAIN_TESTS";;
+      -Dcompat-tests)    TESTS_SPECIFIED="Y";  CMD_LINE_PARAMS="$CMD_LINE_PARAMS $COMPAT_TESTS";;
+      -Dbenchmark-tests) TESTS_SPECIFIED="Y";  CMD_LINE_PARAMS="$CMD_LINE_PARAMS $BENCHMARK_TESTS";;
+      -Dstress-tests)    TESTS_SPECIFIED="Y";  CMD_LINE_PARAMS="$CMD_LINE_PARAMS $STRESS_TESTS";;
+      ## Don't run smoke tests if a single test is specified.
+      -Dtest=*)          TESTS_SPECIFIED="Y";  CMD_LINE_PARAMS="$CMD_LINE_PARAMS $param";; # -DfailIfNoTests=false
+
+      ## Collect Maven goals.
       clean)   MVN_GOALS="$MVN_GOALS$param ";;
       test)    MVN_GOALS="$MVN_GOALS$param ";;
       install) MVN_GOALS="$MVN_GOALS$param ";;
       deploy)  MVN_GOALS="$MVN_GOALS$param ";;
       site)    MVN_GOALS="$MVN_GOALS$param ";;
-      # pass through all other params
-      *)
-        CMD_LINE_PARAMS="$CMD_LINE_PARAMS $param"
-        ;;
+      ## Pass through all other params.
+      *)      CMD_LINE_PARAMS="$CMD_LINE_PARAMS $param";;
     esac
   done
 
