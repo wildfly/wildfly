@@ -152,7 +152,7 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
             throw new CommandFormatException("Failed to perform " + Util.READ_OPERATION_DESCRIPTION + " to validate the request: " + e.getLocalizedMessage());
         }
         if (!Util.isSuccess(outcome)) {
-            throw new CommandFormatException("Failed to get the list of supported operation properties.");
+            throw new CommandFormatException("Failed to get the list of the operation properties: \"" + Util.getFailureDescription(outcome) + '\"');
         }
 
         if(!outcome.has(Util.RESULT)) {
