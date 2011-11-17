@@ -902,7 +902,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             if (name == null) {
                 throw missingRequired(reader, Collections.singleton(Attribute.NAME.getLocalName()));
             }
-            node.get(PROPERTIES).set(new Property(name, new ModelNode().set(value)));
+            node.get(PROPERTIES).add(name, new ModelNode().set(value));
             if (reader.nextTag() != END_ELEMENT) {
                 throw unexpectedElement(reader);
             }
