@@ -188,11 +188,6 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         final ServiceTarget target = context.getServiceTarget();
 
-        // XATerminator has no deps, so just add it in there
-        final XATerminatorService xaTerminatorService = new XATerminatorService();
-        controllers.add(target.addService(TxnServices.JBOSS_TXN_XA_TERMINATOR, xaTerminatorService).setInitialMode(Mode.ACTIVE).install());
-
-
         //bind the TransactionManger and the TSR into JNDI
         final BinderService tmBinderService = new BinderService("TransactionManager");
         final ServiceBuilder<ManagedReferenceFactory> tmBuilder = context.getServiceTarget().addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("TransactionManager"), tmBinderService);
@@ -347,6 +342,11 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final String recoveryBindingName = TransactionSubsystemRootResourceDefinition.BINDING.resolveModelAttribute(context, model).asString();
         final String recoveryStatusBindingName = TransactionSubsystemRootResourceDefinition.STATUS_BINDING.resolveModelAttribute(context, model).asString();
         final boolean recoveryListener = TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.resolveModelAttribute(context, model).asBoolean();
+
+        // XATerminator has no deps, so just add it in there
+        final XATerminatorService xaTerminatorService = new XATerminatorService(jts);
+        controllers.add(context.getServiceTarget().addService(TxnServices.JBOSS_TXN_XA_TERMINATOR, xaTerminatorService).setInitialMode(Mode.ACTIVE).install());
+
 
         final ArjunaRecoveryManagerService recoveryManagerService = new ArjunaRecoveryManagerService(recoveryListener, jts);
         final ServiceBuilder<RecoveryManagerService> recoveryManagerServiceServiceBuilder = context.getServiceTarget().addService(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, recoveryManagerService);

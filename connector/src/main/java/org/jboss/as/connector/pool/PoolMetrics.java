@@ -48,7 +48,7 @@ public abstract class PoolMetrics implements OperationStepHandler {
 
     static final String[] NO_LOCATION = new String[0];
 
-    public static final Set<String> ATTRIBUTES = (new ManagedConnectionPoolStatisticsImpl(1)).getNames();
+    public static final Set<String> ATTRIBUTES =  (new ManagedConnectionPoolStatisticsImpl(1)).getNames();
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         if (context.getType() == OperationContext.Type.SERVER) {
