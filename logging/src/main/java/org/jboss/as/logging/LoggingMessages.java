@@ -25,7 +25,6 @@ package org.jboss.as.logging;
 import java.util.Collection;
 import java.util.EnumSet;
 
-import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
@@ -52,7 +51,7 @@ interface LoggingMessages {
      *
      * @return a {@link StartException} for the error.
      */
-    @Message(id = 11520, value = "Could not access %s.")
+    @Message(id = 11530, value = "Could not access %s.")
     StartException cannotAccessClass(@Cause Throwable cause, String className);
 
     /**
@@ -64,7 +63,7 @@ interface LoggingMessages {
      *
      * @return a {@link StartException} for the error.
      */
-    @Message(id = 11521, value = "Could not instantiate %s.")
+    @Message(id = 11531, value = "Could not instantiate %s.")
     StartException cannotInstantiateClass(@Cause Throwable cause, String className);
 
     /**
@@ -75,7 +74,7 @@ interface LoggingMessages {
      *
      * @return a {@link StartException} for the error
      */
-    @Message(id = 11522, value = "Could not load module %s.")
+    @Message(id = 11532, value = "Could not load module %s.")
     StartException cannotLoadModule(@Cause Throwable cause, String moduleName);
 
     /**
@@ -86,7 +85,7 @@ interface LoggingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11523, value = "Can not unassign handler. Handler %s is not assigned.")
+    @Message(id = 11533, value = "Can not unassign handler. Handler %s is not assigned.")
     String cannotUnassignHandler(String handlerName);
 
     /**
@@ -97,7 +96,7 @@ interface LoggingMessages {
      *
      * @return an {@link StartException} for the error.
      */
-    @Message(id = 11524, value = "Class '%s' could not be found.")
+    @Message(id = 11534, value = "Class '%s' could not be found.")
     StartException classNotFound(@Cause Throwable cause, String className);
 
     /**
@@ -105,7 +104,7 @@ interface LoggingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11525, value = "Failed to set handler encoding.")
+    @Message(id = 11535, value = "Failed to set handler encoding.")
     String failedToSetHandlerEncoding();
 
     /**
@@ -115,7 +114,7 @@ interface LoggingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11526, value = "Handler %s is already assigned.")
+    @Message(id = 11536, value = "Handler %s is already assigned.")
     String handlerAlreadyDefined(String name);
 
     /**
@@ -125,7 +124,7 @@ interface LoggingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11527, value = "Handler %s not found.")
+    @Message(id = 11537, value = "Handler %s not found.")
     String handlerNotFound(String name);
 
     /**
@@ -135,7 +134,7 @@ interface LoggingMessages {
      *
      * @return the message.
      */
-    @Message(value = "Filter %s is invalid")
+    @Message(id = 11538, value = "Filter %s is invalid")
     String invalidFilter(String name);
 
     /**
@@ -145,7 +144,7 @@ interface LoggingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11528, value = "Log level %s is invalid.")
+    @Message(id = 11539, value = "Log level %s is invalid.")
     String invalidLogLevel(String level);
 
     /**
@@ -155,7 +154,7 @@ interface LoggingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11529, value = "Overflow action %s is invalid.")
+    @Message(id = 11540, value = "Overflow action %s is invalid.")
     String invalidOverflowAction(String overflowAction);
 
     /**
@@ -165,7 +164,7 @@ interface LoggingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11530, value = "Invalid size %s")
+    @Message(id = 11541, value = "Invalid size %s")
     String invalidSize(String size);
 
     /**
@@ -175,7 +174,7 @@ interface LoggingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11531, value = "Invalid value for target name. Valid names include: %s")
+    @Message(id = 11542, value = "Invalid value for target name. Valid names include: %s")
     String invalidTargetName(EnumSet<Target> targets);
 
     /**
@@ -187,26 +186,26 @@ interface LoggingMessages {
      *
      * @return a {@link StartException} for the error.
      */
-    @Message(id = 11532, value = "'%s' is not a valid %s.")
+    @Message(id = 11543, value = "'%s' is not a valid %s.")
     StartException invalidType(String className, Class<?> type);
 
     /**
-     * A message indicating the value is invalid.
+     * A message indicating the value type key, represented by the {@code kry} parameter, is invalid.
      *
-     * @param value         the invalid value.
+     * @param key           the key.
      * @param allowedValues a collection of allowed values.
      *
      * @return the message.
      */
-    @Message(value = "Value '%s' is invalid. Valid values are; %s")
-    String invalidValue(String value, Collection<String> allowedValues);
+    @Message(id = 11544, value = "Value type key '%s' is invalid. Valid value type keys are; %s")
+    String invalidValueTypeKey(String key, Collection<String> allowedValues);
 
     /**
      * A message indicating the required nested filter element is missing.
      *
      * @return the message.
      */
-    @Message(id = 11533, value = "Missing required nested filter element")
+    @Message(id = 11545, value = "Missing required nested filter element")
     String missingRequiredNestedFilterElement();
 
     /**
@@ -214,7 +213,7 @@ interface LoggingMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11534, value = "Service not started")
+    @Message(id = 11546, value = "Service not started")
     IllegalStateException serviceNotStarted();
 
     /**
@@ -227,6 +226,6 @@ interface LoggingMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11535, value = "Unknown parameter type (%s) for property '%s' on '%s'")
+    @Message(id = 11547, value = "Unknown parameter type (%s) for property '%s' on '%s'")
     IllegalArgumentException unknownParameterType(Class<?> type, String propertyName, Class<?> clazz);
 }

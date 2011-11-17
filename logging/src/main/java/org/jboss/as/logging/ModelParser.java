@@ -66,8 +66,7 @@ final class ModelParser {
      *
      * @return the filter.
      *
-     * @throws OperationFailedException if the operation fails.
-     * @throws IllegalArgumentException if the filter is invalid.
+     * @throws OperationFailedException if the operation fails or is invalid.
      */
     public static Filter parseFilter(final OperationContext context, final ModelNode node) throws OperationFailedException {
         if (node.hasDefined(CommonAttributes.ACCEPT.getName())) {
@@ -118,13 +117,12 @@ final class ModelParser {
      *
      * @return the long value.
      *
-     * @throws IllegalArgumentException if the value is invalid.
-     * @throws IllegalStateException    if the ending character is not valid.
+     * @throws OperationFailedException if the size is invalid.
      */
     public static long parseSize(final ModelNode node) throws OperationFailedException {
         final Matcher matcher = SIZE_PATTERN.matcher(node.asString());
         if (!matcher.matches()) {
-            throw new IllegalArgumentException();
+            throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidSize(node.asString())));
         }
         long qty = Long.parseLong(matcher.group(1), 10);
         final String chr = matcher.group(2);
@@ -163,7 +161,7 @@ final class ModelParser {
      *
      * @return the logging level.
      *
-     * @throws IllegalArgumentException if the value is invalid.
+     * @throws OperationFailedException if the size is invalid.
      */
     public static Level parseLevel(final ModelNode node) throws OperationFailedException {
         try {
@@ -180,7 +178,7 @@ final class ModelParser {
      *
      * @return the overflow action.
      *
-     * @throws IllegalArgumentException if the value is invalid.
+     * @throws OperationFailedException if the size is invalid.
      */
     public static OverflowAction parseOverflowAction(final ModelNode node) throws OperationFailedException {
         try {
