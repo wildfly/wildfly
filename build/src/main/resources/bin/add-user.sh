@@ -1,44 +1,18 @@
 #!/bin/sh
 
+# Add User Utility
+#
+# A simple utility for adding new users to the properties file used 
+# for domain management authentication out of the box.
+#
+
 DIRNAME=`dirname "$0"`
-PROGNAME=`basename "$0"`
-GREP="grep"
-
-# Use the maximum available, or set MAX_FD != -1 to use that
-MAX_FD="maximum"
-
-#
-# Helper to complain.
-#
-warn() {
-    echo "${PROGNAME}: $*"
-}
-
-#
-# Helper to puke.
-#
-die() {
-    warn $*
-    exit 1
-}
 
 # OS specific support (must be 'true' or 'false').
 cygwin=false;
-darwin=false;
-linux=false;
-case "`uname`" in
-    CYGWIN*)
-        cygwin=true
-        ;;
-
-    Darwin*)
-        darwin=true
-        ;;
-
-    Linux)
-        linux=true
-        ;;
-esac
+if  [ `uname|grep -i CYGWIN` ]; then
+    cygwin = true;
+fi
 
 # For Cygwin, ensure paths are in UNIX format before anything is touched
 if $cygwin ; then
@@ -51,7 +25,10 @@ if $cygwin ; then
 fi
 
 # Setup JBOSS_HOME
-JBOSS_HOME=`cd "$DIRNAME/../.."; pwd`
+if [ "x$JBOSS_HOME" = "x" ]; then
+    # get the full path (without any relative bits)
+    JBOSS_HOME=`cd "$DIRNAME/.."; pwd`
+fi
 export JBOSS_HOME
 
 # Setup the JVM
@@ -67,15 +44,6 @@ if [ "x$MODULEPATH" = "x" ]; then
     MODULEPATH="$JBOSS_HOME/modules"
 fi
 
-###
-# Setup the JBoss SASL classpath
-###
-
-# Shared libs
-JBOSS_SASL_CLASSPATH="$MODULEPATH/org/jboss/sasl/main/*"
-
-export JBOSS_SASL_CLASSPATH
-
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
     JBOSS_HOME=`cygpath --path --windows "$JBOSS_HOME"`
@@ -83,12 +51,12 @@ if $cygwin; then
     JBOSS_CLASSPATH=`cygpath --path --windows "$JBOSS_CLASSPATH"`
     JBOSS_ENDORSED_DIRS=`cygpath --path --windows "$JBOSS_ENDORSED_DIRS"`
     MODULEPATH=`cygpath --path --windows "$MODULEPATH"`
-    JBOSS_SASL_CLASSPATH=`cygpath --path --windows "$JBOSS_SASL_CLASSPATH"`
 fi
 
-# Sample JPDA settings for remote socket debugging
-#JAVA_OPTS="$JAVA_OPTS -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n"
-
-"$JAVA" $JAVA_OPTS -classpath "$JBOSS_SASL_CLASSPATH" \
-   org.jboss.sasl.util.UsernamePasswordHashUtil $@
-
+eval \"$JAVA\" $JAVA_OPTS \
+         -jar \"$JBOSS_HOME/jboss-modules.jar\" \
+         -mp \"${MODULEPATH}\" \
+         -logmodule "org.jboss.logmanager" \
+         org.jboss.as.domain-add-user \
+         -Djboss.home.dir=\"$JBOSS_HOME\" \
+         "$@" 

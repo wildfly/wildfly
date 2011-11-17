@@ -1,7 +1,10 @@
 @echo off
 rem -------------------------------------------------------------------------
-rem JBoss SASL Password Digest script for Windows
+rem Ass User script for Windows
 rem -------------------------------------------------------------------------
+rem
+rem A simple utility for adding new users to the properties file used 
+rem for domain management authentication out of the box.
 
 rem $Id$
 
@@ -14,7 +17,7 @@ if "%OS%" == "Windows_NT" (
   set DIRNAME=.\
 )
 
-pushd %DIRNAME%..\..
+pushd %DIRNAME%..
 if "x%JBOSS_HOME%" == "x" (
   set "JBOSS_HOME=%CD%"
 )
@@ -25,12 +28,10 @@ set DIRNAME=
 if "%OS%" == "Windows_NT" (
   set "PROGNAME=%~nx0%"
 ) else (
-  set "PROGNAME=digest-password.bat"
+  set "PROGNAME=jdr.bat"
 )
 
 rem Setup JBoss specific properties
-set JAVA_OPTS=-Dprogram.name=%PROGNAME% %JAVA_OPTS%
-
 if "x%JAVA_HOME%" == "x" (
   set  JAVA=java
   echo JAVA_HOME is not set. Unexpected results may occur.
@@ -39,7 +40,7 @@ if "x%JAVA_HOME%" == "x" (
   set "JAVA=%JAVA_HOME%\bin\java"
 )
 
-rem Find run.jar, or we can't continue
+rem Find jboss-modules.jar, or we can't continue
 if exist "%JBOSS_HOME%\jboss-modules.jar" (
     set "RUNJAR=%JBOSS_HOME%\jboss-modules.jar"
 ) else (
@@ -48,12 +49,21 @@ if exist "%JBOSS_HOME%\jboss-modules.jar" (
   goto END
 )
 
-"%JAVA%" %JAVA_OPTS% ^
+rem Setup JBoss specific properties
+
+rem Setup the java endorsed dirs
+set JBOSS_ENDORSED_DIRS=%JBOSS_HOME%\lib\endorsed
+
+rem Set default module root paths
+if "x%MODULEPATH%" == "x" (
+  set  "MODULEPATH=%JBOSS_HOME%\modules"
+)
+
+"%JAVA%" ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
-    -logmodule "org.jboss.logmanager"  ^
-    -mp "%JBOSS_HOME%\modules" ^
-     org.jboss.sasl ^
+    -mp "%MODULEPATH%" ^
+     org.jboss.as.domain-add-user ^
+    -Djboss.home.dir="%JBOSS_HOME%" ^
      %*
 
-:END
-
+if "x%NOPAUSE%" == "x" pause
