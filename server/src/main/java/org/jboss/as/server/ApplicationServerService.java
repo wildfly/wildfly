@@ -22,6 +22,9 @@
 
 package org.jboss.as.server;
 
+import static org.jboss.as.server.ServerLogger.AS_ROOT_LOGGER;
+import static org.jboss.as.server.ServerLogger.CONFIG_LOGGER;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -37,7 +40,6 @@ import org.jboss.as.server.moduleservice.ModuleIndexService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.version.Version;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
@@ -56,8 +58,6 @@ import org.jboss.threads.AsyncFuture;
  */
 final class ApplicationServerService implements Service<AsyncFuture<ServiceContainer>> {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as");
-    private static final Logger configLog = Logger.getLogger("org.jboss.as.config");
     private final List<ServiceActivator> extraServices;
     private final Bootstrap.Configuration configuration;
     private final ControlledProcessState processState;
@@ -82,23 +82,36 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         // Install the environment before doing anything
         serverEnvironment.install();
 
-        log.infof("JBoss AS %s \"%s\" starting", Version.AS_VERSION, Version.AS_RELEASE_CODENAME);
-        if (configLog.isDebugEnabled()) {
+        AS_ROOT_LOGGER.serverStarting(Version.AS_VERSION, Version.AS_RELEASE_CODENAME);
+        if (CONFIG_LOGGER.isDebugEnabled()) {
             final Properties properties = System.getProperties();
+            String newLine = properties.getProperty("line.separator");
+            if (newLine == null) {
+                newLine = "\n\t";
+            } else {
+                newLine += "\t";
+            }
             final StringBuilder b = new StringBuilder(8192);
             b.append("Configured system properties:");
             for (String property : new TreeSet<String>(properties.stringPropertyNames())) {
-                b.append("\n\t").append(property).append(" = ").append(properties.getProperty(property, "<undefined>"));
+                b.append(newLine).append(property).append(" = ").append(properties.getProperty(property, "<undefined>"));
             }
-            configLog.debug(b);
-            if (configLog.isTraceEnabled()) {
+            CONFIG_LOGGER.debug(b);
+            if (CONFIG_LOGGER.isTraceEnabled()) {
                 b.setLength(0);
                 final Map<String,String> env = System.getenv();
                 b.append("Configured system environment:");
                 for (String key : new TreeSet<String>(env.keySet())) {
-                    b.append("\n\t").append(key).append(" = ").append(env.get(key));
+                    b.append(newLine).append(key).append(" = ").append(env.get(key));
                 }
-                configLog.trace(b);
+                CONFIG_LOGGER.trace(b);
+            } else {
+                final String javaOpts = System.getenv().get("JAVA_OPTS");
+                if (javaOpts == null || javaOpts.isEmpty()) {
+                    CONFIG_LOGGER.debug("JAVA_OPTS could not be determined.");
+                } else {
+                    CONFIG_LOGGER.debugf("JAVA_OPTS=\"%s\"", javaOpts);
+                }
             }
         }
         final ServiceTarget serviceTarget = context.getChildTarget();
@@ -164,9 +177,9 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         // BES 2011/06/11 -- moved this to AbstractControllerService.start()
 //        processState.setRunning();
 
-        if (log.isDebugEnabled()) {
+        if (AS_ROOT_LOGGER.isDebugEnabled()) {
             final long nanos = context.getElapsedTime();
-            log.debugf("JBoss AS root service started in %d.%06d ms", Long.valueOf(nanos / 1000000L), Long.valueOf(nanos % 1000000L));
+            AS_ROOT_LOGGER.debugf("JBoss AS root service started in %d.%06d ms", Long.valueOf(nanos / 1000000L), Long.valueOf(nanos % 1000000L));
         }
     }
 
@@ -174,7 +187,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
     public synchronized void stop(final StopContext context) {
         processState.setStopping();
         CurrentServiceContainer.setServiceContainer(null);
-        log.infof("JBoss AS %s \"%s\" stopped in %dms", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Integer.valueOf((int) (context.getElapsedTime() / 1000000L)));
+        AS_ROOT_LOGGER.serverStopped(Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Integer.valueOf((int) (context.getElapsedTime() / 1000000L)));
     }
 
     @Override
