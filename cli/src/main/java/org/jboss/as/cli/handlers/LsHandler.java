@@ -39,6 +39,7 @@ import org.jboss.as.cli.operation.OperationRequestAddress.Node;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.util.SimpleTable;
+import org.jboss.as.cli.util.StrictSizeTable;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -142,6 +143,7 @@ public class LsHandler extends CommandHandlerWithHelp {
                         }
                     }
                 }
+                resourceRequest.get(Util.INCLUDE_RUNTIME).set(Util.TRUE);
                 steps.add(resourceRequest);
             }
 
@@ -227,10 +229,12 @@ public class LsHandler extends CommandHandlerWithHelp {
                                     final List<Property> props = resourceResult.asPropertyList();
                                     if (!props.isEmpty()) {
                                         // potentially, allowed and default values
-                                        SimpleTable attrTable = attrDescriptions == null ? null :
-                                            new SimpleTable(new String[]{"ATTR NAME", "VALUE", "TYPE", "NILLABLE", "REQUIRED", "ACCESS", "EXPR", "RESTART", "STORAGE"});
-                                        SimpleTable childrenTable = childDescriptions == null ? null :
-                                            new SimpleTable(new String[]{"CHILD NAME", "MIN-OCCURS", "MAX-OCCURS"});
+//                                        SimpleTable attrTable = attrDescriptions == null ? null :
+//                                            new SimpleTable(new String[]{"ATTR NAME", "VALUE", "TYPE", "NILLABLE", "REQUIRED", "ACCESS", "EXPR", "RESTART", "STORAGE"});
+//                                      SimpleTable childrenTable = childDescriptions == null ? null :
+//                                            new SimpleTable(new String[]{"CHILD NAME", "MIN-OCCURS", "MAX-OCCURS"});
+                                        StrictSizeTable attrTable = attrDescriptions == null ? null : new StrictSizeTable(attrDescriptions.keys().size());
+                                        StrictSizeTable childrenTable = childDescriptions == null ? null : new StrictSizeTable(childDescriptions.keys().size());
                                         if(typeNames == null && attrTable == null && childrenTable == null) {
                                             typeNames = new ArrayList<String>();
                                         }
@@ -250,7 +254,7 @@ public class LsHandler extends CommandHandlerWithHelp {
                                                 } else {
                                                     if(attrDescriptions.hasDefined(prop.getName())) {
                                                         final ModelNode attrDescr = attrDescriptions.get(prop.getName());
-                                                        attrTable.addLine(new String[]{prop.getName(),
+/*                                                        attrTable.addLine(new String[]{prop.getName(),
                                                                 prop.getValue().asString(),
                                                                 getAsString(attrDescr, Util.TYPE),
                                                                 getAsString(attrDescr, Util.NILLABLE),
@@ -260,22 +264,51 @@ public class LsHandler extends CommandHandlerWithHelp {
                                                                 getAsString(attrDescr, Util.RESTART_REQUIRED),
                                                                 getAsString(attrDescr, Util.STORAGE)
                                                                 });
+*/
+                                                        attrTable.addCell("ATTRIBUTE", prop.getName());
+                                                        attrTable.addCell(Util.VALUE, prop.getValue().asString());
+                                                        for(String name : attrDescr.keys()) {
+                                                            if(!Util.DESCRIPTION.equals(name) &&
+                                                                    !Util.HEAD_COMMENT_ALLOWED.equals(name) &&
+                                                                    !Util.TAIL_COMMENT_ALLOWED.equals(name)) {
+                                                                attrTable.addCell(name, attrDescr.get(name).asString());
+                                                            }
+                                                        }
                                                     } else {
-                                                        attrTable.addLine(new String[]{prop.getName(),
+/*                                                        attrTable.addLine(new String[]{prop.getName(),
                                                                 prop.getValue().asString(),
                                                                 "n/a", "n/a", "n/a", "n/a", "n/a", "n/a"
                                                             });
+*/
+                                                        attrTable.addCell(Util.NAME, prop.getName());
+                                                        attrTable.addCell(Util.VALUE, prop.getValue().asString());
+                                                    }
+                                                    if(!attrTable.isAtLastRow()) {
+                                                        attrTable.nextRow();
                                                     }
                                                 }
                                             } else if(childDescriptions != null) {
                                                 if(childDescriptions.hasDefined(prop.getName())) {
-                                                    final ModelNode childDescr = attrDescriptions.get(prop.getName());
-                                                    childrenTable.addLine(new String[]{prop.getName(),
+                                                    final ModelNode childDescr = childDescriptions.get(prop.getName());
+/*                                                    childrenTable.addLine(new String[]{prop.getName(),
                                                             getAsString(childDescr, Util.MIN_OCCURS),
                                                             getAsString(childDescr, Util.MAX_OCCURS)
                                                             });
+*/
+                                                    childrenTable.addCell("CHILD", prop.getName());
+                                                    for(String name : childDescr.keys()) {
+                                                        if(!Util.DESCRIPTION.equals(name) &&
+                                                                !Util.HEAD_COMMENT_ALLOWED.equals(name) &&
+                                                                !Util.TAIL_COMMENT_ALLOWED.equals(name)) {
+                                                            childrenTable.addCell(name, childDescr.get(name).asString());
+                                                        }
+                                                    }
                                                 } else {
-                                                    attrTable.addLine(new String[]{prop.getName(), "n/a", "n/a"});
+//                                                    attrTable.addLine(new String[]{prop.getName(), "n/a", "n/a"});
+                                                    childrenTable.addCell(Util.NAME, prop.getName());
+                                                }
+                                                if(!childrenTable.isAtLastRow()) {
+                                                    childrenTable.nextRow();
                                                 }
                                             }
                                         }
@@ -301,6 +334,7 @@ public class LsHandler extends CommandHandlerWithHelp {
                     ctx.printLine("Failed to fetch the list of children: " + outcome);
                 }
             } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 
