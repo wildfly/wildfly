@@ -22,35 +22,38 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.as.logging.LoggingMessages.MESSAGES;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Locale;
-
-import static org.jboss.as.logging.LoggingMessages.MESSAGES;
-
 /**
- * Date: 22.09.2011
+ * Date: 16.11.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-class TargetValidator extends ModelTypeValidator implements AllowedValuesValidator {
-    private final EnumSet<Target> allowedValues;
+public class ObjectTypeValidator extends ModelTypeValidator implements AllowedValuesValidator {
+    private final Map<String, AttributeDefinition> allowedValues;
     private final List<ModelNode> nodeValues;
 
-    public TargetValidator(final boolean nullable) {
-        super(ModelType.STRING, nullable, false);
-        allowedValues = EnumSet.allOf(Target.class);
-        nodeValues = new ArrayList<ModelNode>(allowedValues.size());
-        for (Target target : allowedValues) {
-            nodeValues.add(new ModelNode().set(target.toString()));
+    public ObjectTypeValidator(final boolean nullable, final AttributeDefinition... attributes) {
+        super(nullable, false, false, ModelType.OBJECT, findModelTypes(attributes));
+        allowedValues = new HashMap<String, AttributeDefinition>(attributes.length);
+        nodeValues = new ArrayList<ModelNode>(attributes.length);
+        for (AttributeDefinition attribute : attributes) {
+            allowedValues.put(attribute.getName(), attribute);
+            nodeValues.add(new ModelNode().set(attribute.getName()));
         }
     }
 
@@ -58,9 +61,12 @@ class TargetValidator extends ModelTypeValidator implements AllowedValuesValidat
     public void validateParameter(final String parameterName, final ModelNode value) throws OperationFailedException {
         super.validateParameter(parameterName, value);
         if (value.isDefined()) {
-            final Target target = Target.fromString(value.asString());
-            if (target == null || !allowedValues.contains(target)) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidTargetName(allowedValues)));
+            for (String key : value.keys()) {
+                if (allowedValues.containsKey(key)) {
+                    allowedValues.get(key).getValidator().validateParameter(key, value.get(key));
+                } else {
+                    throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidValue(key, allowedValues.keySet())));
+                }
             }
         }
     }
@@ -68,5 +74,14 @@ class TargetValidator extends ModelTypeValidator implements AllowedValuesValidat
     @Override
     public List<ModelNode> getAllowedValues() {
         return nodeValues;
+    }
+
+    private static ModelType[] findModelTypes(final AttributeDefinition... attributes) {
+        final Set<ModelType> result = new HashSet<ModelType>();
+        for (AttributeDefinition attr : attributes) {
+            if (attr.getType() != ModelType.OBJECT)
+                result.add(attr.getType());
+        }
+        return result.toArray(new ModelType[]{});
     }
 }

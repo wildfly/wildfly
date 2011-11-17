@@ -24,6 +24,7 @@ package org.jboss.as.logging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
+import static org.jboss.as.logging.CommonAttributes.FILTER;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 
@@ -63,7 +64,7 @@ public abstract class HandlerAddProperties<T extends HandlerService> extends Abs
         this.attributeDefinitions.add(ENCODING);
         this.attributeDefinitions.add(FORMATTER);
         this.attributeDefinitions.add(LEVEL);
-        // TODO - support filter
+        this.attributeDefinitions.add(FILTER);
         this.attributeDefinitions.addAll(attributeDefinitions);
     }
 
@@ -93,7 +94,7 @@ public abstract class HandlerAddProperties<T extends HandlerService> extends Abs
         final ModelNode level = LEVEL.resolveModelAttribute(context, model);
         final ModelNode encoding = ENCODING.resolveModelAttribute(context, model);
         final ModelNode formatter = FORMATTER.resolveModelAttribute(context, model);
-        // TODO - support filter
+        final ModelNode filter = FILTER.resolveModelAttribute(context, model);
 
         if (level.isDefined()) {
             service.setLevel(ModelParser.parseLevel(level));
@@ -108,6 +109,10 @@ public abstract class HandlerAddProperties<T extends HandlerService> extends Abs
 
         if (formatter.isDefined()) {
             service.setFormatterSpec(AbstractFormatterSpec.fromModelNode(context, model));
+        }
+
+        if (filter.isDefined()) {
+            service.setFilter(ModelParser.parseFilter(context, filter));
         }
 
         updateRuntime(context, serviceBuilder, name, service, model);

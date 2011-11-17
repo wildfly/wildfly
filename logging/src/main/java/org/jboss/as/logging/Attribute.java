@@ -88,10 +88,6 @@ public enum Attribute {
         return definition;
     }
 
-    public void marshall(final ModelNode node, final XMLExtendedStreamWriter writer) throws XMLStreamException {
-        definition.marshallAsElement(node, writer);
-    }
-
     private static final Map<String, Attribute> MAP;
 
     static {

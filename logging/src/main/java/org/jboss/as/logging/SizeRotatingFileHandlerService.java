@@ -32,6 +32,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
+import java.util.logging.Filter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
@@ -41,6 +42,8 @@ import java.util.logging.Level;
 public final class SizeRotatingFileHandlerService implements FlushingHandlerService {
 
     private final InjectedValue<String> fileName = new InjectedValue<String>();
+
+    private Filter filter;
 
     private AbstractFormatterSpec formatterSpec;
 
@@ -61,6 +64,7 @@ public final class SizeRotatingFileHandlerService implements FlushingHandlerServ
     public synchronized void start(final StartContext context) throws StartException {
         final SizeRotatingFileHandler handler = new SizeRotatingFileHandler();
         value = handler;
+        if (filter != null) handler.setFilter(filter);
         formatterSpec.apply(handler);
         if (level != null) handler.setLevel(level);
         handler.setAutoFlush(autoflush);
@@ -107,6 +111,13 @@ public final class SizeRotatingFileHandlerService implements FlushingHandlerServ
         this.formatterSpec = formatterSpec;
         final SizeRotatingFileHandler handler = value;
         if (handler != null) formatterSpec.apply(handler);
+    }
+
+    @Override
+    public synchronized void setFilter(final Filter filter) {
+        this.filter = filter;
+        final SizeRotatingFileHandler handler = value;
+        if (handler != null) handler.setFilter(filter);
     }
 
     public synchronized boolean isAutoflush() {

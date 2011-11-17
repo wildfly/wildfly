@@ -24,6 +24,7 @@ package org.jboss.as.logging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
+import static org.jboss.as.logging.CommonAttributes.FILTER;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.LoggingLogger.ROOT_LOGGER;
@@ -69,7 +70,7 @@ public abstract class HandlerUpdateProperties<T extends Handler> implements Oper
         this.attributeDefinitions.add(ENCODING);
         this.attributeDefinitions.add(FORMATTER);
         this.attributeDefinitions.add(LEVEL);
-        // TODO - support filter
+        this.attributeDefinitions.add(FILTER);
         Collections.addAll(this.attributeDefinitions, attributeDefinitions);
     }
 
@@ -105,7 +106,7 @@ public abstract class HandlerUpdateProperties<T extends Handler> implements Oper
                         final ModelNode level = LEVEL.resolveModelAttribute(context, model);
                         final ModelNode formatter = FORMATTER.resolveModelAttribute(context, model);
                         final ModelNode encoding = ENCODING.resolveModelAttribute(context, model);
-                        // TODO (jrp) implement filter
+                        final ModelNode filter = FILTER.resolveModelAttribute(context, model);
 
                         if (level.isDefined()) {
                             handler.setLevel(ModelParser.parseLevel(level));
@@ -122,6 +123,11 @@ public abstract class HandlerUpdateProperties<T extends Handler> implements Oper
                                 throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToSetHandlerEncoding()));
                             }
                         }
+
+                        if (filter.isDefined()) {
+                            handler.setFilter(ModelParser.parseFilter(context, filter));
+                        }
+
                         final boolean restartRequired = applyUpdateToRuntime(context, name, model, originalModel, handler);
 
                         if (restartRequired) {

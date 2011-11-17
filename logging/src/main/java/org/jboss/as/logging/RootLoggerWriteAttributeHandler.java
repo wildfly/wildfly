@@ -22,6 +22,10 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.logging.CommonAttributes.FILTER;
+import static org.jboss.as.logging.CommonAttributes.LEVEL;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -29,9 +33,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.logging.CommonAttributes.LEVEL;
 
 /**
  * Date: 31.10.2011
@@ -42,7 +43,7 @@ class RootLoggerWriteAttributeHandler extends AbstractLoggerWriteAttributeHandle
     public static final RootLoggerWriteAttributeHandler INSTANCE = new RootLoggerWriteAttributeHandler();
 
     private RootLoggerWriteAttributeHandler() {
-        super(LEVEL);
+        super(LEVEL, FILTER);
     }
 
     @Override
@@ -59,6 +60,8 @@ class RootLoggerWriteAttributeHandler extends AbstractLoggerWriteAttributeHandle
         final Logger logger = controller.getValue();
         if (LEVEL.getName().equals(attributeName)) {
             logger.setLevel(ModelParser.parseLevel(resolvedValue));
+        } else if (FILTER.getName().equals(attributeName)) {
+            logger.setFilter(ModelParser.parseFilter(context, resolvedValue));
         }
         return false;
     }
@@ -67,6 +70,8 @@ class RootLoggerWriteAttributeHandler extends AbstractLoggerWriteAttributeHandle
     protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final Logger logger) throws OperationFailedException {
         if (LEVEL.getName().equals(attributeName)) {
             logger.setLevel(ModelParser.parseLevel(valueToRestore));
+        } else if (FILTER.getName().equals(attributeName)) {
+            logger.setFilter(ModelParser.parseFilter(context, valueToRestore));
         }
     }
 }

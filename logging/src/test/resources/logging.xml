@@ -26,6 +26,9 @@
         <formatter>
             <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
         </formatter>
+        <filter>
+            <level-range min-level="TRACE" max-level="WARN" />
+        </filter>
     </console-handler>
 
     <periodic-rotating-file-handler name="FILE">
@@ -35,6 +38,14 @@
         </formatter>
         <file relative-to="jboss.server.log.dir" path="server.log"/>
         <suffix value=".yyyy-MM-dd"/>
+        <filter>
+            <any>
+                <level name="INFO" />
+                <not>
+                    <level name="TRACE" />
+                </not>
+            </any>
+        </filter>
     </periodic-rotating-file-handler>
 
     <size-rotating-file-handler name="sizeLogger">
@@ -47,12 +58,21 @@
         <level name="DEBUG" />
         <max-backup-index value="1024" />
         <rotate-size value="64m" />
+        <filter>
+            <all>
+                <match pattern=".*" />
+                <change-level new-level="DEBUG"/>
+            </all>
+        </filter>
     </size-rotating-file-handler>
 
     <file-handler name="simpleFile">
         <append value="true" />
         <level name="INFO" />
         <file relative-to="jboss.server.log.dir" path="fileHandler.log"/>
+        <filter>
+            <deny />
+        </filter>
     </file-handler>
 
     <async-handler name="async">
@@ -67,7 +87,11 @@
     <custom-handler name="customHandler" module="org.jboss.logmanager" class="org.jboss.logmanager.handler.ConsoleHandler">
         <properties>
             <property name="autoFlush" value="true" />
+            <property name="target" value="SYSTEM_OUT" />
         </properties>
+        <filter>
+            <replace pattern="\b(Name)|\b(name)" replacement="user" replace-all="true"/>
+        </filter>
     </custom-handler>
 
     <logger category="com.arjuna">

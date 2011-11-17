@@ -32,6 +32,7 @@ import org.jboss.msc.value.InjectedValue;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Filter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
@@ -49,6 +50,7 @@ public final class AsyncHandlerService implements HandlerService {
     private AsyncHandler value;
 
     private Level level;
+    private Filter filter;
     private AbstractFormatterSpec formatterSpec;
     private String encoding;
     private boolean autoflush;
@@ -59,6 +61,7 @@ public final class AsyncHandlerService implements HandlerService {
         formatterSpec.apply(handler);
         handler.setOverflowAction(overflowAction);
         handler.setAutoFlush(autoflush);
+        if (filter != null) handler.setFilter(filter);
         try {
             handler.setEncoding(encoding);
         } catch (UnsupportedEncodingException e) {
@@ -119,6 +122,15 @@ public final class AsyncHandlerService implements HandlerService {
         final AsyncHandler handler = value;
         if (handler != null) {
             formatterSpec.apply(handler);
+        }
+    }
+
+    @Override
+    public synchronized void setFilter(final Filter filter) {
+        this.filter = filter;
+        final AsyncHandler handler = value;
+        if (handler != null) {
+            handler.setFilter(filter);
         }
     }
 

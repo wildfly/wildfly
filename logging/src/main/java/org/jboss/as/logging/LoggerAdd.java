@@ -23,6 +23,7 @@
 package org.jboss.as.logging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.logging.CommonAttributes.FILTER;
 import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.USE_PARENT_HANDLERS;
@@ -51,6 +52,7 @@ class LoggerAdd extends AbstractAddStepHandler {
         LEVEL.validateAndSet(operation, model);
         HANDLERS.validateAndSet(operation, model);
         USE_PARENT_HANDLERS.validateAndSet(operation, model);
+        FILTER.validateAndSet(operation, model);
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
@@ -58,6 +60,7 @@ class LoggerAdd extends AbstractAddStepHandler {
         final String name = address.getLastElement().getValue();
         final ModelNode level = LEVEL.resolveModelAttribute(context, model);
         final ModelNode useParentHandlers = USE_PARENT_HANDLERS.resolveModelAttribute(context, model);
+        final ModelNode filter = FILTER.resolveModelAttribute(context, model);
 
         final ServiceTarget target = context.getServiceTarget();
         try {
@@ -65,6 +68,7 @@ class LoggerAdd extends AbstractAddStepHandler {
             final LoggerService service = new LoggerService(name);
             if (level.isDefined()) service.setLevel(ModelParser.parseLevel(level));
             if (useParentHandlers.isDefined()) service.setUseParentHandlers(useParentHandlers.asBoolean());
+            if (filter.isDefined()) service.setFilter(ModelParser.parseFilter(context, filter));
             newControllers.add(target.addService(LogServices.loggerName(name), service)
                     .addListener(verificationHandler)
                     .setInitialMode(ServiceController.Mode.ACTIVE)

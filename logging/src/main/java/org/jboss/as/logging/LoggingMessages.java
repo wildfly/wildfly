@@ -22,13 +22,15 @@
 
 package org.jboss.as.logging;
 
+import java.util.Collection;
+import java.util.EnumSet;
+
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jboss.msc.service.StartException;
-
-import java.util.EnumSet;
 
 /**
  * Date: 09.06.2011
@@ -84,7 +86,7 @@ interface LoggingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11523, value = "Can not unassign handler.  Handler %s is not assigned.")
+    @Message(id = 11523, value = "Can not unassign handler. Handler %s is not assigned.")
     String cannotUnassignHandler(String handlerName);
 
     /**
@@ -125,6 +127,16 @@ interface LoggingMessages {
      */
     @Message(id = 11527, value = "Handler %s not found.")
     String handlerNotFound(String name);
+
+    /**
+     * A message indicating the filter is invalid.
+     *
+     * @param name the name of the filter.
+     *
+     * @return the message.
+     */
+    @Message(value = "Filter %s is invalid")
+    String invalidFilter(String name);
 
     /**
      * A message indicating the log level, represented by the {@code level} parameter, is invalid.
@@ -177,6 +189,17 @@ interface LoggingMessages {
      */
     @Message(id = 11532, value = "'%s' is not a valid %s.")
     StartException invalidType(String className, Class<?> type);
+
+    /**
+     * A message indicating the value is invalid.
+     *
+     * @param value         the invalid value.
+     * @param allowedValues a collection of allowed values.
+     *
+     * @return the message.
+     */
+    @Message(value = "Value '%s' is invalid. Valid values are; %s")
+    String invalidValue(String value, Collection<String> allowedValues);
 
     /**
      * A message indicating the required nested filter element is missing.

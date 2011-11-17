@@ -36,6 +36,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Filter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
@@ -54,6 +55,7 @@ public final class CustomHandlerService implements HandlerService {
     private final String moduleName;
     private final List<Property> properties;
 
+    private Filter filter;
     private AbstractFormatterSpec formatterSpec;
     private Level level;
     private String encoding;
@@ -92,6 +94,7 @@ public final class CustomHandlerService implements HandlerService {
         } catch (IllegalAccessException e) {
             throw MESSAGES.cannotAccessClass(e, className);
         }
+        if (filter != null) handler.setFilter(filter);
         formatterSpec.apply(handler);
         if (level != null) handler.setLevel(level);
         try {
@@ -153,6 +156,15 @@ public final class CustomHandlerService implements HandlerService {
         this.formatterSpec = formatterSpec;
         final Handler handler = value;
         if (handler != null) formatterSpec.apply(handler);
+    }
+
+    @Override
+    public synchronized void setFilter(final Filter filter) {
+        this.filter = filter;
+        final Handler handler = value;
+        if (handler != null) {
+            handler.setFilter(filter);
+        }
     }
 
     public synchronized String getEncoding() {
