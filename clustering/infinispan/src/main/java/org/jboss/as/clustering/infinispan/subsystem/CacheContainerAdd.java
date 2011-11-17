@@ -22,12 +22,11 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.clustering.infinispan.InfinispanMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.clustering.infinispan.InfinispanMessages.MESSAGES;
 
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -35,17 +34,17 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
+
 import javax.management.MBeanServer;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.infinispan.Cache;
 import org.infinispan.client.hotrod.impl.ConfigurationProperties;
-import org.infinispan.client.hotrod.impl.protocol.HotRodConstants;
 import org.infinispan.config.Configuration;
 import org.infinispan.config.Configuration.CacheMode;
-import org.infinispan.config.parsing.XmlConfigHelper;
 import org.infinispan.config.FluentConfiguration;
+import org.infinispan.config.parsing.XmlConfigHelper;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.loaders.AbstractCacheLoaderConfig;
 import org.infinispan.loaders.CacheStore;
@@ -76,7 +75,6 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.network.OutboundSocketBinding;
-import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.as.threads.ThreadsServices;
@@ -97,6 +95,7 @@ import org.jgroups.Channel;
 
 /**
  * @author Paul Ferraro
+ * @author Tristan Tarrant
  */
 public class CacheContainerAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
@@ -250,10 +249,6 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
                 }
                 if (transaction.hasDefined(ModelKeys.LOCKING)) {
                     lockingMode = LockingMode.valueOf(transaction.get(ModelKeys.LOCKING).asString());
-                }
-                if (transaction.hasDefined(ModelKeys.EAGER_LOCKING)) {
-                    EagerLocking eager = EagerLocking.valueOf(transaction.get(ModelKeys.EAGER_LOCKING).asString());
-                    fluentTx.lockingMode(eager.isEnabled() ? LockingMode.PESSIMISTIC : LockingMode.OPTIMISTIC).eagerLockSingleNode(eager.isSingleOwner());
                 }
             }
             fluentTx.transactionMode(txMode.getMode());

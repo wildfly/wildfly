@@ -130,7 +130,7 @@
                 <thread-pool name="default" max-threads="10" keepalive-time="100"/>
             </thread-pools>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:infinispan:1.0" default-cache-container="hibernate">
+        <subsystem xmlns="urn:jboss:domain:infinispan:1.1" default-cache-container="hibernate">
             <cache-container name="hibernate" default-cache="local-query">
                 <local-cache name="entity">
                     <eviction strategy="LRU" max-entries="10000"/>

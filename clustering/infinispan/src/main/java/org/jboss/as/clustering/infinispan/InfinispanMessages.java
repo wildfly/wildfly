@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.infinispan;
 
-import java.io.File;
 import java.net.UnknownHostException;
 
 import org.jboss.as.clustering.ClusteringMessages;

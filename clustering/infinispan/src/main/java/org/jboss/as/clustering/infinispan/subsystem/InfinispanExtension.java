@@ -97,7 +97,8 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
      */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUri(), this);
+        context.setSubsystemXmlMapping(Namespace.INFINISPAN_1_0.getUri(), this);
+        context.setSubsystemXmlMapping(Namespace.INFINISPAN_1_1.getUri(), this);
     }
 
     /**
@@ -144,7 +145,8 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case INFINISPAN_1_0: {
+                case INFINISPAN_1_0:
+                case INFINISPAN_1_1: {
                     Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case CACHE_CONTAINER: {
@@ -594,11 +596,7 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
                     break;
                 }
                 case EAGER_LOCKING: {
-                    try {
-                        transaction.get(ModelKeys.EAGER_LOCKING).set(EagerLocking.valueOf(value).name());
-                    } catch (IllegalArgumentException e) {
-                        throw ParseUtils.invalidAttributeValue(reader, i);
-                    }
+                    ROOT_LOGGER.eagerAttributeDeprecated();
                     break;
                 }
                 default: {
@@ -1019,7 +1017,6 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
                         this.writeOptional(writer, Attribute.STOP_TIMEOUT, transaction, ModelKeys.STOP_TIMEOUT);
                         this.writeOptional(writer, Attribute.MODE, transaction, ModelKeys.MODE);
                         this.writeOptional(writer, Attribute.LOCKING, transaction, ModelKeys.LOCKING);
-                        this.writeOptional(writer, Attribute.EAGER_LOCKING, transaction, ModelKeys.EAGER_LOCKING);
                         writer.writeEndElement();
                     }
 

@@ -137,7 +137,7 @@
                 <thread-pool name="default" max-threads="10" keepalive-time="100"/>
             </thread-pools>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:infinispan:1.0" default-cache-container="cluster">
+        <subsystem xmlns="urn:jboss:domain:infinispan:1.1" default-cache-container="cluster">
             <cache-container name="cluster" default-cache="default">
                 <alias>ha-partition</alias>
                 <replicated-cache name="default" mode="SYNC" batching="true">
