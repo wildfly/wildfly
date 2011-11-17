@@ -409,7 +409,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
         final Map<String,CommandArgument> nodeProps = loadArguments(ctx, null);
         for(String argName : args.getPropertyNames()) {
-            if(argName.equals("--profile") || this.name.getFullName().equals(argName)) {
+            if(dependsOnProfile && argName.equals("--profile") || this.name.getFullName().equals(argName)) {
                 continue;
             }
 
@@ -470,7 +470,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         final Map<String, CommandArgument> argsMap = loadArguments(ctx, operation);
 
         for(String argName : args.getPropertyNames()) {
-            if(argName.equals("--profile")) {
+            if(dependsOnProfile && argName.equals("--profile")) {
                 continue;
             }
 
@@ -551,8 +551,8 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             buf.append(result.get("description").asString());
             ctx.printLine(buf.toString());
 
-            if(result.hasDefined("request-properties")) {
-                printProperties(ctx, result.get("request-properties").asPropertyList());
+            if(result.hasDefined(Util.REQUEST_PROPERTIES)) {
+                printProperties(ctx, result.get(Util.REQUEST_PROPERTIES).asPropertyList());
             } else {
                 printProperties(ctx, Collections.<Property>emptyList());
             }

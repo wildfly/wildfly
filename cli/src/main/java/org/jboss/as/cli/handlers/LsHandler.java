@@ -280,7 +280,7 @@ public class LsHandler extends CommandHandlerWithHelp {
                                                                 "n/a", "n/a", "n/a", "n/a", "n/a", "n/a"
                                                             });
 */
-                                                        attrTable.addCell(Util.NAME, prop.getName());
+                                                        attrTable.addCell("ATTRIBUTE", prop.getName());
                                                         attrTable.addCell(Util.VALUE, prop.getValue().asString());
                                                     }
                                                     if(!attrTable.isAtLastRow()) {
@@ -305,7 +305,7 @@ public class LsHandler extends CommandHandlerWithHelp {
                                                     }
                                                 } else {
 //                                                    attrTable.addLine(new String[]{prop.getName(), "n/a", "n/a"});
-                                                    childrenTable.addCell(Util.NAME, prop.getName());
+                                                    childrenTable.addCell("CHILD", prop.getName());
                                                 }
                                                 if(!childrenTable.isAtLastRow()) {
                                                     childrenTable.nextRow();

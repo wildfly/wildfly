@@ -109,11 +109,11 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
             return true;
         }
         ModelNode request = new ModelNode();
-        ModelNode address = request.get("address");
+        ModelNode address = request.get(Util.ADDRESS);
         for(OperationRequestAddress.Node node : requiredAddress) {
             address.add(node.getType(), node.getName());
         }
-        request.get("operation").set("validate-address");
+        request.get(Util.OPERATION).set(Util.VALIDATE_ADDRESS);
         ModelNode result;
         try {
             result = ctx.getModelControllerClient().execute(request);
