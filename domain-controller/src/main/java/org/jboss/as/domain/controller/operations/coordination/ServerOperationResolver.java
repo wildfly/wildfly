@@ -23,6 +23,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getAllRunningServers;
+import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getRelatedElements;
+import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getServersForGroup;
+import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getServersForType;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,14 +39,12 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.InterfaceDescription;
+import org.jboss.as.controller.operations.common.ResolveExpressionHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyRemoveHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.domain.controller.ServerIdentity;
-import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getAllRunningServers;
-import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getRelatedElements;
-import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getServersForGroup;
-import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getServersForType;
+import org.jboss.as.domain.controller.operations.ResolveExpressionOnDomainHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -361,7 +363,13 @@ public class ServerOperationResolver {
             for (String group : groups) {
                 allServers.addAll(getServersForGroup(group, host, localHostName, serverProxies));
             }
-            return Collections.singletonMap(allServers, operation);
+            result = Collections.singletonMap(allServers, operation);
+        } else if (ResolveExpressionOnDomainHandler.OPERATION_NAME.equals(opName)) {
+            final ModelNode serverOp = operation.clone();
+            serverOp.get(OP).set(ResolveExpressionHandler.OPERATION_NAME);
+            serverOp.get(OP_ADDR).setEmptyList();
+            final Set<ServerIdentity> allServers = getAllRunningServers(host, localHostName, serverProxies);
+            result = Collections.singletonMap(allServers, serverOp);
         }
 
         if (result == null) {
@@ -395,7 +403,7 @@ public class ServerOperationResolver {
     private Map<Set<ServerIdentity>, ModelNode> getServerHostOperations(ModelNode operation, PathAddress address,
             ModelNode domain, ModelNode host) {
         if (address.size() == 1) {
-            return Collections.emptyMap();
+            return resolveHostRootOperation(operation, domain, host);
         }
         else {
             HostKey hostKey = HostKey.forName(address.getElement(1).getKey());
@@ -426,6 +434,24 @@ public class ServerOperationResolver {
                     throw new IllegalStateException(String.format("Unexpected initial path key %s", address.getElement(0).getKey()));
             }
         }
+    }
+
+    private Map<Set<ServerIdentity>, ModelNode> resolveHostRootOperation(ModelNode operation, ModelNode domain, ModelNode host) {
+        Map<Set<ServerIdentity>, ModelNode> result = null;
+        String opName = operation.require(OP).asString();
+        if (ResolveExpressionOnDomainHandler.OPERATION_NAME.equals(opName)) {
+            final ModelNode serverOp = operation.clone();
+            serverOp.get(OP).set(ResolveExpressionHandler.OPERATION_NAME);
+            serverOp.get(OP_ADDR).setEmptyList();
+            final Set<ServerIdentity> allServers = getAllRunningServers(host, localHostName, serverProxies);
+            result = Collections.singletonMap(allServers, serverOp);
+        }
+
+        if (result == null) {
+            result = Collections.emptyMap();
+        }
+
+        return result;
     }
 
     /**

@@ -42,7 +42,7 @@ import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Encapsulates routing information for an operatoin executed against a host controller.
+ * Encapsulates routing information for an operation executed against a host controller.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
@@ -69,7 +69,7 @@ public class OperationRouting {
         if (targetHost != null) {
             Set<OperationEntry.Flag> flags = registry.getOperationFlags(PathAddress.EMPTY_ADDRESS, operation.require(OP).asString());
             checkNull(operation, flags);
-            if(flags.contains(OperationEntry.Flag.READ_ONLY)) {
+            if(flags.contains(OperationEntry.Flag.READ_ONLY) && !flags.contains(OperationEntry.Flag.DOMAIN_PUSH_TO_SERVERS)) {
                 routing =  new OperationRouting(targetHost, false);
             }
             // Check if the target is an actual server
@@ -80,23 +80,23 @@ public class OperationRouting {
                 }
             }
             if (routing == null) {
-                // TODO use a flag or something
-                if("start".equals(operationName) || "stop".equals(operationName) || "restart".equals(operationName)) {
+                if(flags.contains(OperationEntry.Flag.HOST_CONTROLLER_ONLY)) {
                     routing = new OperationRouting(targetHost, false);
                 } else {
                     routing = new OperationRouting(targetHost, true);
                 }
             }
         } else {
+            // Domain level operation
             Set<OperationEntry.Flag> flags = registry.getOperationFlags(PathAddress.EMPTY_ADDRESS, operation.require(OP).asString());
             checkNull(operation, flags);
-            if (flags.contains(OperationEntry.Flag.READ_ONLY)) {
+            if (flags.contains(OperationEntry.Flag.READ_ONLY) && !flags.contains(OperationEntry.Flag.DOMAIN_PUSH_TO_SERVERS)) {
                 // Direct read of domain model
                 routing = new OperationRouting(localHostControllerInfo.getLocalHostName(), false);
             } else if (!localHostControllerInfo.isMasterDomainController()) {
-                // TODO a slave could conceivably handle locally read-only requests for the domain model
+                // Route to master
                 routing = new OperationRouting();
-            } else if (flags.contains(OperationEntry.Flag.DEPLOYMENT_UPLOAD)) {
+            } else if (flags.contains(OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY)) {
                 // Deployment ops should be executed on the master DC only
                 routing = new OperationRouting(localHostControllerInfo.getLocalHostName(), false);
             }
@@ -131,7 +131,7 @@ public class OperationRouting {
                 }
             }
             else {
-                // Write operation to the model; everyone gets it
+                // Write operation to the model or a read that needs to be pushed to servers; everyone gets it
                 routing = new OperationRouting(true);
             }
         }

@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.domain.suites;
 
 import org.jboss.as.arquillian.container.domain.managed.DomainLifecycleUtil;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
@@ -55,6 +56,8 @@ import static org.jboss.as.test.integration.domain.DomainTestSupport.validateRes
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class ManagementReadsTestCase {
+
+    private static final String PATH_SEPARATOR = System.getProperty("file.separator");
 
     private static DomainTestSupport testSupport;
     private static DomainLifecycleUtil domainMasterLifecycleUtil;
@@ -349,5 +352,73 @@ public class ManagementReadsTestCase {
         response = domainClient.execute(request);
         validateResponse(response);
         // TODO make some more assertions about result content
+    }
+
+    @Test
+    public void testResolveExpressionOnDomain() throws Exception  {
+        ModelNode op = testSupport.createOperationNode(null, "resolve-expression-on-domain");
+        op.get("expression").set("${file.separator}");
+
+        DomainClient domainClient = domainMasterLifecycleUtil.getDomainClient();
+        ModelNode response = domainClient.execute(op);
+        ModelNode result = validateResponse(response);
+        validateResolveExpressionOnMaster(result);
+        validateResolveExpressionOnSlave(result);
+    }
+
+    @Test
+    public void testResolveExpressionOnMasterHost() throws Exception  {
+        ModelNode op = testSupport.createOperationNode("host=master", "resolve-expression-on-domain");
+        op.get("expression").set("${file.separator}");
+
+        DomainClient domainClient = domainMasterLifecycleUtil.getDomainClient();
+        ModelNode response = domainClient.execute(op);
+        ModelNode result = validateResponse(response);
+        validateResolveExpressionOnMaster(result);
+    }
+
+    @Test
+    public void testResolveExpressionOnSlaveHost() throws Exception  {
+        resolveExpressionOnSlaveHostTest(domainMasterLifecycleUtil.getDomainClient());
+    }
+
+    @Test
+    public void testResolveExpressionOnSlaveHostDirect() throws Exception  {
+        resolveExpressionOnSlaveHostTest(domainSlaveLifecycleUtil.getDomainClient());
+    }
+
+    private void resolveExpressionOnSlaveHostTest(ModelControllerClient domainClient) throws Exception {
+        ModelNode op = testSupport.createOperationNode("host=slave", "resolve-expression-on-domain");
+        op.get("expression").set("${file.separator}");
+
+        ModelNode response = domainClient.execute(op);
+        ModelNode result = validateResponse(response);
+        validateResolveExpressionOnSlave(result);
+    }
+
+    private static void validateResolveExpressionOnMaster(final ModelNode result) {
+        System.out.println(result);
+        ModelNode serverResult = result.get("server-groups", "main-server-group", "main-one");
+        Assert.assertTrue(serverResult.isDefined());
+        Assert.assertEquals("master", serverResult.get("host").asString());
+        validateResolveExpressionOnServer(serverResult);
+    }
+
+    private static void validateResolveExpressionOnSlave(final ModelNode result) {
+        System.out.println(result);
+        ModelNode serverResult = result.get("server-groups", "main-server-group", "main-three");
+        Assert.assertTrue(serverResult.isDefined());
+        Assert.assertEquals("slave", serverResult.get("host").asString());
+        validateResolveExpressionOnServer(serverResult);
+
+        serverResult = result.get("server-groups", "other-server-group", "other-two");
+        Assert.assertTrue(serverResult.isDefined());
+        Assert.assertEquals("slave", serverResult.get("host").asString());
+        validateResolveExpressionOnServer(serverResult);
+    }
+
+    private static void validateResolveExpressionOnServer(final ModelNode result) {
+        ModelNode serverResult = validateResponse(result.get("response"));
+        Assert.assertEquals(PATH_SEPARATOR, serverResult.asString());
     }
 }

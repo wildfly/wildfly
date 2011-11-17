@@ -122,7 +122,7 @@ public class CoreManagementResourceRegistrationUnitTestCase {
         ManagementResourceRegistration child = rootRegistration.registerSubModel(childElement, new TestDescriptionProvider("child"));
         child.registerOperationHandler("one", TestHandler.CHILD, new TestDescriptionProvider("one"), true);
         child.registerOperationHandler("two", TestHandler.CHILD, new TestDescriptionProvider("two"), true,
-                OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.DEPLOYMENT_UPLOAD));
+                OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY));
 
         ManagementResourceRegistration grandchild = child.registerSubModel(grandchildElement, new TestDescriptionProvider("grandchild"));
 
@@ -246,7 +246,7 @@ public class CoreManagementResourceRegistrationUnitTestCase {
         ManagementResourceRegistration child = rootRegistration.registerSubModel(childElement, new TestDescriptionProvider("child"));
         child.registerOperationHandler("one", TestHandler.INSTANCE, new TestDescriptionProvider("one"), true);
         child.registerOperationHandler("two", TestHandler.INSTANCE, new TestDescriptionProvider("two"), true,
-                OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.DEPLOYMENT_UPLOAD));
+                OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY));
 
         ManagementResourceRegistration grandchild = child.registerSubModel(grandchildElement, new TestDescriptionProvider("grandchild"));
 
@@ -257,7 +257,7 @@ public class CoreManagementResourceRegistrationUnitTestCase {
         Set<OperationEntry.Flag> twoFlags = child.getOperationFlags(PathAddress.EMPTY_ADDRESS, "two");
         assertNotNull(twoFlags);
         assertEquals(1, twoFlags.size());
-        assertTrue(twoFlags.contains(OperationEntry.Flag.DEPLOYMENT_UPLOAD));
+        assertTrue(twoFlags.contains(OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY));
 
         Set<OperationEntry.Flag> threeFlags = child.getOperationFlags(PathAddress.EMPTY_ADDRESS, "three");
         assertNotNull(threeFlags);
@@ -271,7 +271,7 @@ public class CoreManagementResourceRegistrationUnitTestCase {
         twoFlags = rootRegistration.getOperationFlags(childAddress, "two");
         assertNotNull(twoFlags);
         assertEquals(1, twoFlags.size());
-        assertTrue(twoFlags.contains(OperationEntry.Flag.DEPLOYMENT_UPLOAD));
+        assertTrue(twoFlags.contains(OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY));
 
         threeFlags = child.getOperationFlags(childAddress, "three");
         assertNotNull(threeFlags);
@@ -305,17 +305,17 @@ public class CoreManagementResourceRegistrationUnitTestCase {
         twoFlags = rootRegistration.getOperationFlags(grandchildAddress, "two");
         assertNotNull(twoFlags);
         assertEquals(1, twoFlags.size());
-        assertTrue(twoFlags.contains(OperationEntry.Flag.DEPLOYMENT_UPLOAD));
+        assertTrue(twoFlags.contains(OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY));
 
         twoFlags = rootRegistration.getOperationFlags(fullGrandchildAddress, "two");
         assertNotNull(twoFlags);
         assertEquals(1, twoFlags.size());
-        assertTrue(twoFlags.contains(OperationEntry.Flag.DEPLOYMENT_UPLOAD));
+        assertTrue(twoFlags.contains(OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY));
 
         twoFlags = grandchild.getOperationFlags(PathAddress.EMPTY_ADDRESS, "two");
         assertNotNull(twoFlags);
         assertEquals(1, twoFlags.size());
-        assertTrue(twoFlags.contains(OperationEntry.Flag.DEPLOYMENT_UPLOAD));
+        assertTrue(twoFlags.contains(OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY));
 
         threeFlags = rootRegistration.getOperationFlags(grandchildAddress, "three");
         assertNotNull(threeFlags);

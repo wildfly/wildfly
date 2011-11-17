@@ -116,6 +116,22 @@ public class DomainTestSupport {
         processFutures(futures, timeout);
     }
 
+    public static ModelNode createOperationNode(String address, String operation) {
+        ModelNode op = new ModelNode();
+
+        // set address
+        ModelNode list = op.get("address").setEmptyList();
+        if (address != null) {
+            String [] pathSegments = address.split("/");
+            for (String segment : pathSegments) {
+                String[] elements = segment.split("=");
+                list.add(elements[0], elements[1]);
+            }
+        }
+        op.get("operation").set(operation);
+        return op;
+    }
+
     public static ModelNode validateResponse(ModelNode response) {
 
         if(! SUCCESS.equals(response.get(OUTCOME).asString())) {

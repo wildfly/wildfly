@@ -115,7 +115,7 @@ public class ServerOperationsResolverHandler implements OperationStepHandler {
         Map<Set<ServerIdentity>, ModelNode> result = null;
         final PathAddress relativeAddress = domainOpAddress.subAddress(originalAddress.size());
         Set<OperationEntry.Flag> flags = originalRegistration.getOperationFlags(relativeAddress, domainOp.require(OP).asString());
-        if (flags.contains(OperationEntry.Flag.READ_ONLY)) {
+        if (flags.contains(OperationEntry.Flag.READ_ONLY) && !flags.contains(OperationEntry.Flag.DOMAIN_PUSH_TO_SERVERS)) {
             result = Collections.emptyMap();
         }
         if (result == null) {
