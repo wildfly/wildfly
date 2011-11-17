@@ -36,8 +36,19 @@ import org.jboss.tm.JBossXATerminator;
 public final class XATerminatorService implements Service<JBossXATerminator> {
     private volatile JBossXATerminator value;
 
+    private final boolean jts;
+
+    public XATerminatorService(boolean jts) {
+        this.jts = jts;
+    }
+
+
     public void start(final StartContext context) throws StartException {
-        value = new com.arjuna.ats.internal.jbossatx.jta.jca.XATerminator();
+        if (jts) {
+            value = new com.arjuna.ats.internal.jbossatx.jts.jca.XATerminator();
+        } else {
+            value = new com.arjuna.ats.internal.jbossatx.jta.jca.XATerminator();
+        }
     }
 
     public void stop(final StopContext context) {
