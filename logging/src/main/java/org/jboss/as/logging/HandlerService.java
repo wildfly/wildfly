@@ -25,6 +25,7 @@ package org.jboss.as.logging;
 import org.jboss.msc.service.Service;
 
 import java.io.UnsupportedEncodingException;
+import java.util.logging.Filter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
@@ -40,4 +41,6 @@ interface HandlerService extends Service<Handler> {
     void setEncoding(String encoding) throws UnsupportedEncodingException;
 
     void setFormatterSpec(AbstractFormatterSpec formatterSpec);
+
+    void setFilter(Filter filter);
 }

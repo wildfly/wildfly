@@ -22,6 +22,11 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.logging.CommonAttributes.FILTER;
+import static org.jboss.as.logging.CommonAttributes.LEVEL;
+import static org.jboss.as.logging.CommonAttributes.USE_PARENT_HANDLERS;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -29,10 +34,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.logging.CommonAttributes.LEVEL;
-import static org.jboss.as.logging.CommonAttributes.USE_PARENT_HANDLERS;
 
 /**
  * Date: 31.10.2011
@@ -43,7 +44,7 @@ class LoggerWriteAttributeHandler extends AbstractLoggerWriteAttributeHandler {
     public static final LoggerWriteAttributeHandler INSTANCE = new LoggerWriteAttributeHandler();
 
     private LoggerWriteAttributeHandler() {
-        super(LEVEL, USE_PARENT_HANDLERS);
+        super(LEVEL, FILTER, USE_PARENT_HANDLERS);
     }
 
     @Override
@@ -52,7 +53,7 @@ class LoggerWriteAttributeHandler extends AbstractLoggerWriteAttributeHandler {
         final String name = address.getLastElement().getValue();
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
         @SuppressWarnings("unchecked")
-        final ServiceController<Logger> controller = (ServiceController<Logger>) serviceRegistry.getService(LogServices.handlerName(name));
+        final ServiceController<Logger> controller = (ServiceController<Logger>) serviceRegistry.getService(LogServices.loggerName(name));
         if (controller == null) {
             return false;
         }
@@ -60,6 +61,8 @@ class LoggerWriteAttributeHandler extends AbstractLoggerWriteAttributeHandler {
         final Logger logger = controller.getValue();
         if (LEVEL.getName().equals(attributeName)) {
             logger.setLevel(ModelParser.parseLevel(resolvedValue));
+        } else if (FILTER.getName().equals(attributeName)) {
+            logger.setFilter(ModelParser.parseFilter(context, resolvedValue));
         } else if (USE_PARENT_HANDLERS.getName().equals(attributeName)) {
             logger.setUseParentHandlers(resolvedValue.asBoolean());
         }
@@ -70,6 +73,8 @@ class LoggerWriteAttributeHandler extends AbstractLoggerWriteAttributeHandler {
     protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final Logger logger) throws OperationFailedException {
         if (LEVEL.getName().equals(attributeName)) {
             logger.setLevel(ModelParser.parseLevel(valueToRestore));
+        } else if (FILTER.getName().equals(attributeName)) {
+            logger.setFilter(ModelParser.parseFilter(context, valueToRestore));
         } else if (USE_PARENT_HANDLERS.getName().equals(attributeName)) {
             logger.setUseParentHandlers(valueToRestore.asBoolean());
         }

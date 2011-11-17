@@ -29,6 +29,14 @@ import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
+import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Handler;
+
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -37,13 +45,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
-
-import java.io.UnsupportedEncodingException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Handler;
 
 /**
  * Date: 12.10.2011
@@ -54,14 +55,7 @@ abstract class AbstractLogHandlerWriteAttributeHandler<T extends Handler> extend
     private final Map<String, AttributeDefinition> attributes;
 
     AbstractLogHandlerWriteAttributeHandler(final AttributeDefinition... attributes) {
-        this.attributes = new HashMap<String, AttributeDefinition>();
-        this.attributes.put(LEVEL.getName(), LEVEL);
-        this.attributes.put(FILTER.getName(), FILTER);
-        this.attributes.put(FORMATTER.getName(), FORMATTER);
-        this.attributes.put(ENCODING.getName(), ENCODING);
-        for (AttributeDefinition attr : attributes) {
-            this.attributes.put(attr.getName(), attr);
-        }
+        this(Arrays.asList(attributes));
     }
 
     AbstractLogHandlerWriteAttributeHandler(final Collection<AttributeDefinition> attributes) {
@@ -70,6 +64,7 @@ abstract class AbstractLogHandlerWriteAttributeHandler<T extends Handler> extend
         this.attributes.put(FILTER.getName(), FILTER);
         this.attributes.put(FORMATTER.getName(), FORMATTER);
         this.attributes.put(ENCODING.getName(), ENCODING);
+        this.attributes.put(FILTER.getName(), FILTER);
         for (AttributeDefinition attr : attributes) {
             this.attributes.put(attr.getName(), attr);
         }
@@ -91,7 +86,7 @@ abstract class AbstractLogHandlerWriteAttributeHandler<T extends Handler> extend
         if (LEVEL.getName().equals(attributeName)) {
             handler.setLevel(ModelParser.parseLevel(resolvedValue));
         } else if (FILTER.getName().equals(attributeName)) {
-            // TODO (jrp) implement filter
+            handler.setFilter(ModelParser.parseFilter(context, resolvedValue));
         } else if (FORMATTER.getName().equals(attributeName)) {
             AbstractFormatterSpec.fromModelNode(context, resolvedValue).apply(handler);
         } else if (ENCODING.getName().equals(attributeName)) {
@@ -112,7 +107,7 @@ abstract class AbstractLogHandlerWriteAttributeHandler<T extends Handler> extend
             if (LEVEL.getName().equals(attributeName)) {
                 handler.setLevel(ModelParser.parseLevel(valueToRestore));
             } else if (FILTER.getName().equals(attributeName)) {
-                // TODO (jrp) implement filter
+                handler.setFilter(ModelParser.parseFilter(context, valueToRestore));
             } else if (FORMATTER.getName().equals(attributeName)) {
                 AbstractFormatterSpec.fromModelNode(context, valueToRestore).apply(handler);
             } else if (ENCODING.getName().equals(attributeName)) {

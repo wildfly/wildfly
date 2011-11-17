@@ -24,16 +24,16 @@ package org.jboss.as.logging;
 
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Level;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.logging.Level;
 
 /**
  * Checks the value to see if it's a valid {@link Level}.
@@ -60,6 +60,7 @@ final class LogLevelValidator extends ModelTypeValidator implements AllowedValue
     };
 
     private final List<Level> allowedValues;
+    private final List<ModelNode> nodeValues;
 
     public LogLevelValidator(final boolean nullable) {
         this(nullable, false);
@@ -76,6 +77,10 @@ final class LogLevelValidator extends ModelTypeValidator implements AllowedValue
     public LogLevelValidator(final boolean nullable, final boolean allowExpressions, final Level... levels) {
         super(ModelType.STRING, nullable, allowExpressions);
         allowedValues = Arrays.asList(levels);
+        nodeValues = new ArrayList<ModelNode>(allowedValues.size());
+        for (Level level : allowedValues) {
+            nodeValues.add(new ModelNode().set(level.getName()));
+        }
     }
 
     @Override
@@ -96,10 +101,6 @@ final class LogLevelValidator extends ModelTypeValidator implements AllowedValue
 
     @Override
     public List<ModelNode> getAllowedValues() {
-        final List<ModelNode> result = new LinkedList<ModelNode>();
-        for (Level level : allowedValues) {
-            result.add(new ModelNode().set(level.getName()));
-        }
-        return result;
+        return nodeValues;
     }
 }
