@@ -70,7 +70,7 @@
             <artifactId>jboss-common-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>juddi</groupId>
+            <groupId>org.apache.juddi</groupId>
             <artifactId>juddi</artifactId>
         </dependency>
         <dependency>
