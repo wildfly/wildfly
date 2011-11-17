@@ -309,7 +309,7 @@ public class EnterpriseDeploymentTestCase {
         if (file.exists())
             return file;
 
-        String testResourcesDir = "target/test-classes";
+        String testResourcesDir = System.getProperty("jbossas.ts.submodule.dir") + "/target/test-classes";
         file = new File(testResourcesDir + "/" + resource);
         if (file.exists())
             return file;
