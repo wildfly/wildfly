@@ -55,16 +55,19 @@ import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
 public class EjbInjectionSource extends InjectionSource {
     private final String beanName;
     private final String typeName;
+    private final String bindingName;
     private volatile ServiceName resolvedViewName;
     private volatile RemoteViewManagedReferenceFactory remoteFactory;
     private volatile String error = null;
 
-    public EjbInjectionSource(final String beanName, final String typeName) {
+    public EjbInjectionSource(final String beanName, final String typeName, final String bindingName) {
         this.beanName = beanName;
         this.typeName = typeName;
+        this.bindingName = bindingName;
     }
 
-    public EjbInjectionSource(final String typeName) {
+    public EjbInjectionSource(final String typeName, final String bindingName) {
+        this.bindingName = bindingName;
         this.beanName = null;
         this.typeName = typeName;
     }
@@ -85,11 +88,11 @@ public class EjbInjectionSource extends InjectionSource {
     public void resolve(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final Set<ViewDescription> componentsForViewName = getViews(phaseContext);
         if (componentsForViewName.isEmpty()) {
-            error = "No component found for type '" + typeName + "' with name " + beanName;
+            error = "No component found for type '" + typeName + "' with name " + beanName + " for binding " + bindingName;
             return ;
         }
         if (componentsForViewName.size() > 1) {
-            error = "More than 1 component found for type '" + typeName + "' and bean name " + beanName;
+            error = "More than 1 component found for type '" + typeName + "' and bean name " + beanName + " for binding " + bindingName;
             return ;
         }
         ViewDescription description = componentsForViewName.iterator().next();

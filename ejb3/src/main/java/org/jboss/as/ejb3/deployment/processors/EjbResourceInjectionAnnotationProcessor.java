@@ -153,9 +153,9 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
                 valueSource = new LookupInjectionSource(lookup);
             }
         } else if (!isEmpty(beanName)) {
-            valueSource = ejbInjectionSource = new EjbInjectionSource(beanName, beanInterface);
+            valueSource = ejbInjectionSource = new EjbInjectionSource(beanName, beanInterface, localContextName);
         } else {
-            valueSource = ejbInjectionSource = new EjbInjectionSource(beanInterface);
+            valueSource = ejbInjectionSource = new EjbInjectionSource(beanInterface, localContextName);
         }
         if (ejbInjectionSource != null) {
             deploymentUnit.addToAttachmentList(EjbDeploymentAttachmentKeys.EJB_INJECTIONS, ejbInjectionSource);
