@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-jar xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	version="3.0"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd">
+	<display-name>EnvEntry Tests</display-name>
+	<enterprise-beans>
+		<!-- Optional -->
+		<session>
+			<ejb-name>OptionalEnvEntryBean</ejb-name>
+			<env-entry>
+				<description>default env-entry</description>
+				<env-entry-name>entry</env-entry-name>
+				<env-entry-type>java.lang.Double</env-entry-type>
+				<injection-target>
+					<injection-target-class>org.jboss.as.test.integration.ee.injection.resource.enventry.OptionalEnvEntryBean</injection-target-class>
+					<injection-target-name>entry</injection-target-name>
+				</injection-target>
+			</env-entry>
+		</session>
+
+		<!-- EnvEntry -->
+		<session>
+			<ejb-name>TestEnvEntry</ejb-name>
+			<env-entry>
+				<env-entry-name>maxExceptions</env-entry-name>
+				<env-entry-type>java.lang.Integer</env-entry-type>
+				<env-entry-value>15</env-entry-value>
+			</env-entry>
+			<env-entry>
+				<env-entry-name>minExceptions</env-entry-name>
+				<env-entry-type>java.lang.Integer</env-entry-type>
+				<env-entry-value>5</env-entry-value>
+				<injection-target>
+					<injection-target-class>org.jboss.as.test.integration.ee.injection.resource.enventry.TestEnvEntryBean</injection-target-class>
+					<injection-target-name>minExceptions</injection-target-name>
+				</injection-target>
+			</env-entry>
+			<env-entry>
+				<env-entry-name>org.jboss.as.test.integration.ee.injection.resource.enventry.TestEnvEntryBean/numExceptions</env-entry-name>
+				<env-entry-type>java.lang.Integer</env-entry-type>
+				<env-entry-value>10</env-entry-value>
+			</env-entry>
+		</session>
+		<session>
+			<ejb-name>ExtendedTestEnvEntry</ejb-name>
+			<env-entry>
+				<env-entry-name>maxExceptions</env-entry-name>
+				<env-entry-type>java.lang.Integer</env-entry-type>
+				<env-entry-value>14</env-entry-value>
+			</env-entry>
+			<env-entry>
+				<env-entry-name>minExceptions</env-entry-name>
+				<env-entry-type>java.lang.Integer</env-entry-type>
+				<env-entry-value>6</env-entry-value>
+				<injection-target>
+					<injection-target-class>org.jboss.as.test.integration.ee.injection.resource.enventry.ExtendedTestEnvEntryBean</injection-target-class>
+					<injection-target-name>minExceptions</injection-target-name>
+				</injection-target>
+			</env-entry>
+			<env-entry>
+				<env-entry-name>org.jboss.as.test.integration.ee.injection.resource.enventry.ExtendedTestEnvEntryBean/numExceptions</env-entry-name>
+				<env-entry-type>java.lang.Integer</env-entry-type>
+				<env-entry-value>11</env-entry-value>
+			</env-entry>
+		</session>
+		<message-driven>
+			<ejb-name>TestEnvEntryMD</ejb-name>
+			<env-entry>
+				<env-entry-name>maxExceptions</env-entry-name>
+				<env-entry-type>java.lang.Integer</env-entry-type>
+				<env-entry-value>16</env-entry-value>
+			</env-entry>
+			<env-entry>
+				<env-entry-name>minExceptions</env-entry-name>
+				<env-entry-type>java.lang.Integer</env-entry-type>
+				<env-entry-value>7</env-entry-value>
+				<injection-target>
+					<injection-target-class>org.jboss.as.test.integration.ee.injection.resource.enventry.TestEnvEntryMDBean</injection-target-class>
+					<injection-target-name>minExceptions</injection-target-name>
+				</injection-target>
+			</env-entry>
+			<env-entry>
+				<env-entry-name>org.jboss.as.test.integration.ee.injection.resource.enventry.TestEnvEntryMDBean/numExceptions</env-entry-name>
+				<env-entry-type>java.lang.Integer</env-entry-type>
+				<env-entry-value>12</env-entry-value>
+			</env-entry>
+		</message-driven>
+	</enterprise-beans>
+</ejb-jar>

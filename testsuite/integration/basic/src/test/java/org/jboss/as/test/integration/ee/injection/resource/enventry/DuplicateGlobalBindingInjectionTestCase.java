@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.ee.injection.resource.enventry;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.ee.component.EnvEntryInjectionSource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -45,7 +46,10 @@ public class DuplicateGlobalBindingInjectionTestCase {
     @Deployment(name = "dep1", managed = true, testable = true)
     public static WebArchive deployment1() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "dep1.war");
-        war.addPackage(DuplicateGlobalBindingInjectionTestCase.class.getPackage());
+        war.addClasses(
+                EnvEntryInjectionServlet.class,
+                EnvEntryManagedBean.class, 
+                DuplicateGlobalBindingInjectionTestCase.class);
         war.addAsWebInfResource(getWebXml(), "web.xml");
         return war;
     }
@@ -54,7 +58,11 @@ public class DuplicateGlobalBindingInjectionTestCase {
     public static WebArchive deployment2() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "dep2.war");
         war.addPackage(HttpRequest.class.getPackage());
-        war.addPackage(DuplicateGlobalBindingInjectionTestCase.class.getPackage());
+        // war.addPackage(DuplicateGlobalBindingInjectionTestCase.class.getPackage());
+        war.addClasses(
+                EnvEntryInjectionServlet.class,
+                EnvEntryManagedBean.class, 
+                DuplicateGlobalBindingInjectionTestCase.class);
         war.addAsWebInfResource(getWebXml(), "web.xml");
         return war;
     }
