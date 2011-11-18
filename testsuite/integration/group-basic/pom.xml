@@ -107,7 +107,7 @@
                                         <arquillian.xml>arquillian.xml</arquillian.xml>
                                         <arquillian.launch>jboss</arquillian.launch>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
-                                        <jboss.inst>${basedir}/target/jbossas-jbossas</jboss.inst>
+                                        <jboss.inst>${basedir}/target/jbossas</jboss.inst>
                                     </systemPropertyVariables>
 
                                     <additionalClasspathElements>
