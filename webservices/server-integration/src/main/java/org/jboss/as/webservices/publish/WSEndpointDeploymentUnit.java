@@ -66,12 +66,12 @@ public class WSEndpointDeploymentUnit extends SimpleAttachable implements Deploy
 
     @Override
     public ModelNode getDeploymentSubsystemModel(String subsystemName) {
-        throw new RuntimeException("Can't get the deployment submodel from a " + WSEndpointDeploymentUnit.class + " instance");
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public ModelNode createDeploymentSubModel(String subsystemName, PathElement address) {
-        throw new RuntimeException("Can't create a deployment submodel from a " + WSEndpointDeploymentUnit.class + " instance");
+        throw new UnsupportedOperationException();
     }
 
 }

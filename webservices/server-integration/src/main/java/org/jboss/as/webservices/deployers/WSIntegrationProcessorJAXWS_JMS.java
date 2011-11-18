@@ -23,6 +23,7 @@ package org.jboss.as.webservices.deployers;
 
 import static org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT;
 import static org.jboss.as.server.deployment.Attachments.RESOURCE_ROOTS;
+import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 import static org.jboss.as.webservices.util.ASHelper.getAnnotations;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY;
@@ -48,7 +49,6 @@ import org.jboss.as.webservices.util.VirtualFileAdaptor;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
-import org.jboss.logging.Logger;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.ws.common.deployment.SOAPAddressWSDLParser;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
@@ -62,7 +62,6 @@ import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
  */
 public final class WSIntegrationProcessorJAXWS_JMS implements DeploymentUnitProcessor {
 
-    private static Logger LOG = Logger.getLogger(WSIntegrationProcessorJAXWS_JMS.class);
     private static final String WSDL_LOCATION = "wsdlLocation";
     private static final String PORT_NAME = "portName";
     private static final String SERVICE_NAME = "serviceName";
@@ -99,11 +98,7 @@ public final class WSIntegrationProcessorJAXWS_JMS implements DeploymentUnitProc
         final JMSEndpointsMetaData endpointsMetaData = new JMSEndpointsMetaData();
         if (!map.isEmpty()) {
 
-            final boolean trace = LOG.isTraceEnabled();
             for (String wsdlLocation : map.keySet()) {
-                if (trace) {
-                    LOG.tracef("Scanning wsdlLocation: %s", wsdlLocation);
-                }
                 try {
                     final ResourceRoot resourceRoot = getWsdlResourceRoot(unit, wsdlLocation);
                     if (resourceRoot == null) continue;
@@ -117,10 +112,6 @@ public final class WSIntegrationProcessorJAXWS_JMS implements DeploymentUnitProc
                         String tns = targetNS != null ? targetNS.asString() : null;
                         QName serviceName = new QName(tns, service);
                         QName portName = new QName(tns, port);
-                        if (trace) {
-                            LOG.tracef("  serviceName: %s", serviceName);
-                            LOG.tracef("  portName: %s", portName);
-                        }
                         String soapAddress = parser.filterSoapAddress(serviceName, portName, SOAPAddressWSDLParser.SOAP_OVER_JMS_NS);
                         if (soapAddress != null) {
                             ClassInfo webServiceClassInfo = (ClassInfo) ai.target();
@@ -136,12 +127,8 @@ public final class WSIntegrationProcessorJAXWS_JMS implements DeploymentUnitProc
                             endpointsMetaData.addEndpointMetaData(endpointMetaData);
                         }
                     }
-                } catch (Exception e) {
-                    if (trace) {
-                        LOG.warnf("Could not read WSDL at '%s'", wsdlLocation, e);
-                    } else {
-                        LOG.warnf("Could not read WSDL at '%s'", wsdlLocation);
-                    }
+                } catch (Exception ignore) {
+                    ROOT_LOGGER.cannotReadWsdl(wsdlLocation);
                 }
             }
 

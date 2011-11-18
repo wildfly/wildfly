@@ -25,7 +25,6 @@ import java.util.Set;
 
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
-import org.jboss.jandex.ClassInfo;
 import org.jboss.msc.service.ServiceName;
 
 /**

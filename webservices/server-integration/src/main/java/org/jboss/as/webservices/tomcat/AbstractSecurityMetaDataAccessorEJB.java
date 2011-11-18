@@ -21,13 +21,13 @@
  */
 package org.jboss.as.webservices.tomcat;
 
+import static org.jboss.as.webservices.WSMessages.MESSAGES;
+
 import java.util.List;
 
 import org.jboss.as.webservices.metadata.model.EJBEndpoint;
 import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
-import org.jboss.security.SecurityConstants;
-import org.jboss.security.SecurityUtil;
 import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
@@ -42,28 +42,6 @@ import org.jboss.wsf.spi.metadata.j2ee.EJBSecurityMetaData;
  * @author <a href="mailto:tdiesler@redhat.com">Thomas Diesler</a>
  */
 abstract class AbstractSecurityMetaDataAccessorEJB implements SecurityMetaDataAccessorEJB {
-
-    /**
-     * Constructor.
-     */
-    protected AbstractSecurityMetaDataAccessorEJB() {
-        super();
-    }
-
-    /**
-     * Appends 'java:jboss/jaas/' prefix to security domain if it's not prefixed with it.
-     *
-     * @param securityDomain security domain to be prefixed
-     * @return security domain prefixed with jaas JNDI prefix
-     */
-    protected final String appendJaasPrefix(final String securityDomain) {
-        if (securityDomain != null) {
-            SecurityUtil.unprefixSecurityDomain(securityDomain);
-            return SecurityConstants.JAAS_CONTEXT_ROOT + securityDomain;
-        }
-
-        return securityDomain;
-    }
 
     /**
      * @see org.jboss.webservices.integration.tomcat.AbstractSecurityMetaDataAccessorEJB#getSecurityDomain(Deployment)
@@ -183,14 +161,8 @@ abstract class AbstractSecurityMetaDataAccessorEJB implements SecurityMetaDataAc
      */
     private void ensureSameDomains(final String oldSecurityDomain, final String newSecurityDomain) {
         final boolean domainsDiffer = !oldSecurityDomain.equals(newSecurityDomain);
-
-        if (domainsDiffer) {
-            final String errorMessage = "Multiple security domains not supported. ";
-            final String firstDomain = "First domain: '" + oldSecurityDomain + "' ";
-            final String secondDomain = "second domain: '" + newSecurityDomain + "'";
-
-            throw new IllegalStateException(errorMessage + firstDomain + secondDomain);
-        }
+        if (domainsDiffer)
+            throw MESSAGES.multipleSecurityDomainsDetected(oldSecurityDomain, newSecurityDomain);
     }
 
 }

@@ -24,7 +24,6 @@ package org.jboss.as.webservices.service;
 import javax.management.MBeanServer;
 
 import org.jboss.as.webservices.util.WSServices;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
@@ -49,7 +48,6 @@ import org.jboss.wsf.spi.management.EndpointRegistry;
  */
 public final class EndpointRegistryService implements Service<EndpointRegistry> {
 
-    private static final Logger log = Logger.getLogger(EndpointRegistryService.class);
     private static final ServiceName MBEAN_SERVER_NAME = ServiceName.JBOSS.append("mbean", "server");
     private static final EndpointRegistryService INSTANCE = new EndpointRegistryService();
 
@@ -67,7 +65,6 @@ public final class EndpointRegistryService implements Service<EndpointRegistry> 
 
     @Override
     public void start(final StartContext context) throws StartException {
-        log.tracef("Starting %s", EndpointRegistryService.class.getName());
         if (injectedMBeanServer.getValue() != null) {
             final ManagedEndpointRegistry managedEndpointRegistry = new ManagedEndpointRegistry();
             managedEndpointRegistry.setMbeanServer(injectedMBeanServer.getValue());
@@ -79,7 +76,6 @@ public final class EndpointRegistryService implements Service<EndpointRegistry> 
 
     @Override
     public void stop(final StopContext context) {
-        log.tracef("Stopping %s", EndpointRegistryService.class.getName());
     }
 
     private InjectedValue<MBeanServer> getMBeanServerInjector() {

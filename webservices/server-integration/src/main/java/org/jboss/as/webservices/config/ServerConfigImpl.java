@@ -44,36 +44,18 @@ public final class ServerConfigImpl extends AbstractServerConfig implements Abst
     private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
     private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
 
-    /**
-     * Constructor.
-     */
     private ServerConfigImpl() {
         // forbidden inheritance
     }
 
-    /**
-     * Gets server temp directory.
-     *
-     * @return temp directory
-     */
     public File getServerTempDir() {
         return getServerEnvironment().getServerTempDir();
     }
 
-    /**
-     * Gets server home directory.
-     *
-     * @return home directory
-     */
     public File getHomeDir() {
         return getServerEnvironment().getHomeDir();
     }
 
-    /**
-     * Gets server data directory.
-     *
-     * @return data directory
-     */
     public File getServerDataDir() {
         return getServerEnvironment().getServerDataDir();
     }
@@ -85,9 +67,7 @@ public final class ServerConfigImpl extends AbstractServerConfig implements Abst
 
     @Override
     public void setMbeanServer(final MBeanServer mbeanServer) {
-        throw new RuntimeException(
-                this.getClass()
-                        + " does not support setting MBeanServer instance; the value should have already been automatically injected");
+        throw new UnsupportedOperationException();
     }
 
     public InjectedValue<MBeanServer> getMBeanServerInjector() {
@@ -105,7 +85,5 @@ public final class ServerConfigImpl extends AbstractServerConfig implements Abst
     public static ServerConfigImpl getInstance() {
         return INSTANCE;
     }
-
-
 
 }

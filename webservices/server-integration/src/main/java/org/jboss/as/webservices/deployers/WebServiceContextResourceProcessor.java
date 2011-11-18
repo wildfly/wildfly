@@ -32,17 +32,14 @@ import org.jboss.as.ee.component.deployers.EEResourceReferenceProcessor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.webservices.injection.WebServiceContextInjectionSource;
-import org.jboss.logging.Logger;
 
 /**
  * Processes {@link javax.annotation.Resource @Resource} and {@link javax.annotation.Resources @Resources} annotations
  * for a {@link WebServiceContext} type resource
  * <p/>
- * User : Jaikiran Pai
+ * @author Jaikiran Pai
  */
-public class WebServiceContextResourceProcessor implements EEResourceReferenceProcessor {
-
-    private static final Logger logger = Logger.getLogger(WebServiceContextResourceProcessor.class);
+public final class WebServiceContextResourceProcessor implements EEResourceReferenceProcessor {
 
     @Override
     public String getResourceReferenceType() {
@@ -51,11 +48,9 @@ public class WebServiceContextResourceProcessor implements EEResourceReferencePr
 
     @Override
     public InjectionSource getResourceReferenceBindingSource(final DeploymentPhaseContext phaseContext, final EEModuleDescription eeModuleDescription,
-                                                             final EEModuleClassDescription classDescription, final String resourceReferenceType,
-                                                             final String localContextName, final InjectionTarget injectionTarget) throws DeploymentUnitProcessingException {
-        logger.debug("Processing @Resource of type: " + WebServiceContext.class.getName() + " for ENC name: " + localContextName);
-        // webservice context binding source
-        final InjectionSource bindingSource = new WebServiceContextInjectionSource();
-        return bindingSource;
+      final EEModuleClassDescription classDescription, final String resourceReferenceType,
+      final String localContextName, final InjectionTarget injectionTarget) throws DeploymentUnitProcessingException {
+        return new WebServiceContextInjectionSource();
     }
+
 }

@@ -21,6 +21,7 @@
  */
 package org.jboss.as.webservices.metadata;
 
+import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 import static org.jboss.as.webservices.util.ASHelper.getContextRoot;
 
 import java.util.HashMap;
@@ -31,7 +32,6 @@ import java.util.Map;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.metadata.model.POJOEndpoint;
 import org.jboss.as.webservices.util.WebMetaDataHelper;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossServletsMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -57,11 +57,6 @@ import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
  */
 abstract class AbstractMetaDataBuilderPOJO {
 
-    private final Logger log = Logger.getLogger(AbstractMetaDataBuilderPOJO.class);
-
-    /**
-     * Constructor.
-     */
     AbstractMetaDataBuilderPOJO() {
         super();
     }
@@ -73,6 +68,7 @@ abstract class AbstractMetaDataBuilderPOJO {
      * @return universal JSE meta data model
      */
     JSEArchiveMetaData create(final Deployment dep) {
+        ROOT_LOGGER.creatingPojoDeployment(dep.getSimpleName());
         final JBossWebMetaData jbossWebMD = WSHelper.getRequiredAttachment(dep, JBossWebMetaData.class);
         final DeploymentUnit unit = WSHelper.getRequiredAttachment(dep, DeploymentUnit.class);
         final List<POJOEndpoint> pojoEndpoints = getPojoEndpoints(unit);
@@ -81,13 +77,14 @@ abstract class AbstractMetaDataBuilderPOJO {
         // set context root
         final String contextRoot = getContextRoot(dep, jbossWebMD);
         jseArchiveMD.setContextRoot(contextRoot);
+        ROOT_LOGGER.settingContextRoot(contextRoot);
 
         // set servlet url patterns mappings
-        final Map<String, String> servletMappings = this.getServletUrlPatternsMappings(jbossWebMD, pojoEndpoints);
+        final Map<String, String> servletMappings = getServletUrlPatternsMappings(jbossWebMD, pojoEndpoints);
         jseArchiveMD.setServletMappings(servletMappings);
 
         // set servlet class names mappings
-        final Map<String, String> servletClassNamesMappings = this.getServletClassMappings(jbossWebMD, pojoEndpoints);
+        final Map<String, String> servletClassNamesMappings = getServletClassMappings(jbossWebMD, pojoEndpoints);
         jseArchiveMD.setServletClassNames(servletClassNamesMappings);
 
         // set security domain
@@ -102,11 +99,11 @@ abstract class AbstractMetaDataBuilderPOJO {
         }
 
         // set security meta data
-        final List<JSESecurityMetaData> jseSecurityMDs = this.getSecurityMetaData(jbossWebMD.getSecurityConstraints());
+        final List<JSESecurityMetaData> jseSecurityMDs = getSecurityMetaData(jbossWebMD.getSecurityConstraints());
         jseArchiveMD.setSecurityMetaData(jseSecurityMDs);
 
         // set config name and file
-        this.setConfigNameAndFile(jseArchiveMD, jbossWebMD, jbossWebservicesMD);
+        setConfigNameAndFile(jseArchiveMD, jbossWebMD, jbossWebservicesMD);
 
         return jseArchiveMD;
     }
@@ -122,23 +119,30 @@ abstract class AbstractMetaDataBuilderPOJO {
     private void setConfigNameAndFile(final JSEArchiveMetaData jseArchiveMD, final JBossWebMetaData jbossWebMD, final JBossWebservicesMetaData jbossWebservicesMD) {
         if (jbossWebservicesMD != null) {
            if (jbossWebservicesMD.getConfigName() != null) {
-              jseArchiveMD.setConfigName(jbossWebservicesMD.getConfigName());
-              jseArchiveMD.setConfigFile(jbossWebservicesMD.getConfigFile());
+              final String configName = jbossWebservicesMD.getConfigName();
+              jseArchiveMD.setConfigName(configName);
+              ROOT_LOGGER.settingConfigName(configName);
+              final String configFile = jbossWebservicesMD.getConfigFile();
+              jseArchiveMD.setConfigFile(configFile);
+              ROOT_LOGGER.settingConfigFile(configFile);
 
               // ensure higher priority against web.xml context parameters
               return;
            }
         }
 
-
         final List<ParamValueMetaData> contextParams = jbossWebMD.getContextParams();
         if (contextParams != null) {
             for (final ParamValueMetaData contextParam : contextParams) {
                 if (WSConstants.JBOSSWS_CONFIG_NAME.equals(contextParam.getParamName())) {
-                    jseArchiveMD.setConfigName(contextParam.getParamValue());
+                    final String configName = contextParam.getParamValue();
+                    jseArchiveMD.setConfigName(configName);
+                    ROOT_LOGGER.settingConfigName(configName);
                 }
                 if (WSConstants.JBOSSWS_CONFIG_FILE.equals(contextParam.getParamName())) {
-                    jseArchiveMD.setConfigFile(contextParam.getParamValue());
+                    final String configFile = contextParam.getParamValue();
+                    jseArchiveMD.setConfigFile(configFile);
+                    ROOT_LOGGER.settingConfigFile(configFile);
                 }
             }
         }
@@ -203,7 +207,6 @@ abstract class AbstractMetaDataBuilderPOJO {
             if (!pojoEndpoint.isDeclared()) {
                 final String endpointName = pojoEndpoint.getName();
                 final List<String> urlPatterns = WebMetaDataHelper.getUrlPatterns(pojoEndpoint.getUrlPattern());
-                log.debug("Servlet name: " + endpointName + ", URL patterns: " + urlPatterns);
                 WebMetaDataHelper.newServletMapping(endpointName, urlPatterns, servletMappings);
             }
         }
@@ -224,13 +227,10 @@ abstract class AbstractMetaDataBuilderPOJO {
         for (final POJOEndpoint pojoEndpoint : pojoEndpoints) {
             final String pojoName = pojoEndpoint.getName();
             final String pojoClassName = pojoEndpoint.getClassName();
-            this.log.debug("Creating JBoss agnostic JSE meta data for POJO bean: " + pojoName + " " + pojoClassName);
             mappings.put(pojoName, pojoClassName);
             if (!pojoEndpoint.isDeclared()) {
                 final String endpointName = pojoEndpoint.getName();
                 final String endpointClassName = pojoEndpoint.getClassName();
-
-                log.debug("Servlet name: " + endpointName + ", servlet class: " + endpointClassName);
                 WebMetaDataHelper.newServlet(endpointName, endpointClassName, servlets);
             }
         }

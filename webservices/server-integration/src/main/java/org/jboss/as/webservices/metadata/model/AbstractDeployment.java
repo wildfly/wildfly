@@ -21,6 +21,8 @@
  */
 package org.jboss.as.webservices.metadata.model;
 
+import static org.jboss.as.webservices.WSMessages.MESSAGES;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -55,8 +57,7 @@ abstract class AbstractDeployment {
         final String className = ep.getClassName();
         if (urlPatternToClassMapping.keySet().contains((urlPattern))) {
             final String clazz = urlPatternToClassMapping.get(urlPattern);
-            throw new IllegalArgumentException("Web Service endpoint " + clazz + " with URL pattern " + urlPattern + " is already registered. " +
-                "Web service endpoint " + ep.getClassName() + " is requesting the same URL pattern.");
+            throw MESSAGES.sameUrlPatternRequested(clazz, urlPattern, ep.getClassName());
         } else {
             urlPatternToClassMapping.put(urlPattern, className);
             pojoEndpoints.add(ep);

@@ -23,6 +23,7 @@
 package org.jboss.as.webservices.deployers;
 
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
+import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 import static org.jboss.as.webservices.util.ASHelper.getRequiredAttachment;
 import static org.jboss.as.webservices.util.ASHelper.isJaxwsService;
 import static org.jboss.as.webservices.util.DotNames.SINGLETON_ANNOTATION;
@@ -49,7 +50,6 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
@@ -57,8 +57,6 @@ import org.jboss.msc.service.ServiceName;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public abstract class AbstractIntegrationProcessorJAXWS implements DeploymentUnitProcessor {
-
-    private static final Logger logger = Logger.getLogger(AbstractIntegrationProcessorJAXWS.class);
 
     private final DotName[] dotNames;
 
@@ -75,9 +73,7 @@ public abstract class AbstractIntegrationProcessorJAXWS implements DeploymentUni
 
         final CompositeIndex index = unit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         if (index == null) {
-            if (logger.isTraceEnabled()) {
-                logger.trace("Skipping WS annotation processing since no composite annotation index found in unit: " + unit);
-            }
+            ROOT_LOGGER.skippingAnnotationProcessing(unit.getName());
         } else {
             for (final DotName dotName : dotNames) {
                 final List<AnnotationInstance> wsAnnotations = index.getAnnotations(dotName);
@@ -113,15 +109,11 @@ public abstract class AbstractIntegrationProcessorJAXWS implements DeploymentUni
         final boolean hasWebServiceAnnotation = clazz.annotations().containsKey(WEB_SERVICE_ANNOTATION);
         final boolean hasWebServiceProviderAnnotation = clazz.annotations().containsKey(WEB_SERVICE_PROVIDER_ANNOTATION);
         if (hasWebServiceAnnotation && hasWebServiceProviderAnnotation) {
-            final String className = clazz.name().toString();
-            logger.warn("[JAXWS 2.2 spec, section 7.7] The @WebService and @WebServiceProvider annotations are mutually exclusive - "
-                    + className + " won't be considered as a webservice endpoint, since it doesn't meet that requirement");
+            ROOT_LOGGER.mutuallyExclusiveAnnotations(clazz.name().toString());
             return false;
         }
         if (Modifier.isFinal(flags)) {
-            final String className = clazz.name().toString();
-            logger.warn("WebService endpoint class cannot be final - "
-                    + className + " won't be considered as a webservice endpoint");
+            ROOT_LOGGER.finalEndpointClassDetected(clazz.name().toString());
             return false;
         }
         return true;

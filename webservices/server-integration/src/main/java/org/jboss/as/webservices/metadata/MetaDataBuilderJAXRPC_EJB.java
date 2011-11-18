@@ -45,7 +45,7 @@ final class MetaDataBuilderJAXRPC_EJB extends AbstractMetaDataBuilderEJB {
         final JAXRPCDeployment jaxrpcDeployment = WSHelper.getRequiredAttachment(dep, JAXRPCDeployment.class);
 
         for (final EJBEndpoint ejbEndpoint : jaxrpcDeployment.getEjbEndpoints()) {
-            this.buildEnterpriseBeanMetaData(wsEjbsMD, ejbEndpoint, jbossWebservicesMD);
+            buildEnterpriseBeanMetaData(wsEjbsMD, ejbEndpoint, jbossWebservicesMD);
         }
 
         ejbArchiveMD.setEnterpriseBeans(wsEjbsMD);

@@ -21,13 +21,14 @@
  */
 package org.jboss.as.webservices.deployers;
 
+import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
+
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.deployment.Deployment;
@@ -41,33 +42,31 @@ import org.jboss.wsf.spi.deployment.DeploymentAspect;
  */
 public final class AspectDeploymentProcessor implements DeploymentUnitProcessor {
 
-    private static Logger log = Logger.getLogger(AspectDeploymentProcessor.class);
-
     private Class<? extends DeploymentAspect> clazz;
     private String aspectClass;
     private DeploymentAspect aspect;
 
-    public AspectDeploymentProcessor(Class<? extends DeploymentAspect> aspectClass) {
+    public AspectDeploymentProcessor(final Class<? extends DeploymentAspect> aspectClass) {
         this.clazz = aspectClass;
     }
 
-    public AspectDeploymentProcessor(String aspectClass) {
+    public AspectDeploymentProcessor(final String aspectClass) {
         this.aspectClass = aspectClass;
     }
 
-    public AspectDeploymentProcessor(DeploymentAspect aspect) {
+    public AspectDeploymentProcessor(final DeploymentAspect aspect) {
         this.aspect = aspect;
         this.clazz = aspect.getClass();
     }
 
     @Override
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
         if (isWebServiceDeployment(unit)) {
-            ensureAspectInitialised();
+            ensureAspectInitialized();
             final Deployment dep = ASHelper.getRequiredAttachment(unit, WSAttachmentKeys.DEPLOYMENT_KEY);
             if (aspect.canHandle(dep)) {
-                log.debug(this.aspect + " start: " + unit.getName());
+                ROOT_LOGGER.aspectStart(aspect, unit.getName());
                 ClassLoader origClassLoader = SecurityActions.getContextClassLoader();
                 try {
                     SecurityActions.setContextClassLoader(aspect.getLoader());
@@ -86,7 +85,7 @@ public final class AspectDeploymentProcessor implements DeploymentUnitProcessor 
         if (isWebServiceDeployment(unit)) {
             final Deployment dep = ASHelper.getRequiredAttachment(unit, WSAttachmentKeys.DEPLOYMENT_KEY);
             if (aspect.canHandle(dep)) {
-                log.debug(this.aspect + " stop: " + unit.getName());
+                ROOT_LOGGER.aspectStop(aspect, unit.getName());
                 ClassLoader origClassLoader = SecurityActions.getContextClassLoader();
                 try {
                     SecurityActions.setContextClassLoader(aspect.getLoader());
@@ -99,7 +98,7 @@ public final class AspectDeploymentProcessor implements DeploymentUnitProcessor 
     }
 
     @SuppressWarnings("unchecked")
-    private void ensureAspectInitialised() throws DeploymentUnitProcessingException {
+    private void ensureAspectInitialized() throws DeploymentUnitProcessingException {
         if (aspect == null) {
             try {
                 if (clazz == null) {

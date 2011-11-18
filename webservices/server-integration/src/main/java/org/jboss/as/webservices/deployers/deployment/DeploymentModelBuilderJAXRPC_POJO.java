@@ -21,6 +21,7 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
+import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 import static org.jboss.as.webservices.util.ASHelper.getJaxrpcPojos;
 import static org.jboss.wsf.spi.deployment.DeploymentType.JAXRPC;
 import static org.jboss.wsf.spi.deployment.EndpointType.JAXRPC_JSE;
@@ -36,27 +37,18 @@ import org.jboss.wsf.spi.deployment.Deployment;
  */
 final class DeploymentModelBuilderJAXRPC_POJO extends AbstractDeploymentModelBuilder {
 
-    /**
-     * Constructor.
-     */
     DeploymentModelBuilderJAXRPC_POJO() {
         super(JAXRPC, JAXRPC_JSE);
     }
 
-    /**
-     * Creates new JAXRPC POJO deployment and registers it with deployment unit.
-     *
-     * @param dep webservice deployment
-     * @param unit deployment unit
-     */
     @Override
     protected void build(final Deployment dep, final DeploymentUnit unit) {
-        log.debug("Creating JAXRPC POJO endpoints meta data model");
+        ROOT_LOGGER.creatingEndpointsMetaDataModel("JAXRPC", "POJO");
         for (final POJOEndpoint pojoEndpoint : getJaxrpcPojos(unit)) {
             final String pojoEndpointName = pojoEndpoint.getName();
-            log.debug("POJO name: " + pojoEndpointName);
+            ROOT_LOGGER.pojoName(pojoEndpointName);
             final String pojoEndpointClassName = pojoEndpoint.getClassName();
-            log.debug("POJO" + pojoEndpointClassName);
+            ROOT_LOGGER.pojoClass(pojoEndpointClassName);
             newHttpEndpoint(pojoEndpointClassName, pojoEndpointName, dep);
         }
     }

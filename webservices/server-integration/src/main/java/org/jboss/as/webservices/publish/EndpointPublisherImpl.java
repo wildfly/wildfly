@@ -21,6 +21,8 @@
  */
 package org.jboss.as.webservices.publish;
 
+import static org.jboss.as.webservices.WSMessages.MESSAGES;
+
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -127,12 +129,12 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
             host.addChild(context);
             context.create();
         } catch (Exception e) {
-            throw new Exception("Failed to create context", e);
+            throw MESSAGES.createContextPhaseFailed(e);
         }
         try {
             context.start();
         } catch (LifecycleException e) {
-            throw new Exception("Failed to start context", e);
+            throw MESSAGES.startContextPhaseFailed(e);
         }
         return context;
     }
@@ -196,12 +198,12 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
             container.removeChild(context);
             context.stop();
         } catch (LifecycleException e) {
-            throw new Exception("Exception while stopping context", e);
+            throw MESSAGES.stopContextPhaseFailed(e);
         }
         try {
             context.destroy();
         } catch (Exception e) {
-            throw new Exception("Exception while destroying context", e);
+            throw MESSAGES.destroyContextPhaseFailed(e);
         }
     }
 

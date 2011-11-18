@@ -42,9 +42,6 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
-import org.jboss.logging.Logger;
-import org.jboss.metadata.common.jboss.WebserviceDescriptionMetaData;
-import org.jboss.metadata.common.jboss.WebserviceDescriptionsMetaData;
 import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.metadata.ear.spec.ModuleMetaData;
 import org.jboss.metadata.ear.spec.WebModuleMetaData;
@@ -62,14 +59,7 @@ import org.jboss.wsf.spi.deployment.Deployment;
  */
 public final class ASHelper {
 
-    /** Logger. */
-    private static final Logger LOGGER = Logger.getLogger(ASHelper.class);
-
-    /**
-     * Forbidden constructor.
-     */
     private ASHelper() {
-        super();
     }
 
     /**
@@ -171,7 +161,6 @@ public final class ASHelper {
     public static <A> A getRequiredAttachment(final DeploymentUnit unit, final AttachmentKey<A> key) {
         final A value = unit.getAttachment(key);
         if (value == null) {
-            LOGGER.error("Cannot find attachment in deployment unit: " + key);
             throw new IllegalStateException();
         }
 
@@ -188,27 +177,6 @@ public final class ASHelper {
      */
     public static <A> A getOptionalAttachment(final DeploymentUnit unit, final AttachmentKey<A> key) {
         return unit.getAttachment(key);
-    }
-
-    /**
-     * Returns first webservice description meta data or null if not found.
-     *
-     * @param wsDescriptionsMD webservice descriptions
-     * @return webservice description
-     */
-    public static WebserviceDescriptionMetaData getWebserviceDescriptionMetaData(
-            final WebserviceDescriptionsMetaData wsDescriptionsMD) {
-        if (wsDescriptionsMD != null) {
-            if (wsDescriptionsMD.size() > 1) {
-                LOGGER.warn("Multiple <webservice-description> elements not supported");
-            }
-
-            if (wsDescriptionsMD.size() > 0) {
-                return wsDescriptionsMD.iterator().next();
-            }
-        }
-
-        return null;
     }
 
     public static boolean isJaxwsService(final ClassInfo current, final CompositeIndex index) {

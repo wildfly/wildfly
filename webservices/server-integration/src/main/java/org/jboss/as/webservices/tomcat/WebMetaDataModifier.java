@@ -21,13 +21,15 @@
  */
 package org.jboss.as.webservices.tomcat;
 
+import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
+import static org.jboss.as.webservices.WSMessages.MESSAGES;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WebMetaDataHelper;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ServletMetaData;
@@ -46,12 +48,7 @@ import org.jboss.wsf.spi.deployment.WSFServlet;
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  */
 final class WebMetaDataModifier {
-    /** Logger. */
-    private final Logger log = Logger.getLogger(WebMetaDataModifier.class);
 
-    /**
-     * Constructor.
-     */
     WebMetaDataModifier() {
         super();
     }
@@ -78,7 +75,7 @@ final class WebMetaDataModifier {
      */
     private void configureEndpoints(final Deployment dep, final JBossWebMetaData jbossWebMD) {
         final String transportClassName = this.getTransportClassName(dep);
-        this.log.trace("Modifying servlets");
+        ROOT_LOGGER.modifyingServlets();
 
         // get a list of the endpoint bean class names
         final Set<String> epNames = new HashSet<String>();
@@ -93,7 +90,7 @@ final class WebMetaDataModifier {
                 if (epNames.contains(endpointClassName)) {
                     // set transport servlet
                     servletMD.setServletClass(WSFServlet.class.getName());
-                    this.log.debug("Setting transport class: " + transportClassName + " for servlet: " + endpointClassName);
+                    ROOT_LOGGER.settingTransportClass(transportClassName, endpointClassName);
                     final List<ParamValueMetaData> initParams = WebMetaDataHelper.getServletInitParams(servletMD);
                     // configure transport class name
                     WebMetaDataHelper.newParamValue(WSFServlet.STACK_SERVLET_DELEGATE_CLASS, transportClassName, initParams);
@@ -114,7 +111,7 @@ final class WebMetaDataModifier {
      */
     private void modifyContextRoot(final Deployment dep, final JBossWebMetaData jbossWebMD) {
         final String contextRoot = dep.getService().getContextRoot();
-        this.log.debug("Setting context root: " + contextRoot + " for deployment: " + dep.getSimpleName());
+        ROOT_LOGGER.settingContextRoot(contextRoot, dep.getSimpleName());
         jbossWebMD.setContextRoot(contextRoot);
     }
 
@@ -127,11 +124,8 @@ final class WebMetaDataModifier {
      */
     private String getTransportClassName(final Deployment dep) {
         String transportClassName = (String) dep.getProperty(WSConstants.STACK_TRANSPORT_CLASS);
-
-        if (transportClassName == null) {
-            throw new IllegalStateException("Cannot obtain deployment property : " + WSConstants.STACK_TRANSPORT_CLASS);
-        }
-
+        if (transportClassName == null) throw MESSAGES.missingDeploymentProperty(WSConstants.STACK_TRANSPORT_CLASS);
         return transportClassName;
     }
+
 }

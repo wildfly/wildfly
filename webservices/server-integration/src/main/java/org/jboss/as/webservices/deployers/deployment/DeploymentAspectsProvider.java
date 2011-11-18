@@ -21,6 +21,9 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
+import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
+import static org.jboss.as.webservices.WSMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -30,7 +33,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.jboss.as.webservices.parser.WSDeploymentAspectParser;
-import org.jboss.logging.Logger;
 import org.jboss.ws.common.sort.DeploymentAspectSorter;
 import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
@@ -79,11 +81,11 @@ public class DeploymentAspectsProvider {
                 }
             }
             else {
-                Logger.getLogger(DeploymentAspectsProvider.class).warn("Could not load WS deployment aspects from " + resourcePath);
+                ROOT_LOGGER.cannotLoadDeploymentAspectsDefinitionFile(resourcePath);
                 return Collections.emptyList();
             }
         } catch (IOException e) {
-            throw new RuntimeException("Could not load WS deployment aspects from " + resourcePath, e);
+            throw MESSAGES.cannotLoadDeploymentAspectsDefinitionFile(e, resourcePath);
         }
     }
 }

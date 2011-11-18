@@ -21,12 +21,13 @@
  */
 package org.jboss.as.webservices.service;
 
+import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
+
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.security.SecurityDomainContextAdaptor;
 import org.jboss.as.webservices.util.WSServices;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -52,7 +53,6 @@ import org.jboss.wsf.spi.deployment.Endpoint;
  */
 public final class EndpointService implements Service<Endpoint> {
 
-    private static final Logger log = Logger.getLogger(EndpointService.class);
     private final Endpoint endpoint;
     private final ServiceName name;
     private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
@@ -77,21 +77,16 @@ public final class EndpointService implements Service<Endpoint> {
 
     @Override
     public void start(final StartContext context) throws StartException {
-        log.infof("Starting %s", name);
+        ROOT_LOGGER.starting(name);
         endpoint.setSecurityDomainContext(new SecurityDomainContextAdaptor(securityDomainContextValue.getValue()));
     }
 
     @Override
     public void stop(final StopContext context) {
-        log.infof("Stopping %s", name);
+        ROOT_LOGGER.stopping(name);
         endpoint.setSecurityDomainContext(null);
     }
 
-    /**
-     * Target {@code Injector}
-     *
-     * @return target
-     */
     public Injector<SecurityDomainContext> getSecurityDomainContextInjector() {
         return securityDomainContextValue;
     }

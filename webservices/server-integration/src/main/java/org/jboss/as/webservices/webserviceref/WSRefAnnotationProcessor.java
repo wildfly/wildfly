@@ -22,6 +22,7 @@
 package org.jboss.as.webservices.webserviceref;
 
 import static org.jboss.as.ee.utils.InjectionUtils.getInjectionTarget;
+import static org.jboss.as.webservices.WSMessages.MESSAGES;
 import static org.jboss.as.webservices.util.ASHelper.getAnnotations;
 import static org.jboss.as.webservices.util.ASHelper.getWSRefRegistry;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_REFS_ANNOTATION;
@@ -116,7 +117,7 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
     private static void processMethodRef(final DeploymentUnit unit, final WSRefAnnotationWrapper annotation, final MethodInfo methodInfo) throws DeploymentUnitProcessingException {
         final String methodName = methodInfo.name();
         if (!methodName.startsWith("set") || methodInfo.args().length != 1) {
-            throw new IllegalArgumentException("@WebServiceRef injection target is invalid.  Only setter methods are allowed: " + methodInfo);
+            throw MESSAGES.invalidServiceRefSetterMethodName(methodInfo);
         }
         final String injectionType = isEmpty(annotation.type()) || annotation.type().equals(Object.class.getName()) ? methodInfo.args()[0].name().toString() : annotation.type();
         final InjectionTarget injectionTarget = new MethodInjectionTarget(methodInfo.declaringClass().name().toString(), methodName, injectionType);
@@ -126,10 +127,10 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
 
     private static void processClassRef(final DeploymentUnit unit, final WSRefAnnotationWrapper annotation, final ClassInfo classInfo) throws DeploymentUnitProcessingException {
         if (isEmpty(annotation.name())) {
-            throw new DeploymentUnitProcessingException("@WebServiceRef attribute 'name' is required fo class level annotations.");
+            throw MESSAGES.requiredServiceRefName();
         }
         if (isEmpty(annotation.type())) {
-            throw new DeploymentUnitProcessingException("@WebServiceRef attribute 'type' is required fo class level annotations.");
+            throw MESSAGES.requiredServiceRefType();
         }
         processRef(unit, annotation.type(), annotation, classInfo, null, annotation.name());
     }
@@ -260,7 +261,7 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
             try {
                 return classLoader.loadClass(className);
             } catch (ClassNotFoundException e) {
-                throw new DeploymentUnitProcessingException("Could not load class " + className, e);
+                throw new DeploymentUnitProcessingException(e);
             }
         }
 

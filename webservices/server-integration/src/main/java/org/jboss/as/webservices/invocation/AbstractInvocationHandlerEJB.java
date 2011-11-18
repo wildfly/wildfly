@@ -21,10 +21,11 @@
  */
 package org.jboss.as.webservices.invocation;
 
+import static org.jboss.as.webservices.WSMessages.MESSAGES;
+import static org.jboss.as.webservices.metadata.model.EJBEndpoint.EJB_COMPONENT_VIEW_NAME;
+
 import java.lang.reflect.Method;
 import java.util.Collection;
-
-import javax.xml.ws.WebServiceException;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
@@ -38,8 +39,6 @@ import org.jboss.wsf.spi.invocation.Invocation;
 import org.jboss.wsf.spi.ioc.IoCContainerProxy;
 import org.jboss.wsf.spi.ioc.IoCContainerProxyFactory;
 
-import static org.jboss.as.webservices.metadata.model.EJBEndpoint.EJB_COMPONENT_VIEW_NAME;
-
 /**
  * Invocation abstraction for both EJB3 and  EJB21 endpoints.
  *
@@ -50,8 +49,8 @@ abstract class AbstractInvocationHandlerEJB extends AbstractInvocationHandler {
    /** MC kernel controller */
    private final IoCContainerProxy iocContainer;
 
-   /** EJB component name */
-   private String ejbComponentName;
+   /** EJB component view name */
+   private String ejbComponentViewName;
 
    /** EJB component view */
    private volatile ComponentView ejbComponentView;
@@ -72,11 +71,8 @@ abstract class AbstractInvocationHandlerEJB extends AbstractInvocationHandler {
     * @param endpoint web service endpoint
     */
    public void init(final Endpoint endpoint) {
-      ejbComponentName = (String) endpoint.getProperty(EJB_COMPONENT_VIEW_NAME);
-
-      if (ejbComponentName == null) {
-         throw new IllegalArgumentException("Container name cannot be null");
-      }
+       ejbComponentViewName = (String) endpoint.getProperty(EJB_COMPONENT_VIEW_NAME);
+       if (ejbComponentViewName == null) throw MESSAGES.missingEjbComponentViewName();
    }
 
    /**
@@ -90,9 +86,9 @@ abstract class AbstractInvocationHandlerEJB extends AbstractInvocationHandler {
       if (ejbComponentView == null || reference == null) {
          synchronized(this) {
             if (ejbComponentView == null) {
-               ejbComponentView = iocContainer.getBean(ejbComponentName, ComponentView.class);
+               ejbComponentView = iocContainer.getBean(ejbComponentViewName, ComponentView.class);
                if (ejbComponentView == null) {
-                  throw new WebServiceException("Cannot find ejb: " + ejbComponentName);
+                  throw MESSAGES.cannotFindEjbView(ejbComponentViewName);
                }
                reference = ejbComponentView.createInstance();
             }

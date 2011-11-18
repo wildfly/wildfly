@@ -31,23 +31,9 @@ import org.jboss.wsf.spi.invocation.InvocationType;
  * The default invocation model factory for JBoss AS.
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
- * @author <a href="mailto:tdiesler@redhat.com">Thomas Diesler</a>
  */
 public final class InvocationHandlerFactoryImpl extends InvocationHandlerFactory {
 
-    /**
-     * Constructor.
-     */
-    public InvocationHandlerFactoryImpl() {
-        super();
-    }
-
-    /**
-     * Returns invocation handler associated with invocation type.
-     *
-     * @param type invocation type
-     * @return invocation handler
-     */
     public InvocationHandler newInvocationHandler(final InvocationType type) {
         InvocationHandler handler = null;
 
@@ -65,9 +51,10 @@ public final class InvocationHandlerFactoryImpl extends InvocationHandlerFactory
                 handler = new InvocationHandlerEJB21();
                 break;
             default:
-                throw new IllegalArgumentException("Unable to resolve spi.invocation.InvocationHandler for type " + type);
+                throw new IllegalArgumentException();
         }
 
         return handler;
     }
+
 }

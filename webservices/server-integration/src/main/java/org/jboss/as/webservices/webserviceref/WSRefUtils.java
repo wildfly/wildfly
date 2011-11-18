@@ -22,6 +22,8 @@
 
 package org.jboss.as.webservices.webserviceref;
 
+import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
@@ -38,7 +40,6 @@ import javax.xml.ws.WebServiceRef;
 import javax.xml.ws.WebServiceRefs;
 import javax.xml.ws.soap.MTOM;
 
-import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.jboss.JBossPortComponentRef;
 import org.jboss.metadata.javaee.jboss.JBossServiceReferenceMetaData;
 import org.jboss.metadata.javaee.jboss.StubPropertyMetaData;
@@ -65,10 +66,7 @@ import org.jboss.wsf.spi.serviceref.ServiceRefHandler.Type;
  */
 final class WSRefUtils {
 
-    private static final Logger log = Logger.getLogger(WSRefUtils.class);
-
     private WSRefUtils() {
-        // forbidden instantiation
     }
 
     static UnifiedServiceRefMetaData translate(final ServiceReferenceMetaData serviceRefMD, final UnifiedServiceRefMetaData serviceRefUMDM) {
@@ -88,7 +86,7 @@ final class WSRefUtils {
                 if (portComponentUMDM.getServiceEndpointInterface() != null || portComponentUMDM.getPortQName() != null) {
                     serviceRefUMDM.addPortComponentRef(portComponentUMDM);
                 } else {
-                    log.warn("Ignoring <port-component-ref> without <service-endpoint-interface> and <port-qname>: " + portComponentUMDM);
+                    ROOT_LOGGER.ignoringPortComponentRef(portComponentUMDM);
                 }
             }
         }

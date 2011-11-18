@@ -21,6 +21,7 @@
  */
 package org.jboss.as.webservices.dmr;
 
+import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 import static org.jboss.as.webservices.dmr.Constants.APPCLIENT;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
@@ -47,7 +48,6 @@ import org.jboss.as.webservices.util.ModuleClassLoaderProvider;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -57,7 +57,6 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
-    private static final Logger log = Logger.getLogger("org.jboss.as.webservices");
 
     static final WSSubsystemAdd INSTANCE = new WSSubsystemAdd();
 
@@ -98,8 +97,7 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-
-        log.info("Activating WebServices Extension");
+        ROOT_LOGGER.activatingWebservicesExtension();
         ModuleClassLoaderProvider.register();
 
         final boolean appclient;
