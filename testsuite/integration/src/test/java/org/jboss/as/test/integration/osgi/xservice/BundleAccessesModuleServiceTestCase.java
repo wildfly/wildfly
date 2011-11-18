@@ -50,6 +50,7 @@ import org.jboss.osgi.testing.OSGiTestHelper;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -64,6 +65,7 @@ import org.osgi.framework.ServiceReference;
  * @since 14-Oct-2010
  */
 @RunWith(Arquillian.class)
+@Ignore("AS7-2699")
 public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCase {
 
     private static final String TARGET_MODULE_NAME = "example-xservice-bam-target-module";
