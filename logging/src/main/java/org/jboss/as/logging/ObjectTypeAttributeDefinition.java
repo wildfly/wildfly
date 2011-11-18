@@ -39,6 +39,7 @@ import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
 import org.jboss.as.controller.operations.validation.MinMaxValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.logging.validators.ObjectTypeValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 

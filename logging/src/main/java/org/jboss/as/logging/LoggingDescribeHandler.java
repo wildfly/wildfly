@@ -27,6 +27,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.logging.loggers.RootLoggerAdd;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 

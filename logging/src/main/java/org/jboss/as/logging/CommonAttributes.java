@@ -26,6 +26,11 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.logging.handlers.console.Target;
+import org.jboss.as.logging.validators.LogLevelValidator;
+import org.jboss.as.logging.validators.OverflowActionValidator;
+import org.jboss.as.logging.validators.SizeValidator;
+import org.jboss.as.logging.validators.TargetValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.logmanager.handlers.AsyncHandler.OverflowAction;
@@ -34,7 +39,7 @@ import org.jboss.logmanager.handlers.AsyncHandler.OverflowAction;
 /**
  * @author Emanuel Muckenhuber
  */
-interface CommonAttributes {
+public interface CommonAttributes {
 
     SimpleAttributeDefinition ACCEPT = SimpleAttributeDefinitionBuilder.create("accept", ModelType.BOOLEAN, true).
             setDefaultValue(new ModelNode().set(true)).
