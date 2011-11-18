@@ -35,7 +35,8 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 
 /**
- * Injection source for ejb: lookups
+ * Injection source for remote ejb lookups. If the target type is known
+ * then the bean will be narrowed to that type
  *
  * @author Stuart Douglas
  */
@@ -61,15 +62,17 @@ public class EjbLookupInjectionSource extends InjectionSource {
     @Override
     public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
         final Class<?> type;
-        if(targetType != null) {
+        if (targetType != null) {
             type = targetType;
-        } else {
+        } else if (targetTypeName != null) {
             final DeploymentClassIndex index = phaseContext.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
             try {
                 type = index.classIndex(targetTypeName).getModuleClass();
             } catch (ClassNotFoundException e) {
-                throw new RuntimeException("Could not load EJB type " + targetTypeName,e);
+                throw new RuntimeException("Could not load EJB type " + targetTypeName, e);
             }
+        } else {
+            type = null;
         }
 
         injector.inject(new ManagedReferenceFactory() {
@@ -86,7 +89,11 @@ public class EjbLookupInjectionSource extends InjectionSource {
 
                         @Override
                         public Object getInstance() {
-                            return PortableRemoteObject.narrow(value, type);
+                            if(type != null) {
+                                return PortableRemoteObject.narrow(value, type);
+                            } else {
+                                return value;
+                            }
                         }
                     };
                 } catch (NamingException e) {

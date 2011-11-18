@@ -101,9 +101,6 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
                 //add any injection targets
                 remoteInterfaceType = processInjectionTargets(moduleDescription, componentDescription, applicationClasses, injectionSource, classLoader, deploymentReflectionIndex, ejbRef, remoteInterfaceType);
 
-                if (remoteInterfaceType == null) {
-                    throw new DeploymentUnitProcessingException("Could not determine type of ejb-ref " + name + " for component " + componentDescription);
-                }
                 final BindingConfiguration bindingConfiguration;
                 EjbInjectionSource ejbInjectionSource = null;
 
@@ -113,11 +110,18 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
                     } else {
                         bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(lookup));
                     }
-                } else if (!isEmpty(ejbName)) {
-                    bindingConfiguration = new BindingConfiguration(name, ejbInjectionSource = new EjbInjectionSource(ejbName, remoteInterfaceType.getName()));
                 } else {
-                    bindingConfiguration = new BindingConfiguration(name, ejbInjectionSource = new EjbInjectionSource(remoteInterfaceType.getName()));
+
+                if (remoteInterfaceType == null) {
+                    throw new DeploymentUnitProcessingException("Could not determine type of ejb-ref " + name + " for component " + componentDescription);
                 }
+                    if (!isEmpty(ejbName)) {
+                        bindingConfiguration = new BindingConfiguration(name, ejbInjectionSource = new EjbInjectionSource(ejbName, remoteInterfaceType.getName()));
+                    } else {
+                        bindingConfiguration = new BindingConfiguration(name, ejbInjectionSource = new EjbInjectionSource(remoteInterfaceType.getName()));
+                    }
+                }
+
                 if (ejbInjectionSource != null) {
                     deploymentUnit.addToAttachmentList(EjbDeploymentAttachmentKeys.EJB_INJECTIONS, ejbInjectionSource);
                 }
