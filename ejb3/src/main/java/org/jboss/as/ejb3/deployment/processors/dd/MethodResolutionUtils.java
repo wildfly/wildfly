@@ -61,7 +61,9 @@ public class MethodResolutionUtils {
             final ClassReflectionIndex<?> classIndex = reflectionIndex.getClassIndex(clazz);
             if (parameters == null) {
                 final Collection<Method> methods = classIndex.getAllMethods(methodName);
-                return methods;
+                if(!methods.isEmpty()) {
+                    return methods;
+                }
             } else {
                 final Collection<Method> methods = classIndex.getAllMethods(methodName, parameters.size());
                 for (final Method method : methods) {
