@@ -23,6 +23,7 @@ package org.jboss.as.protocol;
 
 import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
 import static org.xnio.Options.SASL_POLICY_NOANONYMOUS;
+import static org.xnio.Options.SASL_POLICY_NOPLAINTEXT;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -110,17 +111,17 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
             throw MESSAGES.alreadyConnected();
         }
 
-        // TODO - do we need better way to decide this?
         Builder builder = OptionMap.builder();
         builder.set(SASL_POLICY_NOANONYMOUS, Boolean.FALSE);
+        builder.set(SASL_POLICY_NOPLAINTEXT, Boolean.FALSE);
+        List<Property> tempProperties = new ArrayList<Property>(saslOptions != null ? saslOptions.size() : 1);
+        tempProperties.add(Property.of("jboss.sasl.local-user.quiet-auth", "true"));
         if (saslOptions != null) {
-            List<Property> tempProperties = new ArrayList<Property>(saslOptions.size());
             for (String currentKey : saslOptions.keySet()) {
                 tempProperties.add(Property.of(currentKey, saslOptions.get(currentKey)));
             }
-
-            builder.set(Options.SASL_PROPERTIES, Sequence.of(tempProperties));
         }
+        builder.set(Options.SASL_PROPERTIES, Sequence.of(tempProperties));
 
         CallbackHandler actualHandler = handler != null ? handler : new AnonymousCallbackHandler();
         WrapperCallbackHandler wrapperHandler = new WrapperCallbackHandler(actualHandler);

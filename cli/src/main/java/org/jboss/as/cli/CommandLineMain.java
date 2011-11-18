@@ -33,7 +33,6 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -783,7 +782,7 @@ public class CommandLineMain {
                 port = defaultControllerPort;
             }
 
-            try {         
+            try {
                 ModelControllerClient newClient = null;
 
                 CallbackHandler cbh = new AuthenticationCallbackHandler(username, password);
@@ -1073,6 +1072,9 @@ public class CommandLineMain {
                         if (username == null) {
                             showRealm();
                             username = readLine("Username: ", false, true);
+                            if (username == null || username.length() == 0) {
+                                throw new SaslException("No username supplied.");
+                            }
                         }
                         ncb.setName(username);
                     } else if (current instanceof PasswordCallback && digest == null) {
