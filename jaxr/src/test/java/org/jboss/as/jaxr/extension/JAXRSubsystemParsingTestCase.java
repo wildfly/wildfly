@@ -22,22 +22,7 @@
 package org.jboss.as.jaxr.extension;
 
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.jaxr.extension.JAXRConstants.Namespace;
-import static org.jboss.as.jaxr.service.JAXRConfiguration.DEFAULT_CONNECTIONFACTORY_BINDING;
-import static org.jboss.as.jaxr.service.JAXRConfiguration.DEFAULT_CREATEONSTART;
-import static org.jboss.as.jaxr.service.JAXRConfiguration.DEFAULT_DATASOURCE_BINDING;
-import static org.jboss.as.jaxr.service.JAXRConfiguration.DEFAULT_DROPONSTART;
-import static org.jboss.as.jaxr.service.JAXRConfiguration.DEFAULT_DROPONSTOP;
-
-import java.util.List;
-
 import junit.framework.Assert;
-
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.jaxr.service.JAXRConfiguration;
@@ -45,6 +30,17 @@ import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
+
+import java.util.List;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.jaxr.extension.JAXRConstants.Namespace;
+import static org.jboss.as.jaxr.service.JAXRConfiguration.DEFAULT_CREATEONSTART;
+import static org.jboss.as.jaxr.service.JAXRConfiguration.DEFAULT_DROPONSTART;
+import static org.jboss.as.jaxr.service.JAXRConfiguration.DEFAULT_DROPONSTOP;
 
 
 /**
@@ -83,8 +79,8 @@ public class JAXRSubsystemParsingTestCase extends AbstractSubsystemTest {
     public void testInstallIntoController() throws Exception {
 
         JAXRConfiguration config = JAXRConfiguration.INSTANCE;
-        Assert.assertEquals(DEFAULT_DATASOURCE_BINDING, config.getDataSourceBinding());
-        Assert.assertEquals(DEFAULT_CONNECTIONFACTORY_BINDING, config.getConnectionFactoryBinding());
+        Assert.assertNull(config.getDataSourceBinding());
+        Assert.assertNull(config.getConnectionFactoryBinding());
         Assert.assertEquals(DEFAULT_DROPONSTART, config.isDropOnStart());
         Assert.assertEquals(DEFAULT_CREATEONSTART, config.isCreateOnStart());
         Assert.assertEquals(DEFAULT_DROPONSTOP, config.isDropOnStop());

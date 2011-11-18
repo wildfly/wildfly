@@ -33,16 +33,14 @@ public class JAXRConfiguration {
 
     static final ServiceName SERVICE_BASE_NAME = ServiceName.JBOSS.append("jaxr", "as");
 
-    public static final String DEFAULT_CONNECTIONFACTORY_BINDING = "java:jboss/jaxr/ConnectionFactory";
-    public static final String DEFAULT_DATASOURCE_BINDING = "java:jboss/datasources/ExampleDS";
     public static final boolean DEFAULT_DROPONSTART = false;
     public static final boolean DEFAULT_CREATEONSTART = false;
     public static final boolean DEFAULT_DROPONSTOP = false;
 
     // Datasource to Database
-    private String dataSourceBinding = DEFAULT_DATASOURCE_BINDING;
+    private String dataSourceBinding;
     // Context to which JAXR ConnectionFactory to bind to
-    private String connectionFactoryBinding = DEFAULT_CONNECTIONFACTORY_BINDING;
+    private String connectionFactoryBinding;
     // Should all tables be dropped on Start
     private boolean dropOnStart=DEFAULT_DROPONSTART;
     // Should all tables be created on Start

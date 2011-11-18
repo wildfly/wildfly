@@ -21,16 +21,12 @@
  */
 package org.jboss.as.jaxr.service;
 
-import org.apache.ws.scout.registry.ConnectionFactoryImpl;
 import org.jboss.as.naming.NamingStore;
-import org.jboss.as.naming.ServiceBasedNamingStore;
-import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.naming.service.BinderService;
 import org.jboss.logging.Logger;
+import org.jboss.logging.Logger.Level;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
@@ -38,7 +34,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 
 import javax.naming.CompositeName;
@@ -60,19 +55,19 @@ import java.sql.Statement;
  * @author Thomas.Diesler@jboss.com
  * @since 26-Oct-2011
  */
-public final class JAXRBootstrapService extends AbstractService<Void> {
+public final class JAXRDatasourceService extends AbstractService<Void> {
 
     static final ServiceName SERVICE_NAME = JAXRConfiguration.SERVICE_BASE_NAME.append("bootstrap");
 
     // [TODO] AS7-2277 JAXR subsystem i18n
-    private final Logger log = Logger.getLogger(JAXRBootstrapService.class);
+    private final Logger log = Logger.getLogger(JAXRDatasourceService.class);
 
     private final InjectedValue<NamingStore> injectedJavaContext = new InjectedValue<NamingStore>();
     private final JAXRConfiguration config;
     private DataSource datasource;
 
     public static ServiceController<?> addService(final ServiceTarget target, final JAXRConfiguration config, final ServiceListener<Object>... listeners) {
-        JAXRBootstrapService service = new JAXRBootstrapService(config);
+        JAXRDatasourceService service = new JAXRDatasourceService(config);
         ServiceBuilder<?> builder = target.addService(SERVICE_NAME, service);
         builder.addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, service.injectedJavaContext);
         builder.addDependency(ServiceName.JBOSS.append("data-source", config.getDataSourceBinding()));
@@ -80,13 +75,13 @@ public final class JAXRBootstrapService extends AbstractService<Void> {
         return builder.install();
     }
 
-    private JAXRBootstrapService(JAXRConfiguration config) {
+    private JAXRDatasourceService(JAXRConfiguration config) {
         this.config = config;
     }
 
     @Override
     public void start(final StartContext context) throws StartException {
-        log.infof("Starting JAXRBootstrapService");
+        log.infof("Starting: %s", getClass().getSimpleName());
         try {
             NamingStore namingStore = injectedJavaContext.getValue();
             String lookup = config.getDataSourceBinding();
@@ -106,17 +101,14 @@ public final class JAXRBootstrapService extends AbstractService<Void> {
             if (datasource == null)
                 throw new IllegalStateException("Cannot obtain data source: " + lookup);
 
-            if (config.getConnectionFactoryBinding() != null) {
-                bindJAXRConnectionFactory(context);
-            }
             if (config.isDropOnStart()) {
                 log.debug("Drop juddi tables on start");
-                locateAndRunScript("juddi_drop_db.ddl");
+                locateAndRunScript("juddi_drop_db.ddl", Level.DEBUG);
             }
             if (config.isCreateOnStart()) {
                 log.debug("Create juddi tables on start");
-                locateAndRunScript("juddi_create_db.ddl");
-                locateAndRunScript("juddi_data.ddl");
+                locateAndRunScript("juddi_create_db.ddl", Level.ERROR);
+                locateAndRunScript("juddi_data.ddl", Level.ERROR);
             }
         } catch (Exception ex) {
             log.errorf(ex, "Cannot start JUDDI service");
@@ -125,13 +117,12 @@ public final class JAXRBootstrapService extends AbstractService<Void> {
 
     @Override
     public void stop(final StopContext context) {
-        log.infof("Stopping JAXRBootstrapService");
+        log.infof("Stopping: %s", getClass().getSimpleName());
         try {
-            unbindJAXRConnectionFactory(context);
             if (config.isDropOnStop()) {
                 try {
                     log.debug("Drop juddi tables on sop");
-                    locateAndRunScript("juddi_drop_db.ddl");
+                    locateAndRunScript("juddi_drop_db.ddl", Level.DEBUG);
                 } catch (SQLException ex) {
                     // [TODO] AS7-2572 Cannot run JAXR drop tables script on shutdown
                     log.errorf("Cannot drop JAXR tables: %s", ex);
@@ -142,7 +133,7 @@ public final class JAXRBootstrapService extends AbstractService<Void> {
         }
     }
 
-    private void locateAndRunScript(String name) throws SQLException, IOException {
+    private void locateAndRunScript(String name, Level errorlevel) throws SQLException, IOException {
         log.infof("RunScript: %s", name);
         InputStream input = getClass().getClassLoader().getResourceAsStream("META-INF/ddl/" + name);
         if (input == null) {
@@ -150,13 +141,13 @@ public final class JAXRBootstrapService extends AbstractService<Void> {
             return;
         }
         try {
-            runScript(input);
+            runScript(input, errorlevel);
         } finally {
             input.close();
         }
     }
 
-    private void runScript(InputStream stream) throws SQLException, IOException {
+    private void runScript(InputStream stream, Level errorlevel) throws SQLException, IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
         Connection connection = datasource.getConnection();
         if (connection == null) {
@@ -181,7 +172,7 @@ public final class JAXRBootstrapService extends AbstractService<Void> {
                         statement.close();
                     } catch (SQLException e) {
                         String msg = "Could not execute statement: %s";
-                        log.errorf(msg, e.getLocalizedMessage());
+                        log.logf(errorlevel, msg, e.getLocalizedMessage());
                     } finally {
                         nextStatement = new StringBuffer();
                     }
@@ -189,38 +180,6 @@ public final class JAXRBootstrapService extends AbstractService<Void> {
             }
         } finally {
             connection.close();
-        }
-    }
-
-
-    private void bindJAXRConnectionFactory(StartContext context) {
-        log.infof("Binding JAXR ConnectionFactory: %s", config.getConnectionFactoryBinding());
-        try {
-            String jndiName = config.getConnectionFactoryBinding();
-            ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
-            BinderService binderService = new BinderService(bindInfo.getBindName());
-            ImmediateValue value = new ImmediateValue(new ConnectionFactoryImpl());
-            binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(value));
-            binderService.getNamingStoreInjector().inject((ServiceBasedNamingStore) injectedJavaContext.getValue());
-            ServiceBuilder<?> builder = context.getChildTarget().addService(bindInfo.getBinderServiceName(), binderService);
-            builder.install();
-        } catch (Exception ex) {
-            log.errorf(ex, "Cannot bind JAXR ConnectionFactory");
-        }
-    }
-
-    private void unbindJAXRConnectionFactory(StopContext context) {
-        log.debugf("Unbind JAXR ConnectionFactory");
-        try {
-            String jndiName = config.getConnectionFactoryBinding();
-            ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
-            ServiceContainer serviceContainer = context.getController().getServiceContainer();
-            ServiceController<?> service = serviceContainer.getService(bindInfo.getBinderServiceName());
-            if (service != null) {
-                service.setMode(ServiceController.Mode.REMOVE);
-            }
-        } catch (Exception ex) {
-            log.errorf(ex, "Cannot unbind JAXR ConnectionFactory");
         }
     }
 }
