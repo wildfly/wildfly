@@ -40,7 +40,7 @@ import static org.jboss.logging.Logger.Level.WARN;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @MessageLogger(projectCode = "JBAS")
-interface LoggingLogger extends BasicLogger {
+public interface LoggingLogger extends BasicLogger {
 
     /**
      * A root logger with the category of the package name.
