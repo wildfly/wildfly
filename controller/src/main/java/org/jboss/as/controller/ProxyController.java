@@ -79,6 +79,11 @@ public interface ProxyController {
          * Handle the final result of an operation, following invocation of
          * {@link ModelController.OperationTransactionControl#operationPrepared(ModelController.OperationTransaction, ModelNode)}.
          * This provides the final response, including any changes made as a result of rolling back the transaction.
+         * <p>
+         * This callback will have been invoked by the time the call made to {@link ModelController.OperationTransaction#commit() commit()}
+         * or {@link ModelController.OperationTransaction#rollback() rollback()} on the {@code OperationTransaction} provided
+         * to {@link #operationPrepared(ModelController.OperationTransaction, ModelNode)} has returned.
+         * </p>
          *
          * @param response the response
          */

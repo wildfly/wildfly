@@ -248,4 +248,13 @@ public interface ControllerLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 14614, value = "Wildcard address detected - will ignore other interface criteria.")
     void wildcardAddressDetected();
+
+    /**
+     * Logs a warning message indicating an invocation on a {@link ProxyController} did not provide a final response.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 14615, value = "Received no final outcome response for operation %s with address %s from remote " +
+            "process at address %s. The result of this operation will only include the remote process' preliminary response to" +
+            "the request.")
+    void noFinalProxyOutcomeReceived(ModelNode op, ModelNode opAddress, ModelNode proxyAddress);
 }

@@ -23,6 +23,8 @@
 package org.jboss.as.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 
 import java.io.InputStream;
@@ -82,25 +84,66 @@ public class ProxyStepHandler implements OperationStepHandler {
             context.getFailureDescription().set(finalResult.get(FAILURE_DESCRIPTION));
             context.completeStep();
         } else {
-            ModelNode preparedResult = preparedResultRef.get();
-            context.getResult().set(preparedResult.get(RESULT));
-            if (preparedResult.hasDefined(FAILURE_DESCRIPTION)) {
-                context.getFailureDescription().set(preparedResult.get(FAILURE_DESCRIPTION));
+
+            completeRemoteTransaction(context, operation, txRef, preparedResultRef, finalResultRef);
+
+        }
+    }
+
+    private void completeRemoteTransaction(OperationContext context, ModelNode operation, AtomicReference<ModelController.OperationTransaction> txRef, AtomicReference<ModelNode> preparedResultRef, AtomicReference<ModelNode> finalResultRef) {
+
+        boolean txCompleted = false;
+        try {
+
+            ModelNode preparedResponse = preparedResultRef.get();
+            ModelNode preparedResult =  preparedResponse.get(RESULT);
+            if (preparedResponse.hasDefined(FAILURE_DESCRIPTION)) {
+                context.getFailureDescription().set(preparedResponse.get(FAILURE_DESCRIPTION));
+                if (preparedResult.isDefined()) {
+                    context.getResult().set(preparedResult);
+                }
+            }
+            else {
+                context.getResult().set(preparedResult);
             }
 
             OperationContext.ResultAction resultAction = context.completeStep();
             ModelController.OperationTransaction tx = txRef.get();
-            if (tx != null) {
+            try {
                 if (resultAction == OperationContext.ResultAction.KEEP) {
                     tx.commit();
                 } else {
                     tx.rollback();
                 }
+            } finally {
+                txCompleted = true;
             }
 
-            // TODO what if the response on the proxy changed following the operationPrepared callback?
-            // e.g. the rolled back flag? This may all be ok, just needs to be thought about, tested.
-            // If it proves unnecessary, get rid of ProxyOperationControl
+            // Get the final result from the proxy and use it to update our response.
+            // Per the ProxyOperationControl contract, this will have been provided via operationCompleted
+            // by the time the call to OperationTransaction.commit/rollback returns
+
+            ModelNode finalResponse = finalResultRef.get();
+            if (finalResponse != null) {
+                ModelNode finalResult =  finalResponse.get(RESULT);
+                if (finalResponse.hasDefined(FAILURE_DESCRIPTION)) {
+                    context.getFailureDescription().set(finalResponse.get(FAILURE_DESCRIPTION));
+                    if (finalResult.isDefined()) {
+                        context.getResult().set(finalResult);
+                    }
+                } else {
+                    context.getResult().set(finalResult);
+                }
+            } else {
+                // This is an error condition
+                ControllerLogger.SERVER_MANAGEMENT_LOGGER.noFinalProxyOutcomeReceived(operation.get(OP),
+                        operation.get(OP_ADDR), proxyController.getProxyNodeAddress().toModelNode());
+            }
+        } finally {
+            // Ensure the remote side gets a transaction outcome if we can't commit/rollback above
+            if (!txCompleted && txRef.get() != null) {
+                txRef.get().rollback();
+            }
         }
     }
 

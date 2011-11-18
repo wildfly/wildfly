@@ -65,8 +65,13 @@ public interface ModelController {
         /**
          * Notify that an operation is complete and may be committed or rolled back.
          *
-         * @param transaction the transaction to control the fate of the operation
-         * @param result the result
+         * <p><strong>It is the responsibility of the user of this {@code OperationTransactionControl} to ensure that
+         * {@link OperationTransaction#commit()} or {@link OperationTransaction#rollback()} is eventually called on
+         * the provided {@code transaction}.
+         * </strong></p>
+         *
+         * @param transaction the transaction to control the fate of the operation. Cannot be {@code null}
+         * @param result the result. Cannot be {@code null}
          */
         void operationPrepared(OperationTransaction transaction, ModelNode result);
 
@@ -94,9 +99,5 @@ public interface ModelController {
          * Roll the operation back.
          */
         void rollback();
-    }
-
-    enum ProcessState {
-
     }
 }
