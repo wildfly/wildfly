@@ -49,7 +49,11 @@ public class EnvEntryInjectionTestCase {
     public static WebArchive deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "war-example.war");
         war.addPackage(HttpRequest.class.getPackage());
-        war.addPackage(EnvEntryInjectionTestCase.class.getPackage());
+        war.addClasses(
+                EnvEntryInjectionServlet.class,
+                EnvEntryManagedBean.class,
+                EnvEntryInjectionTestCase.class
+                );
         war.addAsWebInfResource(getWebXml(), "web.xml");
         return war;
     }
