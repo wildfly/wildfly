@@ -46,11 +46,6 @@ public final class JdrReportSubsystemParser implements XMLStreamConstants, XMLEl
     }
 
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
-
-       // final ModelNode address = new ModelNode();
-       // address.add(SUBSYSTEM, JdrReportExtension.SUBSYSTEM_NAME);
-       // address.protect();
-
         ParseUtils.requireNoAttributes(reader);
         ParseUtils.requireNoContent(reader);
 
@@ -63,12 +58,7 @@ public final class JdrReportSubsystemParser implements XMLStreamConstants, XMLEl
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context)
             throws XMLStreamException {
-
         context.startSubsystemElement(org.jboss.as.jdr.Namespace.CURRENT.getUriString(), false);
-        ModelNode node = context.getModelNode();
-        if (node.isDefined()) {
-            writeJdrElements(writer, node);
-        }
         writer.writeEndElement();
     }
 

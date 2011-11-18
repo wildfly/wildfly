@@ -50,14 +50,14 @@ public class JdrReportSubsystemAdd extends AbstractAddStepHandler implements Des
 
     private JdrReportSubsystemAdd() {
         // Example of registering validators
-//        validator.registerValidator("some-string", new StringLengthValidator(1, Integer.MAX_VALUE, false, false));
-//        validator.registerValidator("some-int", new IntRangeValidator(0, 10, true, false));
+        // validator.registerValidator("some-string", new StringLengthValidator(1, Integer.MAX_VALUE, false, false));
+        // validator.registerValidator("some-int", new IntRangeValidator(0, 10, true, false));
     }
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         validator.validate(operation);
-        // TODO if there is any configuration data, store it in the model
+        model.setEmptyObject();
     }
 
     @Override
