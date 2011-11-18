@@ -54,7 +54,6 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.marshalling.cloner.ClassLoaderClassCloner;
 import org.jboss.marshalling.cloner.ClonerConfiguration;
 import org.jboss.marshalling.cloner.ObjectCloner;
-import org.jboss.marshalling.cloner.ObjectClonerFactory;
 import org.jboss.marshalling.cloner.ObjectCloners;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -104,6 +103,10 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
             throw new RuntimeException("Could not find view " + viewClass + " for ejb " + ejb.getEjbName());
         }
 
+        final ClonerConfiguration paramConfig = new ClonerConfiguration();
+        paramConfig.setClassCloner(new ClassLoaderClassCloner(ejb.getDeploymentClassLoader()));
+        final ObjectCloner parameterCloner = ObjectCloners.getSerializingObjectClonerFactory().createCloner(paramConfig);
+
         //TODO: this is not very efficent
         final Method method = view.getMethod(invocation.getInvokedMethod().getName(), DescriptorUtils.methodDescriptor(invocation.getInvokedMethod()));
 
@@ -115,7 +118,7 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
         } else {
             parameters = new Object[invocation.getParameters().length];
             for (int i = 0; i < parameters.length; ++i) {
-                parameters[i] = clone(method.getParameterTypes()[i], invocation.getInvokedProxy().getClass().getClassLoader(), invocation.getParameters()[i], allowPassByReference);
+                parameters[i] = clone(method.getParameterTypes()[i], parameterCloner, invocation.getParameters()[i], allowPassByReference);
             }
         }
 
@@ -135,6 +138,9 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
             context.putPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, primaryKey);
         }
 
+        final ClonerConfiguration config = new ClonerConfiguration();
+        config.setClassCloner(new ClassLoaderClassCloner(invocation.getInvokedProxy().getClass().getClassLoader()));
+        final ObjectCloner resultCloner = ObjectCloners.getSerializingObjectClonerFactory().createCloner(config);
         if (async) {
             if (ejbComponent instanceof SessionBeanComponent) {
                 final SessionBeanComponent component = (SessionBeanComponent) ejbComponent;
@@ -161,17 +167,17 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
             } catch (Exception e) {
                 //we even have to clone the exception type
                 //to make sure it matches
-                throw (Exception)clone(invocation.getInvokedProxy().getClass().getClassLoader(), e);
+                throw (Exception) clone(resultCloner, e);
             }
             //we do not marshal the return type unless we have to, the spec only says we have to
             //pass parameters by reference
             //TODO: investigate the implications of this further
-            final Object clonedResult = clone(invocation.getInvokedMethod().getReturnType(), invocation.getInvokedProxy().getClass().getClassLoader(), result, allowPassByReference);
+            final Object clonedResult = clone(invocation.getInvokedMethod().getReturnType(), resultCloner, result, allowPassByReference);
             receiverContext.resultReady(new ImmediateResultProducer(clonedResult));
         }
     }
 
-    private Object clone(final Class<?> target, final ClassLoader classLoader, final Object object, final boolean allowPassByReference) {
+    private Object clone(final Class<?> target, final ObjectCloner cloner, final Object object, final boolean allowPassByReference) {
         if (object == null) {
             return null;
         }
@@ -179,19 +185,15 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
         if (allowPassByReference && target.isAssignableFrom(object.getClass())) {
             return object;
         }
-        return clone(classLoader, object);
+        return clone(cloner, object);
     }
 
-    private Object clone(final ClassLoader targetClassLoader, final Object object) {
+    private Object clone(final ObjectCloner cloner, final Object object) {
         if (object == null) {
             return null;
         }
 
         try {
-            final ObjectClonerFactory factory = ObjectCloners.getSerializingObjectClonerFactory();
-            final ClonerConfiguration configuration = new ClonerConfiguration();
-            configuration.setClassCloner(new ClassLoaderClassCloner(targetClassLoader));
-            final ObjectCloner cloner = factory.createCloner(configuration);
             return cloner.clone(object);
         } catch (IOException e) {
             throw new RuntimeException("IOException marshaling EJB parameters", e);
