@@ -25,6 +25,7 @@ package org.jboss.as.logging;
 import java.util.Collection;
 import java.util.EnumSet;
 
+import org.jboss.as.logging.handlers.console.Target;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
@@ -37,7 +38,7 @@ import org.jboss.msc.service.StartException;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @MessageBundle(projectCode = "JBAS")
-interface LoggingMessages {
+public interface LoggingMessages {
     /**
      * The default messages.
      */
