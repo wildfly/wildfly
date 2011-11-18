@@ -26,7 +26,8 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.jaxr.service.JAXRBootstrapService;
+import org.jboss.as.jaxr.service.JAXRConnectionFactoryService;
+import org.jboss.as.jaxr.service.JAXRDatasourceService;
 import org.jboss.as.jaxr.service.JAXRConfiguration;
 import org.jboss.as.jaxr.service.JUDDIContextService;
 import org.jboss.dmr.ModelNode;
@@ -78,8 +79,14 @@ class JAXRSubsystemAdd extends AbstractAddStepHandler {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 JAXRConfiguration config = JAXRConfiguration.INSTANCE;
                 ServiceTarget serviceTarget = context.getServiceTarget();
-                newControllers.add(JAXRBootstrapService.addService(serviceTarget, config, verifyHandler));
-                newControllers.add(JUDDIContextService.addService(serviceTarget, config, verifyHandler));
+                if (config.getConnectionFactoryBinding() != null) {
+                    newControllers.add(JAXRConnectionFactoryService.addService(serviceTarget, config, verifyHandler));
+                }
+                // [TODO] AS7-2681 Make JAXR http endpoint configurable
+                if (config.getDataSourceBinding() != null) {
+                    newControllers.add(JAXRDatasourceService.addService(serviceTarget, config, verifyHandler));
+                    newControllers.add(JUDDIContextService.addService(serviceTarget, config, verifyHandler));
+                }
                 context.completeStep();
             }
         }, OperationContext.Stage.RUNTIME);
