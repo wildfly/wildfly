@@ -368,11 +368,18 @@ public class DataSourcesExtension implements Extension {
                         URL_DELIMITER.marshallAsElement(dataSourceNode, false, writer);
                         URL_SELECTOR_STRATEGY_CLASS_NAME.marshallAsElement(dataSourceNode, false, writer);
                     }
-                    boolean poolRequired = hasAnyOf(dataSourceNode, MIN_POOL_SIZE, MAX_POOL_SIZE, POOL_PREFILL,
-                            POOL_USE_STRICT_MIN, POOL_FLUSH_STRATEGY);
+                    boolean poolRequired = MIN_POOL_SIZE.isMarshallable(dataSourceNode, false) ||
+                            MAX_POOL_SIZE.isMarshallable(dataSourceNode, false) ||
+                            POOL_PREFILL.isMarshallable(dataSourceNode, false) ||
+                            POOL_USE_STRICT_MIN.isMarshallable(dataSourceNode, false) ||
+                            POOL_FLUSH_STRATEGY.isMarshallable(dataSourceNode, false);
                     if (isXADataSource) {
                         poolRequired = poolRequired
-                                || hasAnyOf(dataSourceNode, SAME_RM_OVERRIDE, INTERLEAVING, NOTXSEPARATEPOOL, PAD_XID, WRAP_XA_RESOURCE);
+                                || SAME_RM_OVERRIDE.isMarshallable(dataSourceNode, false) ||
+                                INTERLEAVING.isMarshallable(dataSourceNode, false) ||
+                                NOTXSEPARATEPOOL.isMarshallable(dataSourceNode, false) ||
+                                PAD_XID.isMarshallable(dataSourceNode, false) ||
+                                WRAP_XA_RESOURCE.isMarshallable(dataSourceNode, false);
                     }
                     if (poolRequired) {
                         writer.writeStartElement(isXADataSource ? XaDataSource.Tag.XA_POOL.getLocalName() : DataSource.Tag.POOL
@@ -392,8 +399,11 @@ public class DataSourcesExtension implements Extension {
                         }
                         writer.writeEndElement();
                     }
-                    boolean securityRequired = hasAnyOf(dataSourceNode, USERNAME, PASSWORD, SECURITY_DOMAIN,
-                            REAUTHPLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
+                    boolean securityRequired = USERNAME.isMarshallable(dataSourceNode, false) ||
+                            PASSWORD.isMarshallable(dataSourceNode, false) ||
+                            SECURITY_DOMAIN.isMarshallable(dataSourceNode, false) ||
+                            REAUTHPLUGIN_CLASSNAME.isMarshallable(dataSourceNode, false) ||
+                            REAUTHPLUGIN_PROPERTIES.isMarshallable(dataSourceNode, false);
                     if (securityRequired) {
                         writer.writeStartElement(DataSource.Tag.SECURITY.getLocalName());
                         USERNAME.marshallAsElement(dataSourceNode, false, writer);
@@ -419,8 +429,12 @@ public class DataSourcesExtension implements Extension {
                         writer.writeEndElement();
                     }
 
-                    boolean recoveryRequired = hasAnyOf(dataSourceNode, RECOVERY_USERNAME, RECOVERY_PASSWORD,
-                            RECOVERY_SECURITY_DOMAIN, RECOVERLUGIN_CLASSNAME, NO_RECOVERY, RECOVERLUGIN_PROPERTIES);
+                    boolean recoveryRequired = RECOVERY_USERNAME.isMarshallable(dataSourceNode, false) ||
+                            RECOVERY_PASSWORD.isMarshallable(dataSourceNode, false) ||
+                            RECOVERY_SECURITY_DOMAIN.isMarshallable(dataSourceNode, false) ||
+                            RECOVERLUGIN_CLASSNAME.isMarshallable(dataSourceNode, false) ||
+                            NO_RECOVERY.isMarshallable(dataSourceNode, false) ||
+                            RECOVERLUGIN_PROPERTIES.isMarshallable(dataSourceNode, false);
                     if (recoveryRequired) {
                         writer.writeStartElement(XaDataSource.Tag.RECOVERY.getLocalName());
                         NO_RECOVERY.marshallAsAttribute(dataSourceNode, false, writer);
@@ -450,11 +464,18 @@ public class DataSourcesExtension implements Extension {
                         writer.writeEndElement();
                     }
 
-                    boolean validationRequired = hasAnyOf(dataSourceNode, VALIDCONNECTIONCHECKERCLASSNAME,
-                            VALIDCONNECTIONCHECKER_PROPERTIES, CHECKVALIDCONNECTIONSQL, VALIDATEONMATCH, BACKGROUNDVALIDATION,
-                            BACKGROUNDVALIDATIONMILLIS,
-                            USE_FAST_FAIL, STALECONNECTIONCHECKERCLASSNAME,
-                            STALECONNECTIONCHECKER_PROPERTIES, EXCEPTIONSORTERCLASSNAME, EXCEPTIONSORTER_PROPERTIES);
+                    boolean validationRequired = VALIDCONNECTIONCHECKERCLASSNAME.isMarshallable(dataSourceNode, false) ||
+
+                            VALIDCONNECTIONCHECKER_PROPERTIES.isMarshallable(dataSourceNode, false) ||
+                            CHECKVALIDCONNECTIONSQL.isMarshallable(dataSourceNode, false) ||
+                            VALIDATEONMATCH.isMarshallable(dataSourceNode, false) ||
+                            BACKGROUNDVALIDATION.isMarshallable(dataSourceNode, false) ||
+                            BACKGROUNDVALIDATIONMILLIS.isMarshallable(dataSourceNode, false) ||
+                            USE_FAST_FAIL.isMarshallable(dataSourceNode, false) ||
+                            STALECONNECTIONCHECKERCLASSNAME.isMarshallable(dataSourceNode, false) ||
+                            STALECONNECTIONCHECKER_PROPERTIES.isMarshallable(dataSourceNode, false) ||
+                            EXCEPTIONSORTERCLASSNAME.isMarshallable(dataSourceNode, false) ||
+                            EXCEPTIONSORTER_PROPERTIES.isMarshallable(dataSourceNode, false);
                     if (validationRequired) {
                         writer.writeStartElement(DataSource.Tag.VALIDATION.getLocalName());
                         if (dataSourceNode.hasDefined(VALIDCONNECTIONCHECKERCLASSNAME.getName())) {
@@ -514,9 +535,14 @@ public class DataSourcesExtension implements Extension {
                         }
                         writer.writeEndElement();
                     }
-                    boolean timeoutRequired = hasAnyOf(dataSourceNode, BLOCKING_TIMEOUT_WAIT_MILLIS, IDLETIMEOUTMINUTES,
-                            SETTXQUERYTIMEOUT, QUERYTIMEOUT, USETRYLOCK, ALLOCATION_RETRY, ALLOCATION_RETRY_WAIT_MILLIS,
-                            XA_RESOURCE_TIMEOUT);
+                    boolean timeoutRequired = BLOCKING_TIMEOUT_WAIT_MILLIS.isMarshallable(dataSourceNode, false) ||
+                            IDLETIMEOUTMINUTES.isMarshallable(dataSourceNode, false) ||
+                            SETTXQUERYTIMEOUT.isMarshallable(dataSourceNode, false) ||
+                            QUERYTIMEOUT.isMarshallable(dataSourceNode, false) ||
+                            USETRYLOCK.isMarshallable(dataSourceNode, false) ||
+                            ALLOCATION_RETRY.isMarshallable(dataSourceNode, false) ||
+                            ALLOCATION_RETRY_WAIT_MILLIS.isMarshallable(dataSourceNode, false) ||
+                            XA_RESOURCE_TIMEOUT.isMarshallable(dataSourceNode, false);
                     if (timeoutRequired) {
                         writer.writeStartElement(DataSource.Tag.TIMEOUT.getLocalName());
                         BLOCKING_TIMEOUT_WAIT_MILLIS.marshallAsElement(dataSourceNode, false, writer);
