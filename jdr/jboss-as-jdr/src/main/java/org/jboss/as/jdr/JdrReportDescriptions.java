@@ -22,6 +22,7 @@
 
 package org.jboss.as.jdr;
 
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -44,8 +45,6 @@ public class JdrReportDescriptions {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode result = new ModelNode();
         result.get(DESCRIPTION).set(bundle.getString("jdr.subsystem"));
-        result.get(OPERATIONS);
-        result.get(CHILDREN);
         return result;
     }
 
@@ -77,15 +76,17 @@ public class JdrReportDescriptions {
         result.get(OPERATION_NAME).set(JdrReportRequestHandler.OPERATION_NAME);
         result.get(DESCRIPTION).set(bundle.getString("jdr.request"));
         result.get(REQUEST_PROPERTIES).setEmptyObject();
-        result.get(REPLY_PROPERTIES, "start-time", DESCRIPTION).set(bundle.getString("jdr.report.starttime"));
-        result.get(REPLY_PROPERTIES, "start-time", TYPE).set(ModelType.STRING);
-        result.get(REPLY_PROPERTIES, "start-time", REQUIRED).set(true);
-        result.get(REPLY_PROPERTIES, "end-time", DESCRIPTION).set(bundle.getString("jdr.report.endtime"));
-        result.get(REPLY_PROPERTIES, "end-time", TYPE).set(ModelType.STRING);
-        result.get(REPLY_PROPERTIES, "end-time", REQUIRED).set(true);
-        result.get(REPLY_PROPERTIES, "report-location", DESCRIPTION).set(bundle.getString("jdr.report.location"));
-        result.get(REPLY_PROPERTIES, "report-location", TYPE).set(ModelType.STRING);
-        result.get(REPLY_PROPERTIES, "report-location", REQUIRED).set(false);
+        result.get(REPLY_PROPERTIES, DESCRIPTION).set("jdr.report.return");
+        result.get(REPLY_PROPERTIES, TYPE).set(ModelType.OBJECT);
+        result.get(REPLY_PROPERTIES, VALUE_TYPE, "start-time", DESCRIPTION).set(bundle.getString("jdr.report.return.starttime"));
+        result.get(REPLY_PROPERTIES, VALUE_TYPE, "start-time", TYPE).set(ModelType.STRING);
+        result.get(REPLY_PROPERTIES, VALUE_TYPE, "start-time", REQUIRED).set(true);
+        result.get(REPLY_PROPERTIES, VALUE_TYPE, "end-time", DESCRIPTION).set(bundle.getString("jdr.report.return.endtime"));
+        result.get(REPLY_PROPERTIES, VALUE_TYPE, "end-time", TYPE).set(ModelType.STRING);
+        result.get(REPLY_PROPERTIES, VALUE_TYPE, "end-time", REQUIRED).set(true);
+        result.get(REPLY_PROPERTIES, VALUE_TYPE, "report-location", DESCRIPTION).set(bundle.getString("jdr.report.return.location"));
+        result.get(REPLY_PROPERTIES, VALUE_TYPE, "report-location", TYPE).set(ModelType.STRING);
+        result.get(REPLY_PROPERTIES, VALUE_TYPE, "report-location", REQUIRED).set(false);
 
         return result;
     }

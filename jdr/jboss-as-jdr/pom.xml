@@ -32,10 +32,7 @@
         <version>7.1.0.CR1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-jdr</artifactId>
-    <version>7.1.0.CR1-SNAPSHOT</version>
-
     <name>JBoss Application Server: JDR</name>
 
     <dependencies>

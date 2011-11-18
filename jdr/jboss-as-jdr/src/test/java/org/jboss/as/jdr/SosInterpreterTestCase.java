@@ -34,8 +34,6 @@ import static org.junit.Assert.assertEquals;
  */
 public class SosInterpreterTestCase {
 
-    private final static String JBOSS_HOME_ENV_VAR = "JBOSS_HOME";
-
     @Test
     public void testGetPathUnixPath() {
         String path = "file:/path/to/thing";
