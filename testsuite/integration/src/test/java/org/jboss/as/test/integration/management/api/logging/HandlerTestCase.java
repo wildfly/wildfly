@@ -39,7 +39,9 @@ import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.junit.Assert.*;
@@ -50,80 +52,85 @@ import static org.junit.Assert.*;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class HandlerTestCase extends AbstractMgmtTestBase {        
-    
+public class HandlerTestCase extends AbstractMgmtTestBase {
+
     @ArquillianResource
-    static URL url;
-        
+    URL url;
+
     @Deployment
     public static Archive<?> getDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "LoggingServlet.war");
         war.addClass(LoggingServlet.class);
         return war;
-    }    
-    
+    }
+
     @Before
     public void before() throws IOException {
-        super.init(url.getHost(), MGMT_PORT);                
-    }  
-    
+        initModelControllerClient(url.getHost(), MGMT_PORT);
+    }
+
+    @AfterClass
+    public static void after() throws IOException {
+        closeModelControllerClient();
+    }
+
     @Test
     public void testAddRemoveFileHandler() throws Exception {
-         
+
         File logFile = new File(tempDir, "test-fh.log");
         if (logFile.exists()) assertTrue(logFile.delete());
-        
+
         // add file handler
         ModelNode op = createOpNode("subsystem=logging/file-handler=test-fh", "add");
         op.get("name").set("test-fh");
         op.get("level").set("INFO");
         op.get("file").get("path").set(logFile.getAbsolutePath());
         executeOperation(op);
-        
+
         // register it with root logger
         op = createOpNode("subsystem=logging/root-logger=ROOT", "root-logger-assign-handler");
         op.get("name").set("test-fh");
-        executeOperation(op);        
+        executeOperation(op);
 
         // check it is listed in root-logger
         op = createOpNode("subsystem=logging/root-logger=ROOT", "read-attribute");
         op.get("name").set("handlers");
-        ModelNode handlers = executeOperation(op);        
+        ModelNode handlers = executeOperation(op);
         List<String> loggers = ModelUtil.modelNodeAsStingList(handlers);
         assertTrue(loggers.contains("test-fh"));
-        
+
         // force server to issue a log message
-        String response = HttpRequest.get(url.toString() + "/LoggingServlet", 10, TimeUnit.SECONDS);    
+        String response = HttpRequest.get(url.toString() + "/LoggingServlet", 10, TimeUnit.SECONDS);
         assertTrue(response.contains("Logging servlet."));
-        
+
         // deregister handler from logger
         op = createOpNode("subsystem=logging/root-logger=ROOT", "root-logger-unassign-handler");
         op.get("name").set("test-fh");
-        executeOperation(op);        
+        executeOperation(op);
 
         // check it is not listed in root-logger
         op = createOpNode("subsystem=logging/root-logger=ROOT", "read-attribute");
         op.get("name").set("handlers");
-        handlers = executeOperation(op);  
+        handlers = executeOperation(op);
         loggers = ModelUtil.modelNodeAsStingList(handlers);
         assertFalse(loggers.contains("test-fh"));
-        
+
         // remove handler
         op = createOpNode("subsystem=logging/file-handler=test-fh", "remove");
         executeOperation(op);
-        
+
         // check generated log file
         String log = FileUtils.readFileToString(logFile);
         assertTrue(log.contains("Logging servlet."));
-        
+
         // verify that the logger is stopped, no more logs are comming to the file
         long checksum = FileUtils.checksumCRC32(logFile);
-        response = HttpRequest.get(url.toString() + "/LoggingServlet", 10, TimeUnit.SECONDS);    
+        response = HttpRequest.get(url.toString() + "/LoggingServlet", 10, TimeUnit.SECONDS);
         assertTrue(response.contains("Logging servlet."));
         assertEquals(checksum, FileUtils.checksumCRC32(logFile));
-        
+
         // remove log file
         assertTrue(logFile.delete());
     }
-       
+
 }

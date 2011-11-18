@@ -53,7 +53,9 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.management.api.AbstractMgmtTestBase;
 import org.jboss.dmr.ModelNode;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.junit.Assert.*;
@@ -66,7 +68,7 @@ import static org.junit.Assert.*;
 @RunAsClient
 public class ConnectorTestCase extends AbstractMgmtTestBase {
 
-    private final File keyStoreFile = new File( System.getProperty("java.io.tmpdir"), "test.keystore"); 
+    private final File keyStoreFile = new File( System.getProperty("java.io.tmpdir"), "test.keystore");
 
     public enum Connector {
 
@@ -113,8 +115,13 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
 
     @Before
     public void before() throws IOException {
-        super.init(url.getHost(), MGMT_PORT);                
-    }    
+        initModelControllerClient(url.getHost(), MGMT_PORT);
+    }
+
+    @AfterClass
+    public static void after() throws IOException {
+        closeModelControllerClient();
+    }
 
     @Test
     public void testDefaultConnectorList() throws Exception {
@@ -142,10 +149,10 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
 
     @Test
     public void testHttpsConnector() throws Exception {
-        
-               
-        FileUtils.copyURLToFile(ConnectorTestCase.class.getResource("test.keystore"), keyStoreFile);        
-        
+
+
+        FileUtils.copyURLToFile(ConnectorTestCase.class.getResource("test.keystore"), keyStoreFile);
+
         addConnector(Connector.HTTPS);
 
         // check that the connector is live
@@ -158,8 +165,8 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
         assertTrue("Invalid response: " + response, response.indexOf("JBoss") >= 0);
 
         removeConnector(Connector.HTTPS);
-        
-        if (keyStoreFile.exists()) keyStoreFile.delete();        
+
+        if (keyStoreFile.exists()) keyStoreFile.delete();
     }
 
     @Test
@@ -170,11 +177,11 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
 
     @Test
     public void testAddAndRemoveRollbacks() throws Exception {
-                
+
         // execute and rollback add socket
         ModelNode addSocketOp = getAddSocketBindingOp(Connector.HTTP);
         ModelNode ret = executeAndRollbackOperation(addSocketOp);
-        assertTrue("failed".equals(ret.get("outcome").asString()));        
+        assertTrue("failed".equals(ret.get("outcome").asString()));
 
         // add socket again
         executeOperation(addSocketOp);
@@ -182,14 +189,14 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
         // execute and rollback add connector
         ModelNode addConnectorOp = getAddConnectorOp(Connector.HTTP);
         ret = executeAndRollbackOperation(addConnectorOp);
-        assertTrue("failed".equals(ret.get("outcome").asString()));        
+        assertTrue("failed".equals(ret.get("outcome").asString()));
 
         // add connector again
         executeOperation(addConnectorOp);
-        
+
         // check it is listed
-        assertTrue(getConnectorList().contains("test-" + Connector.HTTP.getName() + "-connector"));     
-        
+        assertTrue(getConnectorList().contains("test-" + Connector.HTTP.getName() + "-connector"));
+
         // execute and rollback remove connector
         ModelNode removeConnOp = getRemoveConnectorOp(Connector.HTTP);
         ret = executeAndRollbackOperation(removeConnOp);
@@ -197,22 +204,22 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
 
         // execute remove connector again
         executeOperation(removeConnOp);
-        
+
         Thread.sleep(5000);
         // check that the connector is not live
         String cURL = Connector.HTTP.getScheme() + "://" + url.getHost() + ":8181";
 
         assertTrue("Connector not removed.", testRequestFail(cURL));
 
-        // execute and rollback remove socket binding        
+        // execute and rollback remove socket binding
         ModelNode removeSocketOp = getRemoveSocketBindingOp(Connector.HTTP);
         ret = executeAndRollbackOperation(removeSocketOp);
-        assertTrue("failed".equals(ret.get("outcome").asString()));        
+        assertTrue("failed".equals(ret.get("outcome").asString()));
 
         // execute remove socket again
         executeOperation(removeSocketOp);
     }
-    
+
     private void addConnector(Connector conn) throws Exception {
 
         // add socket binding
@@ -229,10 +236,10 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
 
     private ModelNode getAddSocketBindingOp(Connector conn) {
         ModelNode op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test-" + conn.getName(), "add");
-        op.get("port").set(8181);    
+        op.get("port").set(8181);
         return op;
     }
-    
+
     private ModelNode getAddConnectorOp(Connector conn) {
         ModelNode op = createOpNode("subsystem=web/connector=test-" + conn.getName() + "-connector", "add");
         op.get("socket-binding").set("test-" + conn.getName());
@@ -245,11 +252,11 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
             ssl.get("certificate-key-file").set(keyStoreFile.getAbsolutePath());
             ssl.get("password").set("test123");
             op.get("ssl").set(ssl);
-        }        
+        }
         return op;
     }
-    
-    
+
+
     private void removeConnector(Connector conn) throws Exception {
 
         // remove connector
@@ -263,21 +270,21 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
 
         assertTrue("Connector not removed.", testRequestFail(cURL));
 
-        // remove socket binding        
+        // remove socket binding
         op = getRemoveSocketBindingOp(conn);
         executeOperation(op);
 
     }
-    
+
     private ModelNode getRemoveSocketBindingOp(Connector conn) {
         ModelNode op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test-" + conn.getName(), "remove");
         return op;
     }
-    
+
     private ModelNode getRemoveConnectorOp(Connector conn) {
         ModelNode op = createOpNode("subsystem=web/connector=test-" + conn.getName() + "-connector", "remove");
         return op;
-    }    
+    }
 
     private HashSet<String> getConnectorList() throws Exception {
 

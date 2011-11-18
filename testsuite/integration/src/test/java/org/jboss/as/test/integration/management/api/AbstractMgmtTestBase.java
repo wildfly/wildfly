@@ -52,21 +52,33 @@ import static org.jboss.as.arquillian.container.Authentication.getCallbackHandle
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
 public class AbstractMgmtTestBase {
-    
-    protected final int MGMT_PORT = 9999;    
+
+    protected static final int MGMT_PORT = 9999;
     protected static final String tempDir = System.getProperty("java.io.tmpdir");
 
-    private ModelControllerClient modelControllerClient;
+    private static ModelControllerClient modelControllerClient;
     private static File brokenWar = null;
-    
-    protected void init(final String hostName, final int port) {
-        try {
-            this.modelControllerClient = ModelControllerClient.Factory.create(InetAddress.getByName(hostName), port, getCallbackHandler());
-        } catch (UnknownHostException e) {
-            throw new RuntimeException("Cannot create model controller client for host: " + hostName + " and port " + port, e);
+
+    protected static void initModelControllerClient(final String hostName, final int port) {
+        if (modelControllerClient == null) {
+            try {
+                modelControllerClient = ModelControllerClient.Factory.create(InetAddress.getByName(hostName), port, getCallbackHandler());
+            } catch (UnknownHostException e) {
+                throw new RuntimeException("Cannot create model controller client for host: " + hostName + " and port " + port, e);
+            }
         }
     }
-    
+
+    protected static void closeModelControllerClient() throws IOException {
+        if (modelControllerClient != null) {
+            try {
+                modelControllerClient.close();
+            } finally {
+                modelControllerClient = null;
+            }
+        }
+    }
+
     protected ModelNode executeOperation(final ModelNode op, boolean unwrapResult) throws IOException {
         ModelNode ret = modelControllerClient.execute(op);
         if (! unwrapResult) return ret;
@@ -79,34 +91,34 @@ public class AbstractMgmtTestBase {
     protected ModelNode executeOperation(final ModelNode op) throws IOException {
         return executeOperation(op, true);
     }
-    
+
     protected ModelNode executeOperation(final String address, final String operation) throws IOException {
         return executeOperation(createOpNode(address, operation));
     }
-    
+
     protected ModelNode executeAndRollbackOperation(final ModelNode op) throws IOException, OperationFormatException {
 
         ModelNode addDeploymentOp = createOpNode("deployment=malformedDeployment.war", "add");
         addDeploymentOp.get("content").get(0).get("input-stream-index").set(0);
         ModelNode deploymentOp = new ModelNode();
-        
+
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         builder.setOperationName("deploy");
         builder.addNode("deployment", "malformedDeployment.war");
 
-        
+
         ModelNode[] steps = new ModelNode[3];
         steps[0] = op;
         steps[1] = addDeploymentOp;
         steps[2] = builder.buildRequest();
         ModelNode compositeOp = createCompositeNode(steps);
-        
+
         OperationBuilder ob = new OperationBuilder(compositeOp);
         ob.addInputStream(new FileInputStream(getBrokenWar()));
-        
+
         return modelControllerClient.execute(ob.build());
     }
-    
+
     public static ModelNode createCompositeNode(ModelNode[] steps) {
         ModelNode comp = new ModelNode();
         comp.get("operation").set("composite");
@@ -115,21 +127,23 @@ public class AbstractMgmtTestBase {
         }
         return comp;
     }
-    
+
     public static ModelNode createOpNode(String address, String operation) {
         ModelNode op = new ModelNode();
-        
+
         // set address
-        String [] pathSegments = address.split("/");
         ModelNode list = op.get("address").setEmptyList();
-        for (String segment : pathSegments) {
-            String[] elements = segment.split("=");
-            list.add(elements[0], elements[1]);
+        if (address != null) {
+            String [] pathSegments = address.split("/");
+            for (String segment : pathSegments) {
+                String[] elements = segment.split("=");
+                list.add(elements[0], elements[1]);
+            }
         }
         op.get("operation").set(operation);
         return op;
-    }       
-    
+    }
+
     public boolean testRequestFail(String url) {
         boolean failed = false;
         try {
@@ -138,21 +152,21 @@ public class AbstractMgmtTestBase {
             failed = true;
         }
         return failed;
-        
-    }   
-    
+
+    }
+
     protected final String getBaseURL(URL url) throws MalformedURLException {
         return new URL(url.getProtocol(), url.getHost(), url.getPort(), "/").toString();
-    }    
-    
+    }
+
     private static File getBrokenWar() {
         if (brokenWar != null) return brokenWar;
-        
+
         WebArchive war = ShrinkWrap.create(WebArchive.class, "deployment2.war");
         war.addClass(SimpleServlet.class);
         war.addAsWebInfResource(new StringAsset("Malformed"), "web.xml");
         brokenWar = new File(System.getProperty("java.io.tmpdir") + File.separator + "malformedDeployment.war");
-        new ZipExporterImpl(war).exportTo(brokenWar, true);        
+        new ZipExporterImpl(war).exportTo(brokenWar, true);
         return brokenWar;
     }
 }

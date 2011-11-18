@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.management.api.security;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import java.io.PrintWriter;
 import org.jboss.as.test.integration.management.cli.GlobalOpsTestCase;
@@ -56,7 +58,7 @@ import static org.junit.Assert.*;
 public class SecurityDomainTestCase extends AbstractMgmtTestBase {
 
     @ArquillianResource
-    static URL url;
+    URL url;
 
     @Deployment
     public static Archive<?> getDeployment() {
@@ -64,7 +66,7 @@ public class SecurityDomainTestCase extends AbstractMgmtTestBase {
         ja.addClass(GlobalOpsTestCase.class);
         return ja;
     }
-    
+
     @Deployment(name = "secured-servlet", managed = false)
     public static Archive<?> getDeployment2() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "SecurityDomainTestCase.war");
@@ -77,7 +79,12 @@ public class SecurityDomainTestCase extends AbstractMgmtTestBase {
 
     @Before
     public void before() throws IOException {
-        super.init(url.getHost(), MGMT_PORT);
+        initModelControllerClient(url.getHost(), MGMT_PORT);
+    }
+
+    @AfterClass
+    public static void after() throws IOException {
+        closeModelControllerClient();
     }
 
     @Test
@@ -113,23 +120,23 @@ public class SecurityDomainTestCase extends AbstractMgmtTestBase {
         } catch (Exception e) {
             throw new Exception("Unable to access secured servlet.", e);
         }
-        
+
         // undeploy servlet
         deployer.undeploy("secured-servlet");
-        
-        
+
+
         // remove security domain
         op = createOpNode("subsystem=security/security-domain=test", "remove");
         executeOperation(op);
-        
+
         // check that the security domain is removed
         failed = false;
         try {
-            deployer.deploy("secured-servlet");        
+            deployer.deploy("secured-servlet");
         } catch (Exception e) {
             failed = true;
         }
         assertTrue(failed);
-        
+
     }
 }

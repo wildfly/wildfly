@@ -29,6 +29,8 @@ import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
 import java.util.logging.Logger;
+
+import org.junit.AfterClass;
 import org.junit.Before;
 import java.io.IOException;
 import java.net.URL;
@@ -41,6 +43,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.junit.Assert.*;
@@ -52,21 +55,21 @@ import static org.junit.Assert.*;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class VirtualServerTestCase extends AbstractMgmtTestBase {
-    
+
     @ArquillianResource
-    static URL url;
-    
+    URL url;
+
     private static String defaultHost;
     private static String virtualHost;
     private static final Logger log = Logger.getLogger(VirtualServerTestCase.class.getName());
-    
+
     @Deployment(order=1)
     public static Archive<?> getDeployment() {
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
         ja.addClass(GlobalOpsTestCase.class);
         return ja;
     }
-    
+
     @Deployment(managed=false, name="vsdeployment", order=2)
     public static Archive<?> getVDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "vsDeployment.war");
@@ -74,42 +77,47 @@ public class VirtualServerTestCase extends AbstractMgmtTestBase {
         war.addAsWebResource(new StringAsset("Virtual Server Deployment"), "index.html");
         war.addAsWebResource(new StringAsset("Rewrite Test"), "/rewritten/index.html");
         war.addAsWebInfResource(new StringAsset("<jboss-web><virtual-host>test</virtual-host></jboss-web>"), "jboss-web.xml");
-        return war;        
-    }    
-    
+        return war;
+    }
+
     @Before
     public void before() throws IOException {
-        super.init(url.getHost(), MGMT_PORT);                
-    }        
-    
+        initModelControllerClient(url.getHost(), MGMT_PORT);
+    }
+
+    @AfterClass
+    public static void after() throws IOException {
+        closeModelControllerClient();
+    }
+
     @Test
     public void testDefaultVirtualServer() throws IOException {
-        
+
         // get default VS
         ModelNode result = executeOperation(createOpNode("subsystem=web/virtual-server=default-host", "read-resource"));
-        
+
         // check VS
         assertTrue(result.get("alias").isDefined());
-        assertTrue(result.get("default-web-module").asString().equals("ROOT.war"));        
+        assertTrue(result.get("default-web-module").asString().equals("ROOT.war"));
     }
-    
+
     @Test
     public void addRemoveVirtualServer(@ArquillianResource Deployer deployer) throws Exception {
-       
+
         if (! resolveHosts()) {
             log.info("Unable to resolve alternate server host name.");
             return;
         }
         addVirtualServer();
-        
+
         // deploy to virtual server
         deployer.deploy("vsdeployment");
-        
+
         // check the deployment is available on and only on virtual server
         URL vURL = new URL(url.getProtocol(), virtualHost, url.getPort(), "/vsDeployment/index.html");
         String response = HttpRequest.get(vURL.toString(), 10, TimeUnit.SECONDS);
         assertTrue("Invalid response: " + response, response.indexOf("Virtual Server Deployment") >=0);
-        
+
         URL dURL = new URL(url.getProtocol(), defaultHost, url.getPort(), "/vsDeployment/index.html");
         boolean failed = false;
         try {
@@ -118,44 +126,44 @@ public class VirtualServerTestCase extends AbstractMgmtTestBase {
             failed = true;
         }
         assertTrue("Deployment also on defaul server. " , failed);
-        
+
         // undeploy form virtual server
         deployer.undeploy("vsdeployment");
-        
+
         // remove virtual server
         removeVirtualServer();
-        
+
     }
-    
-    private void addVirtualServer() throws IOException {        
+
+    private void addVirtualServer() throws IOException {
         ModelNode addOp = createOpNode("subsystem=web/virtual-server=test", "add");
         addOp.get("alias").add(virtualHost);
-        
+
         ModelNode rewrite = new ModelNode();
         rewrite.get("condition").setEmptyList();
         rewrite.get("pattern").set("toberewritten");
         rewrite.get("substitution").set("rewritten");
         rewrite.get("flags").set("nocase");
         addOp.get("rewrite").add(rewrite);
-        
+
         executeOperation(addOp);
-                
+
     }
 
-    private void removeVirtualServer() throws IOException {        
+    private void removeVirtualServer() throws IOException {
 
-        executeOperation(createOpNode("subsystem=web/virtual-server=test", "remove")); 
-        
+        executeOperation(createOpNode("subsystem=web/virtual-server=test", "remove"));
+
     }
-    
+
     private boolean resolveHosts() {
         if (url.getHost().equals("localhost") || (url.getHost().equals("127.0.0.1"))) {
             defaultHost = "localhost";
             virtualHost = "127.0.0.1";
             return true;
         }
-        
+
         return false;
     }
-    
+
 }
