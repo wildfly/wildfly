@@ -449,7 +449,7 @@ public class RemoteProxyControllerProtocolTestCase {
         assertArrays(new byte[0], thirdResult.get());
     }
 
-    @Test
+    @Test @Ignore("AS7-2707")
     public void testClosesBeforePrepare() throws Exception {
 
         final CountDownLatch latch = new CountDownLatch(1);
