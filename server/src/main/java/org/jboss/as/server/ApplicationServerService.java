@@ -22,6 +22,11 @@
 
 package org.jboss.as.server;
 
+import static org.jboss.as.server.ServerLogger.AS_ROOT_LOGGER;
+import static org.jboss.as.server.ServerLogger.CONFIG_LOGGER;
+
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -37,7 +42,6 @@ import org.jboss.as.server.moduleservice.ModuleIndexService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.version.Version;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
@@ -56,8 +60,6 @@ import org.jboss.threads.AsyncFuture;
  */
 final class ApplicationServerService implements Service<AsyncFuture<ServiceContainer>> {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as");
-    private static final Logger configLog = Logger.getLogger("org.jboss.as.config");
     private final List<ServiceActivator> extraServices;
     private final Bootstrap.Configuration configuration;
     private final ControlledProcessState processState;
@@ -82,23 +84,24 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         // Install the environment before doing anything
         serverEnvironment.install();
 
-        log.infof("JBoss AS %s \"%s\" starting", Version.AS_VERSION, Version.AS_RELEASE_CODENAME);
-        if (configLog.isDebugEnabled()) {
+        AS_ROOT_LOGGER.serverStarting(Version.AS_VERSION, Version.AS_RELEASE_CODENAME);
+        if (CONFIG_LOGGER.isDebugEnabled()) {
             final Properties properties = System.getProperties();
             final StringBuilder b = new StringBuilder(8192);
             b.append("Configured system properties:");
             for (String property : new TreeSet<String>(properties.stringPropertyNames())) {
                 b.append("\n\t").append(property).append(" = ").append(properties.getProperty(property, "<undefined>"));
             }
-            configLog.debug(b);
-            if (configLog.isTraceEnabled()) {
+            CONFIG_LOGGER.debug(b);
+            CONFIG_LOGGER.debugf("VM Arguments: %s", getVMArguments());
+            if (CONFIG_LOGGER.isTraceEnabled()) {
                 b.setLength(0);
                 final Map<String,String> env = System.getenv();
                 b.append("Configured system environment:");
                 for (String key : new TreeSet<String>(env.keySet())) {
                     b.append("\n\t").append(key).append(" = ").append(env.get(key));
                 }
-                configLog.trace(b);
+                CONFIG_LOGGER.trace(b);
             }
         }
         final ServiceTarget serviceTarget = context.getChildTarget();
@@ -164,9 +167,9 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         // BES 2011/06/11 -- moved this to AbstractControllerService.start()
 //        processState.setRunning();
 
-        if (log.isDebugEnabled()) {
+        if (AS_ROOT_LOGGER.isDebugEnabled()) {
             final long nanos = context.getElapsedTime();
-            log.debugf("JBoss AS root service started in %d.%06d ms", Long.valueOf(nanos / 1000000L), Long.valueOf(nanos % 1000000L));
+            AS_ROOT_LOGGER.debugf("JBoss AS root service started in %d.%06d ms", Long.valueOf(nanos / 1000000L), Long.valueOf(nanos % 1000000L));
         }
     }
 
@@ -174,11 +177,21 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
     public synchronized void stop(final StopContext context) {
         processState.setStopping();
         CurrentServiceContainer.setServiceContainer(null);
-        log.infof("JBoss AS %s \"%s\" stopped in %dms", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Integer.valueOf((int) (context.getElapsedTime() / 1000000L)));
+        AS_ROOT_LOGGER.serverStopped(Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Integer.valueOf((int) (context.getElapsedTime() / 1000000L)));
     }
 
     @Override
     public AsyncFuture<ServiceContainer> getValue() throws IllegalStateException, IllegalArgumentException {
         return futureContainer;
     }
+
+    private String getVMArguments() {
+      final StringBuilder result = new StringBuilder(1024);
+      final RuntimeMXBean rmBean = ManagementFactory.getRuntimeMXBean();
+      final List<String> inputArguments = rmBean.getInputArguments();
+      for (String arg : inputArguments) {
+          result.append(arg).append(" ");
+      }
+      return result.toString();
+   }
 }

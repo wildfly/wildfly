@@ -22,8 +22,12 @@
 
 package org.jboss.as.server;
 
+import static org.jboss.logging.Logger.Level.INFO;
+
 import org.jboss.logging.BasicLogger;
+import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
+import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 
 /**
@@ -63,4 +67,24 @@ public interface ServerLogger extends BasicLogger {
      * A logger with the category {@code org.jboss.as.deployment.module}.
      */
     ServerLogger DEPLOYMENT_MODULE_LOGGER = Logger.getMessageLogger(ServerLogger.class, "org.jboss.as.deployment.module");
+    /**
+     * Logs an informational message indicating the server is starting.
+     *
+     * @param version  the server version.
+     * @param codeName the code name.
+     */
+    @LogMessage(level = INFO)
+    @Message("JBoss AS %s \"%s\" starting")
+    void serverStarting(String version, String codeName);
+
+    /**
+     * Logs an informational message indicating the server is stopped.
+     *
+     * @param version  the server version.
+     * @param codeName the code name.
+     * @param time     the time it took to stop.
+     */
+    @LogMessage(level = INFO)
+    @Message("JBoss AS %s \"%s\" stopped in %dms")
+    void serverStopped(String version, String codeName, int time);
 }
