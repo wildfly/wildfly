@@ -299,24 +299,15 @@ public class CLIWrapper implements Runnable {
     private static String getCliCommand() throws Exception {
         if (cliCommand != null) return cliCommand;
 
-        File targetDir = new File("../../build/target");
-        if ( (!targetDir.exists()) || (!targetDir.isDirectory())) throw new Exception("Missing AS target directory.");
-        String[] children = targetDir.list();
-        String asDir = null;
-        for(String child : children) {
-            if (child.startsWith("jboss-as")) {
-                asDir = child;
-                break;
-            }
-        }
-        if (asDir == null) throw new Exception("Missing AS target directory.");
+        String asDist = System.getProperty("jboss.dist");
+        String asInst = System.getProperty("jboss.inst");
 
-        cliCommand = "java -Djboss.home.dir=target/jbossas " +
-            "-Djboss.modules.dir=../../build/target/" + asDir + "/modules " +
-            "-Djline.WindowsTerminal.directConsole=false " +
-            "-jar ./target/jbossas/jboss-modules.jar " +
-            "-mp ../../build/target/" + asDir + "/modules " +
-            "-logmodule org.jboss.logmanager org.jboss.as.cli" +
+        cliCommand = "java -Djboss.home.dir=" + asInst +
+            " -Djboss.modules.dir=" + asDist + "/modules" +
+            " -Djline.WindowsTerminal.directConsole=false" +
+            " -jar " + asDist + "/jboss-modules.jar" +
+            " -mp "  + asDist + "/modules" +
+            " -logmodule org.jboss.logmanager org.jboss.as.cli" +
             " --user=" + USERNAME +
             " --password=" + PASSWORD;
         return cliCommand;
