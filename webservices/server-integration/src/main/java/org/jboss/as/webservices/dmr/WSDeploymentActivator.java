@@ -22,6 +22,8 @@
 
 package org.jboss.as.webservices.dmr;
 
+import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
+
 import java.util.List;
 
 import org.jboss.as.ee.component.deployers.EEResourceReferenceProcessorRegistry;
@@ -43,7 +45,6 @@ import org.jboss.as.webservices.deployers.deployment.DeploymentAspectsProvider;
 import org.jboss.as.webservices.injection.WSHandlerChainAnnotationProcessor;
 import org.jboss.as.webservices.webserviceref.WSRefAnnotationProcessor;
 import org.jboss.as.webservices.webserviceref.WSRefDDProcessor;
-import org.jboss.logging.Logger;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
 
 /**
@@ -51,8 +52,6 @@ import org.jboss.wsf.spi.deployment.DeploymentAspect;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 final class WSDeploymentActivator {
-
-    private static final Logger LOGGER = Logger.getLogger(WSDeploymentActivator.class);
 
     static void activate(final DeploymentProcessorTarget processorTarget, final boolean appclient) {
         // Add a EEResourceReferenceProcessor which handles @Resource references of type WebServiceContext.
@@ -72,7 +71,6 @@ final class WSDeploymentActivator {
             processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JAXWS_ENDPOINT_CREATE_COMPONENT_DESCRIPTIONS, new WSIntegrationProcessorJAXWS_POJO());
             processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JAXWS_HANDLER_CREATE_COMPONENT_DESCRIPTIONS, new WSIntegrationProcessorJAXWS_HANDLER());
             processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WS, new WSDependenciesProcessor());
-            //processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JAXRPC, new WSJAXRPCDependenciesDeploymentProcessor());
             processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WS_UNIVERSAL_META_DATA_MODEL, new WSModelDeploymentProcessor());
             addDeploymentProcessors(processorTarget, Phase.INSTALL, Phase.INSTALL_WS_DEPLOYMENT_ASPECTS);
         }
@@ -81,11 +79,8 @@ final class WSDeploymentActivator {
     private static void addDeploymentProcessors(final DeploymentProcessorTarget processorTarget, final Phase phase, final int priority) {
         int index = 1;
         List<DeploymentAspect> aspects = DeploymentAspectsProvider.getSortedDeploymentAspects();
-        boolean trace = LOGGER.isTraceEnabled();
         for (final DeploymentAspect da : aspects) {
-            if (trace) {
-                LOGGER.tracef("Installing aspect %s", da.getClass().getName());
-            }
+            ROOT_LOGGER.installingAspect(da.getClass().getName());
             processorTarget.addDeploymentProcessor(phase, priority + index++, new AspectDeploymentProcessor(da));
         }
     }

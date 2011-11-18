@@ -21,6 +21,8 @@
  */
 package org.jboss.as.webservices.metadata;
 
+import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
+
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.ws.common.integration.AbstractDeploymentAspect;
 import org.jboss.ws.common.integration.WSHelper;
@@ -47,23 +49,23 @@ public final class ContainerMetaDataDeploymentAspect extends AbstractDeploymentA
     public void start(final Deployment dep) {
         if (WSHelper.isJaxwsJseDeployment(dep)) {
             if (WSHelper.hasAttachment(dep, JBossWebMetaData.class)) {
-                log.debug("Creating JBoss agnostic JAXWS POJO meta data for deployment: " + dep.getSimpleName());
+                ROOT_LOGGER.creatingDeployment("JAXWS", "POJO", dep.getSimpleName());
                 final JSEArchiveMetaData jseMetaData = jaxwsPojoMDBuilder.create(dep);
                 dep.addAttachment(JSEArchiveMetaData.class, jseMetaData);
             }
         }
         if (WSHelper.isJaxwsEjbDeployment(dep)) {
-            log.debug("Creating JBoss agnostic JAXWS EJB meta data for deployment: " + dep.getSimpleName());
+            ROOT_LOGGER.creatingDeployment("JAXWS", "EJB", dep.getSimpleName());
             final EJBArchiveMetaData ejbMetaData = jaxwsEjbMDBuilder.create(dep);
             dep.addAttachment(EJBArchiveMetaData.class, ejbMetaData);
         }
         else if (WSHelper.isJaxrpcJseDeployment(dep)) {
-            log.debug("Creating JBoss agnostic JAXRPC POJO meta data for deployment: " + dep.getSimpleName());
+            ROOT_LOGGER.creatingDeployment("JAXRPC", "POJO", dep.getSimpleName());
             final JSEArchiveMetaData jseMetaData = jaxrpcPojoMDBuilder.create(dep);
             dep.addAttachment(JSEArchiveMetaData.class, jseMetaData);
         }
         else if (WSHelper.isJaxrpcEjbDeployment(dep)) {
-            log.debug("Creating JBoss agnostic JAXRPC EJB meta data for deployment: " + dep.getSimpleName());
+            ROOT_LOGGER.creatingDeployment("JAXRPC", "EJB", dep.getSimpleName());
             final EJBArchiveMetaData ejbMetaData = jaxrpcEjbMDBuilder.create(dep);
             dep.addAttachment(EJBArchiveMetaData.class, ejbMetaData);
         }

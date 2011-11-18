@@ -23,6 +23,7 @@ package org.jboss.as.webservices.parser;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
+import static org.jboss.as.webservices.WSMessages.MESSAGES;
 import static org.jboss.wsf.spi.util.StAXUtils.match;
 
 import java.io.InputStream;
@@ -95,7 +96,7 @@ public class WSDeploymentAspectParser {
                 if (match(reader, NS, DEPLOYMENT_ASPECTS)) {
                     deploymentAspects = parseDeploymentAspects(reader, loader);
                 } else {
-                    throw new IllegalStateException("Unexpected element: " + reader.getLocalName());
+                    throw MESSAGES.unexpectedElement(reader.getLocalName());
                 }
             }
         }
@@ -110,25 +111,25 @@ public class WSDeploymentAspectParser {
                     if (match(reader, NS, DEPLOYMENT_ASPECTS)) {
                         return deploymentAspects;
                     } else {
-                        throw new IllegalStateException("Unexpected end tag: " + reader.getLocalName());
+                        throw MESSAGES.unexpectedEndTag(reader.getLocalName());
                     }
                 }
                 case XMLStreamConstants.START_ELEMENT: {
                     if (match(reader, NS, DEPLOYMENT_ASPECT)) {
                         deploymentAspects.add(parseDeploymentAspect(reader, loader));
                     } else {
-                        throw new IllegalStateException("Unexpected element: " + reader.getLocalName());
+                        throw MESSAGES.unexpectedElement(reader.getLocalName());
                     }
                 }
             }
         }
-        throw new IllegalStateException("Reached end of xml document unexpectedly");
+        throw MESSAGES.unexpectedEndOfDocument();
     }
 
     private static DeploymentAspect parseDeploymentAspect(XMLStreamReader reader, ClassLoader loader) throws XMLStreamException {
         String deploymentAspectClass = reader.getAttributeValue(null, CLASS);
         if (deploymentAspectClass == null) {
-            throw new IllegalStateException("Could not find class attribute for deployment aspect!");
+            throw MESSAGES.missingDeploymentAspectClassAttribute();
         }
         DeploymentAspect deploymentAspect = null;
         try {
@@ -142,7 +143,7 @@ public class WSDeploymentAspectParser {
                 setContextClassLoader(orig);
             }
         } catch (Exception e) {
-            throw new IllegalStateException("Could not create a deploymeny aspect of class: " + deploymentAspectClass, e);
+            throw MESSAGES.cannotInstantiateDeploymentAspect(e, deploymentAspectClass);
         }
         String priority = reader.getAttributeValue(null, PRIORITY);
         if (priority != null) {
@@ -154,19 +155,19 @@ public class WSDeploymentAspectParser {
                     if (match(reader, NS, DEPLOYMENT_ASPECT)) {
                         return deploymentAspect;
                     } else {
-                        throw new IllegalStateException("Unexpected end tag: " + reader.getLocalName());
+                        throw MESSAGES.unexpectedEndTag(reader.getLocalName());
                     }
                 }
                 case XMLStreamConstants.START_ELEMENT: {
                     if (match(reader, NS, PROPERTY)) {
                         parseProperty(reader, deploymentAspect, loader);
                     } else {
-                        throw new IllegalStateException("Unexpected element: " + reader.getLocalName());
+                        throw MESSAGES.unexpectedElement(reader.getLocalName());
                     }
                 }
             }
         }
-        throw new IllegalStateException("Reached end of xml document unexpectedly");
+        throw MESSAGES.unexpectedEndOfDocument();
     }
 
     @SuppressWarnings("rawtypes")
@@ -174,12 +175,11 @@ public class WSDeploymentAspectParser {
         Class<? extends DeploymentAspect> deploymentAspectClass = deploymentAspect.getClass();
         String propName = reader.getAttributeValue(null, NAME);
         if (propName == null) {
-            throw new IllegalStateException("Could not find property name attribute for deployment aspect: " + deploymentAspect);
+            throw MESSAGES.missingPropertyNameAttribute(deploymentAspect);
         }
         String propClass = reader.getAttributeValue(null, CLASS);
         if (propClass == null) {
-            throw new IllegalStateException("Could not find property class attribute for deployment aspect: "
-                    + deploymentAspect);
+            throw MESSAGES.missingPropertyClassAttribute(deploymentAspect);
         } else {
             try {
                 if (isSupportedPropertyClass(propClass)) {
@@ -197,7 +197,7 @@ public class WSDeploymentAspectParser {
                     if (match(reader, NS, PROPERTY)) {
                         return;
                     } else {
-                        throw new IllegalStateException("Unexpected end tag: " + reader.getLocalName());
+                        throw MESSAGES.unexpectedEndTag(reader.getLocalName());
                     }
                 }
                 case XMLStreamConstants.START_ELEMENT: {
@@ -219,12 +219,12 @@ public class WSDeploymentAspectParser {
                             throw new IllegalStateException(e);
                         }
                     } else {
-                        throw new IllegalStateException("Unexpected element: " + reader.getLocalName());
+                        throw MESSAGES.unexpectedElement(reader.getLocalName());
                     }
                 }
             }
         }
-        throw new IllegalStateException("Reached end of xml document unexpectedly");
+        throw MESSAGES.unexpectedEndOfDocument();
     }
 
     private static Method selectMethod(Class<?> deploymentAspectClass, String propName, String propClass) throws ClassNotFoundException {
@@ -256,7 +256,7 @@ public class WSDeploymentAspectParser {
         } else if (boolean.class.getName().equals(propClass)) {
             return StAXUtils.elementAsBoolean(reader);
         } else {
-            throw new IllegalArgumentException("Unsupported property class: " + propClass);
+            throw MESSAGES.unsupportedPropertyClass(propClass);
         }
     }
 
@@ -267,7 +267,7 @@ public class WSDeploymentAspectParser {
         try {
             list = (List) Class.forName(propClass).newInstance();
         } catch (Exception e) {
-            throw new IllegalStateException("Could not create list of type: " + propClass, e);
+            throw MESSAGES.cannotInstantiateList(e, propClass);
         }
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
@@ -275,19 +275,19 @@ public class WSDeploymentAspectParser {
                     if (match(reader, NS, LIST)) {
                         return list;
                     } else {
-                        throw new IllegalStateException("Unexpected end tag: " + reader.getLocalName());
+                        throw MESSAGES.unexpectedEndTag(reader.getLocalName());
                     }
                 }
                 case XMLStreamConstants.START_ELEMENT: {
                     if (match(reader, NS, VALUE)) {
                         list.add(parseSimpleValue(reader, elementClass));
                     } else {
-                        throw new IllegalStateException("Unexpected element: " + reader.getLocalName());
+                        throw MESSAGES.unexpectedElement(reader.getLocalName());
                     }
                 }
             }
         }
-        throw new IllegalStateException("Reached end of xml document unexpectedly");
+        throw MESSAGES.unexpectedEndOfDocument();
     }
 
     @SuppressWarnings("rawtypes")
@@ -297,7 +297,7 @@ public class WSDeploymentAspectParser {
         try {
             map = (Map) Class.forName(propClass, true, loader).newInstance();
         } catch (Exception e) {
-            throw new IllegalStateException("Could not create map of type: " + propClass, e);
+            throw MESSAGES.cannotInstantiateMap(e, propClass);
         }
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
@@ -305,19 +305,19 @@ public class WSDeploymentAspectParser {
                     if (match(reader, NS, MAP)) {
                         return map;
                     } else {
-                        throw new IllegalStateException("Unexpected end tag: " + reader.getLocalName());
+                        throw MESSAGES.unexpectedEndTag(reader.getLocalName());
                     }
                 }
                 case XMLStreamConstants.START_ELEMENT: {
                     if (match(reader, NS, ENTRY)) {
                         parseMapEntry(reader, map, keyClass, valueClass);
                     } else {
-                        throw new IllegalStateException("Unexpected element: " + reader.getLocalName());
+                        throw MESSAGES.unexpectedElement(reader.getLocalName());
                     }
                 }
             }
         }
-        throw new IllegalStateException("Reached end of xml document unexpectedly");
+        throw MESSAGES.unexpectedEndOfDocument();
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -333,7 +333,7 @@ public class WSDeploymentAspectParser {
                         map.put(key, value);
                         return;
                     } else {
-                        throw new IllegalStateException("Unexpected end tag: " + reader.getLocalName());
+                        throw MESSAGES.unexpectedEndTag(reader.getLocalName());
                     }
                 }
                 case XMLStreamConstants.START_ELEMENT: {
@@ -344,12 +344,12 @@ public class WSDeploymentAspectParser {
                         valueStartDone = true;
                         value = parseSimpleValue(reader, valueClass);
                     } else {
-                        throw new IllegalStateException("Unexpected element: " + reader.getLocalName());
+                        throw MESSAGES.unexpectedElement(reader.getLocalName());
                     }
                 }
             }
         }
-        throw new IllegalStateException("Reached end of xml document unexpectedly");
+        throw MESSAGES.unexpectedEndOfDocument();
     }
 
     /**

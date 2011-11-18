@@ -40,4 +40,5 @@ public class EndpointPublisherFactoryImpl implements EndpointPublisherFactory {
         Service<VirtualHost> service = (Service<VirtualHost>) controller.getService();
         return new EndpointPublisherImpl(service.getValue().getHost());
     }
+
 }

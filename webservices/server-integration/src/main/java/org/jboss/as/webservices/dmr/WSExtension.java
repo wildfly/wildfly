@@ -34,7 +34,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.logging.Logger;
 
 /**
  * The webservices extension.
@@ -46,13 +45,10 @@ import org.jboss.logging.Logger;
  */
 public final class WSExtension implements Extension {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.webservices");
-
     public static final String SUBSYSTEM_NAME = "webservices";
 
     @Override
-    public void initialize(ExtensionContext context) {
-        log.debugf("Activating WebServices Extension");
+    public void initialize(final ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         subsystem.registerXMLElementWriter(WebservicesSubsystemParser.getInstance());
         // ws subsystem
@@ -63,7 +59,6 @@ public final class WSExtension implements Extension {
         final ManagementResourceRegistration epConfigs = registration.registerSubModel(PathElement.pathElement(ENDPOINT_CONFIG), WSSubsystemProviders.ENDPOINTCONFIG_DESCRIPTION);
         epConfigs.registerOperationHandler(ADD, EndpointConfigAdd.INSTANCE, WSSubsystemProviders.ENDPOINTCONFIG_ADD_DESCRIPTION, false);
         epConfigs.registerOperationHandler(REMOVE, EndpointConfigRemove.INSTANCE, WSSubsystemProviders.ENDPOINTCONFIG_REMOVE_DESCRIPTION, false);
-
 
         final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(WSSubsystemProviders.DEPLOYMENT_DESCRIPTION);
         // ws endpoint children

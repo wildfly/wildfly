@@ -23,6 +23,7 @@ package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.webservices.WSMessages.MESSAGES;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -51,8 +52,6 @@ final class WSEndpointMetrics implements OperationStepHandler {
 
     static final WSEndpointMetrics INSTANCE = new WSEndpointMetrics();
     static final String[] ATTRIBUTES;
-
-    private static final String FALLBACK_MESSAGE = "No metrics available";
 
     static final String MIN_PROCESSING_TIME = "min-processing-time";
     static final String MAX_PROCESSING_TIME = "max-processing-time";
@@ -144,6 +143,6 @@ final class WSEndpointMetrics implements OperationStepHandler {
     }
 
     private static String getFallbackMessage() {
-        return FALLBACK_MESSAGE;
+        return MESSAGES.noMetricsAvailable();
     }
 }

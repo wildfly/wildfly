@@ -21,34 +21,22 @@
  */
 package org.jboss.as.webservices.tomcat;
 
+import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
+
 import org.jboss.ws.common.integration.AbstractDeploymentAspect;
 import org.jboss.wsf.spi.deployment.Deployment;
 
 /**
- * Modifies web meta data to configure webservice stack endpoints and properties.
- *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
- * @author <a href="mailto:tdiesler@redhat.com">Thomas Diesler</a>
  */
 public final class WebMetaDataModifyingDeploymentAspect extends AbstractDeploymentAspect {
-    /** Web meta data modifier. */
+
     private WebMetaDataModifier webMetaDataModifier = new WebMetaDataModifier();
 
-    /**
-     * Constructor.
-     */
-    public WebMetaDataModifyingDeploymentAspect() {
-        super();
-    }
-
-    /**
-     * Modifies web meta data.
-     *
-     * @param dep webservice deployment
-     */
     @Override
     public void start(final Deployment dep) {
-        this.log.debug("Modifying web meta data for webservice deployment: " + dep.getSimpleName());
-        this.webMetaDataModifier.modify(dep);
+        ROOT_LOGGER.modifyingWebMetaData(dep.getSimpleName());
+        webMetaDataModifier.modify(dep);
     }
+
 }

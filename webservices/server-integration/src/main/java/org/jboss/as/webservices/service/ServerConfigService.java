@@ -21,13 +21,14 @@
  */
 package org.jboss.as.webservices.service;
 
+import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
+
 import javax.management.MBeanServer;
 
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.webservices.config.ServerConfigImpl;
 import org.jboss.as.webservices.util.WSServices;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
@@ -50,7 +51,6 @@ import org.jboss.wsf.spi.management.ServerConfig;
  */
 public final class ServerConfigService implements Service<ServerConfig> {
 
-    private static final Logger log = Logger.getLogger(ServerConfigService.class);
     private static final ServiceName MBEAN_SERVER_NAME = ServiceName.JBOSS.append("mbean", "server");
     private final AbstractServerConfig serverConfig;
 
@@ -65,22 +65,20 @@ public final class ServerConfigService implements Service<ServerConfig> {
 
     @Override
     public void start(final StartContext context) throws StartException {
-        log.tracef("Starting %s", ServerConfigService.class.getName());
         try {
             serverConfig.create();
         } catch (final Exception e) {
-            log.fatal("Error while creating configuration service", e);
+            ROOT_LOGGER.configServiceCreationFailed();
             throw new StartException(e);
         }
     }
 
     @Override
     public void stop(final StopContext context) {
-        log.tracef("Stopping %s", ServerConfigService.class.getName());
         try {
             serverConfig.destroy();
         } catch (final Exception e) {
-            log.error("Error while destroying configuration service", e);
+            ROOT_LOGGER.configServiceDestroyFailed();
         }
     }
 

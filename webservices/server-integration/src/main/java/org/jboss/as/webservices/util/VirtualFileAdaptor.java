@@ -21,6 +21,8 @@
  */
 package org.jboss.as.webservices.util;
 
+import static org.jboss.as.webservices.WSMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -71,9 +73,9 @@ public final class VirtualFileAdaptor implements WritableUnifiedVirtualFile {
 
     protected VirtualFileAdaptor(URL rootUrl, String path, boolean requiresMount) {
         if (rootUrl == null)
-            throw new IllegalArgumentException("Null root url");
+            throw MESSAGES.nullRootUrl();
         if (path == null)
-            throw new IllegalArgumentException("Null path");
+            throw MESSAGES.nullPath();
 
         this.rootUrl = rootUrl;
         this.path = path;
@@ -92,14 +94,14 @@ public final class VirtualFileAdaptor implements WritableUnifiedVirtualFile {
             try {
                 root = VFS.getChild(rootUrl);
             } catch (URISyntaxException e) {
-                throw new IOException("Unable to get Virtualfile from URL: " + rootUrl, e);
+                throw MESSAGES.cannotGetVirtualFile(e, rootUrl);
             }
             file = root.getChild(path);
 
             if (!file.exists()) {
-                throw new IOException("VirtualFile " + file + " does not exist");
+                throw MESSAGES.missingVirtualFile(file);
             } else if (requiresMount && !isMounted(root, file)) {
-                throw new IOException("VirtualFile " + file + " is not mounted");
+                throw MESSAGES.unmountedVirtualFile(file);
             }
         }
         return file;
@@ -114,7 +116,7 @@ public final class VirtualFileAdaptor implements WritableUnifiedVirtualFile {
         final VirtualFile virtualFile = getFile();
         final VirtualFile childFile = file.getChild(child);
         if (!childFile.exists())
-            throw new IOException("Child '" + child + "' not found for VirtualFile " + virtualFile);
+            throw MESSAGES.missingChild(child, virtualFile);
         return new VirtualFileAdaptor(childFile);
     }
 

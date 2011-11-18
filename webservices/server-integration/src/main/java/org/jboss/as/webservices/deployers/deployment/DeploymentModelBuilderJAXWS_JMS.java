@@ -21,6 +21,7 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
+import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 import static org.jboss.as.webservices.util.ASHelper.getOptionalAttachment;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY;
 import static org.jboss.wsf.spi.deployment.DeploymentType.JAXWS;
@@ -32,39 +33,30 @@ import org.jboss.wsf.spi.metadata.jms.JMSEndpointMetaData;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
 
 /**
- * Creates new JAXWS JSE deployment.
+ * Creates new JAXWS JMS deployment.
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 final class DeploymentModelBuilderJAXWS_JMS extends AbstractDeploymentModelBuilder {
 
-    /**
-     * Constructor.
-     */
     DeploymentModelBuilderJAXWS_JMS() {
         super(JAXWS, JAXWS_JSE);
     }
 
-    /**
-     * Creates new JAXWS JSE deployment and registers it with deployment unit.
-     *
-     * @param dep webservice deployment
-     * @param unit deployment unit
-     */
     @Override
     protected void build(final Deployment dep, final DeploymentUnit unit) {
         // propagate
         final JMSEndpointsMetaData jmsEndpointsMD = getOptionalAttachment(unit, JMS_ENDPOINT_METADATA_KEY);
         dep.addAttachment(JMSEndpointsMetaData.class, jmsEndpointsMD);
 
-        log.debug("Creating JAXWS JMS endpoints meta data model");
+        ROOT_LOGGER.creatingEndpointsMetaDataModel("JAXWS", "JMS");
         for (final JMSEndpointMetaData jmsEndpoint : jmsEndpointsMD.getEndpointsMetaData()) {
             final String jmsEndpointName = jmsEndpoint.getName();
-            log.debug("JMS name: " + jmsEndpointName);
+            ROOT_LOGGER.jmsName(jmsEndpointName);
             final String jmsEndpointClassName = jmsEndpoint.getImplementor();
-            log.debug("JMS class: " + jmsEndpointClassName);
+            ROOT_LOGGER.jmsClass(jmsEndpointClassName);
             final String jmsEndpointAddress = jmsEndpoint.getSoapAddress();
-            log.debug("JMS address: " + jmsEndpointAddress);
+            ROOT_LOGGER.jmsAddress(jmsEndpointAddress);
             newJMSEndpoint(jmsEndpointClassName, jmsEndpointName, jmsEndpointAddress, dep);
         }
     }

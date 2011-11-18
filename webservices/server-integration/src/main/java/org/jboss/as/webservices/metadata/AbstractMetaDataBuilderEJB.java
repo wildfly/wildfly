@@ -21,10 +21,11 @@
  */
 package org.jboss.as.webservices.metadata;
 
+import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
+
 import java.util.List;
 
 import org.jboss.as.webservices.metadata.model.EJBEndpoint;
-import org.jboss.logging.Logger;
 import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.metadata.j2ee.EJBArchiveMetaData;
@@ -41,8 +42,6 @@ import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
  */
 abstract class AbstractMetaDataBuilderEJB {
 
-    protected final Logger log = Logger.getLogger(this.getClass());
-
     /**
      * Builds universal EJB meta data model that is AS agnostic.
      *
@@ -51,8 +50,7 @@ abstract class AbstractMetaDataBuilderEJB {
      * @return universal EJB meta data model
      */
     final EJBArchiveMetaData create(final Deployment dep) {
-        this.log.debug("Building JBoss agnostic meta data for EJB webservice deployment: " + dep.getSimpleName());
-
+        ROOT_LOGGER.creatingEjbDeployment(dep.getSimpleName());
         final EJBArchiveMetaData ejbArchiveMD = new EJBArchiveMetaData();
 
         this.buildEnterpriseBeansMetaData(dep, ejbArchiveMD);
@@ -92,17 +90,17 @@ abstract class AbstractMetaDataBuilderEJB {
        // set context root
        final String contextRoot = webservicesMD.getContextRoot();
        ejbArchiveMD.setWebServiceContextRoot(contextRoot);
-       this.log.debug("Setting context root: " + contextRoot);
+       ROOT_LOGGER.settingContextRoot(contextRoot);
 
        // set config name
        final String configName = webservicesMD.getConfigName();
-       this.log.debug("Setting config name: " + configName);
        ejbArchiveMD.setConfigName(configName);
+       ROOT_LOGGER.settingConfigName(configName);
 
        // set config file
        final String configFile = webservicesMD.getConfigFile();
-       this.log.debug("Setting config file: " + configFile);
        ejbArchiveMD.setConfigFile(configFile);
+       ROOT_LOGGER.settingConfigFile(configFile);
 
        // set wsdl location resolver
        final JBossWebserviceDescriptionMetaData[] wsDescriptionsMD = webservicesMD.getWebserviceDescriptions();

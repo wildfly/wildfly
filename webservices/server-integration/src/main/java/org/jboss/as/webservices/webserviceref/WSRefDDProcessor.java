@@ -86,7 +86,6 @@ public final class WSRefDDProcessor extends AbstractDeploymentDescriptorBindings
         // register it
         final WSReferences wsRefRegistry = getWSRefRegistry(unit);
         final String serviceRefName = getServiceRefName(componentDescription, serviceRefMD);
-        serviceRefUMDM.setServiceRefName(serviceRefName);
         final String cacheKey = getCacheKey(componentDescription, serviceRefUMDM);
         wsRefRegistry.add(cacheKey, serviceRefUMDM);
         return serviceRefUMDM;
@@ -130,7 +129,7 @@ public final class WSRefDDProcessor extends AbstractDeploymentDescriptorBindings
             try {
                 return classLoader.loadClass(className);
             } catch (ClassNotFoundException e) {
-                throw new DeploymentUnitProcessingException("Could not load class " + className, e);
+                throw new DeploymentUnitProcessingException(e);
             }
         }
 

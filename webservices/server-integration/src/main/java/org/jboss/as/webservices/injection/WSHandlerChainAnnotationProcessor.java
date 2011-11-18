@@ -25,6 +25,7 @@ package org.jboss.as.webservices.injection;
 import static org.jboss.as.server.deployment.Attachments.ANNOTATION_INDEX;
 import static org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT;
 import static org.jboss.as.server.deployment.Attachments.RESOURCE_ROOTS;
+import static org.jboss.as.webservices.WSMessages.MESSAGES;
 import static org.jboss.as.webservices.util.ASHelper.isJaxwsService;
 import static org.jboss.as.webservices.util.DotNames.HANDLER_CHAIN_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
@@ -40,8 +41,6 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.xml.ws.WebServiceException;
 
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
@@ -156,7 +155,7 @@ public final class WSHandlerChainAnnotationProcessor implements DeploymentUnitPr
                 return config.openStream();
             }
 
-            throw new WebServiceException("Handler chain config file '" + handlerChaingConfigFileResourcePath + "' not found in " + resourceRoot);
+            throw MESSAGES.missingHandlerChainConfigFile(handlerChaingConfigFileResourcePath, resourceRoot);
         }
     }
 
