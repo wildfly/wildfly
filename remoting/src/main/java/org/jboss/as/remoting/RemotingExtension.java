@@ -78,6 +78,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -122,6 +123,13 @@ public class RemotingExtension implements Extension {
         final ManagementResourceRegistration sasl = connector.registerSubModel(SaslResource.INSTANCE);
         sasl.registerSubModel(SaslPolicyResource.INSTANCE);
         sasl.registerSubModel(PropertyResource.INSTANCE);
+
+        // remote outbound connection
+        subsystem.registerSubModel(RemoteOutboundConnnectionResourceDefinition.INSTANCE);
+        // local outbound connection
+        subsystem.registerSubModel(LocalOutboundConnectionResourceDefinition.INSTANCE);
+        // (generic) outbound connection
+        subsystem.registerSubModel(OutboundConnectionResourceDefinition.INSTANCE);
     }
 
     /**
@@ -129,7 +137,8 @@ public class RemotingExtension implements Extension {
      */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), NewRemotingSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(Namespace.REMOTING_1_0.getUriString(), NewRemotingSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(Namespace.REMOTING_1_1.getUriString(), RemotingSubsystem11Parser.INSTANCE);
     }
 
     /**
