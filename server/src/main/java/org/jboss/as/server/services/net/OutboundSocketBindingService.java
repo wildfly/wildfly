@@ -22,8 +22,8 @@
 
 package org.jboss.as.server.services.net;
 
-import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.NetworkInterfaceBinding;
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -31,8 +31,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import java.net.InetAddress;
 
 /**
  * Service that represents a outbound socket binding
@@ -42,10 +40,10 @@ import java.net.InetAddress;
 public abstract class OutboundSocketBindingService implements Service<OutboundSocketBinding> {
 
     protected final String outboundSocketName;
-    private final Integer sourcePort;
-    private final InjectedValue<SocketBindingManager> socketBindingManagerInjectedValue = new InjectedValue<SocketBindingManager>();
-    private final InjectedValue<NetworkInterfaceBinding> sourceInterfaceInjectedValue = new InjectedValue<NetworkInterfaceBinding>();
-    private final boolean fixedSourcePort;
+    protected final Integer sourcePort;
+    protected final InjectedValue<SocketBindingManager> socketBindingManagerInjectedValue = new InjectedValue<SocketBindingManager>();
+    protected final InjectedValue<NetworkInterfaceBinding> sourceInterfaceInjectedValue = new InjectedValue<NetworkInterfaceBinding>();
+    protected final boolean fixedSourcePort;
 
     private volatile OutboundSocketBinding outboundSocketBinding;
 
@@ -57,16 +55,7 @@ public abstract class OutboundSocketBindingService implements Service<OutboundSo
 
     @Override
     public synchronized void start(final StartContext context) throws StartException {
-        final InetAddress destinationHost = this.getDestinationAddress();
-        if (destinationHost == null) {
-            throw new IllegalStateException("Destination host cannot be null for outbound socket binding: " + this.outboundSocketName);
-        }
-        final int destinationPort = this.getDestinationPort();
-        if (destinationPort < 0) {
-            throw new IllegalStateException("Destination port " + destinationPort + " cannot be negative for outbound socket binding: " + this.outboundSocketName);
-        }
-        this.outboundSocketBinding = new OutboundSocketBinding(this.outboundSocketName, this.socketBindingManagerInjectedValue.getValue(),
-                destinationHost, destinationPort, this.sourceInterfaceInjectedValue.getOptionalValue(), this.sourcePort, this.fixedSourcePort);
+        this.outboundSocketBinding = this.createOutboundSocketBinding();
     }
 
     @Override
@@ -87,8 +76,9 @@ public abstract class OutboundSocketBindingService implements Service<OutboundSo
         return this.sourceInterfaceInjectedValue;
     }
 
-    protected abstract InetAddress getDestinationAddress();
-
-    protected abstract int getDestinationPort();
-
+    /**
+     * Create and return the {@link OutboundSocketBinding} for this outbound socket binding service
+     * @return
+     */
+    protected abstract OutboundSocketBinding createOutboundSocketBinding();
 }
