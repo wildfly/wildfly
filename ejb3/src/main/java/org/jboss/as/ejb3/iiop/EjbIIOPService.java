@@ -247,12 +247,13 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
             final EJBComponent component = ejbComponentInjectedValue.getValue();
             final String earApplicationName = component.getEarApplicationName();
             if (component.getDistinctName() == null || component.getDistinctName().isEmpty()) {
-                name = earApplicationName == null ? "" : earApplicationName + "/";
+                name = earApplicationName == null  || earApplicationName.isEmpty() ? "" : earApplicationName + "/";
                 name = name + component.getModuleName() + "/" + component.getComponentName();
             } else {
-                name = earApplicationName == null ? "" : earApplicationName + "/";
+                name = earApplicationName == null || earApplicationName.isEmpty() ? "" : earApplicationName + "/";
                 name = name + component.getModuleName() + "/" + component.getDistinctName() + "/" + component.getComponentName();
             }
+            name = name.replace(".", "_");
             final ORB orb = this.orb.getValue();
             if (interfaceRepositorySupported) {
                 // Create a CORBA interface repository for the enterprise bean
