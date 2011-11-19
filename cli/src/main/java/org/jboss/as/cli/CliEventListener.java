@@ -19,18 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.handlers.jca;
-
-import org.jboss.as.cli.CommandContext;
-
+package org.jboss.as.cli;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class DataSourceRemoveHandler extends BaseDataSourceRemoveHandler {
+public interface CliEventListener {
 
-    public DataSourceRemoveHandler(CommandContext ctx) {
-        super(ctx, "data-source-remove", "data-source");
-    }
+    void cliEvent(CliEvent event, CommandContext ctx);
 }

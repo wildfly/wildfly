@@ -48,8 +48,8 @@ public class JmsQueueAddHandler extends BatchModeCommandHandler {
     private final ArgumentWithValue durable;
     private final ArgumentWithValue profile;
 
-    public JmsQueueAddHandler() {
-        super("jms-queue-add", true);
+    public JmsQueueAddHandler(CommandContext ctx) {
+        super(ctx, "jms-queue-add", true);
 
         profile = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
             @Override

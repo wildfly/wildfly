@@ -21,13 +21,15 @@
  */
 package org.jboss.as.cli.handlers.jca;
 
+import org.jboss.as.cli.CommandContext;
+
 /**
 *
 * @author Alexey Loubyansky
 */
 public abstract class BaseDataSourceRemoveHandler extends NoArgDataSourceOperationHandler {
 
-    public BaseDataSourceRemoveHandler(String command, final String dsType) {
-        super(command, dsType, "remove");
+    public BaseDataSourceRemoveHandler(CommandContext ctx, String command, final String dsType) {
+        super(ctx, command, dsType, "remove");
     }
 }

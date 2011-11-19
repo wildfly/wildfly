@@ -21,6 +21,8 @@
  */
 package org.jboss.as.cli.handlers;
 
+import org.jboss.as.cli.CommandContext;
+
 
 /**
  *
@@ -28,14 +30,9 @@ package org.jboss.as.cli.handlers;
  */
 public abstract class BatchModeCommandHandler extends BaseOperationCommand {
 
-    public BatchModeCommandHandler(String command, boolean connectionRequired) {
-        super(command, connectionRequired);
+    public BatchModeCommandHandler(CommandContext ctx, String command, boolean connectionRequired) {
+        super(ctx, command, connectionRequired);
     }
-
-    public BatchModeCommandHandler(String command) {
-        super(command);
-    }
-
 
     @Override
     public boolean isBatchMode() {

@@ -24,8 +24,11 @@ package org.jboss.as.cli.handlers;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import org.jboss.as.cli.CliEvent;
+import org.jboss.as.cli.CliEventListener;
 import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
@@ -34,6 +37,7 @@ import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.RequestParameterArgument;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.CommandLineParser;
+import org.jboss.as.cli.operation.OperationRequestAddress.Node;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.parsing.ParserUtil;
@@ -44,17 +48,18 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Alexey Loubyansky
  */
-public abstract class BaseOperationCommand extends CommandHandlerWithHelp implements OperationCommand {
+public abstract class BaseOperationCommand extends CommandHandlerWithHelp implements OperationCommand, CliEventListener {
 
     protected List<RequestParameterArgument> params = new ArrayList<RequestParameterArgument>();
     protected OperationRequestAddress requiredAddress;
 
-    public BaseOperationCommand(String command) {
-        super(command, true);
-    }
+    private boolean dependsOnProfile;
+    private Boolean addressAvailable;
+    private String requiredType;
 
-    public BaseOperationCommand(String command, boolean connectionRequired) {
+    public BaseOperationCommand(CommandContext ctx, String command, boolean connectionRequired) {
         super(command, connectionRequired);
+        ctx.addEventListener(this);
     }
 
     /**
@@ -65,17 +70,14 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
         if(requiredPath == null) {
             throw new IllegalArgumentException("Required path can't be null.");
         }
-        // there perhaps could be more but for now only one is allowed
-        if(requiredAddress != null) {
-            throw new IllegalStateException("Only one required address is allowed, atm.");
-        }
-        requiredAddress = new DefaultOperationRequestAddress();
+        DefaultOperationRequestAddress requiredAddress = new DefaultOperationRequestAddress();
         CommandLineParser.CallbackHandler handler = new DefaultCallbackHandler(requiredAddress);
         try {
             ParserUtil.parseOperationRequest(requiredPath, handler);
         } catch (CommandFormatException e) {
             throw new IllegalArgumentException("Failed to parse nodeType: " + e.getMessage());
         }
+        addRequiredPath(requiredAddress);
     }
 
     /**
@@ -91,6 +93,27 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
             throw new IllegalStateException("Only one required address is allowed, atm.");
         }
         requiredAddress = requiredPath;
+
+        final Iterator<Node> iterator = requiredAddress.iterator();
+        if(iterator.hasNext()) {
+            final String firstType = iterator.next().getType();
+            dependsOnProfile = "subsystem".equals(firstType) || Util.PROFILE.equals(firstType);
+        }
+        if(requiredAddress.endsOnType()) {
+            requiredType = requiredAddress.toParentNode().getType();
+        }
+    }
+
+    protected boolean isDependsOnProfile() {
+        return dependsOnProfile;
+    }
+
+    protected OperationRequestAddress getRequiredAddress() {
+        return requiredAddress;
+    }
+
+    protected String getRequiredType() {
+        return requiredType;
     }
 
     @Override
@@ -101,26 +124,52 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
         if(requiredAddress == null) {
             return true;
         }
+
+        if(dependsOnProfile && ctx.isDomainMode()) { // not checking address in all the profiles
+            return true;
+        }
+
+        if(addressAvailable != null) {
+            return addressAvailable.booleanValue();
+        }
+
         ModelControllerClient client = ctx.getModelControllerClient();
         if(client == null) {
             return false;
-        }
-        if(ctx.isDomainMode()) {
-            return true;
         }
         ModelNode request = new ModelNode();
         ModelNode address = request.get(Util.ADDRESS);
         for(OperationRequestAddress.Node node : requiredAddress) {
             address.add(node.getType(), node.getName());
         }
-        request.get(Util.OPERATION).set(Util.VALIDATE_ADDRESS);
-        ModelNode result;
-        try {
-            result = ctx.getModelControllerClient().execute(request);
-        } catch (IOException e) {
-            return false;
+
+        if(requiredType == null) {
+            request.get(Util.OPERATION).set(Util.VALIDATE_ADDRESS);
+            ModelNode result;
+            try {
+                result = ctx.getModelControllerClient().execute(request);
+            } catch (IOException e) {
+                return false;
+            }
+            addressAvailable = Util.isSuccess(result);
+        } else {
+            request.get(Util.OPERATION).set(Util.READ_CHILDREN_TYPES);
+            ModelNode result;
+            try {
+                result = ctx.getModelControllerClient().execute(request);
+            } catch (IOException e) {
+                return false;
+            }
+            addressAvailable = Util.listContains(result, requiredType);
         }
-        return Util.isSuccess(result);
+        return addressAvailable;
+    }
+
+    @Override
+    public void cliEvent(CliEvent event, CommandContext ctx) {
+        if(event == CliEvent.DISCONNECTED) {
+            addressAvailable = null;
+        }
     }
 
     /* (non-Javadoc)
