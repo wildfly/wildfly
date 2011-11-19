@@ -52,10 +52,12 @@ import java.util.concurrent.TimeoutException;
 import junit.framework.Assert;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
+import org.jboss.as.arquillian.container.TunneledMBeanServerConnection;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.test.smoke.modular.utils.PollingUtils;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.as.test.smoke.surefire.servermodule.archive.sar.Simple;
 import org.jboss.dmr.ModelNode;
@@ -79,8 +81,8 @@ public class ServerInModuleDeploymentTestCase  {
                 Simple.class.getPackage());
         final ServerDeploymentManager manager = ServerDeploymentManager.Factory
                 .create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
-
-        testDeployments(new DeploymentExecutor() {
+        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+        testDeployments(client, new DeploymentExecutor() {
 
             @Override
             public void initialDeploy() {
@@ -117,7 +119,8 @@ public class ServerInModuleDeploymentTestCase  {
         final File file = new File(dir, "test-deployment.sar");
         archive.as(ZipExporter.class).exportTo(file, true);
 
-        testDeployments(new DeploymentExecutor() {
+        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+        testDeployments(client, new DeploymentExecutor() {
 
             @Override
             public void initialDeploy() throws IOException {
@@ -173,7 +176,7 @@ public class ServerInModuleDeploymentTestCase  {
             final File deployed = new File(deployDir, "test-deployment.sar.deployed");
             Assert.assertFalse(target.exists());
 
-            testDeployments(new DeploymentExecutor() {
+            testDeployments(client, new DeploymentExecutor() {
                 @Override
                 public void initialDeploy() throws IOException {
                     // Copy file to deploy directory
@@ -291,7 +294,7 @@ public class ServerInModuleDeploymentTestCase  {
             final File deployed = new File(deployDir, "test-deployment.sar.deployed");
             Assert.assertFalse(target.exists());
 
-            testDeployments(new DeploymentExecutor() {
+            testDeployments(client, new DeploymentExecutor() {
                 @Override
                 public void initialDeploy() throws IOException {
                     // Copy file to deploy directory
@@ -399,7 +402,7 @@ public class ServerInModuleDeploymentTestCase  {
             final File deployed = new File(deployDir, "test-deployment.sar.deployed");
             Assert.assertFalse(deployed.exists());
 
-            testDeployments(new DeploymentExecutor() {
+            testDeployments(client, new DeploymentExecutor() {
                 @Override
                 public void initialDeploy() throws IOException {
 
@@ -521,35 +524,44 @@ public class ServerInModuleDeploymentTestCase  {
         return deployDir;
     }
 
-    private void testDeployments(DeploymentExecutor deploymentExecutor) throws Exception {
-        final MBeanServerConnectionProvider provider = MBeanServerConnectionProvider.defaultProvider();
-        final MBeanServerConnection mbeanServer = provider.getConnection();
+    private void testDeployments(ModelControllerClient client, DeploymentExecutor deploymentExecutor) throws Exception {
+        final MBeanServerConnection mbeanServer = new TunneledMBeanServerConnection(client);
         final ObjectName name = new ObjectName("jboss.test:service=testdeployments");
-        final TestNotificationListener listener = new TestNotificationListener(name);
-        mbeanServer.addNotificationListener(MBeanServerDelegate.DELEGATE_NAME, listener, null, null);
+
+        // NOTE: Use polling until we have jmx over remoting
+        // final TestNotificationListener listener = new TestNotificationListener(name);
+        // mbeanServer.addNotificationListener(MBeanServerDelegate.DELEGATE_NAME, listener, null, null);
         try {
             // Initial deploy
             deploymentExecutor.initialDeploy();
-            listener.await();
+            PollingUtils.retryWithTimeout(10000, new PollingUtils.WaitForMBeanTask(mbeanServer, name));
+
+            //listener.await();
             Assert.assertNotNull(mbeanServer.getMBeanInfo(name));
 
             // Full replace
-            listener.reset(2);
+            // listener.reset(2);
             deploymentExecutor.fullReplace();
-            listener.await();
+            PollingUtils.retryWithTimeout(10000, new PollingUtils.WaitForMBeanTask(mbeanServer, name));
+
+            // listener.await();
             Assert.assertNotNull(mbeanServer.getMBeanInfo(name));
 
             // Undeploy
-            listener.reset(1);
+            // listener.reset(1);
             deploymentExecutor.undeploy();
-            listener.await();
+            // listener.await();
             try {
-                mbeanServer.getMBeanInfo(name);
+                long start = System.currentTimeMillis();
+                while (System.currentTimeMillis() - start < 10000) {
+                    mbeanServer.getMBeanInfo(name);
+                    Thread.sleep(100);
+                }
                 Assert.fail("Should not have found MBean");
-            } catch (InstanceNotFoundException expected) {
+            } catch (Exception expected) {
             }
         } finally {
-            mbeanServer.removeNotificationListener(MBeanServerDelegate.DELEGATE_NAME, listener);
+            //mbeanServer.removeNotificationListener(MBeanServerDelegate.DELEGATE_NAME, listener);
         }
 
     }

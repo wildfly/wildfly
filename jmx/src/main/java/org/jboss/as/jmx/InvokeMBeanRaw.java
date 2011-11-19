@@ -33,6 +33,7 @@ import java.util.ArrayList;
 
 import javax.management.MBeanServer;
 import javax.management.Notification;
+import javax.management.NotificationBroadcaster;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
@@ -86,7 +87,9 @@ public class InvokeMBeanRaw extends AbstractRuntimeOnlyHandler {
         ObjectName beanName = null;
         try {
             beanName = ObjectName.getInstance(name);
-            if (file != null && file.exists()) {
+            boolean notifications = server.isInstanceOf(beanName, NotificationBroadcaster.class.getName());
+
+            if (notifications && file != null && file.exists()) {
                 listener = new FileNotificationListener(file);
                 server.addNotificationListener(beanName, listener, null, null);
             }
@@ -116,7 +119,7 @@ public class InvokeMBeanRaw extends AbstractRuntimeOnlyHandler {
     }
 
      // Yuck!
-     private static byte[] getBytes(Object param) throws OperationFailedException {
+     static byte[] getBytes(Object param) throws OperationFailedException {
          ByteArrayOutputStream out = new ByteArrayOutputStream();
          ObjectOutputStream oos;
          try {

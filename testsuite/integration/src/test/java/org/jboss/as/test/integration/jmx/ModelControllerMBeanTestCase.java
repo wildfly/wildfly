@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
@@ -47,6 +48,7 @@ import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeDataSupport;
 import javax.management.openmbean.CompositeType;
 import javax.management.openmbean.OpenMBeanParameterInfo;
+import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
@@ -62,7 +64,9 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.xnio.IoUtils;
@@ -75,24 +79,48 @@ import org.xnio.IoUtils;
 @RunAsClient
 public class ModelControllerMBeanTestCase {
 
-    final String HOST = "localhost";
-    final int PORT = 1090;
+    static final String HOST = "localhost";
+    static final int PORT = 1090;
 
     static final ObjectName MODEL_FILTER = createObjectName(Constants.DOMAIN  + ":*");
     static final ObjectName ROOT_MODEL_NAME = Constants.ROOT_MODEL_NAME;
 
-    MBeanServerConnection connection;
-    ModelControllerClient client;
+    static JMXConnector connector;
+    static MBeanServerConnection connection;
+    static ModelControllerClient client;
 
-    @Before
-    public void initialize() throws Exception {
-        connection = setupAndGetConnection();
+    @BeforeClass
+    public static void initialize() throws Exception {
         client = ModelControllerClient.Factory.create("localhost", 9999, getCallbackHandler());
+        enableJMXConnector(client);
+        connection = setupAndGetConnection();
     }
 
-    @After
-    public void closeConnection() throws Exception {
+    private static void enableJMXConnector(ModelControllerClient client) throws IOException {
+        ModelNode op = new ModelNode();
+        op.get(OP).set("add-connector");
+        op.get(OP_ADDR).set("subsystem", "jmx");
+        op.get("server-binding").set("jmx-connector-server");
+        op.get("registry-binding").set("jmx-connector-registry");
+        ModelNode result = client.execute(op);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+    }
+
+    @AfterClass
+    public static void closeConnection() throws Exception {
+        IoUtils.safeClose(connector);
+        disableJMXConnector(client);
         IoUtils.safeClose(client);
+    }
+
+    private static void disableJMXConnector(ModelControllerClient client) throws IOException {
+        ModelNode op = new ModelNode();
+        op.get(OP).set("remove-connector");
+        op.get(OP_ADDR).set("subsystem", "jmx");
+        op.get("server-binding").set("jmx-connector-server");
+        op.get("registry-binding").set("jmx-connector-registry");
+        ModelNode result = client.execute(op);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
     }
 
     /**
@@ -242,13 +270,13 @@ public class ModelControllerMBeanTestCase {
         }
     }
 
-    private MBeanServerConnection setupAndGetConnection() throws Exception {
-
+    private static MBeanServerConnection setupAndGetConnection() throws Exception {
         // Make sure that we can connect to the MBean server
         String urlString = System
                 .getProperty("jmx.service.url", "service:jmx:rmi:///jndi/rmi://" + HOST + ":" + PORT + "/jmxrmi");
         JMXServiceURL serviceURL = new JMXServiceURL(urlString);
-        return JMXConnectorFactory.connect(serviceURL, null).getMBeanServerConnection();
+        connector = JMXConnectorFactory.connect(serviceURL, null);
+        return connector.getMBeanServerConnection();
     }
 
 }

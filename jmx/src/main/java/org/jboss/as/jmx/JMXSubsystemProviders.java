@@ -138,6 +138,21 @@ public class JMXSubsystemProviders {
 
     };
 
+    static final DescriptionProvider GET_MBEAN_INFO_RAW = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode subsystem = new ModelNode();
+            subsystem.get(OPERATION_NAME).set("get-mbean-info-raw");
+            subsystem.get(DESCRIPTION).set("This is an internal method not fit for public consumption. " +
+                    "It will be removed shortly. Therefore its use is not documented");
+
+            return subsystem;
+        }
+
+    };
+
     static final DescriptionProvider JMX_CONNECTOR_REMOVE = new DescriptionProvider() {
 
         public ModelNode getModelDescription(Locale locale) {

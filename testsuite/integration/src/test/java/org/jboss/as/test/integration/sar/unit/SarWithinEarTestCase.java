@@ -22,16 +22,22 @@
 
 package org.jboss.as.test.integration.sar.unit;
 
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.container.TunneledMBeanServerConnection;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.sar.SarWithinEarService;
 import org.jboss.as.test.integration.sar.SarWithinEarServiceMBean;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -40,6 +46,7 @@ import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 
 /**
@@ -55,7 +62,18 @@ public class SarWithinEarTestCase {
     private static final String EAR_WITHOUT_APPLICATION_XML = "sar-within-ear-without-application-xml.ear";
 
     private static final String EAR_WITH_APPLICATION_XML = "sar-within-ear-with-application-xml.ear";
+    private ModelControllerClient client;
 
+
+    @Before
+    public void init() throws UnknownHostException {
+        client = ModelControllerClient.Factory.create("localhost", 9999, getCallbackHandler());
+    }
+
+    @After
+    public void destroy() throws IOException {
+        client.close();
+    }
     /**
      * Create a .ear, without an application.xml, with a nested .sar deployment
      *
@@ -122,7 +140,7 @@ public class SarWithinEarTestCase {
     }
 
     private MBeanServerConnection getMBeanServerConnection() throws IOException {
-        return JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:rmi:///jndi/rmi://localhost:1090/jmxrmi"),
-                new HashMap<String, Object>()).getMBeanServerConnection();
+        return new TunneledMBeanServerConnection(client);
+
     }
 }

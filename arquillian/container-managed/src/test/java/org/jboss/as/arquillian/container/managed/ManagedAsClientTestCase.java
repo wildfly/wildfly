@@ -27,6 +27,7 @@ import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
 import org.jboss.as.arquillian.container.managed.archive.ConfigService;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 /**
@@ -36,6 +37,7 @@ import org.junit.runner.RunWith;
  * @author Thomas.Diesler@jboss.com
  */
 @RunWith(Arquillian.class)
+@Ignore // Disable until JMX over Remoting is implemented
 public class ManagedAsClientTestCase extends AbstractContainerTestCase {
 
     @Deployment(testable = false)

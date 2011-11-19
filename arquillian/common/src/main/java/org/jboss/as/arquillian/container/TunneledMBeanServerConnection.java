@@ -65,6 +65,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class TunneledMBeanServerConnection implements MBeanServerConnection {
     private static final String INVOKE_MBEAN_RAW = "invoke-mbean-raw";
+    private static final String GET_MBEAN_INFO_RAW ="get-mbean-info-raw";
     private static final String JMX = "jmx";
     private static final String MBEAN_NAME = "mbean-name";
     private static final String MBEAN_OPERATION_NAME = "mbean-operation-name";
@@ -211,7 +212,22 @@ public class TunneledMBeanServerConnection implements MBeanServerConnection {
     }
 
     public MBeanInfo getMBeanInfo(ObjectName name) throws InstanceNotFoundException, IntrospectionException, ReflectionException, IOException {
-        return null;
+        ModelNode request = new ModelNode();
+        request.get(OP).set(GET_MBEAN_INFO_RAW);
+        request.get(OP_ADDR).add(SUBSYSTEM, JMX);
+
+        request.get(MBEAN_NAME).set(name.toString());
+
+        ModelNode response = client.execute(request);
+        if (!SUCCESS.equals(response.get(OUTCOME).asString())) {
+            throw new IOException("Failed operation: " + response.get(FAILURE_DESCRIPTION).toString());
+        }
+        byte[] bytes = response.get(RESULT).asBytes();
+        try {
+            return MBeanInfo.class.cast(new ObjectInputStream(new ByteArrayInputStream(bytes)).readObject());
+        } catch (ClassNotFoundException e) {
+            throw new IOException(e);
+        }
     }
 
     public boolean isInstanceOf(ObjectName name, String className) throws InstanceNotFoundException, IOException {

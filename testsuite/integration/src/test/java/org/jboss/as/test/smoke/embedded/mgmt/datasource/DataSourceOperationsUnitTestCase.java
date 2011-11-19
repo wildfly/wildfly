@@ -52,6 +52,7 @@ import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.container.TunneledMBeanServerConnection;
 import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension.NewDataSourceSubsystemParser;
 import org.jboss.as.connector.subsystems.datasources.Namespace;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -94,8 +95,8 @@ public class DataSourceOperationsUnitTestCase {
 
     @Deployment
     public static Archive<?> getDeployment() {
-    	//TODO Don't do this FakeJndi stuff once we have remote JNDI working
-    	return ShrinkWrapUtils.createJavaArchive("demos/fakejndi.sar", FakeJndi.class.getPackage());
+        //TODO Don't do this FakeJndi stuff once we have remote JNDI working
+        return ShrinkWrapUtils.createJavaArchive("demos/fakejndi.sar", FakeJndi.class.getPackage());
     }
 
     // [ARQ-458] @Before not called with @RunAsClient
@@ -585,25 +586,24 @@ public class DataSourceOperationsUnitTestCase {
         final Map<String, ModelNode> parseChildren = getChildren(newList.get(1));
         Assert.assertFalse(parseChildren.isEmpty());
         Assert.assertEquals(xaDsJndi, parseChildren.get("jndi-name").asString());
-        
+
         remove(address);
-        
+
         ModifiableXaDataSource jxaDS = null;
-    	try{
-        	jxaDS = lookup(xaDsJndi ,ModifiableXaDataSource .class);
-        	
-    		Assert.fail("found datasource after it was unbounded");
+        try{
+            jxaDS = lookup(client, xaDsJndi ,ModifiableXaDataSource .class);
+
+            Assert.fail("found datasource after it was unbounded");
         }
         catch (Exception e){
-        	// must be thrown NameNotFound exception - datasource is unbounded	
-        	
+            // must be thrown NameNotFound exception - datasource is unbounded
+
         }
     }
-    private static <T> T lookup(String name, Class<T> expected) throws Exception {
+    private static <T> T lookup(ModelControllerClient client, String name, Class<T> expected) throws Exception {
         //TODO Don't do this FakeJndi stuff once we have remote JNDI working
-    	
-        MBeanServerConnectionProvider provider = MBeanServerConnectionProvider.defaultProvider();
-        MBeanServerConnection mbeanServer = provider.getConnection();
+
+        MBeanServerConnection mbeanServer = new TunneledMBeanServerConnection(client);
         ObjectName objectName = new ObjectName("jboss:name=test,type=fakejndi");
         PollingUtils.retryWithTimeout(10000, new PollingUtils.WaitForMBeanTask(mbeanServer, objectName));
         Object o = mbeanServer.invoke(objectName, "lookup", new Object[] {name}, new String[] {"java.lang.String"});

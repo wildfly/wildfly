@@ -49,6 +49,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
+import org.jboss.as.arquillian.container.TunneledMBeanServerConnection;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.test.smoke.embedded.demos.fakejndi.FakeJndi;
@@ -95,8 +96,8 @@ public class JmsClientTestCase {
             applyUpdate(op, client);
             actionsApplied = true;
 
-            QueueConnectionFactory qcf = lookup("RemoteConnectionFactory", QueueConnectionFactory.class);
-            Queue queue = lookup(QUEUE_NAME, Queue.class);
+            QueueConnectionFactory qcf = lookup(client, "RemoteConnectionFactory", QueueConnectionFactory.class);
+            Queue queue = lookup(client, QUEUE_NAME, Queue.class);
 
             conn = qcf.createQueueConnection();
             conn.start();
@@ -176,10 +177,9 @@ public class JmsClientTestCase {
         }
     }
 
-    private static <T> T lookup(String name, Class<T> expected) throws Exception {
+    private <T> T lookup(ModelControllerClient client, String name, Class<T> expected) throws Exception {
         //TODO Don't do this FakeJndi stuff once we have remote JNDI working
-        MBeanServerConnectionProvider provider = MBeanServerConnectionProvider.defaultProvider();
-        MBeanServerConnection mbeanServer = provider.getConnection();
+        MBeanServerConnection mbeanServer = new TunneledMBeanServerConnection(client);
         ObjectName objectName = new ObjectName("jboss:name=test,type=fakejndi");
         PollingUtils.retryWithTimeout(10000, new PollingUtils.WaitForMBeanTask(mbeanServer, objectName));
         Object o = mbeanServer.invoke(objectName, "lookup", new Object[] {name}, new String[] {"java.lang.String"});

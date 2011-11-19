@@ -32,7 +32,7 @@
 
     <xs:complexType name="subsystem">
       <xs:sequence>
-         <xs:element name="jmx-connector" type="jmx-connectorType" />
+         <xs:element name="jmx-connector" type="jmx-connectorType" minOccurs="0"/>
       </xs:sequence>
       <xs:attribute name="show-model" use="optional" default="false"/>
     </xs:complexType>
