@@ -29,6 +29,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.net.UnknownHostException;
 
 /**
  * A outbound socket binding represents the client end of a socket. It represents binding from a local "host"
@@ -47,8 +48,52 @@ public class OutboundSocketBinding {
     private final boolean fixedSourcePort;
     private final NetworkInterfaceBinding sourceNetworkInterface;
     private final Integer sourcePort;
-    private final InetAddress destinationAddress;
+    private final String unresolvedDestinationAddress;
     private final int destinationPort;
+
+    /**
+     * The destination address is lazily resolved whenever a request is made {@link #getDestinationAddress()}
+     * or for {@link #connect()}
+     */
+    private InetAddress resolvedDestinationAddress;
+
+    /**
+     * Creates a outbound socket binding
+     *
+     * @param name                   Name of the outbound socket binding
+     * @param socketBindingManager   The socket binding manager
+     * @param destinationAddress     The destination address to which this socket will be "connected". Cannot be null or empty string.
+     * @param destinationPort        The destination port. Cannot be < 0.
+     * @param sourceNetworkInterface (Optional) source network interface which will be used as the "source" of the socket binding
+     * @param sourcePort             (Optional) source port. Cannot be null or < 0
+     * @param fixedSourcePort        True if the <code>sourcePort</code> has to be used as a fixed port number. False if the <code>sourcePort</code>
+     *                               will be added to the port offset while determining the absolute source port.
+     */
+    public OutboundSocketBinding(final String name, final SocketBindingManager socketBindingManager,
+                                 final String destinationAddress, final int destinationPort,
+                                 final NetworkInterfaceBinding sourceNetworkInterface, final Integer sourcePort,
+                                 final boolean fixedSourcePort) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Socket name cannot be null or an empty string");
+        }
+        if (socketBindingManager == null) {
+            throw new IllegalArgumentException("SocketBindingManager cannot be null for outbound socket binding " + name);
+        }
+        if (destinationAddress == null || destinationAddress.trim().isEmpty()) {
+            throw new IllegalArgumentException("Destination address cannot be null or empty for outbound socket binding " + name);
+        }
+        if (destinationPort < 0) {
+            throw new IllegalArgumentException("Destination port cannot be a negative value: " + destinationPort
+                    + " for outbound socket binding " + name);
+        }
+        this.name = name;
+        this.socketBindingManager = socketBindingManager;
+        this.unresolvedDestinationAddress = destinationAddress;
+        this.destinationPort = destinationPort;
+        this.sourceNetworkInterface = sourceNetworkInterface;
+        this.sourcePort = sourcePort;
+        this.fixedSourcePort = fixedSourcePort;
+    }
 
     /**
      * Creates a outbound socket binding
@@ -66,26 +111,8 @@ public class OutboundSocketBinding {
                                  final InetAddress destinationAddress, final int destinationPort,
                                  final NetworkInterfaceBinding sourceNetworkInterface, final Integer sourcePort,
                                  final boolean fixedSourcePort) {
-        if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("Socket name cannot be null or an empty string");
-        }
-        if (socketBindingManager == null) {
-            throw new IllegalArgumentException("SocketBindingManager cannot be null for outbound socket binding " + name);
-        }
-        if (destinationAddress == null) {
-            throw new IllegalArgumentException("Destination address cannot be null for outbound socket binding " + name);
-        }
-        if (destinationPort < 0) {
-            throw new IllegalArgumentException("Destination port cannot be a negative value: " + destinationPort
-                    + " for outbound socket binding " + name);
-        }
-        this.name = name;
-        this.socketBindingManager = socketBindingManager;
-        this.destinationAddress = destinationAddress;
-        this.destinationPort = destinationPort;
-        this.sourceNetworkInterface = sourceNetworkInterface;
-        this.sourcePort = sourcePort;
-        this.fixedSourcePort = fixedSourcePort;
+        this(name, socketBindingManager, destinationAddress.getHostAddress(), destinationPort, sourceNetworkInterface, sourcePort, fixedSourcePort);
+        this.resolvedDestinationAddress = destinationAddress;
     }
 
     /**
@@ -105,8 +132,20 @@ public class OutboundSocketBinding {
         return socket;
     }
 
-    public InetAddress getDestinationAddress() {
-        return this.destinationAddress;
+    /**
+     * Returns the destination address of this outbound socket binding. If the destination address
+     * is already resolved then this method return that address or else it tries to resolve the
+     * address before return.
+     *
+     * @return
+     * @throws UnknownHostException If the destination address cannot be resolved
+     */
+    public synchronized InetAddress getDestinationAddress() throws UnknownHostException {
+        if (this.resolvedDestinationAddress != null) {
+            return this.resolvedDestinationAddress;
+        }
+        this.resolvedDestinationAddress = InetAddress.getByName(this.unresolvedDestinationAddress);
+        return this.resolvedDestinationAddress;
     }
 
     public int getDestinationPort() {

@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.clustering.infinispan.InfinispanMessages.MESSAGES;
 
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -455,7 +456,12 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
                 builder.addDependency(OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(outboundSocketBinding), OutboundSocketBinding.class, new Injector<OutboundSocketBinding>() {
                     @Override
                     public void inject(OutboundSocketBinding value) throws InjectionException {
-                        String address = value.getDestinationAddress().getHostAddress()+":"+Integer.toString(value.getDestinationPort());
+                        final String address;
+                        try {
+                            address = value.getDestinationAddress().getHostAddress()+":"+Integer.toString(value.getDestinationPort());
+                        } catch (UnknownHostException uhe) {
+                            throw new InjectionException("Could not resolve destination address for outbound socket binding named " + value, uhe);
+                        }
                         String serverList = storeConfig.getHotRodClientProperties().getProperty(ConfigurationProperties.SERVER_LIST);
                         serverList = serverList==null?address:serverList+";"+address;
                         storeConfig.getHotRodClientProperties().setProperty(ConfigurationProperties.SERVER_LIST, serverList);

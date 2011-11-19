@@ -1,7 +1,9 @@
 package org.jboss.as.mail.extension;
 
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -117,7 +119,13 @@ public class MailSessionService implements Service<Session> {
         if (ref == null) {
             throw MailMessages.MESSAGES.outboundSocketBindingNotAvailable(ref);
         }
-        return new InetSocketAddress(binding.getDestinationAddress(), binding.getDestinationPort());
+        final InetAddress destinationAddress;
+        try {
+            destinationAddress = binding.getDestinationAddress();
+        } catch (UnknownHostException uhe) {
+            throw MailMessages.MESSAGES.unknownOutboundSocketBindingDesintation(uhe, ref);
+        }
+        return new InetSocketAddress(destinationAddress, binding.getDestinationPort());
     }
 
 

@@ -31,7 +31,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.POR
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOURCE_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOURCE_PORT;
 
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 
@@ -119,7 +118,6 @@ public class RemoteDestinationOutboundSocketBindingAddHandler extends AbstractAd
 
         // destination host
         final String destinationHost = RemoteDestinationOutboundSocketBindingResourceDefinition.HOST.validateResolvedOperation(model).asString();
-        final InetAddress destinationHostAddress = InetAddress.getByName(destinationHost);
         // port
         final int destinationPort = RemoteDestinationOutboundSocketBindingResourceDefinition.PORT.validateResolvedOperation(model).asInt();
 
@@ -133,7 +131,7 @@ public class RemoteDestinationOutboundSocketBindingAddHandler extends AbstractAd
         final ModelNode fixedSourcePortModelNode = OutboundSocketBindingResourceDefinition.FIXED_SOURCE_PORT.validateResolvedOperation(model);
         final boolean fixedSourcePort = fixedSourcePortModelNode.isDefined() ? fixedSourcePortModelNode.asBoolean() : false;
         // create the service
-        final OutboundSocketBindingService outboundSocketBindingService = new RemoteDestinationOutboundSocketBindingService(outboundSocketName, destinationHostAddress, destinationPort, sourcePort, fixedSourcePort);
+        final OutboundSocketBindingService outboundSocketBindingService = new RemoteDestinationOutboundSocketBindingService(outboundSocketName, destinationHost, destinationPort, sourcePort, fixedSourcePort);
         final ServiceBuilder<OutboundSocketBinding> serviceBuilder = serviceTarget.addService(OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(outboundSocketName), outboundSocketBindingService);
         // if a source interface has been specified then add a dependency on it
         if (sourceInterfaceName != null) {

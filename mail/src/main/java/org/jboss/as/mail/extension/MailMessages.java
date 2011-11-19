@@ -22,6 +22,8 @@
 
 package org.jboss.as.mail.extension;
 
+import java.net.UnknownHostException;
+
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
@@ -51,4 +53,15 @@ interface MailMessages {
      */
     @Message(id = 15450, value = "No outbound socket binding configuration '%s' is available.")
     StartException outboundSocketBindingNotAvailable(String outgoingSocketBindingRef);
+
+    /**
+     * Creates an exception indicating that the destination address of the outgoing socket binding, that the
+     * mail service depends on, could not be resolved
+     *
+     * @param outgoingSocketBindingRef the name of the socket binding configuration.
+     *
+     * @return a {@link RuntimeException} for the error.
+     */
+    @Message(id = 15451, value = "Unknwon host for outbound socket binding configuration '%s'.")
+    RuntimeException unknownOutboundSocketBindingDesintation(@Cause UnknownHostException cause, String outgoingSocketBindingRef);
 }
