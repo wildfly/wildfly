@@ -64,6 +64,7 @@ public class Util {
     public static final String OPERATION_HEADERS = "operation-headers";
     public static final String OUTCOME = "outcome";
     public static final String PROFILE = "profile";
+    public static final String READ_ATTRIBUTE = "read-attribute";
     public static final String READ_CHILDREN_NAMES = "read-children-names";
     public static final String READ_CHILDREN_TYPES = "read-children-types";
     public static final String READ_ONLY = "read-only";
@@ -115,9 +116,9 @@ public class Util {
     }
 
     public static List<String> getList(ModelNode operationResult) {
-        if(!operationResult.hasDefined(Util.RESULT))
+        if(!operationResult.hasDefined(RESULT))
             return Collections.emptyList();
-        List<ModelNode> nodeList = operationResult.get(Util.RESULT).asList();
+        List<ModelNode> nodeList = operationResult.get(RESULT).asList();
         if(nodeList.isEmpty())
             return Collections.emptyList();
         List<String> list = new ArrayList<String>(nodeList.size());
@@ -128,10 +129,10 @@ public class Util {
     }
 
     public static boolean listContains(ModelNode operationResult, String item) {
-        if(!operationResult.hasDefined("result"))
+        if(!operationResult.hasDefined(RESULT))
             return false;
 
-        List<ModelNode> nodeList = operationResult.get("result").asList();
+        List<ModelNode> nodeList = operationResult.get(RESULT).asList();
         if(nodeList.isEmpty())
             return false;
 
@@ -141,12 +142,6 @@ public class Util {
             }
         }
         return false;
-    }
-
-    public static byte[] getHash(ModelNode operationResult) {
-        if(!operationResult.hasDefined("result"))
-            return null;
-        return operationResult.get("result").asBytes();
     }
 
     public static List<String> getRequestPropertyNames(ModelNode operationResult) {

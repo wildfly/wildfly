@@ -46,8 +46,8 @@ public class JmsTopicAddHandler extends BatchModeCommandHandler {
     private final ArgumentWithValue entries;
     private final ArgumentWithValue profile;
 
-    public JmsTopicAddHandler() {
-        super("jms-topic-add", true);
+    public JmsTopicAddHandler(CommandContext ctx) {
+        super(ctx, "jms-topic-add", true);
 
         profile = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
             @Override

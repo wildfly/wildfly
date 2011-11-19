@@ -74,6 +74,12 @@ public interface CommandContext {
     void terminateSession();
 
     /**
+     * Checks whether the session has been terminated.
+     * @return
+     */
+    boolean isTerminated();
+
+    /**
      * Associates an object with key. The mapping is valid until this method is called with the same key value
      * and null as the new value for this key.
      * @param key the key
@@ -209,4 +215,10 @@ public interface CommandContext {
      * @return  true if the CLI is connected to the domain controller, otherwise false.
      */
     boolean isDomainMode();
+
+    /**
+     * Adds a listener for CLI events.
+     * @param listener  the listener
+     */
+    void addEventListener(CliEventListener listener);
 }

@@ -22,8 +22,8 @@ public class NoArgDataSourceOperationHandler extends BatchModeCommandHandler {
     protected final ArgumentWithValue profile;
     protected final ArgumentWithValue name;
 
-    public NoArgDataSourceOperationHandler(String command, final String dsType, String operationName) {
-        super(command, true);
+    public NoArgDataSourceOperationHandler(CommandContext ctx, String command, final String dsType, String operationName) {
+        super(ctx, command, true);
         this.dsType = dsType;
         this.operationName = operationName;
 

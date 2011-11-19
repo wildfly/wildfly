@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli;
+package org.jboss.as.cli.impl;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -38,19 +38,47 @@ class SecurityActions {
                 return System.getSecurityManager() == null ? NON_PRIVILEGED : PRIVILEGED;
             }
 
+            static void addShutdownHook(Thread hook) {
+                getTCLAction().addShutdownHook(hook);
+            }
+
             public static String getSystemProperty(String name) {
                 return getTCLAction().getSystemProperty(name);
+            }
+
+            public static ClassLoader getClassLoader(Class<?> cls) {
+                return getTCLAction().getClassLoader(cls);
             }
         }
 
         TCLAction NON_PRIVILEGED = new TCLAction() {
+
+            @Override
+            public void addShutdownHook(Thread t) {
+                Runtime.getRuntime().addShutdownHook(t);
+            }
+
             @Override
             public String getSystemProperty(String name) {
                 return System.getProperty(name);
             }
+
+            @Override
+            public ClassLoader getClassLoader(Class<?> cls) {
+                return cls.getClassLoader();
+            }
         };
 
         TCLAction PRIVILEGED = new TCLAction() {
+
+            public void addShutdownHook(final Thread thread) {
+                AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                    public Object run() {
+                        Runtime.getRuntime().addShutdownHook(thread);
+                        return null;
+                    }
+                });
+            }
 
             @Override
             public String getSystemProperty(final String name) {
@@ -60,12 +88,33 @@ class SecurityActions {
                     }
                 });
             }
+
+            @Override
+            public ClassLoader getClassLoader(final Class<?> cls) {
+                return (ClassLoader) AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                    public Object run() {
+                        return cls.getClassLoader();
+                    }
+                });
+            }
         };
+
+        void addShutdownHook(Thread t);
+
+        ClassLoader getClassLoader(Class<?> cls);
 
         String getSystemProperty(String name);
     }
 
+    protected static void addShutdownHook(Thread hook) {
+        TCLAction.UTIL.addShutdownHook(hook);
+    }
+
     protected static String getSystemProperty(String name) {
         return TCLAction.UTIL.getSystemProperty(name);
+    }
+
+    protected static ClassLoader getClassLoader(Class<?> cls) {
+        return TCLAction.UTIL.getClassLoader(cls);
     }
 }

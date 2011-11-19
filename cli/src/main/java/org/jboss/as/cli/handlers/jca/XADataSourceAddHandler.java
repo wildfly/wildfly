@@ -21,6 +21,7 @@
  */
 package org.jboss.as.cli.handlers.jca;
 
+import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.cli.impl.RequestParamArgWithValue;
 import org.jboss.as.cli.impl.RequestParamArgWithoutValue;
@@ -34,8 +35,8 @@ import org.jboss.as.cli.impl.RequiredRequestParamArg;
  */
 public class XADataSourceAddHandler extends BaseDataSourceAddHandler {
 
-    public XADataSourceAddHandler() {
-        super("xa-data-source-add", "xa-data-source");
+    public XADataSourceAddHandler(CommandContext ctx) {
+        super(ctx, "xa-data-source-add", "xa-data-source");
     }
 
     @Override

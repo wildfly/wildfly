@@ -54,8 +54,8 @@ public class BaseDataSourceAddHandler extends BaseOperationCommand {
     private final ArgumentWithValue profile;
     private final ArgumentWithValue jndiName;
 
-    public BaseDataSourceAddHandler(String commandName, String dsType) {
-        super(commandName, true);
+    public BaseDataSourceAddHandler(CommandContext ctx, String commandName, String dsType) {
+        super(ctx, commandName, true);
 
         this.dsType = dsType;
 

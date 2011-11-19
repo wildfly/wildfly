@@ -36,6 +36,7 @@ import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.ParsedCommandLine;
+import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
@@ -57,8 +58,12 @@ public class DeployHandler extends BatchModeCommandHandler {
     private final ArgumentWithoutValue allServerGroups;
     private final ArgumentWithoutValue disabled;
 
-    public DeployHandler() {
-        super("deploy", true);
+    public DeployHandler(CommandContext ctx) {
+        super(ctx, "deploy", true);
+
+        final DefaultOperationRequestAddress requiredAddress = new DefaultOperationRequestAddress();
+        requiredAddress.toNodeType(Util.DEPLOYMENT);
+        addRequiredPath(requiredAddress);
 
         l = new ArgumentWithoutValue(this, "-l");
         l.setExclusive(true);

@@ -50,8 +50,8 @@ public class BaseDataSourceModifyHandler extends BaseOperationCommand {
     private final ArgumentWithValue profile;
     private final ArgumentWithValue jndiName;
 
-    public BaseDataSourceModifyHandler(String commandName, final String dsType) {
-        super(commandName, true);
+    public BaseDataSourceModifyHandler(CommandContext ctx, String commandName, final String dsType) {
+        super(ctx, commandName, true);
 
         this.dsType = dsType;
 
