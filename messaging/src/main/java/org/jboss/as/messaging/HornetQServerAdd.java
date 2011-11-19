@@ -67,7 +67,6 @@ import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_MAX_DAY_HI
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_SAMPLE_PERIOD;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_EXPIRY_SCAN_PERIOD;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_EXPIRY_THREAD_PRIORITY;
-import static org.jboss.as.messaging.CommonAttributes.NAME_OPTIONAL;
 import static org.jboss.as.messaging.CommonAttributes.PAGING_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.PERF_BLAST_PAGES;
 import static org.jboss.as.messaging.CommonAttributes.PERSISTENCE_ENABLED;
@@ -349,10 +348,6 @@ class HornetQServerAdd implements OperationStepHandler {
         configuration.setMessageCounterMaxDayHistory(MESSAGE_COUNTER_MAX_DAY_HISTORY.resolveModelAttribute(context, model).asInt());
         configuration.setMessageExpiryScanPeriod(MESSAGE_EXPIRY_SCAN_PERIOD.resolveModelAttribute(context, model).asLong());
         configuration.setMessageExpiryThreadPriority(MESSAGE_EXPIRY_THREAD_PRIORITY.resolveModelAttribute(context, model).asInt());
-
-        if (model.hasDefined(NAME_OPTIONAL.getName())) {
-            configuration.setName(NAME_OPTIONAL.resolveModelAttribute(context, model).asString());
-        }
 
         configuration.setJournalPerfBlastPages(PERF_BLAST_PAGES.resolveModelAttribute(context, model).asInt());
         configuration.setPersistDeliveryCountBeforeDelivery(PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY.resolveModelAttribute(context, model).asBoolean());

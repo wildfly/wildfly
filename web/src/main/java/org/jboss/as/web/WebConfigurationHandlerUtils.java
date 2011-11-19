@@ -103,7 +103,8 @@ class WebConfigurationHandlerUtils {
      * Initialize the configuration model, since add/remove operations would
      * not make sense. (the operation node should already have the default value set.
      *
-     * @param context the operation context
+     * @param resource the subsystem root resource
+     * @param operation the subsystem add operation
      */
 
     static void initializeConfiguration(final Resource resource, final ModelNode operation) {
@@ -115,6 +116,17 @@ class WebConfigurationHandlerUtils {
         final Resource jsp = resource.getChild(JSPPATH);
         final Resource resources = resource.getChild(RESOURCEPATH);
         final Resource container = resource.getChild(CONTAINERPATH);
+
+        final ModelNode rootModel = resource.getModel();
+        if (operation.hasDefined(Constants.DEFAULT_VIRTUAL_SERVER)) {
+            rootModel.get(Constants.DEFAULT_VIRTUAL_SERVER).set(operation.get(Constants.DEFAULT_VIRTUAL_SERVER));
+        }
+        if (operation.hasDefined(Constants.NATIVE)) {
+            rootModel.get(Constants.NATIVE).set(operation.get(Constants.NATIVE));
+        }
+        if (operation.hasDefined(Constants.INSTANCE_ID)) {
+            rootModel.get(Constants.INSTANCE_ID).set(operation.get(Constants.INSTANCE_ID));
+        }
 
         boolean hasJSP = false;
         boolean hasStatic = false;

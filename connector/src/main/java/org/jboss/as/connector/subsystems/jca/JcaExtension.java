@@ -229,18 +229,25 @@ public class JcaExtension implements Extension {
 
         private void writeBootstrapContexts(XMLExtendedStreamWriter writer, ModelNode parentNode) throws XMLStreamException {
             if (parentNode.hasDefined(BOOTSTRAP_CONTEXT) && parentNode.get(BOOTSTRAP_CONTEXT).asList().size() != 0) {
-                writer.writeStartElement(Element.BOOTSTRAP_CONTEXTS.getLocalName());
+
+                boolean started = false;
 
                 for (ModelNode node : parentNode.get(BOOTSTRAP_CONTEXT).asList()) {
                     if (BootstrapContextAdd.BootstrapCtxParameters.NAME.getAttribute().isMarshallable(node) ||
                             BootstrapContextAdd.BootstrapCtxParameters.WORKMANAGER.getAttribute().isMarshallable(node)) {
+                        if (!started) {
+                            writer.writeStartElement(Element.BOOTSTRAP_CONTEXTS.getLocalName());
+                            started = true;
+                        }
                         writer.writeStartElement(Element.BOOTSTRAP_CONTEXT.getLocalName());
                         BootstrapContextAdd.BootstrapCtxParameters.NAME.getAttribute().marshallAsAttribute(node, writer);
                         BootstrapContextAdd.BootstrapCtxParameters.WORKMANAGER.getAttribute().marshallAsAttribute(node, writer);
                         writer.writeEndElement();
                     }
                 }
-                writer.writeEndElement();
+                if (started) {
+                    writer.writeEndElement();
+                }
             }
         }
 

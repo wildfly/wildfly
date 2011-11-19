@@ -52,13 +52,17 @@ import org.jboss.msc.service.ServiceName;
  * Implements the {@code read-attribute} operation for runtime attributes exposed by a HornetQ
  * {@link org.hornetq.api.jms.management.ConnectionFactoryControl}.
  *
+ * <strong>THIS SHOULD NOT INCLUDE ATTRIBUTES THAT ARE PART OF THE PERSISTENT CONFIGURATION. Those are
+ * handled by {@link ConnectionFactoryWriteAttributeHandler}, since <i>all</i> persistent attributes
+ * are writable (even those that require a restart to take effect in the runtime.)</strong>
+ *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class ConnectionFactoryReadAttributeHandler extends AbstractRuntimeOnlyHandler {
 
     public static final ConnectionFactoryReadAttributeHandler INSTANCE = new ConnectionFactoryReadAttributeHandler();
 
-    public static final List<String> READ_ATTRIBUTES = Arrays.asList( HA.getName(), FACTORY_TYPE, INITIAL_MESSAGE_PACKET_SIZE );
+    public static final List<String> READ_ATTRIBUTES = Arrays.asList( FACTORY_TYPE, INITIAL_MESSAGE_PACKET_SIZE );
 
     private ParametersValidator validator = new ParametersValidator();
 

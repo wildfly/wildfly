@@ -119,9 +119,9 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -135,8 +135,6 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.HashUtil;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.JVMHandlers;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
@@ -188,6 +186,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         set.add("jboss.domain.servers.dir");
         RESTRICTED_PATHS = Collections.unmodifiableSet(set);
     }
+
+    private static final char[] NEW_LINE = new char[]{'\n'};
 
     protected final ModuleLoader moduleLoader;
     private final ExecutorService bootExecutor;
@@ -324,7 +324,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         final ExtensionParsingContextImpl context = new ExtensionParsingContextImpl(reader.getXMLMapper());
 
         final Map<String, Future<XMLStreamException>> loadFutures = bootExecutor != null
-                ? new HashMap<String, Future<XMLStreamException>>() : null;
+                ? new LinkedHashMap<String, Future<XMLStreamException>>() : null;
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
@@ -333,7 +333,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 throw unexpectedElement(reader);
             }
 
-            // Attribute && require no content
+            // One attribute && require no content
             final String moduleName = readStringAttributeElement(reader, Attribute.MODULE.getLocalName());
 
             if (!found.add(moduleName)) {
@@ -2673,16 +2673,16 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 ModelNode binding = bindings.get(bindingName);
                 writer.writeStartElement(Element.SOCKET_BINDING.getLocalName());
                 writeAttribute(writer, Attribute.NAME, bindingName);
-                ModelNode attr = binding.get(PORT);
+                ModelNode attr = binding.get(INTERFACE);
+                if (attr.isDefined()) {
+                    writeAttribute(writer, Attribute.INTERFACE, attr.asString());
+                }
+                attr = binding.get(PORT);
                 writeAttribute(writer, Attribute.PORT, attr.asString());
 
                 attr = binding.get(FIXED_PORT);
                 if (attr.isDefined() && attr.asBoolean()) {
                     writeAttribute(writer, Attribute.FIXED_PORT, attr.asString());
-                }
-                attr = binding.get(INTERFACE);
-                if (attr.isDefined()) {
-                    writeAttribute(writer, Attribute.INTERFACE, attr.asString());
                 }
                 attr = binding.get(MULTICAST_ADDRESS);
                 if (attr.isDefined()) {
@@ -3090,5 +3090,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             }
         }
         writer.writeEndElement();
+    }
+
+    protected static void writeNewLine(XMLExtendedStreamWriter writer) throws XMLStreamException {
+        writer.writeCharacters(NEW_LINE, 0, 1);
     }
 }

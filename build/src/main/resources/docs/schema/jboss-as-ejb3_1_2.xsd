@@ -37,12 +37,12 @@
             </xs:documentation>
         </xs:annotation>
         <xs:all>
-            <xs:element name="mdb" type="mdbType" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="remote" type="remoteType" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="async" type="asyncType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="session-bean" type="session-beanType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="mdb" type="mdbType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="pools" type="poolsType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="async" type="asyncType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="timer-service" type="timerServiceType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="remote" type="remoteType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="thread-pools" type="threadPoolsType" minOccurs="0" maxOccurs="1"/>
         </xs:all>
     </xs:complexType>

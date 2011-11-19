@@ -22,7 +22,10 @@
 
 package org.jboss.as.messaging;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import org.hornetq.core.security.Role;
@@ -55,12 +58,25 @@ class SecurityRoleAdd implements OperationStepHandler, DescriptionProvider {
     static final AttributeDefinition CONSUME = new RoleAttributeDefinition("consume");
     static final AttributeDefinition CREATE_DURABLE_QUEUE = new RoleAttributeDefinition("create-durable-queue", "createDurableQueue");
     static final AttributeDefinition DELETE_DURABLE_QUEUE = new RoleAttributeDefinition("delete-durable-queue", "deleteDurableQueue");
-    static final AttributeDefinition CREATE_NON_DURABLE_QUEUE = new RoleAttributeDefinition("create-non-durable-queue", "createTempQueue");
-    static final AttributeDefinition DELETE_NON_DURABLE_QUEUE = new RoleAttributeDefinition("delete-non-durable-queue", "deleteTempQueue");
+    static final AttributeDefinition CREATE_NON_DURABLE_QUEUE = new RoleAttributeDefinition("create-non-durable-queue", "createNonDurableQueue");
+    static final AttributeDefinition DELETE_NON_DURABLE_QUEUE = new RoleAttributeDefinition("delete-non-durable-queue", "deleteNonDurableQueue");
     static final AttributeDefinition MANAGE = new RoleAttributeDefinition("manage");
 
     static final AttributeDefinition[] ROLE_ATTRIBUTES = new AttributeDefinition[] {SEND, CONSUME, CREATE_DURABLE_QUEUE, DELETE_DURABLE_QUEUE,
                     CREATE_NON_DURABLE_QUEUE, DELETE_NON_DURABLE_QUEUE, MANAGE};
+
+    static final Map<String, AttributeDefinition> ROLE_ATTRIBUTES_BY_XML_NAME;
+
+    static {
+        Map<String, AttributeDefinition> robxn = new HashMap<String, AttributeDefinition>();
+        for (AttributeDefinition attr : ROLE_ATTRIBUTES) {
+            robxn.put(attr.getXmlName(), attr);
+        }
+        // Legacy xml names
+        robxn.put("createTempQueue", CREATE_NON_DURABLE_QUEUE);
+        robxn.put("deleteTempQueue", DELETE_NON_DURABLE_QUEUE);
+        ROLE_ATTRIBUTES_BY_XML_NAME = Collections.unmodifiableMap(robxn);
+    }
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {

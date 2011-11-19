@@ -47,7 +47,7 @@
       </xs:sequence>
       <xs:attribute name="default-virtual-server"/>
       <xs:attribute name="instance-id"/>
-      <xs:attribute name="native" default="true" type="xs:boolean"/> 
+      <xs:attribute name="native" default="true" type="xs:boolean"/>
    </xs:complexType>
 
 
@@ -64,7 +64,7 @@
             </xs:annotation>
          </xs:element>
          <xs:element name="jsp-configuration" minOccurs="0" maxOccurs="1" type="jsp-configurationType" />
-     <!--  
+     <!--
      <xs:element minOccurs="0" maxOccurs="1" name="csrf"/>
      <xs:element minOccurs="0" maxOccurs="1" name="webdav-fix"/>
      -->
@@ -106,7 +106,7 @@
       <xs:attribute name="display-source-fragment" default="true" type="xs:boolean" />
    </xs:complexType>
 
-<!-- 
+<!--
   <xs:complexType name="cgi-servletType">
     <xs:attribute name="debug" default="0"/>
     <xs:attribute name="cgi-path-prefix"/>
@@ -182,17 +182,17 @@
       </xs:complexType>
    </xs:element>
    <xs:attributeGroup name="virtual-server-attlist">
+      <xs:attribute name="name" use="required">
+         <xs:annotation>
+            <xs:documentation>Main vhost name</xs:documentation>
+         </xs:annotation>
+      </xs:attribute>
       <xs:attribute name="enable-welcome-root" type="xs:boolean">
          <xs:annotation>
            <xs:documentation>Whether or not the bundled welcome directory is used as the root web context</xs:documentation>
          </xs:annotation>
       </xs:attribute>
       <xs:attribute name="default-web-module" default="ROOT.war" />
-      <xs:attribute name="name" use="required">
-         <xs:annotation>
-            <xs:documentation>Main vhost name</xs:documentation>
-         </xs:annotation>
-      </xs:attribute>
    </xs:attributeGroup>
 
    <xs:complexType name="http-access-logType">
@@ -264,7 +264,7 @@
          <xs:annotation>
             <xs:documentation>
                 <![CDATA[
-                    The substitution of a rewrite rule is the string which is substituted for (or replaces) 
+                    The substitution of a rewrite rule is the string which is substituted for (or replaces)
                     the original URL which Pattern matched
                   ]]>
             </xs:documentation>
@@ -291,7 +291,7 @@
          <xs:annotation>
             <xs:documentation>
                 <![CDATA[
-                    CondPattern is the condition pattern, a regular expression which is applied to the 
+                    CondPattern is the condition pattern, a regular expression which is applied to the
                     current instance of the test string
                 ]]>
             </xs:documentation>
@@ -307,15 +307,15 @@
    <xs:complexType name="directoryType">
       <xs:annotation>
          <xs:documentation>
-            <![CDATA[               
+            <![CDATA[
                 The "relative-to" references a global path configuration in the domain model, with the default
                 to the JBoss Application data directory (jboss.server.data.dir).
                 The "path" the directory based on the referenced path.
             ]]>
          </xs:documentation>
       </xs:annotation>
-      <xs:attribute name="relative-to" type="xs:string" default="jboss.server.data.dir" />
       <xs:attribute name="path" type="xs:string" default="tx-object-store" />
+      <xs:attribute name="relative-to" type="xs:string" use="optional" />
    </xs:complexType>
 
    <xs:complexType name="mime-mappingType">
@@ -406,7 +406,7 @@
     <xs:attribute name="session-cache-size" default="0"/>
     <xs:attribute name="session-timeout" default="86400"/>
   </xs:complexType>
-  
+
   <xs:simpleType name="SSlProtocolType">
     <xs:restriction base="xs:token">
         <xs:enumeration value="SSLv2"/>
@@ -423,5 +423,5 @@
         <xs:enumeration value="PKCS12"/>
     </xs:restriction>
   </xs:simpleType>
-  
+
 </xs:schema>

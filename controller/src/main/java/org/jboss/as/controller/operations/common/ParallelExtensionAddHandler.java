@@ -25,6 +25,7 @@ package org.jboss.as.controller.operations.common;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -63,7 +64,8 @@ public class ParallelExtensionAddHandler implements OperationStepHandler {
 
         context.addStep(getParallelExtensionInitializeStep(), OperationContext.Stage.IMMEDIATE);
 
-        for (ParsedBootOp op : extensionAdds) {
+        for (int i = extensionAdds.size() -1; i >= 0; i--) { // Reverse order so they execute in normal order!
+            ParsedBootOp op = extensionAdds.get(i);
             context.addStep(op.response, op.operation, op.handler, OperationContext.Stage.IMMEDIATE);
         }
 
