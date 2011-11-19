@@ -325,8 +325,6 @@ public interface CommonAttributes {
     SimpleAttributeDefinition MIN_LARGE_MESSAGE_SIZE = new SimpleAttributeDefinition("min-large-message-size",
             new ModelNode().set(HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE), ModelType.INT,  true, MeasurementUnit.BYTES);
 
-    SimpleAttributeDefinition NAME_OPTIONAL = new SimpleAttributeDefinition("name", ModelType.STRING, true, AttributeAccess.Flag.RESTART_ALL_SERVICES);
-
     SimpleAttributeDefinition PASSWORD = new SimpleAttributeDefinition("password",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD),  ModelType.STRING, true);
 
@@ -487,17 +485,10 @@ public interface CommonAttributes {
     String CONNECTOR_REF_STRING ="connector-ref";
     String CONNECTOR_SERVICE = "connector-service";
     String CONNECTOR_SERVICES = "connector-services";
-    String CONSUME_XML_NAME ="consume";
     String CONSUMER_COUNT ="consumer-count";
     String CORE_ADDRESS ="core-address";
     String CORE_QUEUE ="core-queue";
     String CORE_QUEUES ="core-queues";
-    String CREATEDURABLEQUEUE_XML_NAME ="createDurableQueue";
-    String CREATETEMPQUEUE_NAME ="createTempQueue";
-    String CREATE_NON_DURABLE_QUEUE_XML_NAME ="createNonDurableQueue";
-    String DELETEDURABLEQUEUE_XML_NAME ="deleteDurableQueue";
-    String DELETETEMPQUEUE_NAME ="deleteTempQueue";
-    String DELETE_NON_DURABLE_QUEUE_XML_NAME ="deleteNonDurableQueue";
     String DELIVERING_COUNT ="delivering-count";
     String DISCOVERY_GROUP = "discovery-group";
     String DISCOVERY_GROUPS = "discovery-groups";
@@ -562,7 +553,6 @@ public interface CommonAttributes {
     String SCHEDULED_COUNT = "scheduled-count";
     String SECURITY_SETTING ="security-setting";
     String SECURITY_SETTINGS ="security-settings";
-    String SEND_XML_NAME ="send";
     String HORNETQ_SERVER = "hornetq-server";
     String STARTED = "started";
     String STATIC_CONNECTORS = "static-connectors";
@@ -578,7 +568,7 @@ public interface CommonAttributes {
     String XA_TX = "XATransaction";
 
     AttributeDefinition[] SIMPLE_ROOT_RESOURCE_ATTRIBUTES = {
-        NAME_OPTIONAL, CLUSTERED, PERSISTENCE_ENABLED, SCHEDULED_THREAD_POOL_MAX_SIZE,
+        CLUSTERED, PERSISTENCE_ENABLED, SCHEDULED_THREAD_POOL_MAX_SIZE,
         THREAD_POOL_MAX_SIZE, SECURITY_ENABLED, SECURITY_INVALIDATION_INTERVAL, WILD_CARD_ROUTING_ENABLED, MANAGEMENT_ADDRESS,
         MANAGEMENT_NOTIFICATION_ADDRESS, CLUSTER_USER, CLUSTER_PASSWORD, JMX_MANAGEMENT_ENABLED, JMX_DOMAIN, MESSAGE_COUNTER_ENABLED,
         MESSAGE_COUNTER_SAMPLE_PERIOD, MESSAGE_COUNTER_MAX_DAY_HISTORY, CONNECTION_TTL_OVERRIDE, ASYNC_CONNECTION_EXECUTION_ENABLED,

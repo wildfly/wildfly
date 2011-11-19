@@ -123,14 +123,19 @@ public class DomainXml extends CommonXml {
         writeNamespaces(writer, modelNode);
         writeSchemaLocation(writer, modelNode);
 
+        writeNewLine(writer);
+
         if (modelNode.hasDefined(EXTENSION)) {
             writeExtensions(writer, modelNode.get(EXTENSION));
+            writeNewLine(writer);
         }
         if(modelNode.hasDefined(SYSTEM_PROPERTY)) {
             writeProperties(writer, modelNode.get(SYSTEM_PROPERTY), Element.SYSTEM_PROPERTIES, false);
+            writeNewLine(writer);
         }
         if(modelNode.hasDefined(PATH)) {
             writePaths(writer, modelNode.get(PATH));
+            writeNewLine(writer);
         }
         if(modelNode.hasDefined(PROFILE)) {
             writer.writeStartElement(Element.PROFILES.getLocalName());
@@ -138,9 +143,11 @@ public class DomainXml extends CommonXml {
                 writeProfile(writer, profile.getName(), profile.getValue(), context);
             }
             writer.writeEndElement();
+            writeNewLine(writer);
         }
         if(modelNode.hasDefined(INTERFACE)) {
             writeInterfaces(writer, modelNode.get(INTERFACE));
+            writeNewLine(writer);
         }
         if(modelNode.hasDefined(SOCKET_BINDING_GROUP)) {
             writer.writeStartElement(Element.SOCKET_BINDING_GROUPS.getLocalName());
@@ -148,9 +155,11 @@ public class DomainXml extends CommonXml {
                 writeSocketBindingGroup(writer, property.getValue(), false);
             }
             writer.writeEndElement();
+            writeNewLine(writer);
         }
         if(modelNode.hasDefined(DEPLOYMENT)) {
             writeDomainDeployments(writer, modelNode.get(DEPLOYMENT));
+            writeNewLine(writer);
         }
         if(modelNode.hasDefined(SERVER_GROUP)) {
             writer.writeStartElement(Element.SERVER_GROUPS.getLocalName());
@@ -158,9 +167,11 @@ public class DomainXml extends CommonXml {
                 writeServerGroup(writer, property.getName(), property.getValue());
             }
             writer.writeEndElement();
+            writeNewLine(writer);
         }
 
         writer.writeEndElement();
+        writeNewLine(writer);
         writer.writeEndDocument();
     }
 

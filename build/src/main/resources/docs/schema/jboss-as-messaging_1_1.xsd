@@ -52,7 +52,6 @@
           </xs:documentation>
       </xs:annotation>
       <xs:all>
-          <xs:element maxOccurs="1" minOccurs="0" name="name" type="xs:string" />
           <xs:element maxOccurs="1" minOccurs="0" name="clustered" type="xs:boolean" />
           <!-- no file system deployment in AS
           <xs:element maxOccurs="1" minOccurs="0" type="file-deployment-enabled"/>
@@ -104,6 +103,29 @@
           <xs:element maxOccurs="1" minOccurs="0" name="shared-store" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="persist-delivery-count-before-delivery" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="live-connector-ref" type="live-connectorType" />
+          <xs:element maxOccurs="1" minOccurs="0" name="create-bindings-dir" type="xs:boolean" />
+          <xs:element maxOccurs="1" minOccurs="0" name="create-journal-dir" type="xs:boolean" />
+          <xs:element maxOccurs="1" minOccurs="0" name="journal-type" type="journalType" />
+          <xs:element maxOccurs="1" minOccurs="0" name="journal-buffer-timeout" type="xs:long" />
+          <xs:element maxOccurs="1" minOccurs="0" name="journal-buffer-size" type="xs:long" />
+          <xs:element maxOccurs="1" minOccurs="0" name="journal-sync-transactional" type="xs:boolean" />
+          <xs:element maxOccurs="1" minOccurs="0" name="journal-sync-non-transactional" type="xs:boolean" />
+          <xs:element maxOccurs="1" minOccurs="0" name="log-journal-write-rate" type="xs:boolean" />
+          <xs:element maxOccurs="1" minOccurs="0" name="journal-file-size" type="xs:long" />
+          <xs:element maxOccurs="1" minOccurs="0" name="journal-min-files" type="xs:int" />
+          <xs:element maxOccurs="1" minOccurs="0" name="journal-compact-percentage" type="xs:int" />
+          <xs:element maxOccurs="1" minOccurs="0" name="journal-compact-min-files" type="xs:int" />
+          <xs:element maxOccurs="1" minOccurs="0" name="journal-max-io" type="xs:int" />
+          <xs:element maxOccurs="1" minOccurs="0" name="perf-blast-pages" type="xs:int" />
+          <xs:element maxOccurs="1" minOccurs="0" name="run-sync-speed-test" type="xs:boolean" />
+          <xs:element maxOccurs="1" minOccurs="0" name="server-dump-interval" type="xs:long" />
+          <xs:element maxOccurs="1" minOccurs="0" name="memory-warning-threshold" type="xs:int" />
+          <xs:element maxOccurs="1" minOccurs="0" name="memory-measure-interval" type="xs:long" />
+
+          <xs:element maxOccurs="1" minOccurs="0" name="paging-directory" type="directoryType" />
+          <xs:element maxOccurs="1" minOccurs="0" name="bindings-directory" type="directoryType" />
+          <xs:element maxOccurs="1" minOccurs="0" name="journal-directory" type="directoryType" />
+          <xs:element maxOccurs="1" minOccurs="0" name="large-messages-directory" type="directoryType" />
 
           <xs:element maxOccurs="1" minOccurs="0" name="connectors">
               <xs:complexType>
@@ -160,28 +182,6 @@
               </xs:complexType>
           </xs:element>
           <xs:element maxOccurs="1" minOccurs="0" name="grouping-handler" type="groupingHandlerType" />
-          <xs:element maxOccurs="1" minOccurs="0" name="paging-directory" type="directoryType" />
-          <xs:element maxOccurs="1" minOccurs="0" name="bindings-directory" type="directoryType" />
-          <xs:element maxOccurs="1" minOccurs="0" name="create-bindings-dir" type="directoryType" />
-          <xs:element maxOccurs="1" minOccurs="0" name="journal-directory" type="directoryType" />
-          <xs:element maxOccurs="1" minOccurs="0" name="create-journal-dir" type="directoryType" />
-          <xs:element maxOccurs="1" minOccurs="0" name="journal-type" type="journalType" />
-          <xs:element maxOccurs="1" minOccurs="0" name="journal-buffer-timeout" type="xs:long" />
-          <xs:element maxOccurs="1" minOccurs="0" name="journal-buffer-size" type="xs:long" />
-          <xs:element maxOccurs="1" minOccurs="0" name="journal-sync-transactional" type="xs:boolean" />
-          <xs:element maxOccurs="1" minOccurs="0" name="journal-sync-non-transactional" type="xs:boolean" />
-          <xs:element maxOccurs="1" minOccurs="0" name="log-journal-write-rate" type="xs:boolean" />
-          <xs:element maxOccurs="1" minOccurs="0" name="journal-file-size" type="xs:long" />
-          <xs:element maxOccurs="1" minOccurs="0" name="journal-min-files" type="xs:int" />
-          <xs:element maxOccurs="1" minOccurs="0" name="journal-compact-percentage" type="xs:int" />
-          <xs:element maxOccurs="1" minOccurs="0" name="journal-compact-min-files" type="xs:int" />
-          <xs:element maxOccurs="1" minOccurs="0" name="journal-max-io" type="xs:int" />
-          <xs:element maxOccurs="1" minOccurs="0" name="perf-blast-pages" type="xs:int" />
-          <xs:element maxOccurs="1" minOccurs="0" name="run-sync-speed-test" type="xs:boolean" />
-          <xs:element maxOccurs="1" minOccurs="0" name="server-dump-interval" type="xs:long" />
-          <xs:element maxOccurs="1" minOccurs="0" name="memory-warning-threshold" type="xs:int" />
-          <xs:element maxOccurs="1" minOccurs="0" name="memory-measure-interval" type="xs:long" />
-          <xs:element maxOccurs="1" minOccurs="0" name="large-messages-directory" type="directoryType" />
           <xs:element maxOccurs="1" minOccurs="0" name="security-settings" type="security-settingsType" />
           <xs:element maxOccurs="1" minOccurs="0" name="address-settings" type="address-settingsType" />
           <xs:element maxOccurs="1" minOccurs="0" name="connector-services">
@@ -618,8 +618,7 @@
                </xs:sequence>
             </xs:complexType>
          </xs:element>
-         <xs:element name="resource-adapter" type="xs:string" minOccurs="0" maxOccurs="1"/>
-         <xs:element name="ha" type="xs:string" minOccurs="0" maxOccurs="1"/>
+         <xs:element name="ha" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
          <xs:element name="client-failure-check-period" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="connection-ttl" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="call-timeout" type="xs:long" maxOccurs="1" minOccurs="0" />
@@ -687,7 +686,7 @@
                </xs:sequence>
             </xs:complexType>
          </xs:element>
-         <xs:element name="resource-adapter" type="xs:string" minOccurs="0" maxOccurs="1"/>
+         <xs:element name="ha" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
          <xs:element name="client-failure-check-period" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="connection-ttl" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="call-timeout" type="xs:long" maxOccurs="1" minOccurs="0" />

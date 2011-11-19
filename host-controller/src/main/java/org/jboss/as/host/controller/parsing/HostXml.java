@@ -138,47 +138,36 @@ public class HostXml extends CommonXml {
         writeNamespaces(writer, modelNode);
         writeSchemaLocation(writer, modelNode);
 
+        writeNewLine(writer);
+
         if (modelNode.hasDefined(SYSTEM_PROPERTY)) {
             writeProperties(writer, modelNode.get(SYSTEM_PROPERTY), Element.SYSTEM_PROPERTIES, false);
+            writeNewLine(writer);
         }
 
         if (modelNode.hasDefined(PATH)) {
             writePaths(writer, modelNode.get(PATH));
+            writeNewLine(writer);
         }
 
         if (modelNode.hasDefined(CORE_SERVICE) && modelNode.get(CORE_SERVICE).hasDefined(VAULT)) {
             writeVault(writer, modelNode.get(CORE_SERVICE, VAULT));
-        }
-
-        if (modelNode.hasDefined(VAULT)) {
-            ModelNode vault = modelNode.get(VAULT);
-            writer.writeStartElement(Element.VAULT.getLocalName());
-            String code = vault.get(Attribute.CODE.getLocalName()).asString();
-            if (code != null && !code.isEmpty() && !code.equals("undefined")) {
-                writer.writeAttribute(Attribute.CODE.getLocalName(), code);
-            }
-
-            //TODO: not sure why the vault option is coming under ADD
-            ModelNode addNode = vault.get(ADD);
-            ModelNode properties = addNode.get(VAULT_OPTION);
-            for (Property prop : properties.asPropertyList()) {
-                writer.writeEmptyElement(Element.VAULT_OPTION.getLocalName());
-                writer.writeAttribute(Attribute.NAME.getLocalName(), prop.getName());
-                writer.writeAttribute(Attribute.VALUE.getLocalName(), prop.getValue().asString());
-            }
-            writer.writeEndElement();
+            writeNewLine(writer);
         }
 
         if (modelNode.hasDefined(CORE_SERVICE) && modelNode.get(CORE_SERVICE).hasDefined(MANAGEMENT)) {
             writeManagement(writer, modelNode.get(CORE_SERVICE, MANAGEMENT), true);
+            writeNewLine(writer);
         }
 
         if (modelNode.hasDefined(DOMAIN_CONTROLLER)) {
             writeDomainController(writer, modelNode.get(DOMAIN_CONTROLLER));
+            writeNewLine(writer);
         }
 
         if (modelNode.hasDefined(INTERFACE)) {
             writeInterfaces(writer, modelNode.get(INTERFACE));
+            writeNewLine(writer);
         }
         if (modelNode.hasDefined(JVM)) {
             writer.writeStartElement(Element.JVMS.getLocalName());
@@ -186,13 +175,16 @@ public class HostXml extends CommonXml {
                 writeJVMElement(writer, jvm.getName(), jvm.getValue());
             }
             writer.writeEndElement();
+            writeNewLine(writer);
         }
 
         if (modelNode.hasDefined(SERVER_CONFIG)) {
             writeServers(writer, modelNode.get(SERVER_CONFIG));
+            writeNewLine(writer);
         }
 
         writer.writeEndElement();
+        writeNewLine(writer);
         writer.writeEndDocument();
     }
 

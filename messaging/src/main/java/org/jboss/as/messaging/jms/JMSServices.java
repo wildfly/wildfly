@@ -44,6 +44,7 @@ import static org.jboss.as.messaging.CommonAttributes.DUPS_OK_BATCH_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.FAILOVER_ON_INITIAL_CONNECTION;
 import static org.jboss.as.messaging.CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN;
 import static org.jboss.as.messaging.CommonAttributes.GROUP_ID;
+import static org.jboss.as.messaging.CommonAttributes.HA;
 import static org.jboss.as.messaging.CommonAttributes.JNDI_PARAMS;
 import static org.jboss.as.messaging.CommonAttributes.LOAD_BALANCING_CLASS_NAME;
 import static org.jboss.as.messaging.CommonAttributes.MAX_RETRY_INTERVAL;
@@ -121,6 +122,7 @@ public class JMSServices {
     static String FAILOVER_ON_INITIAL_CONNECTION_METHOD = "failoverOnInitialConnection";  // TODO HornetQResourceAdapter does not have this method
     static String FAILOVER_ON_SERVER_SHUTDOWN_METHOD = "failoverOnServerShutdown";  // TODO HornetQResourceAdapter does not have this method
     static String GROUP_ID_METHOD = "groupId";
+    static String HA_METHOD = "hA";
     static String LOAD_BALANCING_POLICY_CLASS_NAME_METHOD = "loadBalancingPolicyClassName";
     static String MAX_RETRY_INTERVAL_METHOD = "maxRetryInterval";    // TODO HornetQResourceAdapter does not have this method
     static String MIN_LARGE_MESSAGE_SIZE_METHOD = "minLargeMessageSize";
@@ -164,6 +166,7 @@ public class JMSServices {
         FAILOVER_ON_INITIAL_CONNECTION,
         FAILOVER_ON_SERVER_SHUTDOWN, // TODO not used in ConnectionFactoryConfiguration
         GROUP_ID,
+        HA,
         LOAD_BALANCING_CLASS_NAME,
         MAX_RETRY_INTERVAL,
         MIN_LARGE_MESSAGE_SIZE,
@@ -235,6 +238,7 @@ public class JMSServices {
         FAILOVER_ON_INITIAL_CONNECTION,  // TODO HornetQResourceAdapter does not have this method
         FAILOVER_ON_SERVER_SHUTDOWN,   // TODO HornetQResourceAdapter does not have this method
         GROUP_ID,
+        HA,
         LOAD_BALANCING_CLASS_NAME,
         MAX_RETRY_INTERVAL,          // TODO HornetQResourceAdapter does not have this method
         MIN_LARGE_MESSAGE_SIZE,
@@ -279,6 +283,7 @@ public class JMSServices {
         // TODO HornetQResourceAdapter does not have this method
         // new PooledCFAttribute(FAILOVER_ON_SERVER_SHUTDOWN, FAILOVER_ON_SERVER_SHUTDOWN_METHOD),
         new PooledCFAttribute(GROUP_ID, GROUP_ID_METHOD),
+        new PooledCFAttribute(HA, HA_METHOD),
         new PooledCFAttribute(LOAD_BALANCING_CLASS_NAME, LOAD_BALANCING_POLICY_CLASS_NAME_METHOD),
         // TODO HornetQResourceAdapter does not have this method
         //new PooledCFAttribute(MAX_RETRY_INTERVAL, MAX_RETRY_INTERVAL_METHOD),

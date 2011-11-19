@@ -203,8 +203,8 @@ public class JMXExtension implements Extension {
             }
             if (node.hasDefined(CommonAttributes.SERVER_BINDING)) {
                 writer.writeStartElement(Element.JMX_CONNECTOR.getLocalName());
-                writer.writeAttribute(Attribute.SERVER_BINDING.getLocalName(), node.get(CommonAttributes.SERVER_BINDING).asString());
                 writer.writeAttribute(Attribute.REGISTRY_BINDING.getLocalName(), node.get(CommonAttributes.REGISTRY_BINDING).asString());
+                writer.writeAttribute(Attribute.SERVER_BINDING.getLocalName(), node.get(CommonAttributes.SERVER_BINDING).asString());
                 writer.writeEndElement();
             }
             writer.writeEndElement();

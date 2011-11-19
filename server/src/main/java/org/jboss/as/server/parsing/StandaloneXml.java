@@ -821,30 +821,39 @@ public class StandaloneXml extends CommonXml {
         writeNamespaces(writer, modelNode);
         writeSchemaLocation(writer, modelNode);
 
+        writeNewLine(writer);
+
         if (modelNode.hasDefined(EXTENSION)) {
             writeExtensions(writer, modelNode.get(EXTENSION));
+            writeNewLine(writer);
         }
 
         if (modelNode.hasDefined(SYSTEM_PROPERTY)) {
             writeProperties(writer, modelNode.get(SYSTEM_PROPERTY), Element.SYSTEM_PROPERTIES, true);
+            writeNewLine(writer);
         }
 
         if (modelNode.hasDefined(PATH)) {
             writePaths(writer, modelNode.get(PATH));
+            writeNewLine(writer);
         }
 
         if (modelNode.hasDefined(CORE_SERVICE) && modelNode.get(CORE_SERVICE).hasDefined(VAULT)) {
             writeVault(writer, modelNode.get(CORE_SERVICE, VAULT));
+            writeNewLine(writer);
         }
 
         if (modelNode.hasDefined(CORE_SERVICE) && modelNode.get(CORE_SERVICE).hasDefined(MANAGEMENT)) {
             writeManagement(writer, modelNode.get(CORE_SERVICE, MANAGEMENT), true);
+            writeNewLine(writer);
         }
 
         writeServerProfile(writer, context);
+        writeNewLine(writer);
 
         if (modelNode.hasDefined(INTERFACE)) {
             writeInterfaces(writer, modelNode.get(INTERFACE));
+            writeNewLine(writer);
         }
 
         if (modelNode.hasDefined(SOCKET_BINDING_GROUP)) {
@@ -855,12 +864,15 @@ public class StandaloneXml extends CommonXml {
             for (String group : groups) {
                 writeSocketBindingGroup(writer, modelNode.get(SOCKET_BINDING_GROUP, group), true);
             }
+            writeNewLine(writer);
         }
 
         if (modelNode.hasDefined(DEPLOYMENT)) {
             writeServerDeployments(writer, modelNode.get(DEPLOYMENT));
+            writeNewLine(writer);
         }
         writer.writeEndElement();
+        writeNewLine(writer);
         writer.writeEndDocument();
     }
 

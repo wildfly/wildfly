@@ -83,18 +83,18 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 writer.writeStartElement(Element.CONNECTOR.getLocalName());
                 writer.writeAttribute(NAME, connector.getName());
                 writeAttribute(writer, Attribute.PROTOCOL.getLocalName(), config);
-                writeAttribute(writer, Attribute.SOCKET_BINDING.getLocalName(), config);
                 writeAttribute(writer, Attribute.SCHEME.getLocalName(), config);
-                writeAttribute(writer, Attribute.ENABLED.getLocalName(), config);
+                writeAttribute(writer, Attribute.SOCKET_BINDING.getLocalName(), config);
                 writeAttribute(writer, Attribute.ENABLE_LOOKUPS.getLocalName(), config);
                 writeAttribute(writer, Attribute.PROXY_NAME.getLocalName(), config);
                 writeAttribute(writer, Attribute.PROXY_PORT.getLocalName(), config);
+                writeAttribute(writer, Attribute.REDIRECT_PORT.getLocalName(), config);
                 writeAttribute(writer, Attribute.SECURE.getLocalName(), config);
-                writeAttribute(writer, Attribute.EXECUTOR.getLocalName(), config);
                 writeAttribute(writer, Attribute.MAX_POST_SIZE.getLocalName(), config);
                 writeAttribute(writer, Attribute.MAX_SAVE_POST_SIZE.getLocalName(), config);
+                writeAttribute(writer, Attribute.ENABLED.getLocalName(), config);
+                writeAttribute(writer, Attribute.EXECUTOR.getLocalName(), config);
                 writeAttribute(writer, Attribute.MAX_CONNECTIONS.getLocalName(), config);
-                writeAttribute(writer, Attribute.REDIRECT_PORT.getLocalName(), config);
 
                 if (config.get(SSL).isDefined() && config.get(SSL).has("configuration")) {
                     ModelNode sslConfig = config.get(SSL).get("configuration");
@@ -110,11 +110,11 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     writeAttribute(writer, Attribute.CERTIFICATE_FILE.getLocalName(), sslConfig);
                     writeAttribute(writer, Attribute.CA_CERTIFICATE_FILE.getLocalName(), sslConfig);
                     writeAttribute(writer, Attribute.CA_REVOCATION_URL.getLocalName(), sslConfig);
+                    writeAttribute(writer, Attribute.CA_CERTIFICATE_PASSWORD.getLocalName(), sslConfig);
+                    writeAttribute(writer, Attribute.KEYSTORE_TYPE.getLocalName(), sslConfig);
+                    writeAttribute(writer, Attribute.TRUSTSTORE_TYPE.getLocalName(), sslConfig);
                     writeAttribute(writer, Attribute.SESSION_CACHE_SIZE.getLocalName(), sslConfig);
                     writeAttribute(writer, Attribute.SESSION_TIMEOUT.getLocalName(), sslConfig);
-                    writeAttribute(writer, Attribute.CA_CERTIFICATE_PASSWORD.getLocalName(), sslConfig);
-                    writeAttribute(writer, Attribute.TRUSTSTORE_TYPE.getLocalName(), sslConfig);
-                    writeAttribute(writer, Attribute.KEYSTORE_TYPE.getLocalName(), sslConfig);
                     writer.writeEndElement();
                 }
                 if (config.hasDefined(VIRTUAL_SERVER)) {
@@ -302,6 +302,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
     private boolean writeJSPConfiguration(XMLExtendedStreamWriter writer, ModelNode jsp, boolean containerConfigStartWritten) throws XMLStreamException {
 
         boolean startWritten = writeJspConfigAttribute(writer, Attribute.DEVELOPMENT.getLocalName(), jsp, false, containerConfigStartWritten);
+        startWritten = writeJspConfigAttribute(writer, Attribute.DISABLED.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
         startWritten = writeJspConfigAttribute(writer, Attribute.KEEP_GENERATED.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
         startWritten = writeJspConfigAttribute(writer, Attribute.TRIM_SPACES.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
         startWritten = writeJspConfigAttribute(writer, Attribute.TAG_POOLING.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
@@ -319,7 +320,6 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         startWritten = writeJspConfigAttribute(writer, Attribute.JAVA_ENCODING.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
         startWritten = writeJspConfigAttribute(writer, Attribute.X_POWERED_BY.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
         startWritten = writeJspConfigAttribute(writer, Attribute.DISPLAY_SOURCE_FRAGMENT.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
-        startWritten = writeJspConfigAttribute(writer, Attribute.DISABLED.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
 
         if (startWritten) {
             writer.writeEndElement();

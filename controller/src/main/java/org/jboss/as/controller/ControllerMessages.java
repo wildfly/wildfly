@@ -1992,4 +1992,18 @@ public interface ControllerMessages {
      */
     @Message(id = 14799, value = "... and %s more")
     String andNMore(int number);
+
+    /**
+     * Creates an exception indicating an invalid value, represented by the {@code value} parameter, was found for the
+     * attribute, represented by the {@code name} parameter.
+     *
+     * @param value    the invalid value.
+     * @param name     the attribute name.
+     * @param validValues the legal values for the attribute
+     * @param location the location of the error.
+     *
+     * @return a {@link XMLStreamException} for the error.
+     */
+    @Message(id = 14800, value = "Invalid value '%s' for attribute '%s' -- valid values are %s")
+    XMLStreamException invalidAttributeValue(String value, QName name, Set<String> validValues, @Param Location location);
 }

@@ -88,29 +88,6 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
 
         ModelNode model = context.getModelNode();
 
-        // write the mdb element
-        if (model.hasDefined(EJB3SubsystemModel.DEFAULT_MDB_INSTANCE_POOL) || model.hasDefined(EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME)) {
-            // <mdb>
-            writer.writeStartElement(EJB3SubsystemXMLElement.MDB.getLocalName());
-            // write out the mdb element contents
-            this.writeMDB(writer, model);
-            // </mdb>
-            writer.writeEndElement();
-        }
-        // write the remote element
-        if (model.hasDefined(SERVICE) && model.get(SERVICE).hasDefined(REMOTE)) {
-            writer.writeStartElement(EJB3SubsystemXMLElement.REMOTE.getLocalName());
-            writeRemote(writer, model.get(SERVICE, REMOTE));
-            writer.writeEndElement();
-        }
-
-        // write the remot element
-        if (model.hasDefined(SERVICE) && model.get(SERVICE).hasDefined(ASYNC)) {
-            writer.writeStartElement(EJB3SubsystemXMLElement.ASYNC.getLocalName());
-            writeAsync(writer, model.get(SERVICE, ASYNC));
-            writer.writeEndElement();
-        }
-
         // write the session-bean element
         if (model.hasDefined(EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL) || model.hasDefined(EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT)
                 || model.hasDefined(EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT)) {
@@ -126,15 +103,6 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             // </stateless>
             writer.writeEndElement();
         }
-        // <singleton> element
-        if (model.hasDefined(EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT)) {
-            // <singleton>
-            writer.writeStartElement(EJB3SubsystemXMLElement.SINGLETON.getLocalName());
-            // write out the <singleton> element contents
-            this.writeSingletonBean(writer, model);
-            // </singleton>
-            writer.writeEndElement();
-        }
         // <stateful> element
         if (model.hasDefined(EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT)) {
             // <stateful>
@@ -144,12 +112,32 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             // </stateful>
             writer.writeEndElement();
         }
+        // <singleton> element
+        if (model.hasDefined(EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT)) {
+            // <singleton>
+            writer.writeStartElement(EJB3SubsystemXMLElement.SINGLETON.getLocalName());
+            // write out the <singleton> element contents
+            this.writeSingletonBean(writer, model);
+            // </singleton>
+            writer.writeEndElement();
+        }
         // write out the </session-bean> end element
         if (model.hasDefined(EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL) || model.hasDefined(EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT)
                 || model.hasDefined(EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT)) {
             // </session-bean>
             writer.writeEndElement();
         }
+
+        // write the mdb element
+        if (model.hasDefined(EJB3SubsystemModel.DEFAULT_MDB_INSTANCE_POOL) || model.hasDefined(EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME)) {
+            // <mdb>
+            writer.writeStartElement(EJB3SubsystemXMLElement.MDB.getLocalName());
+            // write out the mdb element contents
+            this.writeMDB(writer, model);
+            // </mdb>
+            writer.writeEndElement();
+        }
+
         // write the pools element
         if (model.hasDefined(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL)) {
             // <pools>
@@ -163,6 +151,14 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             // </pools>
             writer.writeEndElement();
         }
+
+        // write the async element
+        if (model.hasDefined(SERVICE) && model.get(SERVICE).hasDefined(ASYNC)) {
+            writer.writeStartElement(EJB3SubsystemXMLElement.ASYNC.getLocalName());
+            writeAsync(writer, model.get(SERVICE, ASYNC));
+            writer.writeEndElement();
+        }
+
         // timer-service
         if (model.hasDefined(SERVICE) && model.get(SERVICE).hasDefined(TIMER_SERVICE)) {
             // <timer-service>
@@ -173,6 +169,12 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             writer.writeEndElement();
         }
 
+        // write the remote element
+        if (model.hasDefined(SERVICE) && model.get(SERVICE).hasDefined(REMOTE)) {
+            writer.writeStartElement(EJB3SubsystemXMLElement.REMOTE.getLocalName());
+            writeRemote(writer, model.get(SERVICE, REMOTE));
+            writer.writeEndElement();
+        }
 
         // thread-pools
         if (model.hasDefined(THREAD_POOL)) {
