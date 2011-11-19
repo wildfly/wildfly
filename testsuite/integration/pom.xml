@@ -52,6 +52,7 @@
                 <module>group-iiop</module>
             </modules>
         </profile>
+        <!-- Define ts.integration uber-group. -->
         <profile>
             <id>ts.integ.allGroups2</id>
             <activation><property><name>ts.integration</name></property></activation>

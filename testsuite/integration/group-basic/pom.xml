@@ -43,6 +43,7 @@
 
     <profiles>
 
+                                
         <profile>
             <id>basic.integration.tests.profile</id>
             <activation>
@@ -194,6 +195,25 @@
                                     </includes>
                                 </configuration>
                             </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- When -Dtest=... is set, only the default surefire execution with standalone-full.xml will run. -->
+        <profile>
+            <id>onlyOneSurefireExecution.profile</id>
+            <activation><property><name>test</name></property></activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <execution><id>basic-integration-web.surefire</id><phase>none</phase></execution>
+                            <execution><id>basic-integration-non-web.surefire</id><phase>none</phase></execution>
+                            <execution><id>basic-integration-2nd.surefire</id><phase>none</phase></execution>
                         </executions>
                     </plugin>
                 </plugins>
