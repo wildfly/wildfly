@@ -22,8 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -38,6 +36,8 @@ import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.msc.service.Service;
+
+import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * The construction parameter set passed in to an abstract component.
@@ -54,6 +54,9 @@ public class ComponentConfiguration {
 
     // Core component config
     private final ClassIndex classIndex;
+
+    private final ClassLoader moduleClassLoder;
+
     private ComponentCreateServiceFactory componentCreateServiceFactory = ComponentCreateServiceFactory.BASIC;
 
     // Interceptor config
@@ -75,9 +78,10 @@ public class ComponentConfiguration {
 
     private InterceptorFactory namespaceContextInterceptorFactory;
 
-    public ComponentConfiguration(final ComponentDescription componentDescription, final ClassIndex classIndex) {
+    public ComponentConfiguration(final ComponentDescription componentDescription, final ClassIndex classIndex, final ClassLoader moduleClassLoder) {
         this.componentDescription = componentDescription;
         this.classIndex = classIndex;
+        this.moduleClassLoder = moduleClassLoder;
     }
 
     /**
@@ -361,5 +365,9 @@ public class ComponentConfiguration {
 
     public void setNamespaceContextInterceptorFactory(InterceptorFactory interceptorFactory) {
         this.namespaceContextInterceptorFactory = interceptorFactory;
+    }
+
+    public ClassLoader getModuleClassLoder() {
+        return moduleClassLoder;
     }
 }

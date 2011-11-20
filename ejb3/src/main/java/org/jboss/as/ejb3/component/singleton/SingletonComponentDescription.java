@@ -89,9 +89,9 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
     }
 
     @Override
-    public ComponentConfiguration createConfiguration(final ClassIndex classIndex) {
+    public ComponentConfiguration createConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoder) {
 
-        ComponentConfiguration singletonComponentConfiguration = new ComponentConfiguration(this, classIndex);
+        ComponentConfiguration singletonComponentConfiguration = new ComponentConfiguration(this, classIndex, moduleClassLoder);
         // setup the component create service
         singletonComponentConfiguration.setComponentCreateServiceFactory(new SingletonComponentCreateServiceFactory(this.isInitOnStartup(), dependsOn));
 

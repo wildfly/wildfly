@@ -22,9 +22,6 @@
 
 package org.jboss.as.ee.component.deployers;
 
-import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -43,6 +40,9 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceName;
+
+import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * Deployment processor responsible for creating a {@link org.jboss.as.ee.component.EEModuleConfiguration} from a {@link org.jboss.as.ee.component.EEModuleDescription} and
@@ -76,7 +76,7 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
                         componentDescription.getComponentName());
                 final ComponentConfiguration componentConfiguration;
                 try {
-                    componentConfiguration = componentDescription.createConfiguration(classIndex.classIndex(componentDescription.getComponentClassName()));
+                    componentConfiguration = componentDescription.createConfiguration(classIndex.classIndex(componentDescription.getComponentClassName()), module.getClassLoader());
                     for (final ComponentConfigurator componentConfigurator : componentDescription.getConfigurators()) {
                         componentConfigurator.configure(phaseContext, componentDescription, componentConfiguration);
                     }

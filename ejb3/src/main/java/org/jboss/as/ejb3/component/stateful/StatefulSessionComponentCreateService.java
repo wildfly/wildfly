@@ -27,8 +27,8 @@ import java.lang.reflect.Method;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.TCCLInterceptor;
-import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
+import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentCreateService;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.invocation.ImmediateInterceptorFactory;
@@ -36,7 +36,6 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * @author Stuart Douglas
@@ -60,8 +59,9 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         super(componentConfiguration, ejbJarConfiguration);
 
         final StatefulComponentDescription componentDescription = (StatefulComponentDescription) componentConfiguration.getComponentDescription();
-        final InterceptorFactory tcclInterceptorFactory = new ImmediateInterceptorFactory(new TCCLInterceptor(componentConfiguration.getComponentClass().getClassLoader()));
+        final InterceptorFactory tcclInterceptorFactory = new ImmediateInterceptorFactory(new TCCLInterceptor(componentConfiguration.getModuleClassLoder()));
         final InterceptorFactory namespaceContextInterceptorFactory = componentConfiguration.getNamespaceContextInterceptorFactory();
+
         this.afterBeginMethod = componentDescription.getAfterBegin();
         if (componentDescription.getAfterBegin() != null) {
             this.afterBegin = Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(componentDescription.getAfterBegin()));

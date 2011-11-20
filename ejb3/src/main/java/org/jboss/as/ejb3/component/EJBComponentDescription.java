@@ -21,6 +21,23 @@
  */
 package org.jboss.as.ejb3.component;
 
+import java.lang.reflect.Method;
+import java.rmi.Remote;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.ejb.TimerService;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagementType;
+
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -56,21 +73,6 @@ import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
-import javax.ejb.TimerService;
-import javax.ejb.TransactionAttributeType;
-import javax.ejb.TransactionManagementType;
-import java.lang.reflect.Method;
-import java.rmi.Remote;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
@@ -433,7 +435,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         ejbHomeViewDescription.getConfigurators().add(new ViewConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration viewConfiguration) throws DeploymentUnitProcessingException {
-                final ClassLoader componentClassLoader = componentConfiguration.getComponentClass().getClassLoader();
+                final ClassLoader componentClassLoader = componentConfiguration.getModuleClassLoder();
                 final InterceptorFactory tcclInterceptorFactory = new ImmediateInterceptorFactory(new TCCLInterceptor(componentClassLoader));
                 viewConfiguration.addViewInterceptor(tcclInterceptorFactory, InterceptorOrder.View.TCCL_INTERCEPTOR);
             }

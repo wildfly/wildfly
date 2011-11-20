@@ -152,8 +152,8 @@ public class ComponentDescription {
         configurators.addLast(FIRST_CONFIGURATOR);
     }
 
-    public ComponentConfiguration createConfiguration(final ClassIndex classIndex) {
-        return new ComponentConfiguration(this, classIndex);
+    public ComponentConfiguration createConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoder) {
+        return new ComponentConfiguration(this, classIndex, moduleClassLoder);
     }
 
     /**

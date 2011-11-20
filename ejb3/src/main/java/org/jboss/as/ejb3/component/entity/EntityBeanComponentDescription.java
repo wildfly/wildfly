@@ -87,9 +87,9 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
 
 
     @Override
-    public ComponentConfiguration createConfiguration(final ClassIndex classIndex) {
+    public ComponentConfiguration createConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoder) {
 
-        final ComponentConfiguration configuration = new ComponentConfiguration(this, classIndex);
+        final ComponentConfiguration configuration = new ComponentConfiguration(this, classIndex, moduleClassLoder);
         // setup the component create service
         configuration.setComponentCreateServiceFactory(EntityBeanComponentCreateService.FACTORY);
 

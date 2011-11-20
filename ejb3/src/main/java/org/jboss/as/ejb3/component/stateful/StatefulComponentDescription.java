@@ -163,9 +163,9 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
     }
 
     @Override
-    public ComponentConfiguration createConfiguration(final ClassIndex classIndex) {
+    public ComponentConfiguration createConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoder) {
 
-        final ComponentConfiguration statefulComponentConfiguration = new ComponentConfiguration(this, classIndex);
+        final ComponentConfiguration statefulComponentConfiguration = new ComponentConfiguration(this, classIndex, moduleClassLoder);
         // setup the component create service
         statefulComponentConfiguration.setComponentCreateServiceFactory(new StatefulComponentCreateServiceFactory());
 

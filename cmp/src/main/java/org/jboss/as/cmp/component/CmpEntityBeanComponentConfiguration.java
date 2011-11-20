@@ -36,7 +36,7 @@ public class CmpEntityBeanComponentConfiguration extends ComponentConfiguration 
     final OrderedItemContainer<InterceptorFactory> relationInterceptors = new OrderedItemContainer<InterceptorFactory>();
 
     public CmpEntityBeanComponentConfiguration(final ComponentDescription componentDescription, final ClassIndex classIndex) {
-        super(componentDescription, classIndex);
+        super(componentDescription, classIndex, moduleClassLoder);
     }
 
     public void addRelationInterceptor(final InterceptorFactory factory, final int priority) {

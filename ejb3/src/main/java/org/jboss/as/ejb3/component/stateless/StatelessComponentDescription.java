@@ -76,8 +76,8 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
     }
 
     @Override
-    public ComponentConfiguration createConfiguration(final ClassIndex classIndex) {
-        final ComponentConfiguration statelessComponentConfiguration = new ComponentConfiguration(this, classIndex);
+    public ComponentConfiguration createConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoder) {
+        final ComponentConfiguration statelessComponentConfiguration = new ComponentConfiguration(this, classIndex, moduleClassLoder);
         // setup the component create service
         statelessComponentConfiguration.setComponentCreateServiceFactory(new StatelessComponentCreateServiceFactory());
 

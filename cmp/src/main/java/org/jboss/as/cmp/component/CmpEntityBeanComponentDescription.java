@@ -77,7 +77,7 @@ public class CmpEntityBeanComponentDescription extends EntityBeanComponentDescri
     }
 
     @Override
-    public ComponentConfiguration createConfiguration(ClassIndex classIndex) {
+    public ComponentConfiguration createConfiguration(ClassIndex classIndex, final ClassLoader moduleClassLoder) {
         final ComponentConfiguration configuration = new CmpEntityBeanComponentConfiguration(this, classIndex);
         configuration.setComponentCreateServiceFactory(CmpEntityBeanComponentCreateService.FACTORY);
         return configuration;
