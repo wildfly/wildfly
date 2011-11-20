@@ -22,6 +22,7 @@
 package org.jboss.as.controller;
 
 import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
@@ -32,14 +33,15 @@ import org.junit.Test;
  */
 public class ExpressionResolverUnitTestCase {
 
-    @Test
-    public void testDefaultExpressionResolverWithNoResolutions() {
-        ModelNode node = ExpressionResolver.DEFAULT.resolveExpressions(createModelNode());
-        checkUnresolved(node);
+    @Test(expected = OperationFailedException.class)
+    public void testDefaultExpressionResolverWithNoResolutions() throws OperationFailedException {
+        ModelNode unresolved = createModelNode();
+        ExpressionResolver.DEFAULT.resolveExpressions(unresolved);
+        fail("Did not fail with ISE: " + unresolved);
     }
 
     @Test
-    public void testDefaultExpressionResolverWithSystemPropertyResolutions() {
+    public void testDefaultExpressionResolverWithSystemPropertyResolutions() throws OperationFailedException {
         System.setProperty("test.prop.expr", "EXPR");
         System.setProperty("test.prop.b", "B");
         System.setProperty("test.prop.c", "C");
@@ -59,7 +61,7 @@ public class ExpressionResolverUnitTestCase {
         }
     }
     @Test
-    public void testPluggableExpressionResolver() {
+    public void testPluggableExpressionResolver() throws OperationFailedException {
         ModelNode node = new ExpressionResolverImpl() {
             @Override
             protected void resolvePluggableExpression(ModelNode node) {
@@ -84,20 +86,21 @@ public class ExpressionResolverUnitTestCase {
         checkResolved(node);
     }
 
-    @Test
-    public void testPluggableExpressionResolverNotResolved() {
-        ModelNode node = new ExpressionResolverImpl() {
+    @Test(expected = OperationFailedException.class)
+    public void testPluggableExpressionResolverNotResolved() throws OperationFailedException {
+        ModelNode unresolved = createModelNode();
+        new ExpressionResolverImpl() {
             @Override
             protected void resolvePluggableExpression(ModelNode node) {
             }
 
-        }.resolveExpressions(createModelNode());
+        }.resolveExpressions(unresolved);
 
-        checkUnresolved(node);
+        fail("Did not fail with ISE: " + unresolved);
     }
 
     @Test
-    public void testPluggableExpressionResolverSomeResolvedAndSomeByDefault() {
+    public void testPluggableExpressionResolverSomeResolvedAndSomeByDefault() throws OperationFailedException {
         System.setProperty("test.prop.c", "C");
         System.setProperty("test.prop.three", "THREE");
         System.setProperty("test.prop.prop", "PROP");
@@ -123,26 +126,6 @@ public class ExpressionResolverUnitTestCase {
             System.clearProperty("test.prop.three");
             System.clearProperty("test.prop.prop");
         }
-    }
-
-
-    private void checkUnresolved(ModelNode node) {
-        assertEquals(6, node.keys().size());
-        assertEquals(1, node.get("int").asInt());
-        assertEquals("${test.prop.expr}", node.get("expr").asString());
-        assertEquals(3, node.get("map").keys().size());
-
-        assertEquals("a", node.get("map", "plain").asString());
-        assertEquals("${test.prop.b}", node.get("map", "prop.b").asString());
-        assertEquals("${test.prop.c}", node.get("map", "prop.c").asString());
-
-        assertEquals(3, node.get("list").asList().size());
-        assertEquals("one", node.get("list").asList().get(0).asString());
-        assertEquals("${test.prop.two}", node.get("list").asList().get(1).asString());
-        assertEquals("${test.prop.three}", node.get("list").asList().get(2).asString());
-
-        assertEquals("plain", node.get("plainprop").asProperty().getValue().asString());
-        assertEquals("${test.prop.prop}", node.get("prop").asProperty().getValue().asString());
     }
 
     private void checkResolved(ModelNode node) {

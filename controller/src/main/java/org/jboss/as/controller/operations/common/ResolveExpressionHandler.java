@@ -24,6 +24,7 @@ package org.jboss.as.controller.operations.common;
 
 import java.util.Locale;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -65,12 +66,18 @@ public class ResolveExpressionHandler implements OperationStepHandler, Descripti
                 if (toResolve.getType() == ModelType.STRING) {
                     toResolve = ParseUtils.parsePossibleExpression(toResolve.asString());
                 }
-                ModelNode resolved = toResolve.resolve();
-                ModelNode result = context.getResult();
-                if (resolved.isDefined()) {
-                    result.set(resolved.asString());
+                try {
+                    ModelNode resolved = toResolve.resolve();
+                    ModelNode result = context.getResult();
+                    if (resolved.isDefined()) {
+                        result.set(resolved.asString());
+                    }
+                    context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+                } catch (SecurityException e) {
+                    throw new OperationFailedException(new ModelNode().set(ControllerMessages.MESSAGES.noPermissionToResolveExpression(toResolve, e)));
+                } catch (IllegalStateException e) {
+                    throw new OperationFailedException(new ModelNode().set(ControllerMessages.MESSAGES.cannotResolveExpression(toResolve, e)));
                 }
-                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.RUNTIME);
 

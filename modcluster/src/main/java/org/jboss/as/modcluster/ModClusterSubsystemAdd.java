@@ -131,7 +131,7 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler implements Descripti
 
     }
 
-    private String unmaskPassword(OperationContext context, ModelNode model) {
+    private String unmaskPassword(OperationContext context, ModelNode model) throws OperationFailedException {
         if (!model.hasDefined(CommonAttributes.SSL)) {
             return null;
         }

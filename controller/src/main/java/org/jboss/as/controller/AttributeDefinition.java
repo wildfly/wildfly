@@ -639,7 +639,7 @@ public abstract class AttributeDefinition {
         }
 
         @Override
-        public ModelNode resolveExpressions(ModelNode node) {
+        public ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
             return ExpressionResolver.DEFAULT.resolveExpressions(node);
         }
 

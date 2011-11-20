@@ -265,7 +265,7 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     }
 
     @Override
-    public ModelNode resolveExpressions(ModelNode node) {
+    public ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
         return primaryContext.resolveExpressions(node);
     }
 

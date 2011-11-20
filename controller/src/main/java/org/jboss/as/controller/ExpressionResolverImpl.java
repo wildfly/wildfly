@@ -26,6 +26,7 @@ import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 
 /**
+ * Basic {@link ExpressionResolver} implementation.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
@@ -35,9 +36,15 @@ public class ExpressionResolverImpl implements ExpressionResolver {
     }
 
     @Override
-    public final ModelNode resolveExpressions(final ModelNode node) {
+    public final ModelNode resolveExpressions(final ModelNode node) throws OperationFailedException {
         ModelNode resolved = resolveExpressionsRecursively(node);
-        return resolved.resolve();
+        try {
+            return resolved.resolve();
+        } catch (SecurityException e) {
+            throw new OperationFailedException(new ModelNode().set(ControllerMessages.MESSAGES.noPermissionToResolveExpression(resolved, e)));
+        } catch (IllegalStateException e) {
+            throw new OperationFailedException(new ModelNode().set(ControllerMessages.MESSAGES.cannotResolveExpression(resolved, e)));
+        }
     }
 
     private ModelNode resolveExpressionsRecursively(final ModelNode node) {
@@ -45,23 +52,29 @@ public class ExpressionResolverImpl implements ExpressionResolver {
             return node;
         }
 
-        ModelNode resolved = node.clone();
-        if (resolved.getType() == ModelType.EXPRESSION) {
+        ModelNode resolved;
+        if (node.getType() == ModelType.EXPRESSION) {
+            resolved = node.clone();
             resolvePluggableExpression(resolved);
-        } else if (resolved.getType() == ModelType.OBJECT) {
+        } else if (node.getType() == ModelType.OBJECT) {
+            resolved = node.clone();
             for (Property prop : resolved.asPropertyList()) {
                 resolved.get(prop.getName()).set(resolveExpressionsRecursively(prop.getValue()));
             }
-        } else if (resolved.getType() == ModelType.LIST) {
+        } else if (node.getType() == ModelType.LIST) {
+            resolved = node.clone();
             ModelNode list = new ModelNode();
             for (ModelNode current : resolved.asList()) {
                 list.add(resolveExpressionsRecursively(current));
             }
             resolved = list;
-        } else if (resolved.getType() == ModelType.PROPERTY) {
+        } else if (node.getType() == ModelType.PROPERTY) {
+            resolved = node.clone();
             resolved.set(resolved.asProperty().getName(), resolveExpressionsRecursively(resolved.asProperty().getValue()));
-
+        } else {
+            resolved = node;
         }
+
         return resolved;
     }
 

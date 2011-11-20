@@ -83,7 +83,7 @@ public class AbstractMgmtTestBase {
         ModelNode ret = modelControllerClient.execute(op);
         if (! unwrapResult) return ret;
 
-        assertTrue("Management operation " + op.asString() + "failed: " + ret.asString(),
+        assertTrue("Management operation " + op.asString() + " failed: " + ret.asString(),
                 "success".equals(ret.get("outcome").asString()));
         return ret.get("result");
     }

@@ -48,6 +48,7 @@ import java.util.concurrent.Executor;
 import org.apache.catalina.connector.Connector;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -128,7 +129,7 @@ class WebConnectorAdd extends AbstractAddStepHandler implements DescriptionProvi
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
         final String bindingRef = operation.require(SOCKET_BINDING).asString();
@@ -172,7 +173,7 @@ class WebConnectorAdd extends AbstractAddStepHandler implements DescriptionProvi
         return WebSubsystemDescriptions.getConnectorAdd(locale);
     }
 
-    private String unmaskSslPassword(OperationContext context, ModelNode connector) {
+    private String unmaskSslPassword(OperationContext context, ModelNode connector) throws OperationFailedException {
         if (!connector.hasDefined(SSL)) {
             return null;
         }

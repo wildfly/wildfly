@@ -89,6 +89,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -120,7 +121,7 @@ import org.jboss.jca.common.metadata.ds.ValidationImpl;
  */
 class DataSourceModelNodeUtil {
 
-    static ModifiableDataSource from(final OperationContext operationContext, final ModelNode dataSourceNode) throws ValidateException {
+    static ModifiableDataSource from(final OperationContext operationContext, final ModelNode dataSourceNode) throws OperationFailedException, ValidateException {
         final Map<String, String> connectionProperties= Collections.emptyMap();
 
         final String connectionUrl = getStringIfSetOrGetDefault(dataSourceNode, CONNECTION_URL, null);
@@ -195,7 +196,7 @@ class DataSourceModelNodeUtil {
                 poolName, enabled, jndiName, spy, useCcm, jta, pool);
     }
 
-    static ModifiableXaDataSource xaFrom(final OperationContext operationContext, final ModelNode dataSourceNode) throws ValidateException {
+    static ModifiableXaDataSource xaFrom(final OperationContext operationContext, final ModelNode dataSourceNode) throws OperationFailedException, ValidateException {
         final Map<String, String> xaDataSourceProperty;
         xaDataSourceProperty = Collections.emptyMap();
 
@@ -350,7 +351,7 @@ class DataSourceModelNodeUtil {
         }
     }
 
-    private static String getResolvedStringIfSetOrGetDefault(final OperationContext context, final ModelNode dataSourceNode, final SimpleAttributeDefinition key, final String defaultValue) {
+    private static String getResolvedStringIfSetOrGetDefault(final OperationContext context, final ModelNode dataSourceNode, final SimpleAttributeDefinition key, final String defaultValue) throws OperationFailedException {
         if (dataSourceNode.hasDefined(key.getName())) {
             return context.resolveExpressions(dataSourceNode.get(key.getName())).asString();
         } else {

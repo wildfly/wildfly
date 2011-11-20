@@ -134,7 +134,6 @@ public class DataSourceEnable implements OperationStepHandler {
                         try {
                             dataSourceConfig = from(context, model);
                         } catch (ValidateException e) {
-                            e.printStackTrace();
                             throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToCreate("DataSource", operation, e.getLocalizedMessage())));
                         }
                         final ServiceName dataSourceCongServiceName = DataSourceConfigService.SERVICE_NAME_BASE.append(dsName);

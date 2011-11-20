@@ -113,7 +113,7 @@ public class RaOperationUtil {
 
     }
 
-    public static ModifiableConnDef buildConnectionDefinitionObject(final OperationContext context, final ModelNode operation) throws ValidateException {
+    public static ModifiableConnDef buildConnectionDefinitionObject(final OperationContext context, final ModelNode operation) throws OperationFailedException, ValidateException {
         Map<String, String> configProperties = new HashMap<String, String>(0);
 //        if (operation.hasDefined(CONFIG_PROPERTIES.getName())) {
 //            configProperties = new HashMap<String, String>(operation.get(CONFIG_PROPERTIES.getName()).asList().size());
@@ -225,7 +225,7 @@ public class RaOperationUtil {
         }
     }
 
-    private static String getResolvedStringIfSetOrGetDefault(final OperationContext context, final ModelNode dataSourceNode, final String key, final String defaultValue) {
+    private static String getResolvedStringIfSetOrGetDefault(final OperationContext context, final ModelNode dataSourceNode, final String key, final String defaultValue) throws OperationFailedException {
         if (dataSourceNode.hasDefined(key)) {
             return context.resolveExpressions(dataSourceNode.get(key)).asString();
         } else {

@@ -22,14 +22,30 @@
 package org.jboss.as.controller;
 
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
+ * Resolves {@link ModelType#EXPRESSION} expressions in a {@link ModelNode}.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public interface ExpressionResolver {
 
-    ModelNode resolveExpressions(ModelNode node);
+    /**
+     * Resolves any expressions in the passed in ModelNode.
+     * Expressions may either represent system properties or vaulted date. For vaulted data the format is
+     * ${VAULT::vault_block::attribute_name::sharedKey}
+     *
+     * @param node the ModelNode containing expressions.
+     * @return a copy of the node with expressions resolved
+     *
+     * @throws OperationFailedException if there is a value of type {@link ModelType#EXPRESSION} in the node tree and
+     *            there is no system property or environment variable that matches the expression, or if a security
+     *            manager exists and its {@link SecurityManager#checkPermission checkPermission} method doesn't allow
+     *            access to the relevant system property or environment variable
+     */
+    ModelNode resolveExpressions(ModelNode node) throws OperationFailedException;
 
+    /** Default {@code ExpressionResolver} that simply calls {@link ModelNode#resolve()}. */
     ExpressionResolver DEFAULT = new ExpressionResolverImpl();
 }

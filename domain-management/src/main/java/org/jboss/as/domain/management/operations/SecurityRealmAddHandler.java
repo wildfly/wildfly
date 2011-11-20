@@ -42,6 +42,7 @@ import java.util.Locale;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -91,7 +92,7 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
         return context.getType() == OperationContext.Type.SERVER || context.getType() == OperationContext.Type.HOST;
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String realmName = address.getLastElement().getValue();
 
@@ -174,7 +175,7 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
     }
 
     // TODO - The operation will also be split out into it's own handler when I make the operations more fine grained.
-    private ServiceName addSSLService(OperationContext context, ModelNode ssl, ServiceName realmServiceName, ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) {
+    private ServiceName addSSLService(OperationContext context, ModelNode ssl, ServiceName realmServiceName, ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) throws OperationFailedException {
         ServiceName sslServiceName = realmServiceName.append(SSLIdentityService.SERVICE_SUFFIX);
         SSLIdentityService sslIdentityService = new SSLIdentityService(ssl, unmaskSslKeystorePassword(context, ssl));
 
@@ -203,7 +204,7 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
         return secretServiceName;
     }
 
-    private ServiceName addUsersService(OperationContext context, ModelNode users, ServiceName realmServiceName, String realmName, ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) {
+    private ServiceName addUsersService(OperationContext context, ModelNode users, ServiceName realmServiceName, String realmName, ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) throws OperationFailedException {
         ServiceName usersServiceName = realmServiceName.append(UserDomainCallbackHandler.SERVICE_SUFFIX);
 
         UserDomainCallbackHandler usersCallbackHandler = new UserDomainCallbackHandler(realmName, unmaskUsersPasswords(context, users));
@@ -221,7 +222,7 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
         return ServiceName.JBOSS.append("server", "path", relativeTo);
     }
 
-    private String unmaskSslKeystorePassword(OperationContext context, ModelNode ssl) {
+    private String unmaskSslKeystorePassword(OperationContext context, ModelNode ssl) throws OperationFailedException {
         if (!ssl.hasDefined(KEYSTORE)) {
             return null;
         }
@@ -231,7 +232,7 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
         return context.resolveExpressions(ssl.get(KEYSTORE, PASSWORD)).asString();
     }
 
-    private ModelNode unmaskUsersPasswords(OperationContext context, ModelNode users) {
+    private ModelNode unmaskUsersPasswords(OperationContext context, ModelNode users) throws OperationFailedException {
         users = users.clone();
         for (Property property : users.get(USER).asPropertyList()) {
             ModelNode user = property.getValue();
