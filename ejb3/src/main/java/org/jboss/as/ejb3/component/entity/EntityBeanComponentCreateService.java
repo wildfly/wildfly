@@ -21,19 +21,28 @@
  */
 package org.jboss.as.ejb3.component.entity;
 
-import org.jboss.as.ee.component.BasicComponent;
-import org.jboss.as.ee.component.BasicComponentCreateService;
-import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ee.component.ComponentCreateServiceFactory;
-import org.jboss.as.ejb3.component.EJBComponentCreateService;
-import org.jboss.as.ejb3.component.EJBComponentCreateServiceFactory;
-import org.jboss.as.ejb3.deployment.ApplicationExceptions;
-import org.jboss.metadata.ejb.spec.EntityBeanMetaData;
+import java.lang.reflect.Method;
 
 import javax.ejb.EJBHome;
 import javax.ejb.EJBLocalHome;
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
+
+import org.jboss.as.ee.component.BasicComponent;
+import org.jboss.as.ee.component.BasicComponentCreateService;
+import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentCreateServiceFactory;
+import org.jboss.as.ee.component.TCCLInterceptor;
+import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.component.EJBComponentCreateService;
+import org.jboss.as.ejb3.component.EJBComponentCreateServiceFactory;
+import org.jboss.as.ejb3.component.InvokeMethodOnTargetInterceptor;
+import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
+import org.jboss.as.ejb3.deployment.ApplicationExceptions;
+import org.jboss.invocation.ImmediateInterceptorFactory;
+import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.Interceptors;
+import org.jboss.metadata.ejb.spec.EntityBeanMetaData;
 
 /**
  * @author Stuart Douglas
@@ -45,19 +54,66 @@ public class EntityBeanComponentCreateService extends EJBComponentCreateService 
     private final Class<EJBObject> remoteClass;
     private final Class<EJBLocalObject> localClass;
     private final Class<Object> primaryKeyClass;
+    private final Method ejbStoreMethod;
+    private final Method ejbLoadMethod;
+    private final Method ejbActivateMethod;
+    private final Method ejbPassivateMethod;
+    private final InterceptorFactory ejbStore;
+    private final InterceptorFactory ejbLoad;
+    private final InterceptorFactory ejbActivate;
+    private final InterceptorFactory ejbPassivate;
 
     public EntityBeanComponentCreateService(final ComponentConfiguration componentConfiguration, final ApplicationExceptions ejbJarConfiguration) {
         super(componentConfiguration, ejbJarConfiguration);
         final EntityBeanComponentDescription description = EntityBeanComponentDescription.class.cast(componentConfiguration.getComponentDescription());
         final EntityBeanMetaData beanMetaData = EntityBeanMetaData.class.cast(description.getDescriptorData());
-
         final ClassLoader classLoader = componentConfiguration.getComponentClass().getClassLoader();
+
 
         homeClass = (Class<EJBHome>) load(classLoader, beanMetaData.getHome());
         localHomeClass = (Class<EJBLocalHome>) load(classLoader, beanMetaData.getLocalHome());
         localClass = (Class<EJBLocalObject>) load(classLoader, beanMetaData.getLocal());
         remoteClass = (Class<EJBObject>) load(classLoader, beanMetaData.getRemote());
         primaryKeyClass = (Class<Object>) load(classLoader, beanMetaData.getPrimKeyClass());
+
+        final InterceptorFactory tcclInterceptorFactory = new ImmediateInterceptorFactory(new TCCLInterceptor(componentConfiguration.getModuleClassLoder()));
+        final InterceptorFactory namespaceContextInterceptorFactory = componentConfiguration.getNamespaceContextInterceptorFactory();
+
+
+        Method ejbStore = null;
+        Method ejbLoad= null;
+        Method ejbActivate= null;
+        Method ejbPassivate= null;
+        for(final Method method : componentConfiguration.getDefinedComponentMethods()) {
+            if(method.getName().equals("ejbStore") && method.getParameterTypes().length == 0) {
+                ejbStore = method;
+            } else if(method.getName().equals("ejbLoad") && method.getParameterTypes().length == 0) {
+                ejbLoad = method;
+            }else if(method.getName().equals("ejbActivate") && method.getParameterTypes().length == 0) {
+                ejbActivate = method;
+            }else if(method.getName().equals("ejbPassivate") && method.getParameterTypes().length == 0) {
+                ejbPassivate = method;
+            }
+        }
+        if(ejbStore == null) {
+            throw EjbMessages.MESSAGES.couldNotFindEntityBeanMethod("ejbStore");
+        } else if(ejbLoad == null) {
+            throw EjbMessages.MESSAGES.couldNotFindEntityBeanMethod("ejbLoad");
+        }else if(ejbActivate == null) {
+            throw EjbMessages.MESSAGES.couldNotFindEntityBeanMethod("ejbActivate");
+        }else if(ejbPassivate == null) {
+            throw EjbMessages.MESSAGES.couldNotFindEntityBeanMethod("ejbPassivate");
+        }
+
+        this.ejbActivateMethod = ejbActivate;
+        this.ejbLoadMethod = ejbLoad;
+        this.ejbStoreMethod = ejbStore;
+        this.ejbPassivateMethod = ejbPassivate;
+        this.ejbActivate = Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(ejbActivate));
+        this.ejbLoad = Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(ejbLoad));
+        this.ejbStore = Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(ejbStore));
+        this.ejbPassivate =Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(ejbPassivate));
+
     }
 
     private Class<?> load(ClassLoader classLoader, String ejbClass) {
@@ -69,6 +125,12 @@ public class EntityBeanComponentCreateService extends EJBComponentCreateService 
             }
         }
         return null;
+    }
+
+
+    private static InterceptorFactory invokeMethodOnTarget(final Method method) {
+        method.setAccessible(true);
+        return InvokeMethodOnTargetInterceptor.factory(method);
     }
 
     @Override
@@ -101,5 +163,37 @@ public class EntityBeanComponentCreateService extends EJBComponentCreateService 
 
     public Class<Object> getPrimaryKeyClass() {
         return primaryKeyClass;
+    }
+
+    public Method getEjbStoreMethod() {
+        return ejbStoreMethod;
+    }
+
+    public Method getEjbLoadMethod() {
+        return ejbLoadMethod;
+    }
+
+    public Method getEjbActivateMethod() {
+        return ejbActivateMethod;
+    }
+
+    public InterceptorFactory getEjbStore() {
+        return ejbStore;
+    }
+
+    public InterceptorFactory getEjbLoad() {
+        return ejbLoad;
+    }
+
+    public InterceptorFactory getEjbActivate() {
+        return ejbActivate;
+    }
+
+    public Method getEjbPassivateMethod() {
+        return ejbPassivateMethod;
+    }
+
+    public InterceptorFactory getEjbPassivate() {
+        return ejbPassivate;
     }
 }

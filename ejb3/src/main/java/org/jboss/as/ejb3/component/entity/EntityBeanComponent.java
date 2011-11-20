@@ -21,7 +21,18 @@
  */
 package org.jboss.as.ejb3.component.entity;
 
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+
+import javax.ejb.EJBHome;
+import javax.ejb.EJBLocalHome;
+import javax.ejb.EJBLocalObject;
+import javax.ejb.EJBObject;
+
 import org.jboss.as.ee.component.BasicComponentInstance;
+import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.entity.entitycache.ReadyEntityCache;
 import org.jboss.as.ejb3.component.entity.entitycache.ReferenceCountingEntityCache;
@@ -30,16 +41,9 @@ import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.pool.StatelessObjectFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-
-import javax.ejb.EJBHome;
-import javax.ejb.EJBLocalHome;
-import javax.ejb.EJBLocalObject;
-import javax.ejb.EJBObject;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
+import org.jboss.invocation.SimpleInterceptorFactoryContext;
 
 /**
  * @author Stuart Douglas
@@ -55,6 +59,15 @@ public class EntityBeanComponent extends EJBComponent {
     private final Class<EJBLocalObject> localClass;
     private final Class<EJBObject> remoteClass;
     private final Class<Object> primaryKeyClass;
+
+    private final Method ejbStoreMethod;
+    private final Method ejbLoadMethod;
+    private final Method ejbActivateMethod;
+    private final Method ejbPassivateMethod;
+    private final InterceptorFactory ejbStore;
+    private final InterceptorFactory ejbLoad;
+    private final InterceptorFactory ejbActivate;
+    private final InterceptorFactory ejbPassivate;
 
     protected EntityBeanComponent(final EntityBeanComponentCreateService ejbComponentCreateService) {
         super(ejbComponentCreateService);
@@ -78,11 +91,28 @@ public class EntityBeanComponent extends EJBComponent {
         this.localClass = ejbComponentCreateService.getLocalClass();
         this.remoteClass = ejbComponentCreateService.getRemoteClass();
         this.primaryKeyClass = ejbComponentCreateService.getPrimaryKeyClass();
+
+        this.ejbActivate = ejbComponentCreateService.getEjbActivate();
+        this.ejbActivateMethod = ejbComponentCreateService.getEjbActivateMethod();
+        this.ejbLoad = ejbComponentCreateService.getEjbLoad();
+        this.ejbLoadMethod = ejbComponentCreateService.getEjbLoadMethod();
+        this.ejbStore = ejbComponentCreateService.getEjbStore();
+        this.ejbStoreMethod = ejbComponentCreateService.getEjbStoreMethod();
+        this.ejbPassivate = ejbComponentCreateService.getEjbPassivate();
+        this.ejbPassivateMethod = ejbComponentCreateService.getEjbPassivateMethod();
     }
 
     @Override
     protected BasicComponentInstance instantiateComponentInstance(final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, final InterceptorFactoryContext interceptorContext) {
         return new EntityBeanComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
+    }
+
+    protected Interceptor createInterceptor(final InterceptorFactory factory) {
+        if (factory == null)
+            return null;
+        final SimpleInterceptorFactoryContext context = new SimpleInterceptorFactoryContext();
+        context.getContextData().put(Component.class, this);
+        return factory.create(context);
     }
 
     public ReadyEntityCache getCache() {
@@ -127,5 +157,37 @@ public class EntityBeanComponent extends EJBComponent {
 
     public Class<Object> getPrimaryKeyClass() {
         return primaryKeyClass;
+    }
+
+    public Method getEjbStoreMethod() {
+        return ejbStoreMethod;
+    }
+
+    public Method getEjbLoadMethod() {
+        return ejbLoadMethod;
+    }
+
+    public Method getEjbActivateMethod() {
+        return ejbActivateMethod;
+    }
+
+    public InterceptorFactory getEjbStore() {
+        return ejbStore;
+    }
+
+    public InterceptorFactory getEjbLoad() {
+        return ejbLoad;
+    }
+
+    public InterceptorFactory getEjbActivate() {
+        return ejbActivate;
+    }
+
+    public Method getEjbPassivateMethod() {
+        return ejbPassivateMethod;
+    }
+
+    public InterceptorFactory getEjbPassivate() {
+        return ejbPassivate;
     }
 }

@@ -1809,4 +1809,7 @@ public interface EjbMessages {
      */
     @Message(id = 14518, value = "%s is deprecated")
     IllegalStateException isDeprecatedIllegalState(String getEnvironment);
+
+    @Message(id=14519, value="Could not find method %s on entity bean")
+    RuntimeException couldNotFindEntityBeanMethod(String method);
 }

@@ -22,7 +22,6 @@
 
 package org.jboss.as.cmp.component;
 
-import org.jboss.as.cmp.component.interceptors.CmpEntityBeanJdbcRelationshipInterceptor;
 import org.jboss.as.cmp.component.interceptors.CmpEntityBeanSynchronizationInterceptor;
 import org.jboss.as.cmp.jdbc.metadata.JDBCEntityMetaData;
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -31,12 +30,9 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentStartService;
 import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ee.component.ViewInstanceFactory;
-import org.jboss.as.ee.component.interceptors.InterceptorOrder;
-import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentDescription;
 import org.jboss.as.ejb3.component.entity.EntityBeanHomeViewConfigurator;
 import org.jboss.as.ejb3.component.entity.EntityBeanObjectViewConfigurator;
-import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanReentrancyInterceptor;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -65,20 +61,13 @@ public class CmpEntityBeanComponentDescription extends EntityBeanComponentDescri
                     }
                 });
                 configuration.setInstanceFactory(factory);
-
-                final CmpEntityBeanComponentConfiguration cmpConfig = CmpEntityBeanComponentConfiguration.class.cast(configuration);
-
-                cmpConfig.addRelationInterceptor(getSynchronizationInterceptorFactory(), InterceptorOrder.Component.SYNCHRONIZATION_INTERCEPTOR);
-                cmpConfig.addRelationInterceptor(EntityBeanReentrancyInterceptor.FACTORY, InterceptorOrder.Component.REENTRANCY_INTERCEPTOR);
-                cmpConfig.addRelationInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.ComponentPostConstruct.EJB_SESSION_CONTEXT_INTERCEPTOR);
-                cmpConfig.addRelationInterceptor(CmpEntityBeanJdbcRelationshipInterceptor.FACTORY, InterceptorOrder.Component.CMP_RELATIONSHIP_INTERCEPTOR);
-            }
+}
         });
     }
 
     @Override
-    public ComponentConfiguration createConfiguration(ClassIndex classIndex, final ClassLoader moduleClassLoder) {
-        final ComponentConfiguration configuration = new CmpEntityBeanComponentConfiguration(this, classIndex);
+    public ComponentConfiguration createConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoder) {
+        final ComponentConfiguration configuration = new ComponentConfiguration(this, classIndex, moduleClassLoder);
         configuration.setComponentCreateServiceFactory(CmpEntityBeanComponentCreateService.FACTORY);
         return configuration;
     }

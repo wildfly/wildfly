@@ -26,7 +26,6 @@ import java.rmi.RemoteException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
@@ -37,6 +36,7 @@ import org.jboss.as.ejb3.component.EjbComponentInstance;
 import org.jboss.as.ejb3.context.EntityContextImpl;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
 
 /**
  * @author Stuart Douglas
@@ -52,8 +52,18 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
     private volatile boolean removed = false;
     private volatile boolean synchronizeRegistered;
 
+    private final Interceptor ejbStore;
+    private final Interceptor ejbActivate;
+    private final Interceptor ejbLoad;
+    private final Interceptor ejbPassivate;
+
     protected EntityBeanComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
         super(component, instanceReference, preDestroyInterceptor, methodInterceptors, Collections.<Method, Interceptor>emptyMap());
+        final EntityBeanComponent ejbComponent = (EntityBeanComponent)component;
+        this.ejbStore = ejbComponent.createInterceptor(ejbComponent.getEjbStore());
+        this.ejbActivate = ejbComponent.createInterceptor(ejbComponent.getEjbActivate());
+        this.ejbLoad = ejbComponent.createInterceptor(ejbComponent.getEjbLoad());
+        this.ejbPassivate  = ejbComponent.createInterceptor(ejbComponent.getEjbPassivate());
     }
 
     @Override
@@ -97,12 +107,21 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
      */
     public synchronized void associate(Object primaryKey) {
         this.primaryKey = primaryKey;
-        EntityBean instance = getInstance();
         try {
-            instance.ejbActivate();
-            instance.ejbLoad();
+            final InterceptorContext context = prepareInterceptorContext();
+            final EntityBeanComponent component = getComponent();
+            final Method ejbActivateMethod = component.getEjbActivateMethod();
+            context.setMethod(ejbActivateMethod);
+            ejbActivate.processInvocation(context);
+            final InterceptorContext loadContext = prepareInterceptorContext();
+            loadContext.setMethod(component.getEjbLoadMethod());
+            ejbLoad.processInvocation(loadContext);
         } catch (RemoteException e) {
             throw new WrappedRemoteException(e);
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -110,13 +129,19 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
      * Invokes the ejbStore method
      */
     public synchronized void store() {
-        EntityBean instance = getInstance();
         try {
             if (!removed) {
-                instance.ejbStore();
+                final InterceptorContext context = prepareInterceptorContext();
+                final EntityBeanComponent component = getComponent();
+                context.setMethod(component.getEjbStoreMethod());
+                ejbStore.processInvocation(context);
             }
         } catch (RemoteException e) {
             throw new WrappedRemoteException(e);
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -126,13 +151,19 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
      * This method does not actually release this instance into the pool
      */
     public synchronized void passivate() {
-        EntityBean instance = getInstance();
         try {
             if (!removed) {
-                instance.ejbPassivate();
+                final InterceptorContext context = prepareInterceptorContext();
+                final EntityBeanComponent component = getComponent();
+                context.setMethod(component.getEjbPassivateMethod());
+                ejbPassivate.processInvocation(context);
             }
         } catch (RemoteException e) {
             throw new WrappedRemoteException(e);
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 

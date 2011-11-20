@@ -23,14 +23,20 @@
 package org.jboss.as.cmp.component;
 
 import org.jboss.as.cmp.TransactionEntityMap;
+import org.jboss.as.cmp.component.interceptors.CmpEntityBeanJdbcRelationshipInterceptor;
+import org.jboss.as.cmp.component.interceptors.CmpEntityBeanSynchronizationInterceptor;
 import org.jboss.as.cmp.jdbc.JDBCEntityPersistenceStore;
 import org.jboss.as.cmp.jdbc.metadata.JDBCEntityMetaData;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentCreateServiceFactory;
+import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ee.component.interceptors.OrderedItemContainer;
 import org.jboss.as.ejb3.component.EJBComponentCreateServiceFactory;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentCreateService;
+import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanReentrancyInterceptor;
+import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
@@ -60,7 +66,13 @@ public class CmpEntityBeanComponentCreateService extends EntityBeanComponentCrea
         final CmpEntityBeanComponentDescription cmpDescription = CmpEntityBeanComponentDescription.class.cast(componentConfiguration.getComponentDescription());
         entityMetaData = cmpDescription.getEntityMetaData();
 
-        this.relationInterceptorFactory = Interceptors.getChainedInterceptorFactory(CmpEntityBeanComponentConfiguration.class.cast(componentConfiguration).getRelationInterceptors());
+        final OrderedItemContainer interceptors = new OrderedItemContainer();
+        interceptors.add(CmpEntityBeanSynchronizationInterceptor.FACTORY, InterceptorOrder.Component.SYNCHRONIZATION_INTERCEPTOR);
+        interceptors.add(EntityBeanReentrancyInterceptor.FACTORY, InterceptorOrder.Component.REENTRANCY_INTERCEPTOR);
+        interceptors.add(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.ComponentPostConstruct.EJB_SESSION_CONTEXT_INTERCEPTOR);
+        interceptors.add(CmpEntityBeanJdbcRelationshipInterceptor.FACTORY, InterceptorOrder.Component.CMP_RELATIONSHIP_INTERCEPTOR);
+
+        this.relationInterceptorFactory = Interceptors.getChainedInterceptorFactory(interceptors.getSortedItems());
     }
 
     @Override
