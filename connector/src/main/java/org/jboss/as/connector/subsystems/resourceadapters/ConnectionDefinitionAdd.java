@@ -96,8 +96,10 @@ public class ConnectionDefinitionAdd extends AbstractBoottimeAddStepHandler impl
                     .addListener(verificationHandler).install();
 
             context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
+
+            serviceControllers.add(controller);
+
         } catch (ValidateException e) {
-            e.printStackTrace();
             throw new OperationFailedException(e, operation);
         }
     }

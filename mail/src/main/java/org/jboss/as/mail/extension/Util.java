@@ -11,6 +11,7 @@ import static org.jboss.as.mail.extension.ModelKeys.SMTP_SERVER;
 import static org.jboss.as.mail.extension.ModelKeys.USERNAME;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -46,13 +47,13 @@ public class Util {
         }
     }
 
-    private static MailSessionServer readServerConfig(final OperationContext operationContext, final ModelNode model) {
+    private static MailSessionServer readServerConfig(final OperationContext operationContext, final ModelNode model) throws OperationFailedException {
         final String socket = model.require(OUTBOUND_SOCKET_BINDING_REF).asString();
         final Credentials credentials = readCredentials(operationContext, model);
         return new MailSessionServer(socket, credentials);
     }
 
-    private static Credentials readCredentials(final OperationContext operationContext, final ModelNode model) {
+    private static Credentials readCredentials(final OperationContext operationContext, final ModelNode model) throws OperationFailedException {
         if (model.has(CREDENTIALS)) {
             String un = model.get(CREDENTIALS).get(USERNAME).asString();
             String pw = operationContext.resolveExpressions((model.get(CREDENTIALS, PASSWORD))).asString();
@@ -61,7 +62,7 @@ public class Util {
         return null;
     }
 
-    static MailSessionConfig from(final OperationContext operationContext, final ModelNode model) {
+    static MailSessionConfig from(final OperationContext operationContext, final ModelNode model) throws OperationFailedException {
         MailSessionConfig cfg = new MailSessionConfig();
         cfg.setJndiName(model.require(JNDI_NAME).asString());
         cfg.setDebug(model.get(DEBUG).asBoolean(false));

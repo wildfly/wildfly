@@ -404,7 +404,7 @@ class ModelControllerImpl implements ModelController {
     }
 
 
-    ModelNode resolveExpressions(ModelNode node) {
+    ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
         return expressionResolver.resolveExpressions(node);
     }
 

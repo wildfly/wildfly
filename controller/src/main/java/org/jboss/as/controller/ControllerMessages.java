@@ -2006,4 +2006,25 @@ public interface ControllerMessages {
      */
     @Message(id = 14800, value = "Invalid value '%s' for attribute '%s' -- valid values are %s")
     XMLStreamException invalidAttributeValue(String value, QName name, Set<String> validValues, @Param Location location);
+
+    /**
+     * Creates an exception message indicating an expression could not be resolved due to lack of security permissions.
+     *
+     * @param toResolve  the node being resolved
+     * @param e the SecurityException
+     * @return an {@link OperationFailedException} for the caller
+     */
+    @Message(id = 14801, value = "Caught SecurityException attempting to resolve expression '%s' -- %s")
+    String noPermissionToResolveExpression(ModelNode toResolve, SecurityException e);
+
+    /**
+     * Creates an exception message indicating an expression could not be resolved due to no corresponding system property
+     * or environment variable.
+     *
+     * @param toResolve  the node being resolved
+     * @param e the SecurityException
+     * @return an {@link OperationFailedException} for the caller
+     */
+    @Message(id = 14802, value = "Cannot resolve expression '%s' -- %s")
+    String cannotResolveExpression(ModelNode toResolve, IllegalStateException e);
 }

@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.management.api.core;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.net.URL;
 
@@ -96,5 +98,15 @@ public class ResolveExpressionTestCase extends AbstractMgmtTestBase {
         op.get("expression");
 
         Assert.assertFalse(executeOperation(op).isDefined());
+    }
+
+    @Test
+    public void testUnresolvableExpression() throws Exception  {
+        ModelNode op = createOpNode(null, "resolve-expression");
+        op.get("expression").set("${unresolvable}");
+
+        ModelNode response = executeOperation(op, false);
+        Assert.assertFalse("Management operation " + op.asString() + " succeeded: " + response.toString(),
+                "success".equals(response.get("outcome").asString()));
     }
 }
