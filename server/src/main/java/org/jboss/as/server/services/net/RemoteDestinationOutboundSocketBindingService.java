@@ -22,6 +22,7 @@
 
 package org.jboss.as.server.services.net;
 
+import org.jboss.as.network.NetworkMessages;
 import org.jboss.as.network.OutboundSocketBinding;
 
 /**
@@ -34,17 +35,17 @@ public class RemoteDestinationOutboundSocketBindingService extends OutboundSocke
     private final String destinationHost;
     private final int destinationPort;
 
-    public RemoteDestinationOutboundSocketBindingService(final String name, final String destinationHost, final int destinationPort,
+    public RemoteDestinationOutboundSocketBindingService(final String name, final String destinationAddress, final int destinationPort,
                                                          final Integer sourcePort, final boolean fixedSourcePort) {
 
         super(name, sourcePort, fixedSourcePort);
-        if (destinationHost == null || destinationHost.trim().isEmpty()) {
-            throw new IllegalArgumentException("Destination host cannot be null or empty for outbound socket binding " + name);
+        if (destinationAddress == null || destinationAddress.trim().isEmpty()) {
+            throw NetworkMessages.MESSAGES.nullDestinationAddress(name);
         }
         if (destinationPort < 0) {
-            throw new IllegalArgumentException("Destination port cannot be a negative value for outbound socket binding " + name);
+            throw NetworkMessages.MESSAGES.negativeDestinationPort(destinationPort, name);
         }
-        this.destinationHost = destinationHost;
+        this.destinationHost = destinationAddress;
         this.destinationPort = destinationPort;
     }
 

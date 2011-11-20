@@ -32,7 +32,7 @@ import org.jboss.logging.Messages;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @MessageBundle(projectCode = "JBAS")
-interface NetworkMessages {
+public interface NetworkMessages {
     /**
      * The default messages
      */
@@ -55,4 +55,46 @@ interface NetworkMessages {
      */
     @Message(id = 15301, value = "no multicast binding: %s")
     IllegalStateException noMulticastBinding(String name);
+
+    /**
+     * Creates an exception indicating parameter {@code name} cannot be null or an empty string.
+     *
+     * @param name the name.
+     *
+     * @return an {@link IllegalArgumentException} for the error.
+     */
+    @Message(id = 15302, value = "%s cannot be null or an empty string")
+    IllegalArgumentException nullOrEmptyVar(String name);
+
+    /**
+     * Creates an exception indicating a param of type {@code type} was null for the outbound socket binding {@code name}.
+     *
+     * @param type the type of the param
+     * @param name the name.
+     *
+     * @return an {@link IllegalArgumentException} for the error.
+     */
+    @Message(id = 15303, value = "%s cannot be null for outbound socket binding '%s'")
+    IllegalArgumentException nullOutboundSocketBindingParam(String type, String name);
+
+    /**
+     * Creates an exception indicating no destination address for the outbound socket binding.
+     *
+     * @param name the name.
+     *
+     * @return an {@link IllegalArgumentException} for the error.
+     */
+    @Message(id = 15304, value = "Destination address cannot be null or empty for outbound socket binding '%s'")
+    IllegalArgumentException nullDestinationAddress(String name);
+
+    /**
+     * Creates an exception indicating a negative destination port for the outbound socket binding {@code name}.
+     *
+     * @param port the illegal port value
+     * @param name the name.
+     *
+     * @return an {@link IllegalArgumentException} for the error.
+     */
+    @Message(id = 15305, value = "Destination port cannot be a negative value: [%d] for outbound socket binding '%s'")
+    IllegalArgumentException negativeDestinationPort(int port, String name);
 }

@@ -22,9 +22,17 @@
 
 package org.jboss.as.clustering.infinispan;
 
+import java.io.File;
+import java.net.UnknownHostException;
+
 import org.jboss.as.clustering.ClusteringMessages;
+import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
+import org.jboss.as.network.OutboundSocketBinding;
+import org.jboss.logging.Cause;
+import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
+import org.jboss.msc.inject.InjectionException;
 
 /**
  * Date: 29.08.2011
@@ -38,4 +46,18 @@ public interface InfinispanMessages extends ClusteringMessages {
      * A logger with the category of the default clustering package.
      */
     InfinispanMessages MESSAGES = Messages.getBundle(InfinispanMessages.class);
+
+    /**
+     * Creates an exception indicating a failure to resolve the outbound socket binding represented by the
+     * {@code binding} parameter.
+     *
+     * @param cause the cause of the error.
+     * @param binding the outbound socket binding.
+     *
+     * @return a {@link ConfigurationPersistenceException} for the error.
+     */
+    @Message(id = 10350, value = "Could not resolve destination address for outbound socket binding named '%s'")
+    InjectionException failedToInjectSocketBinding(@Cause UnknownHostException cause, OutboundSocketBinding binding);
+
+
 }

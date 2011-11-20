@@ -60,6 +60,7 @@ import org.infinispan.loaders.remote.RemoteCacheStoreConfig;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.util.concurrent.IsolationLevel;
+import org.jboss.as.clustering.infinispan.InfinispanMessages;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelFactoryService;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
@@ -460,7 +461,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
                         try {
                             address = value.getDestinationAddress().getHostAddress()+":"+Integer.toString(value.getDestinationPort());
                         } catch (UnknownHostException uhe) {
-                            throw new InjectionException("Could not resolve destination address for outbound socket binding named " + value, uhe);
+                            throw InfinispanMessages.MESSAGES.failedToInjectSocketBinding(uhe, value);
                         }
                         String serverList = storeConfig.getHotRodClientProperties().getProperty(ConfigurationProperties.SERVER_LIST);
                         serverList = serverList==null?address:serverList+";"+address;

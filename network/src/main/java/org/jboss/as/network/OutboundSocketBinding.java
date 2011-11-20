@@ -74,17 +74,16 @@ public class OutboundSocketBinding {
                                  final NetworkInterfaceBinding sourceNetworkInterface, final Integer sourcePort,
                                  final boolean fixedSourcePort) {
         if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("Socket name cannot be null or an empty string");
+            throw NetworkMessages.MESSAGES.nullOrEmptyVar("Socket name");
         }
         if (socketBindingManager == null) {
-            throw new IllegalArgumentException("SocketBindingManager cannot be null for outbound socket binding " + name);
+            throw NetworkMessages.MESSAGES.nullOutboundSocketBindingParam(SocketBindingManager.class.getSimpleName(), name);
         }
         if (destinationAddress == null || destinationAddress.trim().isEmpty()) {
-            throw new IllegalArgumentException("Destination address cannot be null or empty for outbound socket binding " + name);
+            throw NetworkMessages.MESSAGES.nullDestinationAddress(name);
         }
         if (destinationPort < 0) {
-            throw new IllegalArgumentException("Destination port cannot be a negative value: " + destinationPort
-                    + " for outbound socket binding " + name);
+            throw NetworkMessages.MESSAGES.negativeDestinationPort(destinationPort, name);
         }
         this.name = name;
         this.socketBindingManager = socketBindingManager;
