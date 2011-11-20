@@ -28,6 +28,7 @@ import javax.ejb.EJBException;
 import javax.ejb.EJBTransactionRequiredException;
 import javax.ejb.EJBTransactionRolledbackException;
 import javax.ejb.NoSuchEJBException;
+import javax.ejb.NoSuchEntityException;
 import javax.transaction.TransactionRequiredException;
 import javax.transaction.TransactionRolledbackException;
 
@@ -56,6 +57,8 @@ public class EjbExceptionTransformingInterceptorFactory implements InterceptorFa
                 } catch (EJBTransactionRolledbackException e) {
                     throw new TransactionRolledbackException(e.getMessage());
                 } catch (NoSuchEJBException e) {
+                    throw new NoSuchObjectException(e.getMessage());
+                } catch (NoSuchEntityException e) {
                     throw new NoSuchObjectException(e.getMessage());
                 } catch (EJBException e) {
                     throw new RemoteException("Invocation failed", e);
