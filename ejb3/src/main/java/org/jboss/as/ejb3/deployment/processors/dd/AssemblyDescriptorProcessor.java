@@ -44,15 +44,15 @@ public class AssemblyDescriptorProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         // get the deployment unit
-        DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
         // find the EJB jar metadata and start processing it
-        EjbJarMetaData ejbJarMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
+        final EjbJarMetaData ejbJarMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
         if (ejbJarMetaData == null) {
             return;
         }
         // process assembly-descriptor stuff
-        AssemblyDescriptorMetaData assemblyDescriptor = ejbJarMetaData.getAssemblyDescriptor();
+        final AssemblyDescriptorMetaData assemblyDescriptor = ejbJarMetaData.getAssemblyDescriptor();
         if (assemblyDescriptor != null) {
             // get hold of the ejb jar description (to which we'll be adding this assembly description metadata)
             final EjbJarDescription ejbJarDescription = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION);
@@ -60,6 +60,7 @@ public class AssemblyDescriptorProcessor implements DeploymentUnitProcessor {
 
             // process security-role(s)
             this.processSecurityRoles(assemblyDescriptor.getSecurityRoles(), ejbJarDescription);
+
         }
     }
 

@@ -28,6 +28,7 @@ import java.util.Collections;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.metadata.ejb.spec.MethodMetaData;
 import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
 import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
@@ -38,6 +39,10 @@ public class MethodResolutionUtils {
 
 
     public static Method resolveMethod(final NamedMethodMetaData methodData, final Class<?> componentClass, final DeploymentReflectionIndex reflectionIndex) throws DeploymentUnitProcessingException {
+        return resolveMethod(methodData.getMethodName(), methodData.getMethodParams(), componentClass, reflectionIndex);
+    }
+
+    public static Method resolveMethod(final MethodMetaData methodData, final Class<?> componentClass, final DeploymentReflectionIndex reflectionIndex) throws DeploymentUnitProcessingException {
         return resolveMethod(methodData.getMethodName(), methodData.getMethodParams(), componentClass, reflectionIndex);
     }
 

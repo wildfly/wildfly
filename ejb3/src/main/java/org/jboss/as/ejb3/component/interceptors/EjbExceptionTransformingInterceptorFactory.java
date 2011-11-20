@@ -25,8 +25,10 @@ import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 
 import javax.ejb.EJBException;
+import javax.ejb.EJBTransactionRequiredException;
 import javax.ejb.EJBTransactionRolledbackException;
 import javax.ejb.NoSuchEJBException;
+import javax.transaction.TransactionRequiredException;
 import javax.transaction.TransactionRolledbackException;
 
 import org.jboss.invocation.Interceptor;
@@ -49,6 +51,8 @@ public class EjbExceptionTransformingInterceptorFactory implements InterceptorFa
             public Object processInvocation(final InterceptorContext context) throws Exception {
                 try {
                     return context.proceed();
+                } catch (EJBTransactionRequiredException e) {
+                    throw new TransactionRequiredException(e.getMessage());
                 } catch (EJBTransactionRolledbackException e) {
                     throw new TransactionRolledbackException(e.getMessage());
                 } catch (NoSuchEJBException e) {

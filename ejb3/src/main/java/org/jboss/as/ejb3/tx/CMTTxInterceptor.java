@@ -277,17 +277,17 @@ public class CMTTxInterceptor implements Interceptor {
         }
     }
 
-    protected Object required(InterceptorContext invocation, final EJBComponent component) throws Exception {
+    protected Object required(final InterceptorContext invocation, final EJBComponent component) throws Exception {
         final TransactionManager tm = component.getTransactionManager();
-        int oldTimeout = getCurrentTransactionTimeout(component);
-        int timeout = component.getTransactionTimeout(invocation.getMethod());
+        final int oldTimeout = getCurrentTransactionTimeout(component);
+        final int timeout = component.getTransactionTimeout(invocation.getMethod());
 
         try {
-            if (timeout != -1 && tm != null) {
+            if (timeout != -1) {
                 tm.setTransactionTimeout(timeout);
             }
 
-            Transaction tx = tm.getTransaction();
+            final Transaction tx = tm.getTransaction();
 
             if (tx == null) {
                 return invokeInOurTx(invocation, tm, component);
