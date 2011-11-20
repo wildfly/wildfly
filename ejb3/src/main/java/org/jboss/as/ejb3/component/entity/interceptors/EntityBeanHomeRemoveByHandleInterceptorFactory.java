@@ -35,10 +35,10 @@ import org.jboss.invocation.InterceptorFactoryContext;
 public class EntityBeanHomeRemoveByHandleInterceptorFactory implements InterceptorFactory {
     public static final EntityBeanHomeRemoveByHandleInterceptorFactory INSTANCE = new EntityBeanHomeRemoveByHandleInterceptorFactory();
 
-    public Interceptor create(InterceptorFactoryContext context) {
+    public Interceptor create(final InterceptorFactoryContext context) {
         return new AbstractEJBInterceptor() {
-            public Object processInvocation(InterceptorContext interceptorContext) throws Exception {
-                EJBHandle handle = null;
+            public Object processInvocation(final InterceptorContext interceptorContext) throws Exception {
+                final EJBHandle handle = (EJBHandle) interceptorContext.getParameters()[0];
                 handle.getEJBObject().remove();
                 return null;
             }
