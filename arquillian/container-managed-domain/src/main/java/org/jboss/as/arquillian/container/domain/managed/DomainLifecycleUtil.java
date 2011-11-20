@@ -54,11 +54,11 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
-import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.dmr.ModelNode;
 import org.jboss.sasl.JBossSaslProvider;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
@@ -80,16 +80,14 @@ public class DomainLifecycleUtil {
 
     private final JBossAsManagedConfiguration configuration;
     private DomainClient domainClient;
-    private Map<ServerIdentity, ServerStatus> serverStatuses = new HashMap<ServerIdentity, ServerStatus>();
-    private Map<ServerIdentity, MBeanServerConnectionProvider> jmxConnectionProviders = new HashMap<ServerIdentity, MBeanServerConnectionProvider>();
-    private Map<ServerIdentity, MBeanServerConnection> jmxConnections = new HashMap<ServerIdentity, MBeanServerConnection>();
-    private MBeanServerConnectionProvider[] providers;
+    private Map<ServerIdentity,ControlledProcessState.State> serverStatuses = new HashMap<ServerIdentity, ControlledProcessState.State>();
     private ExecutorService executor;
 
     public DomainLifecycleUtil(final JBossAsManagedConfiguration configuration) {
         assert configuration != null : "configuration is null";
         this.configuration = configuration;
     }
+
 
     public void start() {
         AccessController.doPrivileged(new PrivilegedAction<Object>() {
@@ -224,53 +222,6 @@ public class DomainLifecycleUtil {
             }
 
             log.info("All servers started in " + (System.currentTimeMillis() - start) + " ms");
-
-            Map<ServerIdentity, MBeanServerConnection> connections = new HashMap<ServerIdentity, MBeanServerConnection>();
-            for (Map.Entry<ServerIdentity, ServerStatus> entry : serverStatuses.entrySet()) {
-                switch (entry.getValue()) {
-                case STARTED:
-                    connections.put(entry.getKey(), null);
-                }
-            }
-
-            log.info("Awaiting mbeanServer connections for " + connections.keySet());
-
-            int available = 0;
-            int enabledCount = connections.size();
-            while (timeout > 0 && available < enabledCount) {
-                for (Map.Entry<ServerIdentity, MBeanServerConnection> entry : connections.entrySet()) {
-                    if (entry.getValue() == null) {
-                        try {
-                            MBeanServerConnectionProvider provider = getMBeanServerConnectionProvider(entry.getKey());
-                            MBeanServerConnection mbeanServer = provider == null ? null : provider.getConnection();
-                            if (mbeanServer != null) {
-                                connections.put(entry.getKey(), mbeanServer);
-                                available++;
-                            }
-                        } catch (Exception ignore) {
-                            log.severe(String.format("Failed accessing mbean server on %s: %s", entry.getKey(), ignore));
-                        }
-                    }
-                }
-
-                if (available < enabledCount) {
-                    final long sleep = 100;
-                    Thread.sleep(sleep);
-                    timeout -= sleep;
-                }
-            }
-
-            if (available < enabledCount) {
-                ArrayList<ServerIdentity> notStartedServers = new ArrayList<ServerIdentity>();
-                for (Map.Entry<ServerIdentity, MBeanServerConnection> entry : connections.entrySet()) {
-                    if (entry.getValue() == null) {
-                        notStartedServers.add(entry.getKey());
-                    }
-                }
-                throw new TimeoutException(String.format("Could not connect to the managed server's MBeanServer for servers %s within [%d] seconds", notStartedServers.toString(), configuration.getStartupTimeoutInSeconds()));
-            }
-
-            log.info("All containers available");
         } catch (Exception e) {
             throw new RuntimeException("Could not start container", e);
         }
@@ -349,11 +300,10 @@ public class DomainLifecycleUtil {
 
     private boolean areServersStarted() {
         try {
-            Map<ServerIdentity, ServerStatus> statuses = getServerStatuses();
-            for (Map.Entry<ServerIdentity, ServerStatus> entry : statuses.entrySet()) {
+            Map<ServerIdentity, ControlledProcessState.State> statuses = getServerStatuses();
+            for (Map.Entry<ServerIdentity, ControlledProcessState.State> entry : statuses.entrySet()) {
                 switch (entry.getValue()) {
-                    case DISABLED:
-                    case STARTED:
+                    case RUNNING:
                         continue;
                     default:
                         return false;
@@ -378,9 +328,9 @@ public class DomainLifecycleUtil {
         }
     }
 
-    private Map<ServerIdentity, ServerStatus> getServerStatuses() {
+    private Map<ServerIdentity,ControlledProcessState.State> getServerStatuses() {
 
-        Map<ServerIdentity, ServerStatus> result = new HashMap<ServerIdentity, ServerStatus>();
+        Map<ServerIdentity,ControlledProcessState.State> result = new HashMap<ServerIdentity, ControlledProcessState.State>();
         ModelNode op = new ModelNode();
         op.get("operation").set("read-children-names");
         op.get("child-type").set("server-config");
@@ -395,7 +345,14 @@ public class DomainLifecycleUtil {
             address.add("host", configuration.getHostName());
             address.add("server-config", server);
             String group = readAttribute("group", address).asString();
-            ServerStatus status = Enum.valueOf(ServerStatus.class, readAttribute("status", address).asString());
+            if (!readAttribute("auto-start", address).asBoolean())
+                continue;
+
+            address = new ModelNode();
+            address.add("host", configuration.getHostName());
+            address.add("server", server);
+
+            ControlledProcessState.State status = Enum.valueOf(ControlledProcessState.State.class, readAttribute("server-state", address).asString().toUpperCase());
             ServerIdentity id = new ServerIdentity(configuration.getHostName(), group, server);
             result.put(id, status);
         }
@@ -438,36 +395,6 @@ public class DomainLifecycleUtil {
         }
     }
 
-    private MBeanServerConnectionProvider getMBeanServerConnectionProvider(ServerIdentity server) throws IOException{
-        ModelNode op = new ModelNode();
-        op.get("operation").set("read-children-names");
-        ModelNode opAddr = op.get("address");
-        opAddr.add("host", server.getHostName());
-        opAddr.add("server", server.getServerName());
-        op.get("child-type").set("socket-binding-group");
-        ModelNode result = executeForResult(op);
-        String groupName = result.asList().get(0).asString();
-
-        op = new ModelNode();
-        op.get("operation").set("read-attribute");
-        opAddr = op.get("address");
-        opAddr.add("host", server.getHostName());
-        opAddr.add("server", server.getServerName());
-        opAddr.add("socket-binding-group", groupName);
-        opAddr.add("socket-binding", "jmx-connector-registry");
-        op.get("name").set("bound");
-        result = executeForResult(op);
-
-        if (result.asBoolean(false)) {
-            op.get("name").set("bound-address");
-            String address = executeForResult(op).asString();
-            op.get("name").set("bound-port");
-            int port = executeForResult(op).asInt();
-            return new MBeanServerConnectionProvider(InetAddress.getByName(address), port);
-        }
-        return null;
-    }
-
     public static void main(String[] args) throws Exception {
         DomainLifecycleUtil starterUtil = new DomainLifecycleUtil(new JBossAsManagedConfiguration()) ;
         starterUtil.start();
@@ -507,33 +434,6 @@ public class DomainLifecycleUtil {
                     }
                 }
             } catch (IOException e) {
-            }
-        }
-    }
-
-    public final class MBeanServerConnectionProvider {
-        private final InetAddress hostAddr;
-        private final int port;
-
-        private JMXConnector jmxConnector;
-
-        public MBeanServerConnectionProvider(InetAddress hostAddr, int port) {
-            this.hostAddr = hostAddr;
-            this.port = port;
-        }
-
-        public MBeanServerConnection getConnection() {
-            String host = hostAddr.getHostAddress();
-            String urlString = System.getProperty("jmx.service.url", "service:jmx:rmi:///jndi/rmi://" + host + ":" + port + "/jmxrmi");
-            try {
-                if (jmxConnector == null) {
-                    log.fine("Connecting JMXConnector to: " + urlString);
-                    JMXServiceURL serviceURL = new JMXServiceURL(urlString);
-                    jmxConnector = JMXConnectorFactory.connect(serviceURL, null);
-                }
-                return jmxConnector.getMBeanServerConnection();
-            } catch (IOException ex) {
-                throw new IllegalStateException("Cannot obtain MBeanServerConnection to: " + urlString, ex);
             }
         }
     }

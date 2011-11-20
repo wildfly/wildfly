@@ -224,6 +224,11 @@ public class DomainTestSupport {
         if (domainSlaveLifecycleUtil != null) {
             domainSlaveLifecycleUtil.start();
         }
+        try {
+            //Thread.sleep(2000);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void stop() {

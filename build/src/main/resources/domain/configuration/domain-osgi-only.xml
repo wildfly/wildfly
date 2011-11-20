@@ -48,9 +48,7 @@
                     </handlers>
                 </root-logger>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:jmx:1.1">
-                 <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server" />
-            </subsystem>
+            <subsystem xmlns="urn:jboss:domain:jmx:1.1"/>
             <subsystem xmlns="urn:jboss:domain:osgi:1.1" activation="eager">
                 <capabilities>
                     <capability name="org.osgi.compendium"/>
