@@ -25,15 +25,18 @@ package org.jboss.as.logging.loggers;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.NAME;
+import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 import java.util.List;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.logging.util.LogServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 
 
@@ -54,7 +57,7 @@ public class LoggerUnassignHandler extends AbstractLogHandlerAssignmentHandler {
     @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
                                   final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
-        context.removeService(LogServices.loggerHandlerName(getLoggerName(operation), getHandlerName(operation)));
+        removeHandler(context, getLoggerName(operation), getHandlerName(operation));
     }
 
     @Override
@@ -65,6 +68,49 @@ public class LoggerUnassignHandler extends AbstractLogHandlerAssignmentHandler {
     protected String getLoggerName(final ModelNode operation) {
         PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         return address.getLastElement().getValue();
+    }
+
+    /**
+     * Removes the handler, represented by the {@code handlerName} parameter, from the logger.
+     *
+     * @param context     the context of the operation.
+     * @param loggerName  the logger name.
+     * @param handlerName the name of the handler to remove.
+     *
+     * @throws OperationFailedException if an error occurs.
+     */
+    public static void removeHandler(final OperationContext context, final String loggerName, final String handlerName) throws OperationFailedException {
+        // Verify the logger exists
+        if (context.getServiceRegistry(false).getService(LogServices.loggerName(loggerName)) == null) {
+            throw createFailureMessage(MESSAGES.loggerNotFound(loggerName));
+        }
+        context.removeService(LogServices.loggerHandlerName(loggerName, handlerName));
+    }
+
+    /**
+     * Removes the handlers to the logger.
+     *
+     * @param attribute  the attribute definition.
+     * @param node       the model node to extract the handlers from.
+     * @param context    the context of the operation.
+     * @param loggerName the name of the logger.
+     *
+     * @throws OperationFailedException if an error occurs.
+     */
+    public static void removeHandlers(final AttributeDefinition attribute, final ModelNode node, final OperationContext context,
+                                      final String loggerName) throws OperationFailedException {
+        // Verify the logger exists
+        if (context.getServiceRegistry(false).getService(LogServices.loggerName(loggerName)) == null) {
+            throw createFailureMessage(MESSAGES.loggerNotFound(loggerName));
+        }
+        final ModelNode handlers = attribute.resolveModelAttribute(context, node);
+        if (handlers.isDefined()) {
+            if (handlers.getType() == ModelType.LIST) {
+                for (ModelNode handler : handlers.asList()) {
+                    removeHandler(context, loggerName, handler.asString());
+                }
+            }
+        }
     }
 
 }

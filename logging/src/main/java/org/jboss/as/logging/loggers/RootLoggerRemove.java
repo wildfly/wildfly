@@ -22,15 +22,15 @@
 
 package org.jboss.as.logging.loggers;
 
+import static org.jboss.as.logging.CommonAttributes.HANDLERS;
+import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
+import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER_NAME;
+
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.logging.util.LogServices;
 import org.jboss.dmr.ModelNode;
-
-import static org.jboss.as.logging.CommonAttributes.HANDLERS;
-import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
-import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER_NAME;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -51,9 +51,6 @@ public class RootLoggerRemove extends AbstractRemoveStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         context.removeService(LogServices.ROOT_LOGGER);
         final ModelNode rootLogger = operation.get(ROOT_LOGGER);
-        final ModelNode handlers = HANDLERS.validateOperation(rootLogger);
-        if (handlers.isDefined()) {
-            LogServices.uninstallLoggerHandlers(context, ROOT_LOGGER_NAME, handlers);
-        }
+        LoggerUnassignHandler.removeHandlers(HANDLERS, rootLogger, context, ROOT_LOGGER_NAME);
     }
 }

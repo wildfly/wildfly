@@ -30,20 +30,6 @@ import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.LoggingLogger.ROOT_LOGGER;
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.logging.util.LogServices;
-import org.jboss.as.logging.util.ModelParser;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceRegistry;
-
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,6 +38,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Handler;
+
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.logging.util.LogServices;
+import org.jboss.as.logging.util.ModelParser;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * Parent operation responsible for updating the common attributes of logging handlers.
@@ -95,8 +94,6 @@ public abstract class HandlerUpdateProperties<T extends Handler> implements Oper
         if (requiresRuntime(context)) {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
-                    final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                     final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
                     final String name = address.getLastElement().getValue();
                     final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);

@@ -78,31 +78,4 @@ public final class LogServices {
         return HANDLER_FILE.append(handlerName);
     }
 
-    public static Collection<ServiceController<?>> installLoggerHandlers(final ServiceTarget serviceTarget, final String loggerName, final ModelNode handlers, final ServiceVerificationHandler verificationHandler) {
-        final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
-        // Install logger handler services
-        for(final ModelNode handler : handlers.asList()) {
-            final String handlerName = handler.asString();
-            final LoggerHandlerService service = new LoggerHandlerService(loggerName);
-            final Injector<Handler> injector = service.getHandlerInjector();
-            final ServiceName serviceName = LogServices.loggerHandlerName(loggerName, handlerName);
-            final ServiceName dep1 = LogServices.loggerName(loggerName);
-            final ServiceName dep2 = LogServices.handlerName(handlerName);
-            LoggingLogger.ROOT_LOGGER.debugf("Installing: %s - %s - %s", serviceName, dep1, dep2);
-            controllers.add(serviceTarget.addService(serviceName, service)
-                    .addDependency(dep1)
-                    .addDependency(dep2, Handler.class, injector)
-                    .addListener(verificationHandler)
-                    .install());
-        }
-        return controllers;
-    }
-
-    public static void uninstallLoggerHandlers(final OperationContext context, final String loggerName, final ModelNode handlers) {
-        for(final ModelNode handler : handlers.asList()) {
-            final String handlerName = handler.asString();
-            context.removeService(LogServices.loggerHandlerName(loggerName, handlerName));
-        }
-    }
-
 }

@@ -23,6 +23,7 @@
 package org.jboss.as.logging.loggers;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.logging.handlers.LoggerHandlerRemove;
 import org.jboss.as.logging.util.LogServices;
 
 /**

@@ -24,6 +24,7 @@ package org.jboss.as.logging.loggers;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.logging.CommonAttributes.FILTER;
+import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 
 import org.jboss.as.controller.OperationContext;
@@ -45,7 +46,7 @@ public class RootLoggerWriteAttributeHandler extends AbstractLoggerWriteAttribut
     public static final RootLoggerWriteAttributeHandler INSTANCE = new RootLoggerWriteAttributeHandler();
 
     private RootLoggerWriteAttributeHandler() {
-        super(LEVEL, FILTER);
+        super(LEVEL, FILTER, HANDLERS);
     }
 
     @Override
@@ -64,16 +65,28 @@ public class RootLoggerWriteAttributeHandler extends AbstractLoggerWriteAttribut
             logger.setLevel(ModelParser.parseLevel(resolvedValue));
         } else if (FILTER.getName().equals(attributeName)) {
             logger.setFilter(ModelParser.parseFilter(context, resolvedValue));
+        } else if (HANDLERS.getName().equals(attributeName)) {
+            // Remove all handlers
+            LoggerUnassignHandler.removeHandlers(HANDLERS, currentValue, context, name);
+            // Add the new handlers
+            LoggerAssignHandler.addHandlers(HANDLERS, resolvedValue, context, name, null);
         }
         return false;
     }
 
     @Override
     protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final Logger logger) throws OperationFailedException {
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
         if (LEVEL.getName().equals(attributeName)) {
             logger.setLevel(ModelParser.parseLevel(valueToRestore));
         } else if (FILTER.getName().equals(attributeName)) {
             logger.setFilter(ModelParser.parseFilter(context, valueToRestore));
+        } else if (HANDLERS.getName().equals(attributeName)) {
+            // Remove the new handlers
+            LoggerUnassignHandler.removeHandlers(HANDLERS, valueToRevert, context, name);
+            // Re-add the old handlers
+            LoggerAssignHandler.addHandlers(HANDLERS, valueToRestore, context, name, null);
         }
     }
 }
