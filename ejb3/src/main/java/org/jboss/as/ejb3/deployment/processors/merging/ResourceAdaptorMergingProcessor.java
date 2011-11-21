@@ -21,14 +21,23 @@
  */
 package org.jboss.as.ejb3.deployment.processors.merging;
 
+import java.util.List;
+import java.util.Properties;
+
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.metadata.ClassAnnotationInformation;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
+import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
+import org.jboss.as.ejb3.resourceadapterbinding.metadata.EJBBoundResourceAdapterBindingMetaData;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.ejb3.annotation.ResourceAdapter;
+import org.jboss.metadata.ejb.spec.ActivationConfigMetaData;
+import org.jboss.metadata.ejb.spec.AssemblyDescriptorMetaData;
+import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 
 /**
  * Handles the {@link org.jboss.ejb3.annotation.ResourceAdapter} annotation merging
@@ -61,6 +70,30 @@ public class ResourceAdaptorMergingProcessor extends AbstractMergingProcessor<Me
 
     @Override
     protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final MessageDrivenComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
-       //not applicable
+
+        final String ejbName = componentConfiguration.getEJBName();
+        final EjbJarMetaData metaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
+        if (metaData == null) {
+            return;
+        }
+        final AssemblyDescriptorMetaData assemblyDescriptor = metaData.getAssemblyDescriptor();
+        if (assemblyDescriptor == null) {
+            return;
+        }
+        final List<EJBBoundResourceAdapterBindingMetaData> resourceAdapterBindingDataList = assemblyDescriptor.getAny(EJBBoundResourceAdapterBindingMetaData.class);
+
+        String resourceAdapterName = null;
+        if (resourceAdapterBindingDataList != null) {
+            for (EJBBoundResourceAdapterBindingMetaData resourceAdapterBindingData: resourceAdapterBindingDataList) {
+                if ("*".equals(resourceAdapterBindingData.getEjbName()) && resourceAdapterName == null) {
+                    resourceAdapterName = resourceAdapterBindingData.getResourceAdapterName();
+                } else if (ejbName.equals(resourceAdapterBindingData.getEjbName())) {
+                    resourceAdapterName = resourceAdapterBindingData.getResourceAdapterName();
+                }
+            }
+        }
+        if (resourceAdapterName != null) {
+            componentConfiguration.setResourceAdapterName(resourceAdapterName);
+        }
     }
 }
