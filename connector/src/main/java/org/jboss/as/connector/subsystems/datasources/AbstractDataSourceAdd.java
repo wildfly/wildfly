@@ -140,7 +140,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         for (final SimpleAttributeDefinition attribute : attributes) {
             attribute.validateAndSet(operation, modelNode);
         }
-        modelNode.get(ENABLED.getName()).set(false);
+        //modelNode.get(ENABLED.getName()).set(false);
 
     }
 
