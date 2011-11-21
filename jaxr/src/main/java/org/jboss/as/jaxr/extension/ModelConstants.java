@@ -31,7 +31,10 @@ package org.jboss.as.jaxr.extension;
  */
 public interface ModelConstants {
 
+    String CONNECTIONFACTORY = "connection-factory";
     String DATASOURCE = "datasource";
-    String JNDI_NAME = "jndi-name";
+    String DROPONSTART = "drop-on-start";
+    String CREATEONSTART = "create-on-start";
+    String DROPONSTOP = "drop-on-stop";
 
 }

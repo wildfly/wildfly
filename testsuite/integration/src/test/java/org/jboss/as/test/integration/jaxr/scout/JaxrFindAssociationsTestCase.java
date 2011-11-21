@@ -52,7 +52,6 @@ import java.util.Iterator;
  * @since Mar 9, 2005
  */
 @RunWith(Arquillian.class)
-@Ignore // FIXME AS7-2570
 public class JaxrFindAssociationsTestCase extends JaxrTestBase {
 
     @Test

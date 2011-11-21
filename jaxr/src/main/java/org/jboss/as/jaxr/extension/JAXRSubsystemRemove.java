@@ -20,62 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.jpa.hibernate.envers;
+package org.jboss.as.jaxr.extension;
 
-import java.util.HashSet;
-import java.util.Set;
-import javax.persistence.*;
-
-import org.hibernate.envers.Audited;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
 
 /**
- * @author Strong Liu
+ * Handler responsible for removing the subsystem resource to the model
+ *
+ * @author Thomas.Diesler@jboss.com
+ * @since 26-Oct-2011
  */
-@Entity
-@Audited
-@Table(name="ADDRESS_HIB")
-public class Address {
-    @Id
-    @GeneratedValue
-    private int id;
+class JAXRSubsystemRemove extends AbstractRemoveStepHandler {
 
-    private String streetName;
+    static final JAXRSubsystemRemove INSTANCE = new JAXRSubsystemRemove();
 
-    private Integer houseNumber;
-
-
-    @OneToMany(mappedBy = "address")
-    private Set<Person> persons = new HashSet<Person>(  );
-
-	public Integer getHouseNumber() {
-		return houseNumber;
-	}
-
-	public void setHouseNumber(Integer houseNumber) {
-		this.houseNumber = houseNumber;
-	}
-
-	public int getId() {
-		return id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	public Set<Person> getPersons() {
-		return persons;
-	}
-
-	public void setPersons(Set<Person> persons) {
-		this.persons = persons;
-	}
-
-	public String getStreetName() {
-		return streetName;
-	}
-
-	public void setStreetName(String streetName) {
-		this.streetName = streetName;
-	}
+    private JAXRSubsystemRemove() {
+    }
 }
