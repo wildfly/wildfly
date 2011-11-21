@@ -36,6 +36,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.ejb3.annotation.ResourceAdapter;
 import org.jboss.metadata.ejb.spec.ActivationConfigMetaData;
+import org.jboss.metadata.ejb.spec.AssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 
 /**
@@ -72,7 +73,14 @@ public class ResourceAdaptorMergingProcessor extends AbstractMergingProcessor<Me
 
         final String ejbName = componentConfiguration.getEJBName();
         final EjbJarMetaData metaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
-        final List<EJBBoundResourceAdapterBindingMetaData> resourceAdapterBindingDataList = metaData.getAssemblyDescriptor().getAny(EJBBoundResourceAdapterBindingMetaData.class);
+        if (metaData == null) {
+            return;
+        }
+        final AssemblyDescriptorMetaData assemblyDescriptor = metaData.getAssemblyDescriptor();
+        if (assemblyDescriptor == null) {
+            return;
+        }
+        final List<EJBBoundResourceAdapterBindingMetaData> resourceAdapterBindingDataList = assemblyDescriptor.getAny(EJBBoundResourceAdapterBindingMetaData.class);
 
         String resourceAdapterName = null;
         if (resourceAdapterBindingDataList != null) {
