@@ -611,6 +611,28 @@
                                         <ignore/>
                                     </action>
                                 </pluginExecution>
+                                <pluginExecution>
+                                	<pluginExecutionFilter>
+                                		<groupId>
+                                			org.apache.maven.plugins
+                                		</groupId>
+                                		<artifactId>
+                                			maven-help-plugin
+                                		</artifactId>
+                                		<versionRange>
+                                			[2.1.1,)
+                                		</versionRange>
+                                		<goals>
+                                       <goal>active-profiles</goal>
+                                       <goal>effective-pom</goal>
+                                       <goal>effective-settings</goal>
+                                       <goal>system</goal>
+                                		</goals>
+                                	</pluginExecutionFilter>
+                                	<action>
+                                		<ignore></ignore>
+                                	</action>
+                                </pluginExecution>
                             </pluginExecutions>
                         </lifecycleMappingMetadata>
                     </configuration>
