@@ -24,9 +24,10 @@ package org.jboss.as.protocol;
 import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
 import static org.xnio.Options.SASL_POLICY_NOANONYMOUS;
 import static org.xnio.Options.SASL_POLICY_NOPLAINTEXT;
-
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -64,6 +65,7 @@ import org.xnio.OptionMap.Builder;
  * @version $Revision: 1.1 $
  */
 public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeable {
+    private static final String JBOSS_LOCAL_USER = "JBOSS-LOCAL-USER";
     private final boolean startedEndpoint;
     private final Endpoint endpoint;
     private final Registration providerRegistration;
@@ -114,6 +116,9 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
         Builder builder = OptionMap.builder();
         builder.set(SASL_POLICY_NOANONYMOUS, Boolean.FALSE);
         builder.set(SASL_POLICY_NOPLAINTEXT, Boolean.FALSE);
+        if (isLocal() == false) {
+            builder.set(Options.SASL_DISALLOWED_MECHANISMS, Sequence.of(JBOSS_LOCAL_USER));
+        }
         List<Property> tempProperties = new ArrayList<Property>(saslOptions != null ? saslOptions.size() : 1);
         tempProperties.add(Property.of("jboss.sasl.local-user.quiet-auth", "true"));
         if (saslOptions != null) {
@@ -135,6 +140,18 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
         }
 
         return connection;
+    }
+
+    private boolean isLocal() {
+        try {
+            String hostName = uri.getHost();
+            InetAddress address = InetAddress.getByName(hostName);
+            NetworkInterface nic = NetworkInterface.getByInetAddress(address);
+
+            return address.isLoopbackAddress() || nic != null;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public T openChannel(String channelName) throws IOException {
