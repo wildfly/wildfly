@@ -321,7 +321,7 @@ public class DsParser extends AbstractParser {
                     String value = rawAttributeText(reader, ENABLED.getXmlName());
                     if (value != null) {
                         enabled = Boolean.parseBoolean(value);
-                        ENABLED.parseAndSetParameter(value, operation, location);
+                        //ENABLED.parseAndSetParameter(value, operation, location);
                         persistEnabled = true;
                     }
                     break;
@@ -555,7 +555,7 @@ public class DsParser extends AbstractParser {
                     String value = rawAttributeText(reader, ENABLED.getXmlName());
                     if (value != null) {
                         enabled = Boolean.parseBoolean(value);
-                        ENABLED.parseAndSetParameter(value, operation, location);
+                        //ENABLED.parseAndSetParameter(value, operation, location);
                         persistEnabled = true;
                     }
                     break;
