@@ -126,7 +126,7 @@ public class XTSInteropTestCase extends XTSTestBase {
 
     private boolean doInteropTests(String serviceURI, String baseContext, String testName, String outfile) throws Throwable {
         List<NameValuePair> params = new ArrayList<NameValuePair>(5);
-        params.add(new BasicNameValuePair("serviceuri", serviceURI));
+        params.add(new BasicNameValuePair("serviceuri", BASE_URL + serviceURI));
         params.add(new BasicNameValuePair("test", testName));
         params.add(new BasicNameValuePair("testTimeout", "120000"));
         params.add(new BasicNameValuePair("resultPage", "/xmlresults"));
