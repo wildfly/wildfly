@@ -25,11 +25,11 @@ package org.jboss.as.ejb3.component.interceptors;
 import java.lang.reflect.Method;
 
 import org.jboss.as.ee.component.Component;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.tx.ApplicationExceptionDetails;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.logging.Logger;
 
 /**
  * Logs any exceptions/errors that happen during invocation of EJB methods, as specified by the
@@ -41,8 +41,6 @@ import org.jboss.logging.Logger;
  * @author Jaikiran Pai
  */
 public class LoggingInterceptor implements Interceptor {
-
-    public static final Logger logger = Logger.getLogger(LoggingInterceptor.class);
 
     public static final LoggingInterceptor INSTANCE = new LoggingInterceptor();
 
@@ -61,7 +59,7 @@ public class LoggingInterceptor implements Interceptor {
             // check if it's an application exception. If yes, then *don't* log
             final ApplicationExceptionDetails appException = component.getApplicationException(t.getClass(), invokedMethod);
             if (appException == null) {
-                logger.error("Invocation failure for component " + component + " on method " + invokedMethod, t);
+                EjbLogger.EJB3_INVOCATION_LOGGER.invocationFailed(component.getComponentName(), invokedMethod, t);
             }
             if (t instanceof Exception) {
                 throw (Exception) t;

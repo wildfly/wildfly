@@ -24,6 +24,11 @@
 
 package org.jboss.as.ejb3;
 
+import java.io.File;
+import java.lang.reflect.Method;
+
+import javax.ejb.Timer;
+
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
 import org.jboss.as.ejb3.timerservice.CalendarTimer;
@@ -36,9 +41,6 @@ import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
-
-import javax.ejb.Timer;
-import java.io.File;
 
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
@@ -58,6 +60,11 @@ public interface EjbLogger extends BasicLogger {
     EjbLogger ROOT_LOGGER = Logger.getMessageLogger(EjbLogger.class, EjbLogger.class.getPackage().getName());
 
     EjbLogger EJB3_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.ejb3");
+
+    /**
+     * logger use to log EJB invocation eorrors
+     */
+    EjbLogger EJB3_INVOCATION_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.ejb3.invocation");
 
     /**
      * Logs an error message indicating an exception occurred while removing the an inactive bean.
@@ -322,4 +329,11 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 14133, value = "Discarding entity component instance: %s due to exception")
     void discardingEntityComponent(EntityBeanComponentInstance instance, @Cause Throwable t);
+
+    /**
+     * Logs an error message indicating that an invocation failred
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 14134, value = "EJB Invocation failed on component %s for method %s")
+    void invocationFailed(String component, Method method, @Cause Throwable t);
 }

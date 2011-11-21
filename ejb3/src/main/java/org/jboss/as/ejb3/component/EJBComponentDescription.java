@@ -21,12 +21,6 @@
  */
 package org.jboss.as.ejb3.component;
 
-import org.jboss.as.ee.component.ComponentDescription;
-
-
-import javax.ejb.TimerService;
-import javax.ejb.TransactionAttributeType;
-import javax.ejb.TransactionManagementType;
 
 import java.lang.reflect.Method;
 import java.rmi.Remote;
@@ -41,11 +35,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-
 import javax.ejb.TimerService;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
-
 
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
@@ -82,7 +74,6 @@ import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-
 
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
