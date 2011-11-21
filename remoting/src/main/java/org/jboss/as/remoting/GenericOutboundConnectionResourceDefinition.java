@@ -52,7 +52,6 @@ class GenericOutboundConnectionResourceDefinition extends SimpleResourceDefiniti
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        // TODO: Implement this
-        //resourceRegistration.registerReadWriteAttribute(URI, null, null);
+        resourceRegistration.registerReadWriteAttribute(URI, null, GenericOutboundConnectionWriteHandler.INSTANCE);
     }
 }
