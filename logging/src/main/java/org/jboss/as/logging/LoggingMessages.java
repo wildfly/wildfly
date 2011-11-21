@@ -202,6 +202,16 @@ public interface LoggingMessages {
     String invalidValueTypeKey(String key, Collection<String> allowedValues);
 
     /**
+     * A message indicating the logger, represented by the {@code name} parameter was not found.
+     *
+     * @param name the name of the missing logger.
+     *
+     * @return the message.
+     */
+    @Message(id = 11548, value = "Logger '%s' was not found.")
+    String loggerNotFound(String name);
+
+    /**
      * A message indicating the required nested filter element is missing.
      *
      * @return the message.
