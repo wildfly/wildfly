@@ -54,6 +54,10 @@ public class RemoteOutboundConnectionService extends AbstractOutboundConnectionS
 
     private URI connectionURI;
 
+    public RemoteOutboundConnectionService(final OptionMap connectionCreationOptions) {
+        super(connectionCreationOptions);
+    }
+
     @Override
     public void start(StartContext context) throws StartException {
 
@@ -85,7 +89,7 @@ public class RemoteOutboundConnectionService extends AbstractOutboundConnectionS
             throw new RuntimeException(e);
         }
         final Endpoint endpoint = this.endpointInjectedValue.getValue();
-        return endpoint.connect(uri);
+        return endpoint.connect(uri, this.connectionCreationOptions);
     }
 
     Injector<OutboundSocketBinding> getDestinationOutboundSocketBindingInjector() {

@@ -22,6 +22,8 @@
 
 package org.jboss.as.remoting;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -34,12 +36,9 @@ import org.jboss.dmr.ModelType;
 /**
  * @author Jaikiran Pai
  */
-class RemoteOutboundConnnectionResourceDefinition extends SimpleResourceDefinition {
+class RemoteOutboundConnnectionResourceDefinition extends AbstractOutboundConnectionResourceDefinition {
 
     static final PathElement ADDRESS = PathElement.pathElement(CommonAttributes.REMOTE_OUTBOUND_CONNECTION);
-
-    public static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(CommonAttributes.NAME, ModelType.STRING, false)
-            .setValidator(new StringLengthValidator(1)).build();
 
     public static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING_REF = new SimpleAttributeDefinitionBuilder(CommonAttributes.OUTBOUND_SOCKET_BINDING_REF, ModelType.STRING, false)
             .setAllowExpression(true).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true))
@@ -55,6 +54,14 @@ class RemoteOutboundConnnectionResourceDefinition extends SimpleResourceDefiniti
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+        super.registerAttributes(resourceRegistration);
         resourceRegistration.registerReadWriteAttribute(OUTBOUND_SOCKET_BINDING_REF, null, RemoteOutboundConnectionWriteHandler.INSTANCE);
+    }
+
+    @Override
+    protected OperationStepHandler getWriteAttributeHandler(AttributeDefinition attribute) {
+        // we ignore the passed attribute, since all attribute writes lead to the
+        // same action - i.e. restart the service
+        return RemoteOutboundConnectionWriteHandler.INSTANCE;
     }
 }

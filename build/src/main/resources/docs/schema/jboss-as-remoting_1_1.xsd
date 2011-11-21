@@ -293,6 +293,9 @@
     </xs:complexType>
 
     <xs:complexType name="base-outbound-connectionType">
+        <xs:all>
+            <xs:element name="connection-creation-options" type="xnio-optionsType" minOccurs="0" maxOccurs="1"/>
+        </xs:all>
         <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
 
@@ -318,5 +321,16 @@
                 <xs:attribute name="outbound-socket-binding-ref" type="xs:string" use="required"/>
             </xs:extension>
         </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="xnio-optionsType">
+        <xs:sequence>
+            <xs:element name="option" type="xnio-optionType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="xnio-optionType">
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="value" type="xs:string" use="required"/>
     </xs:complexType>
 </xs:schema>

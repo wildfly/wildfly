@@ -22,10 +22,11 @@
 
 package org.jboss.as.remoting;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -34,7 +35,7 @@ import org.jboss.dmr.ModelType;
 /**
  * @author Jaikiran Pai
  */
-class GenericOutboundConnectionResourceDefinition extends SimpleResourceDefinition {
+class GenericOutboundConnectionResourceDefinition extends AbstractOutboundConnectionResourceDefinition {
 
     static final PathElement ADDRESS = PathElement.pathElement(CommonAttributes.OUTBOUND_CONNECTION);
 
@@ -52,6 +53,14 @@ class GenericOutboundConnectionResourceDefinition extends SimpleResourceDefiniti
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+        super.registerAttributes(resourceRegistration);
         resourceRegistration.registerReadWriteAttribute(URI, null, GenericOutboundConnectionWriteHandler.INSTANCE);
+    }
+
+    @Override
+    protected OperationStepHandler getWriteAttributeHandler(AttributeDefinition attribute) {
+        // we ignore the passed attribute, since all attribute writes lead to the
+        // same action - i.e. restart the service
+        return GenericOutboundConnectionWriteHandler.INSTANCE;
     }
 }

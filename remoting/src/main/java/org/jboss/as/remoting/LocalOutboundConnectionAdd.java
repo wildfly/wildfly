@@ -22,11 +22,9 @@
 
 package org.jboss.as.remoting;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Map;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -39,17 +37,21 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.remoting3.Endpoint;
+import org.xnio.OptionMap;
 
 /**
  * @author Jaikiran Pai
  */
-class LocalOutboundConnectionAdd extends AbstractAddStepHandler {
+class LocalOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler {
 
     static final LocalOutboundConnectionAdd INSTANCE = new LocalOutboundConnectionAdd();
 
-    static ModelNode getAddOperation(final String connectionName) {
+    static ModelNode getAddOperation(final String connectionName, final String outboundSocketBindingRef, final Map<String, String> connectionCreationOptions) {
         if (connectionName == null || connectionName.trim().isEmpty()) {
             throw new IllegalArgumentException("Connection name cannot be null or empty");
+        }
+        if (outboundSocketBindingRef == null || outboundSocketBindingRef.trim().isEmpty()) {
+            throw new IllegalArgumentException("Outbound socket binding reference cannot be null or empty for connection named " + connectionName);
         }
         final ModelNode addOperation = new ModelNode();
         addOperation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
@@ -57,6 +59,19 @@ class LocalOutboundConnectionAdd extends AbstractAddStepHandler {
         final PathAddress address = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME),
                 PathElement.pathElement(CommonAttributes.LOCAL_OUTBOUND_CONNECTION, connectionName));
         addOperation.get(ModelDescriptionConstants.OP_ADDR).set(address.toModelNode());
+
+        // set the other params
+        addOperation.get(CommonAttributes.OUTBOUND_SOCKET_BINDING_REF).set(outboundSocketBindingRef);
+        // optional connection creation options
+        if (connectionCreationOptions != null) {
+            for (final Map.Entry<String, String> entry : connectionCreationOptions.entrySet()) {
+                if (entry.getKey() == null) {
+                    // skip
+                    continue;
+                }
+                addOperation.get(CommonAttributes.CONNECTION_CREATION_OPTIONS).set(entry.getKey(), entry.getValue());
+            }
+        }
 
         return addOperation;
     }
@@ -67,8 +82,7 @@ class LocalOutboundConnectionAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        final String connectionName = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
-        model.get(CommonAttributes.NAME).set(connectionName);
+        super.populateModel(operation, model);
 
         LocalOutboundConnectionResourceDefinition.OUTBOUND_SOCKET_BINDING_REF.validateAndSet(operation, model);
     }
@@ -85,8 +99,10 @@ class LocalOutboundConnectionAdd extends AbstractAddStepHandler {
         final String connectionName = outboundConnection.require(CommonAttributes.NAME).asString();
         final String outboundSocketBindingRef = outboundConnection.require(CommonAttributes.OUTBOUND_SOCKET_BINDING_REF).asString();
         final ServiceName outboundSocketBindingDependency = OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(outboundSocketBindingRef);
+        // fetch the connection creation options from the model
+        final OptionMap connectionCreationOptions = this.getConnectionCreationOptions(outboundConnection);
         // create the service
-        final LocalOutboundConnectionService outboundConnectionService = new LocalOutboundConnectionService();
+        final LocalOutboundConnectionService outboundConnectionService = new LocalOutboundConnectionService(connectionCreationOptions);
         final ServiceName serviceName = AbstractOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);
         // also add a alias service name to easily distinguish between a generic, remote and local type of connection services
         final ServiceName aliasServiceName = LocalOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);

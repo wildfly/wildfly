@@ -25,8 +25,8 @@ package org.jboss.as.remoting;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Map;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -38,17 +38,21 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.remoting3.Endpoint;
+import org.xnio.OptionMap;
 
 /**
  * @author Jaikiran Pai
  */
-class GenericOutboundConnectionAdd extends AbstractAddStepHandler {
+class GenericOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler {
 
     static final GenericOutboundConnectionAdd INSTANCE = new GenericOutboundConnectionAdd();
 
-    static ModelNode getAddOperation(final String connectionName) {
+    static ModelNode getAddOperation(final String connectionName, final String uri, final Map<String, String> connectionCreationOptions) {
         if (connectionName == null || connectionName.trim().isEmpty()) {
             throw new IllegalArgumentException("Connection name cannot be null or empty");
+        }
+        if (uri == null || uri.trim().isEmpty()) {
+            throw new IllegalArgumentException("Connection URI cannot be null for connection named " + connectionName);
         }
         final ModelNode addOperation = new ModelNode();
         addOperation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
@@ -56,6 +60,19 @@ class GenericOutboundConnectionAdd extends AbstractAddStepHandler {
         final PathAddress address = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME),
                 PathElement.pathElement(CommonAttributes.OUTBOUND_CONNECTION, connectionName));
         addOperation.get(ModelDescriptionConstants.OP_ADDR).set(address.toModelNode());
+
+        // set the other params
+        addOperation.get(CommonAttributes.URI).set(uri);
+        // optional connection creation options
+        if (connectionCreationOptions != null) {
+            for (final Map.Entry<String, String> entry : connectionCreationOptions.entrySet()) {
+                if (entry.getKey() == null) {
+                    // skip
+                    continue;
+                }
+                addOperation.get(CommonAttributes.CONNECTION_CREATION_OPTIONS).set(entry.getKey(), entry.getValue());
+            }
+        }
 
         return addOperation;
     }
@@ -66,10 +83,9 @@ class GenericOutboundConnectionAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        final String connectionName = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
-        model.get(CommonAttributes.NAME).set(connectionName);
-
+        super.populateModel(operation, model);
         GenericOutboundConnectionResourceDefinition.URI.validateAndSet(operation, model);
+
     }
 
     @Override
@@ -83,11 +99,12 @@ class GenericOutboundConnectionAdd extends AbstractAddStepHandler {
 
         final String connectionName = outboundConnection.require(CommonAttributes.NAME).asString();
         final String uri = outboundConnection.require(CommonAttributes.URI).asString();
-
+        // fetch the connection creation options from the model
+        final OptionMap connectionCreationOptions = this.getConnectionCreationOptions(outboundConnection);
         // create the service
         final GenericOutboundConnectionService outboundRemotingConnectionService;
         try {
-            outboundRemotingConnectionService = new GenericOutboundConnectionService(new URI(uri));
+            outboundRemotingConnectionService = new GenericOutboundConnectionService(new URI(uri), connectionCreationOptions);
         } catch (URISyntaxException e) {
             throw new RuntimeException("Cannot create outbound connection service for connection named " + connectionName
                     + " with uri" + uri, e);
