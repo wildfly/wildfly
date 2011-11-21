@@ -23,40 +23,25 @@ package org.jboss.as.jaxr.extension;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 
-import java.util.Locale;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-
 /**
- * Handler responsible for adding a datasource resource to the model
+ * Handler responsible for adding JAXR attributes to the model
  *
  * @author Thomas.Diesler@jboss.com
  * @since 07-Nov-2011
  */
-class JAXRDatasourceAttributeHandler extends AbstractAddStepHandler {
+abstract class AbstractAttributeHandler extends AbstractAddStepHandler {
 
-    static final JAXRDatasourceAttributeHandler INSTANCE = new JAXRDatasourceAttributeHandler();
+    private final String modelAttribute;
 
-    // Hide ctor
-    private JAXRDatasourceAttributeHandler() {
+    AbstractAttributeHandler(String modelAttribute) {
+        this.modelAttribute = modelAttribute;
     }
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        ModelNode jndiName = operation.get(ModelConstants.DATASOURCE);
-        model.get(ModelConstants.DATASOURCE).set(jndiName);
+        ModelNode attrNode = operation.get(modelAttribute);
+        model.get(modelAttribute).set(attrNode);
     }
-
-    static DescriptionProvider DESCRIPTION = new DescriptionProvider() {
-        public ModelNode getModelDescription(Locale locale) {
-            final ModelNode subsystem = new ModelNode();
-            subsystem.get(ModelDescriptionConstants.DESCRIPTION).set("Adds the datasource used by the JAXR subsystem");
-            subsystem.get(ModelDescriptionConstants.OPERATION_NAME).set(ADD);
-            return subsystem;
-        }
-    };
 }

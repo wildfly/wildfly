@@ -35,7 +35,7 @@ import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.integration.osgi.OSGiTestSupport;
+import org.jboss.as.test.HttpTestSupport;
 import org.jboss.as.test.integration.osgi.xservice.api.Echo;
 import org.jboss.as.test.integration.osgi.xservice.bundle.TargetBundleActivator;
 import org.jboss.logging.Logger;
@@ -73,7 +73,7 @@ public class ServletIntegrationTestCase {
     @Deployment
     public static JavaArchive createDeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "web-osgi-target");
-        archive.addClasses(OSGiTestSupport.class, Echo.class, TargetBundleActivator.class);
+        archive.addClasses(HttpTestSupport.class, Echo.class, TargetBundleActivator.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
@@ -124,6 +124,6 @@ public class ServletIntegrationTestCase {
 
     private String getHttpResponse(String message) throws IOException {
         String reqPath = "/web-osgi-client/servlet?msg=" + message;
-        return OSGiTestSupport.getHttpResponse("localhost", 8080, reqPath, 2000);
+        return HttpTestSupport.getHttpResponse("localhost", 8080, reqPath, 2000);
     }
 }

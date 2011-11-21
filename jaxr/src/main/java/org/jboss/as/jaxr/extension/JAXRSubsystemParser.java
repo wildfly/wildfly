@@ -33,15 +33,7 @@ import javax.xml.stream.XMLStreamException;
 import java.util.Collections;
 import java.util.List;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.controller.parsing.ParseUtils.*;
 
 /**
  * The subsystem parser.
@@ -50,19 +42,22 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
 
     @Override
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
-
-        ModelNode address = new ModelNode();
-        address.add(SUBSYSTEM, JAXRConstants.SUBSYSTEM_NAME);
-        address.protect();
-
+        final ModelNode addop = JAXRSubsystemAdd.createAddSubsystemOperation();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case JAXR_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
+                        case CONNECTIONFACTORY: {
+                            parseBinding(reader, addop, ModelConstants.CONNECTIONFACTORY);
+                            break;
+                        }
                         case DATASOURCE: {
-                            ModelNode result = parseDatasource(reader, address);
-                            operations.add(result);
+                            parseBinding(reader, addop, ModelConstants.DATASOURCE);
+                            break;
+                        }
+                        case FLAGS: {
+                            parseFlags(reader, addop);
                             break;
                         }
                         default:
@@ -71,13 +66,10 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
                 }
             }
         }
+        operations.add(addop);
     }
 
-    private ModelNode parseDatasource(XMLExtendedStreamReader reader, ModelNode address) throws XMLStreamException {
-
-        final ModelNode result = new ModelNode();
-        result.get(OP).set(ADD);
-        result.get(OP_ADDR).set(address);
+    private void parseBinding(XMLExtendedStreamReader reader, ModelNode addop, String modelAttribute) throws XMLStreamException {
 
         // Handle attributes
         String jndiName = null;
@@ -101,7 +93,34 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
 
         requireNoContent(reader);
 
-        result.get(ModelConstants.JNDI_NAME).set(jndiName);
-        return result;
+        addop.get(modelAttribute).set(jndiName);
+    }
+
+    private void parseFlags(XMLExtendedStreamReader reader, ModelNode addop) throws XMLStreamException {
+
+        // Handle attributes
+        int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String attrValue = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case DROPONSTART: {
+                    addop.get(ModelConstants.DROPONSTART).set(attrValue);
+                    break;
+                }
+                case CREATEONSTART: {
+                    addop.get(ModelConstants.CREATEONSTART).set(attrValue);
+                    break;
+                }
+                case DROPONSTOP: {
+                    addop.get(ModelConstants.DROPONSTOP).set(attrValue);
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        requireNoContent(reader);
     }
 }

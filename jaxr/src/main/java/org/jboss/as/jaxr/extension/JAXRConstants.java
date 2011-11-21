@@ -36,6 +36,7 @@ import java.util.Map;
 public interface JAXRConstants {
 
     String SUBSYSTEM_NAME = "jaxr";
+    String RESOURCE_NAME = JAXRConstants.class.getPackage().getName() + ".LocalDescriptions";
 
     enum Namespace {
 
@@ -75,6 +76,9 @@ public interface JAXRConstants {
     enum Attribute {
         UNKNOWN(null),
         JNDI_NAME("jndi-name"),
+        DROPONSTART("drop-on-start"),
+        CREATEONSTART("create-on-start"),
+        DROPONSTOP("drop-on-stop")
         ;
         private final String name;
 
@@ -115,7 +119,9 @@ public interface JAXRConstants {
     enum Element {
         // must be first
         UNKNOWN(null),
+        CONNECTIONFACTORY("connection-factory"),
         DATASOURCE("datasource"),
+        FLAGS("flags"),
         ;
 
         private final String name;

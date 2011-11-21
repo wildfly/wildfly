@@ -26,24 +26,21 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.jaxr.service.JAXRBootstrapService;
+import org.jboss.as.jaxr.service.JAXRConnectionFactoryService;
+import org.jboss.as.jaxr.service.JAXRDatasourceService;
 import org.jboss.as.jaxr.service.JAXRConfiguration;
 import org.jboss.as.jaxr.service.JUDDIContextService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
 import java.util.List;
-import java.util.Locale;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.jaxr.extension.JAXRWriteAttributeHandler.applyUpdateToConfig;
 
 /**
  * Handler responsible for adding the subsystem resource to the model
@@ -60,19 +57,18 @@ class JAXRSubsystemAdd extends AbstractAddStepHandler {
     }
 
     static ModelNode createAddSubsystemOperation() {
-        final ModelNode subsystem = new ModelNode();
-        subsystem.get(OP).set(ADD);
-        subsystem.get(OP_ADDR).add(SUBSYSTEM, JAXRConstants.SUBSYSTEM_NAME);
-        return subsystem;
+        final ModelNode addop = new ModelNode();
+        addop.get(OP).set(ADD);
+        addop.get(OP_ADDR).add(SUBSYSTEM, JAXRConstants.SUBSYSTEM_NAME);
+        return addop;
     }
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        if (operation.has(ModelConstants.JNDI_NAME)) {
-            ModelNode jndiName = operation.get(ModelConstants.JNDI_NAME);
-            model.get(ModelConstants.JNDI_NAME).set(jndiName);
-            JAXRConfiguration config = JAXRConfiguration.INSTANCE;
-            config.setDataSourceUrl(jndiName.asString());
+        for (String attr : JAXRWriteAttributeHandler.REQUIRED_ATTRIBUTES) {
+            ModelNode node = operation.get(attr);
+            applyUpdateToConfig(attr, node);
+            model.get(attr).set(node);
         }
     }
 
@@ -81,28 +77,18 @@ class JAXRSubsystemAdd extends AbstractAddStepHandler {
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                // [TODO] AS7-2278 JAXR configuration through the domain model
                 JAXRConfiguration config = JAXRConfiguration.INSTANCE;
                 ServiceTarget serviceTarget = context.getServiceTarget();
-                newControllers.add(JAXRBootstrapService.addService(serviceTarget, config, verifyHandler));
-                newControllers.add(JUDDIContextService.addService(serviceTarget, config, verifyHandler));
+                if (config.getConnectionFactoryBinding() != null) {
+                    newControllers.add(JAXRConnectionFactoryService.addService(serviceTarget, config, verifyHandler));
+                }
+                // [TODO] AS7-2681 Make JAXR http endpoint configurable
+                if (config.getDataSourceBinding() != null) {
+                    newControllers.add(JAXRDatasourceService.addService(serviceTarget, config, verifyHandler));
+                    newControllers.add(JUDDIContextService.addService(serviceTarget, config, verifyHandler));
+                }
                 context.completeStep();
             }
         }, OperationContext.Stage.RUNTIME);
     }
-
-    /**
-     * Used to create the description of the subsystem add method
-     */
-    static DescriptionProvider DESCRIPTION = new DescriptionProvider() {
-        public ModelNode getModelDescription(Locale locale) {
-            final ModelNode node = new ModelNode();
-            node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.ADD);
-            node.get(ModelDescriptionConstants.DESCRIPTION).set("Adds the JAXR subsystem");
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.JNDI_NAME, ModelDescriptionConstants.DESCRIPTION).set("The JNDI name for the datasource");
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.JNDI_NAME, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-            node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
-            return node;
-        }
-    };
 }

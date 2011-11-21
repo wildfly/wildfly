@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServlet;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.osgi.StartLevelAware;
+import org.jboss.as.test.HttpTestSupport;
 import org.jboss.as.test.integration.osgi.OSGiTestSupport;
 import org.jboss.as.test.integration.osgi.webapp.bundle.EndpointServlet;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
@@ -67,7 +68,7 @@ public class AS1601TestCase {
     @StartLevelAware(startLevel = 4)
     public static WebArchive createdeployment() {
         final WebArchive archive = ShrinkWrap.create(WebArchive.class, "as1601.war");
-        archive.addClasses(OSGiTestSupport.class, EndpointServlet.class);
+        archive.addClasses(HttpTestSupport.class, OSGiTestSupport.class, EndpointServlet.class);
         archive.addAsWebInfResource("osgi/webapp/webA.xml", "web.xml");
         // [SHRINKWRAP-278] WebArchive.setManifest() results in WEB-INF/classes/META-INF/MANIFEST.MF
         archive.add(new Asset() {
@@ -93,6 +94,6 @@ public class AS1601TestCase {
     }
 
     private String getHttpResponse(String reqPath, int timeout) throws IOException {
-        return OSGiTestSupport.getHttpResponse("localhost", 8090, reqPath, timeout);
+        return HttpTestSupport.getHttpResponse("localhost", 8090, reqPath, timeout);
     }
 }

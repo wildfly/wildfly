@@ -21,22 +21,16 @@
  */
 package org.jboss.as.test.integration.jaxr;
 
-import junit.framework.TestCase;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.jaxr.service.JAXRConfiguration;
+import org.jboss.as.test.HttpTestSupport;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.xml.registry.ConnectionFactory;
-import java.util.Properties;
 
 /**
  * Tests the JAXR connection factory bound to JNDI
@@ -44,21 +38,46 @@ import java.util.Properties;
  * @author Thomas.Diesler@jboss.com
  * @since 26-Oct-2011
  */
+@RunAsClient
 @RunWith(Arquillian.class)
 public class JaxrConnectionFactoryBindingTestCase
 {
-    @Deployment
-    public static JavaArchive deployment() {
-        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "jaxr-connection-test");
+    @Deployment(testable = false)
+    public static WebArchive deployment() {
+        WebArchive archive = ShrinkWrap.create(WebArchive.class, "jaxr-connection-test.war");
+        archive.addClasses(JaxrServlet.class);
+        archive.addAsWebInfResource("jaxr/webA.xml", "web.xml");
+        archive.addAsWebInfResource("jaxr/jboss-webA.xml", "jboss-web.xml");
         return archive;
     }
 
     @Test
-    public void testJaxrJNDIConnection() throws Exception
+    public void testConnectionFactoryLookup() throws Exception
     {
-        InitialContext context = new InitialContext();
-        String lookup = JAXRConfiguration.JAXR_DEFAULT_CONNECTION_FACTORY_BINDING;
-        ConnectionFactory factory = (ConnectionFactory) context.lookup(lookup);
-        Assert.assertNotNull("Connection Factory from JNDI:", factory);
+        String reqpath = "/jaxr-connection-test?method=lookup";
+        String response = HttpTestSupport.getHttpResponse("localhost", 8080, reqpath);
+        Assert.assertEquals("org.apache.ws.scout.registry.ConnectionFactoryImpl", response);
+    }
+
+    /*
+    Add this to the configuration to make the following test work
+
+    <system-properties>
+        <property name="javax.xml.registry.ConnectionFactoryClass" value="org.apache.ws.scout.registry.ConnectionFactoryImpl"/>
+    </system-properties>
+
+	<subsystem xmlns="urn:jboss:domain:ee:1.0">
+	  <global-modules>
+	    <module name="org.apache.ws.scout" slot="main" />
+	  </global-modules>
+	</subsystem>
+    */
+    //@Test
+    @Ignore("ConnectionFactory.newInstance() not supported by default")
+    public void testConnectionFactoryNewInstance() throws Exception
+    {
+        String reqpath = "/jaxr-connection-test?method=new";
+        String response = HttpTestSupport.getHttpResponse("localhost", 8080, reqpath);
+        Assert.assertEquals("org.apache.ws.scout.registry.ConnectionFactoryImpl", response);
     }
 }
