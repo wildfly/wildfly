@@ -87,8 +87,6 @@ public class Hibernate3EmbeddedProviderTestCase {
         File hibernateannotations = new File(testdir, "hibernate3-commons-annotations.jar");
         File hibernateentitymanager = new File(testdir, "hibernate3-entitymanager.jar");
         File dom4j = new File(testdir, "dom4j.jar");
-        File slf4j = new File(testdir, "slf4j.jar");
-        File slf4jApi = new File(testdir, "slf4j-api.jar");
         File commonCollections = new File(testdir, "commons-collections.jar");
         File antlr = new File(testdir, "antlr.jar");
         ear.addAsLibraries(
@@ -96,8 +94,6 @@ public class Hibernate3EmbeddedProviderTestCase {
             hibernateannotations,
             hibernateentitymanager,
             dom4j,
-            slf4j,
-            slf4jApi,
             commonCollections,
             antlr
         );
@@ -144,6 +140,22 @@ public class Hibernate3EmbeddedProviderTestCase {
             "web.xml");
 
         ear.addAsModule(war);
+
+        // add application dependency on H2 JDBC driver, so that the Hibernate classloader (same as app classloader)
+        // will see the H2 JDBC driver.
+        // equivalent hack for use of shared Hiberante module, would be to add the H2 dependency directly to the
+        // shared Hibernate module.
+        // also add dependency on org.slf4j
+        ear.addAsManifestResource(new StringAsset(
+            "<jboss-deployment-structure>" +
+            " <deployment>" +
+            "  <dependencies>" +
+            "   <module name=\"com.h2database.h2\" />" +
+            "   <module name=\"org.slf4j\"/>" +
+            "  </dependencies>" +
+            " </deployment>" +
+            "</jboss-deployment-structure>"),
+            "jboss-deployment-structure.xml");
 
         return ear;
     }

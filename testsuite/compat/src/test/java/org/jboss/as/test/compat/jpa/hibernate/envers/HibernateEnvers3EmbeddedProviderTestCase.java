@@ -1,5 +1,12 @@
 package org.jboss.as.test.compat.jpa.hibernate.envers;
 
+import java.io.File;
+
+import javax.naming.InitialContext;
+import javax.naming.NameClassPair;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -13,12 +20,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
-import javax.naming.NameClassPair;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-import java.io.File;
 
 
 /**
@@ -64,8 +65,6 @@ public class HibernateEnvers3EmbeddedProviderTestCase {
         File hibernateentitymanager = new File(testdir, "hibernate3-entitymanager.jar");
         File hibernateenvers = new File(testdir, "hibernate3-envers.jar");
         File dom4j = new File(testdir, "dom4j.jar");
-        File slf4j = new File(testdir, "slf4j.jar");
-        File slf4jApi = new File(testdir, "slf4j-api.jar");
         File commonCollections = new File(testdir, "commons-collections.jar");
         File antlr = new File(testdir, "antlr.jar");
         ear.addAsLibraries(
@@ -74,8 +73,6 @@ public class HibernateEnvers3EmbeddedProviderTestCase {
             hibernateentitymanager,
             hibernateenvers,
             dom4j,
-            slf4j,
-            slf4jApi,
             commonCollections,
             antlr
         );
@@ -101,8 +98,21 @@ public class HibernateEnvers3EmbeddedProviderTestCase {
         main.addClasses(HibernateEnvers3EmbeddedProviderTestCase.class);
         ear.addAsModule(main);
 
-
-
+        // add application dependency on H2 JDBC driver, so that the Hibernate classloader (same as app classloader)
+        // will see the H2 JDBC driver.
+        // equivalent hack for use of shared Hiberante module, would be to add the H2 dependency directly to the
+        // shared Hibernate module.
+        // also add dependency on org.slf4j
+        ear.addAsManifestResource(new StringAsset(
+            "<jboss-deployment-structure>" +
+            " <deployment>" +
+            "  <dependencies>" +
+            "   <module name=\"com.h2database.h2\" />" +
+            "   <module name=\"org.slf4j\"/>" +
+            "  </dependencies>" +
+            " </deployment>" +
+            "</jboss-deployment-structure>"),
+            "jboss-deployment-structure.xml");
 
         return ear;
     }
