@@ -65,6 +65,7 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
     static final String REALM_PROPERTY = "com.sun.security.sasl.digest.realm";
     static final String PRE_DIGESTED_PROPERTY = "org.jboss.sasl.digest.pre_digested";
     static final String LOCAL_DEFAULT_USER = "jboss.sasl.local-user.default-user";
+    static final String LOCAL_USER_CHALLENGE_PATH = "jboss.sasl.local-user.challenge-path";
 
     static final String ANONYMOUS = "ANONYMOUS";
     static final String DIGEST_MD5 = "DIGEST-MD5";
@@ -75,10 +76,12 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
 
     private final SecurityRealm realm;
     private final CallbackHandler serverCallbackHandler;
+    private final String tokensDir;
 
-    public RealmAuthenticationProvider(final SecurityRealm realm, final CallbackHandler serverCallbackHandler) {
+    public RealmAuthenticationProvider(final SecurityRealm realm, final CallbackHandler serverCallbackHandler, final String tokensDir) {
         this.realm = realm;
         this.serverCallbackHandler = serverCallbackHandler;
+        this.tokensDir = tokensDir;
     }
 
     OptionMap getSaslOptionMap() {
@@ -89,6 +92,9 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
         mechanisms.add(JBOSS_LOCAL_USER);
         builder.set(SASL_POLICY_NOPLAINTEXT, false);
         properties.add(Property.of(LOCAL_DEFAULT_USER, DOLLAR_LOCAL));
+        if (tokensDir != null) {
+            properties.add(Property.of(LOCAL_USER_CHALLENGE_PATH, tokensDir));
+        }
         if (digestMd5Supported()) {
             mechanisms.add(DIGEST_MD5);
             properties.add(Property.of(REALM_PROPERTY, realm.getName()));

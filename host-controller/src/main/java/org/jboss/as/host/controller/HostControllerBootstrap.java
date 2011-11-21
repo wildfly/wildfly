@@ -90,6 +90,7 @@ public class HostControllerBootstrap {
         // Install required path services. (Only install those identified as required)
         AbsolutePathService.addService(HostControllerEnvironment.HOME_DIR, environment.getHomeDir().getAbsolutePath(), serviceTarget);
         AbsolutePathService.addService(HostControllerEnvironment.DOMAIN_CONFIG_DIR, environment.getDomainConfigurationDir().getAbsolutePath(), serviceTarget);
+        AbsolutePathService.addService(HostControllerEnvironment.DOMAIN_TEMP_DIR, environment.getDomainTempDir().getAbsolutePath(), serviceTarget);
 
         DomainModelControllerService.addService(serviceTarget, environment, new ControlledProcessState(false));
     }

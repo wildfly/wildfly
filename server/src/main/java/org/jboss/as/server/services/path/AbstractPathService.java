@@ -23,7 +23,6 @@
 package org.jboss.as.server.services.path;
 
 import java.io.File;
-import java.util.regex.Pattern;
 
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
