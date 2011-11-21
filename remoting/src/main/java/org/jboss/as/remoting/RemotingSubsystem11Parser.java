@@ -157,6 +157,7 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
                 }
                 case OUTBOUND_CONNECTIONS: {
                     // parse the outbound-connections
+                    this.parseOutboundConnections(reader, address, list);
                     break;
                 }
                 default: {
@@ -529,16 +530,32 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
             writer.writeStartElement(Element.OUTBOUND_CONNECTIONS.getLocalName());
 
             if (model.hasDefined(OUTBOUND_CONNECTION)) {
-                // process and write outbound connection
-                this.writeOutboundConnection(writer, model);
+                final List<Property> outboundConnections = model.get(OUTBOUND_CONNECTION).asPropertyList();
+                for (Property property : outboundConnections) {
+                    // get the specific outbound-connection
+                    final ModelNode genericOutboundConnectionModel = property.getValue();
+                    // process and write outbound connection
+                    this.writeOutboundConnection(writer, genericOutboundConnectionModel);
+                }
             }
             if (model.hasDefined(REMOTE_OUTBOUND_CONNECTION)) {
-                // process and write remote outbound connection
-                this.writeRemoteOutboundConnection(writer, model);
+                final List<Property> remoteOutboundConnections = model.get(REMOTE_OUTBOUND_CONNECTION).asPropertyList();
+                for (Property property : remoteOutboundConnections) {
+                    // get the specific remote outbound connection
+                    final ModelNode remoteOutboundConnectionModel = property.getValue();
+                    // process and write remote outbound connection
+                    this.writeRemoteOutboundConnection(writer, remoteOutboundConnectionModel);
+                }
             }
             if (model.hasDefined(LOCAL_OUTBOUND_CONNECTION)) {
-                // process and write local outbound connection
-                this.writeLocalOutboundConnection(writer, model);
+                final List<Property> localOutboundConnections = model.get(LOCAL_OUTBOUND_CONNECTION).asPropertyList();
+                for (Property property : localOutboundConnections) {
+                    // get the specific local outbound connection
+                    final ModelNode localOutboundConnectionModel = property.getValue();
+                    // process and write local outbound connection
+                    this.writeLocalOutboundConnection(writer, localOutboundConnectionModel);
+
+                }
             }
             // </outbound-connections>
             writer.writeEndElement();

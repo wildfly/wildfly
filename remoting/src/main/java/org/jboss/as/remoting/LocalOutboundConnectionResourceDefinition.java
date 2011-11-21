@@ -55,7 +55,6 @@ class LocalOutboundConnectionResourceDefinition extends SimpleResourceDefinition
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        // TODO: Implement this
-        // resourceRegistration.registerReadWriteAttribute(OUTBOUND_SOCKET_BINDING_REF, null, null);
+        resourceRegistration.registerReadWriteAttribute(OUTBOUND_SOCKET_BINDING_REF, null, LocalOutboundConnectionWriteHandler.INSTANCE);
     }
 }

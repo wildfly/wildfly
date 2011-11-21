@@ -52,7 +52,9 @@ class GenericOutboundConnectionAdd extends AbstractAddStepHandler {
         }
         final ModelNode addOperation = new ModelNode();
         addOperation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-        final PathAddress address = PathAddress.pathAddress(PathElement.pathElement(CommonAttributes.OUTBOUND_CONNECTION, connectionName));
+        // /subsystem=remoting/outbound-connection=<connection-name>
+        final PathAddress address = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME),
+                PathElement.pathElement(CommonAttributes.OUTBOUND_CONNECTION, connectionName));
         addOperation.get(ModelDescriptionConstants.OP_ADDR).set(address.toModelNode());
 
         return addOperation;
@@ -67,7 +69,7 @@ class GenericOutboundConnectionAdd extends AbstractAddStepHandler {
         final String connectionName = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
         model.get(CommonAttributes.NAME).set(connectionName);
 
-        model.get(CommonAttributes.URI).set(operation.get(CommonAttributes.URI));
+        GenericOutboundConnectionResourceDefinition.URI.validateAndSet(operation, model);
     }
 
     @Override
