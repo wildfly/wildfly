@@ -78,7 +78,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -129,7 +128,7 @@ public class RemotingExtension implements Extension {
         // local outbound connection
         subsystem.registerSubModel(LocalOutboundConnectionResourceDefinition.INSTANCE);
         // (generic) outbound connection
-        subsystem.registerSubModel(OutboundConnectionResourceDefinition.INSTANCE);
+        subsystem.registerSubModel(GenericOutboundConnectionResourceDefinition.INSTANCE);
     }
 
     /**

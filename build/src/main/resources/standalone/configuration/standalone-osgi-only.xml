@@ -65,7 +65,7 @@
                 <capability name="org.osgi.compendium"/>
             </capabilities>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:remoting:1.0"/>
+        <subsystem xmlns="urn:jboss:domain:remoting:1.1"/>
     </profile>
 
     <interfaces>

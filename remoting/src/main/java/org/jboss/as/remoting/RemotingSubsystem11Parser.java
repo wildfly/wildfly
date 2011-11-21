@@ -32,6 +32,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.readArrayAttributeEleme
 import static org.jboss.as.controller.parsing.ParseUtils.readBooleanAttributeElement;
 import static org.jboss.as.controller.parsing.ParseUtils.readProperty;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
@@ -39,14 +40,19 @@ import static org.jboss.as.remoting.CommonAttributes.AUTHENTICATION_PROVIDER;
 import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
 import static org.jboss.as.remoting.CommonAttributes.FORWARD_SECRECY;
 import static org.jboss.as.remoting.CommonAttributes.INCLUDE_MECHANISMS;
+import static org.jboss.as.remoting.CommonAttributes.LOCAL_OUTBOUND_CONNECTION;
+import static org.jboss.as.remoting.CommonAttributes.NAME;
 import static org.jboss.as.remoting.CommonAttributes.NO_ACTIVE;
 import static org.jboss.as.remoting.CommonAttributes.NO_ANONYMOUS;
 import static org.jboss.as.remoting.CommonAttributes.NO_DICTIONARY;
 import static org.jboss.as.remoting.CommonAttributes.NO_PLAIN_TEXT;
+import static org.jboss.as.remoting.CommonAttributes.OUTBOUND_CONNECTION;
+import static org.jboss.as.remoting.CommonAttributes.OUTBOUND_SOCKET_BINDING_REF;
 import static org.jboss.as.remoting.CommonAttributes.PASS_CREDENTIALS;
 import static org.jboss.as.remoting.CommonAttributes.POLICY;
 import static org.jboss.as.remoting.CommonAttributes.PROPERTY;
 import static org.jboss.as.remoting.CommonAttributes.QOP;
+import static org.jboss.as.remoting.CommonAttributes.REMOTE_OUTBOUND_CONNECTION;
 import static org.jboss.as.remoting.CommonAttributes.REUSE_SESSION;
 import static org.jboss.as.remoting.CommonAttributes.SASL;
 import static org.jboss.as.remoting.CommonAttributes.SASL_POLICY;
@@ -54,6 +60,7 @@ import static org.jboss.as.remoting.CommonAttributes.SECURITY;
 import static org.jboss.as.remoting.CommonAttributes.SERVER_AUTH;
 import static org.jboss.as.remoting.CommonAttributes.SOCKET_BINDING;
 import static org.jboss.as.remoting.CommonAttributes.STRENGTH;
+import static org.jboss.as.remoting.CommonAttributes.URI;
 import static org.jboss.as.remoting.CommonAttributes.VALUE;
 
 import javax.xml.stream.XMLStreamConstants;
@@ -410,6 +417,10 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
         if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
+        // This element is just composed of attributes which we already processed, so no more content
+        // is expected
+        requireNoContent(reader);
+
         // create add operation
         final ModelNode addOperation = RemoteOutboundConnectionAdd.getAddOperation(name);
         addOperation.get(CommonAttributes.OUTBOUND_SOCKET_BINDING_REF).set(outboundSocketBindingRef);
@@ -443,6 +454,10 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
         if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
+        // This element is just composed of attributes which we already processed, so no more content
+        // is expected
+        requireNoContent(reader);
+
         // create add operation
         final ModelNode addOperation = LocalOutboundConnectionAdd.getAddOperation(name);
         addOperation.get(CommonAttributes.OUTBOUND_SOCKET_BINDING_REF).set(outboundSocketBindingRef);
@@ -476,8 +491,12 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
         if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
+        // This element is just composed of attributes which we already processed, so no more content
+        // is expected
+        requireNoContent(reader);
+
         // create add operation
-        final ModelNode addOperation = OutboundConnectionAdd.getAddOperation(name);
+        final ModelNode addOperation = GenericOutboundConnectionAdd.getAddOperation(name);
         addOperation.get(CommonAttributes.URI).set(uri);
         // add it to the list of operations
         operations.add(addOperation);
@@ -490,20 +509,39 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
-        final ModelNode node = context.getModelNode();
+        final ModelNode model = context.getModelNode();
 
-        RemotingSubsystemRootResource.WORKER_READ_THREADS.marshallAsAttribute(node, false, writer);
-        RemotingSubsystemRootResource.WORKER_TASK_CORE_THREADS.marshallAsAttribute(node, false, writer);
-        RemotingSubsystemRootResource.WORKER_TASK_KEEPALIVE.marshallAsAttribute(node, false, writer);
-        RemotingSubsystemRootResource.WORKER_TASK_LIMIT.marshallAsAttribute(node, false, writer);
-        RemotingSubsystemRootResource.WORKER_TASK_MAX_THREADS.marshallAsAttribute(node, false, writer);
-        RemotingSubsystemRootResource.WORKER_WRITE_THREADS.marshallAsAttribute(node, false, writer);
+        RemotingSubsystemRootResource.WORKER_READ_THREADS.marshallAsAttribute(model, false, writer);
+        RemotingSubsystemRootResource.WORKER_TASK_CORE_THREADS.marshallAsAttribute(model, false, writer);
+        RemotingSubsystemRootResource.WORKER_TASK_KEEPALIVE.marshallAsAttribute(model, false, writer);
+        RemotingSubsystemRootResource.WORKER_TASK_LIMIT.marshallAsAttribute(model, false, writer);
+        RemotingSubsystemRootResource.WORKER_TASK_MAX_THREADS.marshallAsAttribute(model, false, writer);
+        RemotingSubsystemRootResource.WORKER_WRITE_THREADS.marshallAsAttribute(model, false, writer);
 
-        if (node.hasDefined(CONNECTOR)) {
-            final ModelNode connector = node.get(CONNECTOR);
+        if (model.hasDefined(CONNECTOR)) {
+            final ModelNode connector = model.get(CONNECTOR);
             for (String name : connector.keys()) {
                 writeConnector(writer, connector.require(name), name);
             }
+        }
+        if (model.hasDefined(OUTBOUND_CONNECTION) || model.hasDefined(REMOTE_OUTBOUND_CONNECTION) || model.hasDefined(LOCAL_OUTBOUND_CONNECTION)) {
+            // write <outbound-connections> element
+            writer.writeStartElement(Element.OUTBOUND_CONNECTIONS.getLocalName());
+
+            if (model.hasDefined(OUTBOUND_CONNECTION)) {
+                // process and write outbound connection
+                this.writeOutboundConnection(writer, model);
+            }
+            if (model.hasDefined(REMOTE_OUTBOUND_CONNECTION)) {
+                // process and write remote outbound connection
+                this.writeRemoteOutboundConnection(writer, model);
+            }
+            if (model.hasDefined(LOCAL_OUTBOUND_CONNECTION)) {
+                // process and write local outbound connection
+                this.writeLocalOutboundConnection(writer, model);
+            }
+            // </outbound-connections>
+            writer.writeEndElement();
         }
 
         writer.writeEndElement();
@@ -566,4 +604,47 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
         SaslPolicyResource.PASS_CREDENTIALS.marshallAsElement(policy, writer);
         writer.writeEndElement();
     }
+
+    private void writeOutboundConnection(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
+        // <outbound-connection>
+        writer.writeStartElement(Element.OUTBOUND_CONNECTION.getLocalName());
+
+        final String connectionName = model.get(NAME).asString();
+        writer.writeAttribute(Attribute.NAME.getLocalName(), connectionName);
+
+        final String uri = model.get(URI).asString();
+        writer.writeAttribute(Attribute.URI.getLocalName(), uri);
+
+        // </outbound-connection>
+        writer.writeEndElement();
+    }
+
+    private void writeRemoteOutboundConnection(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
+        // <remote-outbound-connection>
+        writer.writeStartElement(Element.REMOTE_OUTBOUND_CONNECTION.getLocalName());
+
+        final String connectionName = model.get(NAME).asString();
+        writer.writeAttribute(Attribute.NAME.getLocalName(), connectionName);
+
+        final String outboundSocketRef = model.get(OUTBOUND_SOCKET_BINDING_REF).asString();
+        writer.writeAttribute(Attribute.OUTBOUND_SOCKET_BINDING_REF.getLocalName(), outboundSocketRef);
+
+        // </remote-outbound-connection>
+        writer.writeEndElement();
+    }
+
+    private void writeLocalOutboundConnection(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
+        // <local-outbound-connection>
+        writer.writeStartElement(Element.LOCAL_OUTBOUND_CONNECTION.getLocalName());
+
+        final String connectionName = model.get(NAME).asString();
+        writer.writeAttribute(Attribute.NAME.getLocalName(), connectionName);
+
+        final String outboundSocketRef = model.get(OUTBOUND_SOCKET_BINDING_REF).asString();
+        writer.writeAttribute(Attribute.OUTBOUND_SOCKET_BINDING_REF.getLocalName(), outboundSocketRef);
+
+        // </local-outbound-connection>
+        writer.writeEndElement();
+    }
+
 }

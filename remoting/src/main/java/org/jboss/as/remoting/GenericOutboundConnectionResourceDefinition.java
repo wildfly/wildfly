@@ -26,7 +26,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -35,9 +34,7 @@ import org.jboss.dmr.ModelType;
 /**
  * @author Jaikiran Pai
  */
-class OutboundConnectionResourceDefinition extends SimpleResourceDefinition {
-
-    static final OutboundConnectionResourceDefinition INSTANCE = new OutboundConnectionResourceDefinition();
+class GenericOutboundConnectionResourceDefinition extends SimpleResourceDefinition {
 
     static final PathElement ADDRESS = PathElement.pathElement(CommonAttributes.OUTBOUND_CONNECTION);
 
@@ -45,13 +42,17 @@ class OutboundConnectionResourceDefinition extends SimpleResourceDefinition {
             .setAllowExpression(true).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
 
-    private OutboundConnectionResourceDefinition() {
-        super(ADDRESS, CommonDescriptions.getResourceDescriptionResolver(CommonAttributes.OUTBOUND_CONNECTION),
-                OutboundConnectionAdd.INSTANCE, OutboundConnectionRemoveHandler.INSTANCE);
+    static final GenericOutboundConnectionResourceDefinition INSTANCE = new GenericOutboundConnectionResourceDefinition();
+
+
+    private GenericOutboundConnectionResourceDefinition() {
+        super(ADDRESS, RemotingExtension.getResourceDescriptionResolver(CommonAttributes.OUTBOUND_CONNECTION),
+                GenericOutboundConnectionAdd.INSTANCE, OutboundConnectionRemoveHandler.INSTANCE);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadWriteAttribute(URI, null, null);
+        // TODO: Implement this
+        //resourceRegistration.registerReadWriteAttribute(URI, null, null);
     }
 }

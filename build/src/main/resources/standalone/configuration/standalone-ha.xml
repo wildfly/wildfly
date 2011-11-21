@@ -374,7 +374,7 @@
             </capabilities>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
-        <subsystem xmlns="urn:jboss:domain:remoting:1.0">
+        <subsystem xmlns="urn:jboss:domain:remoting:1.1">
             <connector name="remoting-connector" socket-binding="remoting"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0"/>

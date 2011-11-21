@@ -23,7 +23,6 @@
 package org.jboss.as.remoting;
 
 import java.io.IOException;
-import java.net.URI;
 
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -39,20 +38,11 @@ import org.xnio.IoFuture;
 /**
  * @author Jaikiran Pai
  */
-public class OutboundRemotingConnectionService implements Service<OutboundRemotingConnectionService> {
+public abstract class AbstractOutboundConnectionService<T> implements Service<T> {
 
     public static final ServiceName OUTBOUND_CONNECTION_BASE_SERVICE_NAME = RemotingServices.SUBSYSTEM_ENDPOINT.append("outbound-connection");
 
-    private final URI destination;
-
-    private final InjectedValue<Endpoint> endpointInjectedValue = new InjectedValue<Endpoint>();
-
-    public OutboundRemotingConnectionService(final URI destination) {
-        if (destination == null) {
-            throw new IllegalArgumentException("Destination URI cannot be null while creating a outbound remote connection service");
-        }
-        this.destination = destination;
-    }
+    protected final InjectedValue<Endpoint> endpointInjectedValue = new InjectedValue<Endpoint>();
 
     @Override
     public void start(StartContext context) throws StartException {
@@ -62,17 +52,9 @@ public class OutboundRemotingConnectionService implements Service<OutboundRemoti
     public void stop(StopContext context) {
     }
 
-    @Override
-    public OutboundRemotingConnectionService getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
-    }
-
     Injector<Endpoint> getEnpointInjector() {
         return this.endpointInjectedValue;
     }
 
-    IoFuture<Connection> connect() throws IOException {
-        final Endpoint endpoint = this.endpointInjectedValue.getValue();
-        return endpoint.connect(destination);
-    }
+    abstract IoFuture<Connection> connect() throws IOException;
 }

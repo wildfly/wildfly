@@ -22,10 +22,7 @@
 
 package org.jboss.as.remoting;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_SOURCE_PORT;
-
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -34,10 +31,12 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.remoting3.Endpoint;
 
 /**
  * @author Jaikiran Pai
@@ -77,21 +76,25 @@ class RemoteOutboundConnectionAdd extends AbstractAddStepHandler {
     }
 
     ServiceController installRuntimeService(OperationContext context, ModelNode remoteOutboundConnection,
-                                  ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+                                            ServiceVerificationHandler verificationHandler) throws OperationFailedException {
 
         final String connectionName = remoteOutboundConnection.require(CommonAttributes.NAME).asString();
         final String outboundSocketBindingRef = remoteOutboundConnection.require(CommonAttributes.OUTBOUND_SOCKET_BINDING_REF).asString();
+        final ServiceName outboundSocketBindingDependency = OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(outboundSocketBindingRef);
+        // create the service
+        final RemoteOutboundConnectionService outboundConnectionService = new RemoteOutboundConnectionService();
+        final ServiceName serviceName = AbstractOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);
+        // also add a alias service name to easily distinguish between a generic, remote and local type of connection services
+        final ServiceName aliasServiceName = RemoteOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);
+        final ServiceBuilder<RemoteOutboundConnectionService> svcBuilder = context.getServiceTarget().addService(serviceName, outboundConnectionService)
+                .addAliases(aliasServiceName)
+                .addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, outboundConnectionService.getEnpointInjector())
+                .addDependency(outboundSocketBindingDependency, OutboundSocketBinding.class, outboundConnectionService.getDestinationOutboundSocketBindingInjector());
 
-//        // create the pool config
-//        final PoolConfig strictMaxPoolConfig = new StrictMaxPoolConfig(connectionName, maxPoolSize, timeout, TimeUnit.valueOf(unit));
-//        // create and install the service
-//        final PoolConfigService poolConfigService = new PoolConfigService(strictMaxPoolConfig);
-//        final ServiceName serviceName = PoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(connectionName);
-//        ServiceBuilder<PoolConfig> svcBuilder = context.getServiceTarget().addService(serviceName, poolConfigService);
-//        if (verificationHandler != null) {
-//            svcBuilder.addListener(verificationHandler);
-//        }
-//        return svcBuilder.install();
-        return null;
+        if (verificationHandler != null) {
+            svcBuilder.addListener(verificationHandler);
+        }
+        return svcBuilder.install();
+
     }
 }
