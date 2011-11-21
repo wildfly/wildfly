@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ee.beanvalidation;
 
+import javax.validation.ValidatorFactory;
+
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -42,8 +44,6 @@ import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
-
-import javax.validation.ValidatorFactory;
 
 /**
  * Creates a bean validation factory and adds it to the deployment and binds it to JNDI.
@@ -78,7 +78,7 @@ public class BeanValidationFactoryDeployer implements DeploymentUnitProcessor {
 
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         //if this is a war we need to bind to the modules comp namespace
-        if(DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
+        if(DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit) || DeploymentTypeMarker.isType(DeploymentType.APPLICATION_CLIENT, deploymentUnit)) {
             final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(), moduleDescription.getModuleName());
             bindServices(factory, serviceTarget, moduleDescription, moduleDescription.getModuleName(), moduleContextServiceName);
         }
