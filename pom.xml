@@ -5215,6 +5215,10 @@
                         <artifactId>stax-api</artifactId>
                     </exclusion>
                     <exclusion>
+                       <groupId>org.jboss.jaxr</groupId>
+                       <artifactId>juddi-service</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.apache.cxf</groupId>
                         <artifactId>cxf-rt-bindings-soap</artifactId>
                     </exclusion>
