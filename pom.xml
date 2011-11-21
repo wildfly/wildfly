@@ -75,7 +75,7 @@
         <version.commons-lang>2.4</version.commons-lang>
         <version.com.google.guava>10.0.1</version.com.google.guava>
         <version.commons-pool>1.5.6</version.commons-pool>
-        <version.com.h2database.h2>1.2.145</version.com.h2database.h2>
+        <version.com.h2database.h2>1.3.161</version.com.h2database.h2>
         <version.dom4j>1.6.1</version.dom4j>
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
         <version.jacorb>2.3.1jboss.patch01-brew</version.jacorb>
