@@ -34,6 +34,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.Endpoint;
 import org.xnio.IoFuture;
+import org.xnio.OptionMap;
 
 /**
  * @author Jaikiran Pai
@@ -43,6 +44,12 @@ public abstract class AbstractOutboundConnectionService<T> implements Service<T>
     public static final ServiceName OUTBOUND_CONNECTION_BASE_SERVICE_NAME = RemotingServices.SUBSYSTEM_ENDPOINT.append("outbound-connection");
 
     protected final InjectedValue<Endpoint> endpointInjectedValue = new InjectedValue<Endpoint>();
+
+    protected final OptionMap connectionCreationOptions;
+
+    protected AbstractOutboundConnectionService(final OptionMap connectionCreationOptions) {
+        this.connectionCreationOptions = connectionCreationOptions == null ? OptionMap.EMPTY : connectionCreationOptions;
+    }
 
     @Override
     public void start(StartContext context) throws StartException {

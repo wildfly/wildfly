@@ -29,6 +29,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.Endpoint;
 import org.xnio.IoFuture;
+import org.xnio.OptionMap;
 
 /**
  * A {@link GenericOutboundConnectionService} manages a remote outbound connection which is configured via
@@ -44,7 +45,10 @@ public class GenericOutboundConnectionService extends AbstractOutboundConnection
 
     private final URI destination;
 
-    public GenericOutboundConnectionService(final URI destination) {
+    public GenericOutboundConnectionService(final URI destination, final OptionMap connectionCreationOptions) {
+
+        super(connectionCreationOptions);
+
         if (destination == null) {
             throw new IllegalArgumentException("Destination URI cannot be null while creating a outbound remote connection service");
         }
@@ -54,8 +58,7 @@ public class GenericOutboundConnectionService extends AbstractOutboundConnection
     @Override
     IoFuture<Connection> connect() throws IOException {
         final Endpoint endpoint = this.endpointInjectedValue.getValue();
-        // TODO: Allow for passing connection params
-        return endpoint.connect(this.destination);
+        return endpoint.connect(this.destination, this.connectionCreationOptions);
     }
 
     @Override

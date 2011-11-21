@@ -34,6 +34,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.Endpoint;
 import org.xnio.IoFuture;
+import org.xnio.OptionMap;
 
 /**
  * A {@link LocalOutboundConnectionService} manages a local remoting connection (i.e. a connection created with local:// URI scheme).
@@ -50,6 +51,11 @@ public class LocalOutboundConnectionService extends AbstractOutboundConnectionSe
 
     private URI connectionURI;
 
+    public LocalOutboundConnectionService(final OptionMap connectionCreationOptions) {
+        super(connectionCreationOptions);
+    }
+
+
     @Override
     IoFuture<Connection> connect() throws IOException {
         final URI uri;
@@ -62,7 +68,7 @@ public class LocalOutboundConnectionService extends AbstractOutboundConnectionSe
             throw new RuntimeException(e);
         }
         final Endpoint endpoint = this.endpointInjectedValue.getValue();
-        return endpoint.connect(uri);
+        return endpoint.connect(uri, this.connectionCreationOptions);
     }
 
     Injector<OutboundSocketBinding> getDestinationOutboundSocketBindingInjector() {

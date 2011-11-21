@@ -34,6 +34,7 @@ public enum Element {
 
     // Remoting 1.0 elements in alpha order
     AUTHENTICATION_PROVIDER("authentication-provider"),
+    CONNECTION_CREATION_OPTIONS("connection-creation-options"),
     CONNECTOR("connector"),
     FORWARD_SECRECY("forward-secrecy"),
     INCLUDE_MECHANISMS("include-mechanisms"),
@@ -42,6 +43,7 @@ public enum Element {
     NO_ANONYMOUS("no-anonymous"),
     NO_DICTIONARY("no-dictionary"),
     NO_PLAIN_TEXT("no-plain-text"),
+    OPTION("option"),
     OUTBOUND_CONNECTION("outbound-connection"),
     OUTBOUND_CONNECTIONS("outbound-connections"),
     PASS_CREDENTIALS("pass-credentials"),

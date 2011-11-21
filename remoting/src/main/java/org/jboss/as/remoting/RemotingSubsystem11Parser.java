@@ -37,6 +37,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttri
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.remoting.CommonAttributes.AUTHENTICATION_PROVIDER;
+import static org.jboss.as.remoting.CommonAttributes.CONNECTION_CREATION_OPTIONS;
 import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
 import static org.jboss.as.remoting.CommonAttributes.FORWARD_SECRECY;
 import static org.jboss.as.remoting.CommonAttributes.INCLUDE_MECHANISMS;
@@ -65,8 +66,11 @@ import static org.jboss.as.remoting.CommonAttributes.VALUE;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ParseUtils;
@@ -418,13 +422,29 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
         if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
-        // This element is just composed of attributes which we already processed, so no more content
-        // is expected
-        requireNoContent(reader);
+
+        // parse the nested elements
+        Map<String, String> connectionCreationOptions = Collections.emptyMap();
+        final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            if (visited.contains(element)) {
+                throw ParseUtils.unexpectedElement(reader);
+            }
+            visited.add(element);
+            switch (element) {
+                case CONNECTION_CREATION_OPTIONS: {
+                    connectionCreationOptions = this.parseXnioOptions(reader);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
 
         // create add operation
-        final ModelNode addOperation = RemoteOutboundConnectionAdd.getAddOperation(name);
-        addOperation.get(CommonAttributes.OUTBOUND_SOCKET_BINDING_REF).set(outboundSocketBindingRef);
+        final ModelNode addOperation = RemoteOutboundConnectionAdd.getAddOperation(name, outboundSocketBindingRef, connectionCreationOptions);
         // add it to the list of operations
         operations.add(addOperation);
     }
@@ -455,13 +475,29 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
         if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
-        // This element is just composed of attributes which we already processed, so no more content
-        // is expected
-        requireNoContent(reader);
+
+        // parse the nested elements
+        Map<String, String> connectionCreationOptions = Collections.emptyMap();
+        final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            if (visited.contains(element)) {
+                throw ParseUtils.unexpectedElement(reader);
+            }
+            visited.add(element);
+            switch (element) {
+                case CONNECTION_CREATION_OPTIONS: {
+                    connectionCreationOptions = this.parseXnioOptions(reader);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
 
         // create add operation
-        final ModelNode addOperation = LocalOutboundConnectionAdd.getAddOperation(name);
-        addOperation.get(CommonAttributes.OUTBOUND_SOCKET_BINDING_REF).set(outboundSocketBindingRef);
+        final ModelNode addOperation = LocalOutboundConnectionAdd.getAddOperation(name, outboundSocketBindingRef, connectionCreationOptions);
         // add it to the list of operations
         operations.add(addOperation);
     }
@@ -492,16 +528,87 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
         if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
+
+        // parse the nested elements
+        Map<String, String> connectionCreationOptions = Collections.emptyMap();
+        final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            if (visited.contains(element)) {
+                throw ParseUtils.unexpectedElement(reader);
+            }
+            visited.add(element);
+            switch (element) {
+                case CONNECTION_CREATION_OPTIONS: {
+                    connectionCreationOptions = this.parseXnioOptions(reader);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+
+        // create add operation
+        final ModelNode addOperation = GenericOutboundConnectionAdd.getAddOperation(name, uri, connectionCreationOptions);
+        // add it to the list of operations
+        operations.add(addOperation);
+
+    }
+
+    private Map<String, String> parseXnioOptions(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        final Map<String, String> xnioOptions = new HashMap();
+        // Handle nested elements
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case OPTION: {
+                    final Map<String, String> xnioOption = this.parseXnioOption(reader);
+                    xnioOptions.putAll(xnioOption);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+        return xnioOptions;
+    }
+
+    private Map<String, String> parseXnioOption(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.VALUE);
+        final int count = reader.getAttributeCount();
+        String optionName = null;
+        String optionValue = null;
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case NAME: {
+                    if (value.trim().isEmpty()) {
+                        throw ParseUtils.invalidAttributeValue(reader, i);
+                    }
+                    optionName = value;
+                    break;
+                }
+                case VALUE: {
+                    optionValue = value;
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        if (!required.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
         // This element is just composed of attributes which we already processed, so no more content
         // is expected
         requireNoContent(reader);
 
-        // create add operation
-        final ModelNode addOperation = GenericOutboundConnectionAdd.getAddOperation(name);
-        addOperation.get(CommonAttributes.URI).set(uri);
-        // add it to the list of operations
-        operations.add(addOperation);
-
+        return Collections.singletonMap(optionName, optionValue);
     }
 
     /**
@@ -632,6 +739,11 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
         final String uri = model.get(URI).asString();
         writer.writeAttribute(Attribute.URI.getLocalName(), uri);
 
+        // write the connection-creation-options if any
+        if (model.hasDefined(CommonAttributes.CONNECTION_CREATION_OPTIONS)) {
+            this.writeConnectionCreationOptions(writer, model);
+        }
+
         // </outbound-connection>
         writer.writeEndElement();
     }
@@ -645,6 +757,11 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
 
         final String outboundSocketRef = model.get(OUTBOUND_SOCKET_BINDING_REF).asString();
         writer.writeAttribute(Attribute.OUTBOUND_SOCKET_BINDING_REF.getLocalName(), outboundSocketRef);
+
+        // write the connection-creation-options if any
+        if (model.hasDefined(CommonAttributes.CONNECTION_CREATION_OPTIONS)) {
+            this.writeConnectionCreationOptions(writer, model);
+        }
 
         // </remote-outbound-connection>
         writer.writeEndElement();
@@ -660,7 +777,32 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
         final String outboundSocketRef = model.get(OUTBOUND_SOCKET_BINDING_REF).asString();
         writer.writeAttribute(Attribute.OUTBOUND_SOCKET_BINDING_REF.getLocalName(), outboundSocketRef);
 
+        // write the connection-creation-options if any
+        if (model.hasDefined(CommonAttributes.CONNECTION_CREATION_OPTIONS)) {
+            this.writeConnectionCreationOptions(writer, model);
+        }
+
         // </local-outbound-connection>
+        writer.writeEndElement();
+    }
+
+    private void writeConnectionCreationOptions(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
+        // <connection-creation-options>
+        writer.writeStartElement(Element.CONNECTION_CREATION_OPTIONS.getLocalName());
+        final List<Property> connectionCreationOptions = model.get(CONNECTION_CREATION_OPTIONS).asPropertyList();
+        for (final Property connectionCreationOption : connectionCreationOptions) {
+            // <option>
+            writer.writeStartElement(Element.OPTION.getLocalName());
+            // write the name attribute
+            final String optionName = connectionCreationOption.getName();
+            writer.writeAttribute(Attribute.NAME.getLocalName(), optionName);
+            // write the value attribute
+            final String optionValue = connectionCreationOption.getValue().asString();
+            writer.writeAttribute(Attribute.VALUE.getLocalName(), optionValue);
+            // </option>
+            writer.writeEndElement();
+        }
+        // </connection-creation-options>
         writer.writeEndElement();
     }
 
