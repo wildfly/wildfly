@@ -24,7 +24,9 @@ package org.jboss.as.logging.loggers;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.logging.CommonAttributes.FILTER;
+import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
+import static org.jboss.as.logging.CommonAttributes.NAME;
 import static org.jboss.as.logging.CommonAttributes.USE_PARENT_HANDLERS;
 
 import org.jboss.as.controller.OperationContext;
@@ -46,7 +48,7 @@ public class LoggerWriteAttributeHandler extends AbstractLoggerWriteAttributeHan
     public static final LoggerWriteAttributeHandler INSTANCE = new LoggerWriteAttributeHandler();
 
     private LoggerWriteAttributeHandler() {
-        super(LEVEL, FILTER, USE_PARENT_HANDLERS);
+        super(LEVEL, FILTER, HANDLERS, USE_PARENT_HANDLERS);
     }
 
     @Override
@@ -65,6 +67,11 @@ public class LoggerWriteAttributeHandler extends AbstractLoggerWriteAttributeHan
             logger.setLevel(ModelParser.parseLevel(resolvedValue));
         } else if (FILTER.getName().equals(attributeName)) {
             logger.setFilter(ModelParser.parseFilter(context, resolvedValue));
+        } else if (HANDLERS.getName().equals(attributeName)) {
+            // Remove all handlers
+            LoggerUnassignHandler.removeHandlers(HANDLERS, currentValue, context, name);
+            // Add the new handlers
+            LoggerAssignHandler.addHandlers(HANDLERS, resolvedValue, context, name, null);
         } else if (USE_PARENT_HANDLERS.getName().equals(attributeName)) {
             logger.setUseParentHandlers(resolvedValue.asBoolean());
         }
@@ -73,10 +80,17 @@ public class LoggerWriteAttributeHandler extends AbstractLoggerWriteAttributeHan
 
     @Override
     protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final Logger logger) throws OperationFailedException {
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
         if (LEVEL.getName().equals(attributeName)) {
             logger.setLevel(ModelParser.parseLevel(valueToRestore));
         } else if (FILTER.getName().equals(attributeName)) {
             logger.setFilter(ModelParser.parseFilter(context, valueToRestore));
+        } else if (HANDLERS.getName().equals(attributeName)) {
+            // Remove the new handlers
+            LoggerUnassignHandler.removeHandlers(HANDLERS, valueToRevert, context, name);
+            // Re-add the old handlers
+            LoggerAssignHandler.addHandlers(HANDLERS, valueToRestore, context, name, null);
         } else if (USE_PARENT_HANDLERS.getName().equals(attributeName)) {
             logger.setUseParentHandlers(valueToRestore.asBoolean());
         }

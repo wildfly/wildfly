@@ -82,7 +82,7 @@ public class LoggerAdd extends AbstractAddStepHandler {
             // install logger handler services
             final ModelNode handlers = HANDLERS.resolveModelAttribute(context, model);
             if (handlers.isDefined()) {
-                newControllers.addAll(LogServices.installLoggerHandlers(target, name, handlers, verificationHandler));
+                newControllers.addAll(LoggerAssignHandler.addHandlers(HANDLERS, model, context, name, verificationHandler));
             }
         } catch (Throwable t) {
             throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));

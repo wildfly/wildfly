@@ -27,15 +27,18 @@ import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.NAME;
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Handler;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.logging.util.LogServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.logmanager.Logger;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -72,9 +75,30 @@ public class LoggerAssignHandler extends AbstractLogHandlerAssignmentHandler {
                                   final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         String loggerName = getLoggerName(operation);
         String handlerName = getHandlerName(operation);
+        newControllers.add(addHandler(context, loggerName, handlerName, verificationHandler));
+    }
 
-        final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
-        ServiceController<?> loggerHandlerController = serviceRegistry.getService(LogServices.loggerHandlerName(loggerName, handlerName));
+    /**
+     * Adds the handler, represented by the {@code handlerNameToAdd} parameter, to the logger.
+     *
+     * @param context             the context of the operation.
+     * @param loggerName          the logger name.
+     * @param handlerName         the name of the handler to add.
+     * @param verificationHandler a verification handler for the builder, or {@code null} if no verification handler
+     *                            is needed.
+     *
+     * @return the service that was installed.
+     *
+     * @throws OperationFailedException if an error occurs.
+     */
+    public static ServiceController<Logger> addHandler(final OperationContext context, final String loggerName, final String handlerName,
+                                                       final ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+        final ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
+        // Verify the logger exists
+        if (serviceRegistry.getService(LogServices.loggerName(loggerName)) == null) {
+            throw createFailureMessage(MESSAGES.loggerNotFound(loggerName));
+        }
+        final ServiceController<?> loggerHandlerController = serviceRegistry.getService(LogServices.loggerHandlerName(loggerName, handlerName));
         @SuppressWarnings("unchecked")
         final ServiceController<Handler> handlerController = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(handlerName));
 
@@ -86,12 +110,45 @@ public class LoggerAssignHandler extends AbstractLogHandlerAssignmentHandler {
             throw createFailureMessage(MESSAGES.handlerNotFound(handlerName));
         }
 
-        ServiceTarget target = context.getServiceTarget();
-        LoggerHandlerService service = new LoggerHandlerService(loggerName);
-        ServiceBuilder<Logger> builder = target.addService(LogServices.loggerHandlerName(loggerName, handlerName), service);
+        final ServiceTarget target = context.getServiceTarget();
+        final LoggerHandlerService service = new LoggerHandlerService(loggerName);
+        final ServiceBuilder<Logger> builder = target.addService(LogServices.loggerHandlerName(loggerName, handlerName), service);
         builder.addDependency(LogServices.loggerName(loggerName));
         builder.addDependency(LogServices.handlerName(handlerName), Handler.class, service.getHandlerInjector());
-        builder.addListener(verificationHandler);
-        newControllers.add(builder.install());
+        if (verificationHandler != null)
+            builder.addListener(verificationHandler);
+        return builder.install();
+    }
+
+    /**
+     * Adds the handlers to the logger.
+     *
+     * @param attribute           the attribute definition.
+     * @param node                the model node to extract the handlers from.
+     * @param context             the context of the operation.
+     * @param loggerName          the name of the logger.
+     * @param verificationHandler a verification handler for the builder, or {@code null} if no verification handler
+     *                            is needed.
+     *
+     * @return a collection of the installed controllers.
+     *
+     * @throws OperationFailedException if an error occurs.
+     */
+    public static List<ServiceController<?>> addHandlers(final AttributeDefinition attribute, final ModelNode node, final OperationContext context,
+                                                         final String loggerName, final ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+        // Verify the logger exists
+        if (context.getServiceRegistry(false).getService(LogServices.loggerName(loggerName)) == null) {
+            throw createFailureMessage(MESSAGES.loggerNotFound(loggerName));
+        }
+        final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
+        final ModelNode handlers = attribute.resolveModelAttribute(context, node);
+        if (handlers.isDefined()) {
+            if (handlers.getType() == ModelType.LIST) {
+                for (ModelNode handler : handlers.asList()) {
+                    controllers.add(addHandler(context, loggerName, handler.asString(), verificationHandler));
+                }
+            }
+        }
+        return controllers;
     }
 }
