@@ -19,24 +19,30 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.deployment.processors.annotation;
+package org.jboss.as.ee.component.deployers;
+
+import javax.interceptor.Interceptors;
 
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.jandex.AnnotationInstance;
-
-import javax.annotation.security.PermitAll;
+import org.jboss.jandex.Type;
 
 /**
  * @author Stuart Douglas
  */
-public class PermitAllAnnotationInformationFactory extends ClassAnnotationInformationFactory<PermitAll, Boolean> {
+public class InterceptorsAnnotationInformationFactory extends ClassAnnotationInformationFactory<Interceptors, String[]> {
 
-    protected PermitAllAnnotationInformationFactory() {
-        super(PermitAll.class, null);
+    protected InterceptorsAnnotationInformationFactory() {
+        super(Interceptors.class, null);
     }
 
     @Override
-    protected Boolean fromAnnotation(final AnnotationInstance annotationInstance) {
-        return true;
+    protected String[] fromAnnotation(final AnnotationInstance annotationInstance) {
+        final Type[] classes =  annotationInstance.value().asClassArray();
+        final String[] ret = new String[classes.length];
+        for(int i = 0; i < classes.length; ++i) {
+            ret[i] = classes[i].name().toString();
+        }
+        return ret;
     }
 }

@@ -43,6 +43,7 @@ import org.jboss.as.ee.component.interceptors.DependencyInjectionCompleteMarker;
 import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
+import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -335,7 +336,6 @@ public class ComponentDescription {
      * @param description the interceptor class description
      */
     public void addClassInterceptor(InterceptorDescription description) {
-        String name = description.getInterceptorClassName();
         classInterceptors.add(description);
         this.allInterceptors = null;
     }
@@ -552,6 +552,8 @@ public class ComponentDescription {
             final ProxyMetadataSource proxyReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.PROXY_REFLECTION_INDEX);
             final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
 
+            final boolean metadataComplete = MetadataCompleteMarker.isMetadataComplete(deploymentUnit);
+
             // Module stuff
 
             final Deque<InterceptorFactory> instantiators = new ArrayDeque<InterceptorFactory>();
@@ -596,7 +598,7 @@ public class ComponentDescription {
             new ClassDescriptionTraversal(configuration.getComponentClass(), applicationClasses) {
                 @Override
                 public void handle(Class<?> clazz, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                    mergeInjectionsForClass(clazz, classDescription, moduleDescription, description, configuration, context, injectors, instanceKey, uninjectors);
+                    mergeInjectionsForClass(clazz, classDescription, moduleDescription, description, configuration, context, injectors, instanceKey, uninjectors, metadataComplete);
                 }
             }.run();
 
@@ -636,9 +638,9 @@ public class ComponentDescription {
                 new ClassDescriptionTraversal(interceptorClass.getModuleClass(), applicationClasses) {
                     @Override
                     public void handle(final Class<?> clazz, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                        mergeInjectionsForClass(clazz, classDescription, moduleDescription, description, configuration, context, injectors, contextKey, uninjectors);
+                        mergeInjectionsForClass(clazz, classDescription, moduleDescription, description, configuration, context, injectors, contextKey, uninjectors, metadataComplete);
                         final InterceptorClassDescription interceptorConfig;
-                        if (classDescription != null) {
+                        if (classDescription != null && !metadataComplete) {
                             interceptorConfig = InterceptorClassDescription.merge(classDescription.getInterceptorClassDescription(), moduleDescription.getInterceptorClassOverride(clazz.getName()));
                         } else {
                             interceptorConfig = InterceptorClassDescription.merge(null, moduleDescription.getInterceptorClassOverride(clazz.getName()));
@@ -721,7 +723,7 @@ public class ComponentDescription {
                 @Override
                 public void handle(final Class<?> clazz, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
 
-                    final InterceptorClassDescription interceptorConfig = mergeInterceptorConfig(clazz, classDescription, description);
+                    final InterceptorClassDescription interceptorConfig = mergeInterceptorConfig(clazz, classDescription, description, metadataComplete);
 
                     final MethodIdentifier componentPostConstructMethodIdentifier = interceptorConfig.getPostConstruct();
                     if (componentPostConstructMethodIdentifier != null) {
@@ -947,9 +949,9 @@ public class ComponentDescription {
          * @throws DeploymentUnitProcessingException
          *
          */
-        private void mergeInjectionsForClass(final Class<?> clazz, final EEModuleClassDescription classDescription, final EEModuleDescription moduleDescription, final ComponentDescription description, final ComponentConfiguration configuration, final DeploymentPhaseContext context, final Deque<InterceptorFactory> injectors, final Object instanceKey, final Deque<InterceptorFactory> uninjectors) throws DeploymentUnitProcessingException {
+        private void mergeInjectionsForClass(final Class<?> clazz, final EEModuleClassDescription classDescription, final EEModuleDescription moduleDescription, final ComponentDescription description, final ComponentConfiguration configuration, final DeploymentPhaseContext context, final Deque<InterceptorFactory> injectors, final Object instanceKey, final Deque<InterceptorFactory> uninjectors, boolean metadataComplete) throws DeploymentUnitProcessingException {
             final Map<InjectionTarget, ResourceInjectionConfiguration> mergedInjections = new HashMap<InjectionTarget, ResourceInjectionConfiguration>();
-            if (classDescription != null) {
+            if (classDescription != null && !metadataComplete) {
                 mergedInjections.putAll(classDescription.getInjectionConfigurations());
             }
             mergedInjections.putAll(moduleDescription.getResourceInjections(clazz.getName()));
@@ -964,9 +966,9 @@ public class ComponentDescription {
             }
         }
 
-        private InterceptorClassDescription mergeInterceptorConfig(final Class<?> clazz, final EEModuleClassDescription classDescription, final ComponentDescription description) {
+        private InterceptorClassDescription mergeInterceptorConfig(final Class<?> clazz, final EEModuleClassDescription classDescription, final ComponentDescription description, final boolean metadataComplete) {
             final InterceptorClassDescription interceptorConfig;
-            if (classDescription != null) {
+            if (classDescription != null && !metadataComplete) {
                 interceptorConfig = InterceptorClassDescription.merge(classDescription.getInterceptorClassDescription(), description.interceptorClassOverrides.get(clazz.getName()));
             } else {
                 interceptorConfig = InterceptorClassDescription.merge(null, description.interceptorClassOverrides.get(clazz.getName()));

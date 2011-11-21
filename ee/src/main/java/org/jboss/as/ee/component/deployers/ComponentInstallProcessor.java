@@ -22,11 +22,6 @@
 
 package org.jboss.as.ee.component.deployers;
 
-import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
-import static org.jboss.as.server.deployment.Attachments.MODULE;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -48,6 +43,7 @@ import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.InterceptorDescription;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewService;
+import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -66,6 +62,11 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+
+import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
+import static org.jboss.as.server.deployment.Attachments.MODULE;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -182,34 +183,37 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
             final Set<ServiceName> bound = new HashSet<ServiceName>();
             processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, configuration.getComponentDescription().getBindingConfigurations(), dependencies, bound);
 
+            //class level bindings should be ignored if the deployment is metadata complete
+            if (!MetadataCompleteMarker.isMetadataComplete(phaseContext.getDeploymentUnit())) {
 
-            // The bindings for the component class
-            new ClassDescriptionTraversal(configuration.getComponentClass(), applicationClasses) {
-                @Override
-                protected void handle(final Class<?> clazz, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                    if (classDescription != null) {
-                        processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classDescription.getBindingConfigurations(), dependencies, bound);
-                    }
-                }
-            }.run();
-
-
-            for (InterceptorDescription interceptor : configuration.getComponentDescription().getAllInterceptors()) {
-                final Class<?> interceptorClass;
-                try {
-                    interceptorClass = module.getClassLoader().loadClass(interceptor.getInterceptorClassName());
-                } catch (ClassNotFoundException e) {
-                    throw MESSAGES.cannotLoadInterceptor(e, interceptor.getInterceptorClassName(), configuration.getComponentClass());
-                }
-                if (interceptorClass != null) {
-                    new ClassDescriptionTraversal(interceptorClass, applicationClasses) {
-                        @Override
-                        protected void handle(final Class<?> clazz, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                            if (classDescription != null) {
-                                processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classDescription.getBindingConfigurations(), dependencies, bound);
-                            }
+                // The bindings for the component class
+                new ClassDescriptionTraversal(configuration.getComponentClass(), applicationClasses) {
+                    @Override
+                    protected void handle(final Class<?> clazz, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
+                        if (classDescription != null) {
+                            processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classDescription.getBindingConfigurations(), dependencies, bound);
                         }
-                    }.run();
+                    }
+                }.run();
+
+
+                for (InterceptorDescription interceptor : configuration.getComponentDescription().getAllInterceptors()) {
+                    final Class<?> interceptorClass;
+                    try {
+                        interceptorClass = module.getClassLoader().loadClass(interceptor.getInterceptorClassName());
+                    } catch (ClassNotFoundException e) {
+                        throw MESSAGES.cannotLoadInterceptor(e, interceptor.getInterceptorClassName(), configuration.getComponentClass());
+                    }
+                    if (interceptorClass != null) {
+                        new ClassDescriptionTraversal(interceptorClass, applicationClasses) {
+                            @Override
+                            protected void handle(final Class<?> clazz, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
+                                if (classDescription != null) {
+                                    processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classDescription.getBindingConfigurations(), dependencies, bound);
+                                }
+                            }
+                        }.run();
+                    }
                 }
             }
         }
@@ -225,7 +229,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
             if (bindingConfiguration.getName().startsWith("java:comp") || !bindingConfiguration.getName().startsWith("java:")) {
                 final String bindingName = bindingConfiguration.getName().startsWith("java:comp") ? bindingConfiguration.getName() : "java:comp/env/" + bindingConfiguration.getName();
                 final ContextNames.BindInfo bindInfo = ContextNames.bindInfoForEnvEntry(configuration.getApplicationName(), configuration.getModuleName(), configuration.getComponentName(), configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE, bindingName);
-                if(bound.contains(bindInfo.getBinderServiceName())) {
+                if (bound.contains(bindInfo.getBinderServiceName())) {
                     continue;
                 }
                 bound.add(bindInfo.getBinderServiceName());

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.smoke.embedded.demos.managedbean;
 
+import java.net.URL;
+
 import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -36,8 +38,6 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.net.URL;
 
 /**
  *
@@ -76,7 +76,7 @@ public class ManagedBeanTestCase {
         Assert.assertNotNull(bean.getSimple());
         String s = bean.echo("Hello");
         Assert.assertNotNull(s);
-        Assert.assertEquals("#InterceptorBean##InterceptorFromParent##OtherInterceptorBean##BeanParent##BeanWithSimpleInjected#Hello#CDIBean#CDIBean", s);
+        Assert.assertEquals("#InterceptorFromParent##InterceptorBean##OtherInterceptorBean##BeanParent##BeanWithSimpleInjected#Hello#CDIBean#CDIBean", s);
     }
 
 }

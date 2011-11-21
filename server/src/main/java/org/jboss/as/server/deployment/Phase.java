@@ -249,6 +249,7 @@ public enum Phase {
     public static final int PARSE_POJO_DEPLOYMENT                       = 0x2400;
     public static final int PARSE_IRON_JACAMAR_DEPLOYMENT               = 0x2500;
     public static final int PARSE_MANAGED_BEAN_ANNOTATION               = 0x2900;
+    public static final int PARSE_EE_ANNOTATIONS                        = 0x2901;
     public static final int PARSE_JAXRS_ANNOTATIONS                     = 0x2A00;
     public static final int PARSE_WELD_DEPLOYMENT                       = 0x2B00;
     public static final int PARSE_WELD_WEB_INTEGRATION                  = 0x2B10;
@@ -257,7 +258,6 @@ public enum Phase {
     public static final int PARSE_EJB_TIMERSERVICE_BINDING              = 0x2E01;
     public static final int PARSE_PERSISTENCE_UNIT                      = 0x2F00;
     public static final int PARSE_PERSISTENCE_ANNOTATION                = 0x3000;
-    public static final int PARSE_INTERCEPTORS_ANNOTATION               = 0x3100;
     public static final int PARSE_LIEFCYCLE_ANNOTATION                  = 0x3200;
     public static final int PARSE_AROUNDINVOKE_ANNOTATION               = 0x3300;
     public static final int PARSE_AROUNDTIMEOUT_ANNOTATION              = 0x3400;
@@ -306,6 +306,7 @@ public enum Phase {
     public static final int POST_MODULE_REFLECTION_INDEX                = 0x0200;
     public static final int POST_MODULE_TRANSFORMER                     = 0x0201;
     public static final int POST_MODULE_JSF_MANAGED_BEANS               = 0x0300;
+    public static final int POST_MODULE_INTERCEPTOR_ANNOTATIONS         = 0x0301;
     public static final int POST_MODULE_EJB_BUSINESS_VIEW_ANNOTATION    = 0x0400;
     public static final int POST_MODULE_EJB_HOME_MERGE                  = 0x0401;
     public static final int POST_MODULE_EJB_DD_METHOD_RESOLUTION        = 0x0402;

@@ -21,9 +21,6 @@
  */
 package org.jboss.as.ee.component.deployers;
 
-import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -42,6 +39,7 @@ import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.InterceptorDescription;
+import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -59,6 +57,9 @@ import org.jboss.msc.service.DuplicateServiceException;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+
+import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * Processor that sets up JNDI bindings that are owned by the module. It also handles class level jndi bindings
@@ -160,22 +161,24 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                     handledClasses.add(classDescription.getClassName());
                     // TODO: Should the view configuration just return a Set instead of a List? Or is there a better way to
                     // handle these duplicates?
-                    final Set<BindingConfiguration> classLevelBindings = new HashSet<BindingConfiguration>(classDescription.getBindingConfigurations());
-                    for (BindingConfiguration binding : classLevelBindings) {
-                        final String bindingName = binding.getName();
-                        final boolean compBinding = bindingName.startsWith("java:comp") || !bindingName.startsWith("java:");
-                        if (namingMode == ComponentNamingMode.CREATE && compBinding) {
-                            //components with their own comp context do their own binding
-                            continue;
-                        }
-                        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoForEnvEntry(moduleConfiguration.getApplicationName(), moduleConfiguration.getModuleName(), null, false, binding.getName());
+                    if (!MetadataCompleteMarker.isMetadataComplete(phaseContext.getDeploymentUnit())) {
+                        final Set<BindingConfiguration> classLevelBindings = new HashSet<BindingConfiguration>(classDescription.getBindingConfigurations());
+                        for (BindingConfiguration binding : classLevelBindings) {
+                            final String bindingName = binding.getName();
+                            final boolean compBinding = bindingName.startsWith("java:comp") || !bindingName.startsWith("java:");
+                            if (namingMode == ComponentNamingMode.CREATE && compBinding) {
+                                //components with their own comp context do their own binding
+                                continue;
+                            }
+                            final ContextNames.BindInfo bindInfo = ContextNames.bindInfoForEnvEntry(moduleConfiguration.getApplicationName(), moduleConfiguration.getModuleName(), null, false, binding.getName());
 
-                        ROOT_LOGGER.tracef("Binding %s using service %s", binding.getName(), bindInfo.getBinderServiceName());
+                            ROOT_LOGGER.tracef("Binding %s using service %s", binding.getName(), bindInfo.getBinderServiceName());
 
-                        if (deploymentDescriptorBindings.containsKey(bindInfo.getBinderServiceName())) {
-                            continue; //this has been overridden by a DD binding
+                            if (deploymentDescriptorBindings.containsKey(bindInfo.getBinderServiceName())) {
+                                continue; //this has been overridden by a DD binding
+                            }
+                            addJndiBinding(moduleConfiguration, binding, phaseContext, bindInfo.getBinderServiceName(), ownerName, handleCount, dependencies);
                         }
-                        addJndiBinding(moduleConfiguration, binding, phaseContext, bindInfo.getBinderServiceName(), ownerName, handleCount, dependencies);
                     }
                 }
             }.run();

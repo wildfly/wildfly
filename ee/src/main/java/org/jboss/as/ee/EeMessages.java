@@ -802,4 +802,8 @@ public interface EeMessages {
      */
     @Message(id = 11092, value = "Could not find method %s %s on view %s of %s")
     IllegalArgumentException viewMethodNotFound(String name, String descriptor, Class<?> viewClass, Class<?> component);
+
+
+    @Message(id = 11093, value = "Could not load component class %s")
+    DeploymentUnitProcessingException couldNotLoadComponentClass(@Cause Throwable cause, final String className);
 }
