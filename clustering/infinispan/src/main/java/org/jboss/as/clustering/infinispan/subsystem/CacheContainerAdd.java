@@ -332,12 +332,12 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
                 cacheBuilder.addAliases(CacheService.getServiceName(name, null));
             }
             if (configuration.isTransactionalCache()) {
-                cacheBuilder.addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER);
+                builder.addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER);
                 if (configuration.isUseSynchronizationForTransactions()) {
-                    cacheBuilder.addDependency(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY);
+                    builder.addDependency(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY);
                 }
                 if (configuration.isTransactionRecoveryEnabled()) {
-                    cacheBuilder.addDependencies(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER);
+                    builder.addDependencies(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER);
                 }
             }
             if (startMode.getMode() == ServiceController.Mode.ACTIVE) {
