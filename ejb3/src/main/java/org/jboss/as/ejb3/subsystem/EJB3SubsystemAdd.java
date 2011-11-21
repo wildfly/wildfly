@@ -256,6 +256,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         final POARegistry poaRegistry = new POARegistry();
         newControllers.add(context.getServiceTarget().addService(POARegistry.SERVICE_NAME, poaRegistry)
                 .addDependency(CorbaPOAService.ROOT_SERVICE_NAME, POA.class, poaRegistry.getRootPOA())
+                .setInitialMode(ServiceController.Mode.PASSIVE)
                 .addListener(verificationHandler)
                 .install());
         }
