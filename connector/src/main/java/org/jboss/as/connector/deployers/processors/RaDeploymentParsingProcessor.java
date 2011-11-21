@@ -97,7 +97,7 @@ public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
             }
             File root = file.getPhysicalFile();
             URL url = root.toURI().toURL();
-            String deploymentName = deploymentRootName.substring(0, deploymentRootName.indexOf(".rar"));
+            String deploymentName = file.getName().substring(0, file.getName().indexOf(".rar"));
             ConnectorXmlDescriptor xmlDescriptor = new ConnectorXmlDescriptor(result, root, url, deploymentName);
             phaseContext.getDeploymentUnit().putAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
 
