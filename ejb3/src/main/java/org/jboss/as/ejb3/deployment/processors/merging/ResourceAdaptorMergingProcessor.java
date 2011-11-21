@@ -84,7 +84,8 @@ public class ResourceAdaptorMergingProcessor extends AbstractMergingProcessor<Me
                 }
             }
         }
-
-        componentConfiguration.setResourceAdapterName(resourceAdapterName);
+        if (resourceAdapterName != null) {
+            componentConfiguration.setResourceAdapterName(resourceAdapterName);
+        }
     }
 }
