@@ -136,16 +136,16 @@ public class RemotingExtension implements Extension {
      */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.REMOTING_1_0.getUriString(), NewRemotingSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(Namespace.REMOTING_1_0.getUriString(), RemotingSubsystem10Parser.INSTANCE);
         context.setSubsystemXmlMapping(Namespace.REMOTING_1_1.getUriString(), RemotingSubsystem11Parser.INSTANCE);
     }
 
     /**
      * The root element parser for the Remoting subsystem.
      */
-    static final class NewRemotingSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+    static final class RemotingSubsystem10Parser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
-        private static final NewRemotingSubsystemParser INSTANCE = new NewRemotingSubsystemParser();
+        private static final RemotingSubsystem10Parser INSTANCE = new RemotingSubsystem10Parser();
 
         @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
@@ -443,7 +443,7 @@ public class RemotingExtension implements Extension {
 
         private void parseProperties(XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
             while (reader.nextTag() != END_ELEMENT) {
-                reader.require(START_ELEMENT, Namespace.CURRENT.getUriString(), Element.PROPERTY.getLocalName());
+                reader.require(START_ELEMENT, Namespace.REMOTING_1_0.getUriString(), Element.PROPERTY.getLocalName());
                 final Property property = readProperty(reader);
                 ModelNode propertyOp = new ModelNode();
                 propertyOp.get(OP).set(ADD);
