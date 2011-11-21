@@ -26,7 +26,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -37,8 +36,6 @@ import org.jboss.dmr.ModelType;
  */
 class RemoteOutboundConnnectionResourceDefinition extends SimpleResourceDefinition {
 
-    static final RemoteOutboundConnnectionResourceDefinition INSTANCE = new RemoteOutboundConnnectionResourceDefinition();
-
     static final PathElement ADDRESS = PathElement.pathElement(CommonAttributes.REMOTE_OUTBOUND_CONNECTION);
 
     public static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(CommonAttributes.NAME, ModelType.STRING, false)
@@ -48,14 +45,17 @@ class RemoteOutboundConnnectionResourceDefinition extends SimpleResourceDefiniti
             .setAllowExpression(true).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
 
+    static final RemoteOutboundConnnectionResourceDefinition INSTANCE = new RemoteOutboundConnnectionResourceDefinition();
+
 
     private RemoteOutboundConnnectionResourceDefinition() {
-        super(ADDRESS, CommonDescriptions.getResourceDescriptionResolver(CommonAttributes.REMOTE_OUTBOUND_CONNECTION),
+        super(ADDRESS, RemotingExtension.getResourceDescriptionResolver(CommonAttributes.REMOTE_OUTBOUND_CONNECTION),
                 RemoteOutboundConnectionAdd.INSTANCE, OutboundConnectionRemoveHandler.INSTANCE);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadWriteAttribute(OUTBOUND_SOCKET_BINDING_REF, null, null);
+        // TODO: Implement this
+        // resourceRegistration.registerReadWriteAttribute(OUTBOUND_SOCKET_BINDING_REF, null, null);
     }
 }

@@ -42,9 +42,9 @@ import org.jboss.remoting3.Endpoint;
 /**
  * @author Jaikiran Pai
  */
-class OutboundConnectionAdd extends AbstractAddStepHandler {
+class GenericOutboundConnectionAdd extends AbstractAddStepHandler {
 
-    static final OutboundConnectionAdd INSTANCE = new OutboundConnectionAdd();
+    static final GenericOutboundConnectionAdd INSTANCE = new GenericOutboundConnectionAdd();
 
     static ModelNode getAddOperation(final String connectionName) {
         if (connectionName == null || connectionName.trim().isEmpty()) {
@@ -58,7 +58,7 @@ class OutboundConnectionAdd extends AbstractAddStepHandler {
         return addOperation;
     }
 
-    private OutboundConnectionAdd() {
+    private GenericOutboundConnectionAdd() {
 
     }
 
@@ -83,16 +83,20 @@ class OutboundConnectionAdd extends AbstractAddStepHandler {
         final String uri = outboundConnection.require(CommonAttributes.URI).asString();
 
         // create the service
-        final OutboundRemotingConnectionService outboundRemotingConnectionService;
+        final GenericOutboundConnectionService outboundRemotingConnectionService;
         try {
-            outboundRemotingConnectionService = new OutboundRemotingConnectionService(new URI(uri));
+            outboundRemotingConnectionService = new GenericOutboundConnectionService(new URI(uri));
         } catch (URISyntaxException e) {
             throw new RuntimeException("Cannot create outbound connection service for connection named " + connectionName
                     + " with uri" + uri, e);
         }
-        final ServiceName serviceName = OutboundRemotingConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);
-        final ServiceBuilder<OutboundRemotingConnectionService> svcBuilder = context.getServiceTarget().addService(serviceName, outboundRemotingConnectionService)
+        final ServiceName serviceName = AbstractOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);
+        // also add a alias service name to easily distinguish between a generic, remote and local type of connection services
+        final ServiceName aliasServiceName = GenericOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);
+        final ServiceBuilder<GenericOutboundConnectionService> svcBuilder = context.getServiceTarget().addService(serviceName, outboundRemotingConnectionService)
+                .addAliases(aliasServiceName)
                 .addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, outboundRemotingConnectionService.getEnpointInjector());
+
         if (verificationHandler != null) {
             svcBuilder.addListener(verificationHandler);
         }
