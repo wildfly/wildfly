@@ -112,7 +112,7 @@ public class RemotingExtension implements Extension {
 
         // Register the remoting subsystem
         final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
-        registration.registerXMLElementWriter(NewRemotingSubsystemParser.INSTANCE);
+        registration.registerXMLElementWriter(RemotingSubsystem11Parser.INSTANCE);
 
         final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(RemotingSubsystemRootResource.INSTANCE);
         subsystem.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
@@ -122,6 +122,13 @@ public class RemotingExtension implements Extension {
         final ManagementResourceRegistration sasl = connector.registerSubModel(SaslResource.INSTANCE);
         sasl.registerSubModel(SaslPolicyResource.INSTANCE);
         sasl.registerSubModel(PropertyResource.INSTANCE);
+
+        // remote outbound connection
+        subsystem.registerSubModel(RemoteOutboundConnnectionResourceDefinition.INSTANCE);
+        // local outbound connection
+        subsystem.registerSubModel(LocalOutboundConnectionResourceDefinition.INSTANCE);
+        // (generic) outbound connection
+        subsystem.registerSubModel(GenericOutboundConnectionResourceDefinition.INSTANCE);
     }
 
     /**
@@ -129,15 +136,16 @@ public class RemotingExtension implements Extension {
      */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), NewRemotingSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(Namespace.REMOTING_1_0.getUriString(), RemotingSubsystem10Parser.INSTANCE);
+        context.setSubsystemXmlMapping(Namespace.REMOTING_1_1.getUriString(), RemotingSubsystem11Parser.INSTANCE);
     }
 
     /**
      * The root element parser for the Remoting subsystem.
      */
-    static final class NewRemotingSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+    static final class RemotingSubsystem10Parser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
-        private static final NewRemotingSubsystemParser INSTANCE = new NewRemotingSubsystemParser();
+        private static final RemotingSubsystem10Parser INSTANCE = new RemotingSubsystem10Parser();
 
         @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
@@ -435,7 +443,7 @@ public class RemotingExtension implements Extension {
 
         private void parseProperties(XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
             while (reader.nextTag() != END_ELEMENT) {
-                reader.require(START_ELEMENT, Namespace.CURRENT.getUriString(), Element.PROPERTY.getLocalName());
+                reader.require(START_ELEMENT, Namespace.REMOTING_1_0.getUriString(), Element.PROPERTY.getLocalName());
                 final Property property = readProperty(reader);
                 ModelNode propertyOp = new ModelNode();
                 propertyOp.get(OP).set(ADD);

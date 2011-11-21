@@ -32,7 +32,9 @@ public enum Attribute {
     UNKNOWN(null),
     /* Remoting 1.0 attributes, in alpha order */
     NAME("name"),
+    OUTBOUND_SOCKET_BINDING_REF("outbound-socket-binding-ref"),
     SOCKET_BINDING(CommonAttributes.SOCKET_BINDING),
+    URI("uri"),
     VALUE(CommonAttributes.VALUE),
     WORKER_READ_THREADS(CommonAttributes.WORKER_READ_THREADS),
     WORKER_TASK_CORE_THREADS(CommonAttributes.WORKER_TASK_CORE_THREADS),
