@@ -47,6 +47,7 @@ import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.ejb.jboss.ejb3.JBossGenericBeanMetaData;
 import org.jboss.metadata.ejb.spec.ActivationConfigMetaData;
 import org.jboss.metadata.ejb.spec.ActivationConfigPropertiesMetaData;
 import org.jboss.metadata.ejb.spec.ActivationConfigPropertyMetaData;
@@ -121,6 +122,13 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
                     }
                 } else {
                     messagingType = null;
+                }
+                if(beanMetaData instanceof JBossGenericBeanMetaData) {
+                    //This allows is to override the destination in jboss-ejb3.xml
+                    final String destination = ((JBossGenericBeanMetaData) beanMetaData).getDestinationJndiName();
+                    if(destination != null && !destination.isEmpty()) {
+                        activationConfigProperties.put("destination", destination);
+                    }
                 }
                 messageListenerInterfaceName = messagingType != null ? messagingType : getMessageListenerInterface(messageBeanAnnotation);
 
