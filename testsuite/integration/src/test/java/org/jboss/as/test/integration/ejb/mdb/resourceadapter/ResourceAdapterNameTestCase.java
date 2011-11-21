@@ -40,7 +40,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -48,12 +47,12 @@ import org.junit.runner.RunWith;
  * User: jpai
  */
 @RunWith(Arquillian.class)
-@Ignore("Ignore failing tests")
 public class ResourceAdapterNameTestCase {
 
     private static final Logger logger = Logger.getLogger(ResourceAdapterNameTestCase.class);
 
     private static final String REPLY_QUEUE_JNDI_NAME = "java:jboss/resource-adapter-name-test/replyQueue";
+    public static final String QUEUE_JNDI_NAME = "java:jboss/jms/queue/resource-adapater-name-queue";
 
     @EJB(mappedName = "java:module/JMSMessagingUtil")
     private JMSMessagingUtil jmsUtil;
@@ -61,7 +60,7 @@ public class ResourceAdapterNameTestCase {
     @Resource(mappedName = ResourceAdapterNameTestCase.REPLY_QUEUE_JNDI_NAME)
     private Queue replyQueue;
 
-    @Resource(mappedName = OverriddenResourceAdapterNameMDB.QUEUE_JNDI_NAME)
+    @Resource(mappedName = QUEUE_JNDI_NAME)
     private Queue queue;
 
     private static JMSAdminOperations jmsAdminOperations;
@@ -80,7 +79,7 @@ public class ResourceAdapterNameTestCase {
     @BeforeClass
     public static void createJmsDestinations() {
         jmsAdminOperations = new JMSAdminOperations();
-        jmsAdminOperations.createJmsQueue("resource-adapter-name-test/queue", OverriddenResourceAdapterNameMDB.QUEUE_JNDI_NAME);
+        jmsAdminOperations.createJmsQueue("resource-adapter-name-test/queue", QUEUE_JNDI_NAME);
         jmsAdminOperations.createJmsQueue("resource-adapter-name-test/reply-queue", REPLY_QUEUE_JNDI_NAME);
     }
 

@@ -32,7 +32,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.common.JMSAdminOperations;
 import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
-import org.jboss.as.test.integration.ejb.mdb.resourceadapter.OverriddenResourceAdapterNameMDB;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -55,15 +54,16 @@ public class MDBCdiIntegrationTestCase {
 
     private static final Logger logger = Logger.getLogger(MDBCdiIntegrationTestCase.class);
 
-    private static final String REPLY_QUEUE_JNDI_NAME = "java:/resource-adapter-name-test/replyQueue";
+    private static final String REPLY_QUEUE_JNDI_NAME = "java:/mdb-cdi-test/replyQueue";
+    public static final String QUEUE_JNDI_NAME = "java:/mdb-cdi-test/mdb-cdi-test";
 
     @EJB(mappedName = "java:module/JMSMessagingUtil")
     private JMSMessagingUtil jmsUtil;
 
-    @Resource(mappedName = MDBCdiIntegrationTestCase.REPLY_QUEUE_JNDI_NAME)
+    @Resource(mappedName = REPLY_QUEUE_JNDI_NAME)
     private Queue replyQueue;
 
-    @Resource(mappedName = OverriddenResourceAdapterNameMDB.QUEUE_JNDI_NAME)
+    @Resource(mappedName = QUEUE_JNDI_NAME)
     private Queue queue;
 
     private static JMSAdminOperations jmsAdminOperations;
@@ -71,7 +71,7 @@ public class MDBCdiIntegrationTestCase {
     @Deployment
     public static Archive getDeployment() {
 
-        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "resource-adapter-name-mdb-test.jar");
+        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "mdb-cdi-integration-test.jar");
         ejbJar.addClasses(CdiIntegrationMDB.class, RequestScopedCDIBean.class, JMSMessagingUtil.class, JMSAdminOperations.class, MDBCdiIntegrationTestCase.class);
         ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
         ejbJar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
@@ -83,14 +83,14 @@ public class MDBCdiIntegrationTestCase {
     @BeforeClass
     public static void createJmsDestinations() {
         jmsAdminOperations = new JMSAdminOperations();
-        jmsAdminOperations.createJmsQueue("resource-adapter-name-test/queue", CdiIntegrationMDB.QUEUE_JNDI_NAME);
-        jmsAdminOperations.createJmsQueue("resource-adapter-name-test/reply-queue", REPLY_QUEUE_JNDI_NAME);
+        jmsAdminOperations.createJmsQueue("mdb-cdi-test/queue", QUEUE_JNDI_NAME);
+        jmsAdminOperations.createJmsQueue("mdb-cdi-test/reply-queue", REPLY_QUEUE_JNDI_NAME);
     }
 
     @AfterClass
     public static void afterTestClass() {
-        jmsAdminOperations.removeJmsQueue("resource-adapter-name-test/queue");
-        jmsAdminOperations.removeJmsQueue("resource-adapter-name-test/reply-queue");
+        jmsAdminOperations.removeJmsQueue("mdb-cdi-test/queue");
+        jmsAdminOperations.removeJmsQueue("mdb-cdi-test/reply-queue");
         jmsAdminOperations.close();
         jmsAdminOperations = null;
     }

@@ -22,10 +22,6 @@
 
 package org.jboss.as.test.integration.ejb.mdb.resourceadapter;
 
-import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
-import org.jboss.ejb3.annotation.ResourceAdapter;
-import org.jboss.logging.Logger;
-
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.EJB;
 import javax.ejb.MessageDriven;
@@ -33,18 +29,21 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 
+import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
+import org.jboss.ejb3.annotation.ResourceAdapter;
+import org.jboss.logging.Logger;
+
 /**
  * User: jpai
  */
 @MessageDriven(activationConfig = {
-        @ActivationConfigProperty(propertyName = "destination", propertyValue = OverriddenResourceAdapterNameMDB.QUEUE_JNDI_NAME)
+        @ActivationConfigProperty(propertyName = "destination", propertyValue = ResourceAdapterNameTestCase.QUEUE_JNDI_NAME)
 })
 @ResourceAdapter(value = "hornetq-ra.rar")
 public class OverriddenResourceAdapterNameMDB implements MessageListener {
 
     private static final Logger logger = Logger.getLogger(OverriddenResourceAdapterNameMDB.class);
 
-    public static final String QUEUE_JNDI_NAME = "java:jboss/jms/queue/resource-adapater-name-queue";
 
     public static final String REPLY = "Successful message delivery!";
 

@@ -18,25 +18,24 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
-@Ignore("Ignore failing tests")
 public class ConfiguredResourceAdapterNameTestCase {
 
     private static final Logger logger = Logger.getLogger(ConfiguredResourceAdapterNameTestCase.class);
 
-    private static final String REPLY_QUEUE_JNDI_NAME = "java:jboss/resource-adapter-name-test/replyQueue";
+    private static final String REPLY_QUEUE_JNDI_NAME = "java:jboss/override-resource-adapter-name-test/replyQueue";
+    public static final String QUEUE_JNDI_NAME = "java:jboss/override-resource-adapter-name-test/queue";
 
     @EJB(mappedName = "java:module/JMSMessagingUtil")
     private JMSMessagingUtil jmsUtil;
 
-    @Resource(mappedName = ConfiguredResourceAdapterNameTestCase.REPLY_QUEUE_JNDI_NAME)
+    @Resource(mappedName = REPLY_QUEUE_JNDI_NAME)
     private Queue replyQueue;
 
-    @Resource(mappedName = ConfiguredResourceAdapterNameMDB.QUEUE_JNDI_NAME)
+    @Resource(mappedName = QUEUE_JNDI_NAME)
     private Queue queue;
 
     private static JMSAdminOperations jmsAdminOperations;
@@ -54,15 +53,15 @@ public class ConfiguredResourceAdapterNameTestCase {
     @BeforeClass
     public static void createJmsDestinations() {
         jmsAdminOperations = new JMSAdminOperations();
-        jmsAdminOperations.createJmsQueue("resource-adapter-name-test/queue", ConfiguredResourceAdapterNameMDB.QUEUE_JNDI_NAME);
-        jmsAdminOperations.createJmsQueue("resource-adapter-name-test/reply-queue", REPLY_QUEUE_JNDI_NAME);
+        jmsAdminOperations.createJmsQueue("override-resource-adapter-name-test/queue", QUEUE_JNDI_NAME);
+        jmsAdminOperations.createJmsQueue("override-resource-adapter-name-test/reply-queue", REPLY_QUEUE_JNDI_NAME);
     }
 
     @AfterClass
     public static void afterTestClass() {
         if (jmsAdminOperations != null) {
-            jmsAdminOperations.removeJmsQueue("resource-adapter-name-test/queue");
-            jmsAdminOperations.removeJmsQueue("resource-adapter-name-test/reply-queue");
+            jmsAdminOperations.removeJmsQueue("override-resource-adapter-name-test/queue");
+            jmsAdminOperations.removeJmsQueue("override-resource-adapter-name-test/reply-queue");
             jmsAdminOperations.close();
         }
     }
