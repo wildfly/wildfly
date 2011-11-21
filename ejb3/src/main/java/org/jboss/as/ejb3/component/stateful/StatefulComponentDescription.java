@@ -293,11 +293,10 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
             @Override
             public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration viewConfiguration) throws DeploymentUnitProcessingException {
                 // interceptor factory return an interceptor which sets up the session id on component view instance creation
-                InterceptorFactory sessionIdGeneratingInterceptorFactory = StatefulComponentSessionIdGeneratingInterceptorFactory.INSTANCE;
+                final InterceptorFactory sessionIdGeneratingInterceptorFactory = StatefulComponentSessionIdGeneratingInterceptorFactory.INSTANCE;
 
                 // add the session id generating interceptor to the start of the *post-construct interceptor chain of the ComponentViewInstance*
                 viewConfiguration.addClientPostConstructInterceptor(sessionIdGeneratingInterceptorFactory, InterceptorOrder.ClientPostConstruct.INSTANCE_CREATE);
-                viewConfiguration.addClientPreDestroyInterceptor(StatefulComponentInstanceDestroyInterceptorFactory.INSTANCE, InterceptorOrder.ClientPreDestroy.INSTANCE_DESTROY);
 
                 for (Method method : viewConfiguration.getProxyFactory().getCachedMethods()) {
                     if ((method.getName().equals("hashCode") && method.getParameterTypes().length == 0) ||

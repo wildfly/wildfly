@@ -109,9 +109,12 @@ public class BasicComponentInstance implements ComponentInstance {
      */
     public void destroy() {
         if (doneUpdater.compareAndSet(this, 0, 1)) try {
-            final InterceptorContext interceptorContext = prepareInterceptorContext();
-            interceptorContext.setTarget(instanceReference.get().getInstance());
-            preDestroy.processInvocation(interceptorContext);
+            final ManagedReference reference = instanceReference.get();
+            if (reference != null) {
+                final InterceptorContext interceptorContext = prepareInterceptorContext();
+                interceptorContext.setTarget(reference.getInstance());
+                preDestroy.processInvocation(interceptorContext);
+            }
         } catch (Exception e) {
             ROOT_LOGGER.componentDestroyFailure(e, this);
         } finally {

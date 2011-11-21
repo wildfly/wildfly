@@ -37,8 +37,6 @@ import org.jboss.invocation.Interceptor;
  */
 public class StatelessSessionComponentInstance extends SessionBeanComponentInstance {
 
-    private static final Object[] EMPTY_OBJECT_ARRAY = {};
-
     private final Map<Method, Interceptor> timeoutInterceptors;
 
     /**

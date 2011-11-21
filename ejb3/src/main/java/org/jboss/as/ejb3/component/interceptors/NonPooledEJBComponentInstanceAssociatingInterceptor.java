@@ -58,7 +58,7 @@ public class NonPooledEJBComponentInstanceAssociatingInterceptor extends Abstrac
         try {
             return context.proceed();
         } catch (Exception ex) {
-            final EJBComponent ejbComponent = (EJBComponent) component;
+            final EJBComponent ejbComponent = component;
             // Detect app exception
             if (ejbComponent.getApplicationException(ex.getClass(), context.getMethod()) != null) {
                 // it's an application exception, just throw it back.
