@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.integration.respawn;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 import static org.jboss.as.arquillian.container.Authentication.PASSWORD;
 import static org.jboss.as.arquillian.container.Authentication.USERNAME;
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -53,7 +53,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.Assert;
-
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -99,6 +98,14 @@ public class RespawnTestCase {
             }
         });
 
+        final String testName = RespawnTestCase.class.getSimpleName();
+        final File domains = new File("target" + File.separator + "domains" + File.separator + testName);
+        final File masterDir = new File(domains, "master");
+        final String masterDirPath = masterDir.getAbsolutePath();
+        final File domainConfigDir = new File(masterDir, "configuration");
+        // TODO this should not be necessary
+        domainConfigDir.mkdirs();
+
         if (File.pathSeparatorChar == ':'){
             processUtil = new UnixProcessUtil();
         } else {
@@ -121,7 +128,7 @@ public class RespawnTestCase {
         Assert.assertTrue(hostXml.exists());
 
         // No point backing up the file in a test scenario, just write what we need.
-        File usersFile = new File(jbossHome + "/domain/configuration/mgmt-users.properties");
+        File usersFile = new File(domainConfigDir, "mgmt-users.properties");
         FileOutputStream fos = new FileOutputStream(usersFile);
         PrintWriter pw = new PrintWriter(fos);
         pw.println(USERNAME + "=" + new UsernamePasswordHashUtil().generateHashedHexURP(USERNAME, "ManagementRealm", PASSWORD.toCharArray()));
@@ -135,7 +142,7 @@ public class RespawnTestCase {
         args.add("-jvm");
         args.add(processUtil.getJavaCommand());
         args.add("--");
-        args.add("-Dorg.jboss.boot.log.file=" + jbossHome + "/domain/log/host-controller/boot.log");
+        args.add("-Dorg.jboss.boot.log.file=" + masterDirPath + "/log/host-controller.log");
         args.add("-Dlogging.configuration=file:" + jbossHome + "/domain/configuration/logging.properties");
         args.add("-Djboss.test.host.master.address=" + System.getProperty("jboss.test.host.master.address", "127.0.0.1"));
         args.add("-Xms64m");
@@ -150,6 +157,7 @@ public class RespawnTestCase {
         args.add("--host-config=" + hostXml.getAbsolutePath());
         args.add("--domain-config=" + domainXml.getAbsolutePath());
         args.add("-Djboss.test.host.master.address=" + System.getProperty("jboss.test.host.master.address", "127.0.0.1"));
+        args.add("-Djboss.domain.base.dir=" + masterDir.getAbsolutePath());
 
         processController = Main.start(args.toArray(new String[args.size()]));
     }
