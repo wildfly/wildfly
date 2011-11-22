@@ -249,6 +249,7 @@
       </xs:sequence>
       <xs:attribute name="code" type="xs:string" use="required"/>
       <xs:attribute name="flag" type="module-option-flag" use="required"/>
+      <xs:attribute name="module" type="xs:string" use="optional"/>
    </xs:complexType>
 
    <xs:complexType name="propertyType">
@@ -283,6 +284,7 @@
       </xs:sequence>
       <xs:attribute name="code" type="xs:string" use="required"/>
       <xs:attribute name="login-module-stack-ref" type="xs:string" use="optional"/>
+      <xs:attribute name="module" type="xs:string" use="optional"/>
    </xs:complexType>
 
    <xs:complexType name="policyModuleType">
@@ -298,6 +300,7 @@
       </xs:sequence>
       <xs:attribute name="code" type="xs:string" use="required"/>
       <xs:attribute name="flag" type="module-option-flag" use="required"/>
+      <xs:attribute name="module" type="xs:string" use="optional"/>
    </xs:complexType>
 
    <xs:complexType name="aclModuleType">
@@ -313,6 +316,7 @@
       </xs:sequence>
       <xs:attribute name="code" type="xs:string" use="required"/>
       <xs:attribute name="flag" type="module-option-flag" use="required"/>
+      <xs:attribute name="module" type="xs:string" use="optional"/>
    </xs:complexType>
 
    <xs:complexType name="mappingModuleType">
@@ -328,6 +332,7 @@
       </xs:sequence>
       <xs:attribute name="type" type="xs:string" use="optional"/>
       <xs:attribute name="code" type="xs:string" use="required"/>
+      <xs:attribute name="module" type="xs:string" use="optional"/>
    </xs:complexType>
 
    <xs:complexType name="providerModuleType">
@@ -342,6 +347,7 @@
           <xs:element name="module-option" type="propertyType" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
       <xs:attribute name="code" type="xs:string" use="required"/>
+      <xs:attribute name="module" type="xs:string" use="optional"/>
    </xs:complexType>
 
    <xs:complexType name="trustModuleType">
@@ -357,6 +363,7 @@
       </xs:sequence>
       <xs:attribute name="code" type="xs:string" use="required"/>
       <xs:attribute name="flag" type="module-option-flag" use="required"/>
+      <xs:attribute name="module" type="xs:string" use="optional"/>
    </xs:complexType>
 
    <xs:complexType name="jsseType">
