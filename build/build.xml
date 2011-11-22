@@ -512,6 +512,10 @@
             <maven-resource group="org.apache.james" artifact="apache-mime4j"/>
         </module-def>
 
+        <module-def name="org.apache.juddi">
+            <maven-resource group="org.apache.juddi" artifact="juddi"/>
+        </module-def>
+
         <module-def name="org.apache.neethi">
             <maven-resource group="org.apache.neethi" artifact="neethi"/>
         </module-def>
@@ -698,6 +702,10 @@
 
         <module-def name="org.jboss.as.jacorb">
             <maven-resource group="org.jboss.as" artifact="jboss-as-jacorb"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.jaxr">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-jaxr"/>
         </module-def>
 
         <module-def name="org.jboss.as.jaxrs">

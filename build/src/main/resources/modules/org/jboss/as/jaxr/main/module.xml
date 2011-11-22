@@ -1,0 +1,21 @@
+<module xmlns="urn:jboss:module:1.0" name="org.jboss.as.jaxr">
+    <resources>
+        <!-- Insert resources here -->
+    </resources>
+    
+    <dependencies>
+        <module name="javax.api"/>
+        <module name="javax.servlet.api"/>
+        <module name="javax.xml.soap.api"/>
+        <module name="org.apache.juddi"/>
+        <module name="org.apache.ws.scout"/>
+        <module name="org.jboss.as.controller"/>
+        <module name="org.jboss.as.naming"/>
+        <module name="org.jboss.as.server"/>
+        <module name="org.jboss.as.web"/>
+        <module name="org.jboss.common-core"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.msc"/>
+        <module name="org.jboss.staxmapper"/>
+    </dependencies>
+</module>

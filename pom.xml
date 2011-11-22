@@ -110,6 +110,7 @@
         <version.org.apache.felix.scr>1.6.0</version.org.apache.felix.scr>
         <version.org.apache.felix.webconsole>3.1.6.SP1</version.org.apache.felix.webconsole>
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
+        <version.org.apache.juddi>2.0.1</version.org.apache.juddi>
         <version.org.apache.httpcomponents.httpclient>4.1.2</version.org.apache.httpcomponents.httpclient>
         <version.org.apache.httpcomponents.httpcore>4.1.2</version.org.apache.httpcomponents.httpcore>
         <version.org.apache.neethi>3.0.1</version.org.apache.neethi>
@@ -843,6 +844,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-jacorb</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-jaxr</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -2774,6 +2781,19 @@
                         <groupId>commons-logging</groupId>
                         <artifactId>commons-logging</artifactId>
                     </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.juddi</groupId>
+                <artifactId>juddi</artifactId>
+                <version>${version.org.apache.juddi}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                    
                 </exclusions>
             </dependency>
 
@@ -5381,6 +5401,10 @@
                     <exclusion>
                         <groupId>stax</groupId>
                         <artifactId>stax-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.jaxr</groupId>
+                        <artifactId>juddi-service</artifactId>
                     </exclusion>
                </exclusions>
             </dependency>
