@@ -50,8 +50,10 @@ public class Util {
     public static final String DEPLOY = "deploy";
     public static final String DEPLOYMENT = "deployment";
     public static final String DESCRIPTION = "description";
+    public static final String DOMAIN_FAILURE_DESCRIPTION = "domain-failure-description";
     public static final String EXPRESSIONS_ALLOWED = "expressions-allowed";
     public static final String HEAD_COMMENT_ALLOWED = "head-comment-allowed";
+    public static final String FAILURE_DESCRIPTION = "failure-description";
     public static final String FULL_REPLACE_DEPLOYMENT = "full-replace-deployment";
     public static final String IN_SERIES = "in-series";
     public static final String INCLUDE_RUNTIME = "include-runtime";
@@ -108,9 +110,12 @@ public class Util {
         if(operationResult == null) {
             return null;
         }
-        ModelNode descr = operationResult.get("failure-description");
+        ModelNode descr = operationResult.get(Util.FAILURE_DESCRIPTION);
         if(descr == null) {
             return null;
+        }
+        if(descr.hasDefined(Util.DOMAIN_FAILURE_DESCRIPTION)) {
+            descr = descr.get(Util.DOMAIN_FAILURE_DESCRIPTION);
         }
         return descr.asString();
     }
