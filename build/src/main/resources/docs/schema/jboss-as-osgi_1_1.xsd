@@ -38,11 +38,11 @@
             ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:all>
-            <xs:element name="configuration" type="configurationType" minOccurs="0"/>
+        <xs:sequence>
+            <xs:element name="configuration" type="configurationType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="properties" type="propertiesType" minOccurs="0"/>
             <xs:element name="capabilities" type="capabilitiesType" minOccurs="0"/>
-        </xs:all>
+        </xs:sequence>
         <xs:attribute name="activation" type="activationType" default="lazy"/>
     </xs:complexType>
 

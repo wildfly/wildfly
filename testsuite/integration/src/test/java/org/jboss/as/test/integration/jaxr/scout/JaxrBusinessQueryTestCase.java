@@ -52,6 +52,7 @@ import java.util.Iterator;
  *  @since Dec 29, 2004
  */
 @RunWith(Arquillian.class)
+@Ignore("[AS7-2636] Refactor JAXR subsystem into a deployable application")
 public class JaxrBusinessQueryTestCase extends JaxrTestBase {
 
     private String querystr = "JBOSS";

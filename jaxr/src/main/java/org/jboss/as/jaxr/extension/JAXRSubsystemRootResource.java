@@ -31,7 +31,7 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.ee.subsystem.EeWriteAttributeHandler;
+import org.jboss.as.jaxr.service.JAXRConfiguration;
 
 import java.util.EnumSet;
 
@@ -47,10 +47,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
  */
 class JAXRSubsystemRootResource extends SimpleResourceDefinition {
 
-    static JAXRSubsystemRootResource INSTANCE = new JAXRSubsystemRootResource();
+    private final JAXRConfiguration config;
 
-    private JAXRSubsystemRootResource() {
+    JAXRSubsystemRootResource(JAXRConfiguration config) {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JAXRConstants.SUBSYSTEM_NAME), getResourceDescriptionResolver(JAXRConstants.SUBSYSTEM_NAME));
+        this.config = config;
     }
 
     private static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
@@ -61,14 +62,14 @@ class JAXRSubsystemRootResource extends SimpleResourceDefinition {
     public void registerOperations(final ManagementResourceRegistration rootResourceRegistration) {
         final ResourceDescriptionResolver rootResolver = getResourceDescriptionResolver();
         final DescriptionProvider subsystemAddDescription = new DefaultResourceAddDescriptionProvider(rootResourceRegistration, rootResolver);
-        rootResourceRegistration.registerOperationHandler(ADD, JAXRSubsystemAdd.INSTANCE, subsystemAddDescription, EnumSet.of(OperationEntry.Flag.RESTART_ALL_SERVICES));
+        rootResourceRegistration.registerOperationHandler(ADD, new JAXRSubsystemAdd(config), subsystemAddDescription, EnumSet.of(OperationEntry.Flag.RESTART_ALL_SERVICES));
         final DescriptionProvider subsystemRemoveDescription = new DefaultResourceRemoveDescriptionProvider(rootResolver);
         rootResourceRegistration.registerOperationHandler(REMOVE, JAXRSubsystemRemove.INSTANCE, subsystemRemoveDescription, EnumSet.of(OperationEntry.Flag.RESTART_ALL_SERVICES));
     }
 
     @Override
     public void registerAttributes(final ManagementResourceRegistration rootResourceRegistration) {
-        JAXRWriteAttributeHandler writeHandler = new JAXRWriteAttributeHandler();
+        JAXRWriteAttributeHandler writeHandler = new JAXRWriteAttributeHandler(config);
         writeHandler.registerAttributes(rootResourceRegistration);
     }
 }

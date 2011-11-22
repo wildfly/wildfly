@@ -21,6 +21,7 @@
  */
 package org.jboss.as.jaxr.service;
 
+import org.jboss.as.jaxr.extension.JAXRConstants;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.logging.Logger;
@@ -57,79 +58,91 @@ import java.sql.Statement;
  */
 public final class JAXRDatasourceService extends AbstractService<Void> {
 
-    static final ServiceName SERVICE_NAME = JAXRConfiguration.SERVICE_BASE_NAME.append("bootstrap");
+    static final ServiceName SERVICE_NAME = JAXRConstants.SERVICE_BASE_NAME.append("datasource");
 
     // [TODO] AS7-2277 JAXR subsystem i18n
     private final Logger log = Logger.getLogger(JAXRDatasourceService.class);
 
     private final InjectedValue<NamingStore> injectedJavaContext = new InjectedValue<NamingStore>();
-    private final JAXRConfiguration config;
+    private final InjectedValue<JAXRConfiguration> injectedConfig = new InjectedValue<JAXRConfiguration>();
     private DataSource datasource;
 
-    public static ServiceController<?> addService(final ServiceTarget target, final JAXRConfiguration config, final ServiceListener<Object>... listeners) {
-        JAXRDatasourceService service = new JAXRDatasourceService(config);
+    public static ServiceController<?> addService(final ServiceTarget target, final ServiceListener<Object>... listeners) {
+        JAXRDatasourceService service = new JAXRDatasourceService();
         ServiceBuilder<?> builder = target.addService(SERVICE_NAME, service);
         builder.addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, service.injectedJavaContext);
-        builder.addDependency(ServiceName.JBOSS.append("data-source", config.getDataSourceBinding()));
+        builder.addDependency(JAXRConfigurationService.SERVICE_NAME, JAXRConfiguration.class, service.injectedConfig);
         builder.addListener(listeners);
         return builder.install();
     }
 
-    private JAXRDatasourceService(JAXRConfiguration config) {
-        this.config = config;
+    // Hide ctor
+    private JAXRDatasourceService() {
     }
 
     @Override
     public void start(final StartContext context) throws StartException {
-        log.infof("Starting: %s", getClass().getSimpleName());
-        try {
-            NamingStore namingStore = injectedJavaContext.getValue();
-            String lookup = config.getDataSourceBinding();
-            if (lookup == null || lookup.startsWith("java:") == false)
-                throw new IllegalStateException("Datasource lookup expected in java context: %s" + lookup);
+        final JAXRConfiguration config = injectedConfig.getValue();
+        if (config.getDataSourceBinding() != null) {
+            final ServiceTarget childTarget = context.getChildTarget();
+            final ServiceBuilder<Void> builder = childTarget.addService(SERVICE_NAME.append("runner"), new AbstractService<Void>() {
+                @Override
+                public void start(StartContext context) throws StartException {
+                    log.infof("Starting: %s", getClass().getSimpleName());
+                    try {
+                        NamingStore namingStore = injectedJavaContext.getValue();
+                        String lookup = config.getDataSourceBinding();
+                        if (lookup == null || lookup.startsWith("java:") == false)
+                            throw new IllegalStateException("Datasource lookup expected in java context: %s" + lookup);
 
-            // [TODO] AS7-2302 Potential race condition on DataSource lookup
-            long timeout = 2000;
-            while (datasource == null && timeout > 0) {
-                try {
-                    datasource = (DataSource) namingStore.lookup(new CompositeName(lookup.substring(5)));
-                } catch (Exception ex) {
-                    Thread.sleep(200);
-                    timeout -= 200;
+                        // [TODO] AS7-2302 Potential race condition on DataSource lookup
+                        long timeout = 2000;
+                        while (datasource == null && timeout > 0) {
+                            try {
+                                datasource = (DataSource) namingStore.lookup(new CompositeName(lookup.substring(5)));
+                            } catch (Exception ex) {
+                                Thread.sleep(200);
+                                timeout -= 200;
+                            }
+                        }
+                        if (datasource == null)
+                            throw new IllegalStateException("Cannot obtain data source: " + lookup);
+
+                        if (config.isDropOnStart()) {
+                            log.debug("Drop juddi tables on start");
+                            locateAndRunScript("juddi_drop_db.ddl", Level.DEBUG);
+                        }
+                        if (config.isCreateOnStart()) {
+                            log.debug("Create juddi tables on start");
+                            locateAndRunScript("juddi_create_db.ddl", Level.ERROR);
+                            locateAndRunScript("juddi_data.ddl", Level.ERROR);
+                        }
+                    } catch (Exception ex) {
+                        log.errorf(ex, "Cannot start JUDDI service");
+                    }
                 }
-            }
-            if (datasource == null)
-                throw new IllegalStateException("Cannot obtain data source: " + lookup);
 
-            if (config.isDropOnStart()) {
-                log.debug("Drop juddi tables on start");
-                locateAndRunScript("juddi_drop_db.ddl", Level.DEBUG);
-            }
-            if (config.isCreateOnStart()) {
-                log.debug("Create juddi tables on start");
-                locateAndRunScript("juddi_create_db.ddl", Level.ERROR);
-                locateAndRunScript("juddi_data.ddl", Level.ERROR);
-            }
-        } catch (Exception ex) {
-            log.errorf(ex, "Cannot start JUDDI service");
-        }
-    }
-
-    @Override
-    public void stop(final StopContext context) {
-        log.infof("Stopping: %s", getClass().getSimpleName());
-        try {
-            if (config.isDropOnStop()) {
-                try {
-                    log.debug("Drop juddi tables on sop");
-                    locateAndRunScript("juddi_drop_db.ddl", Level.DEBUG);
-                } catch (SQLException ex) {
-                    // [TODO] AS7-2572 Cannot run JAXR drop tables script on shutdown
-                    log.errorf("Cannot drop JAXR tables: %s", ex);
+                @Override
+                public void stop(StopContext context) {
+                    log.infof("Stopping: %s", getClass().getSimpleName());
+                    try {
+                        JAXRConfiguration config = injectedConfig.getValue();
+                        if (config.isDropOnStop()) {
+                            try {
+                                log.debug("Drop juddi tables on sop");
+                                locateAndRunScript("juddi_drop_db.ddl", Level.DEBUG);
+                            } catch (SQLException ex) {
+                                // [TODO] AS7-2572 Cannot run JAXR drop tables script on shutdown
+                                log.errorf("Cannot drop JAXR tables: %s", ex);
+                            }
+                        }
+                    } catch (Exception ex) {
+                        log.errorf(ex, "Failure stopping JUDDI service");
+                    }
                 }
-            }
-        } catch (Exception ex) {
-            log.errorf(ex, "Failure stopping JUDDI service");
+            });
+            builder.addDependency(ServiceName.JBOSS.append("data-source", config.getDataSourceBinding()));
+            builder.install();
         }
     }
 

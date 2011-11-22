@@ -38,9 +38,9 @@ import org.jboss.dmr.ModelType;
  * @author Thomas.Diesler@jboss.com
  * @since 07-Nov-2011
  */
-class JAXRWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
+public class JAXRWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
 
-    static String[] REQUIRED_ATTRIBUTES = new String[]{
+    public static String[] REQUIRED_ATTRIBUTES = new String[]{
             ModelConstants.CONNECTIONFACTORY,
             ModelConstants.DATASOURCE,
             ModelConstants.DROPONSTART,
@@ -54,6 +54,12 @@ class JAXRWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
     static AttributeDefinition CREATEONSTART_ATTRIBUTE = new BooleanAttributeDefinition(ModelConstants.CREATEONSTART, false);
     static AttributeDefinition DROPONSTOP_ATTRIBUTE = new BooleanAttributeDefinition(ModelConstants.DROPONSTOP, false);
 
+    private final JAXRConfiguration config;
+
+    JAXRWriteAttributeHandler(JAXRConfiguration config) {
+        this.config = config;
+    }
+
     void registerAttributes(final ManagementResourceRegistration registry) {
         registry.registerReadWriteAttribute(CONNECTIONFACTORY_ATTRIBUTE, null, this);
         registry.registerReadWriteAttribute(DATASOURCE_ATTRIBUTE, null, this);
@@ -64,28 +70,33 @@ class JAXRWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
 
     @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> voidHandbackHolder) throws OperationFailedException {
-        applyUpdateToConfig(attributeName, resolvedValue);
+        applyUpdateToConfig(config, attributeName, resolvedValue);
         return false;
     }
 
     @Override
     protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
-        applyUpdateToConfig(attributeName, valueToRestore);
+        applyUpdateToConfig(config, attributeName, valueToRestore);
     }
 
-    static void applyUpdateToConfig(String attributeName, ModelNode attributeValue) {
-        JAXRConfiguration config = JAXRConfiguration.INSTANCE;
+    public static void applyUpdateToConfig(JAXRConfiguration config, String attributeName, ModelNode attributeValue) {
         if (attributeValue.isDefined()) {
+            applyUpdateToConfig(config, attributeName, attributeValue.asString());
+        }
+    }
+
+    public static void applyUpdateToConfig(JAXRConfiguration config, String attributeName, String attributeValue) {
+        if (attributeValue != null) {
             if (attributeName.equals(ModelConstants.CONNECTIONFACTORY)) {
-                config.setConnectionFactoryBinding(attributeValue.asString());
+                config.setConnectionFactoryBinding(attributeValue);
             } else if (attributeName.equals(ModelConstants.DATASOURCE)) {
-                config.setDataSourceBinding(attributeValue.asString());
+                config.setDataSourceBinding(attributeValue);
             } else if (attributeName.equals(ModelConstants.DROPONSTART)) {
-                config.setDropOnStart(attributeValue.asBoolean());
+                config.setDropOnStart(Boolean.valueOf(attributeValue));
             } else if (attributeName.equals(ModelConstants.CREATEONSTART)) {
-                config.setCreateOnStart(attributeValue.asBoolean());
+                config.setCreateOnStart(Boolean.valueOf(attributeValue));
             } else if (attributeName.equals(ModelConstants.DROPONSTOP)) {
-                config.setDropOnStop(attributeValue.asBoolean());
+                config.setDropOnStop(Boolean.valueOf(attributeValue));
             } else {
                 throw new IllegalArgumentException("Invalid attribute name: " + attributeName);
             }

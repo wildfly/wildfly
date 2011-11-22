@@ -22,6 +22,7 @@
 package org.jboss.as.jaxr.service;
 
 import org.apache.ws.scout.registry.ConnectionFactoryImpl;
+import org.jboss.as.jaxr.extension.JAXRConstants;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
@@ -49,56 +50,63 @@ import org.jboss.msc.value.InjectedValue;
  */
 public final class JAXRConnectionFactoryService extends AbstractService<Void> {
 
-    static final ServiceName SERVICE_NAME = JAXRConfiguration.SERVICE_BASE_NAME.append("connectionfactory");
+    static final ServiceName SERVICE_NAME = JAXRConstants.SERVICE_BASE_NAME.append("connectionfactory");
 
     // [TODO] AS7-2277 JAXR subsystem i18n
     private final Logger log = Logger.getLogger(JAXRConnectionFactoryService.class);
 
     private final InjectedValue<NamingStore> injectedJavaContext = new InjectedValue<NamingStore>();
-    private final JAXRConfiguration config;
+    private final InjectedValue<JAXRConfiguration> injectedConfig = new InjectedValue<JAXRConfiguration>();
 
-    public static ServiceController<?> addService(final ServiceTarget target, final JAXRConfiguration config, final ServiceListener<Object>... listeners) {
-        JAXRConnectionFactoryService service = new JAXRConnectionFactoryService(config);
+    public static ServiceController<?> addService(final ServiceTarget target, final ServiceListener<Object>... listeners) {
+        JAXRConnectionFactoryService service = new JAXRConnectionFactoryService();
         ServiceBuilder<?> builder = target.addService(SERVICE_NAME, service);
         builder.addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, service.injectedJavaContext);
+        builder.addDependency(JAXRConfigurationService.SERVICE_NAME, JAXRConfiguration.class, service.injectedConfig);
         builder.addListener(listeners);
         return builder.install();
     }
 
-    private JAXRConnectionFactoryService(JAXRConfiguration config) {
-        this.config = config;
+    // Hide ctor
+    private JAXRConnectionFactoryService() {
     }
 
     @Override
     public void start(final StartContext context) throws StartException {
-        log.infof("Binding JAXR ConnectionFactory: %s", config.getConnectionFactoryBinding());
-        try {
-            String jndiName = config.getConnectionFactoryBinding();
-            ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
-            BinderService binderService = new BinderService(bindInfo.getBindName());
-            ImmediateValue value = new ImmediateValue(new ConnectionFactoryImpl());
-            binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(value));
-            binderService.getNamingStoreInjector().inject((ServiceBasedNamingStore) injectedJavaContext.getValue());
-            ServiceBuilder<?> builder = context.getChildTarget().addService(bindInfo.getBinderServiceName(), binderService);
-            builder.install();
-        } catch (Exception ex) {
-            log.errorf(ex, "Cannot bind JAXR ConnectionFactory");
+        JAXRConfiguration config = injectedConfig.getValue();
+        if (config.getConnectionFactoryBinding() != null) {
+            log.infof("Binding JAXR ConnectionFactory: %s", config.getConnectionFactoryBinding());
+            try {
+                String jndiName = config.getConnectionFactoryBinding();
+                ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
+                BinderService binderService = new BinderService(bindInfo.getBindName());
+                ImmediateValue value = new ImmediateValue(new ConnectionFactoryImpl());
+                binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(value));
+                binderService.getNamingStoreInjector().inject((ServiceBasedNamingStore) injectedJavaContext.getValue());
+                ServiceBuilder<?> builder = context.getChildTarget().addService(bindInfo.getBinderServiceName(), binderService);
+                builder.install();
+            } catch (Exception ex) {
+                log.errorf(ex, "Cannot bind JAXR ConnectionFactory");
+            }
         }
     }
 
     @Override
     public void stop(final StopContext context) {
-        log.debugf("Unbind JAXR ConnectionFactory");
-        try {
-            String jndiName = config.getConnectionFactoryBinding();
-            ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
-            ServiceContainer serviceContainer = context.getController().getServiceContainer();
-            ServiceController<?> service = serviceContainer.getService(bindInfo.getBinderServiceName());
-            if (service != null) {
-                service.setMode(ServiceController.Mode.REMOVE);
+        JAXRConfiguration config = injectedConfig.getValue();
+        if (config.getConnectionFactoryBinding() != null) {
+            log.debugf("Unbind JAXR ConnectionFactory");
+            try {
+                String jndiName = config.getConnectionFactoryBinding();
+                ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
+                ServiceContainer serviceContainer = context.getController().getServiceContainer();
+                ServiceController<?> service = serviceContainer.getService(bindInfo.getBinderServiceName());
+                if (service != null) {
+                    service.setMode(ServiceController.Mode.REMOVE);
+                }
+            } catch (Exception ex) {
+                log.errorf(ex, "Cannot unbind JAXR ConnectionFactory");
             }
-        } catch (Exception ex) {
-            log.errorf(ex, "Cannot unbind JAXR ConnectionFactory");
         }
     }
 }

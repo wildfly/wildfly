@@ -22,7 +22,8 @@
 
 package org.jboss.as.jaxr.extension;
 
-import java.util.EnumSet;
+import org.jboss.msc.service.ServiceName;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,6 +37,7 @@ import java.util.Map;
 public interface JAXRConstants {
 
     String SUBSYSTEM_NAME = "jaxr";
+    ServiceName SERVICE_BASE_NAME = ServiceName.JBOSS.append(SUBSYSTEM_NAME, "as");
     String RESOURCE_NAME = JAXRConstants.class.getPackage().getName() + ".LocalDescriptions";
 
     enum Namespace {

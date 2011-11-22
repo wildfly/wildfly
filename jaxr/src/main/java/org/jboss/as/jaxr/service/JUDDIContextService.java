@@ -32,6 +32,7 @@ import org.apache.juddi.registry.RegistryServlet;
 import org.apache.naming.resources.ProxyDirContext;
 import org.apache.naming.resources.Resource;
 import org.apache.tomcat.InstanceManager;
+import org.jboss.as.jaxr.extension.JAXRConstants;
 import org.jboss.as.server.mgmt.HttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.as.web.VirtualHost;
@@ -68,7 +69,7 @@ import java.util.Properties;
  */
 public final class JUDDIContextService implements Service<Context> {
 
-    static final ServiceName JUDDI_CONTEXT_SERVICE_NAME = JAXRConfiguration.SERVICE_BASE_NAME.append("juddi", "context");
+    static final ServiceName JUDDI_CONTEXT_SERVICE_NAME = JAXRConstants.SERVICE_BASE_NAME.append("juddi", "context");
 
     // [TODO] AS7-2277 JAXR subsystem i18n
     private final Logger log = Logger.getLogger(JUDDIContextService.class);
@@ -76,17 +77,19 @@ public final class JUDDIContextService implements Service<Context> {
     private final StandardContext context;
     private final InjectedValue<VirtualHost> hostInjector = new InjectedValue<VirtualHost>();
     private final InjectedValue<HttpManagement> httpManagementInjector = new InjectedValue<HttpManagement>();
+    private final InjectedValue<JAXRConfiguration> injectedConfig = new InjectedValue<JAXRConfiguration>();
 
-    public static ServiceController<?> addService(final ServiceTarget target, final JAXRConfiguration config, final ServiceListener<Object>... listeners) {
-        JUDDIContextService service = new JUDDIContextService(config);
+    public static ServiceController<?> addService(final ServiceTarget target, final ServiceListener<Object>... listeners) {
+        JUDDIContextService service = new JUDDIContextService();
         ServiceBuilder<?> builder = target.addService(JUDDI_CONTEXT_SERVICE_NAME, service);
         builder.addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append("default-host"), VirtualHost.class, service.hostInjector);
         builder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, HttpManagementService.SERVICE_NAME, HttpManagement.class, service.httpManagementInjector);
+        builder.addDependency(JAXRConfigurationService.SERVICE_NAME, JAXRConfiguration.class, service.injectedConfig);
         builder.addListener(listeners);
         return builder.install();
     }
 
-    private JUDDIContextService(final JAXRConfiguration config) {
+    private JUDDIContextService() {
         context = new StandardContext() {
             private DirContext resources;
 
@@ -95,7 +98,8 @@ public final class JUDDIContextService implements Service<Context> {
                 if (resources == null) {
                     DirContext orgdirctx = super.getResources();
                     if (orgdirctx != null) {
-                        resources = new JAXRDirContext(new Hashtable<String, Object>(), orgdirctx);
+                        JAXRConfiguration config = injectedConfig.getValue();
+                        resources = new JAXRDirContext(config, new Hashtable<String, Object>(), orgdirctx);
                     }
                 }
                 return resources;
@@ -105,66 +109,72 @@ public final class JUDDIContextService implements Service<Context> {
 
     @Override
     public synchronized void start(StartContext startContext) throws StartException {
-        HttpManagement httpManagement = httpManagementInjector.getOptionalValue();
-        try {
-            context.setPath("/juddi");
-            context.addLifecycleListener(new ContextConfig());
-            context.setDocBase(""); // [TODO] Define JAXR doc base
+        JAXRConfiguration config = injectedConfig.getValue();
+        if (config.getDataSourceBinding() != null) {
+            HttpManagement httpManagement = httpManagementInjector.getOptionalValue();
+            try {
+                context.setPath("/juddi");
+                context.addLifecycleListener(new ContextConfig());
+                context.setDocBase(""); // [TODO] Define JAXR doc base
 
-            final Loader loader = new WebCtxLoader(this.getClass().getClassLoader());
-            Host host = hostInjector.getValue().getHost();
-            loader.setContainer(host);
-            context.setLoader(loader);
-            context.setInstanceManager(new LocalInstanceManager(httpManagement));
+                final Loader loader = new WebCtxLoader(this.getClass().getClassLoader());
+                Host host = hostInjector.getValue().getHost();
+                loader.setContainer(host);
+                context.setLoader(loader);
+                context.setInstanceManager(new LocalInstanceManager(httpManagement));
 
-            // [TODO] AS7-2391 Add welcome page to JUDDI context
-            //context.setReplaceWelcomeFiles(true);
-            //context.addWelcomeFile("index.html");
+                // [TODO] AS7-2391 Add welcome page to JUDDI context
+                //context.setReplaceWelcomeFiles(true);
+                //context.addWelcomeFile("index.html");
 
-            // Add the JUDDIServlet
-            HttpServlet servlet = new JUDDIServlet();
-            Wrapper wrapper = context.createWrapper();
-            wrapper.setName("JUDDIServlet");
-            wrapper.setServlet(servlet);
-            wrapper.setServletClass(servlet.getClass().getName());
-            context.addChild(wrapper);
+                // Add the JUDDIServlet
+                HttpServlet servlet = new JUDDIServlet();
+                Wrapper wrapper = context.createWrapper();
+                wrapper.setName("JUDDIServlet");
+                wrapper.setServlet(servlet);
+                wrapper.setServletClass(servlet.getClass().getName());
+                context.addChild(wrapper);
 
-            context.addServletMapping("/publish", "JUDDIServlet");
-            context.addServletMapping("/inquiry", "JUDDIServlet");
+                context.addServletMapping("/publish", "JUDDIServlet");
+                context.addServletMapping("/inquiry", "JUDDIServlet");
 
-            // Add the RegistryServlet
-            servlet = new RegistryServlet();
-            wrapper = context.createWrapper();
-            wrapper.setName("JUDDIRegistryServlet");
-            wrapper.setServlet(servlet);
-            wrapper.setServletClass(servlet.getClass().getName());
-            wrapper.setLoadOnStartup(1);
-            context.addChild(wrapper);
+                // Add the RegistryServlet
+                servlet = new RegistryServlet();
+                wrapper = context.createWrapper();
+                wrapper.setName("JUDDIRegistryServlet");
+                wrapper.setServlet(servlet);
+                wrapper.setServletClass(servlet.getClass().getName());
+                wrapper.setLoadOnStartup(1);
+                context.addChild(wrapper);
 
-            host.addChild(context);
-            context.create();
-        } catch (Exception e) {
-            throw new StartException("failed to create context", e);
-        }
-        try {
-            context.start();
-        } catch (LifecycleException e) {
-            throw new StartException("failed to start context", e);
+                host.addChild(context);
+                context.create();
+            } catch (Exception e) {
+                throw new StartException("failed to create context", e);
+            }
+            try {
+                context.start();
+            } catch (LifecycleException e) {
+                throw new StartException("failed to start context", e);
+            }
         }
     }
 
     @Override
     public synchronized void stop(StopContext stopContext) {
-        try {
-            hostInjector.getValue().getHost().removeChild(context);
-            context.stop();
-        } catch (LifecycleException e) {
-            log.error("exception while stopping context", e);
-        }
-        try {
-            context.destroy();
-        } catch (Exception e) {
-            log.error("exception while destroying context", e);
+        JAXRConfiguration config = injectedConfig.getValue();
+        if (config.getDataSourceBinding() != null) {
+            try {
+                hostInjector.getValue().getHost().removeChild(context);
+                context.stop();
+            } catch (LifecycleException e) {
+                log.error("exception while stopping context", e);
+            }
+            try {
+                context.destroy();
+            } catch (Exception e) {
+                log.error("exception while destroying context", e);
+            }
         }
     }
 
@@ -210,8 +220,12 @@ public final class JUDDIContextService implements Service<Context> {
     }
 
     private static class JAXRDirContext extends ProxyDirContext {
-        public JAXRDirContext(Hashtable<String, Object> env, DirContext dircontext) {
+
+        private final JAXRConfiguration config;
+
+        JAXRDirContext(JAXRConfiguration config, Hashtable<String, Object> env, DirContext dircontext) {
             super(env, dircontext);
+            this.config = config;
         }
 
         @Override
@@ -233,7 +247,6 @@ public final class JUDDIContextService implements Service<Context> {
                 try {
                     Properties props = new Properties();
                     props.load(stream);
-                    JAXRConfiguration config = JAXRConfiguration.INSTANCE;
                     props.setProperty("juddi.dataSource", config.getDataSourceBinding());
                     ByteArrayOutputStream out = new ByteArrayOutputStream();
                     props.store(out, "jUDDI Registry Properties");
