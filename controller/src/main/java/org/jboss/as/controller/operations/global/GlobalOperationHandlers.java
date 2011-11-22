@@ -765,14 +765,6 @@ public class GlobalOperationHandlers {
                                 doExecute(context, operation);
                             }
                         }), OperationContext.Stage.IMMEDIATE);
-                // Add a handler at the end of the chain to aggregate the result
-                context.addStep(new OperationStepHandler() {
-                    @Override
-                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        // TODO AS7-2726 This handler is doing nothing
-                        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
-                    }
-                }, OperationContext.Stage.VERIFY);
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             } else {
                 doExecute(context, operation);
@@ -959,14 +951,6 @@ public class GlobalOperationHandlers {
                         doExecute(context, operation);
                     }
                 }), OperationContext.Stage.IMMEDIATE);
-                // Add a handler at the end of the chain to aggregate the result
-                context.addStep(new OperationStepHandler() {
-                    @Override
-                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        // TODO AS7-2726 This handler is doing nothing
-                        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
-                    }
-                }, OperationContext.Stage.VERIFY);
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             } else {
                 doExecute(context, operation);
