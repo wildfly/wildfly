@@ -463,7 +463,8 @@
                                         <arquillian.xml>iiop-arquillian.xml</arquillian.xml>
                                         <arquillian.launch>iiop</arquillian.launch>
                                         <!-- Use combine.children="append" to pick up parent properties automatically. -->
-                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                                        <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
+                                        <server.config>standalone-full.xml</server.config>
                                     </systemPropertyVariables>
 
                                     <additionalClasspathElements>
@@ -563,7 +564,42 @@
                                 <phase>none</phase>
                             </execution>
 
+                            <execution>
+                                <id>basic-integration-full.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/**/*SecondTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/iiop/**/*TestCase*.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/mdb/**/*TestCase*.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/entity/cmp/**/*TestCase*.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/remote/entity/cmp/**/*TestCase*.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/management/deployments/EjbJarInEarRuntimeResourcesTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/management/deployments/EjbJarRuntimeResourcesTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/messaging/**/*TestCase*.java</include>
+                                        <include>org/jboss/as/test/integration/management/cli/HelpTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/management/cli/JmsTestCase.java</include>
+                                    </includes>
 
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <arquillian.xml>arquillian.xml</arquillian.xml>
+                                        <arquillian.launch>jboss</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
+                                        <server.config>standalone-full.xml</server.config>
+                                    </systemPropertyVariables>
+
+                                    <additionalClasspathElements>
+                                        <additionalClasspathElement>${project.basedir}/src/test/resources</additionalClasspathElement>
+                                    </additionalClasspathElements>
+
+                                    <reportNameSuffix>tests-basic-integration-default</reportNameSuffix>
+                                </configuration>
+                            </execution>
                             <execution>
                                 <id>basic-integration-default.surefire</id>
                                 <phase>test</phase>
@@ -577,6 +613,15 @@
                                     </includes>
                                     <excludes>
                                         <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/iiop/**/*TestCase*.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/mdb/**/*TestCase*.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/entity/cmp/**/*TestCase*.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/remote/entity/cmp/**/*TestCase*.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/management/deployments/EjbJarInEarRuntimeResourcesTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/management/deployments/EjbJarRuntimeResourcesTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/messaging/**/*TestCase*.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/management/cli/HelpTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/management/cli/JmsTestCase.java</exclude>
                                     </excludes>
 
                                     <!-- Parameters to test cases. -->
@@ -584,6 +629,7 @@
                                         <arquillian.xml>arquillian.xml</arquillian.xml>
                                         <arquillian.launch>jboss</arquillian.launch>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                                        <server.config>standalone.xml</server.config>
                                     </systemPropertyVariables>
 
                                     <additionalClasspathElements>
@@ -681,6 +727,40 @@
                                 <phase>none</phase>
                             </execution>
 
+                            <!-- Smoke Full tests. -->
+                            <execution>
+                                <id>smoke-full.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/smoke/embedded/demos/client/jms/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/smoke/embedded/demos/client/messaging/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/smoke/embedded/demos/jms/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/smoke/embedded/demos/messaging/**/*TestCase.java</include>
+                                    </includes>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <arquillian.xml>smoke-arquillian.xml</arquillian.xml>
+                                        <arquillian.launch>jboss</arquillian.launch>
+
+                                        <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
+                                        <server.config>standalone-full.xml</server.config>
+                                        <!-- Use combine.children="append" to pick up parent properties automatically. -->
+                                    </systemPropertyVariables>
+
+                                    <!-- Access to resources for clustering tests. -->
+                                    <additionalClasspathElements>
+                                        <additionalClasspathElement>${project.basedir}/src/test/resources/smoke</additionalClasspathElement>
+                                    </additionalClasspathElements>
+
+                                    <reportNameSuffix>tests-smoke-full</reportNameSuffix>
+                                </configuration>
+                            </execution>
                             <!-- Smoke tests. -->
                             <execution>
                                 <id>smoke-default.surefire</id>
@@ -693,6 +773,12 @@
                                     <includes>
                                         <include>org/jboss/as/test/smoke/**/*TestCase.java</include>
                                     </includes>
+                                    <excludes>
+                                        <exclude>org/jboss/as/test/smoke/embedded/demos/client/jms/**/*</exclude>
+                                        <exclude>org/jboss/as/test/smoke/embedded/demos/client/messaging/**/*</exclude>
+                                        <exclude>org/jboss/as/test/smoke/embedded/demos/jms/**/*</exclude>
+                                        <exclude>org/jboss/as/test/smoke/embedded/demos/messaging/**/*</exclude>
+                                    </excludes>
 
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
@@ -700,6 +786,7 @@
                                         <arquillian.launch>jboss</arquillian.launch>
 
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                                        <server.config>standalone.xml</server.config>
                                         <!-- Use combine.children="append" to pick up parent properties automatically. -->
                                     </systemPropertyVariables>
 

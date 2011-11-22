@@ -67,6 +67,7 @@
                 <include name="standalone.xml"/>
                 <include name="standalone-xts.xml"/>
                 <include name="standalone-ha.xml"/>
+                <include name="standalone-full.xml"/>
             </fileset>
             <param name="ds.jdbc.driver.jar" expression="${ds.jdbc.driver.jar}"/>
             <param name="ds.jdbc.url" expression="${ds.jdbc.url}"/>
@@ -78,7 +79,8 @@
         <move todir="${config.dir}">
            <fileset dir="${config.dir}">
                <include name="**/standalone.xml.mod"/>
-               <include name="**/standalone-preview.xml.mod"/>
+               <include name="**/standalone-ha.xml.mod"/>
+               <include name="**/standalone-full.xml.mod"/>
                <include name="**/standalone-xts.xml.mod"/>
            </fileset>
            <mapper type="glob" from="*.mod" to="*"/>
@@ -141,6 +143,7 @@
                   useImplicitFileset="false">
                 <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
                     <include name="**/standalone.xml"/>
+                    <include name="**/standalone-full.xml"/>
                     <include name="**/standalone-ha.xml"/>
                 </fileset>
                 <param name="managementIPAddress" expression="@{node}"/>
@@ -150,6 +153,7 @@
             <!-- move processed files back -->
             <move todir="@{output.dir}/@{name}/@{config.dir.name}">
                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                   <include name="**/standalone-full.xml.mod"/>
                    <include name="**/standalone.xml.mod"/>
                    <include name="**/standalone-ha.xml.mod"/>
                </fileset>
@@ -181,6 +185,7 @@
                 <!-- can't get this to work -->
                 <!-- classpath path="${net.sf.saxon:saxon:jar}"/ -->
                 <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                    <include name="**/standalone-full.xml"/>
                     <include name="**/standalone-ha.xml"/>
                     <include name="**/standalone.xml"/>
                 </fileset>
@@ -194,6 +199,7 @@
                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
                    <include name="**/standalone-ha.xml.mod"/>
                    <include name="**/standalone.xml.mod"/>
+                   <include name="**/standalone-full.xml.mod"/>
                </fileset>
                <mapper type="glob" from="*.mod" to="*"/>
              </move>
@@ -226,6 +232,7 @@
                 <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
                     <include name="**/standalone-ha.xml"/>
                     <include name="**/standalone.xml"/>
+                    <include name="**/standalone-full.xml"/>
                 </fileset>
                 <param name="portOffset" expression="@{offset}"/>
                 <param name="nativeInterfaceManagementPort" expression="@{nativePort}"/>
@@ -237,6 +244,7 @@
                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
                    <include name="**/standalone-ha.xml.mod"/>
                    <include name="**/standalone.xml.mod"/>
+                   <include name="**/standalone-full.xml.mod"/>
                </fileset>
                <mapper type="glob" from="*.mod" to="*"/>
              </move>
@@ -264,6 +272,7 @@
                 <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
                     <include name="**/standalone-ha.xml"/>
                     <include name="**/standalone.xml"/>
+                    <include name="**/standalone-full.xml"/>
                 </fileset>
             </xslt>
 
@@ -272,6 +281,7 @@
                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
                    <include name="**/standalone-ha.xml.mod"/>
                    <include name="**/standalone.xml.mod"/>
+                   <include name="**/standalone-full.xml.mod"/>
                </fileset>
                <mapper type="glob" from="*.mod" to="*"/>
              </move>
