@@ -68,7 +68,7 @@ public class LocalOutboundConnectionService extends AbstractOutboundConnectionSe
             throw new RuntimeException(e);
         }
         final Endpoint endpoint = this.endpointInjectedValue.getValue();
-        return endpoint.connect(uri, this.connectionCreationOptions);
+        return endpoint.connect(uri, this.connectionCreationOptions, getCallbackHandler());
     }
 
     Injector<OutboundSocketBinding> getDestinationOutboundSocketBindingInjector() {
