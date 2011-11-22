@@ -62,6 +62,8 @@ public class EjbExceptionTransformingInterceptorFactory implements InterceptorFa
                     throw new NoSuchObjectException(e.getMessage());
                 } catch (EJBException e) {
                     throw new RemoteException("Invocation failed", e);
+                } catch (Error e) {
+                    throw new RemoteException("Unexpected error", e);
                 }
             };
         };

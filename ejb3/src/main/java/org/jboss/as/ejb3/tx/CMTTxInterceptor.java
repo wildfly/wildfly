@@ -131,10 +131,7 @@ public class CMTTxInterceptor implements Interceptor {
                 t.initCause(cause);
             }
             // If this is an EJBException, pass through to the caller
-            else if (t instanceof EJBException || t instanceof RemoteException) {
-                // Leave Exception as-is (this is in place to handle specifically, and not
-                // as a generic RuntimeException
-            } else if (t instanceof RuntimeException) {
+            else if (t instanceof RuntimeException) {
                 t = new EJBTransactionRolledbackException(t.getMessage(), (Exception) t);
             } else {// application exception
                 throw (Exception) t;
@@ -175,6 +172,7 @@ public class CMTTxInterceptor implements Interceptor {
 
     public Object processInvocation(InterceptorContext invocation) throws Exception {
         final EJBComponent component = (EJBComponent) invocation.getPrivateData(Component.class);
+
         TransactionAttributeType attr = component.getTransactionAttributeType(invocation.getMethod());
         switch (attr) {
             case MANDATORY:

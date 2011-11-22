@@ -129,7 +129,11 @@ public class TransactionAttributeMergingProcessor extends AbstractMergingProcess
                         final MethodsMetaData methods = transaction.getMethods();
                         if(methods != null) {
                             for(final MethodMetaData method : methods) {
-                                componentConfiguration.setTransactionAttribute(MethodIntf.BEAN, transaction.getTransAttribute(), null, method.getMethodName(), this.getMethodParams(method.getMethodParams()));
+                                if(method.getMethodParams() == null ) {
+                                    componentConfiguration.setTransactionAttribute(MethodIntf.BEAN, transaction.getTransAttribute(), null, method.getMethodName());
+                                } else {
+                                    componentConfiguration.setTransactionAttribute(MethodIntf.BEAN, transaction.getTransAttribute(), null, method.getMethodName(), this.getMethodParams(method.getMethodParams()));
+                                }
                             }
                         }
                     }
