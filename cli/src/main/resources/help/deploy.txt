@@ -1,6 +1,6 @@
 SYNOPSIS
 
-    deploy (file_path [--name=deployment_name] [--runtime_name=deployment_runtime_name] [--force] | --name=deployment_name) [--server-groups=group_name (,group_name)* | --all-server-groups]
+    deploy (file_path [--name=deployment_name] [--runtime_name=deployment_runtime_name] [--force | --disabled] | --name=deployment_name) [--server-groups=group_name (,group_name)* | --all-server-groups]
 
 DESCRIPTION
 
@@ -26,6 +26,8 @@ ARGUMENTS
                        deploy will be aborted and the corresponding message will printed.
                        Switch --force (or -f) will force the replacement of the existing deployment
                        with the one specified in the command arguments.
+
+ --disabled          - indicates that the deployment has to be added to the repository disabled.
 
  --server-groups     - comma separated list of server group names the deploy command should apply to.
                        Either server-groups or all-server-groups is required in the domain mode.
