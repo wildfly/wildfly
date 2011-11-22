@@ -22,14 +22,6 @@
 
 package org.jboss.as.jacorb;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-
-import com.arjuna.ats.jts.common.jtsPropertyManager;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -46,6 +38,7 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.com.sun.corba.se.impl.orbutil.ORBConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
@@ -55,6 +48,13 @@ import org.omg.CORBA.ORB;
 import org.omg.PortableServer.IdAssignmentPolicyValue;
 import org.omg.PortableServer.LifespanPolicyValue;
 import org.omg.PortableServer.POA;
+
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
 
 
 /**
@@ -111,7 +111,9 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
         AccessController.doPrivileged(new PrivilegedAction<Object>() {
             @Override
             public Object run() {
-                return System.setProperty("org.jboss.com.sun.CORBA.ORBUseDynamicStub", "true");
+                System.setProperty("org.jboss.com.sun.CORBA.ORBUseDynamicStub", "true");
+                System.setProperty(ORBConstants.DYNAMIC_STUB_FACTORY_FACTORY_CLASS, "org.jboss.as.jacorb.rmi.DelegatingStubFactoryFactory");
+                return null;
             }
         });
 
