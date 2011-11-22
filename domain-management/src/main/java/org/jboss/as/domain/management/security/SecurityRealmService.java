@@ -103,6 +103,11 @@ public class SecurityRealmService implements Service<SecurityRealmService>, Secu
                 public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
                     throw MESSAGES.noAuthenticationDefined();
                 }
+
+                @Override
+                public boolean isReady() {
+                    return false;
+                }
             };
         }
 

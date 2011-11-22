@@ -33,8 +33,14 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
@@ -64,6 +70,8 @@ public class PropertiesCallbackHandler implements Service<DomainCallbackHandler>
             NameCallback.class, PasswordCallback.class};
     private static final Class[] DIGEST_CALLBACKS = {AuthorizeCallback.class, RealmCallback.class,
             NameCallback.class, DigestHashCallback.class};
+
+    private static final String DOLLAR_LOCAL = "$local";
 
     private final Class[] supportedCallbacks;
 
@@ -128,10 +136,6 @@ public class PropertiesCallbackHandler implements Service<DomainCallbackHandler>
                     }
                     checkWeakPasswords(props);
 
-                    if (props.size() == 0) {
-                        ROOT_LOGGER.warnf("No users defined to access management interfaces, add a user to '%s'", propertiesFile.getCanonicalPath());
-                    }
-
                     userProperties = props;
                     // Update this last otherwise the check outside the synchronized block could return true before the file is set.
                     fileUpdated = fileLastModified;
@@ -140,6 +144,69 @@ public class PropertiesCallbackHandler implements Service<DomainCallbackHandler>
         }
 
         return userProperties;
+    }
+
+    private synchronized void persistProperties() throws IOException {
+        Properties toSave = (Properties) userProperties.clone();
+
+        File backup = new File(propertiesFile.getCanonicalPath() + ".bak");
+        if (backup.exists()) {
+            if (backup.delete() == false) {
+                throw new IllegalStateException("Unable to delete backup properties file.");
+            }
+        }
+
+        if (propertiesFile.renameTo(backup) == false) {
+            throw new IllegalStateException("Unable to backup properties file.");
+        }
+
+        FileReader fr = new FileReader(backup);
+        BufferedReader br = new BufferedReader(fr);
+
+        FileWriter fw = new FileWriter(propertiesFile);
+        BufferedWriter bw = new BufferedWriter(fw);
+
+        try {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String trimmed = line.trim();
+                if (trimmed.startsWith("#")) {
+                    bw.append(line);
+                    bw.newLine();
+                } else if (trimmed.length() == 0) {
+                    bw.newLine();
+                } else {
+                    int equals = trimmed.indexOf('=');
+                    if (equals > 0) {
+                        String userName = trimmed.substring(0, equals);
+                        if (toSave.contains(userName)) {
+                            bw.append(userName + "=" + toSave.getProperty(userName));
+                            bw.newLine();
+                            toSave.remove(userName);
+                        }
+                    }
+                }
+            }
+
+            // Append any additional users to the end of the file.
+            for (Object currentKey : toSave.keySet()) {
+                bw.append(currentKey + "=" + toSave.getProperty((String) currentKey));
+                bw.newLine();
+            }
+            bw.newLine();
+        } finally {
+            safeClose(bw);
+            safeClose(fw);
+            safeClose(br);
+            safeClose(fr);
+        }
+    }
+
+    private void safeClose(final Closeable c) {
+        try {
+            c.close();
+        } catch (IOException ignored) {
+        }
     }
 
     private void checkWeakPasswords(final Properties properties) {
@@ -175,18 +242,30 @@ public class PropertiesCallbackHandler implements Service<DomainCallbackHandler>
         return supportedCallbacks;
     }
 
+    @Override
+    public boolean isReady() {
+        Properties users;
+        try {
+            users = getUsersProperties();
+        } catch (IOException e) {
+            return false;
+        }
+        return (users.size() > 0);
+    }
+
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
         List<Callback> toRespondTo = new LinkedList<Callback>();
 
         String userName = null;
         boolean userFound = false;
 
+        Properties users = getUsersProperties();
+
         // A single pass may be sufficient but by using a two pass approach the Callbackhandler will not
         // fail if an unexpected order is encountered.
 
         // First Pass - is to double check no unsupported callbacks and to retrieve
         // information from the callbacks passing in information.
-        Properties users = getUsersProperties();
         for (Callback current : callbacks) {
 
             if (current instanceof AuthorizeCallback) {

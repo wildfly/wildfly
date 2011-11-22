@@ -26,6 +26,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Map;
 
 import javax.security.auth.callback.CallbackHandler;
 
@@ -107,7 +108,7 @@ public interface ModelControllerClient extends Closeable {
          * @return A model controller client
          */
         public static ModelControllerClient create(final InetAddress address, final int port){
-            return new RemotingModelControllerClient(address.getHostName(), port, null);
+            return new RemotingModelControllerClient(address.getHostName(), port, null, null);
         }
 
         /**
@@ -119,7 +120,20 @@ public interface ModelControllerClient extends Closeable {
          * @return A model controller client
          */
         public static ModelControllerClient create(final InetAddress address, final int port, final CallbackHandler handler){
-            return new RemotingModelControllerClient(address.getHostName(), port, handler);
+            return new RemotingModelControllerClient(address.getHostName(), port, handler, null);
+        }
+
+        /**
+         * Create a client instance for a remote address and port.
+         *
+         * @param address the address of the remote host
+         * @param port the port
+         * @param handler  CallbackHandler to obtain authentication information for the call.
+         * @param saslOptions Additional options to be passed to the SASL mechanism.
+         * @return A model controller client
+         */
+        public static ModelControllerClient create(final InetAddress address, final int port, final CallbackHandler handler, final Map<String, String> saslOptions){
+            return new RemotingModelControllerClient(address.getHostName(), port, handler, saslOptions);
         }
 
         /**
@@ -131,7 +145,7 @@ public interface ModelControllerClient extends Closeable {
          * @throws UnknownHostException if the host cannot be found
          */
         public static ModelControllerClient create(final String hostName, final int port) throws UnknownHostException {
-            return new RemotingModelControllerClient(hostName, port, null);
+            return new RemotingModelControllerClient(hostName, port, null, null);
         }
 
         /**
@@ -144,7 +158,21 @@ public interface ModelControllerClient extends Closeable {
          * @throws UnknownHostException if the host cannot be found
          */
         public static ModelControllerClient create(final String hostName, final int port, final CallbackHandler handler) throws UnknownHostException {
-            return new RemotingModelControllerClient(hostName, port, handler);
+            return new RemotingModelControllerClient(hostName, port, handler, null);
+        }
+
+        /**
+         * Create a client instance for a remote address and port and CallbackHandler.
+         *
+         * @param hostName the remote host
+         * @param port     the port
+         * @param handler  CallbackHandler to obtain authentication information for the call.
+         * @param saslOptions Additional options to be passed to the SASL mechanism.
+         * @return A model controller client
+         * @throws UnknownHostException if the host cannot be found
+         */
+        public static ModelControllerClient create(final String hostName, final int port, final CallbackHandler handler, final Map<String, String> saslOptions) throws UnknownHostException {
+            return new RemotingModelControllerClient(hostName, port, handler, saslOptions);
         }
     }
 

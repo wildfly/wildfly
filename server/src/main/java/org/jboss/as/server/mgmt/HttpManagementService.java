@@ -60,7 +60,6 @@ public class HttpManagementService implements Service<HttpManagement> {
     private final InjectedValue<Integer> portValue = new InjectedValue<Integer>();
     private final InjectedValue<Integer> securePortValue = new InjectedValue<Integer>();
     private final InjectedValue<ExecutorService> executorServiceValue = new InjectedValue<ExecutorService>();
-    private final InjectedValue<String> tempDirValue = new InjectedValue<String>();
     private final InjectedValue<SecurityRealmService> securityRealmServiceValue = new InjectedValue<SecurityRealmService>();
     private ManagementHttpServer serverManagement;
     private SocketBindingManager socketBindingManager;
@@ -283,15 +282,6 @@ public class HttpManagementService implements Service<HttpManagement> {
      */
     public Injector<ModelController> getModelControllerInjector() {
         return modelControllerValue;
-    }
-
-    /**
-     * Get the temp dir injector.
-     *
-     * @return the tempDirValue
-     */
-    public InjectedValue<String> getTempDirInjector() {
-        return tempDirValue;
     }
 
     /**

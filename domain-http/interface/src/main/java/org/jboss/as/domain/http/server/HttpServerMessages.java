@@ -152,6 +152,14 @@ public interface HttpServerMessages {
     String trailingSlashFilterDescription();
 
     /**
+     * The description for the {@link RealmReadinessFilter}.
+     *
+     * @return the description.
+     */
+    @Message("Redirect request to instructional page if the realm is not ready.")
+    String realmReadinessFilter();
+
+    /**
      * Creates an exception indicating that unexpected characters are being drop from the header.
      *
      * @param dropping the characters being dropped.

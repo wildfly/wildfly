@@ -150,6 +150,7 @@ public class RemotingServices {
                                                  final String connectorName,
                                                  final ServiceName securityRealmName,
                                                  final ServiceName serverCallbackServiceName,
+                                                 final ServiceName tmpDirService,
                                                  final ServiceVerificationHandler verificationHandler,
                                                  final List<ServiceController<?>> newControllers) {
         final ServiceName authProviderName = RealmAuthenticationProviderService.createName(connectorName);
@@ -163,6 +164,7 @@ public class RemotingServices {
         if (serverCallbackServiceName != null) {
             builder.addDependency(serverCallbackServiceName, CallbackHandler.class, raps.getServerCallbackValue());
         }
+        builder.addDependency(tmpDirService, String.class, raps.getTmpDirValue());
         addController(newControllers, verificationHandler, builder);
 
         RealmOptionMapService roms = new RealmOptionMapService();

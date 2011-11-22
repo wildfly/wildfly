@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <!--
   ~ JBoss, Home of Professional Open Source.
   ~ Copyright 2011, Red Hat, Inc., and individual contributors
@@ -21,26 +22,15 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<project
-    xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<module xmlns="urn:jboss:module:1.1" name="org.jboss.as.domain-add-user">
 
-    <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
-        <version>7.1.0.Alpha2-SNAPSHOT</version>
-    </parent>
+    <main-class name="org.jboss.as.domain.management.security.AddPropertiesUser"/>
 
-    <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-domain-http</artifactId>
-    <packaging>pom</packaging>
+    <resources>
+        <!-- Insert resources here -->
+    </resources>
 
-    <name>JBoss Application Server: Domain HTTP Interface</name>
-
-    <modules>
-        <module>interface</module>
-        <module>error-context</module>
-    </modules>
-</project>
+    <dependencies>
+        <module name="org.jboss.as.domain-management"/>
+    </dependencies>
+</module>

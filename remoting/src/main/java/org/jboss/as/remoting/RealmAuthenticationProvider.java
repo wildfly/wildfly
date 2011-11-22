@@ -27,8 +27,10 @@ import static org.xnio.Options.SASL_POLICY_NOPLAINTEXT;
 import static org.xnio.Options.SASL_PROPERTIES;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -37,6 +39,7 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
+import javax.security.sasl.SaslException;
 
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.remoting3.security.ServerAuthenticationProvider;
@@ -44,7 +47,6 @@ import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
 import org.xnio.OptionMap;
 import org.xnio.OptionMap.Builder;
-import org.xnio.Options;
 import org.xnio.Property;
 import org.xnio.Sequence;
 
@@ -62,50 +64,60 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
 
     static final String REALM_PROPERTY = "com.sun.security.sasl.digest.realm";
     static final String PRE_DIGESTED_PROPERTY = "org.jboss.sasl.digest.pre_digested";
+    static final String LOCAL_DEFAULT_USER = "jboss.sasl.local-user.default-user";
+    static final String LOCAL_USER_CHALLENGE_PATH = "jboss.sasl.local-user.challenge-path";
 
     static final String ANONYMOUS = "ANONYMOUS";
-
     static final String DIGEST_MD5 = "DIGEST-MD5";
-
+    static final String JBOSS_LOCAL_USER = "JBOSS-LOCAL-USER";
     static final String PLAIN = "PLAIN";
+
+    private static final String DOLLAR_LOCAL = "$local";
 
     private final SecurityRealm realm;
     private final CallbackHandler serverCallbackHandler;
+    private final String tokensDir;
 
-    public RealmAuthenticationProvider(final SecurityRealm realm, final CallbackHandler serverCallbackHandler) {
+    public RealmAuthenticationProvider(final SecurityRealm realm, final CallbackHandler serverCallbackHandler, final String tokensDir) {
         this.realm = realm;
         this.serverCallbackHandler = serverCallbackHandler;
+        this.tokensDir = tokensDir;
     }
 
     OptionMap getSaslOptionMap() {
-        if (digestMd5Supported()) {
-            Builder builder = OptionMap.builder();
-            builder.set(SASL_MECHANISMS, Sequence.of("DIGEST-MD5"));
+        List<String> mechanisms = new LinkedList<String>();
+        Set<Property> properties = new HashSet<Property>();
+        Builder builder = OptionMap.builder();
 
-            Sequence<Property> properties;
-            if (contains(DigestHashCallback.class, realm.getCallbackHandler().getSupportedCallbacks())) {
-                properties = Sequence.of(Property.of(REALM_PROPERTY, realm.getName()), Property.of(PRE_DIGESTED_PROPERTY, Boolean.TRUE.toString()));
-            } else {
-                properties = Sequence.of(Property.of(REALM_PROPERTY, realm.getName()));
-            }
-
-            builder.set(SASL_PROPERTIES, properties);
-
-            return builder.getMap();
+        mechanisms.add(JBOSS_LOCAL_USER);
+        builder.set(SASL_POLICY_NOPLAINTEXT, false);
+        properties.add(Property.of(LOCAL_DEFAULT_USER, DOLLAR_LOCAL));
+        if (tokensDir != null) {
+            properties.add(Property.of(LOCAL_USER_CHALLENGE_PATH, tokensDir));
         }
-
-        if (plainSupported()) {
-            if (true)
+        if (digestMd5Supported()) {
+            mechanisms.add(DIGEST_MD5);
+            properties.add(Property.of(REALM_PROPERTY, realm.getName()));
+            if (contains(DigestHashCallback.class, realm.getCallbackHandler().getSupportedCallbacks())) {
+                properties.add(Property.of(PRE_DIGESTED_PROPERTY, Boolean.TRUE.toString()));
+            }
+        } else if (plainSupported()) {
+            int i = 1;
+            if (i + i == 2)
                 throw new IllegalStateException("PLAIN not enabled until SSL supported for Native Interface");
 
-            return OptionMap.create(Options.SASL_MECHANISMS, Sequence.of(PLAIN), SASL_POLICY_NOPLAINTEXT, false);
+            mechanisms.add(PLAIN);
+        } else if (realm == null) {
+            mechanisms.add(ANONYMOUS);
+            builder.set(SASL_POLICY_NOANONYMOUS, false);
+        } else {
+            throw new IllegalStateException("A security realm has been specified but no supported mechanism identified.");
         }
 
-        if (realm == null) {
-            return OptionMap.create(SASL_MECHANISMS, Sequence.of(ANONYMOUS), SASL_POLICY_NOANONYMOUS, Boolean.FALSE);
-        }
+        builder.set(SASL_MECHANISMS, Sequence.of(mechanisms));
+        builder.set(SASL_PROPERTIES, Sequence.of(properties));
 
-        throw new IllegalStateException("A security realm has been specified but no supported mechanism identified.");
+        return builder.getMap();
     }
 
     public CallbackHandler getCallbackHandler(String mechanismName) {
@@ -117,6 +129,31 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
                     for (Callback current : callbacks) {
                         throw new UnsupportedCallbackException(current, "ANONYMOUS mechanism so not expecting a callback");
                     }
+                }
+            };
+        }
+
+        // For now for the JBOSS_LOCAL_USER we are only supporting the $local user and not allowing for
+        // an alternative authorizationID.
+        if (JBOSS_LOCAL_USER.equals(mechanismName)) {
+            return new CallbackHandler() {
+
+                @Override
+                public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+                    for (Callback current : callbacks) {
+                        if (current instanceof NameCallback) {
+                            NameCallback ncb = (NameCallback) current;
+                            if (DOLLAR_LOCAL.equals(ncb.getDefaultName()) == false) {
+                                throw new SaslException("Only " + DOLLAR_LOCAL + " user is acceptable.");
+                            }
+                        } else if (current instanceof AuthorizeCallback) {
+                            AuthorizeCallback acb = (AuthorizeCallback) current;
+                            acb.setAuthorized(acb.getAuthenticationID().equals(acb.getAuthorizationID()));
+                        } else {
+                            throw new UnsupportedCallbackException(current);
+                        }
+                    }
+
                 }
             };
         }

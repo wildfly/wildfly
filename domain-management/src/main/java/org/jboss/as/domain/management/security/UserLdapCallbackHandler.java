@@ -31,7 +31,6 @@ import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.InitialDirContext;
@@ -129,6 +128,11 @@ public class UserLdapCallbackHandler implements Service<UserLdapCallbackHandler>
         // TODO - For safety this Array should be cloned or should use an unmodifiable collection to ensure
         // TODO - caller can not modify.
         return supportedCallbacks;
+    }
+
+    @Override
+    public boolean isReady() {
+        return true;
     }
 
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {

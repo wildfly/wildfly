@@ -26,6 +26,7 @@ import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Map;
 
 import javax.security.auth.callback.CallbackHandler;
 
@@ -47,15 +48,17 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
     private final String hostName;
     private final int port;
     private final CallbackHandler callbackHandler;
+    private final Map<String, String> saslOptions;
     private volatile Endpoint endpoint;
     private ManagementClientChannelStrategy strategy;
     private boolean closed;
 
 
-    public RemotingModelControllerClient(String hostName, int port, final CallbackHandler callbackHandler) {
+    public RemotingModelControllerClient(String hostName, int port, final CallbackHandler callbackHandler, final Map<String, String> saslOptions) {
         this.hostName = hostName;
         this.port = port;
         this.callbackHandler = callbackHandler;
+        this.saslOptions = saslOptions;
     }
 
     @Override
@@ -77,8 +80,9 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
         }
         if (strategy == null) {
             endpoint = Remoting.createEndpoint("management-client", OptionMap.EMPTY);
+
             endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
-            strategy = ManagementClientChannelStrategy.create(hostName, port, endpoint, this, callbackHandler);
+            strategy = ManagementClientChannelStrategy.create(hostName, port, endpoint, this, callbackHandler, saslOptions);
         }
         return strategy;
     }

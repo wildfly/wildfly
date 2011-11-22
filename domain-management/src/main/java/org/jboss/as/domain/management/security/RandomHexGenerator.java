@@ -22,26 +22,26 @@
 
 package org.jboss.as.domain.management.security;
 
-import javax.security.auth.callback.CallbackHandler;
+import java.security.SecureRandom;
+import java.util.Random;
 
 /**
- * An extension of CallbackHandler to allow the supported callbacks to be identified.
+ * A utility to generate a random 32 character 'hash'
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public interface DomainCallbackHandler extends CallbackHandler {
+class RandomHexGenerator {
 
-    // TODO - Switch to collections to clean up how these are checked and to introduce safety to prevent the 'set' from being modified.
-    Class[] getSupportedCallbacks();
+    private static final String CHARS = "0123456789abcdef";
 
-    /**
-     * Is this DomainCallbackHanler ready for handling remote requests.
-     *
-     * To be used by the HTTP interface to display an error if the administrator
-     * has not completed the set-up of their AS installation.
-     *
-     * @return indication of if this is ready for remote requests.
-     */
-    boolean isReady();
+    static String generateHash() {
+        StringBuffer sb = new StringBuffer();
+        Random rand = new SecureRandom();
+        for (int i = 0; i < 32; i++) {
+            sb.append(CHARS.charAt(Math.abs(rand.nextInt()) % CHARS.length()));
+        }
+
+        return sb.toString();
+    }
 
 }

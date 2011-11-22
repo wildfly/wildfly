@@ -25,6 +25,7 @@ package org.jboss.as.domain.http.server;
 import static org.jboss.as.domain.http.server.Constants.APPLICATION_JAVASCRIPT;
 import static org.jboss.as.domain.http.server.Constants.APPLICATION_OCTET_STREAM;
 import static org.jboss.as.domain.http.server.Constants.CONTENT_TYPE;
+import static org.jboss.as.domain.http.server.Constants.FORBIDDEN;
 import static org.jboss.as.domain.http.server.Constants.GET;
 import static org.jboss.as.domain.http.server.Constants.IMAGE_GIF;
 import static org.jboss.as.domain.http.server.Constants.IMAGE_JPEG;
@@ -62,6 +63,9 @@ import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.com.sun.net.httpserver.Headers;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpServer;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 
 /**
  * A generic handler to server up resources requested using a GET request.
@@ -76,28 +80,24 @@ class ResourceHandler implements ManagementHttpHandler {
 
     private static final String EXPIRES_HEADER = "Expires";
     private static final String LAST_MODIFIED_HEADER = "Last-Modified";
-    private static final String NOCACHE_JS = ".nocache.js";
     private static final String GMT = "GMT";
     private static final String CACHE_CONTROL_HEADER = "Cache-Control";
     private static final String CONTENT_LENGTH_HEADER = "Content-Length";
+
+    private static Map<String, String> contentTypeMapping = new ConcurrentHashMap<String, String>();
+    private static final String FORMAT_STRING = "EEE, dd MMM yyyy HH:mm:ss z";
 
     private final String context;
     private final String defaultResource;
     private final ClassLoader loader;
 
-    private static Map<String, String> contentTypeMapping = new ConcurrentHashMap<String, String>();
-
+    private final String lastModified;
     private long lastExpiryDate = 0;
     private String lastExpiryHeader = null;
 
-    private static String LAST_MODIFIED;
-    private static final String FORMAT_STRING = "EEE, dd MMM yyyy HH:mm:ss z";
-
-    private static Map<String, ResourceHandle> buffer = new ConcurrentHashMap<String, ResourceHandle>();
+    private final Map<String, ResourceHandle> buffer = new ConcurrentHashMap<String, ResourceHandle>();
 
     static {
-        LAST_MODIFIED = createDateFormat().format(new Date());
-
         contentTypeMapping.put(".js",   APPLICATION_JAVASCRIPT);
         contentTypeMapping.put(".html", TEXT_HTML);
         contentTypeMapping.put(".htm",  TEXT_HTML);
@@ -111,6 +111,8 @@ class ResourceHandler implements ManagementHttpHandler {
         this.context = context;
         this.defaultResource = defaultResource;
         this.loader = loader;
+
+        lastModified = createDateFormat().format(new Date());
     }
 
     public void handle(HttpExchange http) throws IOException {
@@ -143,6 +145,17 @@ class ResourceHandler implements ManagementHttpHandler {
             respond404(http);
         }
 
+        /*
+         * This allows a sub-class of the ResourceHandler to store resources it may need in META-INF
+         * without these resources being served up to remote clients unchecked.
+         */
+        if (resource.startsWith("META-INF")) {
+            http.sendResponseHeaders(FORBIDDEN, 0);
+            http.close();
+
+            return;
+        }
+
         // load resource
         ResourceHandle handle = getResourceHandle(resource);
 
@@ -153,10 +166,8 @@ class ResourceHandler implements ManagementHttpHandler {
             final Headers responseHeaders = http.getResponseHeaders();
             responseHeaders.add(CONTENT_TYPE, resolveContentType(path));
 
-            boolean skipcache = resource.endsWith(NOCACHE_JS);
-
             // provide the ability to cache GWT artifacts
-            if(!skipcache){
+            if(!skipCache(resource)){
 
                 if(System.currentTimeMillis()>lastExpiryDate) {
                     lastExpiryDate = calculateExpiryDate();
@@ -167,7 +178,7 @@ class ResourceHandler implements ManagementHttpHandler {
                 responseHeaders.add(EXPIRES_HEADER, lastExpiryHeader);
             }
 
-            responseHeaders.add(LAST_MODIFIED_HEADER, LAST_MODIFIED);
+            responseHeaders.add(LAST_MODIFIED_HEADER, lastModified);
             responseHeaders.add(CONTENT_LENGTH_HEADER, String.valueOf(handle.getSize()));
 
             http.sendResponseHeaders(OK, 0);
@@ -298,6 +309,17 @@ class ResourceHandler implements ManagementHttpHandler {
 
     public void stop(HttpServer httpServer) {
         httpServer.removeContext(context);
+    }
+
+    protected static ClassLoader getClassLoader(final String module) throws ModuleLoadException {
+        ModuleIdentifier id = ModuleIdentifier.fromString(module);
+        ClassLoader cl = Module.getCallerModuleLoader().loadModule(id).getClassLoader();
+
+        return cl;
+    }
+
+    protected boolean skipCache(String resource) {
+        return false;
     }
 
     class ResourceHandle {

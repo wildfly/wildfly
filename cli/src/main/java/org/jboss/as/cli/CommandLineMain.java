@@ -49,6 +49,7 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.RealmCallback;
 import javax.security.sasl.RealmChoiceCallback;
+import javax.security.sasl.SaslException;
 
 import org.jboss.as.cli.batch.Batch;
 import org.jboss.as.cli.batch.BatchManager;
@@ -101,12 +102,14 @@ import org.jboss.as.cli.operation.PrefixFormatter;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationCandidatesProvider;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
+import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.jboss.as.cli.operation.impl.DefaultPrefixFormatter;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.sasl.JBossSaslProvider;
+import org.jboss.sasl.callback.DigestHashCallback;
 
 /**
 *
@@ -780,28 +783,65 @@ public class CommandLineMain {
             }
 
             try {
-                CallbackHandler cbh = new AuthenticationCallbackHandler();
-                ModelControllerClient newClient = ModelControllerClient.Factory.create(host, port, cbh);
-                if(this.client != null) {
-                    disconnectController();
+                ModelControllerClient newClient = null;
+
+                CallbackHandler cbh = new AuthenticationCallbackHandler(username, password);
+                ModelControllerClient tempClient = ModelControllerClient.Factory.create(host, port, cbh);
+                switch (initialConnection(tempClient)) {
+                    case SUCCESS:
+                        newClient = tempClient;
+                        break;
+                    case CONNECTION_FAILURE:
+                        printLine("The controller is not available at " + host + ":" + port);
+                        break;
+                    case AUTHENTICATION_FAILURE:
+                        printLine("Unable to authenticate against controller at " + host + ":" + port);
+                        break;
                 }
 
-                client = newClient;
-                this.controllerHost = host;
-                this.controllerPort = port;
+                if (newClient != null) {
+                    if (this.client != null) {
+                        disconnectController();
+                    }
 
-                List<String> nodeTypes = Util.getNodeTypes(newClient, new DefaultOperationRequestAddress());
-                if (!nodeTypes.isEmpty()) {
+                    client = newClient;
+                    this.controllerHost = host;
+                    this.controllerPort = port;
+
+                    List<String> nodeTypes = Util.getNodeTypes(newClient, new DefaultOperationRequestAddress());
                     domainMode = nodeTypes.contains("server-group");
-//                    printLine("Connected to "
-//                            + (domainMode ? "domain controller at " : "standalone controller at ")
-//                            + host + ":" + port);
-                } else {
-                    printLine("The controller is not available at " + host + ":" + port);
-                    disconnectController();
                 }
             } catch (UnknownHostException e) {
                 printLine("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
+            }
+        }
+
+        /**
+         * Used to make a call to the server to verify that it is possible to connect.
+         */
+        private ConnectStatus initialConnection(final ModelControllerClient client) {
+            try {
+                DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
+                builder.setOperationName("read-attribute");
+                builder.addProperty("name", "name");
+
+                client.execute(builder.buildRequest());
+                // We don't actually care what the response is we just want to be sure the ModelControllerClient
+                // does not throw an Exception.
+                return ConnectStatus.SUCCESS;
+            } catch (Exception e) {
+                boolean authenticationFailure = false;
+
+                Throwable current = e;
+                while (current != null && authenticationFailure == false) {
+                    if (current instanceof SaslException) {
+                        authenticationFailure = true;
+                    }
+                    current = current.getCause();
+                }
+
+                StreamUtils.safeClose(client);
+                return authenticationFailure ? ConnectStatus.AUTHENTICATION_FAILURE : ConnectStatus.CONNECTION_FAILURE;
             }
         }
 
@@ -809,9 +849,6 @@ public class CommandLineMain {
         public void disconnectController() {
             if(this.client != null) {
                 StreamUtils.safeClose(client);
-//                if(loggingEnabled) {
-//                    printLine("Closed connection to " + this.controllerHost + ':' + this.controllerPort);
-//                }
                 client = null;
                 this.controllerHost = null;
                 this.controllerPort = -1;
@@ -986,6 +1023,10 @@ public class CommandLineMain {
             this.outputTarget = new BufferedWriter(writer);
         }
 
+        private enum ConnectStatus {
+            SUCCESS, AUTHENTICATION_FAILURE, CONNECTION_FAILURE
+        }
+
         private class AuthenticationCallbackHandler implements CallbackHandler {
 
             // After the CLI has connected the physical connection may be re-established numerous times.
@@ -997,12 +1038,18 @@ public class CommandLineMain {
 
             private String username;
             private char[] password;
+            private String digest;
 
-            private AuthenticationCallbackHandler() {
+            private AuthenticationCallbackHandler(String username, char[] password) {
                 // A local cache is used for scenarios where no values are specified on the command line
                 // and the user wishes to use the connect command to establish a new connection.
-                username = CommandContextImpl.this.username;
-                password = CommandContextImpl.this.password;
+                this.username = username;
+                this.password = password;
+            }
+
+            private AuthenticationCallbackHandler(String username, String digest) {
+                this.username = username;
+                this.digest = digest;
             }
 
             public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
@@ -1025,9 +1072,13 @@ public class CommandLineMain {
                         if (username == null) {
                             showRealm();
                             username = readLine("Username: ", false, true);
+                            if (username == null || username.length() == 0) {
+                                throw new SaslException("No username supplied.");
+                            }
                         }
                         ncb.setName(username);
-                    } else if (current instanceof PasswordCallback) {
+                    } else if (current instanceof PasswordCallback && digest == null) {
+                        // If a digest had been set support for PasswordCallback is disabled.
                         PasswordCallback pcb = (PasswordCallback) current;
                         if (password == null) {
                             showRealm();
@@ -1037,6 +1088,10 @@ public class CommandLineMain {
                             }
                         }
                         pcb.setPassword(password);
+                    } else if (current instanceof DigestHashCallback && digest != null) {
+                        // We don't support an interactive use of this callback so it must have been set in advance.
+                        DigestHashCallback dhc = (DigestHashCallback) current;
+                        dhc.setHexHash(digest);
                     } else {
                         printLine("Unexpected Callback " + current.getClass().getName());
                         throw new UnsupportedCallbackException(current);

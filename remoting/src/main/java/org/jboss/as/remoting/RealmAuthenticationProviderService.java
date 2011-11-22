@@ -21,6 +21,7 @@
  */
 package org.jboss.as.remoting;
 
+import java.io.File;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.Provider;
@@ -46,6 +47,7 @@ public class RealmAuthenticationProviderService implements Service<RealmAuthenti
 
     private final InjectedValue<SecurityRealm> securityRealmInjectedValue = new InjectedValue<SecurityRealm>();
     private final InjectedValue<CallbackHandler> serverCallbackValue = new InjectedValue<CallbackHandler>();
+    private final InjectedValue<String> tmpDirValue = new InjectedValue<String>();
 
     private volatile RealmAuthenticationProvider realmAuthenticationProvider = null;
     /** The base name of the AuthenticationProvider service */
@@ -66,7 +68,17 @@ public class RealmAuthenticationProviderService implements Service<RealmAuthenti
             }
         });
 
-        realmAuthenticationProvider = new RealmAuthenticationProvider(securityRealmInjectedValue.getOptionalValue(), serverCallbackValue.getOptionalValue());
+        String path = tmpDirValue.getValue();
+        File authDir = new File(path, "auth");
+        if (authDir.exists()) {
+            if (authDir.isDirectory() == false) {
+                throw new StartException("Unable to create tmp dir for auth tokens as file already exists.");
+            }
+        } else if (authDir.mkdirs() == false) {
+            throw new StartException("Unable to create auth dir.");
+        }
+
+        realmAuthenticationProvider = new RealmAuthenticationProvider(securityRealmInjectedValue.getOptionalValue(), serverCallbackValue.getOptionalValue(), authDir.getAbsolutePath());
     }
 
     public void stop(StopContext stopContext) {
@@ -83,5 +95,9 @@ public class RealmAuthenticationProviderService implements Service<RealmAuthenti
 
     public InjectedValue<CallbackHandler> getServerCallbackValue() {
         return serverCallbackValue;
+    }
+
+    public InjectedValue<String> getTmpDirValue() {
+     return tmpDirValue;
     }
 }
