@@ -22,10 +22,18 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
 import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.JdbcDriverAdd.startDriverServices;
 
+import java.lang.reflect.Constructor;
 import java.sql.Driver;
 import java.util.ServiceLoader;
 
@@ -36,7 +44,10 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Operation handler responsible for removing a jdbc driver.
@@ -48,27 +59,54 @@ public class JdbcDriverRemove extends AbstractRemoveStepHandler {
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final String driverName = model.get(DRIVER_NAME.getName()).asString();
-        final String moduleName = operation.require(DRIVER_MODULE_NAME.getName()).asString();
 
-        // Use the module for now.  Would be nice to keep the driver info in the model.
-        final Module module;
-        try {
-            module = Module.getCallerModuleLoader().loadModule(ModuleIdentifier.create(moduleName));
-        } catch (ModuleLoadException e) {
-            throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToLoadModuleDriver(moduleName)));
-        }
-
-        final ServiceLoader<Driver> serviceLoader = module.loadService(Driver.class);
-        if (serviceLoader != null) for (Driver driver : serviceLoader) {
-            final int majorVersion = driver.getMajorVersion();
-            final int minorVersion = driver.getMinorVersion();
-
-            context.removeService(ServiceName.JBOSS.append("jdbc-driver", driver.getClass().getName(), Integer.toString(majorVersion), Integer.toString(minorVersion)));
-        }
+        final ServiceRegistry registry = context.getServiceRegistry(true);
+        ServiceName  jdbcServiceName = ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_"));
+        ServiceController<?> jdbcServiceController = registry.getService(jdbcServiceName);
+        context.removeService(jdbcServiceController);
 
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
-        // TODO:  RE-ADD SERVICES
+        final String driverName = model.require(DRIVER_NAME.getName()).asString();
+        final String moduleName = model.require(DRIVER_MODULE_NAME.getName()).asString();
+        final Integer majorVersion = model.hasDefined(DRIVER_MAJOR_VERSION.getName()) ? model.get(DRIVER_MAJOR_VERSION.getName()).asInt() : null;
+        final Integer minorVersion = model.hasDefined(DRIVER_MINOR_VERSION.getName()) ? model.get(DRIVER_MINOR_VERSION.getName()).asInt() : null;
+        final String driverClassName = model.hasDefined(DRIVER_CLASS_NAME.getName()) ? model.get(DRIVER_CLASS_NAME.getName()).asString() : null;
+        final String dataSourceClassName = model.hasDefined(DRIVER_DATASOURCE_CLASS_NAME.getName()) ? model.get(DRIVER_DATASOURCE_CLASS_NAME.getName()).asString() : null;
+        final String xaDataSourceClassName = model.hasDefined(DRIVER_XA_DATASOURCE_CLASS_NAME.getName()) ? model.get(
+                DRIVER_XA_DATASOURCE_CLASS_NAME.getName()).asString() : null;
+
+
+        final ServiceTarget target = context.getServiceTarget();
+
+        final ModuleIdentifier moduleId;
+        final Module module;
+        try {
+            moduleId = ModuleIdentifier.create(moduleName);
+            module = Module.getCallerModuleLoader().loadModule(moduleId);
+        } catch (ModuleLoadException e) {
+            context.getFailureDescription().set(MESSAGES.failedToLoadModuleDriver(moduleName));
+            return;
+        }
+
+        if (driverClassName == null) {
+            final ServiceLoader<Driver> serviceLoader = module.loadService(Driver.class);
+            if (serviceLoader != null)
+                for (Driver driver : serviceLoader) {
+                    startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName);
+                }
+        } else {
+            try {
+                final Class<? extends Driver> driverClass = module.getClassLoader().loadClass(driverClassName)
+                        .asSubclass(Driver.class);
+                final Constructor<? extends Driver> constructor = driverClass.getConstructor();
+                final Driver driver = constructor.newInstance();
+                startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName);
+            } catch (Exception e) {
+                SUBSYSTEM_DATASOURCES_LOGGER.cannotInstantiateDriverClass(driverClassName, e);
+
+            }
+        }
     }
 }
