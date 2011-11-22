@@ -26,11 +26,11 @@ import java.net.InetAddress;
 
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.Oid;
-import org.jboss.as.jacorb.metadata.IORSecurityConfigMetadata;
-import org.jboss.as.jacorb.metadata.IORSecurityConfigMetadata.AsContext;
-import org.jboss.as.jacorb.metadata.IORSecurityConfigMetadata.SasContext;
-import org.jboss.as.jacorb.metadata.IORSecurityConfigMetadata.TransportConfig;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.ejb.jboss.IORASContextMetaData;
+import org.jboss.metadata.ejb.jboss.IORSASContextMetaData;
+import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
+import org.jboss.metadata.ejb.jboss.IORTransportConfigMetaData;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.MARSHAL;
@@ -128,7 +128,7 @@ public final class CSIv2Util {
      * @param orb      a reference to the running {@code ORB}.
      * @return a {@code TaggedComponent} representing the encoded SSL component.
      */
-    public static TaggedComponent createSSLTaggedComponent(IORSecurityConfigMetadata metadata, Codec codec, int sslPort,
+    public static TaggedComponent createSSLTaggedComponent(IORSecurityConfigMetaData metadata, Codec codec, int sslPort,
                                                            ORB orb) {
         if (metadata == null) {
             log.debugf("createSSLTaggedComponent() called with null metadata");
@@ -167,7 +167,7 @@ public final class CSIv2Util {
      * @param orb      a reference to the running {@code ORB}.
      * @return a {@code TaggedComponent} representing the encoded CSIv2 security component.
      */
-    public static TaggedComponent createSecurityTaggedComponent(IORSecurityConfigMetadata metadata, Codec codec,
+    public static TaggedComponent createSecurityTaggedComponent(IORSecurityConfigMetaData metadata, Codec codec,
                                                                 int sslPort, ORB orb) {
         if (metadata == null) {
             log.debugf("createSecurityTaggedComponent() called with null metadata");
@@ -207,7 +207,7 @@ public final class CSIv2Util {
      * @param orb      a reference to the running {@code ORB}.
      * @return the constructed {@code CompoundSecMech} array.
      */
-    public static CompoundSecMech[] createCompoundSecMechanisms(IORSecurityConfigMetadata metadata, Codec codec,
+    public static CompoundSecMech[] createCompoundSecMechanisms(IORSecurityConfigMetaData metadata, Codec codec,
                                                                 int sslPort, ORB orb) {
         // support just 1 security mechanism for now (and ever).
         CompoundSecMech[] csmList = new CompoundSecMech[1];
@@ -239,7 +239,7 @@ public final class CSIv2Util {
      * @param metadata the metadata object that contains the CSIv2 security configuration info.
      * @return the constructed {@code SAS_ContextSec} instance.
      */
-    public static SAS_ContextSec createSecureAttributeServiceContext(IORSecurityConfigMetadata metadata) {
+    public static SAS_ContextSec createSecureAttributeServiceContext(IORSecurityConfigMetaData metadata) {
         SAS_ContextSec context;
 
         // context contains target_supports, target_requires, privilige_authorities, supported_naming_mechanisms, supported_identity_types.
@@ -250,10 +250,10 @@ public final class CSIv2Util {
         int supIdenTypes = 0; // 0 means ITTAbsent
 
         // the the SasContext metadata.
-        SasContext sasMeta = metadata.getSasContext();
+        IORSASContextMetaData sasMeta = metadata.getSasContext();
 
         // if no SAS context metadata, or caller propagation is not supported, we return with a more or less empty sas context.
-        if (sasMeta == null || !sasMeta.isCallerPropagationSupported()) {
+        if (sasMeta == null || sasMeta.getCallerPropagation().equals(IORSASContextMetaData.CALLER_PROPAGATION_NONE)) {
             context = new SAS_ContextSec((short) support, (short) require, privilAuth, supNamMechs, supIdenTypes);
         } else {
             support = IdentityAssertion.value;
@@ -279,7 +279,7 @@ public final class CSIv2Util {
      * @param metadata the metadata object that contains the CSIv2 security configuration info.
      * @return the constructed {@code AS_ContextSec} instance.
      */
-    public static AS_ContextSec createAuthenticationServiceContext(IORSecurityConfigMetadata metadata) {
+    public static AS_ContextSec createAuthenticationServiceContext(IORSecurityConfigMetaData metadata) {
 
         AS_ContextSec context;
 
@@ -289,10 +289,10 @@ public final class CSIv2Util {
         byte[] clientAuthMech = {};
         byte[] targetName = {};
 
-        AsContext asMeta = metadata.getAsContext();
+        IORASContextMetaData asMeta = metadata.getAsContext();
 
         // if no AS context metatada exists, or authentication method "none" is specified, we can produce an empty AS context.
-        if (asMeta == null || asMeta.getAuthMethod().equals(AsContext.AUTH_METHOD_NONE)) {
+        if (asMeta == null || asMeta.getAuthMethod().equals(IORASContextMetaData.AUTH_METHOD_NONE)) {
             context = new AS_ContextSec((short) support, (short) require, clientAuthMech, targetName);
         } else {
             // we do support.
@@ -339,7 +339,7 @@ public final class CSIv2Util {
      * @param orb     a reference to the running {@code ORB}.
      * @return the constructed {@code TaggedComponent}.
      */
-    public static TaggedComponent createTransportMech(TransportConfig tconfig, Codec codec, int sslPort, ORB orb) {
+    public static TaggedComponent createTransportMech(IORTransportConfigMetaData tconfig, Codec codec, int sslPort, ORB orb) {
 
         TaggedComponent tc;
 
@@ -411,24 +411,24 @@ public final class CSIv2Util {
      * @param tc the transport configuration metadata.
      * @return an {@code int} representing the transport mechanism required by the target.
      */
-    public static int createTargetRequires(TransportConfig tc) {
+    public static int createTargetRequires(IORTransportConfigMetaData tc) {
         int requires = 0;
 
         if (tc != null) {
-            if (tc.getIntegrity().equals(TransportConfig.INTEGRITY_REQUIRED)) {
+            if (tc.getIntegrity().equals(IORTransportConfigMetaData.INTEGRITY_REQUIRED)) {
                 requires = requires | Integrity.value;
             }
-            if (tc.getConfidentiality().equals(TransportConfig.CONFIDENTIALITY_REQUIRED)) {
+            if (tc.getConfidentiality().equals(IORTransportConfigMetaData.CONFIDENTIALITY_REQUIRED)) {
                 requires = requires | Confidentiality.value;
             }
-            if (tc.getDetectMisordering().equalsIgnoreCase(TransportConfig.DETECT_MISORDERING_REQUIRED)) {
+            if (tc.getDetectMisordering().equalsIgnoreCase(IORTransportConfigMetaData.DETECT_MISORDERING_REQUIRED)) {
                 requires = requires | DetectMisordering.value;
             }
-            if (tc.getDetectReplay().equalsIgnoreCase(TransportConfig.DETECT_REPLAY_REQUIRED)) {
+            if (tc.getDetectReplay().equalsIgnoreCase(IORTransportConfigMetaData.DETECT_REPLAY_REQUIRED)) {
                 requires = requires | DetectReplay.value;
             }
             // no EstablishTrustInTarget required - client decides
-            if (tc.getEstablishTrustInClient().equals(TransportConfig.ESTABLISH_TRUST_IN_CLIENT_REQUIRED)) {
+            if (tc.getEstablishTrustInClient().equals(IORTransportConfigMetaData.ESTABLISH_TRUST_IN_CLIENT_REQUIRED)) {
                 requires = requires | EstablishTrustInClient.value;
             }
         }
@@ -444,26 +444,26 @@ public final class CSIv2Util {
      * @param tc the transport configuration metadata.
      * @return an {@code int} representing the transport mechanisms supported by the target.
      */
-    public static int createTargetSupports(TransportConfig tc) {
+    public static int createTargetSupports(IORTransportConfigMetaData tc) {
         int supports = 0;
 
         if (tc != null) {
-            if (!tc.getIntegrity().equals(TransportConfig.INTEGRITY_NONE)) {
+            if (!tc.getIntegrity().equals(IORTransportConfigMetaData.INTEGRITY_NONE)) {
                 supports = supports | Integrity.value;
             }
-            if (!tc.getConfidentiality().equals(TransportConfig.CONFIDENTIALITY_NONE)) {
+            if (!tc.getConfidentiality().equals(IORTransportConfigMetaData.CONFIDENTIALITY_NONE)) {
                 supports = supports | Confidentiality.value;
             }
-            if (!tc.getDetectMisordering().equalsIgnoreCase(TransportConfig.DETECT_MISORDERING_NONE)) {
+            if (!tc.getDetectMisordering().equalsIgnoreCase(IORTransportConfigMetaData.DETECT_MISORDERING_NONE)) {
                 supports = supports | DetectMisordering.value;
             }
-            if (!tc.getDetectReplay().equalsIgnoreCase(TransportConfig.DETECT_REPLAY_NONE)) {
+            if (!tc.getDetectReplay().equalsIgnoreCase(IORTransportConfigMetaData.DETECT_REPLAY_NONE)) {
                 supports = supports | DetectReplay.value;
             }
-            if (!tc.getEstablishTrustInTarget().equals(TransportConfig.ESTABLISH_TRUST_IN_TARGET_NONE)) {
+            if (!tc.getEstablishTrustInTarget().equals(IORTransportConfigMetaData.ESTABLISH_TRUST_IN_TARGET_NONE)) {
                 supports = supports | EstablishTrustInTarget.value;
             }
-            if (!tc.getEstablishTrustInClient().equals(TransportConfig.ESTABLISH_TRUST_IN_CLIENT_NONE)) {
+            if (!tc.getEstablishTrustInClient().equals(IORTransportConfigMetaData.ESTABLISH_TRUST_IN_CLIENT_NONE)) {
                 supports = supports | EstablishTrustInClient.value;
             }
         }

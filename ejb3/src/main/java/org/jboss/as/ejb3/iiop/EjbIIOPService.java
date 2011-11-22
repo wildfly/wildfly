@@ -23,7 +23,9 @@ package org.jboss.as.ejb3.iiop;
 
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import javax.ejb.EJBHome;
@@ -32,10 +34,12 @@ import javax.rmi.PortableRemoteObject;
 
 import org.jacorb.ssl.SSLPolicyValue;
 import org.jacorb.ssl.SSLPolicyValueHelper;
+import org.jacorb.ssl.SSL_POLICY_TYPE;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
+import org.jboss.as.jacorb.csiv2.CSIv2Policy;
 import org.jboss.as.jacorb.rmi.ir.InterfaceRepository;
 import org.jboss.as.jacorb.rmi.marshal.strategy.SkeletonStrategy;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
@@ -53,6 +57,7 @@ import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.marshalling.OutputStreamByteOutput;
 import org.jboss.marshalling.river.RiverMarshallerFactory;
+import org.jboss.metadata.ejb.jboss.IIOPMetaData;
 import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
 import org.jboss.metadata.ejb.jboss.IORTransportConfigMetaData;
 import org.jboss.modules.Module;
@@ -180,24 +185,9 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
     private ServantRegistry beanServantRegistry;
 
     /**
-     * <code>ReferenceFactory</code> for the container's <code>EJBHome</code>.
-     */
-    private ReferenceFactory homeReferenceFactory;
-
-    /**
      * <code>ReferenceFactory</code> for <code>EJBObject</code>s.
      */
     private ReferenceFactory beanReferenceFactory;
-
-    /**
-     * The container's <code>CSIv2Policy</code>.
-     */
-    private Policy csiv2Policy;
-
-    /**
-     * The container's <code>SSLPolicy</code>.
-     */
-    private Policy sslPolicy;
 
     /**
      * The container's <code>EJBHome</code>.
@@ -215,28 +205,37 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
      */
     private final InjectedValue<POA> irPoa = new InjectedValue<POA>();
 
-    private Current poaCurrent;
+    /**
+     * The IIOP metadata, configured in the assembly descriptor.
+     */
+    private IIOPMetaData iiopMetaData;
 
     /**
      * The fully qualified name
      */
     private String name = null;
 
-    public EjbIIOPService(final Map<String, SkeletonStrategy> beanMethodMap, final String[] beanRepositoryIds, final Map<String, SkeletonStrategy> homeMethodMap, final String[] homeRepositoryIds, final boolean useQualifiedName, final Module module) {
+    /**
+     * The name of the bean in the COSNaming service.
+     */
+    private String bindingName = null;
+
+    public EjbIIOPService(final Map<String, SkeletonStrategy> beanMethodMap, final String[] beanRepositoryIds,
+                          final Map<String, SkeletonStrategy> homeMethodMap, final String[] homeRepositoryIds,
+                          final boolean useQualifiedName, final IIOPMetaData iiopMetaData, final Module module) {
         this.useQualifiedName = useQualifiedName;
         this.module = module;
         this.beanMethodMap = Collections.unmodifiableMap(beanMethodMap);
         this.beanRepositoryIds = beanRepositoryIds;
         this.homeMethodMap = Collections.unmodifiableMap(homeMethodMap);
         this.homeRepositoryIds = homeRepositoryIds;
+        this.iiopMetaData = iiopMetaData;
     }
 
 
     public synchronized void start(final StartContext startContext) throws StartException {
 
-
         try {
-
             final RiverMarshallerFactory factory = new RiverMarshallerFactory();
             final MarshallingConfiguration configuration = new MarshallingConfiguration();
             configuration.setClassResolver(ModularClassResolver.getInstance(serviceModuleLoaderInjectedValue.getValue()));
@@ -247,6 +246,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
             // Should create a CORBA interface repository?
             final boolean interfaceRepositorySupported = false;
 
+            // Build binding name of the bean.
             final EJBComponent component = ejbComponentInjectedValue.getValue();
             final String earApplicationName = component.getEarApplicationName();
             if (useQualifiedName) {
@@ -261,6 +261,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
                 name = component.getComponentName();
             }
             name = name.replace(".", "_");
+
             final ORB orb = this.orb.getValue();
             if (interfaceRepositorySupported) {
                 // Create a CORBA interface repository for the enterprise bean
@@ -272,64 +273,50 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
                 logger.info("CORBA interface repository for " + name + ": " + orb.object_to_string(iri.getReference()));
             }
 
-            // Create csiv2Policy for both home and remote containing IorSecurityConfigMetadata
-            final Any secPolicy = orb.create_any();
-            /*
-            IORSecurityConfigMetaData securityConfig =  container.getBeanMetaData().getIorSecurityConfigMetaData();
-            // if no security metadata was found, get the default metadata from the registry.
-            if (securityConfig == null) {
-                securityConfig = (IORSecurityConfigMetaData) Registry.lookup(CorbaORBService.IOR_SECURITY_CONFIG);
+            IORSecurityConfigMetaData iorSecurityConfigMetaData = null;
+            if (this.iiopMetaData != null)
+                iorSecurityConfigMetaData = this.iiopMetaData.getIorSecurityConfigMetaData();
+
+            // Create security policies if security metadata has been provided.
+            List<Policy> policyList = new ArrayList<Policy>();
+            if (iorSecurityConfigMetaData != null) {
+
+                // Create csiv2Policy for both home and remote containing IorSecurityConfigMetadata.
+                final Any secPolicy = orb.create_any();
+                secPolicy.insert_Value(iorSecurityConfigMetaData);
+                Policy csiv2Policy = orb.create_policy(CSIv2Policy.TYPE, secPolicy);
+                policyList.add(csiv2Policy);
+
+                // Create SSLPolicy (SSL_REQUIRED ensures home and remote IORs will have port 0 in the primary address).
+                boolean sslRequired = false;
+                if (iorSecurityConfigMetaData != null) {
+                    IORTransportConfigMetaData tc = iorSecurityConfigMetaData.getTransportConfig();
+                    sslRequired = IORTransportConfigMetaData.INTEGRITY_REQUIRED.equals(tc.getIntegrity())
+                            || IORTransportConfigMetaData.CONFIDENTIALITY_REQUIRED.equals(tc.getConfidentiality())
+                            || IORTransportConfigMetaData.ESTABLISH_TRUST_IN_CLIENT_REQUIRED.equals(tc.getEstablishTrustInClient());
+                }
+                final Any sslPolicyValue = orb.create_any();
+                SSLPolicyValueHelper.insert(sslPolicyValue, (sslRequired) ? SSLPolicyValue.SSL_REQUIRED : SSLPolicyValue.SSL_NOT_REQUIRED);
+                Policy sslPolicy = orb.create_policy(SSL_POLICY_TYPE.value, sslPolicyValue);
+                policyList.add(sslPolicy);
+
+                logger.debug("container's SSL policy: " + sslPolicy);
             }
-            */
-            //TODO: setup security config
-            final IORSecurityConfigMetaData securityConfig = null;
-            secPolicy.insert_Value(securityConfig);
-            csiv2Policy = null; // = orb.create_policy(CSIv2Policy.TYPE, secPolicy);
+            Policy[] policies = policyList.toArray(new Policy[policyList.size()]);
 
-            // Create SSLPolicy
-            //    (SSL_REQUIRED ensures home and remote IORs
-            //     will have port 0 in the primary address)
-            boolean sslRequired = false;
-            if (securityConfig != null) {
-                IORTransportConfigMetaData tc = securityConfig.getTransportConfig();
-                sslRequired = tc.getIntegrity() ==
-                        IORTransportConfigMetaData.INTEGRITY_REQUIRED
-                        || tc.getConfidentiality() ==
-                        IORTransportConfigMetaData.CONFIDENTIALITY_REQUIRED
-                        || tc.getEstablishTrustInClient() ==
-                        IORTransportConfigMetaData.ESTABLISH_TRUST_IN_CLIENT_REQUIRED;
-            }
-            final Any sslPolicyValue = orb.create_any();
-            SSLPolicyValueHelper.insert(sslPolicyValue, (sslRequired) ? SSLPolicyValue.SSL_REQUIRED : SSLPolicyValue.SSL_NOT_REQUIRED);
-            sslPolicy = null; //orb.create_policy(SSL_POLICY_TYPE.value, sslPolicyValue);
-            logger.debug("container's SSL policy: " + sslPolicy);
-
-            // Get the POACurrent object
-            poaCurrent = CurrentHelper.narrow(orb.resolve_initial_references("POACurrent"));
-
-            Policy[] policies = {};
-            /*
-            if (codebasePolicy == null)
-                policies = new Policy[]{sslPolicy, csiv2Policy};
-            else
-                policies = new Policy[]{codebasePolicy, sslPolicy, csiv2Policy};
-            */
-
-            // If there is an interface repository, then get
-            // the homeInterfaceDef from the IR
+            // If there is an interface repository, then get the homeInterfaceDef from the IR
             InterfaceDef homeInterfaceDef = null;
             if (iri != null) {
                 Repository ir = iri.getReference();
                 homeInterfaceDef = InterfaceDefHelper.narrow(ir.lookup_id(homeRepositoryIds[0]));
             }
 
-            // Instantiate home servant, bind it to the servant registry, and
-            // create CORBA reference to the EJBHome.
+            // Instantiate home servant, bind it to the servant registry, and create CORBA reference to the EJBHome.
+            final EjbHomeCorbaServant homeServant = new EjbHomeCorbaServant(homeMethodMap, homeRepositoryIds, homeInterfaceDef,
+                    orb, homeView.getValue(), component.getTransactionManager(), module.getClassLoader());
+
             homeServantRegistry = poaRegistry.getValue().getRegistryWithPersistentPOAPerServant();
-
-            final EjbHomeCorbaServant homeServant = new EjbHomeCorbaServant(homeMethodMap, homeRepositoryIds, homeInterfaceDef, orb, homeView.getValue(), component.getTransactionManager(), module.getClassLoader());
-
-            homeReferenceFactory = homeServantRegistry.bind(homeServantName(name), homeServant, policies);
+            ReferenceFactory homeReferenceFactory = homeServantRegistry.bind(homeServantName(name), homeServant, policies);
 
             final org.omg.CORBA.Object corbaRef = homeReferenceFactory.createReference(homeRepositoryIds[0]);
             ejbHome = (EJBHome) PortableRemoteObject.narrow(corbaRef, EJBHome.class);
@@ -357,24 +344,28 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
             }
             homeServant.setEjbMetaData(ejbMetaData);
 
-            // If there is an interface repository, then get
-            // the beanInterfaceDef from the IR
+            // If there is an interface repository, then get the beanInterfaceDef from the IR
             InterfaceDef beanInterfaceDef = null;
             if (iri != null) {
                 final Repository ir = iri.getReference();
                 beanInterfaceDef = InterfaceDefHelper.narrow(ir.lookup_id(beanRepositoryIds[0]));
             }
 
+            // Get the POACurrent object
+            Current poaCurrent = CurrentHelper.narrow(orb.resolve_initial_references("POACurrent"));
 
-            final EjbObjectCorbaServant beanServant = new EjbObjectCorbaServant(poaCurrent, beanMethodMap, beanRepositoryIds, beanInterfaceDef, orb, remoteView.getValue(), factory, configuration, component.getTransactionManager(), module.getClassLoader());
-
+            // Instantiate the ejb object servant and bind it to the servant registry.
+            final EjbObjectCorbaServant beanServant = new EjbObjectCorbaServant(poaCurrent, beanMethodMap, beanRepositoryIds,
+                    beanInterfaceDef, orb, remoteView.getValue(), factory, configuration, component.getTransactionManager(),
+                    module.getClassLoader());
             beanReferenceFactory = beanServantRegistry.bind(beanServantName(name), beanServant, policies);
 
-            final NamingContextExt corbaContext = corbaNamingContext.getValue();
-
             // Register bean home in local CORBA naming context
-            rebind(corbaContext, name, corbaRef);
-            logger.debug("Home IOR for " + component.getComponentName() + " bound to " + name + " in CORBA naming service");
+            this.bindingName = this.iiopMetaData != null ? this.iiopMetaData.getBindingName() : null;
+            if (this.bindingName == null || this.bindingName.isEmpty())
+                this.bindingName = this.name;
+            rebind(corbaNamingContext.getValue(), bindingName, corbaRef);
+            logger.debug("Home IOR for " + component.getComponentName() + " bound to " + this.bindingName + " in CORBA naming service");
         } catch (Exception e) {
             throw new StartException(e);
         }
@@ -387,7 +378,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
 
         // Unregister bean home from local CORBA naming context
         try {
-            NameComponent[] name = corbaContext.to_name(this.name);
+            NameComponent[] name = corbaContext.to_name(this.bindingName);
             corbaContext.unbind(name);
         } catch (InvalidName invalidName) {
             logger.error("Cannot unregister EJBHome from CORBA naming service", invalidName);
@@ -422,7 +413,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
      * @param locator The locator
      * @return The corba reference
      */
-    public Object referenceForLocator(final EJBLocator<? extends Object> locator) {
+    public Object referenceForLocator(final EJBLocator<?> locator) {
         final EJBComponent ejbComponent = ejbComponentInjectedValue.getValue();
         try {
             final String earApplicationName = ejbComponent.getEarApplicationName() == null ? "" : ejbComponent.getEarApplicationName();
@@ -464,6 +455,11 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
      * <p/>
      * This method is synchronized on the class object, if multiple services attempt to bind the
      * same context name at once it will fail
+     *
+     * @param ctx a reference to the COSNaming service.
+     * @param strName the name under which the CORBA object is to be bound.
+     * @param obj the CORBA object to be bound.
+     * @throws Exception if an error occurs while binding the object.
      */
     public static synchronized void rebind(final NamingContextExt ctx, final String strName, final org.omg.CORBA.Object obj) throws Exception {
         final NameComponent[] name = ctx.to_name(strName);

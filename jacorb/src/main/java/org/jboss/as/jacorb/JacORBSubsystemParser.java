@@ -842,7 +842,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
         return isWritable;
     }
 
-    // helper enum types that encapsulate the subsyustem namespace, elements, and attributes.
+    // helper enum types that encapsulate the subsystem namespace, elements, and attributes.
 
     /**
      * <p>
@@ -863,7 +863,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
 
         /**
          * <p>
-         * {@code JacORBNamespace} constructor. Sets the namespace {@code URI}.
+         * {@code Namespace} constructor. Sets the namespace {@code URI}.
          * </p>
          *
          * @param namespaceURI a {@code String} representing the namespace {@code URI}.
@@ -899,12 +899,12 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
 
         /**
          * <p>
-         * Gets the {@code JacORBNamespace} identified by the specified {@code URI}.
+         * Gets the {@code Namespace} identified by the specified {@code URI}.
          * </p>
          *
          * @param uri a {@code String} representing the namespace {@code URI}.
-         * @return the {@code JacORBNamespace} identified by the {@code URI}. If no namespace can be found, the
-         *         {@code JacORBNamespace.UNKNOWN} type is returned.
+         * @return the {@code Namespace} identified by the {@code URI}. If no namespace can be found, the
+         *         {@code Namespace.UNKNOWN} type is returned.
          */
         static Namespace forUri(final String uri) {
             final Namespace element = MAP.get(uri);
@@ -945,7 +945,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
 
         /**
          * <p>
-         * {@code JacORBElement} constructor. Sets the element name.
+         * {@code Element} constructor. Sets the element name.
          * </p>
          *
          * @param name a {@code String} representing the local name of the element.
@@ -981,12 +981,12 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
 
         /**
          * <p>
-         * Gets the {@code JacORBElement} identified by the specified name.
+         * Gets the {@code Element} identified by the specified name.
          * </p>
          *
          * @param localName a {@code String} representing the local name of the element.
-         * @return the {@code JacORBElement} identified by the name. If no attribute can be found, the
-         *         {@code JacORBElement.UNKNOWN} type is returned.
+         * @return the {@code Element} identified by the name. If no attribute can be found, the {@code Element.UNKNOWN}
+         *         type is returned.
          */
         public static Element forName(String localName) {
             final Element element = MAP.get(localName);
@@ -1072,7 +1072,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
 
         /**
          * <p>
-         * {@code JacORBAttribute} constructor. Sets the attribute name.
+         * {@code Attribute} constructor. Sets the attribute name.
          * </p>
          *
          * @param name a {@code String} representing the local name of the attribute.
@@ -1107,12 +1107,12 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
 
         /**
          * <p>
-         * Gets the {@code JacORBAttribute} identified by the specified name.
+         * Gets the {@code Attribute} identified by the specified name.
          * </p>
          *
          * @param localName a {@code String} representing the local name of the attribute.
-         * @return the {@code JacORBAttribute} identified by the name. If no attribute can be found, the
-         *         {@code JacORBAttribute.UNKNOWN} type is returned.
+         * @return the {@code Attribute} identified by the name. If no attribute can be found, the {@code Attribute.UNKNOWN}
+         *         type is returned.
          */
         public static Attribute forName(String localName) {
             final Attribute attribute = MAP.get(localName);
