@@ -94,6 +94,13 @@ public interface ComponentView {
      */
     Method getMethod(final String name, final String descriptor);
 
+    /**
+     * Provides a mechanism to attach arbitrary data to the component view
+     * @param clazz The class of attachment
+     * @return The data, or null if it is not present
+     */
+    <T> T getPrivateData(Class<T> clazz);
+
 
     boolean isAsynchronous(final Method method);
 

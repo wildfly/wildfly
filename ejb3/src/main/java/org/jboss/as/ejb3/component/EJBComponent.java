@@ -196,6 +196,7 @@ public abstract class EJBComponent extends BasicComponent {
 
     protected TransactionAttributeType getCurrentTransactionAttribute() {
         final InterceptorContext currentInvocationContext = CurrentInvocationContext.get();
+
         if (currentInvocationContext == null) {
             return null;
         }
@@ -204,8 +205,11 @@ public abstract class EJBComponent extends BasicComponent {
         if (invokedMethod == null) {
             return null;
         }
+
+        final ComponentView componentView = currentInvocationContext.getPrivateData(ComponentView.class);
+        final MethodIntf methodIntf = componentView.getPrivateData(MethodIntf.class);
         // get the tx attribute of the invoked method
-        return this.getTransactionAttributeType(invokedMethod);
+        return this.getTransactionAttributeType(methodIntf, invokedMethod);
     }
 
     public EJBHome getEJBHome() throws IllegalStateException {
@@ -285,13 +289,12 @@ public abstract class EJBComponent extends BasicComponent {
         return timerService;
     }
 
-    @Deprecated
-    public TransactionAttributeType getTransactionAttributeType(Method method) {
-        return getTransactionAttributeType(MethodIntf.BEAN, method);
-    }
-
-    public TransactionAttributeType getTransactionAttributeType(MethodIntf methodIntf, Method method) {
+    public TransactionAttributeType getTransactionAttributeType(final MethodIntf methodIntf, final Method method) {
         TransactionAttributeType txAttr = txAttrs.get(new MethodTransactionAttributeKey(methodIntf, MethodIdentifier.getIdentifierForMethod(method)));
+        //fall back to type bean if not found
+        if(txAttr == null && methodIntf != MethodIntf.BEAN) {
+            txAttr = txAttrs.get(new MethodTransactionAttributeKey(MethodIntf.BEAN, MethodIdentifier.getIdentifierForMethod(method)));
+        }
         if (txAttr == null)
             return TransactionAttributeType.REQUIRED;
         return txAttr;

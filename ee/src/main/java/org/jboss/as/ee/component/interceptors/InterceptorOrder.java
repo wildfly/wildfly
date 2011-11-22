@@ -43,7 +43,7 @@ public class
         public static final int TIMEOUT_INVOCATION_CONTEXT_INTERCEPTOR                      = 0x310;
         public static final int CDI_REQUEST_SCOPE                                           = 0x320;
         public static final int BMT_TRANSACTION_INTERCEPTOR                                 = 0x400;
-        public static final int TIMEOUT_CMT_INTERCEPTOR                                     = 0x410;
+        public static final int COMPONENT_CMT_INTERCEPTOR                                   = 0x410;
         public static final int SYNCHRONIZATION_INTERCEPTOR                                 = 0x500;
         public static final int REENTRANCY_INTERCEPTOR                                      = 0x501;
         public static final int JPA_SESSION_BEAN_INTERCEPTOR                                = 0x600;

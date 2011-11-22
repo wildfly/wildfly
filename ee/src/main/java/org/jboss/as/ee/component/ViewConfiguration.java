@@ -25,6 +25,7 @@ package org.jboss.as.ee.component;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -53,6 +54,7 @@ public class ViewConfiguration {
     private final List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
     private final Class<?> viewClass;
     private final Set<Method> asyncMethods = new HashSet<Method>();
+    private final Map<Class<?>, Object> privateData = new HashMap<Class<?>, Object>();
     private ViewInstanceFactory viewInstanceFactory;
 
     /**
@@ -272,5 +274,22 @@ public class ViewConfiguration {
      */
     public void setViewInstanceFactory(final ViewInstanceFactory viewInstanceFactory) {
         this.viewInstanceFactory = viewInstanceFactory;
+    }
+
+    /**
+     * Attaches arbitrary private data to this view instance
+     *
+     * @param type The type of data
+     * @param data The data
+     */
+    public <T> void putPrivateData(final Class<T> type, T data ) {
+        privateData.put(type, data);
+    }
+
+    /**
+     * retrieves private data
+     */
+    public Map<Class<?>, Object> getPrivateData() {
+        return privateData;
     }
 }

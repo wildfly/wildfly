@@ -1,0 +1,23 @@
+<ejb-jar xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"
+         version="3.1">
+    <assembly-descriptor>
+        <container-transaction>
+            <method>
+                <ejb-name>DescriptorBean</ejb-name>
+                <method-intf>Local</method-intf>
+                <method-name>transactionStatus</method-name>
+            </method>
+            <trans-attribute>Never</trans-attribute>
+        </container-transaction>
+        <container-transaction>
+            <method>
+                <ejb-name>DescriptorBean</ejb-name>
+                <method-intf>Remote</method-intf>
+                <method-name>transactionStatus</method-name>
+            </method>
+            <trans-attribute>Mandatory</trans-attribute>
+        </container-transaction>
+    </assembly-descriptor>
+</ejb-jar>

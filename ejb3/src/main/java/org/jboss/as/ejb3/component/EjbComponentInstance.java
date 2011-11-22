@@ -61,6 +61,7 @@ public abstract class EjbComponentInstance extends BasicComponentInstance {
         }
         try {
             InterceptorContext context = prepareInterceptorContext();
+            context.putPrivateData(MethodIntf.class, MethodIntf.TIMER);
             context.setMethod(method);
             context.setTimer(timer);
             context.setTarget(getInstance());
