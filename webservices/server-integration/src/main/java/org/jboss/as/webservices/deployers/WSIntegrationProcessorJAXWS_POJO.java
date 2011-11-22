@@ -50,6 +50,7 @@ import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  */
 public class WSIntegrationProcessorJAXWS_POJO extends AbstractIntegrationProcessorJAXWS {
 
@@ -59,7 +60,7 @@ public class WSIntegrationProcessorJAXWS_POJO extends AbstractIntegrationProcess
 
     @Override
     protected void processAnnotation(final DeploymentUnit unit, final ClassInfo classInfo, final AnnotationInstance wsAnnotation, final CompositeIndex compositeIndex) throws DeploymentUnitProcessingException {
-        if (isJaxwsEjb(classInfo)) {
+        if (isEjb3(classInfo)) {
             // Don't create component description for EJB3 endpoints.
             // There's already one created by EJB3 subsystem.
             return;
@@ -71,25 +72,27 @@ public class WSIntegrationProcessorJAXWS_POJO extends AbstractIntegrationProcess
 
         final String endpointClassName = classInfo.name().toString();
         final JBossWebMetaData jbossWebMD = getJBossWebMetaData(unit);
-        final JAXWSDeployment jaxwsDeployment = getJaxwsDeployment(unit);
-        boolean found = false;
-        for (final ServletMetaData servletMD : getServlets(jbossWebMD)) {
-            if (endpointClassName.equals(getEndpointClassName(servletMD))) {
-                found = true;
-                // creating component description for POJO endpoint
-                final String endpointName = getEndpointName(servletMD);
-                createComponentDescription(unit, endpointName, endpointClassName, endpointName);
-                // register POJO endpoint
-                final String urlPattern = getUrlPattern(endpointName, unit);
-                jaxwsDeployment.addEndpoint(new POJOEndpoint(endpointName, endpointClassName, urlPattern));
+        if (jbossWebMD != null) {
+            final JAXWSDeployment jaxwsDeployment = getJaxwsDeployment(unit);
+            boolean found = false;
+            for (final ServletMetaData servletMD : getServlets(jbossWebMD)) {
+                if (endpointClassName.equals(getEndpointClassName(servletMD))) {
+                    found = true;
+                    // creating component description for POJO endpoint
+                    final String endpointName = getEndpointName(servletMD);
+                    createComponentDescription(unit, endpointName, endpointClassName, endpointName);
+                    // register POJO endpoint
+                    final String urlPattern = getUrlPattern(endpointName, unit);
+                    jaxwsDeployment.addEndpoint(new POJOEndpoint(endpointName, endpointClassName, urlPattern));
+                }
             }
-        }
-        if (!found) {
-            // JSR 109, version 1.3 final spec, section 5.3.2.1 javax.jws.WebService annotation
-            createComponentDescription(unit, endpointClassName, endpointClassName, endpointClassName);
-            // register POJO endpoint
-            final String urlPattern = getUrlPattern(classInfo);
-            jaxwsDeployment.addEndpoint(new POJOEndpoint(endpointClassName, urlPattern));
+            if (!found) {
+                // JSR 109, version 1.3 final spec, section 5.3.2.1 javax.jws.WebService annotation
+                createComponentDescription(unit, endpointClassName, endpointClassName, endpointClassName);
+                // register POJO endpoint
+                final String urlPattern = getUrlPattern(classInfo);
+                jaxwsDeployment.addEndpoint(new POJOEndpoint(endpointClassName, urlPattern));
+            }
         }
     }
 
@@ -129,11 +132,11 @@ public class WSIntegrationProcessorJAXWS_POJO extends AbstractIntegrationProcess
 
     private static AnnotationInstance getWebServiceAnnotation(final ClassInfo clazz) {
         final List<AnnotationInstance> webServiceAnnotations = clazz.annotations().get(WEB_SERVICE_ANNOTATION);
-        if (webServiceAnnotations.size() > 0) {
+        if (webServiceAnnotations != null && webServiceAnnotations.size() > 0) {
             return webServiceAnnotations.get(0);
         }
         final List<AnnotationInstance> webServiceProviderAnnotations = clazz.annotations().get(WEB_SERVICE_PROVIDER_ANNOTATION);
-        if (webServiceProviderAnnotations.size() > 0) {
+        if (webServiceProviderAnnotations != null && webServiceProviderAnnotations.size() > 0) {
             return webServiceProviderAnnotations.get(0);
         }
         throw new IllegalStateException();

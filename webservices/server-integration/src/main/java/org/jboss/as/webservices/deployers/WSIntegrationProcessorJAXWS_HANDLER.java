@@ -55,7 +55,7 @@ public final class WSIntegrationProcessorJAXWS_HANDLER extends AbstractIntegrati
         final WSEndpointHandlersMapping mapping = getRequiredAttachment(unit, WS_ENDPOINT_HANDLERS_MAPPING_KEY);
         final String endpointClassName = classInfo.name().toString();
 
-        if (isJaxwsEjb(classInfo)) {
+        if (isEjb3(classInfo)) {
             for (final EJBEndpoint ejbEndpoint : getJaxwsEjbs(unit)) {
                 if (endpointClassName.equals(ejbEndpoint.getClassName())) {
                     for (final String handlerClassName : mapping.getHandlers(endpointClassName)) {
