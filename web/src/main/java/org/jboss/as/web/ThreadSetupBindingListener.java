@@ -54,9 +54,17 @@ public class ThreadSetupBindingListener implements ThreadBindingListener {
     @Override
     public void unbind() {
         final ListIterator<SetupAction> iterator = actions.listIterator(actions.size());
+        Throwable error = null;
         while (iterator.hasPrevious()) {
             SetupAction action = iterator.previous();
-            action.teardown(Collections.<String, Object>emptyMap());
+             try {
+                action.teardown(Collections.<String, Object>emptyMap());
+             } catch (Throwable e) {
+                 error = e;
+             }
+        }
+        if(error != null) {
+            throw new RuntimeException(error);
         }
     }
 }

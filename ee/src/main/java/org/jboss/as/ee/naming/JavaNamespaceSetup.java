@@ -21,10 +21,13 @@
  */
 package org.jboss.as.ee.naming;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.deployment.SetupAction;
-
-import java.util.Map;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Sets and restores the <code>java:</code> contexts
@@ -35,14 +38,21 @@ import java.util.Map;
 public class JavaNamespaceSetup implements SetupAction {
 
     private final NamespaceContextSelector namespaceSelector;
+    private final Set<ServiceName> serviceNames;
 
-    public JavaNamespaceSetup(final NamespaceContextSelector namespaceSelector) {
+    public JavaNamespaceSetup(final NamespaceContextSelector namespaceSelector, final Set<ServiceName> serviceNames) {
         this.namespaceSelector = namespaceSelector;
+        this.serviceNames = serviceNames;
     }
 
     @Override
     public int priority() {
         return 1000;
+    }
+
+    @Override
+    public Set<ServiceName> dependencies() {
+        return Collections.unmodifiableSet(serviceNames);
     }
 
     @Override

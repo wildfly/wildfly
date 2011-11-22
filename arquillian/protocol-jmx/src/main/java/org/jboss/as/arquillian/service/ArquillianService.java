@@ -22,8 +22,6 @@
 
 package org.jboss.as.arquillian.service;
 
-import static org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT;
-
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Collections;
@@ -58,6 +56,8 @@ import org.jboss.osgi.framework.BundleManagerService;
 import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
+
+import static org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT;
 
 /**
  * Service responsible for creating and managing the life-cycle of the Arquillian service.
@@ -278,6 +278,11 @@ public class ArquillianService implements Service<ArquillianService> {
         @Override
         public int priority() {
             return 10000;
+        }
+
+        @Override
+        public Set<ServiceName> dependencies() {
+            return Collections.emptySet();
         }
 
         @Override

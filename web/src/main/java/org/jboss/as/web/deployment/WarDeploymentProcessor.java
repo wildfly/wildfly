@@ -229,7 +229,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
                     SecurityDomainContext.class, realmService.getSecurityDomainContextInjector()).setInitialMode(Mode.ACTIVE)
                     .install();
 
-            WebDeploymentService webDeploymentService = new WebDeploymentService(webContext, injectionContainer, setupActions);
+            final WebDeploymentService webDeploymentService = new WebDeploymentService(webContext, injectionContainer, setupActions);
             builder = serviceTarget
                     .addService(deploymentServiceName, webDeploymentService)
                     .addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), VirtualHost.class,
@@ -237,6 +237,11 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
                     .addDependency(realmServiceName, Realm.class, webDeploymentService.getRealm())
                     .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES))
                     .addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit));
+
+            //add any dependencies required by the setup action
+            for(final SetupAction action : setupActions) {
+                builder.addDependencies(action.dependencies());
+            }
 
             if (metaData.getDistributable() != null) {
                 final DistributedCacheManagerFactory factory = DistributableSessionManager.getDistributedCacheManagerFactory();

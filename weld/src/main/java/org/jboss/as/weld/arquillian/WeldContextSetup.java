@@ -21,7 +21,9 @@
  */
 package org.jboss.as.weld.arquillian;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.enterprise.context.spi.CreationalContext;
@@ -32,6 +34,7 @@ import javax.naming.NamingException;
 
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.weld.Container;
 import org.jboss.weld.context.bound.BoundConversationContext;
 import org.jboss.weld.context.bound.BoundLiteral;
@@ -138,6 +141,11 @@ public class WeldContextSetup implements SetupAction {
             requestContexts.remove();
             boundRequests.remove();
         }
+    }
+
+    @Override
+    public Set<ServiceName> dependencies() {
+        return Collections.emptySet();
     }
 
     @Override

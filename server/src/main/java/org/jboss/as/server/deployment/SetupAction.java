@@ -22,6 +22,9 @@
 package org.jboss.as.server.deployment;
 
 import java.util.Map;
+import java.util.Set;
+
+import org.jboss.msc.service.ServiceName;
 
 /**
  * And action that sets up and tears down some form of context (e.g. the TCCL, JNDI context etc).
@@ -48,5 +51,10 @@ public interface SetupAction {
      * Higher priority setup actions run first
      */
     int priority();
+
+    /**
+     * Any dependencies that this action requires
+     */
+    Set<ServiceName> dependencies();
 
 }
