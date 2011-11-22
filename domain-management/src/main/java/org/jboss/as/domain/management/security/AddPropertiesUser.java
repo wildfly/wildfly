@@ -51,11 +51,28 @@ public class AddPropertiesUser {
     private List<File> propertiesFiles;
     private State nextState;
 
-    public AddPropertiesUser() {
+    private AddPropertiesUser() {
         if (theConsole == null) {
             throw new IllegalStateException("No console available.");
         }
         nextState = new PropertyFileFinder();
+    }
+
+    private AddPropertiesUser(final String user, final char[] password, final String realm) {
+        if (theConsole == null) {
+            throw new IllegalStateException("No console available.");
+        }
+        Values values = new Values();
+        values.nonInteractive = true;
+        values.userName = user;
+        values.password = password;
+        values.realm = realm;
+
+        nextState = new PropertyFileFinder(values);
+    }
+
+    private AddPropertiesUser(final String user, final char[] password) {
+        this(user, password, DEFAULT_REALM);
     }
 
     private void run() {
@@ -67,13 +84,29 @@ public class AddPropertiesUser {
      * @param args
      */
     public static void main(String[] args) {
-        new AddPropertiesUser().run();
+        if (args.length == 3) {
+            new AddPropertiesUser(args[0], args[1].toCharArray(), args[2]).run();
+        } else if (args.length == 2) {
+            new AddPropertiesUser(args[0], args[1].toCharArray()).run();
+        } else {
+            new AddPropertiesUser().run();
+        }
     }
 
     /**
      * The first state executed, responsible for searching for the relevent properties files.
      */
     private class PropertyFileFinder implements State {
+
+        private final Values values;
+
+        private PropertyFileFinder() {
+            values = null;
+        }
+
+        private PropertyFileFinder(final Values values) {
+            this.values = values;
+        }
 
         @Override
         public State execute() {
@@ -98,7 +131,11 @@ public class AddPropertiesUser {
 
             propertiesFiles = foundFiles;
 
-            return new PromptNewUserState();
+            if (values == null) {
+                return new PromptNewUserState();
+            } else {
+                return new PromptNewUserState(values);
+            }
         }
 
     }
@@ -108,9 +145,10 @@ public class AddPropertiesUser {
      * pre-defined realm and username to be used.
      */
     private class PromptNewUserState implements State {
-        private Values values = new Values();
+        private final Values values;
 
         PromptNewUserState() {
+            values = new Values();
             values.realm = DEFAULT_REALM;
         }
 
@@ -120,59 +158,62 @@ public class AddPropertiesUser {
 
         @Override
         public State execute() {
-            theConsole.printf("\nEnter details of new user to add.\n");
-            /*
-             * Prompt for realm.
-             */
-            String temp = theConsole.readLine("Realm (%s) : ", values.realm);
-            if (temp == null) {
-                theConsole.printf("\n");
-                return null;
-            }
-            if (temp.length() > 0) {
-                values.realm = temp;
-            }
+            if (values.nonInteractive == false) {
+                theConsole.printf("\nEnter details of new user to add.\n");
 
-            /*
-             * Prompt for username.
-             */
-            if (values.userName == null) {
-                temp = theConsole.readLine("Username : ");
-                if (temp == null || temp.length() == 0) {
-                    theConsole.printf("\n");
-                    return null;
-                }
-                values.userName = temp;
-            } else {
-                temp = theConsole.readLine("Username (%s): ", values.userName);
+                /*
+                 * Prompt for realm.
+                 */
+                String temp = theConsole.readLine("Realm (%s) : ", values.realm);
                 if (temp == null) {
                     theConsole.printf("\n");
                     return null;
                 }
                 if (temp.length() > 0) {
-                    values.userName = temp;
+                    values.realm = temp;
                 }
-            }
 
-            /*
-             * Prompt for password.
-             */
-            char[] tempChar = theConsole.readPassword("Password : ");
-            if (tempChar == null || tempChar.length == 0) {
-                theConsole.printf("\n");
-                return null;
-            }
+                /*
+                 * Prompt for username.
+                 */
+                if (values.userName == null) {
+                    temp = theConsole.readLine("Username : ");
+                    if (temp == null || temp.length() == 0) {
+                        theConsole.printf("\n");
+                        return null;
+                    }
+                    values.userName = temp;
+                } else {
+                    temp = theConsole.readLine("Username (%s): ", values.userName);
+                    if (temp == null) {
+                        theConsole.printf("\n");
+                        return null;
+                    }
+                    if (temp.length() > 0) {
+                        values.userName = temp;
+                    }
+                }
 
-            char[] secondTempChar = theConsole.readPassword("Re-enter Password : ");
-            if (tempChar == null || tempChar.length == 0) {
-                theConsole.printf("\n");
-                return null;
-            }
+                /*
+                 * Prompt for password.
+                 */
+                char[] tempChar = theConsole.readPassword("Password : ");
+                if (tempChar == null || tempChar.length == 0) {
+                    theConsole.printf("\n");
+                    return null;
+                }
 
-            if (Arrays.equals(tempChar, secondTempChar) == false) {
-                return new ErrorState("Passwords to not match", this);
+                char[] secondTempChar = theConsole.readPassword("Re-enter Password : ");
+                if (tempChar == null || tempChar.length == 0) {
+                    theConsole.printf("\n");
+                    return null;
+                }
+
+                if (Arrays.equals(tempChar, secondTempChar) == false) {
+                    return new ErrorState("Passwords to not match", this);
+                }
+                values.password = tempChar;
             }
-            values.password = tempChar;
 
             return new WeakCheckState(values);
         }
@@ -196,13 +237,21 @@ public class AddPropertiesUser {
         @Override
         public State execute() {
             if (Arrays.equals(values.userName.toCharArray(), values.password)) {
-                return new ErrorState("Username must not match the password", new PromptNewUserState(values));
+                if (values.nonInteractive) {
+                    return new ErrorState("Username must not match the password");
+                } else {
+                    return new ErrorState("Username must not match the password", new PromptNewUserState(values));
+                }
             }
 
             for (char currentChar : values.userName.toCharArray()) {
                 if ((Character.isLetter(currentChar) || Character.isDigit(currentChar)) == false) {
-                    values.userName = null;
-                    return new ErrorState("Only alpha/numeric usernames accepted.", new PromptNewUserState(values));
+                    if (values.nonInteractive) {
+                        return new ErrorState("Only alpha/numeric usernames accepted.");
+                    } else {
+                        values.userName = null;
+                        return new ErrorState("Only alpha/numeric usernames accepted.", new PromptNewUserState(values));
+                    }
                 }
             }
 
@@ -214,7 +263,7 @@ public class AddPropertiesUser {
                 }
             }
 
-            if (weakUserName) {
+            if (weakUserName && values.nonInteractive == false) {
                 theConsole.printf("The username '%s' is easy to guess\n", values.userName);
                 String temp = theConsole.readLine("Are you sure you want to add user '%s' yes/no? ", values.userName);
                 boolean yes = temp != null && "yes".equals(temp.toLowerCase());
@@ -225,7 +274,12 @@ public class AddPropertiesUser {
                 }
             }
 
-            return new ConfirmNewUser(values);
+            if (values.nonInteractive) {
+                return new AddUser(values);
+            } else {
+                return new ConfirmNewUser(values);
+            }
+
         }
 
     }
@@ -353,6 +407,7 @@ public class AddPropertiesUser {
     }
 
     private class Values {
+        private boolean nonInteractive = false;
         private String realm;
         private String userName;
         private char[] password;

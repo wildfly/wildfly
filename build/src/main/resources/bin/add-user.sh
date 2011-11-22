@@ -53,10 +53,12 @@ if $cygwin; then
     MODULEPATH=`cygpath --path --windows "$MODULEPATH"`
 fi
 
+# Sample JPDA settings for remote socket debugging
+#JAVA_OPTS="$JAVA_OPTS -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y"
+
 eval \"$JAVA\" $JAVA_OPTS \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"${MODULEPATH}\" \
          -logmodule "org.jboss.logmanager" \
          org.jboss.as.domain-add-user \
-         -Djboss.home.dir=\"$JBOSS_HOME\" \
          "$@" 

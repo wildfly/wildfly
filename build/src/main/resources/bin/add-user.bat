@@ -63,7 +63,6 @@ if "x%MODULEPATH%" == "x" (
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
     -mp "%MODULEPATH%" ^
      org.jboss.as.domain-add-user ^
-    -Djboss.home.dir="%JBOSS_HOME%" ^
      %*
 
 if "x%NOPAUSE%" == "x" pause
