@@ -43,7 +43,7 @@ public class GenericOutboundConnectionService extends AbstractOutboundConnection
 
     public static final ServiceName GENERIC_OUTBOUND_CONNECTION_BASE_SERVICE_NAME = RemotingServices.SUBSYSTEM_ENDPOINT.append("generic-outbound-connection");
 
-    private final URI destination;
+    private volatile URI destination;
 
     public GenericOutboundConnectionService(final URI destination, final OptionMap connectionCreationOptions) {
 
@@ -64,5 +64,9 @@ public class GenericOutboundConnectionService extends AbstractOutboundConnection
     @Override
     public GenericOutboundConnectionService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
+    }
+
+    void setDestination(final URI uri) {
+        this.destination = uri;
     }
 }

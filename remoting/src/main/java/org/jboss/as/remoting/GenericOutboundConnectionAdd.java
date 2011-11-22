@@ -90,25 +90,20 @@ class GenericOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler 
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        final ServiceController serviceController = installRuntimeService(context, model, verificationHandler);
+        final String name = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
+        final ServiceController serviceController = installRuntimeService(context, name, model, verificationHandler);
         newControllers.add(serviceController);
     }
 
-    ServiceController installRuntimeService(OperationContext context, ModelNode outboundConnection,
+    ServiceController installRuntimeService(OperationContext context, final String connectionName, ModelNode outboundConnection,
                                             ServiceVerificationHandler verificationHandler) throws OperationFailedException {
 
-        final String connectionName = outboundConnection.require(CommonAttributes.NAME).asString();
-        final String uri = outboundConnection.require(CommonAttributes.URI).asString();
         // fetch the connection creation options from the model
-        final OptionMap connectionCreationOptions = this.getConnectionCreationOptions(outboundConnection);
+        final OptionMap connectionCreationOptions = getConnectionCreationOptions(outboundConnection);
+        // Get the destination URI
+        final URI uri = getDestinationURI(context, outboundConnection);
         // create the service
-        final GenericOutboundConnectionService outboundRemotingConnectionService;
-        try {
-            outboundRemotingConnectionService = new GenericOutboundConnectionService(new URI(uri), connectionCreationOptions);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException("Cannot create outbound connection service for connection named " + connectionName
-                    + " with uri" + uri, e);
-        }
+        final GenericOutboundConnectionService outboundRemotingConnectionService = new GenericOutboundConnectionService(uri, connectionCreationOptions);
         final ServiceName serviceName = AbstractOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);
         // also add a alias service name to easily distinguish between a generic, remote and local type of connection services
         final ServiceName aliasServiceName = GenericOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);
@@ -120,5 +115,14 @@ class GenericOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler 
             svcBuilder.addListener(verificationHandler);
         }
         return svcBuilder.install();
+    }
+
+    URI getDestinationURI(final OperationContext context, final ModelNode outboundConnection) throws OperationFailedException {
+        final String uri = GenericOutboundConnectionResourceDefinition.URI.resolveModelAttribute(context, outboundConnection).asString();
+        try {
+            return new URI(uri);
+        } catch (URISyntaxException e) {
+            throw new OperationFailedException(new ModelNode().set("Cannot create a valid URI from " + uri + " -- " + e.toString()));
+        }
     }
 }

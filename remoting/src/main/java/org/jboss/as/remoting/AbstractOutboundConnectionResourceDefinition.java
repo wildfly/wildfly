@@ -22,22 +22,21 @@
 
 package org.jboss.as.remoting;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 import java.util.Locale;
 import java.util.ResourceBundle;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.MapAttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -47,10 +46,9 @@ import org.jboss.dmr.ModelType;
  */
 abstract class AbstractOutboundConnectionResourceDefinition extends SimpleResourceDefinition {
 
-    public static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(CommonAttributes.NAME, ModelType.STRING, false)
-            .setValidator(new StringLengthValidator(1)).build();
-
-    public static final MapAttributeDefinition CONNECTION_CREATION_OPTIONS = new PropertiesAttributeDefinition(CommonAttributes.CONNECTION_CREATION_OPTIONS, Element.CONNECTION_CREATION_OPTIONS.getLocalName(), true);
+    public static final MapAttributeDefinition CONNECTION_CREATION_OPTIONS =
+            new PropertiesAttributeDefinition(CommonAttributes.CONNECTION_CREATION_OPTIONS,
+                    Element.CONNECTION_CREATION_OPTIONS.getLocalName(), true, null, null);
 
     protected AbstractOutboundConnectionResourceDefinition(final PathElement pathElement, final ResourceDescriptionResolver descriptionResolver,
                                                            final OperationStepHandler addHandler, final OperationStepHandler removeHandler) {
@@ -65,7 +63,7 @@ abstract class AbstractOutboundConnectionResourceDefinition extends SimpleResour
     /**
      * Returns the write attribute handler for the <code>attribute</code>
      * @param attribute The attribute for which the write operation handler is being queried
-     * @return
+     * @return the handler
      */
     protected abstract OperationStepHandler getWriteAttributeHandler(final AttributeDefinition attribute);
 
@@ -76,8 +74,9 @@ abstract class AbstractOutboundConnectionResourceDefinition extends SimpleResour
      */
     private static class PropertiesAttributeDefinition extends MapAttributeDefinition {
 
-        PropertiesAttributeDefinition(final String name, final String xmlName, boolean allowNull) {
-            super(name, xmlName, allowNull, 0, Integer.MAX_VALUE, new ModelTypeValidator(ModelType.STRING));
+        PropertiesAttributeDefinition(final String name, final String xmlName, boolean allowNull,final String[] alternatives,
+                                      final String[] requires, final AttributeAccess.Flag... flags) {
+            super(name, xmlName, allowNull, 0, Integer.MAX_VALUE, new ModelTypeValidator(ModelType.STRING), alternatives, requires, flags);
         }
 
         @Override

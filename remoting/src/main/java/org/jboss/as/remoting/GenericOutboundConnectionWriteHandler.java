@@ -40,7 +40,7 @@ class GenericOutboundConnectionWriteHandler extends AbstractWriteAttributeHandle
     static final GenericOutboundConnectionWriteHandler INSTANCE = new GenericOutboundConnectionWriteHandler();
 
     private GenericOutboundConnectionWriteHandler() {
-        super(GenericOutboundConnectionResourceDefinition.URI);
+        super(AbstractOutboundConnectionResourceDefinition.CONNECTION_CREATION_OPTIONS, GenericOutboundConnectionResourceDefinition.URI);
     }
 
     @Override
@@ -65,14 +65,18 @@ class GenericOutboundConnectionWriteHandler extends AbstractWriteAttributeHandle
         final ServiceName serviceName = GenericOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);
         final ServiceRegistry registry = context.getServiceRegistry(true);
         ServiceController sc = registry.getService(serviceName);
-        if (sc != null) {
-            GenericOutboundConnectionService outboundConnectionService = GenericOutboundConnectionService.class.cast(sc.getValue());
-            // remove the service and re-install it with the new values
-            if (outboundConnectionService != null) {
-                context.removeService(serviceName);
+        if (sc != null && sc.getState() == ServiceController.State.UP) {
+            GenericOutboundConnectionService svc = GenericOutboundConnectionService.class.cast(sc.getValue());
+            if (AbstractOutboundConnectionResourceDefinition.CONNECTION_CREATION_OPTIONS.getName().equals(attributeName)) {
+                svc.setConnectionCreationOptions(AbstractOutboundConnectionAddHandler.getConnectionCreationOptions(model));
+            } else if (GenericOutboundConnectionResourceDefinition.URI.getName().equals(attributeName)) {
+                svc.setDestination(GenericOutboundConnectionAdd.INSTANCE.getDestinationURI(context, model));
             }
+        } else {
+            // Service isn't up so we can bounce it
+            context.removeService(serviceName); // safe even if the service doesn't exist
+            // install the service with new values
+            GenericOutboundConnectionAdd.INSTANCE.installRuntimeService(context, connectionName, model, null);
         }
-        // install the service with new values
-        GenericOutboundConnectionAdd.INSTANCE.installRuntimeService(context, model, null);
     }
 }

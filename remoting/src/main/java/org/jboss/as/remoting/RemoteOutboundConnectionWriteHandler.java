@@ -35,44 +35,54 @@ import org.jboss.msc.service.ServiceRegistry;
 /**
  * @author Jaikiran Pai
  */
-class RemoteOutboundConnectionWriteHandler extends AbstractWriteAttributeHandler<Void> {
+class RemoteOutboundConnectionWriteHandler extends AbstractWriteAttributeHandler<Boolean> {
 
     static final RemoteOutboundConnectionWriteHandler INSTANCE = new RemoteOutboundConnectionWriteHandler();
 
     private RemoteOutboundConnectionWriteHandler() {
-        super(RemoteOutboundConnnectionResourceDefinition.OUTBOUND_SOCKET_BINDING_REF);
+        super(AbstractOutboundConnectionResourceDefinition.CONNECTION_CREATION_OPTIONS, RemoteOutboundConnnectionResourceDefinition.OUTBOUND_SOCKET_BINDING_REF);
     }
 
     @Override
-    protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> voidHandbackHolder) throws OperationFailedException {
+    protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Boolean> handbackHolder) throws OperationFailedException {
         final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-        applyModelToRuntime(context, operation, attributeName, model);
-
-        return false;
+        boolean handback = applyModelToRuntime(context, operation, attributeName, model);
+        handbackHolder.setHandback(handback);
+        return handback;
 
     }
 
     @Override
-    protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
-        final ModelNode restored = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().clone();
-        restored.get(attributeName).set(valueToRestore);
-        applyModelToRuntime(context, operation, attributeName, restored);
+    protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Boolean handback) throws OperationFailedException {
+        if (handback != null && !handback.booleanValue()) {
+            final ModelNode restored = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().clone();
+            restored.get(attributeName).set(valueToRestore);
+            applyModelToRuntime(context, operation, attributeName, restored);
+        }
     }
 
-    private void applyModelToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode model) throws OperationFailedException {
+    private boolean applyModelToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode model) throws OperationFailedException {
 
+        boolean reloadRequired = false;
         final String connectionName = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
         final ServiceName serviceName = RemoteOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);
         final ServiceRegistry registry = context.getServiceRegistry(true);
         ServiceController sc = registry.getService(serviceName);
-        if (sc != null) {
-            RemoteOutboundConnectionService outboundConnectionService = RemoteOutboundConnectionService.class.cast(sc.getValue());
-            // remove the service and re-install it with the new values
-            if (outboundConnectionService != null) {
-                context.removeService(serviceName);
+        if (sc != null && sc.getState() == ServiceController.State.UP) {
+            RemoteOutboundConnectionService svc = RemoteOutboundConnectionService.class.cast(sc.getValue());
+            if (AbstractOutboundConnectionResourceDefinition.CONNECTION_CREATION_OPTIONS.getName().equals(attributeName)) {
+                svc.setConnectionCreationOptions(AbstractOutboundConnectionAddHandler.getConnectionCreationOptions(model));
+            } else {
+                // We can't change the socket binding ref on a running service
+                reloadRequired = true;
             }
+        } else {
+            // Service isn't up so we can bounce it
+            context.removeService(serviceName); // safe even if the service doesn't exist
+            // install the service with new values
+            RemoteOutboundConnectionAdd.INSTANCE.installRuntimeService(context, connectionName, model, null);
         }
-        // install the service with new values
-        RemoteOutboundConnectionAdd.INSTANCE.installRuntimeService(context, model, null);
+
+        return reloadRequired;
     }
 }

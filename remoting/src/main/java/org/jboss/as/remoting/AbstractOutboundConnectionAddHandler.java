@@ -42,8 +42,6 @@ abstract class AbstractOutboundConnectionAddHandler extends AbstractAddStepHandl
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        final String connectionName = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
-        model.get(CommonAttributes.NAME).set(connectionName);
 
         AbstractOutboundConnectionResourceDefinition.CONNECTION_CREATION_OPTIONS.validateAndSet(operation, model);
     }
@@ -56,7 +54,7 @@ abstract class AbstractOutboundConnectionAddHandler extends AbstractAddStepHandl
      * @param model The model which might contain the connection creation options
      * @return
      */
-    protected OptionMap getConnectionCreationOptions(final ModelNode model) {
+    protected static OptionMap getConnectionCreationOptions(final ModelNode model) {
         if (!model.hasDefined(CommonAttributes.CONNECTION_CREATION_OPTIONS)) {
             return OptionMap.EMPTY;
         }

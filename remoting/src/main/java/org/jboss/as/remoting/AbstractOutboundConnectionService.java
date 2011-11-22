@@ -39,13 +39,13 @@ import org.xnio.OptionMap;
 /**
  * @author Jaikiran Pai
  */
-public abstract class AbstractOutboundConnectionService<T> implements Service<T> {
+public abstract class AbstractOutboundConnectionService<T extends AbstractOutboundConnectionService> implements Service<T> {
 
     public static final ServiceName OUTBOUND_CONNECTION_BASE_SERVICE_NAME = RemotingServices.SUBSYSTEM_ENDPOINT.append("outbound-connection");
 
     protected final InjectedValue<Endpoint> endpointInjectedValue = new InjectedValue<Endpoint>();
 
-    protected final OptionMap connectionCreationOptions;
+    protected volatile OptionMap connectionCreationOptions;
 
     protected AbstractOutboundConnectionService(final OptionMap connectionCreationOptions) {
         this.connectionCreationOptions = connectionCreationOptions == null ? OptionMap.EMPTY : connectionCreationOptions;
@@ -62,6 +62,11 @@ public abstract class AbstractOutboundConnectionService<T> implements Service<T>
     Injector<Endpoint> getEnpointInjector() {
         return this.endpointInjectedValue;
     }
+
+    void setConnectionCreationOptions(final OptionMap connectionCreationOptions) {
+        this.connectionCreationOptions = connectionCreationOptions == null ? OptionMap.EMPTY : connectionCreationOptions;
+    }
+
 
     abstract IoFuture<Connection> connect() throws IOException;
 }
