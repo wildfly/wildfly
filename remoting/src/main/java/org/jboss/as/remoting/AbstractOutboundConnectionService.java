@@ -22,6 +22,10 @@
 
 package org.jboss.as.remoting;
 
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
 import java.io.IOException;
 
 import org.jboss.msc.inject.Injector;
@@ -76,4 +80,25 @@ public abstract class AbstractOutboundConnectionService<T extends AbstractOutbou
     }
 
     public abstract IoFuture<Connection> connect() throws IOException;
+
+    protected CallbackHandler getCallbackHandler() {
+        return new AnonymousCallbackHandler();
+    }
+
+    // TODO: This is temporary for now, till we decide about security related configurations
+    // for outbound connections, post Beta1
+    private class AnonymousCallbackHandler implements CallbackHandler {
+
+        @Override
+        public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+            for (Callback current : callbacks) {
+                if (current instanceof NameCallback) {
+                    NameCallback ncb = (NameCallback) current;
+                    ncb.setName("anonymous");
+                } else {
+                    throw new UnsupportedCallbackException(current);
+                }
+            }
+        }
+    }
 }
