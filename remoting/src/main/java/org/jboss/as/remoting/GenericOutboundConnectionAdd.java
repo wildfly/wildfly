@@ -103,10 +103,10 @@ class GenericOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler 
         // Get the destination URI
         final URI uri = getDestinationURI(context, outboundConnection);
         // create the service
-        final GenericOutboundConnectionService outboundRemotingConnectionService = new GenericOutboundConnectionService(uri, connectionCreationOptions);
+        final GenericOutboundConnectionService outboundRemotingConnectionService = new GenericOutboundConnectionService(connectionName, uri, connectionCreationOptions);
         final ServiceName serviceName = AbstractOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);
         // also add a alias service name to easily distinguish between a generic, remote and local type of connection services
-        final ServiceName aliasServiceName = GenericOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);
+        final ServiceName aliasServiceName = GenericOutboundConnectionService.GENERIC_OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);
         final ServiceBuilder<GenericOutboundConnectionService> svcBuilder = context.getServiceTarget().addService(serviceName, outboundRemotingConnectionService)
                 .addAliases(aliasServiceName)
                 .addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, outboundRemotingConnectionService.getEnpointInjector());

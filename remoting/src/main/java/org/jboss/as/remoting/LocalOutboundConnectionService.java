@@ -51,13 +51,13 @@ public class LocalOutboundConnectionService extends AbstractOutboundConnectionSe
 
     private URI connectionURI;
 
-    public LocalOutboundConnectionService(final OptionMap connectionCreationOptions) {
-        super(connectionCreationOptions);
+    public LocalOutboundConnectionService(final String connectionName, final OptionMap connectionCreationOptions) {
+        super(connectionName, connectionCreationOptions);
     }
 
 
     @Override
-    IoFuture<Connection> connect() throws IOException {
+    public IoFuture<Connection> connect() throws IOException {
         final URI uri;
         try {
             // we lazily generate the URI on first request to connect() instead of on start() of the service

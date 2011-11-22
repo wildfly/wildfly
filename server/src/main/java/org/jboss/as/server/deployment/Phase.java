@@ -186,6 +186,7 @@ public enum Phase {
     public static final int STRUCTURE_EAR_DEPLOYMENT_INIT               = 0x0600;
     public static final int STRUCTURE_EAR_APP_XML_PARSE                 = 0x0700;
     public static final int STRUCTURE_EAR_JBOSS_APP_XML_PARSE           = 0x0800;
+    public static final int STRUCTURE_JBOSS_EJB_CLIENT_XML_PARSE        = 0x0825;
     public static final int STRUCTURE_EJB_EAR_APPLICATION_NAME          = 0x0850;
     public static final int STRUCTURE_EAR                               = 0x0900;
     public static final int STRUCTURE_APP_CLIENT                        = 0x0950;
@@ -225,6 +226,7 @@ public enum Phase {
     // create and attach EJB metadata for EJB deployments
     public static final int PARSE_EJB_DEPLOYMENT                        = 0x1100;
     public static final int PARSE_APP_CLIENT_XML                        = 0x1101;
+    public static final int PARSE_EJB_CLIENT_METADATA                   = 0x1102;
     public static final int PARSE_SESSION_BEAN_CREATE_COMPONENT_DESCRIPTIONS     = 0x1150;
     public static final int PARSE_MDB_CREATE_COMPONENT_DESCRIPTIONS     = 0x1151;
     public static final int PARSE_ENTITY_BEAN_CREATE_COMPONENT_DESCRIPTIONS = 0x1152;

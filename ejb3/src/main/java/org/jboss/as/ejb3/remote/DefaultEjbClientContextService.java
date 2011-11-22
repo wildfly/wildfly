@@ -41,7 +41,7 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author Stuart Douglas
  */
-public class EjbClientContextService implements Service<EJBClientContext> {
+public class DefaultEjbClientContextService implements Service<EJBClientContext> {
 
     /**
      * The base service name for these services

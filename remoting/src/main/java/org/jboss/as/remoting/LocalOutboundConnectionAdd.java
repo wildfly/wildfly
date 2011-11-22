@@ -102,10 +102,10 @@ class LocalOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler {
         // fetch the connection creation options from the model
         final OptionMap connectionCreationOptions = getConnectionCreationOptions(outboundConnection);
         // create the service
-        final LocalOutboundConnectionService outboundConnectionService = new LocalOutboundConnectionService(connectionCreationOptions);
+        final LocalOutboundConnectionService outboundConnectionService = new LocalOutboundConnectionService(connectionName, connectionCreationOptions);
         final ServiceName serviceName = AbstractOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);
         // also add a alias service name to easily distinguish between a generic, remote and local type of connection services
-        final ServiceName aliasServiceName = LocalOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);
+        final ServiceName aliasServiceName = LocalOutboundConnectionService.LOCAL_OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);
         final ServiceBuilder<LocalOutboundConnectionService> svcBuilder = context.getServiceTarget().addService(serviceName, outboundConnectionService)
                 .addAliases(aliasServiceName)
                 .addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, outboundConnectionService.getEnpointInjector())
