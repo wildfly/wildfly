@@ -69,7 +69,7 @@ public class RootLoggerWriteAttributeHandler extends AbstractLoggerWriteAttribut
             // Remove all handlers
             LoggerUnassignHandler.removeHandlers(HANDLERS, currentValue, context, name);
             // Add the new handlers
-            LoggerAssignHandler.addHandlers(HANDLERS, resolvedValue, context, name, null);
+            LoggerAssignHandler.addHandlers(HANDLERS.resolveModelAttribute(context, resolvedValue), context, name, null);
         }
         return false;
     }
@@ -86,7 +86,7 @@ public class RootLoggerWriteAttributeHandler extends AbstractLoggerWriteAttribut
             // Remove the new handlers
             LoggerUnassignHandler.removeHandlers(HANDLERS, valueToRevert, context, name);
             // Re-add the old handlers
-            LoggerAssignHandler.addHandlers(HANDLERS, valueToRestore, context, name, null);
+            LoggerAssignHandler.addHandlers(HANDLERS.resolveModelAttribute(context, valueToRestore), context, name, null);
         }
     }
 }

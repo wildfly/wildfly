@@ -22,12 +22,16 @@
 
 package org.jboss.as.logging.handlers.custom;
 
+import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
+import static org.jboss.as.logging.LoggingMessages.MESSAGES;
+
+import java.util.logging.Handler;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.logging.handlers.AbstractLogHandlerWriteAttributeHandler;
 import org.jboss.dmr.ModelNode;
-
-import java.util.logging.Handler;
+import org.jboss.dmr.ModelType;
 
 /**
  * Date: 12.10.2011
@@ -43,12 +47,22 @@ public class CustomHandlerWriteAttributeHandler extends AbstractLogHandlerWriteA
 
     @Override
     protected boolean doApplyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final String handlerName, final Handler handler) throws OperationFailedException {
-        // TODO (jrp) see if we can implement a write-attribute(property)
+        if (PROPERTIES.equals(attributeName)) {
+            if (resolvedValue.getType() != ModelType.LIST) {
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidType(PROPERTIES, ModelType.LIST, resolvedValue.getType())));
+            }
+            PropertiesConfigurator.setProperties(handler, resolvedValue.asPropertyList());
+        }
         return false;
     }
 
     @Override
     protected void doRevertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final String handlerName, final Handler handler) throws OperationFailedException {
-        //TODO (jrp) - return proper value
+        if (PROPERTIES.equals(attributeName)) {
+            if (valueToRestore.getType() != ModelType.LIST) {
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidType(PROPERTIES, ModelType.LIST, valueToRestore.getType())));
+            }
+            PropertiesConfigurator.setProperties(handler, valueToRestore.asPropertyList());
+        }
     }
 }

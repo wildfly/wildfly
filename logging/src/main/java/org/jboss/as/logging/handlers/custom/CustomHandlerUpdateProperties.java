@@ -22,14 +22,16 @@
 
 package org.jboss.as.logging.handlers.custom;
 
+import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
+import static org.jboss.as.logging.LoggingMessages.MESSAGES;
+
+import java.util.logging.Handler;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.logging.handlers.HandlerUpdateProperties;
 import org.jboss.dmr.ModelNode;
-
-import java.util.logging.Handler;
-
-import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
+import org.jboss.dmr.ModelType;
 
 /**
  * Date: 15.08.2011
@@ -47,7 +49,11 @@ public class CustomHandlerUpdateProperties extends HandlerUpdateProperties<Handl
     protected boolean applyUpdateToRuntime(final OperationContext context, final String handlerName, final ModelNode model,
                                            final ModelNode originalModel, final Handler handler) throws OperationFailedException {
         if (model.hasDefined(PROPERTIES)) {
-            PropertiesConfigurator.setProperties(handler, model.get(PROPERTIES).asPropertyList());
+            final ModelNode properties = model.get(PROPERTIES);
+            if (properties.getType() != ModelType.LIST) {
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidType(PROPERTIES, ModelType.LIST, properties.getType())));
+            }
+            PropertiesConfigurator.setProperties(handler, properties.asPropertyList());
         }
         return false;
     }
@@ -55,7 +61,11 @@ public class CustomHandlerUpdateProperties extends HandlerUpdateProperties<Handl
     @Override
     protected void revertUpdateToRuntime(final OperationContext context, final String handlerName, final ModelNode model, final ModelNode originalModel, final Handler handler) throws OperationFailedException {
         if (originalModel.hasDefined(PROPERTIES)) {
-            PropertiesConfigurator.setProperties(handler, originalModel.get(PROPERTIES).asPropertyList());
+            final ModelNode properties = originalModel.get(PROPERTIES);
+            if (properties.getType() != ModelType.LIST) {
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidType(PROPERTIES, ModelType.LIST, properties.getType())));
+            }
+            PropertiesConfigurator.setProperties(handler, properties.asPropertyList());
         }
     }
 }

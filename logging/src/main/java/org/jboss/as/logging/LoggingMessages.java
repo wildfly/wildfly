@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 
 import org.jboss.as.logging.handlers.console.Target;
+import org.jboss.dmr.ModelType;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
@@ -189,6 +190,18 @@ public interface LoggingMessages {
      */
     @Message(id = 11543, value = "'%s' is not a valid %s.")
     StartException invalidType(String className, Class<?> type);
+
+    /**
+     * A message indicating the attribute, represented by the {@code name} parameter, is not a valid type.
+     *
+     * @param name      the name of the attribute
+     * @param validType the valid model type.
+     * @param foundType the type found.
+     *
+     * @return the message.
+     */
+    @Message(id = 11549, value = "'%s' is not a valid %s, found type %s.")
+    String invalidType(String name, ModelType validType, ModelType foundType);
 
     /**
      * A message indicating the value type key, represented by the {@code kry} parameter, is invalid.
