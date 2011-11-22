@@ -25,28 +25,27 @@
 <!--
     1. The testsuite module has a small number of submodules:
 
-    api         - holds all API tests for AS7
-    benchmark   - holds all benchmark tests for AS7
-    domain      - holds all domain management tests for AS7
-    integration - holds all integration tests for AS7
-    spec        - holds all spec tests for AS7
-    stress      - holds all stress tests for AS7
+    integration - holds all integration tests for AS7.
+    compat      - holds all compatibility management tests for AS7.
+    domain      - holds all domain management tests for AS7.
+    benchmark   - holds all benchmark tests for AS7.
+    stress      - holds all stress tests for AS7.
 
     All tests should fit into one of these four categories.
 
     2. This pom is inherited by all submodules and should be used to do the following:
-    - set defaults for common testsuite system properties (which can then be overridden on the command line)
-    - define dependencies common to all tests (Arquillian, junit or testng, and container type)
-    - provide a workaround for @Resource(lookup=...) which requires libraries in jbossas/endorsed
-    - defines a default server configuration installed into target/jboasas in each submodule, which
-    represents an unmodified copy of the AS server. Custom server configurations are defined in the submodules.
-    - define profiles to allow selection of which test modules will be executed
+       - Set defaults for common testsuite system properties (which can then be overridden on the command line).
+       - Define dependencies common to all tests (Arquillian, junit or testng, and container type).
+       - Provide a workaround for @Resource(lookup=...) which requires libraries in jbossas/endorsed.
+       - Define a default server configuration installed into target/jboasas in each submodule, which
+         represents an unmodified copy of the AS server. Custom server configurations are defined in the submodules.
+       - Define profiles to allow selection of which test modules will be executed.
 
     3. This pom should not be used to do the following:
-    - define module-specific server configuration build steps
-    - define module-specific surefire executions
-    These elements should be defined in logical profiles associated with each logical grouping of tests,
-    in the pom for the module which contains the tests. See the submodule poms for more details.
+       - Define module-specific server configuration build steps.
+       - Define module-specific surefire executions.
+       These elements should be defined in logical profiles associated with each logical grouping of tests,
+       in the pom for the module which contains the tests. See the submodule poms for more details.
 
 -->
 
@@ -64,6 +63,7 @@
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-testsuite</artifactId>
     <version>7.1.0.CR1-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
     <name>JBoss Application Server Test Suite: Aggregator</name>
 
@@ -71,34 +71,33 @@
         <module>integration</module>
     </modules>
 
-    <packaging>pom</packaging>
 
-    <!-- global testsuite system property defaults -->
+    <!-- Global testsuite system properties defaults. -->
 
     <properties>
-        <!-- used to provide an absolute location for the distribution under test -->
-        <!-- this value is overridden in modules with the correct relative pathname -->
+        <!-- Used to provide an absolute location for the distribution under test. -->
+        <!-- This value is overridden in modules with the correct relative pathname. -->
         <jboss.dist>${project.basedir}/../build/target/jboss-as-${jboss.as.release.version}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
 
-        <!-- used to provide an absolute location for the XSLT scripts -->
-        <!-- this value is overridden in modules with the correct relative pathname -->
+        <!-- Used to provide an absolute location for the XSLT scripts. -->
+        <!-- This value is overridden in modules with the correct relative pathname. -->
         <xslt.scripts.dir>${basedir}/integration/src/test/xslt</xslt.scripts.dir>
 
-        <!-- IP address defaults -->
+        <!-- IP address defaults. -->
         <node0>127.0.0.1</node0>
         <node1>127.0.0.1</node1>
         <udpGroup>230.0.0.4</udpGroup>
 
-        <!-- IP stack configs -->
+        <!-- IP stack configs. -->
         <ip.client.stack>-Djava.net.preferIPv4Stack=true</ip.client.stack>
         <ip.server.stack>-Djava.net.preferIPv4Stack=true</ip.server.stack>
 
-        <!-- security properties -->
+        <!-- Security properties. -->
         <security.manager>-Djava.security.manager</security.manager>
         <security.policy></security.policy>
 
-        <!-- database properties -->
+        <!-- Database properties. -->
         <ds.db></ds.db>
         <ds.jdbc.driver></ds.jdbc.driver>
         <ds.jdbc.driver.version></ds.jdbc.driver.version>
@@ -107,7 +106,7 @@
         <ds.jdbc.pass>test</ds.jdbc.pass>
         <ds.jdbc.driver.jar>${ds.db}-jdbc-driver.jar</ds.jdbc.driver.jar>
 
-        <!-- common surefire properties -->
+        <!-- Common surefire properties. -->
         <surefire.memory.args>-Xmx512m -XX:MaxPermSize=256m</surefire.memory.args>
         <surefire.jpda.args></surefire.jpda.args>
         <surefire.system.args>${surefire.memory.args} ${surefire.jpda.args} -Djboss.dist=${jboss.dist}</surefire.system.args>
@@ -348,6 +347,10 @@
                         <jboss.home>${basedir}/target/jbossas</jboss.home>
                         <module.path>${jboss.dist}/modules</module.path>
                     </systemPropertyVariables>
+                    <!-- Arquillian's config files. -->
+                    <additionalClasspathElements combine.children="append">
+                        <additionalClasspathElement>${jbossas.ts.integ.dir}/src/test/config/arq</additionalClasspathElement>
+                    </additionalClasspathElements>
                 </configuration>
             </plugin>
             

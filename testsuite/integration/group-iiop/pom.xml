@@ -105,16 +105,10 @@
 
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
-                                        <arquillian.xml>iiop-arquillian.xml</arquillian.xml>
+                                        <arquillian.xml>arquillian-iiop.xml</arquillian.xml>
                                         <arquillian.launch>iiop</arquillian.launch>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
-
-                                    <additionalClasspathElements>
-                                        <additionalClasspathElement>${jbossas.ts.integ.dir}/src/test/resources/iiop</additionalClasspathElement>
-                                    </additionalClasspathElements>
-
-                                    <!--<reportNameSuffix>tests-iiop-multi-node</reportNameSuffix>-->
                                 </configuration>
                             </execution>
 

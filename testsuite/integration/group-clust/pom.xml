@@ -103,16 +103,10 @@
 
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
-                                        <arquillian.xml>clustering-arquillian.xml</arquillian.xml>
+                                        <arquillian.xml>arquillian-clust.xml</arquillian.xml>
                                         <arquillian.launch>clustering-udp-single</arquillian.launch>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
-
-                                    <additionalClasspathElements>
-                                        <additionalClasspathElement>${jbossas.ts.integ.dir}/src/test/resources/clustering</additionalClasspathElement>
-                                    </additionalClasspathElements>
-
-                                    <reportNameSuffix>tests-clustering-single-node</reportNameSuffix>
                                 </configuration>
                             </execution>
 
@@ -129,17 +123,11 @@
 
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
-                                        <arquillian.xml>clustering-arquillian.xml</arquillian.xml>
+                                        <arquillian.xml>arquillian-clust.xml</arquillian.xml>
                                         <arquillian.launch>clustering-udp</arquillian.launch>
                                         <!-- Use combine.children="append" to pick up parent properties automatically. -->
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
-
-                                    <additionalClasspathElements>
-                                        <additionalClasspathElement>${jbossas.ts.integ.dir}/src/test/resources/clustering</additionalClasspathElement>
-                                    </additionalClasspathElements>
-
-                                    <!--<reportNameSuffix>tests-clustering-multi-node</reportNameSuffix>-->
                                 </configuration>
                             </execution>
 
