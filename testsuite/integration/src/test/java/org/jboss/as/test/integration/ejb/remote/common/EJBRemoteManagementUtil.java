@@ -22,23 +22,26 @@
 
 package org.jboss.as.test.integration.ejb.remote.common;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_REF;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import javax.security.auth.callback.CallbackHandler;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Properties;
-
-import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -109,6 +112,157 @@ public class EJBRemoteManagementUtil {
             // execute the read-attribute
             final ModelNode portResult = execute(modelControllerClient, readPortAttribute);
             return portResult.get(RESULT).asInt();
+
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        } finally {
+            // close the controller client connection
+            try {
+                modelControllerClient.close();
+            } catch (IOException e) {
+                logger.warn("Error closing model controller client", e);
+            }
+        }
+    }
+
+    public static void createRemoteOutboundSocket(final String managementServerHostName, final int managementPort,
+                                                  final String socketGroupName, final String outboundSocketName, final String destinationHost, final int destinationPort,
+                                                  final CallbackHandler callbackHandler) {
+        final ModelControllerClient modelControllerClient = getModelControllerClient(managementServerHostName, managementPort, callbackHandler);
+        try {
+            // /socket-binding-group=<group-name>/remote-destination-outbound-socket-binding=<name>:add(host=<host>, port=<port>)
+            final ModelNode outboundSocketAddOperation = new ModelNode();
+            outboundSocketAddOperation.get(OP).set(ADD);
+
+            final PathAddress address = PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, socketGroupName),
+                    PathElement.pathElement(ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING, outboundSocketName));
+            outboundSocketAddOperation.get(OP_ADDR).set(address.toModelNode());
+            // setup the other parameters for the add operation
+            outboundSocketAddOperation.get(HOST).set(destinationHost);
+            outboundSocketAddOperation.get(PORT).set(destinationPort);
+            // execute the add operation
+            execute(modelControllerClient, outboundSocketAddOperation);
+
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        } finally {
+            // close the controller client connection
+            try {
+                modelControllerClient.close();
+            } catch (IOException e) {
+                logger.warn("Error closing model controller client", e);
+            }
+        }
+    }
+
+    public static void createLocalOutboundSocket(final String managementServerHostName, final int managementPort,
+                                                  final String socketGroupName, final String outboundSocketName,
+                                                  final String socketBindingRef,
+                                                  final CallbackHandler callbackHandler) {
+        final ModelControllerClient modelControllerClient = getModelControllerClient(managementServerHostName, managementPort, callbackHandler);
+        try {
+            // /socket-binding-group=<group-name>/local-destination-outbound-socket-binding=<name>:add(socket-binding-ref=<ref>)
+            final ModelNode outboundSocketAddOperation = new ModelNode();
+            outboundSocketAddOperation.get(OP).set(ADD);
+
+            final PathAddress address = PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, socketGroupName),
+                    PathElement.pathElement(ModelDescriptionConstants.LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING, outboundSocketName));
+            outboundSocketAddOperation.get(OP_ADDR).set(address.toModelNode());
+            // setup the other parameters for the add operation
+            outboundSocketAddOperation.get(SOCKET_BINDING_REF).set(socketBindingRef);
+            // execute the add operation
+            execute(modelControllerClient, outboundSocketAddOperation);
+
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        } finally {
+            // close the controller client connection
+            try {
+                modelControllerClient.close();
+            } catch (IOException e) {
+                logger.warn("Error closing model controller client", e);
+            }
+        }
+    }
+
+    public static void removeLocalOutboundSocket(final String managementServerHostName, final int managementPort,
+                                                  final String socketGroupName, final String outboundSocketName,
+                                                  final CallbackHandler callbackHandler) {
+        final ModelControllerClient modelControllerClient = getModelControllerClient(managementServerHostName, managementPort, callbackHandler);
+        try {
+            // /socket-binding-group=<group-name>/local-destination-outbound-socket-binding=<name>:remove()
+            final ModelNode outboundSocketRemoveOperation = new ModelNode();
+            outboundSocketRemoveOperation.get(OP).set(REMOVE);
+
+            final PathAddress address = PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, socketGroupName),
+                    PathElement.pathElement(ModelDescriptionConstants.LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING, outboundSocketName));
+            outboundSocketRemoveOperation.get(OP_ADDR).set(address.toModelNode());
+            // execute the remove operation
+            execute(modelControllerClient, outboundSocketRemoveOperation);
+
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        } finally {
+            // close the controller client connection
+            try {
+                modelControllerClient.close();
+            } catch (IOException e) {
+                logger.warn("Error closing model controller client", e);
+            }
+        }
+    }
+
+    public static void createRemoteOutboundConnection(final String managementServerHostName, final int managementPort,
+                                                      final String connectionName, final String outboundSocketRef,
+                                                      final Map<String, String> connectionCreationOptions, final CallbackHandler callbackHandler) {
+        final ModelControllerClient modelControllerClient = getModelControllerClient(managementServerHostName, managementPort, callbackHandler);
+        try {
+            // /subsystem=remoting/remote-outbound-connection=<name>:add(outbound-socket-ref=<ref>)
+            final ModelNode addRemoteOutboundConnection = new ModelNode();
+            addRemoteOutboundConnection.get(OP).set(ADD);
+            final PathAddress address = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME),
+                    PathElement.pathElement("remote-outbound-connection", connectionName));
+            addRemoteOutboundConnection.get(OP_ADDR).set(address.toModelNode());
+
+            // set the other properties
+            addRemoteOutboundConnection.get("outbound-socket-binding-ref").set(outboundSocketRef);
+            if (!connectionCreationOptions.isEmpty()) {
+                final ModelNode connectionCreationOptionsModel = addRemoteOutboundConnection.get("connection-creation-options");
+                for (final Map.Entry<String, String> entry : connectionCreationOptions.entrySet()) {
+                    final String optionName = entry.getKey();
+                    final String optionValue = entry.getValue();
+                    connectionCreationOptionsModel.set(optionName, optionValue);
+                }
+            }
+
+            // execute the add operation
+            execute(modelControllerClient, addRemoteOutboundConnection);
+
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        } finally {
+            // close the controller client connection
+            try {
+                modelControllerClient.close();
+            } catch (IOException e) {
+                logger.warn("Error closing model controller client", e);
+            }
+        }
+    }
+
+    public static void removeRemoteOutboundConnection(final String managementServerHostName, final int managementPort,
+                                                      final String connectionName, final CallbackHandler callbackHandler) {
+        final ModelControllerClient modelControllerClient = getModelControllerClient(managementServerHostName, managementPort, callbackHandler);
+        try {
+            // /subsystem=remoting/remote-outbound-connection=<name>:remove()
+            final ModelNode removeRemoteOutboundConnection = new ModelNode();
+            removeRemoteOutboundConnection.get(OP).set(REMOVE);
+            final PathAddress address = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME),
+                    PathElement.pathElement("remote-outbound-connection", connectionName));
+            removeRemoteOutboundConnection.get(OP_ADDR).set(address.toModelNode());
+
+            // execute the remove operation
+            execute(modelControllerClient, removeRemoteOutboundConnection);
 
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
