@@ -25,6 +25,7 @@ package org.jboss.as.domain.http.server;
 import static org.jboss.as.domain.http.server.Constants.APPLICATION_JAVASCRIPT;
 import static org.jboss.as.domain.http.server.Constants.APPLICATION_OCTET_STREAM;
 import static org.jboss.as.domain.http.server.Constants.CONTENT_TYPE;
+import static org.jboss.as.domain.http.server.Constants.FORBIDDEN;
 import static org.jboss.as.domain.http.server.Constants.GET;
 import static org.jboss.as.domain.http.server.Constants.IMAGE_GIF;
 import static org.jboss.as.domain.http.server.Constants.IMAGE_JPEG;
@@ -83,23 +84,20 @@ class ResourceHandler implements ManagementHttpHandler {
     private static final String CACHE_CONTROL_HEADER = "Cache-Control";
     private static final String CONTENT_LENGTH_HEADER = "Content-Length";
 
+    private static Map<String, String> contentTypeMapping = new ConcurrentHashMap<String, String>();
+    private static final String FORMAT_STRING = "EEE, dd MMM yyyy HH:mm:ss z";
+
     private final String context;
     private final String defaultResource;
     private final ClassLoader loader;
 
-    private static Map<String, String> contentTypeMapping = new ConcurrentHashMap<String, String>();
-
+    private final String lastModified;
     private long lastExpiryDate = 0;
     private String lastExpiryHeader = null;
 
-    private static String LAST_MODIFIED;
-    private static final String FORMAT_STRING = "EEE, dd MMM yyyy HH:mm:ss z";
-
-    private static Map<String, ResourceHandle> buffer = new ConcurrentHashMap<String, ResourceHandle>();
+    private final Map<String, ResourceHandle> buffer = new ConcurrentHashMap<String, ResourceHandle>();
 
     static {
-        LAST_MODIFIED = createDateFormat().format(new Date());
-
         contentTypeMapping.put(".js",   APPLICATION_JAVASCRIPT);
         contentTypeMapping.put(".html", TEXT_HTML);
         contentTypeMapping.put(".htm",  TEXT_HTML);
@@ -113,6 +111,8 @@ class ResourceHandler implements ManagementHttpHandler {
         this.context = context;
         this.defaultResource = defaultResource;
         this.loader = loader;
+
+        lastModified = createDateFormat().format(new Date());
     }
 
     public void handle(HttpExchange http) throws IOException {
@@ -145,6 +145,17 @@ class ResourceHandler implements ManagementHttpHandler {
             respond404(http);
         }
 
+        /*
+         * This allows a sub-class of the ResourceHandler to store resources it may need in META-INF
+         * without these resources being served up to remote clients unchecked.
+         */
+        if (resource.startsWith("META-INF")) {
+            http.sendResponseHeaders(FORBIDDEN, 0);
+            http.close();
+
+            return;
+        }
+
         // load resource
         ResourceHandle handle = getResourceHandle(resource);
 
@@ -167,7 +178,7 @@ class ResourceHandler implements ManagementHttpHandler {
                 responseHeaders.add(EXPIRES_HEADER, lastExpiryHeader);
             }
 
-            responseHeaders.add(LAST_MODIFIED_HEADER, LAST_MODIFIED);
+            responseHeaders.add(LAST_MODIFIED_HEADER, lastModified);
             responseHeaders.add(CONTENT_LENGTH_HEADER, String.valueOf(handle.getSize()));
 
             http.sendResponseHeaders(OK, 0);

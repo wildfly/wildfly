@@ -32,13 +32,35 @@ import org.jboss.modules.ModuleLoadException;
 class ErrorHandler extends ResourceHandler {
 
     private static final String INDEX_HTML = "index.html";
+    private static final String INDEX_WIN_HTML = "index_win.html";
 
     private static final String ERROR_MODULE = "org.jboss.as.domain-http-error-context";
     static final String ERROR_CONTEXT = "/error";
-    private static final String DEFAULT_RESOURCE = "/" + INDEX_HTML;
+    private static final String DEFAULT_RESOURCE;
+
+    static {
+        String os = System.getProperty("os.name");
+        if (os != null && os.toLowerCase().contains("win")) {
+            DEFAULT_RESOURCE = "/" + INDEX_WIN_HTML;
+        } else {
+            DEFAULT_RESOURCE = "/" + INDEX_HTML;
+        }
+    }
 
     ErrorHandler() throws ModuleLoadException {
         super(ERROR_CONTEXT, DEFAULT_RESOURCE, getClassLoader(ERROR_MODULE));
     }
+
+    @Override
+    protected boolean skipCache(String resource) {
+        /*
+         * This context is not expected to be used a lot, however if the pages can
+         * be cached this can cause problems with new installations that may
+         * have different content.
+         */
+        return true;
+    }
+
+
 
 }
