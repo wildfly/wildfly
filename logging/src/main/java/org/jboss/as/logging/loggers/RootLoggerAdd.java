@@ -22,22 +22,23 @@
 
 package org.jboss.as.logging.loggers;
 
+import static org.jboss.as.logging.CommonAttributes.FILTER;
+import static org.jboss.as.logging.CommonAttributes.HANDLERS;
+import static org.jboss.as.logging.CommonAttributes.LEVEL;
+
+import java.util.List;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.logging.util.LogServices;
 import org.jboss.as.logging.LoggingExtension;
+import org.jboss.as.logging.util.LogServices;
 import org.jboss.as.logging.util.ModelParser;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-
-import java.util.List;
-
-import static org.jboss.as.logging.CommonAttributes.HANDLERS;
-import static org.jboss.as.logging.CommonAttributes.LEVEL;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -52,6 +53,7 @@ public class RootLoggerAdd extends AbstractAddStepHandler {
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         LEVEL.validateAndSet(operation, model);
+        FILTER.validateAndSet(operation, model);
         HANDLERS.validateAndSet(operation, model);
     }
 
@@ -60,11 +62,13 @@ public class RootLoggerAdd extends AbstractAddStepHandler {
         final String name = address.getLastElement().getValue();
         final ModelNode level = LEVEL.resolveModelAttribute(context, model);
         final ModelNode handlers = HANDLERS.resolveModelAttribute(context, model);
+        final ModelNode filter = FILTER.resolveModelAttribute(context, model);
         final ServiceTarget target = context.getServiceTarget();
         try {
 
             final RootLoggerService service = new RootLoggerService();
             if (level.isDefined()) service.setLevel(ModelParser.parseLevel(level));
+            if (filter.isDefined()) service.setFilter(ModelParser.parseFilter(context, filter));
             newControllers.add(target.addService(LogServices.loggerName(name), service)
                     .addListener(verificationHandler)
                     .setInitialMode(ServiceController.Mode.ACTIVE)
@@ -77,7 +81,7 @@ public class RootLoggerAdd extends AbstractAddStepHandler {
         try {
             // install logger handler services
             if (handlers.isDefined()) {
-                newControllers.addAll(LoggerAssignHandler.addHandlers(HANDLERS, model, context, name, verificationHandler));
+                newControllers.addAll(LoggerAssignHandler.installHandlers(target, name, handlers, verificationHandler));
             }
         } catch (Throwable t) {
             throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));

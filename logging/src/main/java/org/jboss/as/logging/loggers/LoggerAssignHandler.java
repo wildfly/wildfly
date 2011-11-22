@@ -25,13 +25,14 @@ package org.jboss.as.logging.loggers;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.NAME;
+import static org.jboss.as.logging.LoggingLogger.ROOT_LOGGER;
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Handler;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -40,8 +41,10 @@ import org.jboss.as.logging.util.LogServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.logmanager.Logger;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -120,11 +123,30 @@ public class LoggerAssignHandler extends AbstractLogHandlerAssignmentHandler {
         return builder.install();
     }
 
+
+    public static Collection<ServiceController<?>> installHandlers(final ServiceTarget serviceTarget, final String loggerName, final ModelNode handlers, final ServiceVerificationHandler verificationHandler) {
+        final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
+        // Install logger handler services
+        for(final ModelNode handler : handlers.asList()) {
+            final String handlerName = handler.asString();
+            final LoggerHandlerService service = new LoggerHandlerService(loggerName);
+            final Injector<Handler> injector = service.getHandlerInjector();
+            final ServiceName serviceName = LogServices.loggerHandlerName(loggerName, handlerName);
+            final ServiceName loggerDep = LogServices.loggerName(loggerName);
+            final ServiceName handlerDep = LogServices.handlerName(handlerName);
+            ROOT_LOGGER.tracef("Installing service '%s' for logger '%s' with handler '%s'", serviceName, loggerDep, handlerDep);
+            controllers.add(serviceTarget.addService(serviceName, service)
+                    .addDependency(loggerDep)
+                    .addDependency(handlerDep, Handler.class, injector)
+                    .addListener(verificationHandler)
+                    .install());
+        }
+        return controllers;
+    }
+
     /**
      * Adds the handlers to the logger.
      *
-     * @param attribute           the attribute definition.
-     * @param node                the model node to extract the handlers from.
      * @param context             the context of the operation.
      * @param loggerName          the name of the logger.
      * @param verificationHandler a verification handler for the builder, or {@code null} if no verification handler
@@ -134,15 +156,14 @@ public class LoggerAssignHandler extends AbstractLogHandlerAssignmentHandler {
      *
      * @throws OperationFailedException if an error occurs.
      */
-    public static List<ServiceController<?>> addHandlers(final AttributeDefinition attribute, final ModelNode node, final OperationContext context,
+    public static List<ServiceController<?>> addHandlers(final ModelNode handlers, final OperationContext context,
                                                          final String loggerName, final ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-        // Verify the logger exists
-        if (context.getServiceRegistry(false).getService(LogServices.loggerName(loggerName)) == null) {
-            throw createFailureMessage(MESSAGES.loggerNotFound(loggerName));
-        }
         final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
-        final ModelNode handlers = attribute.resolveModelAttribute(context, node);
         if (handlers.isDefined()) {
+            // Verify the logger exists
+            if (context.getServiceRegistry(false).getService(LogServices.loggerName(loggerName)) == null) {
+                throw createFailureMessage(MESSAGES.loggerNotFound(loggerName));
+            }
             if (handlers.getType() == ModelType.LIST) {
                 for (ModelNode handler : handlers.asList()) {
                     controllers.add(addHandler(context, loggerName, handler.asString(), verificationHandler));

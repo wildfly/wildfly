@@ -28,6 +28,8 @@ import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.USE_PARENT_HANDLERS;
 
+import java.util.List;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -38,8 +40,6 @@ import org.jboss.as.logging.util.ModelParser;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-
-import java.util.List;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -82,7 +82,7 @@ public class LoggerAdd extends AbstractAddStepHandler {
             // install logger handler services
             final ModelNode handlers = HANDLERS.resolveModelAttribute(context, model);
             if (handlers.isDefined()) {
-                newControllers.addAll(LoggerAssignHandler.addHandlers(HANDLERS, model, context, name, verificationHandler));
+                newControllers.addAll(LoggerAssignHandler.installHandlers(target, name, handlers, verificationHandler));
             }
         } catch (Throwable t) {
             throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
