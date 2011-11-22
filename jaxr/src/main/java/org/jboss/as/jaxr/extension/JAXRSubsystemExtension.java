@@ -31,6 +31,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.jaxr.extension.JAXRConstants.Namespace;
+import org.jboss.as.jaxr.service.JAXRConfiguration;
 import org.jboss.dmr.ModelNode;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
@@ -43,6 +44,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 public class JAXRSubsystemExtension implements Extension {
 
     private final JAXRSubsystemParser parser = new JAXRSubsystemParser();
+    private final JAXRConfiguration config = new JAXRConfiguration();
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
@@ -52,7 +54,7 @@ public class JAXRSubsystemExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         SubsystemRegistration subsystem = context.registerSubsystem(JAXRConstants.SUBSYSTEM_NAME);
-        ManagementResourceRegistration registration = subsystem.registerSubsystemModel(JAXRSubsystemRootResource.INSTANCE);
+        ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new JAXRSubsystemRootResource(config));
         registration.registerOperationHandler(DESCRIBE, SubsystemDescribeHandler.INSTANCE, SubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         subsystem.registerXMLElementWriter(JAXRSubsystemWriter.INSTANCE);
     }

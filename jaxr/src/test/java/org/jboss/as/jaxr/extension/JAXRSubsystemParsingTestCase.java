@@ -26,9 +26,12 @@ import junit.framework.Assert;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.jaxr.service.JAXRConfiguration;
+import org.jboss.as.jaxr.service.JAXRConfigurationService;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
 import org.junit.Test;
 
 import java.util.List;
@@ -78,15 +81,12 @@ public class JAXRSubsystemParsingTestCase extends AbstractSubsystemTest {
     @Test
     public void testInstallIntoController() throws Exception {
 
-        JAXRConfiguration config = JAXRConfiguration.INSTANCE;
-        Assert.assertNull(config.getDataSourceBinding());
-        Assert.assertNull(config.getConnectionFactoryBinding());
-        Assert.assertEquals(DEFAULT_DROPONSTART, config.isDropOnStart());
-        Assert.assertEquals(DEFAULT_CREATEONSTART, config.isCreateOnStart());
-        Assert.assertEquals(DEFAULT_DROPONSTOP, config.isDropOnStop());
-
         //Parse the subsystem xml and install into the controller
         KernelServices services = super.installInController(SUBSYSTEM_XML);
+
+        ServiceContainer container = services.getContainer();
+        ServiceController<?> controller = container.getService(JAXRConfigurationService.SERVICE_NAME);
+        JAXRConfiguration config = (JAXRConfiguration) controller.getService().getValue();
 
         Assert.assertEquals("java:DataSource", config.getDataSourceBinding());
         Assert.assertEquals("java:ConnectionFactory", config.getConnectionFactoryBinding());

@@ -8,8 +8,6 @@
         <extension module="org.jboss.as.deployment-scanner"/>
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.ejb3"/>
-        <extension module="org.jboss.as.jacorb"/>
-        <extension module="org.jboss.as.jaxr"/>
         <extension module="org.jboss.as.jaxrs"/>
         <extension module="org.jboss.as.jdr"/>
         <extension module="org.jboss.as.jmx"/>
@@ -151,12 +149,6 @@
                 </local-cache>
             </cache-container>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:jacorb:1.1"/>
-        <subsystem xmlns="urn:jboss:domain:jaxr:1.0">
-            <connection-factory jndi-name="java:jboss/jaxr/ConnectionFactory"/>
-            <datasource jndi-name="java:jboss/datasources/ExampleDS"/>
-            <flags drop-on-start="true" create-on-start="true" drop-on-stop="false"/>
-        </subsystem>
         <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
         <subsystem xmlns="urn:jboss:domain:jca:1.1">
             <archive-validation enabled="false"/>
@@ -192,6 +184,13 @@
         <subsystem xmlns="urn:jboss:domain:osgi:1.1" activation="lazy">
             <configuration pid="org.apache.felix.webconsole.internal.servlet.OsgiManager">
                 <property name="manager.root" value="jboss-osgi"/>
+            </configuration>
+            <configuration pid="org.jboss.as.jaxr.service.JAXRConfiguration">
+                <property name="connection-factory" value="java:jboss/jaxr/ConnectionFactory"/>
+                <property name="datasource" value="java:jboss/datasources/ExampleDS"/>
+                <property name="drop-on-start" value="true"/>
+                <property name="create-on-start" value="true"/>
+                <property name="drop-on-stop" value="false"/>
             </configuration>
             <properties>
                 <!-- Specifies the beginning start level of the framework -->

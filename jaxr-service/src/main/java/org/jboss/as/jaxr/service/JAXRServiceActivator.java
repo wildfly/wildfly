@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2006, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,34 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.jaxr.service;
 
-package org.jboss.as.osgi.service;
-
-import java.util.Dictionary;
-import java.util.Set;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceRegistryException;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
- * A configuration listener for the {@link ConfigAdminService}.
- *
- * When a configuration listener is first registered with the {@link ConfigAdminService}
- * its configurationModified method is invoked for every PID the listener registers with.
- *
- * A <code>null</code> dictionary indicates that there is currently no configuration for the associated PID.
+ * Activates the JAXR server side services
  *
  * @author Thomas.Diesler@jboss.com
- * @since 11-Dec-2010
+ * @since 22-Nov-2011
  */
-public interface ConfigAdminListener {
+public class JAXRServiceActivator implements ServiceActivator {
 
-    /**
-     * Called when the {@code ConfigAdminService} receives an update for
-     * a PID that the listener has registered with.
-     */
-    void configurationModified(String pid, Dictionary<String, String> props);
-
-    /**
-     * Return the set of PIDs that this listener is interested in.
-     * A <code>null</code> return value denotes any PID.
-     */
-    Set<String> getPIDs();
+    @Override
+    public void activate(ServiceActivatorContext context) throws ServiceRegistryException {
+        ServiceTarget serviceTarget = context.getServiceTarget();
+        JAXRConfigAdminService.addService(serviceTarget);
+        JAXRConnectionFactoryService.addService(serviceTarget);
+        JAXRDatasourceService.addService(serviceTarget);
+        JUDDIContextService.addService(serviceTarget);
+    }
 }

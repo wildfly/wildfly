@@ -31,66 +31,34 @@
     </parent>
 
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-jaxr</artifactId>
+    <artifactId>jboss-as-jaxr-service</artifactId>
     <packaging>jar</packaging>
 
-    <name>JBoss Application Server: JAXR Subsystem</name>
+    <name>JBoss Application Server: JAXR Service</name>
 
     <properties>
     </properties>
 
     <build>
-        <plugins>
-        </plugins>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <configuration>
+            <archive>
+              <manifestEntries>
+                <Dependencies>org.jboss.as.jaxr,org.jboss.as.osgi</Dependencies>
+              </manifestEntries>
+            </archive>
+          </configuration>
+        </plugin>
+      </plugins>
     </build>
 
     <dependencies>
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-controller</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-naming</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-osgi-service</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-server</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.spec.javax.xml.registry</groupId>
-            <artifactId>jboss-jaxr-api_1.0_spec</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss</groupId>
-            <artifactId>jboss-common-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.juddi</groupId>
-            <artifactId>juddi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.ws.scout</groupId>
-            <artifactId>scout</artifactId>
-        </dependency>
-        <!-- Test Dependencies -->
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-subsystem-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
+            <artifactId>jboss-as-jaxr</artifactId>
         </dependency>
     </dependencies>
 </project>

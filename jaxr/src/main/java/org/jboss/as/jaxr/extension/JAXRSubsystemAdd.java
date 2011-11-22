@@ -26,6 +26,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.jaxr.service.JAXRConfigurationService;
 import org.jboss.as.jaxr.service.JAXRConnectionFactoryService;
 import org.jboss.as.jaxr.service.JAXRDatasourceService;
 import org.jboss.as.jaxr.service.JAXRConfiguration;
@@ -50,10 +51,10 @@ import static org.jboss.as.jaxr.extension.JAXRWriteAttributeHandler.applyUpdateT
  */
 class JAXRSubsystemAdd extends AbstractAddStepHandler {
 
-    static final JAXRSubsystemAdd INSTANCE = new JAXRSubsystemAdd();
+    private final JAXRConfiguration config;
 
-    // Hide ctor
-    private JAXRSubsystemAdd() {
+    JAXRSubsystemAdd(JAXRConfiguration config) {
+        this.config = config;
     }
 
     static ModelNode createAddSubsystemOperation() {
@@ -67,7 +68,7 @@ class JAXRSubsystemAdd extends AbstractAddStepHandler {
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         for (String attr : JAXRWriteAttributeHandler.REQUIRED_ATTRIBUTES) {
             ModelNode node = operation.get(attr);
-            applyUpdateToConfig(attr, node);
+            applyUpdateToConfig(config, attr, node);
             model.get(attr).set(node);
         }
     }
@@ -77,16 +78,12 @@ class JAXRSubsystemAdd extends AbstractAddStepHandler {
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                JAXRConfiguration config = JAXRConfiguration.INSTANCE;
                 ServiceTarget serviceTarget = context.getServiceTarget();
-                if (config.getConnectionFactoryBinding() != null) {
-                    newControllers.add(JAXRConnectionFactoryService.addService(serviceTarget, config, verifyHandler));
-                }
-                // [TODO] AS7-2681 Make JAXR http endpoint configurable
-                if (config.getDataSourceBinding() != null) {
-                    newControllers.add(JAXRDatasourceService.addService(serviceTarget, config, verifyHandler));
-                    newControllers.add(JUDDIContextService.addService(serviceTarget, config, verifyHandler));
-                }
+                newControllers.add(JAXRConfigurationService.addService(serviceTarget, config, verifyHandler));
+                newControllers.add(JAXRConnectionFactoryService.addService(serviceTarget, verifyHandler));
+                // The subsystem does not initialize the JAXR database nor create an HTTP endpoint
+                //newControllers.add(JAXRDatasourceService.addService(serviceTarget, verifyHandler));
+                //newControllers.add(JUDDIContextService.addService(serviceTarget, verifyHandler));
                 context.completeStep();
             }
         }, OperationContext.Stage.RUNTIME);

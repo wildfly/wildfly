@@ -51,6 +51,7 @@ import java.util.Iterator;
  * @since Mar 9, 2005
  */
 @RunWith(Arquillian.class)
+@Ignore("[AS7-2636] Refactor JAXR subsystem into a deployable application")
 public class JaxrDeleteAssociationTestCase extends JaxrTestBase
 {
    private static Logger log = Logger.getLogger(JaxrDeleteAssociationTestCase.class);

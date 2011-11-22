@@ -40,6 +40,7 @@ import org.junit.runner.RunWith;
  */
 @RunAsClient
 @RunWith(Arquillian.class)
+@Ignore("[AS7-2636] Refactor JAXR subsystem into a deployable application")
 public class JaxrConnectionFactoryBindingTestCase
 {
     @Deployment(testable = false)

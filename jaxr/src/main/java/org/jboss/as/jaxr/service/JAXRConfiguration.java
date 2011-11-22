@@ -21,8 +21,6 @@
  */
 package org.jboss.as.jaxr.service;
 
-import org.jboss.msc.service.ServiceName;
-
 /**
  * The configuration of the JAXR subsystem.
  *
@@ -30,8 +28,6 @@ import org.jboss.msc.service.ServiceName;
  * @since 26-Oct-2011
  */
 public class JAXRConfiguration {
-
-    static final ServiceName SERVICE_BASE_NAME = ServiceName.JBOSS.append("jaxr", "as");
 
     public static final boolean DEFAULT_DROPONSTART = false;
     public static final boolean DEFAULT_CREATEONSTART = false;
@@ -42,16 +38,22 @@ public class JAXRConfiguration {
     // Context to which JAXR ConnectionFactory to bind to
     private String connectionFactoryBinding;
     // Should all tables be dropped on Start
-    private boolean dropOnStart=DEFAULT_DROPONSTART;
+    private boolean dropOnStart;
     // Should all tables be created on Start
-    private boolean createOnStart=DEFAULT_CREATEONSTART;
+    private boolean createOnStart;
     // Should all tables be dropped on Stop
-    private boolean dropOnStop=DEFAULT_DROPONSTOP;
+    private boolean dropOnStop;
 
-    public static JAXRConfiguration INSTANCE = new JAXRConfiguration();
+    public JAXRConfiguration() {
+        init();
+    }
 
-    // Hide ctor
-    private JAXRConfiguration() {
+    public void init() {
+        dataSourceBinding = null;
+        connectionFactoryBinding = null;
+        dropOnStart = DEFAULT_DROPONSTART;
+        createOnStart = DEFAULT_CREATEONSTART;
+        dropOnStop = DEFAULT_DROPONSTOP;
     }
 
     public boolean isDropOnStop() {
