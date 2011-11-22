@@ -110,7 +110,7 @@
         <!-- common surefire properties -->
         <surefire.memory.args>-Xmx512m -XX:MaxPermSize=256m</surefire.memory.args>
         <surefire.jpda.args></surefire.jpda.args>
-        <surefire.system.args>${surefire.memory.args} ${surefire.jpda.args}</surefire.system.args>
+        <surefire.system.args>${surefire.memory.args} ${surefire.jpda.args} -Djboss.dist=${jboss.dist}</surefire.system.args>
         <surefire.forked.process.timeout>900</surefire.forked.process.timeout>
         <surefire.test.failure.ignore>false</surefire.test.failure.ignore>
 
