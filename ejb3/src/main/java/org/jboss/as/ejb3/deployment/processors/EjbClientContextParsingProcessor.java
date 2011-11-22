@@ -21,28 +21,44 @@
  */
 package org.jboss.as.ejb3.deployment.processors;
 
+
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
-import org.jboss.as.ejb3.remote.EjbClientContextService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceName;
 
 /**
- * Deployment unit processor that sets up the appropriate {@link org.jboss.ejb.client.EJBClientContext} for a deployment.
+ * Deployment unit processor that sets up a dependency for the {@link DeploymentPhaseContext} on the appropriate
+ * {@link org.jboss.ejb.client.EJBClientContext} so that the subsequent phase will have the {@link org.jboss.ejb.client.EJBClientContext}
+ * available as an attachment in the deployment unit.
  *
  * @author Stuart Douglas
  */
 public class EjbClientContextParsingProcessor implements DeploymentUnitProcessor {
 
+    private static final Logger logger = Logger.getLogger(EjbClientContextParsingProcessor.class);
+
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-
-        //TODO: this needs to figure out the correct service name from some kind of configuration
-
-        deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT_SERVICE_NAME, EjbClientContextService.DEFAULT_SERVICE_NAME);
-        phaseContext.addDeploymentDependency(EjbClientContextService.DEFAULT_SERVICE_NAME, EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT);
+        final DeploymentUnit parentDeploymentUnit = deploymentUnit.getParent();
+        final ServiceName ejbClientContextServiceName;
+        // The top level parent deployment unit will have the attachment containing the EJB client context
+        // service name
+        if (parentDeploymentUnit != null) {
+            ejbClientContextServiceName = parentDeploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT_SERVICE_NAME);
+        } else {
+            ejbClientContextServiceName = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT_SERVICE_NAME);
+        }
+        if (ejbClientContextServiceName == null) {
+            throw new IllegalStateException("Deployment unit " + deploymentUnit + " doesn't contain the service name for EJB client context");
+        }
+        logger.debug("Using " + ejbClientContextServiceName + " as the EJB client context service for deployment unit " + deploymentUnit);
+        // add the attachments/dependencies in the DU
+        phaseContext.addDeploymentDependency(ejbClientContextServiceName, EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT);
     }
 
     @Override

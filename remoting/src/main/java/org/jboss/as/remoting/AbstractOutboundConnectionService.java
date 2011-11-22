@@ -47,7 +47,10 @@ public abstract class AbstractOutboundConnectionService<T extends AbstractOutbou
 
     protected volatile OptionMap connectionCreationOptions;
 
-    protected AbstractOutboundConnectionService(final OptionMap connectionCreationOptions) {
+    protected final String connectionName;
+
+    protected AbstractOutboundConnectionService(final String connectionName, final OptionMap connectionCreationOptions) {
+        this.connectionName = connectionName;
         this.connectionCreationOptions = connectionCreationOptions == null ? OptionMap.EMPTY : connectionCreationOptions;
     }
 
@@ -68,5 +71,9 @@ public abstract class AbstractOutboundConnectionService<T extends AbstractOutbou
     }
 
 
-    abstract IoFuture<Connection> connect() throws IOException;
+    public String getConnectionName() {
+        return this.connectionName;
+    }
+
+    public abstract IoFuture<Connection> connect() throws IOException;
 }

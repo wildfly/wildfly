@@ -54,8 +54,8 @@ public class RemoteOutboundConnectionService extends AbstractOutboundConnectionS
 
     private URI connectionURI;
 
-    public RemoteOutboundConnectionService(final OptionMap connectionCreationOptions) {
-        super(connectionCreationOptions);
+    public RemoteOutboundConnectionService(final String connectionName, final OptionMap connectionCreationOptions) {
+        super(connectionName, connectionCreationOptions);
     }
 
     @Override
@@ -78,7 +78,7 @@ public class RemoteOutboundConnectionService extends AbstractOutboundConnectionS
     }
 
     @Override
-    IoFuture<Connection> connect() throws IOException {
+    public IoFuture<Connection> connect() throws IOException {
         final URI uri;
         try {
             // we lazily generate the URI on first request to connect() instead of on start() of the service

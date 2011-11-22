@@ -45,9 +45,9 @@ public class GenericOutboundConnectionService extends AbstractOutboundConnection
 
     private volatile URI destination;
 
-    public GenericOutboundConnectionService(final URI destination, final OptionMap connectionCreationOptions) {
+    public GenericOutboundConnectionService(final String connectionName, final URI destination, final OptionMap connectionCreationOptions) {
 
-        super(connectionCreationOptions);
+        super(connectionName, connectionCreationOptions);
 
         if (destination == null) {
             throw new IllegalArgumentException("Destination URI cannot be null while creating a outbound remote connection service");
@@ -56,7 +56,7 @@ public class GenericOutboundConnectionService extends AbstractOutboundConnection
     }
 
     @Override
-    IoFuture<Connection> connect() throws IOException {
+    public IoFuture<Connection> connect() throws IOException {
         final Endpoint endpoint = this.endpointInjectedValue.getValue();
         return endpoint.connect(this.destination, this.connectionCreationOptions);
     }

@@ -102,10 +102,10 @@ class RemoteOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler {
         // fetch the connection creation options from the model
         final OptionMap connectionCreationOptions = getConnectionCreationOptions(remoteOutboundConnection);
         // create the service
-        final RemoteOutboundConnectionService outboundConnectionService = new RemoteOutboundConnectionService(connectionCreationOptions);
+        final RemoteOutboundConnectionService outboundConnectionService = new RemoteOutboundConnectionService(connectionName, connectionCreationOptions);
         final ServiceName serviceName = AbstractOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);
         // also add a alias service name to easily distinguish between a generic, remote and local type of connection services
-        final ServiceName aliasServiceName = RemoteOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);
+        final ServiceName aliasServiceName = RemoteOutboundConnectionService.REMOTE_OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionName);
         final ServiceBuilder<RemoteOutboundConnectionService> svcBuilder = context.getServiceTarget().addService(serviceName, outboundConnectionService)
                 .addAliases(aliasServiceName)
                 .addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, outboundConnectionService.getEnpointInjector())

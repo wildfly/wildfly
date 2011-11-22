@@ -33,11 +33,13 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.ee.structure.EJBClientDescriptorParsingProcessor;
 import org.jboss.as.ejb3.component.EJBUtilities;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.processors.ApplicationExceptionAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.BusinessViewAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.DeploymentRepositoryProcessor;
+import org.jboss.as.ejb3.deployment.processors.EJBClientDescriptorMetaDataProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbCleanUpProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbClientContextParsingProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbClientContextSetupProcessor;
@@ -83,7 +85,7 @@ import org.jboss.as.ejb3.deployment.processors.merging.TransactionAttributeMergi
 import org.jboss.as.ejb3.deployment.processors.merging.TransactionManagementMergingProcessor;
 import org.jboss.as.ejb3.iiop.POARegistry;
 import org.jboss.as.ejb3.deployment.processors.security.JaccEjbDeploymentProcessor;
-import org.jboss.as.ejb3.remote.EjbClientContextService;
+import org.jboss.as.ejb3.remote.DefaultEjbClientContextService;
 import org.jboss.as.ejb3.remote.LocalEjbReceiver;
 import org.jboss.as.ejb3.remote.TCCLBasedEJBClientContextSelector;
 import org.jboss.as.jacorb.service.CorbaPOAService;
@@ -154,6 +156,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_SESSION_BEAN_DD, new SessionBeanXmlDescriptorProcessor(appclient));
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_ANNOTATION_EJB, new EjbAnnotationProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_INJECTION_ANNOTATION, new EjbResourceInjectionAnnotationProcessor());
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_CLIENT_METADATA, new EJBClientDescriptorMetaDataProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_ENTITY_BEAN_CREATE_COMPONENT_DESCRIPTIONS, new EntityBeanComponentDescriptionFactory(appclient));
 
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_EJB, new EjbDependencyDeploymentUnitProcessor());
@@ -271,8 +274,8 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         //add the default EjbClientContext
         //TODO: This should be managed
-        final EjbClientContextService clientContextService = new EjbClientContextService();
-        final ServiceBuilder<EJBClientContext> clientContextServiceBuilder = context.getServiceTarget().addService(EjbClientContextService.DEFAULT_SERVICE_NAME,
+        final DefaultEjbClientContextService clientContextService = new DefaultEjbClientContextService();
+        final ServiceBuilder<EJBClientContext> clientContextServiceBuilder = context.getServiceTarget().addService(DefaultEjbClientContextService.DEFAULT_SERVICE_NAME,
                 clientContextService).addDependency(TCCLBasedEJBClientContextSelector.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME,
                 TCCLBasedEJBClientContextSelector.class, clientContextService.getTCCLBasedEJBClientContextSelectorInjector());
 
