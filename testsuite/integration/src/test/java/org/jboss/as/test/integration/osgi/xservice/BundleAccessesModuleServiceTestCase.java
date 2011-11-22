@@ -22,12 +22,6 @@
 
 package org.jboss.as.test.integration.osgi.xservice;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.InputStream;
-
-import javax.inject.Inject;
-
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -46,7 +40,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.testing.ManifestBuilder;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
-import org.jboss.osgi.testing.OSGiTestHelper;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -56,6 +49,11 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
+
+import javax.inject.Inject;
+import java.io.InputStream;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * A test that shows how a bundle can access an MSC service.
@@ -160,7 +158,7 @@ public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, TARGET_MODULE_NAME);
         archive.addClasses(Echo.class, EchoService.class, TargetModuleActivator.class);
         String activatorPath = "META-INF/services/" + ServiceActivator.class.getName();
-        archive.addAsResource(OSGiTestHelper.getResourceFile("osgi/xservice/target-module/" + activatorPath), activatorPath);
+        archive.addAsResource("osgi/xservice/target-module/" + activatorPath, activatorPath);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 ManifestBuilder builder = ManifestBuilder.newInstance();
