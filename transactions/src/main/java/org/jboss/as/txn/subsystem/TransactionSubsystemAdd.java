@@ -44,6 +44,7 @@ import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.as.txn.deployment.TransactionJndiBindingProcessor;
+import org.jboss.as.txn.deployment.TransactionLeakRollbackProcessor;
 import org.jboss.as.txn.service.ArjunaObjectStoreEnvironmentService;
 import org.jboss.as.txn.service.ArjunaRecoveryManagerService;
 import org.jboss.as.txn.service.ArjunaTransactionManagerService;
@@ -182,6 +183,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(final DeploymentProcessorTarget processorTarget) {
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_TRANSACTION_ROLLBACK_ACTION, new TransactionLeakRollbackProcessor());
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_TRANSACTION_BINDINGS, new TransactionJndiBindingProcessor());
             }
         }, OperationContext.Stage.RUNTIME);

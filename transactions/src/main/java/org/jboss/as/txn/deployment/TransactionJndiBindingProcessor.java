@@ -51,7 +51,7 @@ import org.jboss.msc.service.ServiceTarget;
  *
  * @author Stuart Douglas
  */
-public class TransactionJndiBindingProcessor implements DeploymentUnitProcessor{
+public class TransactionJndiBindingProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();

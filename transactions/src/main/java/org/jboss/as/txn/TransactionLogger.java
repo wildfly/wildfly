@@ -23,8 +23,13 @@
 package org.jboss.as.txn;
 
 import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Cause;
+import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
+import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
+
+import static org.jboss.logging.Logger.Level.ERROR;
 
 /**
  * Transaction logger. Uses id's 10100 to 10199.
@@ -37,4 +42,33 @@ public interface TransactionLogger extends BasicLogger {
      * A logger with the category of the default transaction package.
      */
     TransactionLogger ROOT_LOGGER = Logger.getMessageLogger(TransactionLogger.class, TransactionLogger.class.getPackage().getName());
+
+    /**
+     * If a transaction could not be rolled back
+     *
+     * @return the message.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 10150, value = "Unable to roll back active transaction")
+    void unableToRollBack(@Cause Throwable cause);
+
+
+    /**
+     * If the current transaction status could not be determined
+     *
+     * @return the message.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 10151, value = "Unable to get transaction state")
+    void unableToGetTransactionStatus(@Cause Throwable cause);
+
+
+    /**
+     * If the user left a transaction open
+     *
+     * @return the message.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 10152, value = "APPLICATION ERROR: transaction still active in request with status %s")
+    void transactionStillOpen(int status);
 }
