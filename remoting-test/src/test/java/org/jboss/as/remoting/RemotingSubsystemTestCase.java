@@ -210,6 +210,41 @@ public class RemotingSubsystemTestCase extends AbstractSubsystemBaseTest {
         }
     }
 
+    /**
+     * Tests that the outbound connections configured in the remoting subsytem are processed and services
+     * are created for them
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testOutboundConnections() throws Exception {
+        final int outboundSocketBindingPort = 6799;
+        final int socketBindingPort = 1234;
+        KernelServices services = installInController(new AdditionalInitialization(){
+                @Override
+                protected void setupController(ControllerInitializer controllerInitializer) {
+                    controllerInitializer.addSocketBinding("test", socketBindingPort);
+                    controllerInitializer.addRemoteOutboundSocketBinding("dummy-outbound-socket", "localhost", outboundSocketBindingPort);
+                    controllerInitializer.addRemoteOutboundSocketBinding("other-outbound-socket", "localhost", outboundSocketBindingPort);
+                }
+
+            },readResource("remoting-with-outbound-connections.xml"));
+
+        ServiceController<?> endPointService = services.getContainer().getRequiredService(RemotingServices.SUBSYSTEM_ENDPOINT);
+        assertNotNull("Endpoint service was null", endPointService);
+
+        final String remoteOutboundConnectionName = "remote-conn1";
+        ServiceName remoteOutboundConnectionServiceName = RemoteOutboundConnectionService.REMOTE_OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(remoteOutboundConnectionName);
+        ServiceController<?> remoteOutboundConnectionService = services.getContainer().getRequiredService(remoteOutboundConnectionServiceName);
+        assertNotNull("Remote outbound connection service for outbound connection:" + remoteOutboundConnectionName + " was null", remoteOutboundConnectionService);
+
+
+        final String localOutboundConnectionName = "local-conn1";
+        ServiceName localOutboundConnectionServiceName = LocalOutboundConnectionService.LOCAL_OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(localOutboundConnectionName);
+        ServiceController<?> localOutboundConnectionService = services.getContainer().getRequiredService(localOutboundConnectionServiceName);
+        assertNotNull("Local outbound connection service for outbound connection:" + localOutboundConnectionName + " was null", localOutboundConnectionService);
+    }
+
     @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("remoting.xml");
