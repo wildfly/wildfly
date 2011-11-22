@@ -126,11 +126,6 @@ abstract class AbstractOperationContext implements OperationContext {
         if (stage.compareTo(currentStage) < 0 && (stage != Stage.IMMEDIATE || currentStage == Stage.DONE)) {
             throw MESSAGES.stageAlreadyComplete(stage);
         }
-        if (contextType == Type.MANAGEMENT && stage.compareTo(Stage.MODEL) > 0) {
-            if(stage != Stage.VERIFY) { // allow verification also in mgmt mode
-                throw MESSAGES.invalidStepStageForContext();
-            }
-        }
         if (stage == Stage.DOMAIN && contextType != Type.HOST) {
             throw MESSAGES.invalidStage(stage, contextType);
         }

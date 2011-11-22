@@ -724,7 +724,127 @@ public class HostXml extends CommonXml {
         }
     }
 
-    private void parseServer(final XMLExtendedStreamReader reader, final ModelNode parentAddress, final Namespace expectedNs, final List<ModelNode> list,
+    private void parseServer(final XMLExtendedStreamReader reader, final ModelNode parentAddress,
+                             final Namespace expectedNs, final List<ModelNode> list,
+            final Set<String> serverNames) throws XMLStreamException {
+
+        // Handle attributes
+        final ModelNode addUpdate = parseServerAttributes(reader, parentAddress, serverNames);
+        final ModelNode address = addUpdate.require(OP_ADDR);
+        list.add(addUpdate);
+
+        // Handle elements
+        switch (expectedNs) {
+            case DOMAIN_1_0:
+                parseServerContent1_0(reader, address, expectedNs, list);
+                break;
+            default:
+                parseServerContent1_1(reader, address, expectedNs, list);
+        }
+
+    }
+
+    private void parseServerContent1_0(final XMLExtendedStreamReader reader, final ModelNode serverAddress,
+                                       final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+        boolean sawJvm = false;
+        boolean sawSystemProperties = false;
+        boolean sawSocketBinding = false;
+        final Set<String> interfaceNames = new HashSet<String>();
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case INTERFACE_SPECS: {
+                    parseInterfaces(reader, interfaceNames, serverAddress, expectedNs, list, true);
+                    break;
+                }
+                case JVM: {
+                    if (sawJvm) {
+                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
+                    }
+
+                    parseJvm(reader, serverAddress, expectedNs, list, new HashSet<String>(), true);
+                    sawJvm = true;
+                    break;
+                }
+                case PATHS: {
+                    parsePaths(reader, serverAddress, expectedNs, list, true);
+                    break;
+                }
+                case SOCKET_BINDING_GROUP: {
+                    if (sawSocketBinding) {
+                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
+                    }
+                    parseSocketBindingGroupRef(reader, serverAddress, list);
+                    sawSocketBinding = true;
+                    break;
+                }
+                case SYSTEM_PROPERTIES: {
+                    if (sawSystemProperties) {
+                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
+                    }
+                    parseSystemProperties(reader, serverAddress, expectedNs, list, false);
+                    sawSystemProperties = true;
+                    break;
+                }
+                default:
+                    throw unexpectedElement(reader);
+            }
+        }
+
+    }
+
+    private void parseServerContent1_1(final XMLExtendedStreamReader reader, final ModelNode serverAddress,
+                                       final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+        boolean sawJvm = false;
+        boolean sawSystemProperties = false;
+        boolean sawSocketBinding = false;
+        final Set<String> interfaceNames = new HashSet<String>();
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case INTERFACES: { // THIS IS DIFFERENT FROM 1.0
+                    parseInterfaces(reader, interfaceNames, serverAddress, expectedNs, list, true);
+                    break;
+                }
+                case JVM: {
+                    if (sawJvm) {
+                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
+                    }
+
+                    parseJvm(reader, serverAddress, expectedNs, list, new HashSet<String>(), true);
+                    sawJvm = true;
+                    break;
+                }
+                case PATHS: {
+                    parsePaths(reader, serverAddress, expectedNs, list, true);
+                    break;
+                }
+                case SOCKET_BINDING_GROUP: {
+                    if (sawSocketBinding) {
+                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
+                    }
+                    parseSocketBindingGroupRef(reader, serverAddress, list);
+                    sawSocketBinding = true;
+                    break;
+                }
+                case SYSTEM_PROPERTIES: {
+                    if (sawSystemProperties) {
+                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
+                    }
+                    parseSystemProperties(reader, serverAddress, expectedNs, list, false);
+                    sawSystemProperties = true;
+                    break;
+                }
+                default:
+                    throw unexpectedElement(reader);
+            }
+        }
+
+    }
+
+    private ModelNode parseServerAttributes(final XMLExtendedStreamReader reader, final ModelNode parentAddress,
             final Set<String> serverNames) throws XMLStreamException {
         // Handle attributes
         String name = null;
@@ -771,55 +891,7 @@ public class HostXml extends CommonXml {
         if (start != null) {
             addUpdate.get(AUTO_START).set(start.booleanValue());
         }
-        list.add(addUpdate);
-
-        // Handle elements
-        boolean sawJvm = false;
-        boolean sawSystemProperties = false;
-        boolean sawSocketBinding = false;
-        final Set<String> interfaceNames = new HashSet<String>();
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            requireNamespace(reader, expectedNs);
-            final Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case INTERFACE_SPECS: {
-                    parseInterfaces(reader, interfaceNames, address, expectedNs, list, true);
-                    break;
-                }
-                case JVM: {
-                    if (sawJvm) {
-                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
-                    }
-
-                    parseJvm(reader, address, expectedNs, list, new HashSet<String>(), true);
-                    sawJvm = true;
-                    break;
-                }
-                case PATHS: {
-                    parsePaths(reader, address, expectedNs, list, true);
-                    break;
-                }
-                case SOCKET_BINDING_GROUP: {
-                    if (sawSocketBinding) {
-                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
-                    }
-                    parseSocketBindingGroupRef(reader, address, list);
-                    sawSocketBinding = true;
-                    break;
-                }
-                case SYSTEM_PROPERTIES: {
-                    if (sawSystemProperties) {
-                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
-                    }
-                    parseSystemProperties(reader, address, expectedNs, list, false);
-                    sawSystemProperties = true;
-                    break;
-                }
-                default:
-                    throw unexpectedElement(reader);
-            }
-        }
-
+        return addUpdate;
     }
 
     protected void writeNativeManagementProtocol(final XMLExtendedStreamWriter writer, final ModelNode protocol)

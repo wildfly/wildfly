@@ -378,6 +378,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         final Map<String, ModelNode> interfaces = new LinkedHashMap<String, ModelNode>();
         addInterfaces(interfaces, domainModel.get(INTERFACE));
         addInterfaces(interfaces, hostModel.get(INTERFACE));
+        addInterfaces(interfaces, hostModel.get(SERVER_CONFIG, serverName, INTERFACE));
 
         for (Entry<String, ModelNode> entry : interfaces.entrySet()) {
             updates.add(InterfaceAddHandler.getAddInterfaceOperation(pathAddress(PathElement.pathElement(INTERFACE, entry.getKey())), entry.getValue()));
@@ -387,7 +388,6 @@ class ModelCombiner implements ManagedServerBootConfiguration {
     private void addInterfaces(Map<String, ModelNode> map, ModelNode iface) {
         if (iface.isDefined()) {
             for (Property prop : iface.asPropertyList()) {
-                //TODO merge rather than replace existing?
                 map.put(prop.getName(), prop.getValue());
             }
         }

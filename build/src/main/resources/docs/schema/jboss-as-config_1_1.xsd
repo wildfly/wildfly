@@ -722,7 +722,7 @@
         <xs:all>
             <xs:element name="paths" type="specified-pathsType" minOccurs="0" maxOccurs="1" />
 
-            <xs:element name="interface-specs" type="specified-interfacesType" minOccurs="0"/>
+            <xs:element name="interfaces" type="specified-interfacesType" minOccurs="0"/>
             <xs:element name="socket-binding-group" type="socket-binding-group-refType" minOccurs="0"/>
 
             <!--<xs:element name="loggers" type="loggersType" minOccurs="0"/>-->
