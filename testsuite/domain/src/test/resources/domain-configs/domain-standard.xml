@@ -24,6 +24,8 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     <extensions>
+        <extension module="org.jboss.as.clustering.infinispan"/>
+        <extension module="org.jboss.as.clustering.jgroups"/>
         <extension module="org.jboss.as.cmp"/>
         <extension module="org.jboss.as.connector"/>
         <extension module="org.jboss.as.jmx"/>
@@ -142,6 +144,82 @@
                 <thread-pools>
                     <thread-pool name="default" max-threads="10" keepalive-time="100" />
                 </thread-pools>
+            </subsystem>
+            <subsystem xmlns="urn:jboss:domain:infinispan:1.1" default-cache-container="cluster">
+                <cache-container name="cluster" default-cache="default">
+                    <alias>ha-partition</alias>
+                    <replicated-cache name="default" mode="SYNC" batching="true">
+                        <locking isolation="REPEATABLE_READ"/>
+                    </replicated-cache>
+                </cache-container>
+                <cache-container name="web" default-cache="repl">
+                    <alias>standard-session-cache</alias>
+                    <replicated-cache name="repl" mode="ASYNC" batching="true">
+                        <file-store/>
+                    </replicated-cache>
+                    <distributed-cache name="dist" mode="ASYNC" batching="true">
+                        <file-store/>
+                    </distributed-cache>
+                </cache-container>
+                <cache-container name="sfsb" default-cache="repl">
+                    <alias>sfsb-cache</alias>
+                    <alias>jboss.cache:service=EJB3SFSBClusteredCache</alias>
+                    <replicated-cache name="repl" mode="ASYNC" batching="true">
+                        <eviction strategy="LRU" max-entries="10000"/>
+                        <file-store/>
+                    </replicated-cache>
+                </cache-container>
+                <cache-container name="hibernate" default-cache="local-query">
+                    <invalidation-cache name="entity" mode="SYNC">
+                        <eviction strategy="LRU" max-entries="10000"/>
+                        <expiration max-idle="100000"/>
+                    </invalidation-cache>
+                    <local-cache name="local-query">
+                        <eviction strategy="LRU" max-entries="10000"/>
+                        <expiration max-idle="100000"/>
+                    </local-cache>
+                    <replicated-cache name="timestamps" mode="ASYNC">
+                        <eviction strategy="NONE"/>
+                    </replicated-cache>
+                </cache-container>
+            </subsystem>
+            <subsystem xmlns="urn:jboss:domain:jgroups:1.0" default-stack="udp">
+                <stack name="udp">
+                    <transport type="UDP" socket-binding="jgroups-udp" diagnostics-socket-binding="jgroups-diagnostics"/>
+                    <protocol type="PING"/>
+                    <protocol type="MERGE2"/>
+                    <protocol type="FD_SOCK" socket-binding="jgroups-udp-fd"/>
+                    <protocol type="FD"/>
+                    <protocol type="VERIFY_SUSPECT"/>
+                    <protocol type="BARRIER"/>
+                    <protocol type="pbcast.NAKACK"/>
+                    <protocol type="UNICAST2"/>
+                    <protocol type="pbcast.STABLE"/>
+                    <protocol type="pbcast.GMS"/>
+                    <protocol type="UFC"/>
+                    <protocol type="MFC"/>
+                    <protocol type="FRAG2"/>
+                    <protocol type="pbcast.STATE_TRANSFER"/>
+                    <protocol type="pbcast.FLUSH"/>
+                </stack>
+                <stack name="tcp">
+                    <transport type="TCP" socket-binding="jgroups-tcp" diagnostics-socket-binding="jgroups-diagnostics"/>
+                    <protocol type="MPING" socket-binding="jgroups-mping"/>
+                    <protocol type="MERGE2"/>
+                    <protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
+                    <protocol type="FD"/>
+                    <protocol type="VERIFY_SUSPECT"/>
+                    <protocol type="BARRIER"/>
+                    <protocol type="pbcast.NAKACK"/>
+                    <protocol type="UNICAST2"/>
+                    <protocol type="pbcast.STABLE"/>
+                    <protocol type="pbcast.GMS"/>
+                    <protocol type="UFC"/>
+                    <protocol type="MFC"/>
+                    <protocol type="FRAG2"/>
+                    <protocol type="pbcast.STATE_TRANSFER"/>
+                    <protocol type="pbcast.FLUSH"/>
+                </stack>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:mail:1.0">
                 <mail-session jndi-name="java:jboss/mail/Default">
@@ -382,7 +460,12 @@
             <include socket-binding-group="web-sockets"/>
             <socket-binding name="jmx-connector-registry" interface="management" port="1090"/>
             <socket-binding name="jmx-connector-server" interface="management" port="1091"/>
-            <socket-binding name="jndi" port="1099"/>
+            <socket-binding name="jgroups-diagnostics" port="0" multicast-address="224.0.75.75" multicast-port="7500"/>
+            <socket-binding name="jgroups-mping" port="0" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45700"/>
+            <socket-binding name="jgroups-tcp" port="7600"/>
+            <socket-binding name="jgroups-tcp-fd" port="57600"/>
+            <socket-binding name="jgroups-udp" port="55200" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45688"/>
+            <socket-binding name="jgroups-udp-fd" port="54200"/>
             <socket-binding name="remoting" port="4447"/>
             <socket-binding name="txn-recovery-environment" port="4712"/>
             <socket-binding name="txn-status-manager" port="4713"/>
