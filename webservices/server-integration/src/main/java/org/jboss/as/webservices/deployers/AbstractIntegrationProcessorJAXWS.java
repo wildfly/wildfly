@@ -55,6 +55,7 @@ import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  */
 public abstract class AbstractIntegrationProcessorJAXWS implements DeploymentUnitProcessor {
 
@@ -108,6 +109,9 @@ public abstract class AbstractIntegrationProcessorJAXWS implements DeploymentUni
         if (isJaxwsService(clazz, index)) return false;
         final boolean hasWebServiceAnnotation = clazz.annotations().containsKey(WEB_SERVICE_ANNOTATION);
         final boolean hasWebServiceProviderAnnotation = clazz.annotations().containsKey(WEB_SERVICE_PROVIDER_ANNOTATION);
+        if (!hasWebServiceAnnotation && !hasWebServiceProviderAnnotation) {
+            return false;
+        }
         if (hasWebServiceAnnotation && hasWebServiceProviderAnnotation) {
             ROOT_LOGGER.mutuallyExclusiveAnnotations(clazz.name().toString());
             return false;
@@ -135,7 +139,7 @@ public abstract class AbstractIntegrationProcessorJAXWS implements DeploymentUni
         return componentDescription;
     }
 
-    static boolean isJaxwsEjb(final ClassInfo clazz) {
+    static boolean isEjb3(final ClassInfo clazz) {
         final boolean isStateless = clazz.annotations().containsKey(STATELESS_ANNOTATION);
         final boolean isSingleton = clazz.annotations().containsKey(SINGLETON_ANNOTATION);
         return isStateless || isSingleton;
