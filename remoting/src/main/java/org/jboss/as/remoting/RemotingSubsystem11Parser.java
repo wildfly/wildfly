@@ -42,7 +42,6 @@ import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
 import static org.jboss.as.remoting.CommonAttributes.FORWARD_SECRECY;
 import static org.jboss.as.remoting.CommonAttributes.INCLUDE_MECHANISMS;
 import static org.jboss.as.remoting.CommonAttributes.LOCAL_OUTBOUND_CONNECTION;
-import static org.jboss.as.remoting.CommonAttributes.NAME;
 import static org.jboss.as.remoting.CommonAttributes.NO_ACTIVE;
 import static org.jboss.as.remoting.CommonAttributes.NO_ANONYMOUS;
 import static org.jboss.as.remoting.CommonAttributes.NO_DICTIONARY;
@@ -639,28 +638,31 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
             if (model.hasDefined(OUTBOUND_CONNECTION)) {
                 final List<Property> outboundConnections = model.get(OUTBOUND_CONNECTION).asPropertyList();
                 for (Property property : outboundConnections) {
+                    final String connectionName = property.getName();
                     // get the specific outbound-connection
                     final ModelNode genericOutboundConnectionModel = property.getValue();
                     // process and write outbound connection
-                    this.writeOutboundConnection(writer, genericOutboundConnectionModel);
+                    this.writeOutboundConnection(writer, connectionName, genericOutboundConnectionModel);
                 }
             }
             if (model.hasDefined(REMOTE_OUTBOUND_CONNECTION)) {
                 final List<Property> remoteOutboundConnections = model.get(REMOTE_OUTBOUND_CONNECTION).asPropertyList();
                 for (Property property : remoteOutboundConnections) {
+                    final String connectionName = property.getName();
                     // get the specific remote outbound connection
                     final ModelNode remoteOutboundConnectionModel = property.getValue();
                     // process and write remote outbound connection
-                    this.writeRemoteOutboundConnection(writer, remoteOutboundConnectionModel);
+                    this.writeRemoteOutboundConnection(writer, connectionName, remoteOutboundConnectionModel);
                 }
             }
             if (model.hasDefined(LOCAL_OUTBOUND_CONNECTION)) {
                 final List<Property> localOutboundConnections = model.get(LOCAL_OUTBOUND_CONNECTION).asPropertyList();
                 for (Property property : localOutboundConnections) {
+                    final String connectionName = property.getName();
                     // get the specific local outbound connection
                     final ModelNode localOutboundConnectionModel = property.getValue();
                     // process and write local outbound connection
-                    this.writeLocalOutboundConnection(writer, localOutboundConnectionModel);
+                    this.writeLocalOutboundConnection(writer, connectionName, localOutboundConnectionModel);
 
                 }
             }
@@ -729,11 +731,10 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
         writer.writeEndElement();
     }
 
-    private void writeOutboundConnection(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
+    private void writeOutboundConnection(final XMLExtendedStreamWriter writer, final String connectionName, final ModelNode model) throws XMLStreamException {
         // <outbound-connection>
         writer.writeStartElement(Element.OUTBOUND_CONNECTION.getLocalName());
 
-        final String connectionName = model.get(NAME).asString();
         writer.writeAttribute(Attribute.NAME.getLocalName(), connectionName);
 
         final String uri = model.get(URI).asString();
@@ -748,11 +749,10 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
         writer.writeEndElement();
     }
 
-    private void writeRemoteOutboundConnection(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
+    private void writeRemoteOutboundConnection(final XMLExtendedStreamWriter writer, final String connectionName, final ModelNode model) throws XMLStreamException {
         // <remote-outbound-connection>
         writer.writeStartElement(Element.REMOTE_OUTBOUND_CONNECTION.getLocalName());
 
-        final String connectionName = model.get(NAME).asString();
         writer.writeAttribute(Attribute.NAME.getLocalName(), connectionName);
 
         final String outboundSocketRef = model.get(OUTBOUND_SOCKET_BINDING_REF).asString();
@@ -767,11 +767,10 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
         writer.writeEndElement();
     }
 
-    private void writeLocalOutboundConnection(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
+    private void writeLocalOutboundConnection(final XMLExtendedStreamWriter writer, final String connectionName, final ModelNode model) throws XMLStreamException {
         // <local-outbound-connection>
         writer.writeStartElement(Element.LOCAL_OUTBOUND_CONNECTION.getLocalName());
 
-        final String connectionName = model.get(NAME).asString();
         writer.writeAttribute(Attribute.NAME.getLocalName(), connectionName);
 
         final String outboundSocketRef = model.get(OUTBOUND_SOCKET_BINDING_REF).asString();

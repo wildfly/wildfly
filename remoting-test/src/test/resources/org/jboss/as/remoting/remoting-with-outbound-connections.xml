@@ -1,0 +1,16 @@
+<subsystem xmlns="urn:jboss:domain:remoting:1.1"
+    worker-read-threads="5"
+    worker-task-core-threads="6"
+    worker-task-keepalive="7"
+    worker-task-limit="8"
+    worker-task-max-threads="9"
+    worker-write-threads="10"
+>
+    <connector name="test-connector" socket-binding="test"/>
+
+    <outbound-connections>
+        <remote-outbound-connection name="remote-conn1" outbound-socket-binding-ref="dummy-outbound-socket"/>
+        <local-outbound-connection name="local-conn1" outbound-socket-binding-ref="other-outbound-socket"/>
+    </outbound-connections>
+</subsystem>
+
