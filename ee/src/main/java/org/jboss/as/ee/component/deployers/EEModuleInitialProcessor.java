@@ -36,8 +36,7 @@ public final class EEModuleInitialProcessor implements DeploymentUnitProcessor {
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final DeploymentUnit parent = deploymentUnit.getParent();
-        String deploymentUnitName = deploymentUnit.getName();
+        final String deploymentUnitName = deploymentUnit.getName();
         final String moduleName;
         if (deploymentUnitName.endsWith(".war") || deploymentUnitName.endsWith(".jar") || deploymentUnitName.endsWith(".ear") || deploymentUnitName.endsWith(".rar")) {
             moduleName = deploymentUnitName.substring(0, deploymentUnitName.length() - 4);
@@ -45,17 +44,14 @@ public final class EEModuleInitialProcessor implements DeploymentUnitProcessor {
             moduleName = deploymentUnitName;
         }
         final String appName;
-        if (parent == null) {
-            appName = moduleName;
-        } else {
-            final String parentName = parent.getName();
-            if (parentName.endsWith(".ear")) {
-                appName = parentName.substring(0, parentName.length() - 4);
-            } else {
-                appName = parentName;
-            }
-        }
         final String earApplicationName = deploymentUnit.getAttachment(Attachments.EAR_APPLICATION_NAME);
+        //the ear application name takes into account the name set in application.xml
+        //if this is non-null this is always the one we want to use
+        if(earApplicationName != null) {
+            appName = earApplicationName;
+        } else {
+            appName = moduleName;
+        }
         deploymentUnit.putAttachment(Attachments.EE_MODULE_DESCRIPTION, new EEModuleDescription(appName, moduleName, earApplicationName));
     }
 
