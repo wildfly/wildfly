@@ -26,8 +26,13 @@ import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
+import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;
 import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.logging.Logger;
 
 /**
@@ -38,10 +43,17 @@ import org.jboss.logging.Logger;
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  * @version $Revision: $
  */
-public class StatelessBMTInterceptor extends BMTInterceptor {
-    private static final Logger log = Logger.getLogger(StatelessBMTInterceptor.class);
+public class EjbBMTInterceptor extends BMTInterceptor {
+    private static final Logger log = Logger.getLogger(EjbBMTInterceptor.class);
 
-    public StatelessBMTInterceptor(final EJBComponent component) {
+    public static final InterceptorFactory FACTORY = new ComponentInstanceInterceptorFactory() {
+        @Override
+        protected Interceptor create(final Component component, final InterceptorFactoryContext context) {
+            return new EjbBMTInterceptor((EJBComponent)component);
+        }
+    };
+
+    EjbBMTInterceptor(final EJBComponent component) {
         super(component);
     }
 
@@ -99,4 +111,5 @@ public class StatelessBMTInterceptor extends BMTInterceptor {
             }
         }
     }
+
 }
