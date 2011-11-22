@@ -89,7 +89,7 @@ public class EjbLookupInjectionSource extends InjectionSource {
 
                         @Override
                         public Object getInstance() {
-                            if(type != null) {
+                            if(type != null && value instanceof org.omg.CORBA.Object) {
                                 return PortableRemoteObject.narrow(value, type);
                             } else {
                                 return value;
