@@ -7,21 +7,6 @@ GREP="grep"
 # Use the maximum available, or set MAX_FD != -1 to use that
 MAX_FD="maximum"
 
-#
-# Helper to complain.
-#
-warn() {
-    echo "${PROGNAME}: $*"
-}
-
-#
-# Helper to puke.
-#
-die() {
-    warn $*
-    exit 1
-}
-
 # OS specific support (must be 'true' or 'false').
 cygwin=false;
 darwin=false;
