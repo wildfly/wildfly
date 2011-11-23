@@ -108,20 +108,21 @@ public class ServiceBasedNamingStore implements NamingStore {
 
     private Object lookup(final String name, final ServiceName lookupName) throws NameNotFoundException {
         final ServiceController<?> controller = serviceRegistry.getService(lookupName);
+        final Object object;
         if (controller != null) {
             try {
-                final Object object = controller.getValue();
-                if (object instanceof ManagedReferenceFactory) {
-                    return ManagedReferenceFactory.class.cast(object).getReference().getInstance();
-                }
-
-                return object;
+                object = controller.getValue();
             } catch (IllegalStateException e) {
                 //occurs if the service is not actually up
                 throw new NameNotFoundException("Error looking up " + name + ", service " + lookupName + " is not started");
             }
+        } else {
+            return null;
         }
-        return null;
+        if (object instanceof ManagedReferenceFactory) {
+            return ManagedReferenceFactory.class.cast(object).getReference().getInstance();
+        }
+        return object;
     }
 
     public List<NameClassPair> list(final Name name) throws NamingException {
