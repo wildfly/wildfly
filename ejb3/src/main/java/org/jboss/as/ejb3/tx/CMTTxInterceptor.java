@@ -218,7 +218,16 @@ public class CMTTxInterceptor implements Interceptor {
     }
 
     protected Object invokeInNoTx(InterceptorContext invocation) throws Exception {
-        return invocation.proceed();
+        try {
+            return invocation.proceed();
+        } catch (Throwable t) {
+            if(t instanceof Exception) {
+                throw (Exception)t;
+            } else {
+                //If this is an error we wrap in in an EJBException
+                throw new EJBException(new RuntimeException(t));
+            }
+        }
     }
 
     protected Object invokeInOurTx(InterceptorContext invocation, TransactionManager tm, final EJBComponent component) throws Exception {

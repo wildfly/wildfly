@@ -66,16 +66,18 @@ public abstract class BMTInterceptor implements Interceptor {
      * @param ex The exception to handle
      * @throws Exception Either the passed exception or an EJBException
      */
-    protected Exception handleException(final InterceptorContext invocation, Exception ex) throws Exception {
+    protected Exception handleException(final InterceptorContext invocation, Throwable ex) throws Exception {
         ApplicationExceptionDetails ae = component.getApplicationException(ex.getClass(), invocation.getMethod());
         // it's an application exception, so just throw it back as-is
         if (ae != null) {
-            throw ex;
+            throw (Exception)ex;
         }
         if (ex instanceof EJBException) {
             throw (EJBException) ex;
+        } else if(ex instanceof Exception){
+            throw new EJBException((Exception)ex);
         } else {
-            throw new EJBException(ex);
+            throw new EJBException(new RuntimeException(ex));
         }
     }
 

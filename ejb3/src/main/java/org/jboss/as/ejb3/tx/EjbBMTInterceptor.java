@@ -49,7 +49,7 @@ public class EjbBMTInterceptor extends BMTInterceptor {
     public static final InterceptorFactory FACTORY = new ComponentInstanceInterceptorFactory() {
         @Override
         protected Interceptor create(final Component component, final InterceptorFactoryContext context) {
-            return new EjbBMTInterceptor((EJBComponent)component);
+            return new EjbBMTInterceptor((EJBComponent) component);
         }
     };
 
@@ -57,7 +57,7 @@ public class EjbBMTInterceptor extends BMTInterceptor {
         super(component);
     }
 
-    private void checkStatelessDone(final EJBComponent component,final InterceptorContext invocation, final TransactionManager tm, Exception ex) throws Exception {
+    private void checkStatelessDone(final EJBComponent component, final InterceptorContext invocation, final TransactionManager tm, Throwable ex) throws Exception {
         int status = Status.STATUS_NO_TRANSACTION;
 
         try {
@@ -82,7 +82,11 @@ public class EjbBMTInterceptor extends BMTInterceptor {
                 String msg = "EJB 3.1 FR 13.3.3: BMT bean " + component.getComponentName()
                         + " should complete transaction before returning.";
                 log.error(msg);
-                throw new EJBException(msg, ex);
+                if (ex instanceof Exception) {
+                    throw new EJBException(msg, (Exception) ex);
+                } else {
+                    throw new EJBException(msg, new RuntimeException(ex));
+                }
         }
         // the instance interceptor will discard the instance
         if (ex != null)
@@ -99,10 +103,11 @@ public class EjbBMTInterceptor extends BMTInterceptor {
         boolean exceptionThrown = false;
         try {
             return invocation.proceed();
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             exceptionThrown = true;
             checkStatelessDone(ejbComponent, invocation, tm, ex);
-            throw ex;
+            //we should never get here, as checkStatelessDone should re-throw
+            throw (Exception)ex;
         } finally {
             try {
                 if (!exceptionThrown) checkStatelessDone(ejbComponent, invocation, tm, null);
