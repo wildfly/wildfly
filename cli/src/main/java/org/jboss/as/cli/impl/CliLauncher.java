@@ -35,7 +35,6 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.Security;
 
-import org.jboss.as.cli.CommandLineMain;
 import org.jboss.as.cli.handlers.VersionHandler;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.sasl.JBossSaslProvider;
@@ -298,7 +297,7 @@ public class CliLauncher {
             bindingsName = "keybindings/jline-default-bindings.properties";
         }
 
-        ClassLoader cl = SecurityActions.getClassLoader(CommandLineMain.class);
+        ClassLoader cl = SecurityActions.getClassLoader(CliLauncher.class);
         InputStream bindingsIs = cl.getResourceAsStream(bindingsName);
         if(bindingsIs == null) {
             System.err.println("Failed to locate key bindings for OS '" + osName +"': " + bindingsName);

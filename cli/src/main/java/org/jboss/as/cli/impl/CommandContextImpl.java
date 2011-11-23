@@ -52,8 +52,6 @@ import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.CommandRegistry;
 import org.jboss.as.cli.OperationCommand;
 import org.jboss.as.cli.Util;
-import org.jboss.as.cli.CommandLineMain.CommandContextImpl.AuthenticationCallbackHandler;
-import org.jboss.as.cli.CommandLineMain.CommandContextImpl.ConnectStatus;
 import org.jboss.as.cli.batch.Batch;
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.batch.BatchedCommand;

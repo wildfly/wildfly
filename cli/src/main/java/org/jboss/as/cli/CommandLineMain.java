@@ -21,6 +21,8 @@
 */
 package org.jboss.as.cli;
 
+import org.jboss.as.cli.impl.CliLauncher;
+
 
 /**
 *
