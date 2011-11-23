@@ -29,10 +29,11 @@
             <fileMode>0755</fileMode>
         </fileSet>
         <fileSet>
+            <directory>../build/target</directory>
+            <outputDirectory/>
             <includes>
                 <include>jboss-*/auth</include>
             </includes>
-            <directory>../build/target</directory>
             <directoryMode>700</directoryMode>
         </fileSet>
     </fileSets>
