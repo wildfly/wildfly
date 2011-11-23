@@ -37,7 +37,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanInfo;
 import javax.management.MBeanOperationInfo;
@@ -53,7 +52,6 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
 import junit.framework.Assert;
-
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -63,10 +61,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.xnio.IoUtils;
@@ -77,6 +74,7 @@ import org.xnio.IoUtils;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("AS7-2741")
 public class ModelControllerMBeanTestCase {
 
     static final String HOST = "localhost";
