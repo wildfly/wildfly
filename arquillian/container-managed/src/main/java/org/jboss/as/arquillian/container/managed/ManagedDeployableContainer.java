@@ -114,7 +114,11 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             fos.close();
 
             List<String> cmd = new ArrayList<String>();
-            cmd.add("java");
+            String javaExec = config.getJavaHome() + File.separatorChar + "bin" + File.separatorChar + "java";
+            if (config.getJavaHome().contains(" ")) {
+                javaExec = "\"" + javaExec + "\"";
+            }
+            cmd.add(javaExec);
             if (additionalJavaOpts != null) {
                 for (String opt : additionalJavaOpts.split("\\s+")) {
                     cmd.add(opt);
