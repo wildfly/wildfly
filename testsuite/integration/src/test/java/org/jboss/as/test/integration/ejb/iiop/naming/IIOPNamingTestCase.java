@@ -1,13 +1,13 @@
 package org.jboss.as.test.integration.ejb.iiop.naming;
 
+import java.rmi.NoSuchObjectException;
+import java.rmi.RemoteException;
+import java.util.Properties;
 import javax.ejb.RemoveException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.rmi.PortableRemoteObject;
-import java.rmi.NoSuchObjectException;
-import java.rmi.RemoteException;
-import java.util.Properties;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -18,6 +18,10 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assume.assumeThat;
+import static org.junit.matchers.JUnitMatchers.containsString;
 
 /**
  * @author Stuart Douglas
@@ -32,6 +36,10 @@ public class IIOPNamingTestCase {
         System.setProperty("com.sun.CORBA.ORBUseDynamicStub", "true");
         return ShrinkWrap.create(JavaArchive.class, "test.jar")
                 .addPackage(IIOPNamingTestCase.class.getPackage());
+    }
+
+    private static String property(final String name) {
+        return System.getProperty(name);
     }
 
     @Test
@@ -68,6 +76,8 @@ public class IIOPNamingTestCase {
 
     @Test
     public void testIIOPNamingCorbanameInvocation() throws NamingException, RemoteException {
+        // AS7-2593: test hangs on OpenJDK
+        assumeThat(property("java.runtime.name"), not(containsString("OpenJDK")));
         final Properties prope = new Properties();
         prope.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.cosnaming.CNCtxFactory");
         prope.put(Context.PROVIDER_URL, "corbaloc::localhost:3528");
