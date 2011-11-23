@@ -25,6 +25,7 @@ package org.jboss.as.connector.metadata.deployment;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.services.ResourceAdapterService;
+import org.jboss.as.naming.WritableServiceBasedNamingStore;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.common.api.metadata.ra.Connector;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
@@ -96,7 +97,12 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
 
             CommonDeployment raxmlDeployment = null;
             try {
-                raxmlDeployment = raDeployer.doDeploy();
+                WritableServiceBasedNamingStore.pushOwner(container.subTarget());
+                try {
+                    raxmlDeployment = raDeployer.doDeploy();
+                } finally {
+                    WritableServiceBasedNamingStore.popOwner();
+                }
             } catch (Throwable t) {
                 throw MESSAGES.failedToStartRaDeployment(t, raName);
             }
