@@ -27,10 +27,12 @@ import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.ejb3.iiop.handle.HandleDelegateImpl;
 import org.jboss.as.jacorb.deployment.JacORBDeploymentMarker;
 import org.jboss.as.jacorb.service.CorbaORBService;
 import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.naming.ServiceBasedNamingStore;
+import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -39,17 +41,18 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.ImmediateValue;
 import org.omg.CORBA.ORB;
 
 /**
- * Processor responsible for binding transaction related resources to JNDI.
+ * Processor responsible for binding IIOP related resources to JNDI.
  * </p>
  * Unlike other resource injections this binding happens for all eligible components,
  * regardless of the presence of the {@link javax.annotation.Resource} annotation.
  *
  * @author Stuart Douglas
  */
-public class ORBJndiBindingProcessor implements DeploymentUnitProcessor {
+public class IIOPJndiBindingProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -87,14 +90,22 @@ public class ORBJndiBindingProcessor implements DeploymentUnitProcessor {
      * @param serviceTarget      The service target
      * @param contextServiceName The service name of the context to bind to
      */
-    private void bindService(ServiceTarget serviceTarget, ServiceName contextServiceName) {
+    private void bindService(final ServiceTarget serviceTarget, final ServiceName contextServiceName) {
 
-        final ServiceName userTransactionServiceName = contextServiceName.append("ORB");
-        BinderService userTransactionBindingService = new BinderService("ORB");
-        serviceTarget.addService(userTransactionServiceName, userTransactionBindingService)
+        final ServiceName orbServiceName = contextServiceName.append("ORB");
+        final BinderService orbService = new BinderService("ORB");
+        serviceTarget.addService(orbServiceName, orbService)
                 .addDependency(CorbaORBService.SERVICE_NAME, ORB.class,
-                        new ManagedReferenceInjector<ORB>(userTransactionBindingService.getManagedObjectInjector()))
-                .addDependency(contextServiceName, ServiceBasedNamingStore.class, userTransactionBindingService.getNamingStoreInjector())
+                        new ManagedReferenceInjector<ORB>(orbService.getManagedObjectInjector()))
+                .addDependency(contextServiceName, ServiceBasedNamingStore.class, orbService.getNamingStoreInjector())
+                .install();
+
+
+        final ServiceName handleDelegateServiceName = contextServiceName.append("HandleDelegate");
+        final BinderService handleDelegateBindingService = new BinderService("HandleDelegate");
+        handleDelegateBindingService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue(new HandleDelegateImpl())));
+        serviceTarget.addService(handleDelegateServiceName, handleDelegateBindingService)
+                .addDependency(contextServiceName, ServiceBasedNamingStore.class, handleDelegateBindingService.getNamingStoreInjector())
                 .install();
 
     }
