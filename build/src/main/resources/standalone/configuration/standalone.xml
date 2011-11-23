@@ -185,13 +185,6 @@
             <configuration pid="org.apache.felix.webconsole.internal.servlet.OsgiManager">
                 <property name="manager.root" value="jboss-osgi"/>
             </configuration>
-            <configuration pid="org.jboss.as.jaxr.service.JAXRConfiguration">
-                <property name="connection-factory" value="java:jboss/jaxr/ConnectionFactory"/>
-                <property name="datasource" value="java:jboss/datasources/ExampleDS"/>
-                <property name="drop-on-start" value="true"/>
-                <property name="create-on-start" value="true"/>
-                <property name="drop-on-stop" value="false"/>
-            </configuration>
             <properties>
                 <!-- Specifies the beginning start level of the framework -->
                 <property name="org.osgi.framework.startlevel.beginning">1</property>

@@ -51,7 +51,6 @@ import java.util.List;
  * @since Mar 9, 2005
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-2636] Refactor JAXR subsystem into a deployable application")
 public class JaxrConfirmAssociationTestCase extends JaxrTestBase {
     /**
      * Testcase that tests the association between two organizations

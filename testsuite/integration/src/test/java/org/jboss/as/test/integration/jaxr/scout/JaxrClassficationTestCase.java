@@ -47,7 +47,6 @@ import org.junit.runner.RunWith;
  * @since Apr 11, 2006
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-2636] Refactor JAXR subsystem into a deployable application")
 public class JaxrClassficationTestCase extends JaxrTestBase {
     private static final String UUID_TYPE = "uuid:C1ACF26D-9672-4404-9D70-39B756E62AB4";
 
