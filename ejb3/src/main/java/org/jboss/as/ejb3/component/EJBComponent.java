@@ -21,25 +21,6 @@
  */
 package org.jboss.as.ejb3.component;
 
-import java.lang.reflect.Method;
-import java.security.Principal;
-import java.util.Collections;
-import java.util.Map;
-
-import javax.ejb.EJBHome;
-import javax.ejb.EJBLocalHome;
-import javax.ejb.TimerService;
-import javax.ejb.TransactionAttributeType;
-import javax.ejb.TransactionManagementType;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-import javax.transaction.UserTransaction;
-
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
@@ -59,8 +40,27 @@ import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
+import javax.ejb.EJBHome;
+import javax.ejb.EJBLocalHome;
+import javax.ejb.TimerService;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagementType;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.transaction.Status;
+import javax.transaction.SystemException;
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+import javax.transaction.UserTransaction;
+import java.lang.reflect.Method;
+import java.security.Principal;
+import java.util.Collections;
+import java.util.Map;
+
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -195,21 +195,21 @@ public abstract class EJBComponent extends BasicComponent {
     }
 
     protected TransactionAttributeType getCurrentTransactionAttribute() {
-        final InterceptorContext currentInvocationContext = CurrentInvocationContext.get();
 
-        if (currentInvocationContext == null) {
-            return null;
-        }
-        final Method invokedMethod = currentInvocationContext.getMethod();
-        // if method is null, then it's a lifecycle invocation
-        if (invokedMethod == null) {
-            return null;
+        final InterceptorContext invocation = CurrentInvocationContext.get();
+        //for timer invocations there is no view, so the methodInf is attached directly
+        //to the context. Otherwise we retrive it from the invoked view
+        MethodIntf methodIntf = invocation.getPrivateData(MethodIntf.class);
+        if (methodIntf == null) {
+            final ComponentView componentView = invocation.getPrivateData(ComponentView.class);
+            if (componentView != null) {
+                methodIntf = componentView.getPrivateData(MethodIntf.class);
+            } else {
+                methodIntf = MethodIntf.BEAN;
+            }
         }
 
-        final ComponentView componentView = currentInvocationContext.getPrivateData(ComponentView.class);
-        final MethodIntf methodIntf = componentView.getPrivateData(MethodIntf.class);
-        // get the tx attribute of the invoked method
-        return this.getTransactionAttributeType(methodIntf, invokedMethod);
+        return getTransactionAttributeType(methodIntf, invocation.getMethod());
     }
 
     public EJBHome getEJBHome() throws IllegalStateException {
