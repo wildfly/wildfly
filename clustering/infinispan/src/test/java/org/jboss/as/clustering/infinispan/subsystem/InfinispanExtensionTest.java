@@ -32,8 +32,11 @@ import org.jboss.as.clustering.subsystem.AbstractExtensionTest;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
 
 /**
  * @author Paul Ferraro
@@ -41,13 +44,13 @@ import org.jboss.dmr.ModelNode;
 public class InfinispanExtensionTest extends AbstractExtensionTest {
 
     public InfinispanExtensionTest() {
-        this(new InfinispanExtension());
+        this(InfinispanSubsystemParser_1_0.getInstance(), InfinispanSubsystemParser_1_0.getInstance());
     }
 
-    private InfinispanExtensionTest(InfinispanExtension extension) {
-        super(extension, extension, "subsystem-infinispan.xml", Namespace.CURRENT.getUri());
+    private InfinispanExtensionTest(XMLElementReader<List<ModelNode>> reader, XMLElementWriter<SubsystemMarshallingContext> writer) {
+        super(reader, writer, "subsystem-infinispan.xml", Namespace.CURRENT.getUri());
     }
-    
+
     @Override
     protected ModelNode populate(List<ModelNode> operations) throws OperationFailedException {
         OperationContext context = mock(OperationContext.class);
