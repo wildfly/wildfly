@@ -70,7 +70,7 @@ public class InitialContext extends NamingContext {
                     ObjectFactory factory = urlContextFactories.get(scheme);
                     if (factory != null) {
                         try {
-                            return ((Context)factory.getObjectInstance(null, name, this, getEnvironment())).lookup(name);
+                            return ((Context) factory.getObjectInstance(null, name, this, getEnvironment())).lookup(name);
                         } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
@@ -122,6 +122,90 @@ public class InitialContext extends NamingContext {
             throw new NameNotFoundException(name.toString());
         }
         return namespaceContext.list(parsedName.remaining());
+    }
+
+    public void bind(Name name, Object object) throws NamingException {
+        final ParsedName parsedName = parse(name);
+        if (parsedName.namespace() == null || parsedName.namespace().equals("")) {
+            super.bind(parsedName.remaining(), object);
+            return;
+        }
+        final NamespaceContextSelector selector = NamespaceContextSelector.getCurrentSelector();
+        if (selector == null) {
+            throw new NameNotFoundException(name.toString());
+        }
+        final Context namespaceContext = selector.getContext(parsedName.namespace());
+        if (namespaceContext == null) {
+            throw new NameNotFoundException(name.toString());
+        }
+        namespaceContext.bind(parsedName.remaining(), object);
+    }
+
+    public void rebind(Name name, Object object) throws NamingException {
+        final ParsedName parsedName = parse(name);
+        if (parsedName.namespace() == null || parsedName.namespace().equals("")) {
+            super.rebind(parsedName.remaining(), object);
+            return;
+        }
+        final NamespaceContextSelector selector = NamespaceContextSelector.getCurrentSelector();
+        if (selector == null) {
+            throw new NameNotFoundException(name.toString());
+        }
+        final Context namespaceContext = selector.getContext(parsedName.namespace());
+        if (namespaceContext == null) {
+            throw new NameNotFoundException(name.toString());
+        }
+        namespaceContext.rebind(parsedName.remaining(), object);
+    }
+
+    public void unbind(Name name) throws NamingException {
+        final ParsedName parsedName = parse(name);
+        if (parsedName.namespace() == null || parsedName.namespace().equals("")) {
+            super.unbind(parsedName.remaining());
+            return;
+        }
+        final NamespaceContextSelector selector = NamespaceContextSelector.getCurrentSelector();
+        if (selector == null) {
+            throw new NameNotFoundException(name.toString());
+        }
+        final Context namespaceContext = selector.getContext(parsedName.namespace());
+        if (namespaceContext == null) {
+            throw new NameNotFoundException(name.toString());
+        }
+        namespaceContext.unbind(parsedName.remaining());
+    }
+
+    public void destroySubcontext(Name name) throws NamingException {
+        final ParsedName parsedName = parse(name);
+        if (parsedName.namespace() == null || parsedName.namespace().equals("")) {
+            super.destroySubcontext(parsedName.remaining());
+            return;
+        }
+        final NamespaceContextSelector selector = NamespaceContextSelector.getCurrentSelector();
+        if (selector == null) {
+            throw new NameNotFoundException(name.toString());
+        }
+        final Context namespaceContext = selector.getContext(parsedName.namespace());
+        if (namespaceContext == null) {
+            throw new NameNotFoundException(name.toString());
+        }
+        namespaceContext.destroySubcontext(parsedName.remaining());
+    }
+
+    public Context createSubcontext(Name name) throws NamingException {
+        final ParsedName parsedName = parse(name);
+        if (parsedName.namespace() == null || parsedName.namespace().equals("")) {
+            return super.createSubcontext(parsedName.remaining());
+        }
+        final NamespaceContextSelector selector = NamespaceContextSelector.getCurrentSelector();
+        if (selector == null) {
+            throw new NameNotFoundException(name.toString());
+        }
+        final Context namespaceContext = selector.getContext(parsedName.namespace());
+        if (namespaceContext == null) {
+            throw new NameNotFoundException(name.toString());
+        }
+        return namespaceContext.createSubcontext(parsedName.remaining());
     }
 
     private interface ParsedName {

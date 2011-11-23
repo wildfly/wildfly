@@ -159,49 +159,38 @@ public class NamingContextTestCase {
     }
 
     @Test
-    public void testbind() throws Exception {
-        try {
-            namingContext.bind(new CompositeName("test"), new Object());
-            fail("Should have thrown and UnsupportedOperationException");
-        } catch (UnsupportedOperationException expected) {
-        }
+    public void testBind() throws Exception {
+        final Name name = new CompositeName("test");
+        final Object value = new Object();
+        namingContext.bind(name, value);
+        assertEquals(value, namingStore.lookup(name));
     }
 
     @Test
     public void testUnbind() throws Exception {
+        final Name name = new CompositeName("test");
+        final Object value = new Object();
+        namingStore.bind(name, value);
+        namingContext.unbind(name);
         try {
-            namingContext.unbind(new CompositeName("test"));
-            fail("Should have thrown and UnsupportedOperationException");
-        } catch (UnsupportedOperationException expected) {
-        }
+            namingStore.lookup(name);
+            fail("Should have thrown name not found");
+        } catch (NameNotFoundException expect) {}
     }
 
     @Test
     public void testCreateSubcontext() throws Exception {
-        try {
-            namingContext.createSubcontext(new CompositeName());
-            fail("Should have thrown and UnsupportedOperationException");
-        } catch (UnsupportedOperationException expected) {
-        }
+        assertTrue(namingContext.createSubcontext(new CompositeName("test")) instanceof NamingContext);
     }
-
-    @Test
-    public void testDestroyNonEmptySubcontext() throws Exception {
-        try {
-            namingContext.destroySubcontext(new CompositeName("subcontext"));
-            fail("Should have thrown and UnsupportedOperationException");
-        } catch (UnsupportedOperationException expected) {
-        }
-    }
-
 
     @Test
     public void testRebind() throws Exception {
-        try {
-            namingContext.rebind(new CompositeName(), new Object());
-            fail("Should have thrown and UnsupportedOperationException");
-        } catch (UnsupportedOperationException expected) {
-        }
+        final Name name = new CompositeName("test");
+        final Object value = new Object();
+        namingStore.bind(name, value);
+        final Object newValue = new Object();
+        namingContext.rebind(name, newValue);
+        assertEquals(newValue, namingStore.lookup(name));
     }
 
     @Test

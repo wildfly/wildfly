@@ -215,43 +215,63 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public void bind(final Name name, Object object) throws NamingException {
-        throw MESSAGES.readOnlyNamingContext();
+        if(namingStore instanceof WritableNamingStore) {
+            final Name absoluteName = getAbsoluteName(name);
+            getWritableNamingStore().bind(absoluteName, object);
+        } else {
+            throw MESSAGES.readOnlyNamingContext();
+        }
+
     }
 
     /** {@inheritDoc} */
     public void bind(final String name, final Object obj) throws NamingException {
-        throw MESSAGES.readOnlyNamingContext();
+        bind(parseName(name), obj);
     }
 
     /** {@inheritDoc} */
     public void rebind(final Name name, Object object) throws NamingException {
-        throw MESSAGES.readOnlyNamingContext();
+        if(namingStore instanceof WritableNamingStore) {
+            final Name absoluteName = getAbsoluteName(name);
+            getWritableNamingStore().rebind(absoluteName, object);
+        } else {
+            throw MESSAGES.readOnlyNamingContext();
+        }
     }
 
     /** {@inheritDoc} */
-    public void rebind(final String name, final Object obj) throws NamingException {
-        throw MESSAGES.readOnlyNamingContext();
+    public void rebind(final String name, final Object object) throws NamingException {
+        rebind(parseName(name), object);
     }
 
     /** {@inheritDoc} */
     public void unbind(final Name name) throws NamingException {
-        throw MESSAGES.readOnlyNamingContext();
+        if(namingStore instanceof WritableNamingStore) {
+            final Name absoluteName = getAbsoluteName(name);
+            getWritableNamingStore().unbind(absoluteName);
+        } else {
+            throw MESSAGES.readOnlyNamingContext();
+        }
     }
 
     /** {@inheritDoc} */
     public void unbind(final String name) throws NamingException {
-        throw MESSAGES.readOnlyNamingContext();
+        unbind(parseName(name));
     }
 
     /** {@inheritDoc} */
     public void rename(final Name oldName, final Name newName) throws NamingException {
-        throw MESSAGES.readOnlyNamingContext();
-
+        if (namingStore instanceof WritableNamingStore) {
+            bind(newName, lookup(oldName));
+            unbind(oldName);
+        } else {
+            throw MESSAGES.readOnlyNamingContext();
+        }
     }
 
     /** {@inheritDoc} */
     public void rename(final String oldName, final String newName) throws NamingException {
-        throw MESSAGES.readOnlyNamingContext();
+        rename(parseName(oldName), parseName(newName));
     }
 
     /** {@inheritDoc} */
@@ -300,22 +320,29 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public void destroySubcontext(final Name name) throws NamingException {
-        throw MESSAGES.readOnlyNamingContext();
+        if(!(namingStore instanceof WritableNamingStore)) {
+            throw MESSAGES.readOnlyNamingContext();
+        }
     }
 
     /** {@inheritDoc} */
     public void destroySubcontext(String name) throws NamingException {
-        throw MESSAGES.readOnlyNamingContext();
+        destroySubcontext(parseName(name));
     }
 
     /** {@inheritDoc} */
     public Context createSubcontext(Name name) throws NamingException {
-        throw MESSAGES.readOnlyNamingContext();
+        if(namingStore instanceof WritableNamingStore) {
+            final Name absoluteName = getAbsoluteName(name);
+            return getWritableNamingStore().createSubcontext(absoluteName);
+        } else {
+            throw MESSAGES.readOnlyNamingContext();
+        }
     }
 
     /** {@inheritDoc} */
     public Context createSubcontext(String name) throws NamingException {
-        throw MESSAGES.readOnlyNamingContext();
+        return createSubcontext(parseName(name));
     }
 
     /** {@inheritDoc} */
@@ -466,5 +493,9 @@ public class NamingContext implements EventContext {
 
     NamingStore getNamingStore() {
         return namingStore;
+    }
+
+    WritableNamingStore getWritableNamingStore() {
+        return WritableNamingStore.class.cast(getNamingStore());
     }
 }
