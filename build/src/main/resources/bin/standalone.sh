@@ -65,6 +65,9 @@ if [ "x$JBOSS_HOME" = "x" ]; then
 fi
 export JBOSS_HOME
 
+# Security precaution, make sure the auth directory is only visible to the owner
+# This is used by transparent SASL authentication to validate user security
+chmod 700 $JBOSS_HOME/auth
 # Setup the JVM
 if [ "x$JAVA" = "x" ]; then
     if [ "x$JAVA_HOME" != "x" ]; then

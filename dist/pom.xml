@@ -80,22 +80,6 @@
                                     <workDirectory>target/assembly/work</workDirectory>
                                 </configuration>
                             </execution>
-                            <execution>
-                                <id>assemblew-web</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>single</goal>
-                                </goals>
-                                <configuration>
-                                    <descriptors>
-                                        <descriptor>assembly-web.xml</descriptor>
-                                    </descriptors>
-                                    <finalName>jboss-as-web-${project.version}</finalName>
-                                    <appendAssemblyId>false</appendAssemblyId>
-                                    <outputDirectory>target/</outputDirectory>
-                                    <workDirectory>target/assembly-web/work</workDirectory>
-                                </configuration>
-                            </execution>
                         </executions>
                     </plugin>
                 </plugins>

@@ -51,7 +51,7 @@
                 <include name="welcome-content/**"/>
             </fileset>
         </copy>
-        <chmod perm="+x">
+        <chmod perm="755">
             <fileset dir="${output.dir}/bin">
                 <include name="**/*.sh"/>
             </fileset>
@@ -61,7 +61,9 @@
     <target name="make-dirs">
         <mkdir dir="${output.dir}/domain/content"/>
         <mkdir dir="${output.dir}/standalone/lib/ext"/>
-        <mkdir dir="${output.dir}/domain/lib/ext"/>
+        <mkdir dir="${output.dir}/auth"/>
+         <!-- This is directory is used by the SASL transparent auth mechanism to validate local user access -->
+        <chmod perm="700" dir="${output.dir}/auth"/>
     </target>
 
     <target name="create-ext-content">

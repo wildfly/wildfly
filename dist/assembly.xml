@@ -17,6 +17,7 @@
             </includes>
             <excludes>
                 <exclude>**/*.sh</exclude>
+                <exclude>jboss-*/auth</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -25,7 +26,14 @@
             <includes>
                 <include>jboss-*/**/*.sh</include>
             </includes>
-            <fileMode>0777</fileMode>
+            <fileMode>0755</fileMode>
+        </fileSet>
+        <fileSet>
+            <includes>
+                <include>jboss-*/auth</include>
+            </includes>
+            <directory>../build/target</directory>
+            <directoryMode>700</directoryMode>
         </fileSet>
     </fileSets>
 </assembly>

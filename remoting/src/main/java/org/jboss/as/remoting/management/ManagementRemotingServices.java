@@ -113,7 +113,7 @@ public final class ManagementRemotingServices extends RemotingServices {
                                                       final ServiceVerificationHandler verificationHandler,
                                                       final List<ServiceController<?>> newControllers) {
         ServiceName serverCallbackService = ServiceName.JBOSS.append("host", "controller", "server-inventory", "callback");
-        ServiceName tmpDirPath = ServiceName.JBOSS.append("server", "path", "jboss.domain.temp.dir");
+        ServiceName tmpDirPath = ServiceName.JBOSS.append("server", "path", "jboss.home.dir");
         installSecurityServices(serviceTarget, MANAGEMENT_CONNECTOR, securityRealmName, serverCallbackService, tmpDirPath, verificationHandler, newControllers);
         installConnectorServicesForNetworkInterfaceBinding(serviceTarget, endpointName, MANAGEMENT_CONNECTOR, networkInterfaceBinding, port, OptionMap.EMPTY, verificationHandler, newControllers);
     }
@@ -135,7 +135,7 @@ public final class ManagementRemotingServices extends RemotingServices {
             final ServiceName securityRealmName,
             final ServiceVerificationHandler verificationHandler,
             final List<ServiceController<?>> newControllers) {
-        ServiceName tmpDirPath = ServiceName.JBOSS.append("server", "path", "jboss.server.temp.dir");
+        ServiceName tmpDirPath = ServiceName.JBOSS.append("server", "path", "jboss.home.dir");
         installSecurityServices(serviceTarget, MANAGEMENT_CONNECTOR, securityRealmName, null, tmpDirPath, verificationHandler,
                 newControllers);
         installConnectorServicesForNetworkInterfaceBinding(serviceTarget, endpointName, MANAGEMENT_CONNECTOR, networkInterfaceBindingName, port, OptionMap.EMPTY, verificationHandler, newControllers);
