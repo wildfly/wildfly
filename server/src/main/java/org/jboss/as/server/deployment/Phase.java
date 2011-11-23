@@ -361,14 +361,14 @@ public enum Phase {
     public static final int POST_MODULE_CMP_STORE_MANAGER               = 0x2500;
     public static final int POST_MODULE_EJB_IIOP                        = 0x2600;
     public static final int POST_MODULE_POJO                            = 0x2700;
+    public static final int POST_MODULE_NAMING_CONTEXT                  = 0x2800;
+    public static final int POST_MODULE_APP_NAMING_CONTEXT              = 0x2900;
 
     // INSTALL
     public static final int INSTALL_JNDI_DEPENDENCY_SETUP               = 0x0100;
     public static final int INSTALL_JPA_INTERCEPTORS                    = 0x0200;
-    public static final int INSTALL_APP_CONTEXT                         = 0x0300;
     public static final int INSTALL_JACC_POLICY                         = 0x0350;
     public static final int INSTALL_COMPONENT_AGGREGATION               = 0x0400;
-    public static final int INSTALL_MODULE_CONTEXT                      = 0x0401;
     public static final int INSTALL_RESOLVE_EJB_INJECTIONS              = 0x0402;
     public static final int INSTALL_EJB_JACC_PROCESSING                 = 0x0403;
     public static final int INSTALL_SERVICE_ACTIVATOR                   = 0x0500;

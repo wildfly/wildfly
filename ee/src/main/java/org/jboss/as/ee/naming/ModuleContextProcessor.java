@@ -22,9 +22,6 @@
 
 package org.jboss.as.ee.naming;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
@@ -41,6 +38,9 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.Values;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
 import static org.jboss.as.ee.naming.Attachments.MODULE_CONTEXT_CONFIG;
@@ -97,7 +97,7 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
         serviceNames.add(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME);
 
         // add the arquillian setup action, so the module namespace is available in arquillian tests
-        final JavaNamespaceSetup setupAction = new JavaNamespaceSetup(selector, serviceNames);
+        final JavaNamespaceSetup setupAction = new JavaNamespaceSetup(selector);
         deploymentUnit.addToAttachmentList(SETUP_ACTIONS, setupAction);
         deploymentUnit.addToAttachmentList(org.jboss.as.ee.component.Attachments.EE_SETUP_ACTIONS, setupAction);
     }
