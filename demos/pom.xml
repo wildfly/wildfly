@@ -39,9 +39,7 @@
     <name>JBoss Application Server: Demos: Aggregator</name>
 
     <modules>
-        <module>api</module>
         <module>spec</module>
-        <module>internals</module>
         <module>legacy</module>
     </modules>
 
