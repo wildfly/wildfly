@@ -221,7 +221,7 @@ public class ServiceBasedNamingStore implements NamingStore {
         boundServices.remove(serviceName);
     }
 
-    private ServiceName buildServiceName(final Name name) {
+    protected ServiceName buildServiceName(final Name name) {
         final Enumeration<String> parts = name.getAll();
         ServiceName current = serviceNameBase;
         while (parts.hasMoreElements()) {
@@ -263,5 +263,11 @@ public class ServiceBasedNamingStore implements NamingStore {
         return name;
     }
 
+    protected ServiceName getServiceNameBase() {
+        return serviceNameBase;
+    }
 
+    protected ServiceRegistry getServiceRegistry() {
+        return serviceRegistry;
+    }
 }

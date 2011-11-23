@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.osgi.jndi;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 import java.io.InputStream;
 
@@ -75,13 +75,9 @@ public class JNDITestCase {
         Object lookup = iniCtx.lookup("java:jboss");
         assertNotNull("Lookup not null", lookup);
 
-        // Naming context is read-only
-        try {
-            iniCtx.createSubcontext("test").bind("Foo", new String("Bar"));
-            fail("UnsupportedOperationException expected");
-        } catch (UnsupportedOperationException ex) {
-            // expected
-        }
+        final String value = "Bar";
+        iniCtx.createSubcontext("test").bind("Foo", value);
+        assertEquals(value, iniCtx.lookup("test/Foo"));
     }
 
     private InitialContext getInitialContext(BundleContext context) {

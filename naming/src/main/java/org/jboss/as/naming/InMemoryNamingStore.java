@@ -188,6 +188,14 @@ public class InMemoryNamingStore implements WritableNamingStore {
         return root.accept(new ListBindingsVisitor(name));
     }
 
+    public Context createSubcontext(final Name name) throws NamingException {
+        if (isLastComponentEmpty(name)) {
+            throw emptyNameException();
+        }
+        checkPermissions(name, JndiPermission.Action.CREATE_SUBCONTEXT);
+        return root.accept(new CreateSubContextVisitor(name));
+    }
+
     /**
      * Close the store.  This will clear all children from the root node.
      *
@@ -521,4 +529,18 @@ public class InMemoryNamingStore implements WritableNamingStore {
         }
     }
 
+    private final class CreateSubContextVisitor extends BindingContextVisitor<Context> {
+        private CreateSubContextVisitor(final Name targetName) throws NamingException {
+            super(targetName);
+        }
+
+        protected Context foundBindContext(ContextNode contextNode) throws NamingException {
+            final NamingContext subContext = new NamingContext(targetName, InMemoryNamingStore.this, new Hashtable<String, Object>());
+            final String childName = getLastComponent(targetName);
+            final ContextNode subContextNode = new ContextNode(contextNode, childName, targetName, subContext);
+            contextNode.addChild(getLastComponent(targetName), subContextNode);
+            fireEvent(contextNode, targetName, null, subContextNode.binding, NamingEvent.OBJECT_ADDED, "createSubcontext");
+            return subContext;
+        }
+    }
 }

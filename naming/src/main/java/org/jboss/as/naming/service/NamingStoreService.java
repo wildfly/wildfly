@@ -25,6 +25,7 @@ package org.jboss.as.naming.service;
 import javax.naming.NamingException;
 
 import org.jboss.as.naming.ServiceBasedNamingStore;
+import org.jboss.as.naming.WritableServiceBasedNamingStore;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -58,7 +59,7 @@ public class NamingStoreService implements Service<ServiceBasedNamingStore> {
      */
     public synchronized void start(final StartContext context) throws StartException {
         if(store == null) {
-            store = new ServiceBasedNamingStore(context.getController().getServiceContainer(), context.getController().getName());
+            store = new WritableServiceBasedNamingStore(context.getController().getServiceContainer(), context.getController().getName());
         }
     }
 
