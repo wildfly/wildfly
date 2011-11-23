@@ -79,6 +79,35 @@
          </move>
     </target>
 
+    <target name="addJAXRConfiguration" description="Add the JAXR configuration">
+
+        <echo message="Add JAXR configuration for ${server-config}"/>
+
+        <property name="server.dir" value="${project.build.directory}/${server-config}"/>
+        <property name="config.dir" value="${server.dir}/standalone/configuration"/>
+
+        <!-- change standalone/configuration/standalone.xml file:
+              i.e. update datasource subsystem config
+         -->
+        <xslt destdir="${config.dir}"
+              extension=".xml.mod"
+              style="${main.basedir}/../../integration/src/test/xslt/addJAXRConfiguration.xsl"
+              useImplicitFileset="false">
+            <fileset dir="${config.dir}">
+                <include name="standalone.xml"/>
+                <include name="standalone-full.xml"/>
+            </fileset>
+        </xslt>
+
+        <!-- move processed files back -->
+        <move todir="${config.dir}">
+           <fileset dir="${config.dir}">
+               <include name="**/standalone.xml.mod"/>
+               <include name="**/standalone-full.xml.mod"/>
+           </fileset>
+           <mapper type="glob" from="*.mod" to="*"/>
+         </move>
+    </target>
 
 
     <!--
@@ -104,6 +133,13 @@
                 <fileset dir="@{jboss.dist}">
                     <exclude name="**/modules/**"/>
                     <exclude name="**/bundles/**"/>
+                </fileset>
+            </copy>
+
+            <!-- deploy the UDDI registry and HTTP endpoint services -->
+            <copy todir="@{output.dir}/@{name}/standalone/deployments">
+                <fileset dir="@{jboss.dist}/modules/org/jboss/as/jaxr/service/main">
+                    <include name="jboss-as-jaxr-service-*.jar"/>
                 </fileset>
             </copy>
 

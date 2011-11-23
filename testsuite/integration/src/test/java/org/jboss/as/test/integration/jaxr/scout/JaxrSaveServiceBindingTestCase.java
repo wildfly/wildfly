@@ -50,7 +50,6 @@ import java.util.Iterator;
  * @since Mar 8, 2005
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-2636] Refactor JAXR subsystem into a deployable application")
 public class JaxrSaveServiceBindingTestCase extends JaxrTestBase
 {
    private static Logger log = Logger.getLogger(JaxrSaveServiceBindingTestCase.class);

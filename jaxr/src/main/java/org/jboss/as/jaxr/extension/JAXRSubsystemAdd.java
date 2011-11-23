@@ -81,9 +81,8 @@ class JAXRSubsystemAdd extends AbstractAddStepHandler {
                 ServiceTarget serviceTarget = context.getServiceTarget();
                 newControllers.add(JAXRConfigurationService.addService(serviceTarget, config, verifyHandler));
                 newControllers.add(JAXRConnectionFactoryService.addService(serviceTarget, verifyHandler));
-                // The subsystem does not initialize the JAXR database nor create an HTTP endpoint
-                //newControllers.add(JAXRDatasourceService.addService(serviceTarget, verifyHandler));
-                //newControllers.add(JUDDIContextService.addService(serviceTarget, verifyHandler));
+                newControllers.add(JAXRDatasourceService.addService(serviceTarget, verifyHandler));
+                newControllers.add(JUDDIContextService.addService(serviceTarget, verifyHandler));
                 context.completeStep();
             }
         }, OperationContext.Stage.RUNTIME);

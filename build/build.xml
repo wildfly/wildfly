@@ -708,6 +708,10 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-jaxr"/>
         </module-def>
 
+        <module-def name="org.jboss.as.jaxr.service">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-jaxr-service"/>
+        </module-def>
+
         <module-def name="org.jboss.as.jaxrs">
             <maven-resource group="org.jboss.as" artifact="jboss-as-jaxrs"/>
         </module-def>
