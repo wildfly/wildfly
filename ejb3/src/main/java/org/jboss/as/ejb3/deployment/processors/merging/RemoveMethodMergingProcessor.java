@@ -23,8 +23,10 @@ package org.jboss.as.ejb3.deployment.processors.merging;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ejb.Remove;
 
@@ -78,14 +80,28 @@ public class RemoveMethodMergingProcessor extends AbstractMergingProcessor<State
 
         final DeploymentReflectionIndex reflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
 
+        final Set<MethodIdentifier> annotationRemoveMethods = new HashSet<MethodIdentifier>();
+        for(final StatefulComponentDescription.StatefulRemoveMethod method : componentConfiguration.getRemoveMethods()) {
+            annotationRemoveMethods.add(method.getMethodIdentifier());
+        }
+
         //We loop through twice, as the more more general form with no parameters is applied to all methods with that name
         //while the method that specifies the actual parameters override this
         for (final RemoveMethodMetaData removeMethod : beanMetaData.getRemoveMethods()) {
             if(removeMethod.getBeanMethod().getMethodParams() == null) {
                 final NamedMethodMetaData methodData = removeMethod.getBeanMethod();
                 final Collection<Method> methods = MethodResolutionUtils.resolveMethods(methodData, componentClass, reflectionIndex);
-                for(Method method : methods) {
-                    componentConfiguration.addRemoveMethod(MethodIdentifier.getIdentifierForMethod(method), removeMethod.isRetainIfException());
+                for(final Method method : methods) {
+                    final Boolean retainIfException = removeMethod.getRetainIfException();
+                    final MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifierForMethod(method);
+                    if(retainIfException == null) {
+                        //if this is null we have to allow annotation values of retainIfException to take precidence
+                        if(!annotationRemoveMethods.contains(methodIdentifier)) {
+                            componentConfiguration.addRemoveMethod(methodIdentifier, false);
+                        }
+                    } else {
+                        componentConfiguration.addRemoveMethod(methodIdentifier, retainIfException);
+                    }
                 }
             }
         }
@@ -93,8 +109,17 @@ public class RemoveMethodMergingProcessor extends AbstractMergingProcessor<State
             if(removeMethod.getBeanMethod().getMethodParams() != null) {
                 final NamedMethodMetaData methodData = removeMethod.getBeanMethod();
                 final Collection<Method> methods = MethodResolutionUtils.resolveMethods(methodData, componentClass, reflectionIndex);
-                for(Method method : methods) {
-                    componentConfiguration.addRemoveMethod(MethodIdentifier.getIdentifierForMethod(method), removeMethod.isRetainIfException());
+                for(final Method method : methods) {
+                    final Boolean retainIfException = removeMethod.getRetainIfException();
+                    final MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifierForMethod(method);
+                    if(retainIfException == null) {
+                        //if this is null we have to allow annotation values of retainIfException to take precidence
+                        if(!annotationRemoveMethods.contains(methodIdentifier)) {
+                            componentConfiguration.addRemoveMethod(methodIdentifier, false);
+                        }
+                    } else {
+                        componentConfiguration.addRemoveMethod(methodIdentifier, retainIfException);
+                    }
                 }
             }
         }
