@@ -44,6 +44,7 @@ import org.jboss.logging.MessageLogger;
 
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.TRACE;
 import static org.jboss.logging.Logger.Level.WARN;
 
 /**
@@ -81,7 +82,7 @@ public interface EjbLogger extends BasicLogger {
      *
      * @param id the session id that could not be released
      */
-    @LogMessage(level = WARN)
+    @LogMessage(level = TRACE)
     @Message(id = 14101, value = "Could not find stateful bean to release %s")
     void couldNotFindStatefulBean(SessionID id);
 
