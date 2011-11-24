@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-jar xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+                            http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd"
+	version="3.0">
+	<display-name>InterceptorsTest</display-name>
+
+	<enterprise-beans>
+		<session>
+			<ejb-name>MyTestB</ejb-name>
+			<business-remote>org.jboss.as.test.integration.ejb.interceptor.environment.MyTestRemoteB</business-remote>
+			<ejb-class>org.jboss.as.test.integration.ejb.interceptor.environment.MyTestB</ejb-class>
+			<session-type>Stateless</session-type>
+			<transaction-type>Container</transaction-type>
+			<ejb-ref>
+				<ejb-ref-name>ejb/Session23</ejb-ref-name>
+				<ejb-ref-type>Session</ejb-ref-type>
+				<remote>org.jboss.as.test.integration.ejb.interceptor.environment.MySession2RemoteB</remote>
+				<ejb-link>MySession2BeanB</ejb-link>
+				<injection-target>
+					<injection-target-class>org.jboss.as.test.integration.ejb.interceptor.environment.MyTestB</injection-target-class>
+					<injection-target-name>session23</injection-target-name>
+				</injection-target>
+			</ejb-ref>
+		</session>
+	</enterprise-beans>
+
+	<interceptors>
+		<interceptor>
+			<interceptor-class>org.jboss.as.test.integration.ejb.interceptor.environment.XMLInterceptorB</interceptor-class>
+			<around-invoke>
+				<method-name>intercept</method-name>
+			</around-invoke>
+			<ejb-ref>
+				<ejb-ref-name>ejb/Session2</ejb-ref-name>
+				<ejb-ref-type>Session</ejb-ref-type>
+				<remote>org.jboss.as.test.integration.ejb.interceptor.environment.MySession2RemoteB</remote>
+				<ejb-link>MySession2BeanB</ejb-link>
+				<injection-target>
+					<injection-target-class>org.jboss.as.test.integration.ejb.interceptor.environment.XMLInterceptorB</injection-target-class>
+					<injection-target-name>session2</injection-target-name>
+				</injection-target>
+			</ejb-ref>
+		</interceptor>
+	</interceptors>
+	<assembly-descriptor>
+		<interceptor-binding>
+			<ejb-name>MySession2BeanB</ejb-name>
+			<interceptor-class>org.jboss.as.test.integration.ejb.interceptor.environment.XMLInterceptorB</interceptor-class>
+			<method>
+				<method-name>doit</method-name>
+			</method>
+		</interceptor-binding>
+	</assembly-descriptor>
+
+
+</ejb-jar>
