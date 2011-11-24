@@ -60,7 +60,6 @@ import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceRemoveHandler;
 import org.jboss.as.controller.operations.common.PathAddHandler;
 import org.jboss.as.controller.operations.common.PathRemoveHandler;
-import org.jboss.as.controller.operations.common.ResolveExpressionHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationRemoveHandler;
 import org.jboss.as.controller.operations.common.SnapshotDeleteHandler;
@@ -82,6 +81,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
 import org.jboss.as.domain.controller.operations.ApplyRemoteMasterDomainModelHandler;
+import org.jboss.as.domain.controller.operations.HackDomainServerLifecycleHandlers;
 import org.jboss.as.domain.controller.operations.ProcessTypeHandler;
 import org.jboss.as.domain.controller.operations.ProfileAddHandler;
 import org.jboss.as.domain.controller.operations.ProfileDescribeHandler;
@@ -136,17 +136,19 @@ public class DomainModelUtil {
     public static ExtensionContext initializeMasterDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
                                                                   final ContentRepository contentRepository, final FileRepository fileRepository,
                                                                   final DomainController domainController, final UnregisteredHostChannelRegistry registry) {
-        return initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, true, domainController, registry, domainController.getLocalHostInfo());
+        return initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, domainController, registry, domainController.getLocalHostInfo());
     }
 
     public static ExtensionContext initializeSlaveDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
                                                                  final FileRepository fileRepository, final LocalHostControllerInfo hostControllerInfo) {
-        return initializeDomainRegistry(root, configurationPersister, null, fileRepository, false, null, null, hostControllerInfo);
+        return initializeDomainRegistry(root, configurationPersister, null, fileRepository, null, null, hostControllerInfo);
     }
 
     private static ExtensionContext initializeDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
-                                                             final ContentRepository contentRepo, final FileRepository fileRepository, final boolean isMaster,
+                                                             final ContentRepository contentRepo, final FileRepository fileRepository,
                                                              final DomainController domainController, final UnregisteredHostChannelRegistry registry, final LocalHostControllerInfo hostControllerInfo) {
+
+        final boolean isMaster = hostControllerInfo.isMasterDomainController();
 
         final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY);
         final EnumSet<OperationEntry.Flag> deploymentUpload = EnumSet.of(OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY);
@@ -181,6 +183,8 @@ public class DomainModelUtil {
 
         root.registerOperationHandler(ResolveExpressionOnDomainHandler.OPERATION_NAME, ResolveExpressionOnDomainHandler.INSTANCE,
                 ResolveExpressionOnDomainHandler.INSTANCE, EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.DOMAIN_PUSH_TO_SERVERS));
+
+        HackDomainServerLifecycleHandlers.registerDomainHandlers(root);
 
         // System Properties
         ManagementResourceRegistration systemProperties = root.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), DomainDescriptionProviders.SYSTEM_PROPERTY_PROVIDER);
@@ -217,6 +221,9 @@ public class DomainModelUtil {
         serverGroups.registerOperationHandler(REMOVE, ServerGroupRemoveHandler.INSTANCE, ServerGroupRemoveHandler.INSTANCE, false);
         serverGroups.registerReadWriteAttribute(SOCKET_BINDING_GROUP, null, WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE, Storage.CONFIGURATION);
         serverGroups.registerReadWriteAttribute(SOCKET_BINDING_PORT_OFFSET, null, new IntRangeValidatingHandler(0), Storage.CONFIGURATION);
+        HackDomainServerLifecycleHandlers.registerServerGroupHandlers(serverGroups);
+
+
         final ManagementResourceRegistration groupVMs = serverGroups.registerSubModel(PathElement.pathElement(JVM), CommonProviders.JVM_PROVIDER);
         JVMHandlers.register(groupVMs);
         ServerGroupDeploymentReplaceHandler sgdrh = new ServerGroupDeploymentReplaceHandler(fileRepository);

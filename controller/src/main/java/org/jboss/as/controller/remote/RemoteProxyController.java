@@ -24,6 +24,7 @@ package org.jboss.as.controller.remote;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -37,7 +38,6 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.ModelController.OperationTransaction;
 import org.jboss.as.controller.PathAddress;
@@ -47,7 +47,6 @@ import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementBatchIdManager;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
@@ -178,6 +177,7 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
             // result, or there is a failure
             prepareOrFailedLatch.await();
         } catch (Exception e) {
+            e.printStackTrace();
             try {
                 ManagementBatchIdManager.DEFAULT.freeBatchId(batchId);
             } catch (Exception ignore) {

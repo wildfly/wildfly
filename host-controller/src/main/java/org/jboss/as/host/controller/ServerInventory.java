@@ -22,8 +22,9 @@
 
 package org.jboss.as.host.controller;
 
-import javax.security.auth.callback.CallbackHandler;
 import java.util.Map;
+
+import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.process.ProcessInfo;
@@ -37,8 +38,38 @@ import org.jboss.dmr.ModelNode;
    */
 public interface ServerInventory extends ManagedServerLifecycleCallback {
     void stopServers(int gracefulTimeout);
+
+    /**
+     * Gets the process name for a server
+     *
+     * @param serverName the name of a server in the model
+     * @return the server name
+     */
     String getServerProcessName(String serverName);
+
+    /**
+     * Gets the server model name for a process
+     *
+     * @param processName the name of the server process
+     * @return the server model name
+     */
+    String getProcessServerName(String processName);
+
+    /**
+     * Gets all the running processes
+     *
+     * @return all the running processes
+     */
     Map<String, ProcessInfo> determineRunningProcesses();
+
+    /**
+     * Gets all the running processes
+     *
+     * @param serversOnly {@code true} to only return the server processes
+     * @return all the running processes
+     */
+    Map<String, ProcessInfo> determineRunningProcesses(boolean serversOnly);
+
     ServerStatus determineServerStatus(final String serverName);
     ServerStatus startServer(final String serverName, final ModelNode domainModel);
     void reconnectServer(final String serverName, final ModelNode domainModel, final boolean running);

@@ -51,10 +51,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ProxyController;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.plan.NewRolloutPlanController;
 import org.jboss.as.domain.controller.plan.NewServerOperationExecutor;
@@ -191,6 +191,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
         if (opsByGroup.size() > 0) {
 
             final ModelNode rolloutPlan = getRolloutPlan(this.providedRolloutPlan, opsByGroup);
+
             if (trace) {
                 PrepareStepHandler.log.trace("Rollout plan is " + rolloutPlan);
             }
@@ -223,11 +224,15 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
                         future = executorService.submit(task);
                         result = task.getUncommittedResult();
                         futures.put(server, future);
-                    } catch (InterruptedException e) {
-                        interrupted = true;
+                    } catch (Exception e) {
                         result = new ModelNode();
                         result.get(OUTCOME).set(FAILED);
-                        result.get(FAILURE_DESCRIPTION).set(String.format("Interrupted waiting for result from server %s", server));
+                        if (e instanceof InterruptedException) {
+                            result.get(FAILURE_DESCRIPTION).set(String.format("Interrupted waiting for result from server %s", server));
+                            interrupted = true;
+                        } else {
+                            result.get(FAILURE_DESCRIPTION).set(String.format("Exception getting result from server %s: %s", server, e.getMessage()));
+                        }
                         task.cancel();
                         future.cancel(true);
                     } finally {
@@ -238,6 +243,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
                     return result;
                 }
             };
+
             NewRolloutPlanController rolloutPlanController = new NewRolloutPlanController(opsByGroup, rolloutPlan, domainOperationContext, operationExecutor, executorService);
             NewRolloutPlanController.Result planResult = rolloutPlanController.execute();
             if (trace) {

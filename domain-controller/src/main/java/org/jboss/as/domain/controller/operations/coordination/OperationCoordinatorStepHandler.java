@@ -184,6 +184,7 @@ public class OperationCoordinatorStepHandler {
         }
 
         if (localHostControllerInfo.isMasterDomainController()) {
+
             // Add steps to invoke on the HC for each relevant slave
             Set<String> remoteHosts = new HashSet<String>(routing.getHosts());
             boolean global = remoteHosts.size() == 0;

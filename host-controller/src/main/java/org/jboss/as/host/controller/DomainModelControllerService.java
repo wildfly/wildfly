@@ -424,12 +424,20 @@ public class DomainModelControllerService extends AbstractControllerService impl
             return serverInventory.getServerProcessName(serverName);
         }
 
+        public String getProcessServerName(String processName) {
+            return serverInventory.getProcessServerName(processName);
+        }
+
         public void processInventory(Map<String, ProcessInfo> processInfos) {
             serverInventory.processInventory(processInfos);
         }
 
         public Map<String, ProcessInfo> determineRunningProcesses() {
             return serverInventory.determineRunningProcesses();
+        }
+
+        public Map<String, ProcessInfo> determineRunningProcesses(boolean serversOnly) {
+            return serverInventory.determineRunningProcesses(serversOnly);
         }
 
         public ServerStatus determineServerStatus(String serverName) {

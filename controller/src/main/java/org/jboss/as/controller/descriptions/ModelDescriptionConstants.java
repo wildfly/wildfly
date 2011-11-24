@@ -221,6 +221,7 @@ public class ModelDescriptionConstants {
     public static final String SERVICE_CONTAINER = "service-container";
     public static final String OPERATION_REQUIRES_RELOAD = "operation-requires-reload";
     public static final String OPERATION_REQUIRES_RESTART = "operation-requires-restart";
+    public static final String RESTART_SERVERS = "restart-servers";
     public static final String SHUTDOWN = "shutdown";
     public static final String SOCKET_BINDING = "socket-binding";
     public static final String SOCKET_BINDING_REF = "socket-binding-ref";
@@ -231,8 +232,10 @@ public class ModelDescriptionConstants {
     public static final String SOURCE_PORT = "source-port";
     public static final String SSL = "ssl";
     public static final String START = "start";
+    public static final String START_SERVERS = "start-servers";
     public static final String STATUS = "status";
     public static final String STEPS = "steps";
+    public static final String STOP_SERVERS = "stop-servers";
     /** The key for {@link AttributeAccess.Storage} fields. */
     public static final String STORAGE = "storage";
     public static final String SUBDEPLOYMENT = "subdeployment";

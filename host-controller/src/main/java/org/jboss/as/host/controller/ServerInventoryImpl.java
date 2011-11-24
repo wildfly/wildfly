@@ -25,14 +25,6 @@ package org.jboss.as.host.controller;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.sasl.AuthorizeCallback;
-import javax.security.sasl.RealmCallback;
-import javax.security.sasl.SaslException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.NoSuchAlgorithmException;
@@ -45,9 +37,18 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.controller.ProxyController;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.sasl.AuthorizeCallback;
+import javax.security.sasl.RealmCallback;
+import javax.security.sasl.SaslException;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.remote.RemoteProxyController;
@@ -112,7 +113,20 @@ public class ServerInventoryImpl implements ServerInventory {
         } catch (InterruptedException e) {
         }
         return processInfos;
+    }
 
+    public Map<String, ProcessInfo> determineRunningProcesses(boolean serversOnly){
+        Map<String, ProcessInfo> processInfos = determineRunningProcesses();
+        if (!serversOnly) {
+            return processInfos;
+        }
+        Map<String, ProcessInfo> processes = new HashMap<String, ProcessInfo>();
+        for (Map.Entry<String, ProcessInfo> procEntry : processInfos.entrySet()) {
+            if (ManagedServer.isServerProcess(procEntry.getKey())) {
+                processes.put(procEntry.getKey(), procEntry.getValue());
+            }
+        }
+        return processes;
     }
 
     @Override
@@ -157,7 +171,7 @@ public class ServerInventoryImpl implements ServerInventory {
     }
 
     public ServerStatus startServer(final String serverName, final ModelNode domainModel) {
-
+        System.out.println("--- start" + serverName);
         final String processName = ManagedServer.getServerProcessName(serverName);
         final ManagedServer existing = servers.get(processName);
         if(existing != null) { // FIXME
@@ -202,6 +216,7 @@ public class ServerInventoryImpl implements ServerInventory {
     }
 
     public ServerStatus restartServer(String serverName, final int gracefulTimeout, final ModelNode domainModel) {
+        System.out.println("---> restart " + serverName);
         stopServer(serverName, gracefulTimeout);
         ServerStatus status;
         // FIXME total hack; set up some sort of notification scheme
@@ -346,6 +361,7 @@ public class ServerInventoryImpl implements ServerInventory {
     }
 
     private ManagedServer createManagedServer(final String serverName, final ModelNode domainModel) {
+        System.out.println("====" + serverName);
         final ModelNode hostModel = domainModel.require(HOST).require(domainController.getLocalHostInfo().getLocalHostName());
         final ModelCombiner combiner = new ModelCombiner(serverName, domainModel, hostModel, domainController, environment);
         return new ManagedServer(serverName, processControllerClient, managementAddress, combiner);

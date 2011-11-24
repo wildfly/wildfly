@@ -22,6 +22,10 @@
 
 package org.jboss.as.domain.controller.operations.coordination;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +52,7 @@ class ProxyTask implements Callable<ModelNode> {
     private final ModelNode operation;
     private final OperationContext context;
 
+    private volatile Exception exception;
     private final AtomicReference<Boolean> transactionAction = new AtomicReference<Boolean>();
     private final AtomicReference<ModelNode> uncommittedResultRef = new AtomicReference<ModelNode>();
     private boolean cancelRemoteTransaction;
@@ -61,85 +66,100 @@ class ProxyTask implements Callable<ModelNode> {
 
     @Override
     public ModelNode call() throws Exception {
-
-        boolean trace = PrepareStepHandler.isTraceEnabled();
-        if (trace) {
-            PrepareStepHandler.log.trace("Sending " + operation + " to " + host);
-        }
-        OperationMessageHandler messageHandler = new DelegatingMessageHandler(context);
-
-        final AtomicReference<ModelController.OperationTransaction> txRef = new AtomicReference<ModelController.OperationTransaction>();
-        final AtomicReference<ModelNode> preparedResultRef = new AtomicReference<ModelNode>();
-        final AtomicReference<ModelNode> finalResultRef = new AtomicReference<ModelNode>();
-        final ProxyController.ProxyOperationControl proxyControl = new ProxyController.ProxyOperationControl() {
-
-            @Override
-            public void operationPrepared(ModelController.OperationTransaction transaction, ModelNode result) {
-                txRef.set(transaction);
-                preparedResultRef.set(result);
-            }
-
-            @Override
-            public void operationFailed(ModelNode response) {
-                finalResultRef.set(response);
-            }
-
-            @Override
-            public void operationCompleted(ModelNode response) {
-                finalResultRef.set(response);
-            }
-        };
-
-        proxyController.execute(operation, messageHandler, proxyControl, new DelegatingOperationAttachments(context));
-
-        ModelController.OperationTransaction remoteTransaction = null;
-        ModelNode result = finalResultRef.get();
-        if (result != null) {
-            // operation failed before it could commit
+        try {
+            boolean trace = PrepareStepHandler.isTraceEnabled();
             if (trace) {
-                PrepareStepHandler.log.trace("Received final result " + result + " from " + host);
+                PrepareStepHandler.log.trace("Sending " + operation + " to " + host);
             }
-        } else {
-            result = preparedResultRef.get();
-            if (trace) {
-                PrepareStepHandler.log.trace("Received prepared result " + result + " from " + host);
-            }
-            remoteTransaction = txRef.get();
-        }
+            OperationMessageHandler messageHandler = new DelegatingMessageHandler(context);
 
-        synchronized (uncommittedResultRef) {
-            uncommittedResultRef.set(result);
-            uncommittedResultRef.notifyAll();
-        }
+            final AtomicReference<ModelController.OperationTransaction> txRef = new AtomicReference<ModelController.OperationTransaction>();
+            final AtomicReference<ModelNode> preparedResultRef = new AtomicReference<ModelNode>();
+            final AtomicReference<ModelNode> finalResultRef = new AtomicReference<ModelNode>();
+            final ProxyController.ProxyOperationControl proxyControl = new ProxyController.ProxyOperationControl() {
 
-        if (remoteTransaction != null) {
-            if (cancelRemoteTransaction) {
-                // Controlling thread was cancelled
-                remoteTransaction.rollback();
+                @Override
+                public void operationPrepared(ModelController.OperationTransaction transaction, ModelNode result) {
+                    txRef.set(transaction);
+                    preparedResultRef.set(result);
+                }
+
+                @Override
+                public void operationFailed(ModelNode response) {
+                    finalResultRef.set(response);
+                }
+
+                @Override
+                public void operationCompleted(ModelNode response) {
+                    finalResultRef.set(response);
+                }
+            };
+
+            proxyController.execute(operation, messageHandler, proxyControl, new DelegatingOperationAttachments(context));
+
+            ModelController.OperationTransaction remoteTransaction = null;
+            ModelNode result = finalResultRef.get();
+            if (result != null) {
+                // operation failed before it could commit
+                if (trace) {
+                    PrepareStepHandler.log.trace("Received final result " + result + " from " + host);
+                }
             } else {
-                synchronized (transactionAction) {
-                    while (transactionAction.get() == null) {
-                        try {
-                            transactionAction.wait();
+                result = preparedResultRef.get();
+                if (trace) {
+                    PrepareStepHandler.log.trace("Received prepared result " + result + " from " + host);
+                }
+                remoteTransaction = txRef.get();
+            }
+
+            synchronized (uncommittedResultRef) {
+                uncommittedResultRef.set(result);
+                uncommittedResultRef.notifyAll();
+            }
+
+            if (remoteTransaction != null) {
+                if (cancelRemoteTransaction) {
+                    // Controlling thread was cancelled
+                    remoteTransaction.rollback();
+                } else {
+                    synchronized (transactionAction) {
+                        while (transactionAction.get() == null) {
+                            try {
+                                transactionAction.wait();
+                            }
+                            catch (InterruptedException ie) {
+                                // Treat as cancellation
+                                transactionAction.set(Boolean.FALSE);
+                            }
                         }
-                        catch (InterruptedException ie) {
-                            // Treat as cancellation
-                            transactionAction.set(Boolean.FALSE);
+                        if (transactionAction.get().booleanValue()) {
+                            remoteTransaction.commit();
+                        } else {
+                            remoteTransaction.rollback();
                         }
-                    }
-                    if (transactionAction.get().booleanValue()) {
-                        remoteTransaction.commit();
-                    } else {
-                        remoteTransaction.rollback();
                     }
                 }
             }
-        }
 
-        return finalResultRef.get();
+            return finalResultRef.get();
+        } catch (Exception e) {
+            ModelNode node = new ModelNode();
+            node.get(OUTCOME).set(FAILED);
+            node.get(FAILURE_DESCRIPTION).set(e.getMessage());
+            exception = e;
+            uncommittedResultRef.set(node);
+            synchronized (uncommittedResultRef) {
+                uncommittedResultRef.notifyAll();
+            }
+            throw e;
+        }
     }
 
-    ModelNode getUncommittedResult() throws InterruptedException {
+    /**
+     * @throws InterruptedException if interrupted while waiting for the result
+     * @throws Exception if something went wrong executing the request
+     */
+    ModelNode getUncommittedResult() throws Exception {
         synchronized (uncommittedResultRef) {
 
             while (uncommittedResultRef.get() == null) {
@@ -150,6 +170,9 @@ class ProxyTask implements Callable<ModelNode> {
                     cancelRemoteTransaction = true;
                     throw ie;
                 }
+            }
+            if (exception != null) {
+                throw exception;
             }
             return uncommittedResultRef.get();
         }

@@ -311,7 +311,6 @@ abstract class AbstractOperationContext implements OperationContext {
     }
 
     private void executeStep(final Step step) {
-
         step.predecessor = this.activeStep;
         this.activeStep = step;
 

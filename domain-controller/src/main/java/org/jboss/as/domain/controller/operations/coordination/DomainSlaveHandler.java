@@ -34,9 +34,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ProxyController;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
@@ -88,11 +88,15 @@ public class DomainSlaveHandler implements OperationStepHandler {
                 ModelNode result = null;
                 try {
                     result = entry.getValue().getUncommittedResult();
-                } catch (InterruptedException e) {
+                } catch (Exception e) {
                     result = new ModelNode();
                     result.get(OUTCOME).set(FAILED);
-                    result.get(FAILURE_DESCRIPTION).set(String.format("Interrupted waiting for result from host %s", entry.getKey()));
-                    interrupted = true;
+                    if (e instanceof InterruptedException) {
+                        result.get(FAILURE_DESCRIPTION).set(String.format("Interrupted waiting for result from host %s", entry.getKey()));
+                        interrupted = true;
+                    } else {
+                        result.get(FAILURE_DESCRIPTION).set(String.format("Exception getting result from host %s: %s", entry.getKey(), e.getMessage()));
+                    }
                     task.cancel();
                     futures.get(entry.getKey()).cancel(true);
                 }
