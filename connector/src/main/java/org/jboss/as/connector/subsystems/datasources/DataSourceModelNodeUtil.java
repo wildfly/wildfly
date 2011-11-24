@@ -50,7 +50,6 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.NOTXSEPARA
 import static org.jboss.as.connector.subsystems.datasources.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PAD_XID;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PASSWORD;
-import static org.jboss.as.connector.subsystems.datasources.Constants.POOLNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PREPAREDSTATEMENTSCACHESIZE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.QUERYTIMEOUT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTHPLUGIN_CLASSNAME;
@@ -121,7 +120,7 @@ import org.jboss.jca.common.metadata.ds.ValidationImpl;
  */
 class DataSourceModelNodeUtil {
 
-    static ModifiableDataSource from(final OperationContext operationContext, final ModelNode dataSourceNode) throws OperationFailedException, ValidateException {
+    static ModifiableDataSource from(final OperationContext operationContext, final ModelNode dataSourceNode, final String dsName) throws OperationFailedException, ValidateException {
         final Map<String, String> connectionProperties= Collections.emptyMap();
 
         final String connectionUrl = getStringIfSetOrGetDefault(dataSourceNode, CONNECTION_URL, null);
@@ -130,7 +129,7 @@ class DataSourceModelNodeUtil {
         final String jndiName = getStringIfSetOrGetDefault(dataSourceNode, JNDINAME, null);
         final String driver = getStringIfSetOrGetDefault(dataSourceNode, DATASOURCE_DRIVER, null);
         final String newConnectionSql = getStringIfSetOrGetDefault(dataSourceNode, NEW_CONNECTION_SQL, null);
-        final String poolName = getStringIfSetOrGetDefault(dataSourceNode, POOLNAME, null);
+        final String poolName = dsName;
         final String urlDelimiter = getStringIfSetOrGetDefault(dataSourceNode, URL_DELIMITER, null);
         final String urlSelectorStrategyClassName = getStringIfSetOrGetDefault(dataSourceNode,
                 URL_SELECTOR_STRATEGY_CLASS_NAME, null);
@@ -196,7 +195,7 @@ class DataSourceModelNodeUtil {
                 poolName, enabled, jndiName, spy, useCcm, jta, pool);
     }
 
-    static ModifiableXaDataSource xaFrom(final OperationContext operationContext, final ModelNode dataSourceNode) throws OperationFailedException, ValidateException {
+    static ModifiableXaDataSource xaFrom(final OperationContext operationContext, final ModelNode dataSourceNode, final String dsName) throws OperationFailedException, ValidateException {
         final Map<String, String> xaDataSourceProperty;
         xaDataSourceProperty = Collections.emptyMap();
 
@@ -204,7 +203,7 @@ class DataSourceModelNodeUtil {
         final String jndiName = getStringIfSetOrGetDefault(dataSourceNode, JNDINAME, null);
         final String module = getStringIfSetOrGetDefault(dataSourceNode, DATASOURCE_DRIVER, null);
         final String newConnectionSql = getStringIfSetOrGetDefault(dataSourceNode, NEW_CONNECTION_SQL, null);
-        final String poolName = getStringIfSetOrGetDefault(dataSourceNode, POOLNAME, null);
+        final String poolName = dsName;
         final String urlDelimiter = getStringIfSetOrGetDefault(dataSourceNode, URL_DELIMITER, null);
         final String urlSelectorStrategyClassName = getStringIfSetOrGetDefault(dataSourceNode,
                 URL_SELECTOR_STRATEGY_CLASS_NAME, null);

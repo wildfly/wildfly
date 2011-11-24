@@ -62,7 +62,6 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.NOTXSEPARA
 import static org.jboss.as.connector.subsystems.datasources.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PAD_XID;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PASSWORD;
-import static org.jboss.as.connector.subsystems.datasources.Constants.POOLNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PREPAREDSTATEMENTSCACHESIZE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.QUERYTIMEOUT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTHPLUGIN_CLASSNAME;
@@ -326,7 +325,7 @@ public class DataSourcesExtension implements Extension {
                     writer.writeStartElement(isXADataSource ? DataSources.Tag.XA_DATASOURCE.getLocalName()
                             : DataSources.Tag.DATASOURCE.getLocalName());
                     JNDINAME.marshallAsAttribute(dataSourceNode, false, writer);
-                    POOLNAME.marshallAsAttribute(dataSourceNode, false, writer);
+                    writer.writeAttribute("pool-name", property.getName());
                     ENABLED.marshallAsAttribute(dataSourceNode, writer);
                     JTA.marshallAsAttribute(dataSourceNode, false, writer);
                     USE_JAVA_CONTEXT.marshallAsAttribute(dataSourceNode, false, writer);

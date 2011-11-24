@@ -93,7 +93,7 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
             context.removeService(xaDataSourceConfigServiceName);
         }
 
-        final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(dsName);
+        final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
         final ServiceController<?> dataSourceController = registry.getService(dataSourceServiceName);
         if (dataSourceController != null) {
             context.removeService(dataSourceServiceName);

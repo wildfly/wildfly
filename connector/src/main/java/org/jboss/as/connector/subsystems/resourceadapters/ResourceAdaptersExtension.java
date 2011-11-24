@@ -48,7 +48,6 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDIN
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_CLASSNAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_PASSWORD;
@@ -89,30 +88,20 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.connector.pool.PoolConfigurationRWHandler;
-import org.jboss.as.connector.pool.PoolConfigurationRWHandler.PoolConfigurationReadHandler;
-import org.jboss.as.connector.pool.PoolConfigurationRWHandler.RaPoolConfigurationWriteHandler;
 import org.jboss.as.connector.pool.PoolMetrics;
 import org.jboss.as.connector.pool.PoolOperations;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
@@ -258,7 +247,7 @@ public class ResourceAdaptersExtension implements Extension {
             if (ra.hasDefined(CONNECTIONDEFINITIONS_NAME)) {
                 streamWriter.writeStartElement(ResourceAdapter.Tag.CONNECTION_DEFINITIONS.getLocalName());
                 for (Property conDef : ra.get(CONNECTIONDEFINITIONS_NAME).asPropertyList()) {
-                    writeConDef(streamWriter, conDef.getValue());
+                    writeConDef(streamWriter, conDef.getValue(), conDef.getName());
                 }
                 streamWriter.writeEndElement();
             }
@@ -266,7 +255,7 @@ public class ResourceAdaptersExtension implements Extension {
             if (ra.hasDefined(ADMIN_OBJECTS_NAME)) {
                 streamWriter.writeStartElement(ResourceAdapter.Tag.ADMIN_OBJECTS.getLocalName());
                 for (Property adminObject : ra.get(ADMIN_OBJECTS_NAME).asPropertyList()) {
-                    writeAdminObject(streamWriter, adminObject.getValue());
+                    writeAdminObject(streamWriter, adminObject.getValue(), adminObject.getName());
                 }
                 streamWriter.writeEndElement();
             }
@@ -306,26 +295,26 @@ public class ResourceAdaptersExtension implements Extension {
         }
 
 
-        private void writeAdminObject(XMLExtendedStreamWriter streamWriter, ModelNode adminObject) throws XMLStreamException {
+        private void writeAdminObject(XMLExtendedStreamWriter streamWriter, ModelNode adminObject, final String poolName) throws XMLStreamException {
             streamWriter.writeStartElement(ResourceAdapter.Tag.ADMIN_OBJECT.getLocalName());
             CLASS_NAME.marshallAsAttribute(adminObject, false, streamWriter);
             JNDINAME.marshallAsAttribute(adminObject, false, streamWriter);
             ENABLED.marshallAsAttribute(adminObject, false, streamWriter);
             USE_JAVA_CONTEXT.marshallAsAttribute(adminObject, false, streamWriter);
-            POOL_NAME.marshallAsAttribute(adminObject, false, streamWriter);
+            streamWriter.writeAttribute("pool-name", poolName);
 
             writeNewConfigProperties(streamWriter, adminObject);
             streamWriter.writeEndElement();
 
         }
 
-        private void writeConDef(XMLExtendedStreamWriter streamWriter, ModelNode conDef) throws XMLStreamException {
+        private void writeConDef(XMLExtendedStreamWriter streamWriter, ModelNode conDef, final String poolName) throws XMLStreamException {
             streamWriter.writeStartElement(ResourceAdapter.Tag.CONNECTION_DEFINITION.getLocalName());
             CLASS_NAME.marshallAsAttribute(conDef, false, streamWriter);
             JNDINAME.marshallAsAttribute(conDef, false, streamWriter);
             ENABLED.marshallAsAttribute(conDef, false, streamWriter);
             USE_JAVA_CONTEXT.marshallAsAttribute(conDef, false, streamWriter);
-            POOL_NAME.marshallAsAttribute(conDef, false, streamWriter);
+            streamWriter.writeAttribute("pool-name", poolName);
             USE_CCM.marshallAsAttribute(conDef, false, streamWriter);
 
 

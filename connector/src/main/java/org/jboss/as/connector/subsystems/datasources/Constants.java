@@ -90,7 +90,7 @@ class Constants {
 
     private static final String USE_JAVA_CONTEXT_NAME = "use-java-context";
 
-    private static final String POOLNAME_NAME = "pool-name";
+    static final String POOLNAME_NAME = "pool-name";
 
     private static final String ENABLED_NAME = "enabled";
 
@@ -210,8 +210,6 @@ class Constants {
     static SimpleAttributeDefinition DATASOURCE_DRIVER = new SimpleAttributeDefinition(DATASOURCE_DRIVER_NAME, DataSource.Tag.DRIVER.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition NEW_CONNECTION_SQL = new SimpleAttributeDefinition(NEW_CONNECTION_SQL_NAME, DataSource.Tag.NEW_CONNECTION_SQL.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
-
-    static SimpleAttributeDefinition POOLNAME = new SimpleAttributeDefinition(POOLNAME_NAME, DataSource.Attribute.POOL_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition URL_DELIMITER = new SimpleAttributeDefinition(URL_DELIMITER_NAME, DataSource.Tag.URL_DELIMITER.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 

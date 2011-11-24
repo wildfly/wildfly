@@ -56,7 +56,7 @@ class Constants {
 
     private static final String CLASS_NAME_NAME = "class-name";
 
-    private static final String POOL_NAME_NAME = "pool-name";
+    static final String POOL_NAME_NAME = "pool-name";
 
     private static final String USE_JAVA_CONTEXT_NAME = "use-java-context";
 
@@ -118,8 +118,6 @@ class Constants {
 
 
     static final SimpleAttributeDefinition CLASS_NAME = new SimpleAttributeDefinition(CLASS_NAME_NAME, CommonConnDef.Attribute.CLASS_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
-
-    static final SimpleAttributeDefinition POOL_NAME = new SimpleAttributeDefinition(POOL_NAME_NAME, CommonConnDef.Attribute.POOL_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition JNDINAME = new SimpleAttributeDefinition(JNDINAME_NAME, CommonConnDef.Attribute.JNDI_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 

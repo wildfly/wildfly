@@ -61,7 +61,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.NOTXSEPARA
 import static org.jboss.as.connector.subsystems.datasources.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PAD_XID;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PASSWORD;
-import static org.jboss.as.connector.subsystems.datasources.Constants.POOLNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.POOLNAME_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PREPAREDSTATEMENTSCACHESIZE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.QUERYTIMEOUT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTHPLUGIN_CLASSNAME;
@@ -102,7 +102,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -308,7 +307,7 @@ public class DsParser extends AbstractParser {
     private void parseXADataSource(XMLExtendedStreamReader reader, final List<ModelNode> list, final ModelNode parentAddress) throws XMLStreamException, ParserException,
             ValidateException {
 
-        String jndiName = null;
+        String poolName = null;
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(ADD);
         boolean enabled = ENABLED.getDefaultValue().asBoolean();
@@ -328,14 +327,13 @@ public class DsParser extends AbstractParser {
                 }
                 case JNDI_NAME: {
                     final Location location = reader.getLocation();
-                    jndiName = rawAttributeText(reader, JNDINAME.getXmlName());
+                    final String jndiName = rawAttributeText(reader, JNDINAME.getXmlName());
                     JNDINAME.parseAndSetParameter(jndiName, operation, location);
                     break;
                 }
                 case POOL_NAME: {
                     final Location location = reader.getLocation();
-                    String value = rawAttributeText(reader, POOLNAME.getXmlName());
-                    POOLNAME.parseAndSetParameter(value, operation, location);
+                    poolName = rawAttributeText(reader, POOLNAME_NAME);
                     break;
                 }
                 case USE_JAVA_CONTEXT: {
@@ -368,7 +366,7 @@ public class DsParser extends AbstractParser {
         }
 
         final ModelNode dsAddress = parentAddress.clone();
-        dsAddress.add(XA_DATASOURCE, jndiName);
+        dsAddress.add(XA_DATASOURCE, poolName);
         dsAddress.protect();
 
         operation.get(OP_ADDR).set(dsAddress);
@@ -542,7 +540,7 @@ public class DsParser extends AbstractParser {
     private void parseDataSource(final XMLExtendedStreamReader reader, final List<ModelNode> list, final ModelNode parentAddress) throws XMLStreamException, ParserException,
             ValidateException {
 
-        String jndiName = null;
+        String poolName = null;
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(ADD);
         boolean enabled = ENABLED.getDefaultValue().asBoolean();
@@ -562,14 +560,13 @@ public class DsParser extends AbstractParser {
                 }
                 case JNDI_NAME: {
                     final Location location = reader.getLocation();
-                    jndiName = rawAttributeText(reader, JNDINAME.getXmlName());
+                    final String jndiName = rawAttributeText(reader, JNDINAME.getXmlName());
                     JNDINAME.parseAndSetParameter(jndiName, operation, location);
                     break;
                 }
                 case POOL_NAME: {
                     final Location location = reader.getLocation();
-                    String value = rawAttributeText(reader, POOLNAME.getXmlName());
-                    POOLNAME.parseAndSetParameter(value, operation, location);
+                    poolName = rawAttributeText(reader, POOLNAME_NAME);
                     break;
                 }
                 case USE_JAVA_CONTEXT: {
@@ -602,7 +599,7 @@ public class DsParser extends AbstractParser {
         }
 
         final ModelNode dsAddress = parentAddress.clone();
-        dsAddress.add(DATA_SOURCE, jndiName);
+        dsAddress.add(DATA_SOURCE, poolName);
         dsAddress.protect();
 
         operation.get(OP_ADDR).set(dsAddress);
