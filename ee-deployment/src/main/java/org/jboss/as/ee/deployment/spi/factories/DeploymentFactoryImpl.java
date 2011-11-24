@@ -63,32 +63,28 @@ public class DeploymentFactoryImpl implements DeploymentFactory {
     private static String PRODUCT_VERSION;
 
     /*
-     * Obtain the display name and version from the Package object for org.jboss.deploy.spi.factories
+     * Register a DeploymentFactoryImpl instance with the DeploymentFactoryManager. This obtains the display name and version
+     * from the Package object for org.jboss.deploy.spi.factories
      */
     static {
-        register();
+        DeploymentFactoryManager manager = DeploymentFactoryManager.getInstance();
+        manager.registerDeploymentFactory(new DeploymentFactoryImpl());
+        Package pkg = DeploymentFactoryImpl.class.getPackage();
+        if (pkg != null) {
+            DISPLAY_NAME = pkg.getImplementationVendor();
+            PRODUCT_VERSION = pkg.getImplementationVersion();
+        }
+        if (DISPLAY_NAME == null || PRODUCT_VERSION == null) {
+            DISPLAY_NAME = "DeploymentFactoryImpl";
+            PRODUCT_VERSION = "1.1-DEV";
+        }
     }
 
     /**
-     * Register a DeploymentFactoryImpl instance with the DeploymentFactoryManager. This obtains the display name and version
-     * from the Package object for org.jboss.deploy.spi.factories
-     *
+     * Register this deployment factory with the manager
      */
     public static synchronized void register() {
-        // Register this deployment factory with the manager
-        if (DISPLAY_NAME == null) {
-            DeploymentFactoryManager manager = DeploymentFactoryManager.getInstance();
-            manager.registerDeploymentFactory(new DeploymentFactoryImpl());
-            Package pkg = DeploymentFactoryImpl.class.getPackage();
-            if (pkg != null) {
-                DISPLAY_NAME = pkg.getImplementationVendor();
-                PRODUCT_VERSION = pkg.getImplementationVersion();
-            }
-            if (DISPLAY_NAME == null || PRODUCT_VERSION == null) {
-                DISPLAY_NAME = "DeploymentFactoryImpl";
-                PRODUCT_VERSION = "1.1-DEV";
-            }
-        }
+        // registration is actually done in the static block above
     }
 
     /**
