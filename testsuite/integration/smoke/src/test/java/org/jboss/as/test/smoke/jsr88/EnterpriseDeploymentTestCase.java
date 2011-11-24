@@ -38,6 +38,7 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.util.UnreachableStatementException;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -47,6 +48,7 @@ import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
+import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
@@ -87,8 +89,6 @@ public class EnterpriseDeploymentTestCase {
     private static final String WAR_JBOSS_FILE = "WEB-INF/jboss-web.xml";
     private static final String JAR_JBOSS_FILE = "META-INF/jboss.xml";
     private static final String EAR_JBOSS_FILE = "META-INF/jboss-app.xml";
-
-    DeploymentFactory deploymentFactory;
 
     @Test
     public void testDeploymentManager() throws Exception {
@@ -166,7 +166,8 @@ public class EnterpriseDeploymentTestCase {
 
     @Test
     public void testListAvailableModules() throws Exception {
-        DeploymentManager manager = getDeploymentManager();
+        String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7&serverHost=127.0.0.1&serverPort=9999";
+        DeploymentManager manager = getDeploymentManager(uri, USERNAME, PASSWORD);
         Target[] targets = manager.getTargets();
         TargetModuleID[] availableModules = manager.getAvailableModules(ModuleType.EAR, targets);
         assertNull(availableModules);
@@ -190,28 +191,41 @@ public class EnterpriseDeploymentTestCase {
     }
 
     @Test
+    @Ignore("[AS7-2771] ModelControllerClient operations don't fail on invalid username/password")
     public void testListAvailableModulesUnauthorized() throws Exception {
         DeploymentManager manager = getDeploymentManager("nobody", "nopass");
         Target[] targets = manager.getTargets();
-        // [AS7-2771] ModelControllerClient operations don't fail on invalid username/password
-        TargetModuleID[] availableModules = manager.getAvailableModules(ModuleType.EAR, targets);
-        assertNull(availableModules);
-
-        ProgressObject progress = jsr88Deploy(manager, getEarArchive());
-        TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
         try {
-            availableModules = manager.getAvailableModules(ModuleType.EAR, targets);
-            assertNotNull(availableModules);
-            assertEquals(1, availableModules.length);
+            manager.getAvailableModules(ModuleType.EAR, targets);
+            fail("TargetException expected");
+        } catch (TargetException ex) {
+            // expected
+        }
+    }
 
-            TargetModuleID targetModuleID = availableModules[0];
-            String moduleID = targetModuleID.getModuleID();
-            assertTrue("Ends with deployment-app.ear", moduleID.endsWith("deployment-app.ear"));
+    @Test
+    public void testListAvailableModulesWrongHost() throws Exception {
+        String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7&serverHost=wrongHost";
+        DeploymentManager manager = getDeploymentManager(uri, USERNAME, PASSWORD);
+        Target[] targets = manager.getTargets();
+        try {
+            manager.getAvailableModules(ModuleType.EAR, targets);
+            fail("TargetException expected");
+        } catch (TargetException ex) {
+            // expected
+        }
+    }
 
-            // [TODO] verify child modules
-
-        } finally {
-            jsr88Undeploy(manager, targetModules);
+    @Test
+    public void testListAvailableModulesWrongPort() throws Exception {
+        String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7&serverPort=9876";
+        DeploymentManager manager = getDeploymentManager(uri, USERNAME, PASSWORD);
+        Target[] targets = manager.getTargets();
+        try {
+            manager.getAvailableModules(ModuleType.EAR, targets);
+            fail("TargetException expected");
+        } catch (TargetException ex) {
+            // expected
         }
     }
 
@@ -220,15 +234,15 @@ public class EnterpriseDeploymentTestCase {
     }
 
     private DeploymentManager getDeploymentManager(String username, String password) throws Exception {
-        if (deploymentFactory == null) {
-            DeploymentFactoryImpl.register();
-            DeploymentFactoryManager dfManager = DeploymentFactoryManager.getInstance();
-            DeploymentFactory[] factories = dfManager.getDeploymentFactories();
-            assertTrue("DeploymentFactory available", factories.length > 0);
-            deploymentFactory = factories[0];
-        }
-        String mgrURI = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7";
-        DeploymentManager deploymentManager = deploymentFactory.getDeploymentManager(mgrURI, username, password);
+        String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7";
+        return getDeploymentManager(uri, username, password);
+    }
+
+    private DeploymentManager getDeploymentManager(String uri, String username, String password) throws Exception {
+        DeploymentFactoryImpl.register();
+        DeploymentFactoryManager dfManager = DeploymentFactoryManager.getInstance();
+        DeploymentFactory[] factories = dfManager.getDeploymentFactories();
+        DeploymentManager deploymentManager = factories[0].getDeploymentManager(uri, username, password);
         return deploymentManager;
     }
 
