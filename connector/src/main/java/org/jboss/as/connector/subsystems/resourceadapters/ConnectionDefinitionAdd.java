@@ -79,13 +79,13 @@ public class ConnectionDefinitionAdd extends AbstractBoottimeAddStepHandler impl
         final ModelNode address = operation.require(OP_ADDR);
         PathAddress path = PathAddress.pathAddress(address);
         final String archiveName = path.getElement(path.size() -2).getValue();
-        final String jndiName = PathAddress.pathAddress(address).getLastElement().getValue();
+        final String poolName = PathAddress.pathAddress(address).getLastElement().getValue();
 
         try {
-            final ModifiableConnDef connectionDefinitionValue = RaOperationUtil.buildConnectionDefinitionObject(context, operation);
+            final ModifiableConnDef connectionDefinitionValue = RaOperationUtil.buildConnectionDefinitionObject(context, operation, poolName);
 
 
-            ServiceName serviceName = ServiceName.of(ConnectorServices.RA_SERVICE, archiveName, jndiName);
+            ServiceName serviceName = ServiceName.of(ConnectorServices.RA_SERVICE, archiveName, poolName);
             ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, archiveName);
 
             final ServiceTarget serviceTarget = context.getServiceTarget();

@@ -86,7 +86,7 @@ class DataSourcesSubsystemProviders {
     static final SimpleAttributeDefinition[] DATASOURCE_ATTRIBUTE = new SimpleAttributeDefinition[] { Constants.CONNECTION_URL,
             Constants.DRIVER_CLASS, Constants.DATASOURCE_CLASS, Constants.JNDINAME,
             Constants.DATASOURCE_DRIVER,
-            Constants.NEW_CONNECTION_SQL, Constants.POOLNAME, Constants.URL_DELIMITER,
+            Constants.NEW_CONNECTION_SQL, Constants.URL_DELIMITER,
             Constants.URL_SELECTOR_STRATEGY_CLASS_NAME, Constants.USE_JAVA_CONTEXT,
             Constants.JTA, org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE,
             org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE, org.jboss.as.connector.pool.Constants.POOL_PREFILL, org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN,
@@ -109,7 +109,7 @@ class DataSourcesSubsystemProviders {
 
     static final SimpleAttributeDefinition[] XA_DATASOURCE_ATTRIBUTE = new SimpleAttributeDefinition[] {
             Constants.XADATASOURCECLASS, Constants.JNDINAME, Constants.DATASOURCE_DRIVER,
-            Constants.NEW_CONNECTION_SQL, Constants.POOLNAME, Constants.URL_DELIMITER,
+            Constants.NEW_CONNECTION_SQL, Constants.URL_DELIMITER,
             Constants.URL_SELECTOR_STRATEGY_CLASS_NAME, Constants.USE_JAVA_CONTEXT,
             org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE, org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE,
             org.jboss.as.connector.pool.Constants.POOL_PREFILL, org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN, Constants.INTERLEAVING,

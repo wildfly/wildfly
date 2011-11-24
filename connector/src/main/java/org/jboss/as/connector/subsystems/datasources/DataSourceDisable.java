@@ -64,7 +64,7 @@ public class DataSourceDisable implements OperationStepHandler {
 
                     final ServiceRegistry registry = context.getServiceRegistry(true);
 
-                    final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(dsName);
+                    final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
                     final ServiceController<?> dataSourceController = registry.getService(dataSourceServiceName);
                     if (dataSourceController != null) {
                         if (ServiceController.State.UP.equals(dataSourceController.getState())) {

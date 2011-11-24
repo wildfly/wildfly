@@ -44,8 +44,6 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFI
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_NAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTERS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
@@ -57,10 +55,8 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -88,7 +84,6 @@ class ResourceAdaptersSubsystemProviders {
             CONFIG_PROPERTIES.getName(), BEANVALIDATIONGROUPS.getName(), CONNECTIONDEFINITIONS_NAME, ADMIN_OBJECTS_NAME};
     static final SimpleAttributeDefinition[] CONNECTIONDEFINITIONS_NODEATTRIBUTE = new SimpleAttributeDefinition[]{
             CLASS_NAME, JNDINAME,
-            POOL_NAME,
             USE_JAVA_CONTEXT,
             ENABLED, MAX_POOL_SIZE,
             MIN_POOL_SIZE,
@@ -109,7 +104,6 @@ class ResourceAdaptersSubsystemProviders {
 
     static final SimpleAttributeDefinition[] ADMIN_OBJECTS_NODEATTRIBUTE = new SimpleAttributeDefinition[]{
             CLASS_NAME, JNDINAME,
-            POOL_NAME,
             USE_JAVA_CONTEXT, ENABLED};
 
     static final String RESOURCE_NAME = ResourceAdaptersSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";

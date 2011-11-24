@@ -82,7 +82,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
         AbstractDataSourceService dataSourceService = createDataSourceService(dsName);
 
-        final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(dsName);
+        final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
         final ServiceBuilder<?> dataSourceServiceBuilder = serviceTarget
                 .addService(dataSourceServiceName, dataSourceService)
                 .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,

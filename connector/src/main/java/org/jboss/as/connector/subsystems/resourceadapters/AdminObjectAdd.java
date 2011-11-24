@@ -77,13 +77,13 @@ public class AdminObjectAdd extends AbstractBoottimeAddStepHandler implements De
         final ModelNode address = operation.require(OP_ADDR);
         PathAddress path = PathAddress.pathAddress(address);
         final String archiveName = path.getElement(path.size() - 2).getValue();
-        final String jndiName = PathAddress.pathAddress(address).getLastElement().getValue();
+        final String poolName = PathAddress.pathAddress(address).getLastElement().getValue();
 
 
-        final ModifiableAdminObject adminObjectValue = RaOperationUtil.buildAdminObjects(operation);
+        final ModifiableAdminObject adminObjectValue = RaOperationUtil.buildAdminObjects(operation, poolName);
 
 
-        ServiceName serviceName = ServiceName.of(ConnectorServices.RA_SERVICE, archiveName, jndiName);
+        ServiceName serviceName = ServiceName.of(ConnectorServices.RA_SERVICE, archiveName, poolName);
         ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, archiveName);
 
         final ServiceTarget serviceTarget = context.getServiceTarget();

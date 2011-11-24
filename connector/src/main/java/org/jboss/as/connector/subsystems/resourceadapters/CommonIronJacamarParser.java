@@ -33,21 +33,18 @@ import static org.jboss.as.connector.pool.Constants.POOL_FLUSH_STRATEGY;
 import static org.jboss.as.connector.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ADMIN_OBJECTS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CLASS_NAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTY_VALUE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLEAVING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_NAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_NAME_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_CLASSNAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_PASSWORD;
@@ -62,10 +59,8 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.xml.stream.Location;
@@ -137,7 +132,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
         final ModelNode connectionDefinitionNode = new ModelNode();
         connectionDefinitionNode.get(OP).set(ADD);
 
-        String jndiName = null;
+        String poolName = null;
         int attributeSize = reader.getAttributeCount();
         boolean isXa = Boolean.FALSE;
         boolean poolDefined = Boolean.FALSE;
@@ -154,14 +149,13 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                 }
                 case JNDI_NAME: {
                     final Location location = reader.getLocation();
-                    jndiName = rawAttributeText(reader, JNDINAME.getXmlName());
+                    final String jndiName = rawAttributeText(reader, JNDINAME.getXmlName());
                     JNDINAME.parseAndSetParameter(jndiName, connectionDefinitionNode, location);
                     break;
                 }
                 case POOL_NAME: {
                     final Location location = reader.getLocation();
-                    String value = rawAttributeText(reader, POOL_NAME.getXmlName());
-                    POOL_NAME.parseAndSetParameter(value, connectionDefinitionNode, location);
+                    poolName = rawAttributeText(reader, POOL_NAME_NAME);
                     break;
                 }
                 case USE_JAVA_CONTEXT: {
@@ -188,7 +182,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                     break;
             }
         }
-        if (jndiName == null || jndiName.trim().equals(""))
+        if (poolName == null || poolName.trim().equals(""))
             throw new ParserException(bundle.missingJndiName(reader.getLocalName()));
 
         while (reader.hasNext()) {
@@ -196,7 +190,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                 case END_ELEMENT: {
                     if (ResourceAdapter.Tag.forName(reader.getLocalName()) == ResourceAdapter.Tag.CONNECTION_DEFINITION) {
 
-                        map.put(jndiName, connectionDefinitionNode);
+                        map.put(poolName, connectionDefinitionNode);
                         return;
                     } else {
                         if (CommonConnDef.Tag.forName(reader.getLocalName()) == CommonConnDef.Tag.UNKNOWN) {
@@ -208,10 +202,10 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                 case START_ELEMENT: {
                     switch (CommonConnDef.Tag.forName(reader.getLocalName())) {
                         case CONFIG_PROPERTY: {
-                            if (! configMap.containsKey(jndiName)) {
-                                configMap.put(jndiName, new HashMap<String, ModelNode>(0));
+                            if (! configMap.containsKey(poolName)) {
+                                configMap.put(poolName, new HashMap<String, ModelNode>(0));
                             }
-                            parseConfigProperties(reader, configMap.get(jndiName));
+                            parseConfigProperties(reader, configMap.get(poolName));
                             break;
                         }
                         case SECURITY: {
@@ -370,7 +364,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
         int attributeSize = reader.getAttributeCount();
 
 
-        String jndiName = null;
+        String poolName = null;
         for (int i = 0; i < attributeSize; i++) {
             CommonAdminObject.Attribute attribute = CommonAdminObject.Attribute.forName(reader
                     .getAttributeLocalName(i));
@@ -383,14 +377,13 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                 }
                 case JNDI_NAME: {
                     final Location location = reader.getLocation();
-                    jndiName = rawAttributeText(reader, JNDINAME.getXmlName());
+                    final String jndiName = rawAttributeText(reader, JNDINAME.getXmlName());
                     JNDINAME.parseAndSetParameter(jndiName, adminObjectNode, location);
                     break;
                 }
                 case POOL_NAME: {
                     final Location location = reader.getLocation();
-                    String value = rawAttributeText(reader, POOL_NAME.getXmlName());
-                    POOL_NAME.parseAndSetParameter(value, adminObjectNode, location);
+                    poolName = rawAttributeText(reader, POOL_NAME_NAME);
                     break;
                 }
                 case USE_JAVA_CONTEXT: {
@@ -409,7 +402,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                     throw new ParserException(bundle.unexpectedAttribute(attribute.getLocalName(), reader.getLocalName()));
             }
         }
-        if (jndiName == null || jndiName.trim().equals(""))
+        if (poolName == null || poolName.trim().equals(""))
             throw new ParserException(bundle.missingJndiName(reader.getLocalName()));
 
         while (reader.hasNext()) {
@@ -417,7 +410,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                 case END_ELEMENT: {
                     if (ResourceAdapter.Tag.forName(reader.getLocalName()) == ResourceAdapter.Tag.ADMIN_OBJECT) {
 
-                        map.put(jndiName, adminObjectNode);
+                        map.put(poolName, adminObjectNode);
                         return;
                     } else {
                         if (CommonAdminObject.Tag.forName(reader.getLocalName()) == CommonAdminObject.Tag.UNKNOWN) {
@@ -429,10 +422,10 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                 case START_ELEMENT: {
                     switch (CommonAdminObject.Tag.forName(reader.getLocalName())) {
                         case CONFIG_PROPERTY: {
-                            if (! configMap.containsKey(jndiName)) {
-                                configMap.put(jndiName, new HashMap<String, ModelNode>(0));
+                            if (! configMap.containsKey(poolName)) {
+                                configMap.put(poolName, new HashMap<String, ModelNode>(0));
                             }
-                            parseConfigProperties(reader, configMap.get(jndiName));
+                            parseConfigProperties(reader, configMap.get(poolName));
                             break;
                         }
                         default:

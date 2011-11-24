@@ -98,7 +98,7 @@ public class DataSourceEnable implements OperationStepHandler {
                     if (isXa()) {
                         final ModifiableXaDataSource dataSourceConfig;
                         try {
-                            dataSourceConfig = xaFrom(context, model);
+                            dataSourceConfig = xaFrom(context, model, dsName);
                         } catch (ValidateException e) {
                             throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToCreate("XaDataSource", operation, e.getLocalizedMessage())));
                         }
@@ -132,7 +132,7 @@ public class DataSourceEnable implements OperationStepHandler {
 
                         final ModifiableDataSource dataSourceConfig;
                         try {
-                            dataSourceConfig = from(context, model);
+                            dataSourceConfig = from(context, model,dsName);
                         } catch (ValidateException e) {
                             throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToCreate("DataSource", operation, e.getLocalizedMessage())));
                         }
@@ -180,7 +180,7 @@ public class DataSourceEnable implements OperationStepHandler {
                     final String jndiName = model.get(JNDINAME.getName()).asString();
                     final ServiceRegistry registry = context.getServiceRegistry(true);
 
-                    final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(dsName);
+                    final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
 
                     final List<ServiceName> serviceNames = registry.getServiceNames();
 
