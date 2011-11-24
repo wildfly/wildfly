@@ -145,10 +145,11 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
                 URIParser parser = new URIParser(deployURI);
                 String targetType = parser.getParameter("targetType");
-                if (targetType.equals("as7"))
+                if ("as7".equals(targetType)) {
                     targets = new Target[] { new DeploymentManagerTarget(deployURI, username, password) };
-                else
+                } else {
                     throw new IllegalArgumentException("Invalid targetType in URI: " + deployURI);
+                }
             }
         }
         return targets;
@@ -271,11 +272,14 @@ public class DeploymentManagerImpl implements DeploymentManager {
      * @throws javax.enterprise.deploy.spi.exceptions.InvalidModuleException when the module does not exist or is not supported
      */
     public DeploymentConfiguration createConfiguration(DeployableObject obj) throws InvalidModuleException {
+        if (obj == null)
+            throw new IllegalArgumentException("Null DeployableObject");
+
         // do some stuff to figure out what kind of config to return.
         if (obj.getType().equals(ModuleType.WAR))
             return new WarConfiguration(obj);
 
-        throw new InvalidModuleException("CreateConfiguration: Module type not yet supported");
+        throw new InvalidModuleException("CreateConfiguration: Module type not supported: " + obj.getType());
     }
 
     /**
@@ -357,7 +361,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
             // delete all temp files, except the depoyment
             for (int i = 0; i < tmpFiles.size(); i++) {
-                File file = (File) tmpFiles.get(i);
+                File file = tmpFiles.get(i);
                 if (file.equals(deployment) == false)
                     file.delete();
             }
