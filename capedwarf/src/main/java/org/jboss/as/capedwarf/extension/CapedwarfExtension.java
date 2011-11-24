@@ -87,10 +87,12 @@ public class CapedwarfExtension implements Extension {
         subsystem.registerXMLElementWriter(parser);
     }
 
-    private static ModelNode createAddSubsystemOperation() {
+    private static ModelNode createAddSubsystemOperation(String appengineAPI) {
         final ModelNode subsystem = new ModelNode();
         subsystem.get(OP).set(ADD);
         subsystem.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
+        if (appengineAPI != null)
+            subsystem.get("appengine-api").set(appengineAPI);
         return subsystem;
     }
 
@@ -109,9 +111,9 @@ public class CapedwarfExtension implements Extension {
         /** {@inheritDoc} */
         @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
+            list.add(createAddSubsystemOperation(reader.getAttributeValue(CapedwarfExtension.NAMESPACE, "appengine-api")));
             // Require no content
             ParseUtils.requireNoContent(reader);
-            list.add(createAddSubsystemOperation());
         }
     }
 
@@ -124,7 +126,8 @@ public class CapedwarfExtension implements Extension {
         static final SubsystemDescribeHandler INSTANCE = new SubsystemDescribeHandler();
 
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            context.getResult().add(createAddSubsystemOperation());
+            final String appengineAPI = operation.hasDefined("appengine-api") ? operation.get("appengine-api").asString() : null;
+            context.getResult().add(createAddSubsystemOperation(appengineAPI));
             context.completeStep();
         }
 

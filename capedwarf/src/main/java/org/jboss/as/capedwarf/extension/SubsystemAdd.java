@@ -62,11 +62,13 @@ class SubsystemAdd extends AbstractBoottimeAddStepHandler {
             ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
             throws OperationFailedException {
 
+        final String appengineAPI = operation.hasDefined("appengine-api") ? operation.get("appengine-api").asString() : null;
+
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(Phase.PARSE, CapedwarfInitializationProcessor.PRIORITY, new CapedwarfInitializationProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, CapedwarfFiltersDeploymentProcessor.PRIORITY, new CapedwarfFiltersDeploymentProcessor());
-                processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, CapedwarfDeploymentProcessor.PRIORITY, new CapedwarfDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, CapedwarfDeploymentProcessor.PRIORITY, new CapedwarfDeploymentProcessor(appengineAPI));
             }
         }, OperationContext.Stage.RUNTIME);
 

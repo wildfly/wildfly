@@ -48,12 +48,20 @@ public class CapedwarfDeploymentProcessor implements DeploymentUnitProcessor {
     private static final ModuleIdentifier APPENGINE = ModuleIdentifier.create("com.google.appengine");
     private static final ModuleIdentifier CAPEDWARF = ModuleIdentifier.create("org.jboss.capedwarf");
 
-    private final VirtualFileFilter LIBS = new VirtualFileFilter() {
+    private static final VirtualFileFilter LIBS = new VirtualFileFilter() {
         @Override
         public boolean accepts(VirtualFile file) {
             return file.getName().endsWith(".jar");
         }
     };
+
+    private String appengingAPI;
+
+    public CapedwarfDeploymentProcessor(String appengingAPI) {
+        if (appengingAPI == null)
+            appengingAPI = "appengine-api";
+        this.appengingAPI = appengingAPI;
+    }
 
     /**
      * The relative order of this processor within the phase.
@@ -86,7 +94,7 @@ public class CapedwarfDeploymentProcessor implements DeploymentUnitProcessor {
             VirtualFile libs = root.getRoot().getChild("WEB-INF/lib");
             if (libs.exists()) {
                 for (VirtualFile lib : libs.getChildren(LIBS)) {
-                    if (lib.getName().contains("appengine-api"))
+                    if (lib.getName().contains(appengingAPI))
                         return true;
                 }
             }
