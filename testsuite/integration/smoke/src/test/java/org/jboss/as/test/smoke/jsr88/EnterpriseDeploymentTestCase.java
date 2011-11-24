@@ -131,7 +131,6 @@ public class EnterpriseDeploymentTestCase {
     }
 
     @Test
-		@Ignore("AS7-2631")
     public void testDistributeEjbApp() throws Exception {
         ProgressObject progress = jsr88Deploy(getEjbArchive());
         TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
@@ -144,7 +143,6 @@ public class EnterpriseDeploymentTestCase {
     }
 
     @Test
-		@Ignore("AS7-2631")
     public void testDistributeEARApp() throws Exception {
         ProgressObject progress = jsr88Deploy(getEarArchive());
         TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
@@ -164,7 +162,6 @@ public class EnterpriseDeploymentTestCase {
     }
 
     @Test
-		@Ignore("AS7-2631")
     public void testListAvailableModules() throws Exception {
         DeploymentManager manager = getDeploymentManager();
         Target[] targets = manager.getTargets();
