@@ -26,6 +26,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -35,6 +36,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipFile;
@@ -57,7 +59,9 @@ public class XTSInteropTestCase extends XTSTestBase {
 
     private static final String ARCHIVE_INTEROP11   = "interop11.war";
     private static final String ARCHIVE_SC007       = "sc007.war";
-    private static final String BASE_URL            = "http://localhost:8080";
+
+    @ArquillianResource
+    URL contextPath;
 
     private static String jbossxtsTestsPath;
     static {
@@ -126,12 +130,12 @@ public class XTSInteropTestCase extends XTSTestBase {
 
     private boolean doInteropTests(String serviceURI, String baseContext, String testName, String outfile) throws Throwable {
         List<NameValuePair> params = new ArrayList<NameValuePair>(5);
-        params.add(new BasicNameValuePair("serviceuri", BASE_URL + serviceURI));
+        params.add(new BasicNameValuePair("serviceuri", contextPath.toString() + serviceURI));
         params.add(new BasicNameValuePair("test", testName));
         params.add(new BasicNameValuePair("testTimeout", "120000"));
         params.add(new BasicNameValuePair("resultPage", "/xmlresults"));
 
-        return callTestServlet(BASE_URL + "/" + baseContext + "/test", params, outfile);
+        return callTestServlet(contextPath.toString() + "/" + baseContext + "/test", params, outfile);
     }
 
     private String getOutfileName(String tag) {

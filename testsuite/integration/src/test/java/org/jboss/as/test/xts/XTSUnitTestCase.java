@@ -24,6 +24,7 @@ package org.jboss.as.test.xts;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -32,6 +33,7 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.net.URL;
 import java.util.zip.ZipFile;
 
 import static org.junit.Assert.assertTrue;
@@ -56,7 +58,8 @@ public class XTSUnitTestCase extends XTSTestBase {
     private static final String ARCHIVE_WST     = "ws-t-tests.ear";
     private static final String ARCHIVE_WSTX    = "wstx-tests.ear";
 
-    private static final String BASE_URL        = "http://localhost:8080";
+    @ArquillianResource
+    URL contextPath;
 
     private static String jbossxtsTestsPath;
     static {
@@ -163,7 +166,7 @@ public class XTSUnitTestCase extends XTSTestBase {
 
 
     private boolean callTests(String serviceURI, String outfile) throws Throwable {
-        return callTestServlet(BASE_URL + serviceURI, null, outfile);
+        return callTestServlet(contextPath.toString() + serviceURI, null, outfile);
     }
 
     private String getOutfileName(String tag) {
