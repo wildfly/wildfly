@@ -126,6 +126,7 @@ final class DeploymentManagerTarget extends JBossTarget {
     @Override
     public void start(TargetModuleID targetModuleID) throws Exception {
         // [TODO] A hack that fakes module start/stop behaviour
+        // [AS7-2777] Add notion of start/stop for deployments
         ((TargetModuleIDImpl)targetModuleID).setRunning(Boolean.TRUE);
         runtimeState.put(targetModuleID, Boolean.TRUE);
     }
@@ -133,6 +134,7 @@ final class DeploymentManagerTarget extends JBossTarget {
     @Override
     public void stop(TargetModuleID targetModuleID) throws Exception {
         // [TODO] A hack that fakes module start/stop behaviour
+        // [AS7-2777] Add notion of start/stop for deployments
         ((TargetModuleIDImpl)targetModuleID).setRunning(Boolean.FALSE);
         runtimeState.put(targetModuleID, Boolean.FALSE);
     }
