@@ -22,6 +22,7 @@
 
 package org.jboss.as.ee.component;
 
+import org.jboss.as.ee.EeMessages;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.msc.inject.InjectionException;
@@ -45,7 +46,11 @@ public final class ViewManagedReferenceFactory implements ManagedReferenceFactor
 
     /** {@inheritDoc} */
     public ManagedReference getReference() {
-       return view.createInstance();
+        try {
+            return view.createInstance();
+        } catch (Exception e) {
+            throw EeMessages.MESSAGES.componentViewConstructionFailure(e);
+        }
     }
 
     /**

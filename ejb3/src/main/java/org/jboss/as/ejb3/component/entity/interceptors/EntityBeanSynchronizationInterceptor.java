@@ -158,7 +158,9 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
             synchronized (threadLock) {
                 //invoke the EJB store method within the transaction
                 try {
-                    componentInstance.store();
+                    if(!componentInstance.isRemoved()) {
+                        componentInstance.store();
+                    }
                 } catch (Throwable t) {
                     lock.pushOwner(lockOwner);
                     try {

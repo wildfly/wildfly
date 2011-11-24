@@ -22,6 +22,14 @@
 
 package org.jboss.as.test.integration.ejb.entity.bmp;
 
+import java.util.Collection;
+
+import javax.ejb.EJBException;
+import javax.ejb.NoSuchObjectLocalException;
+import javax.ejb.RemoveException;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -31,13 +39,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.ejb.EJBException;
-import javax.ejb.NoSuchEJBException;
-import javax.ejb.RemoveException;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import java.util.Collection;
 
 /**
  * Tests bean managed persistence
@@ -112,7 +113,34 @@ public class BMPEntityBeanTestCase {
         try {
             result.getMyField();
             throw new RuntimeException("Expected invocation on removed instance to fail");
-        } catch (NoSuchEJBException expected) {
+        } catch (NoSuchObjectLocalException expected) {
+
+        }
+    }
+
+    @Test
+    public void testCreateRemoveCreate() throws Exception {
+        DataStore.DATA.clear();
+        final BMPLocalHome home = getHome();
+
+        BMPLocalInterface result = home.createWithValueAndPk(88888, "Hello1");
+        Assert.assertEquals("Hello1", result.getMyField());
+        result.remove();
+        Assert.assertFalse(DataStore.DATA.containsKey(88888));
+        try {
+            result.getMyField();
+            throw new RuntimeException("Expected invocation on removed instance to fail");
+        } catch (NoSuchObjectLocalException expected) {
+
+        }
+        result = home.createWithValueAndPk(88888, "Hello2");
+        Assert.assertEquals("Hello2", result.getMyField());
+        result.remove();
+        Assert.assertFalse(DataStore.DATA.containsKey(88888));
+        try {
+            result.getMyField();
+            throw new RuntimeException("Expected invocation on removed instance to fail");
+        } catch (NoSuchObjectLocalException expected) {
 
         }
     }
@@ -161,6 +189,11 @@ public class BMPEntityBeanTestCase {
 
             @Override
             public BMPLocalInterface createWithValue(final String value) {
+                return null;
+            }
+
+            @Override
+            public BMPLocalInterface createWithValueAndPk(final Integer pk, final String value) {
                 return null;
             }
 

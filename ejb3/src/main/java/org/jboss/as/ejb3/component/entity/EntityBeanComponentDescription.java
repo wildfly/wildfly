@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.component.entity;
 
+import java.lang.reflect.Method;
+
 import javax.ejb.TransactionManagementType;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -31,13 +33,14 @@ import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.ViewInstanceFactory;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
-import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.EjbHomeViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanReentrancyInterceptor;
+import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanRemoveInterceptor;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanSynchronizationInterceptor;
+import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.tx.CMTTxInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -65,6 +68,21 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
             @Override
             public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
                 configuration.addPostConstructInterceptor(EntityBeanInterceptors.POST_CONSTRUCT, InterceptorOrder.ComponentPostConstruct.SETUP_CONTEXT);
+            }
+        });
+        addRemoveInterceptor();
+    }
+
+    protected void addRemoveInterceptor() {
+        getConfigurators().add(new ComponentConfigurator() {
+            @Override
+            public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                for (Method method : configuration.getDefinedComponentMethods()) {
+                    if (method.getName().equals("ejbRemove") && method.getParameterTypes().length == 0) {
+                        configuration.addComponentInterceptor(method, EntityBeanRemoveInterceptor.FACTORY, InterceptorOrder.Component.ENTITY_BEAN_REMOVE_INTERCEPTOR);
+                    }
+                }
+
             }
         });
     }

@@ -46,6 +46,7 @@ public class
         public static final int COMPONENT_CMT_INTERCEPTOR                                   = 0x410;
         public static final int SYNCHRONIZATION_INTERCEPTOR                                 = 0x500;
         public static final int REENTRANCY_INTERCEPTOR                                      = 0x501;
+        public static final int ENTITY_BEAN_REMOVE_INTERCEPTOR                              = 0x502;
         public static final int JPA_SESSION_BEAN_INTERCEPTOR                                = 0x600;
         public static final int SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR         = 0x700;
         public static final int CMP_RELATIONSHIP_INTERCEPTOR                                = 0x800;

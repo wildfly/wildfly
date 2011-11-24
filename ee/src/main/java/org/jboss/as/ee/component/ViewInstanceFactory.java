@@ -34,6 +34,6 @@ import org.jboss.as.naming.ManagedReference;
  */
 public interface ViewInstanceFactory {
 
-    ManagedReference createViewInstance(ComponentView componentView, final Map<Object, Object> contextData);
+    ManagedReference createViewInstance(ComponentView componentView, final Map<Object, Object> contextData) throws Exception;
 
 }

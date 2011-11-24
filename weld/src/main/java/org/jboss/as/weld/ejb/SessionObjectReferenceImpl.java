@@ -86,7 +86,11 @@ public class SessionObjectReferenceImpl implements SessionObjectReference {
         if (viewServices.containsKey(businessInterfaceType.getName())) {
             final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(viewServices.get(businessInterfaceType.getName()));
             final ComponentView view = (ComponentView) serviceController.getValue();
-            return(S) view.createInstance().getInstance();
+            try {
+                return(S) view.createInstance().getInstance();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         } else {
             throw new IllegalArgumentException("View of type " + businessInterfaceType + " not found on bean ");
         }

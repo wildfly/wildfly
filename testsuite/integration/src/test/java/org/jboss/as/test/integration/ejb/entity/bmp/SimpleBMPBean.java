@@ -21,16 +21,17 @@
  */
 package org.jboss.as.test.integration.ejb.entity.bmp;
 
-import javax.ejb.EJBException;
-import javax.ejb.EntityBean;
-import javax.ejb.EntityContext;
-import javax.ejb.NoSuchEJBException;
-import javax.ejb.RemoveException;
 import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.ejb.EJBException;
+import javax.ejb.EntityBean;
+import javax.ejb.EntityContext;
+import javax.ejb.NoSuchEJBException;
+import javax.ejb.RemoveException;
 
 /**
  * @author Stuart Douglas
@@ -58,11 +59,21 @@ public class SimpleBMPBean implements EntityBean {
         return primaryKey;
     }
 
+    public Integer ejbCreateWithValueAndPk(Integer pk, String value) {
+        myField = value;
+        DataStore.DATA.put(pk, myField);
+        return pk;
+    }
+
     public void ejbPostCreateEmpty() {
         ejbPostCreateCalled = true;
     }
 
     public void ejbPostCreateWithValue(String value) {
+        ejbPostCreateCalled = true;
+    }
+
+    public void ejbPostCreateWithValueAndPk(Integer pk, String value) {
         ejbPostCreateCalled = true;
     }
 

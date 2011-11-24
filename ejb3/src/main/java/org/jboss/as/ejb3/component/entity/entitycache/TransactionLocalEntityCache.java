@@ -21,18 +21,19 @@
  */
 package org.jboss.as.ejb3.component.entity.entitycache;
 
-import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
-import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
-import org.jboss.logging.Logger;
-
-import javax.ejb.NoSuchEJBException;
-import javax.transaction.Synchronization;
-import javax.transaction.TransactionSynchronizationRegistry;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import javax.ejb.NoSuchEJBException;
+import javax.transaction.Synchronization;
+import javax.transaction.TransactionSynchronizationRegistry;
+
+import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
+import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
+import org.jboss.logging.Logger;
 
 /**
  * Cache of entity bean component instances by transaction key
@@ -75,7 +76,6 @@ public class TransactionLocalEntityCache implements ReadyEntityCache {
                 map.remove(instance.getPrimaryKey());
             }
         }
-        instance.discard();
     }
 
     @Override

@@ -21,9 +21,6 @@
  */
 package org.jboss.as.webservices.invocation;
 
-import static org.jboss.as.webservices.WSMessages.MESSAGES;
-import static org.jboss.as.webservices.metadata.model.EJBEndpoint.EJB_COMPONENT_VIEW_NAME;
-
 import java.lang.reflect.Method;
 import java.util.Collection;
 
@@ -38,6 +35,9 @@ import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.invocation.Invocation;
 import org.jboss.wsf.spi.ioc.IoCContainerProxy;
 import org.jboss.wsf.spi.ioc.IoCContainerProxyFactory;
+
+import static org.jboss.as.webservices.WSMessages.MESSAGES;
+import static org.jboss.as.webservices.metadata.model.EJBEndpoint.EJB_COMPONENT_VIEW_NAME;
 
 /**
  * Invocation abstraction for both EJB3 and  EJB21 endpoints.
@@ -90,7 +90,11 @@ abstract class AbstractInvocationHandlerEJB extends AbstractInvocationHandler {
                if (ejbComponentView == null) {
                   throw MESSAGES.cannotFindEjbView(ejbComponentViewName);
                }
-               reference = ejbComponentView.createInstance();
+                try {
+                    reference = ejbComponentView.createInstance();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             }
          }
       }

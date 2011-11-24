@@ -149,11 +149,11 @@ public final class ViewService implements Service<ComponentView> {
 
         }
 
-        public ManagedReference createInstance() {
+        public ManagedReference createInstance() throws Exception {
             return createInstance(Collections.<Object, Object>emptyMap());
         }
 
-        public ManagedReference createInstance(Map<Object, Object> contextData) {
+        public ManagedReference createInstance(Map<Object, Object> contextData) throws Exception {
             return viewInstanceFactory.createViewInstance(this, contextData);
         }
 
@@ -242,7 +242,7 @@ public final class ViewService implements Service<ComponentView> {
 
     private class DefaultViewInstanceFactory implements ViewInstanceFactory {
 
-        public ManagedReference createViewInstance(final ComponentView componentView, final Map<Object, Object> contextData) {
+        public ManagedReference createViewInstance(final ComponentView componentView, final Map<Object, Object> contextData) throws Exception {
             final SimpleInterceptorFactoryContext factoryContext = new SimpleInterceptorFactoryContext();
             final Component component = componentView.getComponent();
             factoryContext.getContextData().put(Component.class, component);
@@ -273,16 +273,12 @@ public final class ViewService implements Service<ComponentView> {
                 throw error;
             }
 
-            try {
-                InterceptorContext context = new InterceptorContext();
-                context.putPrivateData(ComponentView.class, componentView);
-                context.putPrivateData(Component.class, component);
-                context.setContextData(new HashMap<String, Object>());
-                clientPostConstructInterceptor.processInvocation(context);
-            } catch (Exception e) {
-                // TODO: What is the best exception type to throw here?
-                throw MESSAGES.componentViewConstructionFailure(e);
-            }
+            InterceptorContext context = new InterceptorContext();
+            context.putPrivateData(ComponentView.class, componentView);
+            context.putPrivateData(Component.class, component);
+            context.setContextData(new HashMap<String, Object>());
+            clientPostConstructInterceptor.processInvocation(context);
+
             return new ManagedReference() {
 
                 @Override

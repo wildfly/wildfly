@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
@@ -29,6 +30,7 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.invocation.Interceptors;
 
 /**
  * Interceptor factory for SFSB's that invokes the ejbCreate method. This interceptor
@@ -57,7 +59,11 @@ public class StatefulInitMethodInterceptorFactory implements InterceptorFactory 
             @Override
             public Object processInvocation(final InterceptorContext context) throws Exception {
                 if (method != null) {
-                    method.invoke(context.getTarget(), params);
+                    try {
+                        method.invoke(context.getTarget(), params);
+                    } catch (InvocationTargetException e) {
+                        throw Interceptors.rethrow(e.getCause());
+                    }
                 }
                 return context.proceed();
             }

@@ -22,12 +22,14 @@
 
 package org.jboss.as.ejb3.component.entity;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
-import javax.ejb.EJBException;
+
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.TransactionSynchronizationRegistry;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.ViewInstanceFactory;
@@ -36,6 +38,7 @@ import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EntityEJBLocator;
+import org.jboss.invocation.Interceptors;
 import org.jboss.msc.value.ImmediateValue;
 
 /**
@@ -54,7 +57,7 @@ public class EntityBeanRemoteViewInstanceFactory implements ViewInstanceFactory 
         this.beanName = beanName;
     }
 
-    public ManagedReference createViewInstance(final ComponentView componentView, final Map<Object, Object> contextData) {
+    public ManagedReference createViewInstance(final ComponentView componentView, final Map<Object, Object> contextData) throws Exception {
         Object primaryKey = contextData.get(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY);
         if (primaryKey == null) {
             primaryKey = invokeCreate(componentView.getComponent(), contextData);
@@ -63,7 +66,7 @@ public class EntityBeanRemoteViewInstanceFactory implements ViewInstanceFactory 
         return new ValueManagedReference(new ImmediateValue(value));
     }
 
-    private Object invokeCreate(final Component component, final Map<Object, Object> contextData) {
+    private Object invokeCreate(final Component component, final Map<Object, Object> contextData) throws Exception {
         final Method ejbCreate = (Method) contextData.get(EntityBeanHomeCreateInterceptorFactory.EJB_CREATE_METHOD_KEY);
         if (ejbCreate == null) {
             throw new IllegalStateException("Entities can not be created.  No create method available.");
@@ -80,11 +83,7 @@ public class EntityBeanRemoteViewInstanceFactory implements ViewInstanceFactory 
 
         //call the ejbCreate method
         final Object primaryKey;
-        try {
-            primaryKey = invokeEjbCreate(contextData, ejbCreate, instance, params);
-        } catch (Exception e) {
-            throw new EJBException(e);
-        }
+        primaryKey = invokeEjbCreate(contextData, ejbCreate, instance, params);
         instance.associate(primaryKey);
 
         //now add the instance to the cache, so it is usable
@@ -92,11 +91,7 @@ public class EntityBeanRemoteViewInstanceFactory implements ViewInstanceFactory 
         //the cache will do that when it is expired or removed
         entityBeanComponent.getCache().create(instance);
 
-        try {
-            invokeEjbPostCreate(contextData, ejbPostCreate, instance, params);
-        } catch (Exception e) {
-            throw new EJBException(e);
-        }
+        invokeEjbPostCreate(contextData, ejbPostCreate, instance, params);
 
         //if a transaction is active we register a sync
         //and if the transaction is rolled back we release the instance back into the pool
@@ -122,10 +117,18 @@ public class EntityBeanRemoteViewInstanceFactory implements ViewInstanceFactory 
     }
 
     protected void invokeEjbPostCreate(final Map<Object, Object> contextData, final Method ejbPostCreate, final EntityBeanComponentInstance instance, final Object[] params) throws Exception {
-        ejbPostCreate.invoke(instance.getInstance(), params);
+        try {
+            ejbPostCreate.invoke(instance.getInstance(), params);
+        } catch (InvocationTargetException e) {
+            throw Interceptors.rethrow(e.getCause());
+        }
     }
 
     protected Object invokeEjbCreate(final Map<Object, Object> contextData, final Method ejbCreate, final EntityBeanComponentInstance instance, final Object[] params) throws Exception {
-        return ejbCreate.invoke(instance.getInstance(), params);
+        try {
+            return ejbCreate.invoke(instance.getInstance(), params);
+        } catch (InvocationTargetException e) {
+            throw Interceptors.rethrow(e.getCause());
+        }
     }
 }

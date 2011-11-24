@@ -21,8 +21,9 @@
  */
 package org.jboss.as.test.integration.ejb.entity.bmp;
 
-import javax.ejb.EJBLocalHome;
 import java.util.Collection;
+
+import javax.ejb.EJBLocalHome;
 
 /**
  * Simple local home interface
@@ -34,6 +35,8 @@ public interface BMPLocalHome extends EJBLocalHome {
     BMPLocalInterface createEmpty();
 
     BMPLocalInterface createWithValue(String value);
+
+    BMPLocalInterface createWithValueAndPk(Integer pk, String value);
 
     BMPLocalInterface findByPrimaryKey(Integer primaryKey);
 

@@ -41,7 +41,7 @@ public interface ComponentView {
      *
      * @return the component view instance
      */
-    ManagedReference createInstance();
+    ManagedReference createInstance() throws Exception;
 
     /**
      * Create the component view instance using the additional context data
@@ -49,7 +49,7 @@ public interface ComponentView {
      * @param contextData Additional context data used in the view creation
      * @return the component view instance
      */
-    ManagedReference createInstance(Map<Object, Object> contextData);
+    ManagedReference createInstance(Map<Object, Object> contextData) throws Exception;
 
     /**
      * Invoke on the component view interceptor chain.

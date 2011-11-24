@@ -21,11 +21,14 @@
  */
 package org.jboss.as.ejb3.component.entity.interceptors;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicReference;
+
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.TransactionSynchronizationRegistry;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
@@ -33,7 +36,10 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.invocation.Interceptors;
+
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 /**
  * Interceptor factory for entity beans that class the corresponding ejbCreate method.
  * <p/>
@@ -70,7 +76,7 @@ public class EntityBeanEjbCreateMethodInterceptorFactory implements InterceptorF
 
                 final Component component = context.getPrivateData(Component.class);
                 if (!(component instanceof EntityBeanComponent)) {
-                    throw MESSAGES.unexpectedComponent(component,EntityBeanComponent.class);
+                    throw MESSAGES.unexpectedComponent(component, EntityBeanComponent.class);
                 }
                 final EntityBeanComponent entityBeanComponent = (EntityBeanComponent) component;
                 //grab an unasociated entity bean from the pool
@@ -117,10 +123,18 @@ public class EntityBeanEjbCreateMethodInterceptorFactory implements InterceptorF
     }
 
     protected void invokeEjbPostCreate(final InterceptorContext context, final Method ejbPostCreate, final EntityBeanComponentInstance instance, final Object[] params) throws Exception {
-        ejbPostCreate.invoke(instance.getInstance(), params);
+        try {
+            ejbPostCreate.invoke(instance.getInstance(), params);
+        } catch (InvocationTargetException e) {
+            throw Interceptors.rethrow(e.getCause());
+        }
     }
 
     protected Object invokeEjbCreate(final InterceptorContext context, final Method ejbCreate, final EntityBeanComponentInstance instance, final Object[] params) throws Exception {
-        return ejbCreate.invoke(instance.getInstance(), params);
+        try {
+            return ejbCreate.invoke(instance.getInstance(), params);
+        } catch (InvocationTargetException e) {
+            throw Interceptors.rethrow(e.getCause());
+        }
     }
 }

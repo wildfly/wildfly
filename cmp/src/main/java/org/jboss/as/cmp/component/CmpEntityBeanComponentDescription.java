@@ -72,6 +72,11 @@ public class CmpEntityBeanComponentDescription extends EntityBeanComponentDescri
         return configuration;
     }
 
+    @Override
+    protected void addRemoveInterceptor() {
+        //No-OP, the remove method is not actually forwarded to the component chain
+    }
+
     protected EntityBeanObjectViewConfigurator getObjectViewConfigurator() {
         return new CmpEntityBeanObjectViewConfigurator();
     }

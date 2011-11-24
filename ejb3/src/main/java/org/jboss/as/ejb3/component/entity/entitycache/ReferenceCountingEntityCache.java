@@ -76,7 +76,12 @@ public class ReferenceCountingEntityCache implements ReadyEntityCache {
             }
             instance.passivate();
             component.getPool().release(instance);
-            discard(instance);
+            cache.remove(instance.getPrimaryKey());
+        } else if(instance.isRemoved() && success) {
+            //the instance has been removed, we need to remove it from the cache
+            //even if someone is still referencing it, as their reference is no longer usable
+            component.getPool().release(instance);
+            cache.remove(instance.getPrimaryKey());
         }
     }
 

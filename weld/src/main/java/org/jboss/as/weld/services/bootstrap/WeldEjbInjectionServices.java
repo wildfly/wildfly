@@ -114,7 +114,11 @@ public class WeldEjbInjectionServices implements EjbInjectionServices {
             final ViewDescription viewDescription = viewService.iterator().next();
             final ServiceController<?> controller = serviceRegistry.getRequiredService(viewDescription.getServiceName());
             final ComponentView view = (ComponentView) controller.getValue();
-            return view.createInstance().getInstance();
+            try {
+                return view.createInstance().getInstance();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

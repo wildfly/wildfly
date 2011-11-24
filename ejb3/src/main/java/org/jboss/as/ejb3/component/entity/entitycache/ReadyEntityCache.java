@@ -21,9 +21,9 @@
  */
 package org.jboss.as.ejb3.component.entity.entitycache;
 
-import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
-
 import javax.ejb.NoSuchEntityException;
+
+import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 
 /**
  * A cache for entity beans that are in the ready state.

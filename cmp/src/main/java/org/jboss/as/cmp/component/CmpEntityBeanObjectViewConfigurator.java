@@ -45,12 +45,13 @@ public class CmpEntityBeanObjectViewConfigurator extends EntityBeanObjectViewCon
         return CmpEntityBeanEjbCreateMethodInterceptorFactory.INSTANCE;
     }
 
-    protected InterceptorFactory getEjbRemoveInterceptorFactory(Method remove) {
+    protected InterceptorFactory getEjbRemoveInterceptorFactory(final Method remove) {
         return new CmpEntityBeanRemoveInterceptorFactory(remove);
     }
 
     protected void handleNonBeanMethod(final ComponentConfiguration componentConfiguration, final ViewConfiguration configuration, final DeploymentReflectionIndex index, final Method method) {
         configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
+        //TODO: these look like they are bypassing the synchronization interceptor
         configuration.addViewInterceptor(method, new ImmediateInterceptorFactory(new InstanceMethodInvokingInterceptor(method)), InterceptorOrder.View.COMPONENT_DISPATCHER);
     }
 
@@ -63,10 +64,11 @@ public class CmpEntityBeanObjectViewConfigurator extends EntityBeanObjectViewCon
         }
 
         public Object processInvocation(final InterceptorContext context) throws Exception {
-            ComponentInstance componentInstance = context.getPrivateData(ComponentInstance.class);
+            final ComponentInstance componentInstance = context.getPrivateData(ComponentInstance.class);
             if (componentInstance == null) {
                 throw new IllegalStateException("No component instance associated");
             }
+            //for CMP beans we invoke directly on the instance, bypassing the interceptor chain
             return componentMethod.invoke(componentInstance.getInstance(), context.getParameters());
         }
     }
