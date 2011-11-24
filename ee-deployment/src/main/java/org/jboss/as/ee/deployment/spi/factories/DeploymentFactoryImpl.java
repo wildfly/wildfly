@@ -53,6 +53,7 @@ import static org.jboss.as.ee.deployment.spi.DeploymentManagerImpl.DEPLOYER_URI;
  *
  */
 public class DeploymentFactoryImpl implements DeploymentFactory {
+
     // deployment logging
     private static final Logger log = Logger.getLogger(DeploymentFactoryImpl.class);
 
@@ -111,17 +112,14 @@ public class DeploymentFactoryImpl implements DeploymentFactory {
      */
     public DeploymentManager getDeploymentManager(String uri, String userName, String password) throws DeploymentManagerCreationException {
         log.debug("getDeploymentManager (uri=" + uri + ")");
-        DeploymentManager mgr = null;
-
         try {
             URI deployURI = parseURI(uri);
-            mgr = new DeploymentManagerImpl(deployURI, true, userName, password);
+            return new DeploymentManagerImpl(deployURI, true, userName, password);
         } catch (URISyntaxException e) {
             DeploymentManagerCreationException ex = new DeploymentManagerCreationException("Failed to create DeploymentManagerImpl");
             ex.initCause(e);
             throw ex;
         }
-        return mgr;
     }
 
     /**
@@ -134,17 +132,14 @@ public class DeploymentFactoryImpl implements DeploymentFactory {
      */
     public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
         log.debug("getDisconnectedDeploymentManager (uri=" + uri + ")");
-        DeploymentManager mgr = null;
-
         try {
             URI deployURI = parseURI(uri);
-            mgr = new DeploymentManagerImpl(deployURI, false);
+            return new DeploymentManagerImpl(deployURI, false);
         } catch (URISyntaxException e) {
             DeploymentManagerCreationException ex = new DeploymentManagerCreationException("Failed to create DeploymentManagerImpl");
             ex.initCause(e);
             throw ex;
         }
-        return mgr;
     }
 
     /**
