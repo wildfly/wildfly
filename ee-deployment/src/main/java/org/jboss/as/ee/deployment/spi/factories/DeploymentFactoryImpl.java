@@ -32,6 +32,8 @@ import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import org.jboss.as.ee.deployment.spi.DeploymentManagerImpl;
 import org.jboss.logging.Logger;
 
+import static org.jboss.as.ee.deployment.spi.DeploymentManagerImpl.DEPLOYER_URI;
+
 /**
  * The DeploymentFactory interface is a deployment driver for a J2EE plaform product.
  *
@@ -89,22 +91,10 @@ public class DeploymentFactoryImpl implements DeploymentFactory {
     }
 
     /**
-     * Look for jboss-deployer:.... URIs. Returns true if uri is has a scheme of jboss-deployer, false otherwise.
-     *
-     * @param uri the uri
-     * @return true for jboss-deployer schemes, false otherwise.
+     * Tests whether the factory can create a manager for the URI
      */
     public boolean handlesURI(String uri) {
-        boolean handlesURI = DeploymentManagerImpl.DEPLOYER_URI.equals(uri);
-        if (handlesURI == false) {
-            try {
-                URI deployURI = parseURI(uri);
-                handlesURI = "jnp".equals(deployURI.getScheme());
-            } catch (URISyntaxException e) {
-                log.warn("Failed to parse uri: " + uri, e);
-            }
-        }
-
+        boolean handlesURI = uri.startsWith(DEPLOYER_URI);
         log.debug("handlesURI [" + uri + "]: " + handlesURI);
         return handlesURI;
     }
