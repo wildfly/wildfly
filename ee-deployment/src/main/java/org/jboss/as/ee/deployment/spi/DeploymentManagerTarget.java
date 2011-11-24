@@ -76,6 +76,7 @@ final class DeploymentManagerTarget extends JBossTarget {
     static final String DESCRIPTION = "ServerDeploymentManager target";
 
     private final Map<TargetModuleID, String> runtimeNames = new HashMap<TargetModuleID, String>();
+    private final Map<TargetModuleID, Boolean> runtimeState = new HashMap<TargetModuleID, Boolean>();
     private final ModelControllerClient modelControllerClient;
     private final ServerDeploymentManager deploymentManager;
     private final URI deployURI;
@@ -124,12 +125,16 @@ final class DeploymentManagerTarget extends JBossTarget {
 
     @Override
     public void start(TargetModuleID targetModuleID) throws Exception {
-        // do nothing
+        // [TODO] A hack that fakes module start/stop behaviour
+        ((TargetModuleIDImpl)targetModuleID).setRunning(Boolean.TRUE);
+        runtimeState.put(targetModuleID, Boolean.TRUE);
     }
 
     @Override
     public void stop(TargetModuleID targetModuleID) throws Exception {
-        // do nothing
+        // [TODO] A hack that fakes module start/stop behaviour
+        ((TargetModuleIDImpl)targetModuleID).setRunning(Boolean.FALSE);
+        runtimeState.put(targetModuleID, Boolean.FALSE);
     }
 
     @Override
@@ -163,6 +168,8 @@ final class DeploymentManagerTarget extends JBossTarget {
                     moduleType = ModuleType.EAR;
                 } else if (moduleID.endsWith(".war")) {
                     moduleType = ModuleType.WAR;
+                } else if (moduleID.endsWith(".rar")) {
+                    moduleType = ModuleType.RAR;
                 } else if (moduleID.endsWith(".jar")) {
                     // [TODO] not every jar is also an ejb jar
                     moduleType = ModuleType.EJB;
@@ -173,7 +180,8 @@ final class DeploymentManagerTarget extends JBossTarget {
                 }
                 if (filterType == null || filterType.equals(moduleType)) {
                     TargetModuleIDImpl targetModuleID = new TargetModuleIDImpl(this, moduleID, null, moduleType);
-                    targetModuleID.setRunning(true);
+                    Boolean state = runtimeState.get(targetModuleID);
+                    targetModuleID.setRunning(state != null ? state : Boolean.TRUE);
                     list.add(targetModuleID);
                 }
             }

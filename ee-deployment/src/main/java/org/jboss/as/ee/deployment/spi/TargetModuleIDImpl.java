@@ -132,6 +132,6 @@ final class TargetModuleIDImpl implements JBossTargetModuleID {
 
     public String toString() {
         String parentID = (parentModuleID != null ? parentModuleID.getModuleID() : null);
-        return "[target=" + target.getName() + ",parent=" + parentID + ",id=" + moduleID + "]";
+        return "[target=" + target.getName() + ",parent=" + parentID + ",type=" + moduleType+ ",id=" + moduleID + "]";
     }
 }
