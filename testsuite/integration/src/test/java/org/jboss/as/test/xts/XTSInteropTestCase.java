@@ -24,6 +24,7 @@ package org.jboss.as.test.xts;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -60,9 +61,6 @@ public class XTSInteropTestCase extends XTSTestBase {
     private static final String ARCHIVE_INTEROP11   = "interop11.war";
     private static final String ARCHIVE_SC007       = "sc007.war";
 
-    @ArquillianResource
-    URL contextPath;
-
     private static String jbossxtsTestsPath;
     static {
         jbossxtsTestsPath = System.getProperty(JBOSSXTS_TESTS_PATH_PROPERTY, JBOSSXTS_TESTS_PATH_DEFAULT);
@@ -93,34 +91,34 @@ public class XTSInteropTestCase extends XTSTestBase {
 */
 
 
-    @Test
+    @Test  @OperateOnDeployment("sc007")
     @Ignore("JBTM-914")
-    public void testSC007() throws Throwable {
+    public void testSC007(@ArquillianResource URL contextPath) throws Throwable {
         String outfile = getOutfileName("sc007");
         try {
-            boolean res = doInteropTests("/sc007/ParticipantService", "sc007", "allTests", outfile);
+            boolean res = doInteropTests(contextPath, "ParticipantService", "allTests", outfile);
             assertTrue("The sc007 tests failed, for more info see " + outfile, res);
         } catch (Throwable e) {
             throw new Throwable("The sc007 tests failed with '" + e.getMessage() + "', for more info see " + outfile, e);
         }
     }
 
-    @Test
-    public void testInterop11AT() throws Throwable {
+    @Test  @OperateOnDeployment("interop11")
+    public void testInterop11AT(@ArquillianResource URL contextPath) throws Throwable {
         String outfile = getOutfileName("interop11-AT");
         try {
-            boolean res = doInteropTests("/interop11/ATParticipantService", "interop11", "allATTests", outfile);
+            boolean res = doInteropTests(contextPath, "ATParticipantService", "allATTests", outfile);
             assertTrue("The interop11-AT tests failed, for more info see " + outfile, res);
         } catch (Throwable e) {
             throw new Throwable("The interop11-AT tests failed with '" + e.getMessage() + "', for more info see " + outfile, e);
         }
     }
 
-    @Test
-    public void testInterop11BA() throws Throwable {
+    @Test  @OperateOnDeployment("interop11")
+    public void testInterop11BA(@ArquillianResource URL contextPath) throws Throwable {
         String outfile = getOutfileName("interop11-BA");
         try {
-            boolean res = doInteropTests("/interop11/BAParticipantService", "interop11", "allBATests", outfile);
+            boolean res = doInteropTests(contextPath, "BAParticipantService", "allBATests", outfile);
             assertTrue("The interop11-BA tests failed, for more info see " + outfile, res);
         } catch (Throwable e) {
             throw new Throwable("The interop11-BA tests failed with '" + e.getMessage() + "', for more info see " + outfile, e);
@@ -128,14 +126,14 @@ public class XTSInteropTestCase extends XTSTestBase {
     }
 
 
-    private boolean doInteropTests(String serviceURI, String baseContext, String testName, String outfile) throws Throwable {
+    private boolean doInteropTests(URL contextPath, String serviceURI, String testName, String outfile) throws Throwable {
         List<NameValuePair> params = new ArrayList<NameValuePair>(5);
         params.add(new BasicNameValuePair("serviceuri", contextPath.toString() + serviceURI));
         params.add(new BasicNameValuePair("test", testName));
         params.add(new BasicNameValuePair("testTimeout", "120000"));
         params.add(new BasicNameValuePair("resultPage", "/xmlresults"));
 
-        return callTestServlet(contextPath.toString() + "/" + baseContext + "/test", params, outfile);
+        return callTestServlet(contextPath.toString() + "test", params, outfile);
     }
 
     private String getOutfileName(String tag) {

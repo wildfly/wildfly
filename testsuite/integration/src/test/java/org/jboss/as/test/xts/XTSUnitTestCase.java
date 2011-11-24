@@ -22,6 +22,7 @@
 package org.jboss.as.test.xts;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -57,9 +58,6 @@ public class XTSUnitTestCase extends XTSTestBase {
     private static final String ARCHIVE_WSC     = "ws-c-tests.ear";
     private static final String ARCHIVE_WST     = "ws-t-tests.ear";
     private static final String ARCHIVE_WSTX    = "wstx-tests.ear";
-
-    @ArquillianResource
-    URL contextPath;
 
     private static String jbossxtsTestsPath;
     static {
@@ -109,55 +107,56 @@ public class XTSUnitTestCase extends XTSTestBase {
     }
 
 
-    @Test
-    public void testWSAS() throws Throwable {
+    @Test  @OperateOnDeployment("wsas")
+    public void testWSAS(@ArquillianResource URL contextPath) throws Throwable {
         String outfile = getOutfileName("wsas");
         try {
-            boolean res = callTests("/wsas-tests/index.xml", outfile);
+            log.info("_contextPath = " + contextPath);
+            boolean res = callTests(contextPath.toString() + "index.xml", outfile);
             assertTrue("The wsas tests failed, for more info see " + outfile, res);
         } catch (Throwable e) {
             throw new Throwable("The wsas tests failed with '" + e.getMessage() + "', for more info see " + outfile, e);
         }
     }
 
-    @Test
-    public void testWSCF() throws Throwable {
+    @Test  @OperateOnDeployment("wscf")
+    public void testWSCF(@ArquillianResource URL contextPath) throws Throwable {
         String outfile = getOutfileName("wscf");
         try {
-            boolean res = callTests("/wscf11-tests/index.xml", outfile);
+            boolean res = callTests(contextPath.toString() + "index.xml", outfile);
             assertTrue("The wscf tests failed, for more info see " + outfile, res);
         } catch (Throwable e) {
             throw new Throwable("The wscf tests failed with '" + e.getMessage() + "', for more info see " + outfile, e);
         }
     }
 
-    @Test
-    public void testWSC() throws Throwable {
+    @Test  @OperateOnDeployment("wsc")
+    public void testWSC(@ArquillianResource URL contextPath) throws Throwable {
         String outfile = getOutfileName("wsc");
         try {
-            boolean res = callTests("/ws-c11-tests/index.xml", outfile);
+            boolean res = callTests(contextPath.toString() + "index.xml", outfile);
             assertTrue("The wsc tests failed, for more info see " + outfile, res);
         } catch (Throwable e) {
             throw new Throwable("The wsc tests failed with '" + e.getMessage() + "', for more info see " + outfile, e);
         }
     }
 
-    @Test
-    public void testWST() throws Throwable {
+    @Test  @OperateOnDeployment("wst")
+    public void testWST(@ArquillianResource URL contextPath) throws Throwable {
         String outfile = getOutfileName("wst");
         try {
-            boolean res = callTests("/ws-t11-tests/index.xml", outfile);
+            boolean res = callTests(contextPath.toString() + "index.xml", outfile);
             assertTrue("The wst tests failed, for more info see " + outfile, res);
         } catch (Throwable e) {
             throw new Throwable("The wst tests failed with '" + e.getMessage() + "', for more info see " + outfile, e);
         }
     }
 
-    @Test
-    public void testWSTX() throws Throwable {
+    @Test  @OperateOnDeployment("wstx")
+    public void testWSTX(@ArquillianResource URL contextPath) throws Throwable {
         String outfile = getOutfileName("wstx");
         try {
-            boolean res = callTests("/wstx11-tests/index.xml", outfile);
+            boolean res = callTests(contextPath.toString() + "index.xml", outfile);
             assertTrue("The wstx tests failed, for more info see " + outfile, res);
         } catch (Throwable e) {
             throw new Throwable("The wstx tests failed with '" + e.getMessage() + "', for more info see " + outfile, e);
@@ -166,7 +165,7 @@ public class XTSUnitTestCase extends XTSTestBase {
 
 
     private boolean callTests(String serviceURI, String outfile) throws Throwable {
-        return callTestServlet(contextPath.toString() + serviceURI, null, outfile);
+        return callTestServlet(serviceURI, null, outfile);
     }
 
     private String getOutfileName(String tag) {
