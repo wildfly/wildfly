@@ -5997,6 +5997,18 @@
 
             <dependency>
                 <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-bytecode</artifactId>
+                <version>${version.org.jboss.capedwarf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.maven.plugins</groupId>
+                        <artifactId>maven-transformer-plugin</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
                 <artifactId>capedwarf-capabilities</artifactId>
                 <version>${version.org.jboss.capedwarf}</version>
             </dependency>

@@ -945,6 +945,7 @@
         <module-def name="org.jboss.capedwarf">
             <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-appidentity"/>
             <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-blobstore"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-bytecode"/>
             <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-capabilities"/>
             <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-common"/>
             <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-datastore"/>
