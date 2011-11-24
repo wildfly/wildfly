@@ -21,16 +21,13 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
-import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 
 import javax.ejb.ConcurrentAccessException;
 import javax.ejb.ConcurrentAccessTimeoutException;
 import javax.ejb.NoSuchEJBException;
-import javax.ejb.NoSuchObjectLocalException;
 
 import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.Interceptor;
@@ -38,8 +35,9 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.logging.Logger;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Associate the proper component instance to the invocation based on the passed in session identifier.
  *
@@ -62,14 +60,8 @@ public class StatefulComponentInstanceInterceptor extends AbstractEJBInterceptor
         ROOT_LOGGER.debug("Looking for stateful component instance with session id: " + sessionId);
         StatefulSessionComponentInstance instance = component.getCache().get(sessionId);
         if(instance == null) {
-            final ComponentView view = context.getPrivateData(ComponentView.class);
-            if(view.getViewClass() == component.getEjbLocalObjectType()) {
-                throw new NoSuchObjectLocalException("Could not find SFSB " + component.getComponentName() + " with " + sessionId);
-            } else if(view.getViewClass() == component.getEjbObjectType()) {
-                throw new NoSuchObjectException("Could not find SFSB " + component.getComponentName() + " with " + sessionId);
-            } else {
-                throw new NoSuchEJBException("Could not find SFSB " + component.getComponentName() + " with " + sessionId);
-            }
+            //This exception will be transformed into the correct exception type by the exception transforming interceptor
+            throw new NoSuchEJBException("Could not find SFSB " + component.getComponentName() + " with " + sessionId);
         }
         try {
             context.putPrivateData(ComponentInstance.class, instance);
