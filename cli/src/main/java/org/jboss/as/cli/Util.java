@@ -93,6 +93,7 @@ public class Util {
     public static final String TYPE = "type";
     public static final String VALIDATE_ADDRESS = "validate-address";
     public static final String VALUE = "value";
+    public static final String VALUE_TYPE = "value-type";
     public static final String WRITE_ATTRIBUTE = "write-attribute";
 
     public static boolean isWindows() {
