@@ -444,15 +444,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
                         log.debug("Skip entry found in deployment plan: " + entryName);
                 }
             }
-
             entry = jis.getNextJarEntry();
-        }
-
-        // JBAS-8059: the regular jar didn't show us enough information, lets analyze the deployment plan
-        for (String entryName : mapDeploymentPlan.keySet()) {
-            moduleType = determineModuleType(entryName);
-            if (moduleType != null)
-                break;
         }
 
         if (moduleType == null) {

@@ -169,21 +169,52 @@ public class EnterpriseDeploymentTestCase {
         String uri = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7&serverHost=127.0.0.1&serverPort=9999";
         DeploymentManager manager = getDeploymentManager(uri, USERNAME, PASSWORD);
         Target[] targets = manager.getTargets();
-        TargetModuleID[] availableModules = manager.getAvailableModules(ModuleType.EAR, targets);
-        assertNull(availableModules);
+        TargetModuleID[] modules = manager.getAvailableModules(ModuleType.EAR, targets);
+        assertNull(modules);
 
         ProgressObject progress = jsr88Deploy(manager, getEarArchive());
         TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
         try {
-            availableModules = manager.getAvailableModules(ModuleType.EAR, targets);
-            assertNotNull(availableModules);
-            assertEquals(1, availableModules.length);
+            // Test getAvailableModules
+            modules = manager.getAvailableModules(ModuleType.EAR, targets);
+            assertNotNull(modules);
+            assertEquals(1, modules.length);
 
-            TargetModuleID targetModuleID = availableModules[0];
+            TargetModuleID targetModuleID = modules[0];
             String moduleID = targetModuleID.getModuleID();
             assertTrue("Ends with deployment-app.ear", moduleID.endsWith("deployment-app.ear"));
 
-            // [TODO] verify child modules
+            // Test getNonRunningModules
+            modules = manager.getNonRunningModules(ModuleType.EAR, targets);
+            assertEquals(0, modules.length);
+
+            // Test getRunningModules
+            modules = manager.getRunningModules(ModuleType.EAR, targets);
+            assertEquals(1, modules.length);
+
+            targetModuleID = modules[0];
+            moduleID = targetModuleID.getModuleID();
+            assertTrue("Ends with deployment-app.ear", moduleID.endsWith("deployment-app.ear"));
+
+            manager.stop(modules);
+
+            // Test getRunningModules
+            modules = manager.getRunningModules(ModuleType.EAR, targets);
+            assertEquals(0, modules.length);
+
+            // Test getNonRunningModules
+            modules = manager.getNonRunningModules(ModuleType.EAR, targets);
+            assertEquals(1, modules.length);
+
+            manager.start(modules);
+
+            // Test getNonRunningModules
+            modules = manager.getNonRunningModules(ModuleType.EAR, targets);
+            assertEquals(0, modules.length);
+
+            // Test getRunningModules
+            modules = manager.getRunningModules(ModuleType.EAR, targets);
+            assertEquals(1, modules.length);
 
         } finally {
             jsr88Undeploy(manager, targetModules);
