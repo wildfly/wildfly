@@ -183,7 +183,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
             }
         }
         if (poolName == null || poolName.trim().equals(""))
-            throw new ParserException(bundle.missingJndiName(reader.getLocalName()));
+            throw new ParserException(bundle.missingValue(POOL_NAME_NAME));
 
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
@@ -403,7 +403,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
             }
         }
         if (poolName == null || poolName.trim().equals(""))
-            throw new ParserException(bundle.missingJndiName(reader.getLocalName()));
+            throw new ParserException(bundle.missingValue(POOL_NAME_NAME));
 
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
