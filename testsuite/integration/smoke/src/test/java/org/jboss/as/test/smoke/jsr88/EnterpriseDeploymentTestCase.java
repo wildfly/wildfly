@@ -21,13 +21,25 @@
  */
 package org.jboss.as.test.smoke.jsr88;
 
-import static org.jboss.as.arquillian.container.Authentication.PASSWORD;
-import static org.jboss.as.arquillian.container.Authentication.USERNAME;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.ee.deployment.spi.DeploymentManagerImpl;
+import org.jboss.as.ee.deployment.spi.DeploymentMetaData;
+import org.jboss.as.ee.deployment.spi.JarUtils;
+import org.jboss.as.ee.deployment.spi.factories.DeploymentFactoryImpl;
+import org.jboss.as.test.smoke.embedded.deployment.Echo;
+import org.jboss.as.test.smoke.embedded.deployment.EchoBean;
+import org.jboss.as.test.smoke.embedded.deployment.EchoHome;
+import org.jboss.as.test.smoke.embedded.deployment.SampleServlet;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.util.UnreachableStatementException;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.shared.StateType;
@@ -53,26 +65,13 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.JarOutputStream;
 
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.ee.deployment.spi.DeploymentManagerImpl;
-import org.jboss.as.ee.deployment.spi.DeploymentMetaData;
-import org.jboss.as.ee.deployment.spi.JarUtils;
-import org.jboss.as.ee.deployment.spi.factories.DeploymentFactoryImpl;
-import org.jboss.as.test.smoke.embedded.deployment.Echo;
-import org.jboss.as.test.smoke.embedded.deployment.EchoBean;
-import org.jboss.as.test.smoke.embedded.deployment.EchoHome;
-import org.jboss.as.test.smoke.embedded.deployment.SampleServlet;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.util.UnreachableStatementException;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static org.jboss.as.arquillian.container.Authentication.PASSWORD;
+import static org.jboss.as.arquillian.container.Authentication.USERNAME;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Deployment API JSR-88 tests
@@ -89,7 +88,7 @@ public class EnterpriseDeploymentTestCase {
     private static final String JAR_JBOSS_FILE = "META-INF/jboss.xml";
     private static final String EAR_JBOSS_FILE = "META-INF/jboss-app.xml";
 
-    private DeploymentManager deploymentManager;
+    DeploymentFactory deploymentFactory;
 
     @Test
     public void testDeploymentManager() throws Exception {
@@ -101,14 +100,15 @@ public class EnterpriseDeploymentTestCase {
 
     @Test
     public void testDistributeWebApp() throws Exception {
-        ProgressObject progress = jsr88Deploy(getWebArchive());
+        DeploymentManager manager = getDeploymentManager();
+        ProgressObject progress = jsr88Deploy(manager, getWebArchive());
         TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
         try {
             DeploymentStatus state = progress.getDeploymentStatus();
             assertEquals(StateType.COMPLETED, state.getState());
             assertServletAccess("custom-context");
         } finally {
-            jsr88Undeploy(targetModules);
+            jsr88Undeploy(manager, targetModules);
         }
         try {
             assertServletAccess("custom-context");
@@ -120,38 +120,41 @@ public class EnterpriseDeploymentTestCase {
 
     @Test
     public void testDistributeBadWar() throws Exception {
-        ProgressObject progress = jsr88Deploy(getBadWebArchive());
+        DeploymentManager manager = getDeploymentManager();
+        ProgressObject progress = jsr88Deploy(manager, getBadWebArchive());
         TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
         try {
             DeploymentStatus state = progress.getDeploymentStatus();
             assertEquals(StateType.FAILED, state.getState());
         } finally {
-            jsr88Undeploy(targetModules);
+            jsr88Undeploy(manager, targetModules);
         }
     }
 
     @Test
     public void testDistributeEjbApp() throws Exception {
-        ProgressObject progress = jsr88Deploy(getEjbArchive());
+        DeploymentManager manager = getDeploymentManager();
+        ProgressObject progress = jsr88Deploy(manager, getEjbArchive());
         TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
         try {
             DeploymentStatus state = progress.getDeploymentStatus();
             assertEquals(StateType.COMPLETED, state.getState());
         } finally {
-            jsr88Undeploy(targetModules);
+            jsr88Undeploy(manager, targetModules);
         }
     }
 
     @Test
     public void testDistributeEARApp() throws Exception {
-        ProgressObject progress = jsr88Deploy(getEarArchive());
+        DeploymentManager manager = getDeploymentManager();
+        ProgressObject progress = jsr88Deploy(manager, getEarArchive());
         TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
         try {
             DeploymentStatus state = progress.getDeploymentStatus();
             assertEquals(StateType.COMPLETED, state.getState());
             assertServletAccess("custom-context");
         } finally {
-            jsr88Undeploy(targetModules);
+            jsr88Undeploy(manager, targetModules);
         }
         try {
             assertServletAccess("custom-context");
@@ -168,7 +171,7 @@ public class EnterpriseDeploymentTestCase {
         TargetModuleID[] availableModules = manager.getAvailableModules(ModuleType.EAR, targets);
         assertNull(availableModules);
 
-        ProgressObject progress = jsr88Deploy(getEarArchive());
+        ProgressObject progress = jsr88Deploy(manager, getEarArchive());
         TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
         try {
             availableModules = manager.getAvailableModules(ModuleType.EAR, targets);
@@ -182,25 +185,54 @@ public class EnterpriseDeploymentTestCase {
             // [TODO] verify child modules
 
         } finally {
-            jsr88Undeploy(targetModules);
+            jsr88Undeploy(manager, targetModules);
+        }
+    }
+
+    @Test
+    public void testListAvailableModulesUnauthorized() throws Exception {
+        DeploymentManager manager = getDeploymentManager("nobody", "nopass");
+        Target[] targets = manager.getTargets();
+        // [AS7-2771] ModelControllerClient operations don't fail on invalid username/password
+        TargetModuleID[] availableModules = manager.getAvailableModules(ModuleType.EAR, targets);
+        assertNull(availableModules);
+
+        ProgressObject progress = jsr88Deploy(manager, getEarArchive());
+        TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
+        try {
+            availableModules = manager.getAvailableModules(ModuleType.EAR, targets);
+            assertNotNull(availableModules);
+            assertEquals(1, availableModules.length);
+
+            TargetModuleID targetModuleID = availableModules[0];
+            String moduleID = targetModuleID.getModuleID();
+            assertTrue("Ends with deployment-app.ear", moduleID.endsWith("deployment-app.ear"));
+
+            // [TODO] verify child modules
+
+        } finally {
+            jsr88Undeploy(manager, targetModules);
         }
     }
 
     private DeploymentManager getDeploymentManager() throws Exception {
-        if (deploymentManager == null) {
+        return getDeploymentManager(USERNAME, PASSWORD);
+    }
+
+    private DeploymentManager getDeploymentManager(String username, String password) throws Exception {
+        if (deploymentFactory == null) {
             DeploymentFactoryImpl.register();
             DeploymentFactoryManager dfManager = DeploymentFactoryManager.getInstance();
             DeploymentFactory[] factories = dfManager.getDeploymentFactories();
             assertTrue("DeploymentFactory available", factories.length > 0);
-            String mgrURI = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7";
-            deploymentManager = factories[0].getDeploymentManager(mgrURI, USERNAME, PASSWORD);
+            deploymentFactory = factories[0];
         }
+        String mgrURI = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7";
+        DeploymentManager deploymentManager = deploymentFactory.getDeploymentManager(mgrURI, username, password);
         return deploymentManager;
     }
 
-    private ProgressObject jsr88Deploy(Archive<?> archive) throws Exception {
-        // Get the deployment manager and the distribution targets
-        DeploymentManager manager = getDeploymentManager();
+    private ProgressObject jsr88Deploy(DeploymentManager manager, Archive<?> archive) throws Exception {
         Target[] targets = manager.getTargets();
         assertEquals(1, targets.length);
 
@@ -219,8 +251,7 @@ public class EnterpriseDeploymentTestCase {
         return progress;
     }
 
-    private ProgressObject jsr88Undeploy(TargetModuleID[] resultTargetModuleIDs) throws Exception {
-        DeploymentManager manager = getDeploymentManager();
+    private ProgressObject jsr88Undeploy(DeploymentManager manager, TargetModuleID[] resultTargetModuleIDs) throws Exception {
         Target[] targets = manager.getTargets();
         assertEquals(1, targets.length);
 
