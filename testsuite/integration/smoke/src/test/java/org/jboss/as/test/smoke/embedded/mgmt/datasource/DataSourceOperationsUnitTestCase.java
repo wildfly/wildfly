@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Hashtable;
+import java.util.Iterator;
 
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
@@ -62,6 +64,7 @@ import org.jboss.staxmapper.XMLMapper;
 import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
@@ -305,7 +308,7 @@ public class DataSourceOperationsUnitTestCase {
      *
      * @throws Exception
      */
-    //@Test
+    @Test
     public void testAddAndRemoveNameAndJndiNameDifferent() throws Exception {
         final String dsName = "DsName";
         final String jndiDsName = "JndiDsName";
@@ -602,6 +605,274 @@ public class DataSourceOperationsUnitTestCase {
 
         }
     }
+    /**
+     * AS7-2720 tests for parsing particular datasource in standalone mode
+     *
+     * @throws Exception
+     */
+    @Test
+    @Ignore("AS7-2775")
+    public void testAddComplexDs() throws Exception {
+
+        final String complexDs = "complexDs";
+        final String complexDsJndi = "java:jboss/datasources/" + complexDs;
+        final ModelNode address = new ModelNode();
+        address.add("subsystem", "datasources");
+        address.add("data-source", complexDs);
+        address.protect();
+        
+        Hashtable<String,String> params=hashtableWithNonXaParameters(complexDs,complexDsJndi);
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("add");
+        operation.get(OP_ADDR).set(address);
+        
+        setOperationParams(operation, params);
+        addExtensionProperties(operation);
+        
+        execute(operation);
+        
+        final ModelNode datasourcePropertiesAddress = address.clone();
+        datasourcePropertiesAddress.add("connection-properties", "char.encoding");
+        datasourcePropertiesAddress.protect();
+        final ModelNode datasourcePropertyOperation = new ModelNode();
+        datasourcePropertyOperation.get(OP).set("add");
+        datasourcePropertyOperation.get(OP_ADDR).set(datasourcePropertiesAddress);
+        datasourcePropertyOperation.get("value").set("UTF-8");
+
+        execute(datasourcePropertyOperation);
+
+        final ModelNode operationts = new ModelNode();
+        operationts.get(OP).set("take-snapshot");
+        execute(operationts);
+
+        List<ModelNode> newList = marshalAndReparseDsResources("data-source");
+
+        Assert.assertNotNull(newList);
+
+        final Map<String, ModelNode> parseChildren = getChildren(newList.get(1));
+        Assert.assertFalse(parseChildren.isEmpty());
+        
+        controlParseChildrenParams(parseChildren, params);
+         
+        remove(address);
+        
+    }
+    /**
+     * AS7-2720 tests for parsing particular XA-datasource in standalone mode
+     *
+     * @throws Exception
+     */
+    @Test
+    @Ignore("AS7-2775")
+    public void testAddComplexXaDs() throws Exception {
+
+        final String complexXaDs = "complexXaDs";
+        final String complexXaDsJndi = "java:jboss/xa-datasources/" + complexXaDs;
+
+        final ModelNode address = new ModelNode();
+        address.add("subsystem", "datasources");
+        address.add("xa-data-source", complexXaDs);
+        address.protect();
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("add");
+        operation.get(OP_ADDR).set(address);
+
+        Hashtable<String,String> params = hashtableWithXaParameters(complexXaDs, complexXaDsJndi) ;       
+        setOperationParams(operation, params);
+        addExtensionProperties(operation);
+        
+        /* TODO: Properties for Extension type parameters not implemented in DRM
+         * operation.get("recovery-plugin-properties","Property").set("A");
+         */
+        execute(operation);
+
+        final ModelNode xaDatasourcePropertiesAddress = address.clone();
+        xaDatasourcePropertiesAddress.add("xa-datasource-properties", "URL");
+        xaDatasourcePropertiesAddress.protect();
+        final ModelNode xaDatasourcePropertyOperation = new ModelNode();
+        xaDatasourcePropertyOperation.get(OP).set("add");
+        xaDatasourcePropertyOperation.get(OP_ADDR).set(xaDatasourcePropertiesAddress);
+        xaDatasourcePropertyOperation.get("value").set("jdbc:h2:mem:test");
+
+        execute(xaDatasourcePropertyOperation);
+        
+        final ModelNode operationts = new ModelNode();
+        operationts.get(OP).set("take-snapshot");
+        execute(operationts);
+
+        List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source");
+
+        Assert.assertNotNull(newList);
+
+        final Map<String, ModelNode> parseChildren = getChildren(newList.get(1));
+        Assert.assertFalse(parseChildren.isEmpty());
+        
+        controlParseChildrenParams(parseChildren, params);
+        
+        remove(address);
+        
+    }
+    /**
+     * Returns Hashtable with common parameters for both XA and Non-XA datasource 
+     * 
+     */
+    private  Hashtable<String,String> hashtableWithCommonParameters(){
+    	Hashtable<String,String> params=new Hashtable<String,String>();
+    	//attributes
+    	params.put("enabled","true");
+    	params.put("use-java-context","true");
+        params.put("spy","false");
+        params.put("use-ccm","true");
+        //common elements
+        params.put("driver-name","h2");
+        params.put("new-connection-sql","select 1");
+        params.put("transaction-isolation","TRANSACTION_READ_COMMITTED");
+        params.put("url-delimiter",":");
+        params.put("url-selector-strategy-class-name","someClass");
+        //pool
+        params.put("min-pool-size","1");
+        params.put("max-pool-size","5");
+        params.put("pool-prefill","true");
+        params.put("pool-use-strict-min","true");
+        params.put("flush-strategy","EntirePool");
+        //security
+        params.put("user-name","sa");
+        params.put("password","sa");
+        params.put("security-domain","HsqlDbRealm");
+        params.put("reauth-plugin-class-name","someClass1");
+        //validation
+        params.put("valid-connection-checker-class-name","someClass2");
+        params.put("check-valid-connection-sql","select 1");
+        params.put("validate-on-match","true");
+        params.put("background-validation","true");
+        params.put("background-validation-millis","2000");
+        params.put("use-fast-fail","true");
+        params.put("stale-connection-checker-class-name","someClass3");
+        params.put("exception-sorter-class-name","someClass4");
+        //time-out
+        params.put("blocking-timeout-wait-millis","20000");
+        params.put("idle-timeout-minutes","4");
+        params.put("set-tx-query-timeout","true");
+        params.put("query-timeout","120");
+        params.put("use-try-lock","100");
+        params.put("allocation-retry","2");
+        params.put("allocation-retry-wait-millis","3000");
+        //statement
+        params.put("track-statements","NOWARN");
+        params.put("prepared-statements-cache-size","30");
+        params.put("share-prepared-statements","true");
+    	
+    	return params;
+    }
+    /**
+     * Returns a Hashtable, containing parameters for XA datasource
+     * @param datasourceName
+     */
+    private Hashtable<String,String> hashtableWithXaParameters(String datasourceName,String jndiName){
+    	Hashtable<String,String> params=hashtableWithCommonParameters();
+    	//attributes 
+    	params.put("name",datasourceName);
+        params.put("jndi-name", jndiName);
+        params.put("pool-name",datasourceName + "_Pool");
+        //common
+        params.put("xa-datasource-class","org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource");
+        //xa-pool
+        params.put("same-rm-override","true");
+        params.put("interleaving","true");
+        params.put("no-tx-separate-pool","true");
+        params.put("pad-xid","true");
+        params.put("wrap-xa-resource","true");
+        //time-out
+        params.put("xa-resource-timeout","120");
+        //recovery
+        params.put("no-recovery","false");
+        params.put("recovery-plugin-class-name","someClass5");
+        params.put("recovery-username","sa");
+        params.put("recovery-password","sa");
+        params.put("recovery-security-domain","HsqlDbRealm");
+        
+    	
+    	return params;
+    }
+    /**
+     * Returns a Hashtable, containing parameters for non XA datasource
+     * @param datasourceName
+     */
+    private Hashtable<String,String> hashtableWithNonXaParameters(String datasourceName,String jndiName){
+    	Hashtable<String,String> params=hashtableWithCommonParameters();
+    	//attributes
+        params.put("name",datasourceName);
+        params.put("jndi-name",jndiName);
+        params.put("jta","false");
+        params.put("pool-name",datasourceName + "_Pool");
+        //common
+        params.put("driver-class","org.hsqldb.jdbcDriver");
+        params.put("datasource-class","org.jboss.as.connector.subsystems.datasources.ModifiableDataSource");
+        params.put("connection-url","jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+        
+        return params;
+    }
+    /**
+     * Sets parameters for DMR operation
+     * @param operation
+     * @param params
+     */
+    private void setOperationParams(ModelNode operation,Hashtable<String,String> params){
+    	String str;
+        Iterator it=params.keySet().iterator();
+        while(it.hasNext()){
+        	str=(String)it.next();
+        	operation.get(str).set(params.get(str));
+        }
+    }
+    /**
+     * Adds properties of Extension type to the operation
+     * TODO: not implemented jet in DRM
+     */
+    private void addExtensionProperties(ModelNode operation){
+    	/* 
+        
+        operation.get("reauth-plugin-properties","Property").set("A");
+        operation.get("valid-connection-checker-properties","Property").set("B");
+        operation.get("stale-connect,roperties","Property").set("C");
+        operation.get("exception-sorter-properties","Property").set("D");
+       */  
+        /*final ModelNode sourcePropertiesAddress = address.clone();
+        sourcePropertiesAddress.add("reauth-plugin-properties", "Property");
+        sourcePropertiesAddress.protect();
+        final ModelNode sourcePropertyOperation = new ModelNode();
+        sourcePropertyOperation.get(OP).set("add");
+        sourcePropertyOperation.get(OP_ADDR).set(sourcePropertiesAddress);
+        sourcePropertyOperation.get("value").set("A");
+
+        execute(sourcePropertyOperation);*/
+
+    }
+    /**
+     * Controls if result of reparsing contains certain parameters 
+     * @param parseChildren
+     * @param params
+     */
+    private void controlParseChildrenParams(Map<String,ModelNode> parseChildren,Hashtable<String,String> params){
+    	String str;
+        Iterator it=params.keySet().iterator();
+        
+        StringBuffer sb = new StringBuffer();
+        String par,child;
+        while(it.hasNext()){
+        	str=(String)it.next();
+        	par=params.get(str);
+        	if (!parseChildren.containsKey(str)) sb.append("Parameter <"+str+"> is not set, but must be set to '"+par+"' \n");
+        	else{
+        		child= parseChildren.get(str).asString();
+        		if (!child.equals(par)) sb.append("Parameter <"+str+"> is set to '"+child+"', but must be set to '"+par+"' \n");
+        	}
+        }
+        if (sb.length()>0) Assert.fail("There are parsing errors:\n"+sb.toString()+"Parsed configuration:\n"+parseChildren);
+    }
+    
     private static <T> T lookup(ModelControllerClient client, String name, Class<T> expected) throws Exception {
         //TODO Don't do this FakeJndi stuff once we have remote JNDI working
 
@@ -611,6 +882,7 @@ public class DataSourceOperationsUnitTestCase {
         Object o = mbeanServer.invoke(objectName, "lookup", new Object[] {name}, new String[] {"java.lang.String"});
         return expected.cast(o);
     }
+    
     public List<ModelNode> marshalAndReparseDsResources(final String childType) throws Exception {
 
         final ModelNode address = new ModelNode();
