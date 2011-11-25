@@ -42,6 +42,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.security.auth.callback.CallbackHandler;
+import javax.security.sasl.SaslException;
 
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.ModelController;
@@ -165,6 +166,13 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                break;
             }
             catch (IllegalStateException e) {
+                Throwable cause = e;
+                while ((cause = cause.getCause()) != null) {
+                    if (cause instanceof SaslException) {
+                        throw new IllegalStateException("Unable to connect due to authentication failure.", cause);
+                    }
+                }
+
                 if (System.currentTimeMillis() > endTime) {
                     throw new IllegalStateException("Could not connect to master in " + retries + "attempts within  " + timeout + " ms", e);
                 }
