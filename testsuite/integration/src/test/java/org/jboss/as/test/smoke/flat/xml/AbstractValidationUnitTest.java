@@ -43,6 +43,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.fail;
 
@@ -52,15 +53,24 @@ import static junit.framework.Assert.fail;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class AbstractValidationUnitTest {
-    private static final Map<String, File> JBOSS_SCHEMAS = new HashMap<String, File>();
+		
+		private static final String SCHEMAS_LOCATION = "docs/schema";
+		private static final String JBOSS_DIST_PROP_NAME = "jboss.dist";
+		
+    private static final Map<String, File> JBOSS_SCHEMAS_MAP = new HashMap<String, File>();
     private static Map<String, String> NAMESPACE_MAP = new HashMap<String, String>();
-    static final File MOD_DIR = new File(System.getProperty("user.dir"));
-    static final File TARGET_DIR = new File(MOD_DIR, "../../build/target/");
-    private static File BASE_DIR = null;
+
+		
+    private static final File JBOSS_DIST_DIR;
 
     static {
         NAMESPACE_MAP.put("http://java.sun.com/xml/ns/javaee/javaee_6.xsd", "schema/javaee_6.xsd");
         NAMESPACE_MAP.put("http://www.w3.org/2001/xml.xsd", "schema/xml.xsd");
+				
+				/*
+				final File MODULE_DIR = new File(System.getProperty("jboss.ts.dir"));
+				final File TARGET_DIR = new File(MODULE_DIR, "../../build/target/");
+				
         final File[] children = TARGET_DIR.listFiles();
         if (children != null) {
             for (File child : children) {
@@ -69,14 +79,23 @@ public class AbstractValidationUnitTest {
                     break;
                 }
             }
-            if (BASE_DIR != null) {
-                final File schemaDir = new File(BASE_DIR, "docs/schema");
-                final File[] xsds = schemaDir.listFiles(SchemaFilter.FILTER);
-                for (File xsd : xsds) {
-                    JBOSS_SCHEMAS.put(xsd.getName(), xsd);
-                }
-            }
         }
+			 */
+				
+				String asDir = System.getProperty(JBOSS_DIST_PROP_NAME);
+				if( null == asDir ){
+						JBOSS_DIST_DIR = null;
+				}else{
+						JBOSS_DIST_DIR = new File(asDir);
+						if( ! JBOSS_DIST_DIR.exists() )
+								throw new IllegalStateException("Directory set in '"+JBOSS_DIST_PROP_NAME+"' does not exist: " + JBOSS_DIST_DIR.getAbsolutePath());
+								
+						final File schemaDir = new File(JBOSS_DIST_DIR, SCHEMAS_LOCATION);
+						final File[] xsds = schemaDir.listFiles(SchemaFilter.FILTER);
+						for (File xsd : xsds) {
+								JBOSS_SCHEMAS_MAP.put(xsd.getName(), xsd);
+						}
+				}
     }
 
     static final EntityResolver DEFAULT_ENTITY_RESOLVER = new EntityResolver() {
@@ -120,20 +139,24 @@ public class AbstractValidationUnitTest {
      *
      * @return the base directory.
      */
-    File baseDir() {
-        if (BASE_DIR == null)
-            fail("Server not built");
-        return BASE_DIR;
+    protected static File getBaseDir() {
+				assertNotNull("'"+JBOSS_DIST_PROP_NAME+"' is not set.", JBOSS_DIST_DIR);
+				assertTrue("Directory set in '"+JBOSS_DIST_PROP_NAME+"' does not exist: " + JBOSS_DIST_DIR.getAbsolutePath(), JBOSS_DIST_DIR.exists());
+        return JBOSS_DIST_DIR;
     }
+		
+		private static Map<String, File> getSchemas(){
+				assertFalse("No schemas found under " + getBaseDir().getAbsolutePath(), JBOSS_SCHEMAS_MAP.isEmpty());
+				return JBOSS_SCHEMAS_MAP;
+		}
 
     /**
      * A map of the schemas keyed by the schema name.
      *
      * @return a map of the schemas.
      */
-    Map<String, File> jbossSchemas() {
-        assertFalse("No schemas found.", JBOSS_SCHEMAS.isEmpty());
-        return Collections.unmodifiableMap(JBOSS_SCHEMAS);
+    static Map<String, File> jbossSchemas() {
+        return Collections.unmodifiableMap(getSchemas());
     }
 
     /**
@@ -142,8 +165,7 @@ public class AbstractValidationUnitTest {
      * @return a collection of schema names.
      */
     Set<String> jbossSchemaNames() {
-        assertFalse("No schemas found.", JBOSS_SCHEMAS.isEmpty());
-        return JBOSS_SCHEMAS.keySet();
+        return getSchemas().keySet();
     }
 
     /**
@@ -152,8 +174,7 @@ public class AbstractValidationUnitTest {
      * @return a collection of the schema files.
      */
     static Collection<File> jbossSchemaFiles() {
-        assertFalse("No schemas found.", JBOSS_SCHEMAS.isEmpty());
-        return JBOSS_SCHEMAS.values();
+        return getSchemas().values();
     }
 
     /**
@@ -164,7 +185,7 @@ public class AbstractValidationUnitTest {
      * @return the file.
      */
     static URL discoverXsd(final String xsdName) {
-        final File file = JBOSS_SCHEMAS.get(xsdName);
+        final File file = JBOSS_SCHEMAS_MAP.get(xsdName);
         URL url = null;
         try {
             if (file != null) {
