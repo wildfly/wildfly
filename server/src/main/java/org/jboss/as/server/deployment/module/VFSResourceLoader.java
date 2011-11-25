@@ -22,15 +22,25 @@
 
 package org.jboss.as.server.deployment.module;
 
-import java.security.CodeSigner;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.CodeSource;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.jar.Manifest;
+
+import org.jboss.modules.AbstractResourceLoader;
 import org.jboss.modules.ClassSpec;
 import org.jboss.modules.PackageSpec;
 import org.jboss.modules.PathUtils;
+import org.jboss.modules.Resource;
 import org.jboss.modules.filter.PathFilter;
 import org.jboss.modules.filter.PathFilters;
-import org.jboss.modules.Resource;
-import org.jboss.modules.ResourceLoader;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
@@ -38,24 +48,12 @@ import org.jboss.vfs.VirtualFileFilter;
 import org.jboss.vfs.VisitorAttributes;
 import org.jboss.vfs.util.FilterVirtualFileVisitor;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
-
 /**
  * Resource loader capable of loading resources from VFS archives.
  *
  * @author John Bailey
  */
-public class VFSResourceLoader implements ResourceLoader {
+public class VFSResourceLoader extends AbstractResourceLoader {
 
     private final VirtualFile root;
     private final String rootName;
@@ -120,28 +118,7 @@ public class VFSResourceLoader implements ResourceLoader {
 
     /** {@inheritDoc} */
     public PackageSpec getPackageSpec(final String name) throws IOException {
-        final PackageSpec spec = new PackageSpec();
-        final Manifest manifest = this.manifest;
-        if (manifest == null) {
-            return spec;
-        }
-        final Attributes mainAttribute = manifest.getAttributes(name);
-        final Attributes entryAttribute = manifest.getAttributes(name);
-        spec.setSpecTitle(getDefinedAttribute(Attributes.Name.SPECIFICATION_TITLE, entryAttribute, mainAttribute));
-        spec.setSpecVersion(getDefinedAttribute(Attributes.Name.SPECIFICATION_VERSION, entryAttribute, mainAttribute));
-        spec.setSpecVendor(getDefinedAttribute(Attributes.Name.SPECIFICATION_VENDOR, entryAttribute, mainAttribute));
-        spec.setImplTitle(getDefinedAttribute(Attributes.Name.IMPLEMENTATION_TITLE, entryAttribute, mainAttribute));
-        spec.setImplVersion(getDefinedAttribute(Attributes.Name.IMPLEMENTATION_VERSION, entryAttribute, mainAttribute));
-        spec.setImplVendor(getDefinedAttribute(Attributes.Name.IMPLEMENTATION_VENDOR, entryAttribute, mainAttribute));
-        if (Boolean.parseBoolean(getDefinedAttribute(Attributes.Name.SEALED, entryAttribute, mainAttribute))) {
-            spec.setSealBase(rootUrl);
-        }
-        return spec;
-    }
-
-    private static String getDefinedAttribute(Attributes.Name name, Attributes entryAttribute, Attributes mainAttribute) {
-        final String value = entryAttribute == null ? null : entryAttribute.getValue(name);
-        return value == null ? mainAttribute == null ? null : mainAttribute.getValue(name) : value;
+        return getPackageSpec(name, this.manifest, this.rootUrl);
     }
 
     /** {@inheritDoc} */
