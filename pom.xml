@@ -258,61 +258,22 @@
     </properties>
 
     <modules>
-        <module>api</module>
-        <module>appclient</module>
         <module>build</module>
         <module>build-config</module>
-        <module>arquillian</module>
-        <module>cli</module>
-        <module>clustering</module>
-        <module>cmp</module>
-        <module>connector</module>
         <module>controller</module>
         <module>controller-client</module>
-        <module>demos</module>
         <module>deployment-repository</module>
-        <module>deployment-scanner</module>
-        <module>dist</module>
         <module>domain-http</module>
         <module>domain-management</module>
-        <module>ee</module>
-        <module>ee-deployment</module>
-        <module>ejb3</module>
         <module>embedded</module>
-        <module>host-controller</module>
-        <module>jacorb</module>
-        <module>jaxrs</module>
-        <module>jdr</module>
-        <module>jmx</module>
-        <module>jpa</module>
-        <module>jsr77</module>
-        <module>logging</module>
-        <module>mail</module>
-        <module>messaging</module>
-        <module>modcluster</module>
-        <module>naming</module>
         <module>network</module>
-        <module>osgi</module>
-        <module>pojo</module>
         <module>platform-mbean</module>
         <module>process-controller</module>
         <module>protocol</module>
         <module>remoting</module>
-        <module>remoting-test</module>
-        <module>sar</module>
-        <module>security</module>
         <module>server</module>
-        <module>spec-api</module>
-        <module>subsystem-test</module>
         <module>threads</module>
-        <module>transactions</module>
-        <module>web</module>
-        <module>webservices</module>
-        <module>weld</module>
-        <module>xts</module>
-        <module>testsuite</module>
-
-  </modules>
+    </modules>
 
     <build>
         <plugins>
@@ -5878,6 +5839,55 @@
             <properties>
                 <surefire.jpda.args>-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y</surefire.jpda.args>
             </properties>
+        </profile>
+
+        <profile>
+            <id>normal</id>
+            <activation>
+                <property><name>!minimalistic</name></property>
+            </activation>
+            <modules>
+                <module>api</module>
+                <module>appclient</module>
+                <module>build</module>
+                <module>build-config</module>
+                <module>arquillian</module>
+                <module>cli</module>
+                <module>clustering</module>
+                <module>cmp</module>
+                <module>connector</module>
+                <module>demos</module>
+                <module>deployment-scanner</module>
+                <module>dist</module>
+                <module>ee</module>
+                <module>ee-deployment</module>
+                <module>ejb3</module>
+                <module>host-controller</module>
+                <module>jacorb</module>
+                <module>jaxrs</module>
+                <module>jdr</module>
+                <module>jmx</module>
+                <module>jpa</module>
+                <module>jsr77</module>
+                <module>logging</module>
+                <module>mail</module>
+                <module>messaging</module>
+                <module>modcluster</module>
+                <module>naming</module>
+                <module>osgi</module>
+                <module>pojo</module>
+                <module>remoting-test</module>
+                <module>sar</module>
+                <module>security</module>
+                <module>spec-api</module>
+                <module>subsystem-test</module>
+                <module>transactions</module>
+                <module>web</module>
+                <module>webservices</module>
+                <module>weld</module>
+                <module>xts</module>
+                <module>testsuite</module>
+            </modules>
         </profile>
     </profiles>
 </project>
