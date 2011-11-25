@@ -133,9 +133,6 @@
                                 <configuration>
                                     <!-- Tests to execute. Overriden in webProfileExclusion.profile . -->
                                     <excludes>
-                                        <exclude>org/jboss/as/test/clustering/**</exclude>
-                                        <exclude>org/jboss/as/test/iiop/**</exclude>
-                                        <exclude>org/jboss/as/test/smoke/**</exclude>
                                         <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/iiop/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/mdb/**/*TestCase*.java</exclude>
