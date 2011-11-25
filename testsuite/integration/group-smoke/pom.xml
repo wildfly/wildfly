@@ -104,7 +104,33 @@
 
                             <!-- Smoke tests. -->
                             <execution>
-                                <id>smoke-default.surefire</id>
+                                <id>smoke-full.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/smoke/embedded/demos/client/jms/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/smoke/embedded/demos/client/messaging/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/smoke/embedded/demos/jms/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/smoke/embedded/demos/messaging/**/*TestCase.java</include>
+                                    </includes>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <arquillian.xml>arquillian-smoke.xml</arquillian.xml>
+                                        <arquillian.launch>jboss</arquillian.launch>
+
+                                        <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
+                                        <jboss.inst>${basedir}/target/jbossas-smoke</jboss.inst>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+
+                            <execution>
+                                <id>smoke-web.surefire</id>
                                 <phase>test</phase>
                                 <goals>
                                     <goal>test</goal>
@@ -114,6 +140,12 @@
                                     <includes>
                                         <include>org/jboss/as/test/smoke/**/*TestCase.java</include>
                                     </includes>
+                                    <excludes>
+                                        <exclude>org/jboss/as/test/smoke/embedded/demos/client/jms/**/*</exclude>
+                                        <exclude>org/jboss/as/test/smoke/embedded/demos/client/messaging/**/*</exclude>
+                                        <exclude>org/jboss/as/test/smoke/embedded/demos/jms/**/*</exclude>
+                                        <exclude>org/jboss/as/test/smoke/embedded/demos/messaging/**/*</exclude>
+                                    </excludes>
 
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>

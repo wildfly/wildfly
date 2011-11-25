@@ -301,6 +301,7 @@
                                     </stylesheet>
                                     <includes>
                                         <include>standalone.xml</include>
+                                        <include>standalone-full.xml</include>
                                         <include>standalone-preview.xml</include>
                                         <include>standalone-xts.xml</include>
                                     </includes>
@@ -550,6 +551,7 @@
                                             <stylesheet>${xslt.scripts.dir}/changeDatabase.xsl</stylesheet>
                                             <includes>
                                                 <include>standalone.xml</include>
+                                                <include>standalone-full.xml</include>
                                                 <include>standalone-preview.xml</include>
                                                 <include>standalone-xts.xml</include>
                                             </includes>
