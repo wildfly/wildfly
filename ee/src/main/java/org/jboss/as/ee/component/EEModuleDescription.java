@@ -22,8 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,6 +31,8 @@ import java.util.Map;
 
 import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
+
+import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -48,6 +48,11 @@ public final class EEModuleDescription {
     private final Map<String, EEModuleClassDescription> classDescriptions = new HashMap<String, EEModuleClassDescription>();
     private final Map<String, InterceptorClassDescription> interceptorClassOverrides = new HashMap<String, InterceptorClassDescription>();
 
+    /**
+     * A map of message destinations names to their resolved JNDI name
+     */
+    private final Map<String, String> messageDestinations = new HashMap<String, String>();
+
     private InjectedEENamespaceContextSelector namespaceContextSelector;
 
     // Module Bindings
@@ -59,8 +64,8 @@ public final class EEModuleDescription {
     /**
      * Construct a new instance.
      *
-     * @param applicationName the application name (which is same as the module name if the .ear is absent)
-     * @param moduleName      the module name
+     * @param applicationName    the application name (which is same as the module name if the .ear is absent)
+     * @param moduleName         the module name
      * @param earApplicationName The application name (which is null if the .ear is absent)
      */
     public EEModuleDescription(final String applicationName, final String moduleName, final String earApplicationName) {
@@ -229,18 +234,26 @@ public final class EEModuleDescription {
     public void addResourceInjection(final ResourceInjectionConfiguration injection) {
         String className = injection.getTarget().getClassName();
         Map<InjectionTarget, ResourceInjectionConfiguration> map = resourceInjections.get(className);
-        if(map == null) {
+        if (map == null) {
             resourceInjections.put(className, map = new HashMap<InjectionTarget, ResourceInjectionConfiguration>());
         }
         map.put(injection.getTarget(), injection);
     }
 
-    public Map<InjectionTarget, ResourceInjectionConfiguration> getResourceInjections(final  String className) {
+    public Map<InjectionTarget, ResourceInjectionConfiguration> getResourceInjections(final String className) {
         Map<InjectionTarget, ResourceInjectionConfiguration> injections = resourceInjections.get(className);
-        if(injections == null) {
+        if (injections == null) {
             return Collections.emptyMap();
         } else {
             return Collections.unmodifiableMap(injections);
         }
+    }
+
+    public void addMessageDestination(final String name, final String jndiName) {
+        messageDestinations.put(name, jndiName);
+    }
+
+    public Map<String, String> getMessageDestinations() {
+        return Collections.unmodifiableMap(messageDestinations);
     }
 }

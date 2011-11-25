@@ -28,6 +28,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
@@ -69,7 +70,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
         bindings.addAll(getEnvironmentEntries(environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription, applicationClasses));
         bindings.addAll(getResourceEnvRefEntries(environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription, applicationClasses));
         bindings.addAll(getResourceRefEntries(environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription, applicationClasses));
-        bindings.addAll(getMessageDestinationRefs(environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription, applicationClasses));
+        bindings.addAll(getMessageDestinationRefs(environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription, applicationClasses, deploymentUnit));
         return bindings;
     }
 
@@ -208,13 +209,13 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
         return bindings;
     }
 
-    private List<BindingConfiguration> getEnvironmentEntries(DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, ComponentDescription componentDescription, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
-        List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
+    private List<BindingConfiguration> getEnvironmentEntries(final DeploymentDescriptorEnvironment environment, final ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, ComponentDescription componentDescription, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
+        final List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
         final EnvironmentEntriesMetaData envEntries = environment.getEnvironment().getEnvironmentEntries();
         if (envEntries == null) {
             return bindings;
         }
-        for (EnvironmentEntryMetaData envEntry : envEntries) {
+        for (final EnvironmentEntryMetaData envEntry : envEntries) {
             final String name;
             if (envEntry.getName().startsWith("java:")) {
                 name = envEntry.getName();
@@ -293,7 +294,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
     /**
      * TODO: should this be part of the messaging subsystem
      */
-    private List<BindingConfiguration> getMessageDestinationRefs(final DeploymentDescriptorEnvironment environment, final ClassLoader classLoader, final DeploymentReflectionIndex deploymentReflectionIndex, final EEModuleDescription moduleDescription, final ComponentDescription componentDescription, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
+    private List<BindingConfiguration> getMessageDestinationRefs(final DeploymentDescriptorEnvironment environment, final ClassLoader classLoader, final DeploymentReflectionIndex deploymentReflectionIndex, final EEModuleDescription moduleDescription, final ComponentDescription componentDescription, final EEApplicationClasses applicationClasses, final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
         final List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
         final MessageDestinationReferencesMetaData messageDestinationReferences = environment.getEnvironment().getMessageDestinationReferences();
         if (messageDestinationReferences == null) {
@@ -315,7 +316,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                 }
             }
             // our injection (source) comes from the local (ENC) lookup, no matter what.
-            LookupInjectionSource injectionSource = new LookupInjectionSource(name);
+            final LookupInjectionSource injectionSource = new LookupInjectionSource(name);
 
             classType = processInjectionTargets(moduleDescription, componentDescription, applicationClasses, injectionSource, classLoader, deploymentReflectionIndex, messageRef, classType);
             final BindingConfiguration bindingConfiguration;
@@ -325,6 +326,11 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
             } else if (!isEmpty(messageRef.getMappedName())) {
                 bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(messageRef.getMappedName()));
                 bindings.add(bindingConfiguration);
+            } else if (!isEmpty(messageRef.getLink())) {
+                final MessageDestinationInjectionSource messageDestinationInjectionSource = new MessageDestinationInjectionSource(messageRef.getLink(), name);
+                bindingConfiguration = new BindingConfiguration(name, messageDestinationInjectionSource);
+                deploymentUnit.addToAttachmentList(Attachments.MESSAGE_DESTINATIONS, messageDestinationInjectionSource);
+                bindings.add(bindingConfiguration);
             } else {
                 ROOT_LOGGER.cannotResolve("message-destination-ref", name);
             }
@@ -332,7 +338,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
         return bindings;
     }
 
-    private boolean isEmpty(String string) {
+    private boolean isEmpty(final String string) {
         return string == null || string.isEmpty();
     }
 

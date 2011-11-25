@@ -24,6 +24,7 @@ package org.jboss.as.ee.component;
 
 import java.util.Set;
 
+import org.jboss.as.ee.component.deployers.MessageDestinationInjectionSource;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.SetupAction;
@@ -67,4 +68,10 @@ public class Attachments {
      * EJB spec semantics.
      */
     public static final AttachmentKey<String> EAR_APPLICATION_NAME = AttachmentKey.create(String.class);
+
+
+    /**
+     * Any message destinations that need to be resolved.
+     */
+    public static final AttachmentKey<AttachmentList<MessageDestinationInjectionSource>> MESSAGE_DESTINATIONS = AttachmentKey.createList(MessageDestinationInjectionSource.class);
 }

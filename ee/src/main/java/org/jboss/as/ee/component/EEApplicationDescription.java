@@ -29,7 +29,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 
 import org.jboss.vfs.VirtualFile;
 
@@ -37,8 +36,12 @@ import org.jboss.vfs.VirtualFile;
  * @author John Bailey
  */
 public class EEApplicationDescription {
+    //these are only written to by a single top level processor, so do not need to be synchronized
     private final Map<String, List<ViewInformation>> componentsByViewName = new HashMap<String, List<ViewInformation>>();
     private final Map<String, List<Description>> componentsByName = new HashMap<String, List<Description>>();
+
+    //this must be synchronized for writing
+    private final Map<String, List<MessageDestinationMapping>> messageDestinationJndiMapping = new HashMap<String, List<MessageDestinationMapping>>();
 
     /**
      * Add a component to this application.
@@ -46,8 +49,8 @@ public class EEApplicationDescription {
      * @param description    the component description
      * @param deploymentRoot
      */
-    public void addComponent(ComponentDescription description, final VirtualFile deploymentRoot) {
-        for (ViewDescription viewDescription : description.getViews()) {
+    public void addComponent(final ComponentDescription description, final VirtualFile deploymentRoot) {
+        for (final ViewDescription viewDescription : description.getViews()) {
             List<ViewInformation> viewComponents = componentsByViewName.get(viewDescription.getViewClassName());
             if (viewComponents == null) {
                 viewComponents = new ArrayList<ViewInformation>(1);
@@ -60,6 +63,21 @@ public class EEApplicationDescription {
             componentsByName.put(description.getComponentName(), components = new ArrayList<Description>(1));
         }
         components.add(new Description(description, deploymentRoot));
+    }
+
+    /**
+     * Add a message destination to the application
+     *
+     * @param name           The message destination name
+     * @param resolvedName   The resolved JNDI name
+     * @param deploymentRoot The deployment root
+     */
+    public void addMessageDestination(final String name, final String resolvedName, final VirtualFile deploymentRoot) {
+        List<MessageDestinationMapping> components = messageDestinationJndiMapping.get(name);
+        if (components == null) {
+            messageDestinationJndiMapping.put(name, components = new ArrayList<MessageDestinationMapping>(1));
+        }
+        components.add(new MessageDestinationMapping(resolvedName, deploymentRoot));
     }
 
     /**
@@ -111,7 +129,7 @@ public class EEApplicationDescription {
             final Set<ComponentDescription> thisDeployment = new HashSet<ComponentDescription>();
             for (Description i : info) {
                 all.add(i.componentDescription);
-                if(i.deploymentRoot.equals(deploymentRoot)) {
+                if (i.deploymentRoot.equals(deploymentRoot)) {
                     thisDeployment.add(i.componentDescription);
                 }
             }
@@ -139,7 +157,7 @@ public class EEApplicationDescription {
         if (componentName.contains("#")) {
             final String[] parts = componentName.split("#");
             String path = parts[0];
-            if(!path.startsWith("../")) {
+            if (!path.startsWith("../")) {
                 path = "../" + path;
             }
             final VirtualFile virtualPath = deploymentRoot.getChild(path);
@@ -160,8 +178,51 @@ public class EEApplicationDescription {
             for (ViewInformation i : info) {
                 if (i.beanName.equals(componentName)) {
                     all.add(i.viewDescription);
-                    if(i.deploymentRoot.equals(deploymentRoot)) {
+                    if (i.deploymentRoot.equals(deploymentRoot)) {
                         thisDeployment.add(i.viewDescription);
+                    }
+                }
+            }
+            if (all.size() > 1) {
+                return thisDeployment;
+            }
+            return all;
+        }
+    }
+
+    /**
+     * Resolves a message destination name into a JNDI name
+     */
+    public Set<String> resolveMessageDestination(final String messageDestName, final VirtualFile deploymentRoot) {
+
+        if (messageDestName.contains("#")) {
+            final String[] parts = messageDestName.split("#");
+            String path = parts[0];
+            if (!path.startsWith("../")) {
+                path = "../" + path;
+            }
+            final VirtualFile virtualPath = deploymentRoot.getChild(path);
+            final String name = parts[1];
+            final Set<String> ret = new HashSet<String>();
+            final List<MessageDestinationMapping> data = messageDestinationJndiMapping.get(name);
+            if (data != null) {
+                for (final MessageDestinationMapping i : data) {
+                    //now we need to check the path
+                    if (virtualPath.equals(i.deploymentRoot)) {
+                        ret.add(i.jndiName);
+                    }
+                }
+            }
+            return ret;
+        } else {
+            final Set<String> all = new HashSet<String>();
+            final Set<String> thisDeployment = new HashSet<String>();
+            final List<MessageDestinationMapping> data = messageDestinationJndiMapping.get(messageDestName);
+            if (data != null) {
+                for (final MessageDestinationMapping i : data) {
+                    all.add(i.jndiName);
+                    if (i.deploymentRoot.equals(deploymentRoot)) {
+                        thisDeployment.add(i.jndiName);
                     }
                 }
             }
@@ -194,5 +255,14 @@ public class EEApplicationDescription {
         }
     }
 
+    private static final class MessageDestinationMapping {
+        private final String jndiName;
+        private final VirtualFile deploymentRoot;
+
+        public MessageDestinationMapping(final String jndiName, final VirtualFile deploymentRoot) {
+            this.jndiName = jndiName;
+            this.deploymentRoot = deploymentRoot;
+        }
+    }
 
 }

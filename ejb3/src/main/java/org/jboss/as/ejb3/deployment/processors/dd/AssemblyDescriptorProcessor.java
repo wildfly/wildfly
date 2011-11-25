@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.deployment.processors.dd;
 
+import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -30,6 +32,8 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.metadata.ejb.spec.AssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
+import org.jboss.metadata.javaee.spec.MessageDestinationMetaData;
+import org.jboss.metadata.javaee.spec.MessageDestinationsMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 
@@ -57,10 +61,24 @@ public class AssemblyDescriptorProcessor implements DeploymentUnitProcessor {
             // get hold of the ejb jar description (to which we'll be adding this assembly description metadata)
             final EjbJarDescription ejbJarDescription = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION);
 
+            final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
 
             // process security-role(s)
             this.processSecurityRoles(assemblyDescriptor.getSecurityRoles(), ejbJarDescription);
 
+            final MessageDestinationsMetaData destinations = assemblyDescriptor.getMessageDestinations();
+            if(destinations != null) {
+                processMessageDestinations(destinations, eeModuleDescription);
+            }
+        }
+
+    }
+
+    private void processMessageDestinations(final MessageDestinationsMetaData destinations, final EEModuleDescription eeModuleDescription) {
+        for(final MessageDestinationMetaData destination : destinations) {
+            if(destination.getJndiName() != null) {
+                eeModuleDescription.addMessageDestination(destination.getName(), destination.getJndiName());
+            }
         }
     }
 

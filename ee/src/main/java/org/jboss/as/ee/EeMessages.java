@@ -22,11 +22,13 @@
 
 package org.jboss.as.ee;
 
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Set;
+
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
-import java.lang.reflect.Method;
-import java.util.Collection;
 
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -849,5 +851,18 @@ public interface EeMessages {
      */
     @Message(id = 11097, value = "%s")
     XMLStreamException errorParsingEJBClientDescriptor(String message, @Param Location location);
+
+    /**
+     * If a message destination could not be resolved
+     */
+    @Message(id = 11098, value = "No message destination with name %s for binding %s")
+    String noMessageDestination(String name, String binding);
+
+
+    /**
+     * If a message destination could not be resolved
+     */
+    @Message(id = 11099, value = "More than one message destination with name %s for binding %s destinations: %s")
+    String moreThanOneMessageDestination(String name, String binding, Set<String> jndiNames);
 
 }

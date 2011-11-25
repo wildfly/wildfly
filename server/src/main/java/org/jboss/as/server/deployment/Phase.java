@@ -372,6 +372,7 @@ public enum Phase {
     public static final int INSTALL_JACC_POLICY                         = 0x0350;
     public static final int INSTALL_COMPONENT_AGGREGATION               = 0x0400;
     public static final int INSTALL_RESOLVE_EJB_INJECTIONS              = 0x0402;
+    public static final int INSTALL_RESOLVE_MESSAGE_DESTINATIONS        = 0x0403;
     public static final int INSTALL_EJB_JACC_PROCESSING                 = 0x0403;
     public static final int INSTALL_SERVICE_ACTIVATOR                   = 0x0500;
     public static final int INSTALL_OSGI_DEPLOYMENT                     = 0x0600;
