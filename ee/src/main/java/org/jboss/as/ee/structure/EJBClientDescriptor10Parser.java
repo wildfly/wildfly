@@ -100,6 +100,8 @@ class EJBClientDescriptor10Parser implements XMLElementReader<EJBClientDescripto
     }
 
     enum Attribute {
+        EXCLUDE_LOCAL_RECEIVER,
+        LOCAL_RECEIVER_PASS_BY_VALUE,
         OUTBOUND_CONNECTION_REF,
 
         // default unknown attribute
@@ -109,6 +111,8 @@ class EJBClientDescriptor10Parser implements XMLElementReader<EJBClientDescripto
 
         static {
             Map<QName, Attribute> attributesMap = new HashMap<QName, Attribute>();
+            attributesMap.put(new QName("exclude-local-receiver"), EXCLUDE_LOCAL_RECEIVER);
+            attributesMap.put(new QName("local-receiver-pass-by-value"), LOCAL_RECEIVER_PASS_BY_VALUE);
             attributesMap.put(new QName("outbound-connection-ref"), OUTBOUND_CONNECTION_REF);
             attributes = attributesMap;
         }
@@ -177,6 +181,28 @@ class EJBClientDescriptor10Parser implements XMLElementReader<EJBClientDescripto
     }
 
     private void parseEJBReceivers(final XMLExtendedStreamReader reader, final EJBClientDescriptorMetaData ejbClientDescriptorMetaData) throws XMLStreamException {
+
+        // initialize the local-receiver-pass-by-value to the default true
+        boolean localReceiverPassByValue = true;
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            final String val = reader.getAttributeValue(i);
+            switch (attribute) {
+                case EXCLUDE_LOCAL_RECEIVER:
+                    final boolean excludeLocalReceiver = Boolean.parseBoolean(val.trim());
+                    ejbClientDescriptorMetaData.setExcludeLocalReceiver(excludeLocalReceiver);
+                    break;
+                case LOCAL_RECEIVER_PASS_BY_VALUE:
+                    localReceiverPassByValue = Boolean.parseBoolean(val.trim());
+                    break;
+                default:
+                    unexpectedContent(reader);
+            }
+        }
+        // set the local receiver pass by value into the metadata
+        ejbClientDescriptorMetaData.setLocalReceiverPassByValue(localReceiverPassByValue);
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case END_ELEMENT: {

@@ -21,7 +21,8 @@
   -->
 <jboss-ejb-client xmlns="urn:jboss:ejb-client:1.0">
     <client-context>
-        <ejb-receivers exclude-local-receiver="true">
+        <ejb-receivers local-receiver-pass-by-value="false">
+            <remoting-ejb-receiver outbound-connection-ref="ejb-client-descriptor-test-remote-outbound-connection"/>
         </ejb-receivers>
     </client-context>
 </jboss-ejb-client>
