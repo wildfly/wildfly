@@ -49,10 +49,10 @@
             <id>ts.integ.allGroups</id>
             <activation><property><name>allTests</name></property></activation>
             <modules>
-                <module>group-smoke</module>
-                <module>group-basic</module>
-                <module>group-clust</module>
-                <module>group-iiop</module>
+                <module>smoke</module>
+                <module>basic</module>
+                <module>clust</module>
+                <module>iiop</module>
             </modules>
         </profile>
         <!-- Define ts.integration uber-group. -->
@@ -60,10 +60,10 @@
             <id>ts.integ.allGroups2</id>
             <activation><property><name>ts.integration</name></property></activation>
             <modules>
-                <module>group-smoke</module>
-                <module>group-basic</module>
-                <module>group-clust</module>
-                <module>group-iiop</module>
+                <module>smoke</module>
+                <module>basic</module>
+                <module>clust</module>
+                <module>iiop</module>
             </modules>
         </profile>
 
@@ -72,7 +72,7 @@
             <id>ts.integ.group.smoke</id>
             <activation><property><name>!ts.noSmoke</name></property></activation>
             <modules>
-                <module>group-smoke</module>
+                <module>smoke</module>
             </modules>
         </profile>
 
@@ -81,7 +81,7 @@
             <id>ts.integ.group.basic</id>
             <activation><property><name>ts.basic</name></property></activation>
             <modules>
-                <module>group-basic</module>
+                <module>basic</module>
             </modules>
         </profile>
 
@@ -90,7 +90,7 @@
             <id>ts.integ.group.clust</id>
             <activation><property><name>ts.clust</name></property></activation>
             <modules>
-                <module>group-clust</module>
+                <module>clust</module>
             </modules>
         </profile>
 
@@ -99,7 +99,7 @@
             <id>ts.integ.group.iiop</id>
             <activation><property><name>ts.iiop</name></property></activation>
             <modules>
-                <module>group-iiop</module>
+                <module>iiop</module>
             </modules>
         </profile>
 

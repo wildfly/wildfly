@@ -422,7 +422,7 @@
                 <module>stress</module>
             </modules>
         </profile>
-
+        
         <profile>
             <id>benchmark.module.profile</id>
             <activation><property><name>benchmark.module</name></property></activation>
