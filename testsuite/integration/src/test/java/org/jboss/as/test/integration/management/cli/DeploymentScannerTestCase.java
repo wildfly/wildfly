@@ -52,24 +52,24 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class DeploymentScannerTestCase extends AbstractCliTestBase {
-    
+
     private static final String tempDir = System.getProperty("java.io.tmpdir");
     private static WebArchive war;
-    private static File warFile;    
+    private static File warFile;
     private static File deployDir;
-    
+
     @ArquillianResource URL url;
-    
+
     @Deployment
     public static Archive<?> getDeployment() {
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
         ja.addClass(DeploymentScannerTestCase.class);
         return ja;
-    }    
-    
+    }
+
     @BeforeClass
     public static void before() throws Exception {
-        
+
         deployDir = new File(tempDir + File.separator + "tempDeployment");
         if (deployDir.exists()) {
             FileUtils.deleteDirectory(deployDir);
@@ -77,50 +77,50 @@ public class DeploymentScannerTestCase extends AbstractCliTestBase {
         assertTrue("Unable to create deployment scanner directory.", deployDir.mkdir());
         AbstractCliTestBase.before();
     }
-    
+
     @AfterClass
     public static void after() throws Exception {
         FileUtils.deleteDirectory(deployDir);
         AbstractCliTestBase.after();
     }
-   
+
     @Test
     public void testAddRemoveDeploymentScanner() throws Exception {
         addDeploymentScanner();
         removeDeploymentScanner();
     }
-    
+
     private void addDeploymentScanner() throws Exception {
-                       
+
         war = ShrinkWrap.create(WebArchive.class, "SimpleServlet.war");
-        war.addClass(SimpleServlet.class);        
+        war.addClass(SimpleServlet.class);
         warFile = new File(deployDir.getAbsolutePath() + File.separator + "SimpleServlet.war");
         new ZipExporterImpl(war).exportTo(warFile, true);
-        
+
         // add deployment scanner
         String path =  deployDir.getAbsolutePath();
-        path = path.replaceAll("\\\\", "/");        
-        cli.sendLine("/subsystem=deployment-scanner/scanner=testScanner:add(scan-interval=2000,path=\"" + path +"\")");        
-        
+        path = path.replaceAll("\\\\", "/");
+        cli.sendLine("/subsystem=deployment-scanner/scanner=testScanner:add(scan-interval=2000,path=\"" + path +"\")");
+
         // wait for deployment
         Thread.sleep(2000);
-        
+
         // check that the app has been deployed
         File marker = new File(deployDir.getAbsolutePath() + File.separator + "SimpleServlet.war.deployed");
         assertTrue(marker.exists());
-        
+
         String response = HttpRequest.get(getBaseURL(url) + "SimpleServlet/SimpleServlet", 10, TimeUnit.SECONDS);
         assertTrue("Invalid response: " + response, response.indexOf("SimpleServlet") >=0);
-        
+
     }
 
     private void removeDeploymentScanner() throws Exception {
-        
+
         // remove deployment scanner
         cli.sendLine("/subsystem=deployment-scanner/scanner=testScanner:remove()", false);
         CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         assertTrue(result.isIsOutcomeSuccess());
-        
+
         // delete deployment
         assertTrue("Could not delete deployed file.", warFile.delete());
 
@@ -133,10 +133,6 @@ public class DeploymentScannerTestCase extends AbstractCliTestBase {
 
         // undeploy using CLI
         cli.sendLine("undeploy SimpleServlet.war", true);
-        String line = cli.readLine(1000);
-        assertTrue("Undeployment failed:" + line, line.indexOf("Successfully undeployed") >= 0);        
-        
+        assertUndeployed(getBaseURL(url) + "SimpleServlet/SimpleServlet");
     }
-    
-    
 }

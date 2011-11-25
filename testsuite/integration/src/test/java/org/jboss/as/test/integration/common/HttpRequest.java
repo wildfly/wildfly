@@ -79,6 +79,45 @@ public class HttpRequest {
         return execute(task, timeout, unit);
     }
 
+    /**
+     * Returns the URL response as a string.
+     *
+     * @param spec  URL spec
+     * @param waitUntilAvailableMs  maximum timeout in milliseconds to wait for the URL to return non 404 response
+     * @param responseTimeout  the timeout to read the response
+     * @param responseTimeoutUnit  the time unit for responseTimeout
+     * @return  URL response
+     * @throws IOException
+     * @throws ExecutionException
+     * @throws TimeoutException
+     */
+    public static String get(final String spec, final long waitUntilAvailableMs, final long responseTimeout, final TimeUnit responseTimeoutUnit) throws IOException, ExecutionException, TimeoutException {
+        final URL url = new URL(spec);
+        Callable<String> task = new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                final long startTime = System.currentTimeMillis();
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setDoInput(true);
+                while(conn.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) {
+                    if(System.currentTimeMillis() - startTime >= waitUntilAvailableMs) {
+                        break;
+                    }
+                    try {
+                        Thread.sleep(500);
+                    } catch(InterruptedException e) {
+                        break;
+                    } finally {
+                        conn = (HttpURLConnection) url.openConnection();
+                        conn.setDoInput(true);
+                    }
+                }
+                return processResponse(conn);
+            }
+        };
+        return execute(task, responseTimeout, responseTimeoutUnit);
+    }
+
     public static String get(final String spec, final String username, final String password, final long timeout, final TimeUnit unit) throws IOException, TimeoutException {
         final URL url = new URL(spec);
         Callable<String> task = new Callable<String>() {
