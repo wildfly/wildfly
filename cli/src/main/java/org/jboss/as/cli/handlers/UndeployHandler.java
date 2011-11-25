@@ -214,7 +214,6 @@ public class UndeployHandler extends BatchModeCommandHandler {
             ctx.printLine("Undeploy failed: " + Util.getFailureDescription(result));
             return;
         }
-        ctx.printLine("Successfully undeployed " + name + ".");
     }
 
     @Override

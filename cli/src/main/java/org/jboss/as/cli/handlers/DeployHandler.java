@@ -382,7 +382,6 @@ public class DeployHandler extends BatchModeCommandHandler {
             }
 
         }
-        ctx.printLine("'" + name + "' deployed successfully.");
     }
 
     @Override
@@ -531,7 +530,7 @@ public class DeployHandler extends BatchModeCommandHandler {
             final ModelNode steps = composite.get(Util.STEPS);
             steps.add(addRequest);
             steps.add(deployRequest);
-            return addRequest;
+            return composite;
         }
         return deployRequest;
     }
@@ -618,7 +617,6 @@ public class DeployHandler extends BatchModeCommandHandler {
             ctx.printLine(Util.getFailureDescription(result));
             return;
         }
-        ctx.printLine("'" + name + "' re-deployed successfully.");
     }
 
     protected byte[] readBytes(File f) throws OperationFormatException {
