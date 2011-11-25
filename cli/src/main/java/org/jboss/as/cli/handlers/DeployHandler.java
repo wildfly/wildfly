@@ -382,7 +382,7 @@ public class DeployHandler extends BatchModeCommandHandler {
             }
 
         }
-        //ctx.printLine("'" + name + "' deployed successfully.");
+        ctx.printLine("'" + name + "' deployed successfully.");
     }
 
     @Override
@@ -618,7 +618,7 @@ public class DeployHandler extends BatchModeCommandHandler {
             ctx.printLine(Util.getFailureDescription(result));
             return;
         }
-        //ctx.printLine("'" + name + "' replaced successfuly successfully.");
+        ctx.printLine("'" + name + "' re-deployed successfully.");
     }
 
     protected byte[] readBytes(File f) throws OperationFormatException {
