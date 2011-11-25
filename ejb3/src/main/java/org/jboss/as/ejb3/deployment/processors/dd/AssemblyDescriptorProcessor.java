@@ -76,8 +76,11 @@ public class AssemblyDescriptorProcessor implements DeploymentUnitProcessor {
 
     private void processMessageDestinations(final MessageDestinationsMetaData destinations, final EEModuleDescription eeModuleDescription) {
         for(final MessageDestinationMetaData destination : destinations) {
+            //TODO: should these be two seperate metadata attributes?
             if(destination.getJndiName() != null) {
                 eeModuleDescription.addMessageDestination(destination.getName(), destination.getJndiName());
+            } else if(destination.getLookupName() != null) {
+                eeModuleDescription.addMessageDestination(destination.getName(), destination.getLookupName());
             }
         }
     }
