@@ -131,6 +131,9 @@ process_test_directives() {
       install) MVN_GOALS="$MVN_GOALS$param ";;
       deploy)  MVN_GOALS="$MVN_GOALS$param ";;
       site)    MVN_GOALS="$MVN_GOALS$param ";;
+      # Only show the mvn command. Testsuite debugging purposes.
+      -DonlyShowMvnCommand)
+        ONLY_SHOW_MVN_COMMAND=true;;
       # pass through all other params
       *)
         CMD_LINE_PARAMS="$CMD_LINE_PARAMS $param"
@@ -268,6 +271,7 @@ main() {
     export MVN MAVEN_HOME MVN_OPTS MVN_GOAL
 
     echo "$MVN $MVN_OPTIONS $MVN_GOAL"
+    if [ "true" == "$ONLY_SHOW_MVN_COMMAND" ] ; then exit; fi
 
     # execute in debug mode, or simply execute
     if [ "x$MVN_DEBUG" != "x" ]; then
