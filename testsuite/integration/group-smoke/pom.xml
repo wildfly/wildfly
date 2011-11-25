@@ -120,9 +120,6 @@
 
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
-                                        <arquillian.xml>arquillian-smoke.xml</arquillian.xml>
-                                        <arquillian.launch>jboss</arquillian.launch>
-
                                         <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
                                         <jboss.inst>${basedir}/target/jbossas-smoke</jboss.inst>
                                     </systemPropertyVariables>
@@ -146,9 +143,6 @@
 
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
-                                        <arquillian.xml>arquillian-smoke.xml</arquillian.xml>
-                                        <arquillian.launch>jboss</arquillian.launch>
-
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                         <jboss.inst>${basedir}/target/jbossas-smoke</jboss.inst>
                                     </systemPropertyVariables>

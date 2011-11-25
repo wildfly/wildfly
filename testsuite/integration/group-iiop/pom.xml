@@ -105,7 +105,6 @@
 
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
-                                        <arquillian.xml>arquillian-iiop.xml</arquillian.xml>
                                         <arquillian.launch>iiop</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
