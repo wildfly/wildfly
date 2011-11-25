@@ -111,7 +111,7 @@ public class CapedwarfExtension implements Extension {
         /** {@inheritDoc} */
         @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
-            list.add(createAddSubsystemOperation(reader.getAttributeValue(CapedwarfExtension.NAMESPACE, "appengine-api")));
+            list.add(createAddSubsystemOperation(reader.getAttributeValue(null, "appengine-api")));
             // Require no content
             ParseUtils.requireNoContent(reader);
         }
