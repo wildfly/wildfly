@@ -160,6 +160,7 @@ public class AddPropertiesUser {
         public State execute() {
             if (values.nonInteractive == false) {
                 theConsole.printf("\nEnter details of new user to add.\n");
+                values.password = null; // If interactive we want to be sure to capture this.
 
                 /*
                  * Prompt for realm.
@@ -179,15 +180,13 @@ public class AddPropertiesUser {
                 if (values.userName == null) {
                     temp = theConsole.readLine("Username : ");
                     if (temp == null || temp.length() == 0) {
-                        theConsole.printf("\n");
-                        return null;
+                        return new ErrorState("No Username entered, exiting.");
                     }
                     values.userName = temp;
                 } else {
                     temp = theConsole.readLine("Username (%s): ", values.userName);
                     if (temp == null) {
-                        theConsole.printf("\n");
-                        return null;
+                        return new ErrorState("No Username entered, exiting.");
                     }
                     if (temp.length() > 0) {
                         values.userName = temp;
@@ -199,14 +198,12 @@ public class AddPropertiesUser {
                  */
                 char[] tempChar = theConsole.readPassword("Password : ");
                 if (tempChar == null || tempChar.length == 0) {
-                    theConsole.printf("\n");
-                    return null;
+                    return new ErrorState("No Password entered, exiting.");
                 }
 
                 char[] secondTempChar = theConsole.readPassword("Re-enter Password : ");
-                if (tempChar == null || tempChar.length == 0) {
-                    theConsole.printf("\n");
-                    return null;
+                if (secondTempChar == null) {
+                    secondTempChar = new char[0]; // If re-entry missed allow fall through to comparison.
                 }
 
                 if (Arrays.equals(tempChar, secondTempChar) == false) {
@@ -263,50 +260,84 @@ public class AddPropertiesUser {
                 }
             }
 
-            if (weakUserName && values.nonInteractive == false) {
-                theConsole.printf("The username '%s' is easy to guess\n", values.userName);
-                String temp = theConsole.readLine("Are you sure you want to add user '%s' yes/no? ", values.userName);
-                boolean yes = temp != null && "yes".equals(temp.toLowerCase());
-
-                if (yes == false) {
-                    values.userName = null;
-                    return new PromptNewUserState(values);
-                }
-            }
-
+            State addState = new AddUser(values);
+            final State continuingState;
             if (values.nonInteractive) {
-                return new AddUser(values);
+                continuingState = addState;
             } else {
-                return new ConfirmNewUser(values);
+                String message = String.format("About to add user '%s' for realm '%s'\n", values.userName, values.realm);
+                String prompt = "Is this correct";
+
+                continuingState = new ConfirmationChoice(message, prompt, addState, new PromptNewUserState(values));
             }
 
+            if (weakUserName && values.nonInteractive == false) {
+                String message = String.format("The username '%s' is easy to guess\n", values.userName);
+                String prompt = String.format("Are you sure you want to add user '%s'", values.userName);
+                State noState = new PromptNewUserState(values);
+
+                return new ConfirmationChoice(message, prompt, continuingState, noState);
+            }
+
+            return continuingState;
         }
 
     }
 
     /**
-     * State to give user a final opportunity to accept the user they are adding.
+     * State to display a message to the user with option to confirm a choice.
+     *
+     * This state handles either a yes or no outcome and will loop with an error
+     * on invalid input.
      */
-    private class ConfirmNewUser implements State {
+    private class ConfirmationChoice implements State {
 
-        private final Values values;
+        private final String message;
+        private final String prompt;
+        private final State yesState;
+        private final State noState;
 
-        private ConfirmNewUser(final Values values) {
-            this.values = values;
+        private static final int YES = 0;
+        private static final int NO = 1;
+        private static final int INVALID = 2;
+
+        private ConfirmationChoice(final String message, final String prompt, final State yesState, final State noState) {
+            this.message = message;
+            this.prompt = prompt;
+            this.yesState = yesState;
+            this.noState = noState;
         }
 
         @Override
         public State execute() {
-            theConsole.printf("About to add user '%s' for realm '%s'\n", values.userName, values.realm);
-            String temp = theConsole.readLine("Is this correct yes/no? ");
+            if (message != null) {
+                theConsole.printf(message);
+            }
+            String temp = theConsole.readLine(prompt + " yes/no? ");
 
-            boolean yes = temp != null && "yes".equals(temp.toLowerCase());
+            switch (convertResponse(temp)) {
+                case YES:
+                    return yesState;
+                case NO:
+                    return noState;
+                default:
+                    return new ErrorState("Invalid response. (Valid responses are yes, y, no, and n)", this);
+            }
+        }
 
-            if (yes == false) {
-                return new PromptNewUserState();
+        private int convertResponse(final String response) {
+            if (response != null) {
+                String temp = response.toLowerCase();
+                if ("yes".equals(temp) || "y".equals(temp)) {
+                    return YES;
+                }
+
+                if ("no".equals(temp) || "n".equals(temp)) {
+                    return NO;
+                }
             }
 
-            return new AddUser(values);
+            return INVALID;
         }
 
     }
