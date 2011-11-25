@@ -76,10 +76,167 @@
         <copy file="${org.jboss.seam.integration:jboss-seam-int-jbossas:jar}" tofile="${output.dir}/modules/org/jboss/integration/ext-content/main/bundled/jboss-seam-int.jar"/>
     </target>
 
-    <target name="modules">
+    <target name="minimalistic" depends="clean-target, modules-minimalistic, copy-files, make-dirs"/>
+
+    <target name="modules-minimalistic">
 
         <copy file="${org.jboss.modules:jboss-modules:jar}" tofile="${output.dir}/jboss-modules.jar"/>
 
+        <!--
+          ~ Minimalistic list of modules to assemble.
+          ~
+          ~ +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+          ~ +++++++   KEEP THIS LIST ALPHABETICAL BY MODULE NAME!   +++++++
+          ~ +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+          -->
+
+        <module-def name="javax.api"/>
+
+        <module-def name="javax.xml.stream.api"/>
+
+        <module-def name="org.apache.log4j">
+            <maven-resource group="log4j" artifact="log4j"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.controller">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-controller"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.controller-client">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-controller-client"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.deployment-repository">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-deployment-repository"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.domain-http-interface">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-domain-http-interface"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.domain-management">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-domain-management"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.embedded">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-embedded"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.jmx">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-jmx"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.network">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-network"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.platform-mbean">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-platform-mbean"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.process-controller">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-process-controller"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.protocol">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-protocol"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.remoting">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-remoting"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.server">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-server"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.standalone"/>
+
+        <module-def name="org.jboss.common-core">
+            <maven-resource group="org.jboss" artifact="jboss-common-core"/>
+        </module-def>
+
+        <module-def name="org.jboss.dmr">
+            <maven-resource group="org.jboss" artifact="jboss-dmr"/>
+        </module-def>
+
+        <module-def name="org.jboss.invocation">
+            <maven-resource group="org.jboss.invocation" artifact="jboss-invocation"/>
+        </module-def>
+
+        <!-- TODO: why do we need jandex in minimal? -->
+        <module-def name="org.jboss.jandex">
+            <maven-resource group="org.jboss" artifact="jandex"/>
+        </module-def>
+
+        <module-def name="org.jboss.marshalling">
+            <maven-resource group="org.jboss.marshalling" artifact="jboss-marshalling"/>
+        </module-def>
+
+        <module-def name="org.jboss.marshalling.river">
+            <maven-resource group="org.jboss.marshalling" artifact="jboss-marshalling-river"/>
+        </module-def>
+
+        <module-def name="org.jboss.modules"/>
+
+        <module-def name="org.jboss.msc">
+            <maven-resource group="org.jboss.msc" artifact="jboss-msc"/>
+        </module-def>
+
+        <module-def name="org.jboss.logging">
+            <maven-resource group="org.jboss.logging" artifact="jboss-logging"/>
+        </module-def>
+
+        <module-def name="org.jboss.logmanager">
+            <maven-resource group="org.jboss.logmanager" artifact="jboss-logmanager"/>
+        </module-def>
+
+        <module-def name="org.jboss.logmanager.log4j">
+            <maven-resource group="org.jboss.logmanager" artifact="jboss-logmanager-log4j"/>
+        </module-def>
+
+        <module-def name="org.jboss.remoting3">
+            <maven-resource group="org.jboss.remoting3" artifact="jboss-remoting"/>
+        </module-def>
+
+        <module-def name="org.jboss.sasl">
+            <maven-resource group="org.jboss.sasl" artifact="jboss-sasl" />
+        </module-def>
+
+        <module-def name="org.jboss.staxmapper">
+            <maven-resource group="org.jboss" artifact="staxmapper"/>
+        </module-def>
+
+        <module-def name="org.jboss.stdio">
+            <maven-resource group="org.jboss.stdio" artifact="jboss-stdio"/>
+        </module-def>
+
+        <module-def name="org.jboss.threads">
+            <maven-resource group="org.jboss.threads" artifact="jboss-threads"/>
+        </module-def>
+
+        <module-def name="org.jboss.vfs">
+            <maven-resource group="org.jboss" artifact="jboss-vfs"/>
+        </module-def>
+
+        <module-def name="org.jboss.xnio">
+            <maven-resource group="org.jboss.xnio" artifact="xnio-api"/>
+        </module-def>
+
+        <module-def name="org.jboss.xnio.nio">
+            <maven-resource group="org.jboss.xnio" artifact="xnio-nio"/>
+        </module-def>
+
+        <!-- See RuntimeVaultReader -->
+        <module-def name="org.picketbox">
+            <maven-resource group="org.picketbox" artifact="picketbox"/>
+            <maven-resource group="org.picketbox" artifact="picketbox-infinispan"/>
+            <maven-resource group="org.picketbox" artifact="picketbox-commons"/>
+        </module-def>
+
+    </target>
+
+    <target name="modules" depends="modules-minimalistic">
         <!--
           ~ Complete list of modules to assemble.
           ~
@@ -134,8 +291,6 @@
         </module-def>
 
         <module-def name="javaee.api"/>
-
-        <module-def name="javax.api"/>
 
         <module-def name="javax.activation.api">
             <maven-resource group="javax.activation" artifact="activation"/>
@@ -255,8 +410,6 @@
             <maven-resource group="org.jboss.spec.javax.xml.soap" artifact="jboss-saaj-api_1.3_spec"/>
         </module-def>
 
-        <module-def name="javax.xml.stream.api"/>
-
         <module-def name="javax.xml.ws.api">
             <maven-resource group="org.jboss.spec.javax.xml.ws" artifact="jboss-jaxws-api_2.2_spec"/>
         </module-def>
@@ -351,10 +504,6 @@
 
         <module-def name="org.apache.james.mime4j">
             <maven-resource group="org.apache.james" artifact="apache-mime4j"/>
-        </module-def>
-
-        <module-def name="org.apache.log4j">
-            <maven-resource group="log4j" artifact="log4j"/>
         </module-def>
 
         <module-def name="org.apache.neethi">
@@ -513,18 +662,6 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-connector"/>
         </module-def>
 
-        <module-def name="org.jboss.as.controller">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-controller"/>
-        </module-def>
-
-        <module-def name="org.jboss.as.controller-client">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-controller-client"/>
-        </module-def>
-
-        <module-def name="org.jboss.as.deployment-repository">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-deployment-repository"/>
-        </module-def>
-
         <module-def name="org.jboss.as.deployment-scanner">
             <maven-resource group="org.jboss.as" artifact="jboss-as-deployment-scanner"/>
         </module-def>
@@ -535,14 +672,6 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-domain-http-error-context"/>
         </module-def>        	
     	
-        <module-def name="org.jboss.as.domain-http-interface">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-domain-http-interface"/>
-        </module-def>
-
-        <module-def name="org.jboss.as.domain-management">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-domain-management"/>
-        </module-def>
-
         <module-def name="org.jboss.as.ee">
             <maven-resource group="org.jboss.as" artifact="jboss-as-ee"/>
         </module-def>
@@ -553,10 +682,6 @@
 
         <module-def name="org.jboss.as.ejb3">
             <maven-resource group="org.jboss.as" artifact="jboss-as-ejb3"/>
-        </module-def>
-
-        <module-def name="org.jboss.as.embedded">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-embedded"/>
         </module-def>
 
         <module-def name="org.jboss.as.host-controller">
@@ -578,10 +703,6 @@
         <module-def name="org.jboss.as.jdr">
             <maven-resource group="org.jboss.as" artifact="jboss-as-jdr"/>
             <maven-resource group="org.jboss.as" artifact="jboss-as-sos"/>
-        </module-def>
-
-        <module-def name="org.jboss.as.jmx">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-jmx"/>
         </module-def>
 
         <module-def name="org.jboss.as.jpa">
@@ -633,43 +754,17 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-naming"/>
         </module-def>
 
-        <module-def name="org.jboss.as.network">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-network"/>
-        </module-def>
-
      	<module-def name="org.jboss.as.osgi">
             <maven-resource group="org.jboss.as" artifact="jboss-as-osgi-service"/>
-        </module-def>
-
-        <module-def name="org.jboss.as.platform-mbean">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-platform-mbean"/>
-        </module-def>
-
-        <module-def name="org.jboss.as.process-controller">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-process-controller"/>
-        </module-def>
-
-        <module-def name="org.jboss.as.protocol">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-protocol"/>
-        </module-def>
-
-        <module-def name="org.jboss.as.remoting">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-remoting"/>
         </module-def>
 
         <module-def name="org.jboss.as.sar">
             <maven-resource group="org.jboss.as" artifact="jboss-as-sar"/>
         </module-def>
 
-        <module-def name="org.jboss.as.server">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-server"/>
-        </module-def>
-
         <module-def name="org.jboss.as.security">
             <maven-resource group="org.jboss.as" artifact="jboss-as-security"/>
         </module-def>
-
-        <module-def name="org.jboss.as.standalone"/>
 
         <module-def name="org.jboss.as.transactions">
             <maven-resource group="org.jboss.as" artifact="jboss-as-transactions"/>
@@ -709,16 +804,8 @@
             <maven-resource group="org.jboss.classfilewriter" artifact="jboss-classfilewriter"/>
         </module-def>
 
-        <module-def name="org.jboss.common-core">
-            <maven-resource group="org.jboss" artifact="jboss-common-core"/>
-        </module-def>
-
         <module-def name="org.jboss.com.sun.httpserver">
             <maven-resource group="org.jboss.com.sun.httpserver" artifact="httpserver"/>
-        </module-def>
-
-        <module-def name="org.jboss.dmr">
-            <maven-resource group="org.jboss" artifact="jboss-dmr"/>
         </module-def>
 
         <module-def name="org.jboss.ejb-client">
@@ -751,10 +838,6 @@
             <maven-resource group="org.jboss.interceptor" artifact="jboss-interceptor-spi"/>
         </module-def>
 
-        <module-def name="org.jboss.invocation">
-            <maven-resource group="org.jboss.invocation" artifact="jboss-invocation"/>
-        </module-def>
-
         <module-def name="org.jboss.ironjacamar.api">
             <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-common-api"/>
             <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-common-spi"/>
@@ -770,10 +853,6 @@
 
         <module-def name="org.jboss.ironjacamar.jdbcadapters">
             <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-jdbc"/>
-        </module-def>
-
-        <module-def name="org.jboss.jandex">
-            <maven-resource group="org.jboss" artifact="jandex"/>
         </module-def>
 
         <module-def name="org.jboss.jaxbintros">
@@ -792,38 +871,12 @@
             <maven-resource group="org.jboss.jbossts" artifact="jbossjts-integration"/>
         </module-def>
 
-        <module-def name="org.jboss.logging">
-            <maven-resource group="org.jboss.logging" artifact="jboss-logging"/>
-        </module-def>
-
-        <module-def name="org.jboss.logmanager">
-            <maven-resource group="org.jboss.logmanager" artifact="jboss-logmanager"/>
-        </module-def>
-
-        <module-def name="org.jboss.logmanager.log4j">
-            <maven-resource group="org.jboss.logmanager" artifact="jboss-logmanager-log4j"/>
-        </module-def>
-
-        <module-def name="org.jboss.marshalling">
-            <maven-resource group="org.jboss.marshalling" artifact="jboss-marshalling"/>
-        </module-def>
-
-        <module-def name="org.jboss.marshalling.river">
-            <maven-resource group="org.jboss.marshalling" artifact="jboss-marshalling-river"/>
-        </module-def>
-
         <module-def name="org.jboss.metadata">
             <maven-resource group="org.jboss.metadata" artifact="jboss-metadata-common"/>
             <maven-resource group="org.jboss.metadata" artifact="jboss-metadata-appclient"/>
             <maven-resource group="org.jboss.metadata" artifact="jboss-metadata-ejb"/>
             <maven-resource group="org.jboss.metadata" artifact="jboss-metadata-web"/>
             <maven-resource group="org.jboss.metadata" artifact="jboss-metadata-ear"/>
-        </module-def>
-
-        <module-def name="org.jboss.modules"/>
-
-        <module-def name="org.jboss.msc">
-            <maven-resource group="org.jboss.msc" artifact="jboss-msc"/>
         </module-def>
 
         <module-def name="org.jboss.netty">
@@ -852,10 +905,6 @@
         <module-def name="org.jboss.osgi.vfs">
             <maven-resource group="org.jboss.osgi.vfs" artifact="jbosgi-vfs"/>
             <maven-resource group="org.jboss.osgi.vfs" artifact="jbosgi-vfs30"/>
-        </module-def>
-
-        <module-def name="org.jboss.remoting3">
-            <maven-resource group="org.jboss.remoting3" artifact="jboss-remoting"/>
         </module-def>
 
         <module-def name="org.jboss.resteasy.resteasy-atom-provider">
@@ -887,10 +936,6 @@
             <maven-resource group="org.jboss.resteasy" artifact="resteasy-multipart-provider" jandex="true"/>
         </module-def>
 
-        <module-def name="org.jboss.sasl">
-            <maven-resource group="org.jboss.sasl" artifact="jboss-sasl" />
-        </module-def>
-
         <module-def name="org.jboss.security.negotiation">
             <maven-resource group="org.jboss.security" artifact="jboss-negotiation"/>
         </module-def>
@@ -903,26 +948,6 @@
             <maven-resource group="org.jboss.shrinkwrap" artifact="shrinkwrap-api"/>
             <maven-resource group="org.jboss.shrinkwrap" artifact="shrinkwrap-spi"/>
             <maven-resource group="org.jboss.shrinkwrap" artifact="shrinkwrap-impl-base"/>
-        </module-def>
-
-        <module-def name="org.jboss.staxmapper">
-            <maven-resource group="org.jboss" artifact="staxmapper"/>
-        </module-def>
-
-        <module-def name="org.jboss.stdio">
-            <maven-resource group="org.jboss.stdio" artifact="jboss-stdio"/>
-        </module-def>
-
-        <module-def name="org.jboss.threads">
-            <maven-resource group="org.jboss.threads" artifact="jboss-threads"/>
-        </module-def>
-
-        <module-def name="org.jboss.xnio.nio">
-            <maven-resource group="org.jboss.xnio" artifact="xnio-nio"/>
-        </module-def>
-
-        <module-def name="org.jboss.vfs">
-            <maven-resource group="org.jboss" artifact="jboss-vfs"/>
         </module-def>
 
         <module-def name="org.jboss.weld.core">
@@ -1000,10 +1025,6 @@
             <maven-resource group="org.jboss" artifact="jbossxb"/>
         </module-def>
 
-        <module-def name="org.jboss.xnio">
-            <maven-resource group="org.jboss.xnio" artifact="xnio-api"/>
-        </module-def>
-
         <module-def name="org.jboss.xts">
             <maven-resource group="org.jboss.jbossts" artifact="jbossxts"/>
             <maven-resource group="org.jboss.jbossts" artifact="jbossxts-api"/>
@@ -1026,12 +1047,6 @@
 
         <module-def name="org.osgi.core">
             <maven-resource group="org.osgi" artifact="org.osgi.core"/>
-        </module-def>
-
-        <module-def name="org.picketbox">
-            <maven-resource group="org.picketbox" artifact="picketbox"/>
-            <maven-resource group="org.picketbox" artifact="picketbox-infinispan"/>
-            <maven-resource group="org.picketbox" artifact="picketbox-commons"/>
         </module-def>
 
         <module-def name="org.picketlink">
@@ -1163,5 +1178,5 @@
         <delete file="maven-ant-tasks.jar"/>
     </target>
 
-    <target name="all" depends="clean-target, modules, bundles, copy-files, make-dirs, create-ext-content"/>
+    <target name="all" depends="minimalistic, modules, bundles, create-ext-content"/>
 </project>
