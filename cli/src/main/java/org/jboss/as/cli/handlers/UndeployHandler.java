@@ -37,6 +37,7 @@ import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.ParsedCommandLine;
+import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
@@ -53,8 +54,12 @@ public class UndeployHandler extends BatchModeCommandHandler {
     private final ArgumentWithoutValue allRelevantServerGroups;
     private final ArgumentWithoutValue keepContent;
 
-    public UndeployHandler() {
-        super("undeploy", true);
+    public UndeployHandler(CommandContext ctx) {
+        super(ctx, "undeploy", true);
+
+        final DefaultOperationRequestAddress requiredAddress = new DefaultOperationRequestAddress();
+        requiredAddress.toNodeType(Util.DEPLOYMENT);
+        addRequiredPath(requiredAddress);
 
         l = new ArgumentWithoutValue(this, "-l");
         l.setExclusive(true);
@@ -209,8 +214,6 @@ public class UndeployHandler extends BatchModeCommandHandler {
             ctx.printLine("Undeploy failed: " + Util.getFailureDescription(result));
             return;
         }
-
-        ctx.printLine("Successfully undeployed " + name + ".");
     }
 
     @Override

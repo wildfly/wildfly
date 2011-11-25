@@ -188,7 +188,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
                 ctx.printLine("Command '" + cmdName + "' already registered.");
                 return;
             }
-            cmdRegistry.registerHandler(new GenericTypeOperationHandler(nodePath, propName), cmdName);
+            cmdRegistry.registerHandler(new GenericTypeOperationHandler(ctx, nodePath, propName), cmdName);
             return;
         }
 

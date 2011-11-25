@@ -45,8 +45,8 @@ public class JmsQueueRemoveHandler extends BatchModeCommandHandler {
     private final ArgumentWithValue profile;
     private final ArgumentWithValue name;
 
-    public JmsQueueRemoveHandler() {
-        super("jms-queue-remove", true);
+    public JmsQueueRemoveHandler(CommandContext ctx) {
+        super(ctx, "jms-queue-remove", true);
 
         profile = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
             @Override

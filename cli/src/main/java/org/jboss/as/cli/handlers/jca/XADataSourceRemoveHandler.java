@@ -21,6 +21,8 @@
  */
 package org.jboss.as.cli.handlers.jca;
 
+import org.jboss.as.cli.CommandContext;
+
 
 /**
  *
@@ -28,7 +30,7 @@ package org.jboss.as.cli.handlers.jca;
  */
 public class XADataSourceRemoveHandler extends BaseDataSourceRemoveHandler {
 
-    public XADataSourceRemoveHandler() {
-        super("xa-data-source-remove", "xa-data-source");
+    public XADataSourceRemoveHandler(CommandContext ctx) {
+        super(ctx, "xa-data-source-remove", "xa-data-source");
     }
 }

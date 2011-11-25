@@ -21,7 +21,6 @@
  */
 package org.jboss.as.test.integration.management.cli;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -49,22 +48,22 @@ import org.junit.runner.RunWith;
  *
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
-@RunWith(Arquillian.class)    
+@RunWith(Arquillian.class)
 @RunAsClient
 public class DeployTestCase extends AbstractCliTestBase {
-    
+
     private static WebArchive war;
     private static File warFile;
 
     @ArquillianResource URL url;
-    
+
     @Deployment
     public static Archive<?> getDeployment() {
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
         ja.addClass(DeployTestCase.class);
         return ja;
-    }    
-    
+    }
+
     @BeforeClass
     public static void before() throws Exception {
         war = ShrinkWrap.create(WebArchive.class, "SimpleServlet.war");
@@ -76,29 +75,27 @@ public class DeployTestCase extends AbstractCliTestBase {
 
         AbstractCliTestBase.before();
     }
-    
+
     @AfterClass
     public static void after() throws Exception {
         warFile.delete();
         AbstractCliTestBase.after();
     }
-    
+
     @Test
     public void testDeployRedeployUndeploy() throws Exception {
         testDeploy();
         testRedeploy();
         testUndeploy();
     }
-    
+
     public void testDeploy() throws Exception {
-                
-        // deploy to server        
+
+        // deploy to server
         cli.sendLine("deploy " + warFile.getAbsolutePath(), true);
-        String line = cli.readLine(1000);
-        assertTrue("Deployment failed: " + line, line.indexOf("deployed successfully") >= 0);        
-        
+
         // check deployment
-        String response = HttpRequest.get(getBaseURL(url) + "SimpleServlet/SimpleServlet", 10, TimeUnit.SECONDS);
+        String response = HttpRequest.get(getBaseURL(url) + "SimpleServlet/SimpleServlet", 1000, 10, TimeUnit.SECONDS);
         assertTrue("Invalid response: " + response, response.indexOf("SimpleServlet") >=0);
     }
 
@@ -107,48 +104,47 @@ public class DeployTestCase extends AbstractCliTestBase {
         // check we have original deployment
         String response = HttpRequest.get(getBaseURL(url) + "SimpleServlet/page.html", 10, TimeUnit.SECONDS);
         assertTrue("Invalid response: " + response, response.indexOf("Version1") >=0);
-        
+
         // update the deployment - replace page.html
         war = ShrinkWrap.create(WebArchive.class, "SimpleServlet.war");
-        war.addClass(SimpleServlet.class);        
+        war.addClass(SimpleServlet.class);
         war.addAsWebResource(new StringAsset("Version2"), "page.html");
         new ZipExporterImpl(war).exportTo(warFile, true);
-        
-        
-        // redeploy to server        
+
+
+        // redeploy to server
         cli.sendLine("deploy " + warFile.getAbsolutePath(), true);
         String line = cli.readLine(1000);
         // check that this fails
-        assertFalse("Deployment failed: " + line, line.indexOf("deployed successfully") >= 0);        
-        
+        assertTrue("Deployment failed: " + line, line.indexOf("use --force to replace") >= 0);
+
         // force redeploy
         cli.sendLine("deploy " + warFile.getAbsolutePath() + " --force", true);
-        line = cli.readLine(1000);
-        // check that now it is ok
-        assertTrue("Deployment failed: " + line, line.indexOf("deployed successfully") >= 0);       
-        
+
         // check that new version is running
-        response = HttpRequest.get(getBaseURL(url) + "SimpleServlet/page.html", 10, TimeUnit.SECONDS);
+        final long firstTry = System.currentTimeMillis();
+        response = HttpRequest.get(getBaseURL(url) + "SimpleServlet/page.html", 1000, 10, TimeUnit.SECONDS);
+        while(response.indexOf("Version2") < 0) {
+            if(System.currentTimeMillis() - firstTry >= 1000) {
+                break;
+            }
+            try {
+                Thread.sleep(500);
+            } catch(InterruptedException e) {
+                break;
+            } finally {
+                response = HttpRequest.get(getBaseURL(url) + "SimpleServlet/page.html", 1000, 10, TimeUnit.SECONDS);
+            }
+        }
         assertTrue("Invalid response: " + response, response.indexOf("Version2") >=0);
     }
-    
+
     public void testUndeploy() throws Exception {
-        
+
         //undeploy
         cli.sendLine("undeploy SimpleServlet.war", true);
-        String line = cli.readLine(1000);
-        assertTrue("Undeployment failed:" + line, line.indexOf("Successfully undeployed") >= 0);        
-        
+
         // check undeployment
-        boolean getFailed = false;
-        String response = null;
-        try {
-            response = HttpRequest.get(getBaseURL(url) + "SimpleServlet/SimpleServlet", 10, TimeUnit.SECONDS);
-        } catch (Exception e) {
-            getFailed = true;
-        }
-        assertTrue("Deployment still exists:" + response, getFailed);
+        assertUndeployed(getBaseURL(url) + "SimpleServlet/SimpleServlet");
     }
-    
-    
 }

@@ -248,8 +248,8 @@ public class ThreadsSubsystemProviders {
         node.get(ATTRIBUTES, THREAD_FACTORY, REQUIRED).set(false);
 
         node.get(ATTRIBUTES, PROPERTIES, DESCRIPTION).set(bundle.getString("threadpool.common.properties"));
-        node.get(ATTRIBUTES, PROPERTIES, TYPE).set(ModelType.OBJECT);
-        node.get(ATTRIBUTES, PROPERTIES, VALUE_TYPE).set(ModelType.STRING);
+        node.get(ATTRIBUTES, PROPERTIES, TYPE).set(ModelType.LIST);
+        node.get(ATTRIBUTES, PROPERTIES, VALUE_TYPE).set(ModelType.PROPERTY);
         node.get(ATTRIBUTES, PROPERTIES, REQUIRED).set(false);
 
         node.get(ATTRIBUTES, MAX_THREADS, DESCRIPTION).set(bundle.getString("threadpool.common.maxthreads"));
@@ -441,8 +441,8 @@ public class ThreadsSubsystemProviders {
         operation.get(REQUEST_PROPERTIES, THREAD_FACTORY, TYPE).set(ModelType.STRING);
         operation.get(REQUEST_PROPERTIES, THREAD_FACTORY, REQUIRED).set(false);
         operation.get(REQUEST_PROPERTIES, PROPERTIES, DESCRIPTION).set(bundle.getString("threadpool.common.properties"));
-        operation.get(REQUEST_PROPERTIES, PROPERTIES, TYPE).set(ModelType.OBJECT);
-        operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE).set(ModelType.STRING);
+        operation.get(REQUEST_PROPERTIES, PROPERTIES, TYPE).set(ModelType.LIST);
+        operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE).set(ModelType.PROPERTY);
         operation.get(REQUEST_PROPERTIES, PROPERTIES, REQUIRED).set(false);
 
         operation.get(REQUEST_PROPERTIES, MAX_THREADS, DESCRIPTION).set(bundle.getString("threadpool.common.maxthreads"));

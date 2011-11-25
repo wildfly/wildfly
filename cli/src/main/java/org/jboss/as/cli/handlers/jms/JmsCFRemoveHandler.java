@@ -45,8 +45,8 @@ public class JmsCFRemoveHandler extends BatchModeCommandHandler {
     private final ArgumentWithValue profile;
     private final ArgumentWithValue name;
 
-    public JmsCFRemoveHandler() {
-        super("jms-cf-remove", true);
+    public JmsCFRemoveHandler(CommandContext ctx) {
+        super(ctx, "jms-cf-remove", true);
 
         profile = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
             @Override

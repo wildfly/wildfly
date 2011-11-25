@@ -21,6 +21,8 @@
  */
 package org.jboss.as.cli.handlers.jca;
 
+import org.jboss.as.cli.CommandContext;
+
 
 /**
  *
@@ -28,8 +30,8 @@ package org.jboss.as.cli.handlers.jca;
  */
 public class DataSourceModifyHandler extends BaseDataSourceModifyHandler {
 
-    public DataSourceModifyHandler() {
-        super("data-source-modify", "data-source");
+    public DataSourceModifyHandler(CommandContext ctx) {
+        super(ctx, "data-source-modify", "data-source");
     }
 
 /*    @Override

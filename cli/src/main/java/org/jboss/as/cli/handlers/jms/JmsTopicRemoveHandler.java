@@ -45,8 +45,8 @@ public class JmsTopicRemoveHandler extends BatchModeCommandHandler {
     private final ArgumentWithValue profile;
     private final ArgumentWithValue name;
 
-    public JmsTopicRemoveHandler() {
-        super("jms-topic-remove", true);
+    public JmsTopicRemoveHandler(CommandContext ctx) {
+        super(ctx, "jms-topic-remove", true);
 
         profile = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
             @Override
