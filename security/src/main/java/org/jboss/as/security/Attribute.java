@@ -56,6 +56,7 @@ public enum Attribute {
     KEYSTORE_URL("keystore-url"),
     LOGIN_MODULE_STACK_REF("login-module-stack-ref"),
     MAPPING_MANAGER_CLASS_NAME("mapping-manager-class-name"),
+    MODULE("module"),
     NAME("name"),
     PROTOCOLS("protocols"),
     SERVER_ALIAS("server-alias"),

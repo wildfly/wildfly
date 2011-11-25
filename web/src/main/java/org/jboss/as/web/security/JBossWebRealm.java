@@ -257,6 +257,7 @@ public class JBossWebRealm extends RealmBase {
                 }
             }
         } catch (Exception e) {
+            log.errorf(e,"Error during authenticate(String,String)");
             userPrincipal = null;
             exceptionAudit(userPrincipal, null, e);
         }
@@ -327,7 +328,7 @@ public class JBossWebRealm extends RealmBase {
                 userPrincipal = null;
             }
         } catch (Exception e) {
-            log.errorf("Error during authenticate(X509Certificate[])");
+            log.errorf(e,"Error during authenticate(X509Certificate[])");
             exceptionAudit(userPrincipal, null, e);
         }
 
@@ -404,7 +405,7 @@ public class JBossWebRealm extends RealmBase {
                 userPrincipal = null;
             }
         } catch (Exception e) {
-            log.errorf("Error during authenticate(String,String,String,String,String,String,String,String)");
+            log.errorf(e,"Error during authenticate(String,String,String,String,String,String,String,String)");
         }
 
         if (userPrincipal != null) {
@@ -503,7 +504,7 @@ public class JBossWebRealm extends RealmBase {
             try {
                 helper = SecurityHelperFactory.getWebAuthorizationHelper(sc);
             } catch (Exception e) {
-                log.errorf("Exception in obtaining helper", e);
+                log.errorf(e,"Exception in obtaining helper");
                 return false;
             }
 
@@ -563,7 +564,7 @@ public class JBossWebRealm extends RealmBase {
             try {
                 helper = SecurityHelperFactory.getWebAuthorizationHelper(sc);
             } catch (Exception e) {
-                log.errorf("Error obtaining helper", e);
+                log.errorf(e,"Error obtaining helper");
             }
             Subject callerSubject = sc.getUtil().getSubject();
             if (callerSubject == null) {
@@ -610,7 +611,7 @@ public class JBossWebRealm extends RealmBase {
             try {
                 helper = SecurityHelperFactory.getWebAuthorizationHelper(sc);
             } catch (Exception e) {
-                log.errorf("Error obtaining helper", e);
+                log.errorf(e,"Error obtaining helper");
             }
 
             Subject callerSubject = sc.getUtil().getSubject();

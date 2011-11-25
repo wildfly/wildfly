@@ -59,6 +59,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * @author Darran Lofthouse
  * @author Brian Stansberry
  * @author Jason T. Greene
+ * @author Anil Saldhana
  */
 public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
         XMLElementWriter<SubsystemMarshallingContext>, ModulesMap {
@@ -643,6 +644,11 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                     node.get(TYPE).set(type);
                     break;
                 }
+                case MODULE: {
+                    ModelNode module = MappingModulesAttributeDefinition.parseField(MODULE, value, reader.getLocation());
+                    node.get(MODULE).set(module);
+                    break;
+                }
                 default:
                     throw unexpectedAttribute(reader, i);
             }
@@ -902,5 +908,4 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
 
         parseProperties(Element.PROPERTY.getLocalName(), reader, op.get(ADDITIONAL_PROPERTIES));
     }
-
 }

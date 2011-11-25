@@ -149,6 +149,7 @@ public abstract class AbstractDatabaseLoginModuleTest extends AbstractLoginModul
        ModelNode loginModule = op.get(Constants.LOGIN_MODULES).add();
        loginModule.get(ModelDescriptionConstants.CODE).set(DatabaseServerLoginModule.class.getName());
        loginModule.get(FLAG).set("required");
+       loginModule.get(MODULE).set("org.picketbox");
        op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
 
        ModelNode moduleOptions = loginModule.get("module-options");
