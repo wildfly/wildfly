@@ -24,22 +24,19 @@
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
     </properties>
-
     <build>
-        <testSourceDirectory>../src/test/java</testSourceDirectory>
         <testResources>
             <testResource>
-                <directory>../src/test/resources</directory>
+                <directory>src/test/resources</directory>
             </testResource>
             <testResource>
-                <directory>../src/test/java</directory>
+                <directory>src/test/java</directory>
                 <excludes>
                     <exclude>**/*.java</exclude>
                 </excludes>
             </testResource>
         </testResources>
     </build>
-
     <profiles>
 
         <profile>

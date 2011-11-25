@@ -350,6 +350,8 @@
                     </systemPropertyVariables>
                     <!-- Arquillian's config files. -->
                     <additionalClasspathElements combine.children="append">
+                        <additionalClasspathElement>src/test/config/arq</additionalClasspathElement>
+                        <!-- TODO get rid of this -->
                         <additionalClasspathElement>${jbossas.ts.integ.dir}/src/test/config/arq</additionalClasspathElement>
                     </additionalClasspathElements>
                 </configuration>
