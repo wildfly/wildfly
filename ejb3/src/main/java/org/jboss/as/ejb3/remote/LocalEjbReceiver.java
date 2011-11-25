@@ -289,18 +289,18 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
         public void listenerAdded(final DeploymentRepository repository) {
             for (Map.Entry<DeploymentModuleIdentifier, ModuleDeployment> entry : repository.getModules().entrySet()) {
                 final DeploymentModuleIdentifier module = entry.getKey();
-                LocalEjbReceiver.this.registerModule(module.getApplicationName(), module.getModuleName(), module.getModuleName());
+                LocalEjbReceiver.this.registerModule(module.getApplicationName(), module.getModuleName(), module.getDistinctName());
             }
         }
 
         @Override
         public void deploymentAvailable(final DeploymentModuleIdentifier deployment, final ModuleDeployment moduleDeployment) {
-            LocalEjbReceiver.this.registerModule(deployment.getApplicationName(), deployment.getModuleName(), deployment.getModuleName());
+            LocalEjbReceiver.this.registerModule(deployment.getApplicationName(), deployment.getModuleName(), deployment.getDistinctName());
         }
 
         @Override
         public void deploymentRemoved(final DeploymentModuleIdentifier deployment) {
-            //TODO: implement this
+            LocalEjbReceiver.this.deRegisterModule(deployment.getApplicationName(), deployment.getModuleName(), deployment.getDistinctName());
         }
     }
 }

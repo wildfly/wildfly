@@ -76,6 +76,22 @@
                 </annotation>
             </xsd:element>
         </xsd:choice>
+        <xsd:attribute name="exclude-local-receiver" type="xsd:boolean" use="optional" default="false">
+            <annotation xmlns="http://www.w3.org/2001/XMLSchema">
+                <documentation>
+                    Set to true if the local receiver which gets added to the EJB client context by default, has to be
+                    excluded from the context
+                </documentation>
+            </annotation>
+        </xsd:attribute>
+        <xsd:attribute name="local-receiver-pass-by-value" type="xsd:boolean" use="optional" default="true">
+            <annotation xmlns="http://www.w3.org/2001/XMLSchema">
+                <documentation>
+                    Set to false if the local receiver that's available in the EJB client context, should use
+                    pass-by-reference (instead of pass-by-value) semantics for the EJB invocations.
+                </documentation>
+            </annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
 

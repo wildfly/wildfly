@@ -32,6 +32,7 @@ import org.jboss.as.remoting.AbstractOutboundConnectionService;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.remoting.IoFutureHelper;
 import org.jboss.logging.Logger;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -43,6 +44,9 @@ import org.jboss.remoting3.Connection;
 import org.xnio.IoFuture;
 
 /**
+ * A service which sets up the {@link EJBClientContext} with appropriate remoting receivers and local receivers.
+ * The receivers and the client context are configured in a jboss-ejb-client.xml.
+ *
  * @author Jaikiran Pai
  */
 public class DescriptorBasedEJBClientContextService implements Service<EJBClientContext> {
@@ -59,19 +63,31 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
     private final List<InjectedValue<AbstractOutboundConnectionService>> remotingOutboundConnections = new ArrayList<InjectedValue<AbstractOutboundConnectionService>>();
 
     /**
+     * (optional) local EJB receiver for the EJB client context
+     */
+    private final InjectedValue<LocalEjbReceiver> localEjbReceiverInjectedValue = new InjectedValue<LocalEjbReceiver>();
+
+    /**
      * The client context
      */
     private volatile EJBClientContext ejbClientContext;
 
     @Override
     public synchronized void start(StartContext startContext) throws StartException {
-        final Collection<Connection> connections = this.createRemotingConnections();
         // setup the context with the receivers
-        EJBClientContext context = EJBClientContext.create();
+        final EJBClientContext context = EJBClientContext.create();
+        // add the (optional) local EJB receiver
+        final LocalEjbReceiver localEjbReceiver = this.localEjbReceiverInjectedValue.getOptionalValue();
+        if (localEjbReceiver != null) {
+            context.registerEJBReceiver(localEjbReceiver);
+            logger.debug("Added a local EJB receiver to descriptor based EJB client context named " + startContext.getController().getName());
+        }
+        // now process the remoting receivers
+        final Collection<Connection> connections = this.createRemotingConnections();
         for (final Connection conection : connections) {
             context.registerConnection(conection);
         }
-        logger.debug("Descriptor based EJB client context created with " + connections.size() + " remoting EJB receivers");
+        logger.debug("Added " + connections.size() + " remoting EJB receivers to descriptor based EJB client context named " + startContext.getController().getName());
         this.ejbClientContext = context;
     }
 
@@ -89,6 +105,10 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
         final InjectedValue<AbstractOutboundConnectionService> value = new InjectedValue<AbstractOutboundConnectionService>();
         serviceBuilder.addDependency(serviceName, AbstractOutboundConnectionService.class, value);
         remotingOutboundConnections.add(value);
+    }
+
+    public Injector<LocalEjbReceiver> getLocalEjbReceiverInjector() {
+        return this.localEjbReceiverInjectedValue;
     }
 
     private Collection<Connection> createRemotingConnections() {

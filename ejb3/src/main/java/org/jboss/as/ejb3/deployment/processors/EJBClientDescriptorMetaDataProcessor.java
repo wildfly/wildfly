@@ -27,6 +27,7 @@ import org.jboss.as.ee.structure.Attachments;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.remote.DefaultEjbClientContextService;
 import org.jboss.as.ejb3.remote.DescriptorBasedEJBClientContextService;
+import org.jboss.as.ejb3.remote.LocalEjbReceiver;
 import org.jboss.as.remoting.AbstractOutboundConnectionService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -82,6 +83,16 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
             final ServiceName connectionDependencyService = AbstractOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionRef);
             service.addRemotingConnectionDependency(serviceBuilder, connectionDependencyService);
         }
+        // if the local receiver is enabled for this context, then add a dependency on the appropriate LocalEjbReceiver
+        // service
+        if (!ejbClientDescriptorMetaData.isLocalReceiverExcluded()) {
+            if (ejbClientDescriptorMetaData.isLocalReceiverPassByValue()) {
+                serviceBuilder.addDependency(LocalEjbReceiver.BY_VALUE_SERVICE_NAME, LocalEjbReceiver.class, service.getLocalEjbReceiverInjector());
+            } else {
+                serviceBuilder.addDependency(LocalEjbReceiver.BY_REFERENCE_SERVICE_NAME, LocalEjbReceiver.class, service.getLocalEjbReceiverInjector());
+            }
+        }
+
         // install the service
         serviceBuilder.install();
         logger.debug("Deployment unit " + deploymentUnit + " will use " + ejbClientContextServiceName + " as the EJB client context service");

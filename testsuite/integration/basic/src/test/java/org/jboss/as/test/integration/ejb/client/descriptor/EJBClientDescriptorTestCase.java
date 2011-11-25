@@ -61,6 +61,7 @@ public class EJBClientDescriptorTestCase {
 
     private static final String MODULE_NAME_ONE = "ejb-client-descriptor-test";
     private static final String MODULE_NAME_TWO = "ejb-client-descriptor-with-no-receiver-test";
+    private static final String MODULE_NAME_THREE = "ejb-client-descriptor-with-local-and-remote-receivers-test";
 
     private static Context context;
 
@@ -82,12 +83,22 @@ public class EJBClientDescriptorTestCase {
     }
 
     @Deployment(name = "no-ejb-receiver-client-config", testable = false)
-    public static Archive createAnotherDeployment() throws Exception {
+    public static Archive createNoEJBReceiverConfigDeployment() throws Exception {
         setupRemoteOutboundConnection();
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME_TWO + ".jar");
         jar.addPackage(EchoBean.class.getPackage());
         jar.addAsManifestResource("ejb/client/descriptor/no-ejb-receiver-jboss-ejb-client.xml", "jboss-ejb-client.xml");
+        return jar;
+    }
+
+    @Deployment(name = "local-and-remote-receviers-config", testable = false)
+    public static Archive createLocalAndRemoteReceiverConfigDeployment() throws Exception {
+        setupRemoteOutboundConnection();
+
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME_THREE + ".jar");
+        jar.addPackage(EchoBean.class.getPackage());
+        jar.addAsManifestResource("ejb/client/descriptor/local-and-remote-receiver-jboss-ejb-client.xml", "jboss-ejb-client.xml");
         return jar;
     }
 
@@ -170,4 +181,23 @@ public class EJBClientDescriptorTestCase {
             // exception will be thrown for non-availability of EJB receivers.
         }
     }
+
+    /**
+     * Tests that a deployment containing jboss-ejb-client.xml with both local and remoting EJB receivers configured,
+     * works as expected
+     *
+     * @throws Exception
+     */
+    @Test
+    @OperateOnDeployment("local-and-remote-receviers-config")
+    public void testLocalAndRemoteReceiversClientConfig() throws Exception {
+        final RemoteEcho remoteEcho = (RemoteEcho) context.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME_THREE + "/" + DISTINCT_NAME
+                + "/" + EchoBean.class.getSimpleName() + "!" + RemoteEcho.class.getName());
+        Assert.assertNotNull("Lookup returned a null bean proxy", remoteEcho);
+        final String msg = "Hello world from a EJB client descriptor test!!!";
+        final String echo = remoteEcho.echo(MODULE_NAME_THREE, msg);
+        logger.info("Received echo " + echo);
+        Assert.assertEquals("Unexpected echo returned from remote bean", msg, echo);
+    }
+
 }

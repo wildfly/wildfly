@@ -33,6 +33,9 @@ import java.util.Set;
  */
 public class EJBClientDescriptorMetaData {
 
+    private boolean excludeLocalReceiver;
+    private boolean localReceiverPassByValue;
+
     private Set<String> remotingReceiverConnectionRefs = new HashSet<String>();
 
     /**
@@ -56,5 +59,44 @@ public class EJBClientDescriptorMetaData {
      */
     public Collection<String> getRemotingReceiverConnectionRefs() {
         return this.remotingReceiverConnectionRefs;
+    }
+
+    /**
+     * Set the pass-by-value semantics for the local receiver belonging to the EJB client context
+     * represented by this metadata
+     *
+     * @param passByValue True if pass-by-value. False otherwise.
+     */
+    public void setLocalReceiverPassByValue(final boolean passByValue) {
+        this.localReceiverPassByValue = passByValue;
+    }
+
+    /**
+     * Returns true if the local receiver is configured for pass-by-value semantics. Else
+     * returns false
+     *
+     * @return
+     */
+    public boolean isLocalReceiverPassByValue() {
+        return this.localReceiverPassByValue;
+    }
+
+    /**
+     * Exclude/include the local receiver in the EJB client context represented by this metadata.
+     *
+     * @param excludeLocalReceiver True if local receiver has to be excluded in the EJB client context. False otherwise.
+     */
+    public void setExcludeLocalReceiver(final boolean excludeLocalReceiver) {
+        this.excludeLocalReceiver = excludeLocalReceiver;
+    }
+
+    /**
+     * Returns true if the local receiver is disabled in the EJB client context represented by this metadata.
+     * Else returns false.
+     *
+     * @return
+     */
+    public boolean isLocalReceiverExcluded() {
+        return this.excludeLocalReceiver;
     }
 }
