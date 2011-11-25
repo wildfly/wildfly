@@ -121,6 +121,9 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
     }
 
     public CallbackHandler getCallbackHandler(String mechanismName) {
+        // TODO - Once authorization is in place we may be able to relax the realm check to
+        //        allow anonymous along side fully authenticated connections.
+
         // If the mechanism is ANONYMOUS and we don't have a realm we return quickly.
         if (ANONYMOUS.equals(mechanismName) && realm == null) {
             return new CallbackHandler() {
@@ -158,14 +161,14 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
             };
         }
 
-        CallbackHandler realmCallbackHandler = null;
+        final CallbackHandler realmCallbackHandler; // Referenced later by an inner-class so needs to be final.
 
         // We must have a match in this block or throw an IllegalStateException.
         if (DIGEST_MD5.equals(mechanismName) && digestMd5Supported() ||
                 PLAIN.equals(mechanismName) && plainSupported()) {
             realmCallbackHandler = realm.getCallbackHandler();
         } else {
-            throw new IllegalStateException("Unsupported Callback '" + mechanismName + "'");
+            return null;
         }
 
         // If there is not serverCallbackHandler then we don't need to wrap it so we can just return the realm
@@ -174,12 +177,11 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
             return realmCallbackHandler;
         }
 
-        final CallbackHandler wrappedHandler = realmCallbackHandler; // Just a copy so it can be made final for the inner class.
         return new CallbackHandler() {
             public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
                 serverCallbackHandler.handle(callbacks);
                 if (handled(callbacks) == false) {
-                    wrappedHandler.handle(callbacks);
+                    realmCallbackHandler.handle(callbacks);
                 }
             }
 
