@@ -6,7 +6,7 @@
         <configuration>
             <property name="jbossHome">${basedir}/target/jbossas-clustering-udp-0</property>
             <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-clustering-udp-0</property>
-            <property name="serverConfig">${server.config:standalone.xml}</property>
+            <property name="serverConfig">${jboss.server.config.file.name:standalone.xml}</property>
         </configuration>
     </container>
 
@@ -16,7 +16,7 @@
             <configuration>
                 <property name="jbossHome">${basedir}/target/jbossas-clustering-udp-0</property>
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-clustering-udp-0</property>
-                <property name="serverConfig">${server.config:standalone-ha.xml}</property>
+                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
             </configuration>
         </container>
 
@@ -24,7 +24,7 @@
             <configuration>
                 <property name="jbossHome">${basedir}/target/jbossas-clustering-udp-1</property>
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-clustering-udp-1 -Djboss.port.offset=100</property>
-                <property name="serverConfig">${server.config:standalone-ha.xml}</property>
+                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
                 <property name="managementPort">10099</property>
             </configuration>
         </container>
