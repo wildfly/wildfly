@@ -21,7 +21,6 @@
 */
 package org.jboss.as.test.smoke.embedded.parse;
 
-import org.jboss.as.controller.ProxyController;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
@@ -67,6 +66,7 @@ import javax.xml.namespace.QName;
 
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.AbstractControllerService;
@@ -81,6 +81,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
@@ -724,7 +725,7 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     private File getLegacyConfigFile(String type, final String profile) {
-				File f = new File( System.getProperty("jbossas.ts.integ.dir") );
+				File f = new File( System.getProperty("jbossas.ts.submodule.dir") );
         Assert.assertTrue(f.exists());
         f = new File(f, "src");
         Assert.assertTrue("Not found: " + f.getPath(), f.exists());
