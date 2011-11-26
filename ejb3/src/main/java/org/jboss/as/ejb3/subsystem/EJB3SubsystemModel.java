@@ -35,6 +35,7 @@ public interface EJB3SubsystemModel {
     String APPCLIENT = "appclient";
 
     String ASYNC = "async";
+    String IIOP = "iiop";
 
     String CONNECTOR_REF = "connector-ref";
 
@@ -63,10 +64,14 @@ public interface EJB3SubsystemModel {
     String THREAD_POOL_NAME = "thread-pool-name";
     String DEFAULT = "default";
 
+    String USE_QUALIFIED_NAME = "use-qualified-name";
+    String ENABLE_BY_DEFAULT = "enable-by-default";
+
     PathElement REMOTE_SERVICE_PATH = PathElement.pathElement(SERVICE, REMOTE);
     PathElement ASYNC_SERVICE_PATH = PathElement.pathElement(SERVICE, ASYNC);
     PathElement TIMER_SERVICE_PATH = PathElement.pathElement(SERVICE, TIMER_SERVICE);
     PathElement THREAD_POOL_PATH = PathElement.pathElement(THREAD_POOL);
+    PathElement IIOP_PATH = PathElement.pathElement(SERVICE, IIOP);
 
 
 }

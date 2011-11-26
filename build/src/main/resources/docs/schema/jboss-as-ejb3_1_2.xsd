@@ -44,6 +44,7 @@
             <xs:element name="timer-service" type="timerServiceType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="remote" type="remoteType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="thread-pools" type="threadPoolsType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="iiop" type="iiopType" minOccurs="0" maxOccurs="1"/>
         </xs:all>
     </xs:complexType>
 
@@ -182,6 +183,11 @@
     <xs:complexType name="dataStoreType">
         <xs:attribute name="path" type="xs:string"/>
         <xs:attribute name="relative-to" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:complexType name="iiopType">
+        <xs:attribute name="enable-by-default" type="xs:boolean" use="required"/>
+        <xs:attribute name="use-qualified-name" type="xs:boolean" use="required"/>
     </xs:complexType>
 
 </xs:schema>

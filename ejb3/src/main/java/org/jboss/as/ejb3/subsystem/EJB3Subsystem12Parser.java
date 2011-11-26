@@ -22,6 +22,14 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -31,13 +39,6 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.Location;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -51,9 +52,11 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ASYNC;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IIOP;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT_UNIT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.KEEPALIVE_TIME;
@@ -67,7 +70,6 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STRICT_MAX_BEAN_INS
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL_NAME;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * @author Jaikiran Pai
  */
@@ -180,14 +182,28 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
         if (model.hasDefined(THREAD_POOL)) {
             // <timer-service>
             writer.writeStartElement(EJB3SubsystemXMLElement.THREAD_POOLS.getLocalName());
-            final ModelNode threadPoolsModel = model.get(THREAD_POOL);
-            this.writeThreadPools(writer, threadPoolsModel);
+            final ModelNode iiopModel = model.get(THREAD_POOL);
+            this.writeThreadPools(writer, iiopModel);
             // </timer-service>
             writer.writeEndElement();
         }
 
+        // iiop
+        // write the remote element
+        if (model.hasDefined(SERVICE) && model.get(SERVICE).hasDefined(IIOP)) {
+            writer.writeStartElement(EJB3SubsystemXMLElement.IIOP.getLocalName());
+            writeIIOP(writer, model.get(SERVICE, IIOP));
+            writer.writeEndElement();
+        }
+
+
         // write the subsystem end element
         writer.writeEndElement();
+    }
+
+    private void writeIIOP(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
+        writer.writeAttribute(EJB3SubsystemXMLAttribute.USE_QUALIFIED_NAME.getLocalName(), model.require(EJB3SubsystemModel.USE_QUALIFIED_NAME).asString());
+        writer.writeAttribute(EJB3SubsystemXMLAttribute.ENABLE_BY_DEFAULT.getLocalName(), model.require(EJB3SubsystemModel.ENABLE_BY_DEFAULT).asString());
     }
 
     private void writeThreadPools(final XMLExtendedStreamWriter writer, final ModelNode threadPoolsModel) throws XMLStreamException {
@@ -259,6 +275,10 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                         }
                         case THREAD_POOLS: {
                             parseThreadPools(reader, operations);
+                            break;
+                        }
+                         case IIOP: {
+                            parseIIOP(reader, operations);
                             break;
                         }
                         default: {
@@ -474,6 +494,34 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
         }
         requireNoContent(reader);
         operations.add(EJB3AsyncServiceAdd.create(threadPoolName));
+    }
+
+    private void parseIIOP(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        boolean enableByDefault = true;
+        boolean useQualifiedName = true;
+        final EnumSet<EJB3SubsystemXMLAttribute> required = EnumSet.of(EJB3SubsystemXMLAttribute.ENABLE_BY_DEFAULT, EJB3SubsystemXMLAttribute.USE_QUALIFIED_NAME);
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case ENABLE_BY_DEFAULT:
+                    enableByDefault = Boolean.parseBoolean(reader.getAttributeValue(i));
+                    break;
+                case USE_QUALIFIED_NAME:
+                    useQualifiedName = Boolean.parseBoolean(reader.getAttributeValue(i));
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        if (!required.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+        requireNoContent(reader);
+        operations.add(EJB3IIOPAdd.create(enableByDefault, useQualifiedName));
     }
 
     private ModelNode parseMDB(final XMLExtendedStreamReader reader, List<ModelNode> operations, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {

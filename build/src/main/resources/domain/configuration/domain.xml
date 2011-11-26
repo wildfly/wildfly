@@ -120,6 +120,7 @@
                 <thread-pools>
                     <thread-pool name="default" max-threads="10" keepalive-time="100"/>
                 </thread-pools>
+                <iiop enable-by-default="true" use-qualified-name="true"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:infinispan:1.1" default-cache-container="hibernate">
                 <cache-container name="hibernate" default-cache="local-query">
@@ -429,6 +430,7 @@
                 <thread-pools>
                     <thread-pool name="default" max-threads="10" keepalive-time="100"/>
                 </thread-pools>
+                <iiop enable-by-default="true" use-qualified-name="true"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:infinispan:1.1" default-cache-container="cluster">
                 <cache-container name="cluster" default-cache="default">

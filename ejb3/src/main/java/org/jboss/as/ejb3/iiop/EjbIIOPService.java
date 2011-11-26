@@ -168,6 +168,8 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
      */
     private final String[] homeRepositoryIds;
 
+    private final boolean useQualifiedName;
+
     /**
      * <code>ServantRegistry</code> for the container's <code>EJBHome</code>.
      */
@@ -221,7 +223,8 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
      */
     private String name = null;
 
-    public EjbIIOPService(final Map<String, SkeletonStrategy> beanMethodMap, final String[] beanRepositoryIds, final Map<String, SkeletonStrategy> homeMethodMap, final String[] homeRepositoryIds) {
+    public EjbIIOPService(final Map<String, SkeletonStrategy> beanMethodMap, final String[] beanRepositoryIds, final Map<String, SkeletonStrategy> homeMethodMap, final String[] homeRepositoryIds, final boolean useQualifiedName) {
+        this.useQualifiedName = useQualifiedName;
         this.beanMethodMap = Collections.unmodifiableMap(beanMethodMap);
         this.beanRepositoryIds = beanRepositoryIds;
         this.homeMethodMap = Collections.unmodifiableMap(homeMethodMap);
@@ -246,12 +249,16 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
 
             final EJBComponent component = ejbComponentInjectedValue.getValue();
             final String earApplicationName = component.getEarApplicationName();
-            if (component.getDistinctName() == null || component.getDistinctName().isEmpty()) {
-                name = earApplicationName == null  || earApplicationName.isEmpty() ? "" : earApplicationName + "/";
-                name = name + component.getModuleName() + "/" + component.getComponentName();
+            if (useQualifiedName) {
+                if (component.getDistinctName() == null || component.getDistinctName().isEmpty()) {
+                    name = earApplicationName == null || earApplicationName.isEmpty() ? "" : earApplicationName + "/";
+                    name = name + component.getModuleName() + "/" + component.getComponentName();
+                } else {
+                    name = earApplicationName == null || earApplicationName.isEmpty() ? "" : earApplicationName + "/";
+                    name = name + component.getModuleName() + "/" + component.getDistinctName() + "/" + component.getComponentName();
+                }
             } else {
-                name = earApplicationName == null || earApplicationName.isEmpty() ? "" : earApplicationName + "/";
-                name = name + component.getModuleName() + "/" + component.getDistinctName() + "/" + component.getComponentName();
+                name = component.getComponentName();
             }
             name = name.replace(".", "_");
             final ORB orb = this.orb.getValue();
@@ -452,10 +459,9 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
     /**
      * (Re)binds an object to a name in a given CORBA naming context, creating
      * any non-existent intermediate contexts along the way.
-     *
+     * <p/>
      * This method is synchronized on the class object, if multiple services attempt to bind the
      * same context name at once it will fail
-     *
      */
     public static synchronized void rebind(final NamingContextExt ctx, final String strName, final org.omg.CORBA.Object obj) throws Exception {
         final NameComponent[] name = ctx.to_name(strName);

@@ -40,6 +40,9 @@ public enum EJB3SubsystemXMLElement {
     BEAN_INSTANCE_POOL_REF("bean-instance-pool-ref"),
 
     DATA_STORE("data-store"),
+
+    IIOP("iiop"),
+
     MDB("mdb"),
 
     POOLS("pools"),
