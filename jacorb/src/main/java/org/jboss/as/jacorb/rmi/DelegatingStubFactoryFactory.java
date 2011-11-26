@@ -1,11 +1,11 @@
 package org.jboss.as.jacorb.rmi;
 
+import javax.rmi.CORBA.Tie;
+
 import org.jboss.com.sun.corba.se.impl.presentation.rmi.StubFactoryFactoryBase;
 import org.jboss.com.sun.corba.se.impl.presentation.rmi.StubFactoryFactoryProxyImpl;
 import org.jboss.com.sun.corba.se.impl.presentation.rmi.StubFactoryFactoryStaticImpl;
 import org.jboss.com.sun.corba.se.spi.presentation.rmi.PresentationManager;
-
-import javax.rmi.CORBA.Tie;
 
 /**
  * Stub factory
@@ -14,8 +14,10 @@ import javax.rmi.CORBA.Tie;
  */
 public class DelegatingStubFactoryFactory extends StubFactoryFactoryBase {
 
-    private final StubFactoryFactoryBase staticFactory;
-    private final StubFactoryFactoryBase dynamicFactory;
+    private final PresentationManager.StubFactoryFactory staticFactory;
+    private final PresentationManager.StubFactoryFactory dynamicFactory;
+
+    private static volatile PresentationManager.StubFactoryFactory overridenDynamicFactory;
 
     public DelegatingStubFactoryFactory() {
         staticFactory = new StubFactoryFactoryStaticImpl();
@@ -31,7 +33,12 @@ public class DelegatingStubFactoryFactory extends StubFactoryFactoryBase {
         } catch (Exception e) {
 
         }
-        return dynamicFactory.createStubFactory(className, isIDLStub, remoteCodeBase, expectedClass, classLoader);
+        if (overridenDynamicFactory != null) {
+            return overridenDynamicFactory.createStubFactory(className, isIDLStub, remoteCodeBase, expectedClass, classLoader);
+
+        } else {
+            return dynamicFactory.createStubFactory(className, isIDLStub, remoteCodeBase, expectedClass, classLoader);
+        }
     }
 
     public Tie getTie(final Class<?> cls) {
@@ -48,5 +55,13 @@ public class DelegatingStubFactoryFactory extends StubFactoryFactoryBase {
 
     public boolean createsDynamicStubs() {
         return true;
+    }
+
+    public static PresentationManager.StubFactoryFactory getOverridenDynamicFactory() {
+        return overridenDynamicFactory;
+    }
+
+    public static void setOverridenDynamicFactory(final PresentationManager.StubFactoryFactory overridenDynamicFactory) {
+        DelegatingStubFactoryFactory.overridenDynamicFactory = overridenDynamicFactory;
     }
 }

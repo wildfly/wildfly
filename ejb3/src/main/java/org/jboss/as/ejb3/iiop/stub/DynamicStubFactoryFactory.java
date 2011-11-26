@@ -1,0 +1,51 @@
+package org.jboss.as.ejb3.iiop.stub;
+
+import org.jboss.classfilewriter.ClassFile;
+import org.jboss.com.sun.corba.se.impl.presentation.rmi.StubFactoryBase;
+import org.jboss.com.sun.corba.se.impl.presentation.rmi.StubFactoryFactoryDynamicBase;
+import org.jboss.com.sun.corba.se.spi.presentation.rmi.PresentationManager;
+
+/**
+ * @author Stuart Douglas
+ */
+public class DynamicStubFactoryFactory extends StubFactoryFactoryDynamicBase {
+
+    @Override
+    public PresentationManager.StubFactory makeDynamicStubFactory(final PresentationManager pm, final PresentationManager.ClassData classData, final ClassLoader classLoader) {
+        final String stubClassName = classData.getMyClass() + "_Stub";
+        ClassLoader cl = classData.getMyClass().getClassLoader();
+        if (cl == null) {
+            cl = SecurityActions.getContextClassLoader();
+        }
+        Class<?> theClass;
+        try {
+            theClass = cl.loadClass(stubClassName);
+        } catch (ClassNotFoundException e) {
+            final ClassFile clazz = IIOPStubCompiler.compile(classData.getMyClass(), stubClassName);
+            theClass = clazz.define(cl);
+        }
+        return new StubFactory(classData, theClass);
+    }
+
+    private static final class StubFactory extends StubFactoryBase {
+
+        private final Class<?> clazz;
+
+        protected StubFactory(PresentationManager.ClassData classData, final Class<?> clazz) {
+            super(classData);
+
+            this.clazz = clazz;
+        }
+
+        @Override
+        public org.omg.CORBA.Object makeStub() {
+            try {
+                return (org.omg.CORBA.Object) clazz.newInstance();
+            } catch (InstantiationException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+}

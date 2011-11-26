@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.jacorb.deployment.JacORBDeploymentMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -56,6 +57,7 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
      */
     private static final ModuleIdentifier EJB3_TIMERS = ModuleIdentifier.create("org.jboss.as.ejb3");
     private static final ModuleIdentifier EJB_CLIENT = ModuleIdentifier.create("org.jboss.ejb-client");
+    private static final ModuleIdentifier JACORB = ModuleIdentifier.create("org.jboss.as.jacorb");
 
 
     /**
@@ -67,7 +69,6 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
      */
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-
 
 
         // get hold of the deployment unit
@@ -94,6 +95,11 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
 
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAEE_MODULE_IDENTIFIER, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB3_TIMERS, false, false, false));
+
+        if (JacORBDeploymentMarker.isJacORBDeployment(deploymentUnit)) {
+            //needed for dynamic IIOP stubs
+            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JACORB, false, false, false));
+        }
     }
 
     @Override
