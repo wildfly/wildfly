@@ -37,6 +37,7 @@ import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.ejb3.iiop.EjbIIOPService;
 import org.jboss.as.ejb3.iiop.POARegistry;
+import org.jboss.as.ejb3.subsystem.IIOPSettingsService;
 import org.jboss.as.jacorb.deployment.JacORBDeploymentMarker;
 import org.jboss.as.jacorb.rmi.AttributeAnalysis;
 import org.jboss.as.jacorb.rmi.InterfaceAnalysis;
@@ -72,11 +73,21 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
 
     private static final Logger logger = Logger.getLogger(EjbIIOPDeploymentUnitProcessor.class);
 
+    private final IIOPSettingsService settingsService;
+
+    public EjbIIOPDeploymentUnitProcessor(final IIOPSettingsService settingsService) {
+        this.settingsService = settingsService;
+    }
+
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if(!JacORBDeploymentMarker.isJacORBDeployment(deploymentUnit)) {
+            return;
+        }
+        //TODO: we need some way to enable this by deployment descriptor
+        if(!settingsService.isEnabledByDefault()) {
             return;
         }
 
@@ -196,7 +207,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         // Initialize repository ids of home interface
         final String[] homeRepositoryIds = homeInterfaceAnalysis.getAllTypeIds();
 
-        final EjbIIOPService service = new EjbIIOPService(beanMethodMap, beanRepositoryIds, homeMethodMap, homeRepositoryIds);
+        final EjbIIOPService service = new EjbIIOPService(beanMethodMap, beanRepositoryIds, homeMethodMap, homeRepositoryIds, settingsService.isUseQualifiedName());
         final ServiceBuilder<EjbIIOPService> builder = serviceTarget.addService(componentDescription.getServiceName().append(EjbIIOPService.SERVICE_NAME), service);
         builder.addDependency(componentDescription.getCreateServiceName(), EJBComponent.class, service.getEjbComponentInjectedValue());
         builder.addDependency(homeView.getServiceName(), ComponentView.class, service.getHomeView());
