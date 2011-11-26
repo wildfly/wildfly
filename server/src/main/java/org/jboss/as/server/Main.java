@@ -225,7 +225,8 @@ public final class Main {
 
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
-                        System.err.printf("Argument expected for option %s\n", arg);
+                        System.err.printf(ServerMessages.MESSAGES.valueExpectedForCommandLineOption(arg));
+                        System.err.println();
                         usage();
                         return null;
                     }
@@ -234,12 +235,14 @@ public final class Main {
                     systemProperties.setProperty(ServerEnvironment.JBOSS_DEFAULT_MULTICAST_ADDRESS, value);
                     SecurityActions.setSystemProperty(ServerEnvironment.JBOSS_DEFAULT_MULTICAST_ADDRESS, value);
                 } else {
-                    System.err.printf("Invalid option '%s'\n", arg);
+                    System.err.printf(ServerMessages.MESSAGES.invalidCommandLineOption(arg));
+                    System.err.println();
                     usage();
                     return null;
                 }
             } catch (IndexOutOfBoundsException e) {
-                System.err.printf("Argument expected for option %s\n", arg);
+                System.err.printf(ServerMessages.MESSAGES.valueExpectedForCommandLineOption(arg));
+                System.err.println();
                 usage();
                 return null;
             }
@@ -267,11 +270,13 @@ public final class Main {
              props.load(url.openConnection().getInputStream());
              return true;
          } catch (MalformedURLException e) {
-             System.err.printf("Malformed URL provided for option %s\n", arg);
+             System.err.printf(ServerMessages.MESSAGES.malformedCommandLineURL(urlSpec, arg));
+             System.err.println();
              usage();
              return false;
          } catch (IOException e) {
-             System.err.printf("Unable to load properties from URL %s\n", url);
+             System.err.printf(ServerMessages.MESSAGES.unableToLoadProperties(url));
+             System.err.println();
              usage();
              return false;
          }

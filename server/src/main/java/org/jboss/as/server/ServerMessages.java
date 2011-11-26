@@ -22,8 +22,16 @@
 
 package org.jboss.as.server;
 
+import java.io.InputStream;
+import java.net.URL;
+
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
+import org.jboss.logging.Param;
 
 /**
  * Date: 05.11.2011
@@ -37,4 +45,46 @@ public interface ServerMessages {
      * The messages
      */
     ServerMessages MESSAGES = Messages.getBundle(ServerMessages.class);
+
+    /**
+     * Creates an error message indicating a value was expected for the given command line option.
+     *
+     * @param option the name of the command line option
+     *
+     * @return a message that can by output to stderr.
+     */
+    @Message(id = 15800, value = "Value expected for option %s")
+    String valueExpectedForCommandLineOption(String option);
+
+    /**
+     * Creates an error message indicating an invalid command line option was presented.
+     *
+     * @param option the name of the command line option
+     *
+     * @return a message that can by output to stderr.
+     */
+    @Message(id = 15801, value = "Invalid option '%s'")
+    String invalidCommandLineOption(String option);
+
+    /**
+     * Creates an error message indicating a malformed URL was provided as a value for a command line option.
+     *
+     * @param urlSpec the provided url
+     * @param option the name of the command line option
+     *
+     * @return a message that can by output to stderr.
+     */
+    @Message(id = 15802, value = "Malformed URL '%s' provided for option '%s'")
+    String malformedCommandLineURL(String urlSpec, String option);
+
+    /**
+     * Creates an error message indicating {@link java.util.Properties#load(InputStream) properties could not be loaded}
+     * from a given url.
+     *
+     * @param url the provided url
+     *
+     * @return a message that can by output to stderr.
+     */
+    @Message(id = 15803, value = "Unable to load properties from URL '%s'")
+    String unableToLoadProperties(URL url);
 }
