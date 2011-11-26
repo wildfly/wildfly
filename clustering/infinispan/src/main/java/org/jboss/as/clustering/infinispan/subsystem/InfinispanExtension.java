@@ -65,14 +65,44 @@ public class InfinispanExtension implements Extension, DescriptionProvider {
     static final String SUBSYSTEM_NAME = "infinispan";
 
     private static final PathElement containerPath = PathElement.pathElement(ModelKeys.CACHE_CONTAINER);
+    private static final PathElement localCachePath = PathElement.pathElement(ModelKeys.LOCAL_CACHE);
+    private static final PathElement invalidationCachePath = PathElement.pathElement(ModelKeys.INVALIDATION_CACHE);
+    private static final PathElement replicatedCachePath = PathElement.pathElement(ModelKeys.REPLICATED_CACHE);
+    private static final PathElement distributedCachePath = PathElement.pathElement(ModelKeys.DISTRIBUTED_CACHE);
+
     private static final InfinispanSubsystemAdd add = new InfinispanSubsystemAdd();
     private static final InfinispanSubsystemDescribe describe = new InfinispanSubsystemDescribe();
     private static final CacheContainerAdd containerAdd = new CacheContainerAdd();
     private static final CacheContainerRemove containerRemove = new CacheContainerRemove();
+
     private static final DescriptionProvider containerDescription = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             return InfinispanDescriptions.getCacheContainerDescription(locale);
+        }
+    };
+    private static final DescriptionProvider localCacheDescription = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return InfinispanDescriptions.getLocalCacheDescription(locale);
+        }
+    };
+    private static final DescriptionProvider invalidationCacheDescription = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return InfinispanDescriptions.getInvalidationCacheDescription(locale);
+        }
+    };
+    private static final DescriptionProvider replicatedCacheDescription = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return InfinispanDescriptions.getReplicatedCacheDescription(locale);
+        }
+    };
+    private static final DescriptionProvider distributedCacheDescription = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return InfinispanDescriptions.getDistributedCacheDescription(locale);
         }
     };
 
@@ -89,9 +119,29 @@ public class InfinispanExtension implements Extension, DescriptionProvider {
         registration.registerOperationHandler(ModelDescriptionConstants.ADD, add, add, false);
         registration.registerOperationHandler(ModelDescriptionConstants.DESCRIBE, describe, describe, false, EntryType.PRIVATE);
 
-        ManagementResourceRegistration containers = registration.registerSubModel(containerPath, containerDescription);
-        containers.registerOperationHandler(ModelDescriptionConstants.ADD, containerAdd, containerAdd, false);
-        containers.registerOperationHandler(ModelDescriptionConstants.REMOVE, containerRemove, containerRemove, false);
+        ManagementResourceRegistration container = registration.registerSubModel(containerPath, containerDescription);
+        container.registerOperationHandler(ModelDescriptionConstants.ADD, containerAdd, containerAdd, false);
+        container.registerOperationHandler(ModelDescriptionConstants.REMOVE, containerRemove, containerRemove, false);
+
+        // add /subsystem=infinispan/cache-container=*/local-cache=*
+        ManagementResourceRegistration local = container.registerSubModel(localCachePath, localCacheDescription);
+        local.registerOperationHandler(ModelDescriptionConstants.ADD, LocalCacheAdd.INSTANCE, LocalCacheAdd.INSTANCE, false);
+        local.registerOperationHandler(ModelDescriptionConstants.REMOVE, CacheRemove.INSTANCE, CacheRemove.INSTANCE, false);
+
+        // add /subsystem=infinispan/cache-container=*/invalidation-cache=*
+        ManagementResourceRegistration invalidation = container.registerSubModel(invalidationCachePath, invalidationCacheDescription);
+        invalidation.registerOperationHandler(ModelDescriptionConstants.ADD, InvalidationCacheAdd.INSTANCE, InvalidationCacheAdd.INSTANCE, false);
+        invalidation.registerOperationHandler(ModelDescriptionConstants.REMOVE, CacheRemove.INSTANCE, CacheRemove.INSTANCE, false);
+
+        // add /subsystem=infinispan/cache-container=*/local-cache=*
+        ManagementResourceRegistration replicated = container.registerSubModel(replicatedCachePath, replicatedCacheDescription);
+        replicated.registerOperationHandler(ModelDescriptionConstants.ADD, ReplicatedCacheAdd.INSTANCE, ReplicatedCacheAdd.INSTANCE, false);
+        replicated.registerOperationHandler(ModelDescriptionConstants.REMOVE, CacheRemove.INSTANCE, CacheRemove.INSTANCE, false);
+
+        // add /subsystem=infinispan/cache-container=*/local-cache=*
+        ManagementResourceRegistration distributed = container.registerSubModel(distributedCachePath, distributedCacheDescription);
+        distributed.registerOperationHandler(ModelDescriptionConstants.ADD, DistributedCacheAdd.INSTANCE, DistributedCacheAdd.INSTANCE, false);
+        distributed.registerOperationHandler(ModelDescriptionConstants.REMOVE, CacheRemove.INSTANCE, CacheRemove.INSTANCE, false);
     }
 
     /**
