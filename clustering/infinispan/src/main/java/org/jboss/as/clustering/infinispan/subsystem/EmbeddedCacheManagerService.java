@@ -26,9 +26,12 @@ import static org.jboss.as.clustering.infinispan.InfinispanLogger.ROOT_LOGGER;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
-
 import javax.management.MBeanServer;
 import javax.transaction.xa.XAResource;
+import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.infinispan.config.Configuration;
 import org.infinispan.config.FluentConfiguration;
@@ -49,6 +52,7 @@ import org.jboss.as.clustering.infinispan.ExecutorProvider;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.clustering.infinispan.TransactionManagerProvider;
 import org.jboss.as.clustering.infinispan.TransactionSynchronizationRegistryProvider;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -62,6 +66,8 @@ import org.jboss.tm.XAResourceRecoveryRegistry;
  */
 @Listener
 public class EmbeddedCacheManagerService implements Service<CacheContainer> {
+
+    private static final Logger log = Logger.getLogger(EmbeddedCacheManagerService.class.getPackage().getName());
     private static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(InfinispanExtension.SUBSYSTEM_NAME);
 
     public static ServiceName getServiceName(String name) {
@@ -91,11 +97,21 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
      */
     @Override
     public void start(StartContext context) throws StartException {
+
         EmbeddedCacheManagerDefaults defaults = this.configuration.getDefaults();
         GlobalConfiguration global = defaults.getGlobalConfiguration().clone();
+
+        // set up transport only if transport is required by some cache in the cache manager
         TransportConfiguration transport = this.configuration.getTransportConfiguration();
         FluentGlobalConfiguration.TransportConfig fluentTransport = global.fluent().transport();
-        if (transport != null) {
+
+
+        // check if we need a transport
+        AtomicBoolean transportRequired = this.configuration.getTransportRequired();
+
+        if ((transportRequired.get() == true) && transport != null) {
+            log.debug("initializing transport for cache manager") ;
+
             fluentTransport.transportClass(JGroupsTransport.class);
             Long timeout = transport.getLockTimeout();
             if (timeout != null) {
@@ -154,6 +170,7 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
 
         this.configureTransactions(defaultConfig);
 
+        // create the cache manager
         EmbeddedCacheManager manager = new DefaultCacheManager(global, defaultConfig, false);
         manager.addListener(this);
         // Add named configurations
@@ -166,6 +183,8 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
         }
         this.container = new DefaultEmbeddedCacheManager(manager, this.configuration.getDefaultCache());
         this.container.start();
+        log.debug("cache manager started");
+
     }
 
     private void configureTransactions(Configuration config) {
@@ -185,6 +204,7 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
     public void stop(StopContext context) {
         this.container.stop();
         this.container = null;
+        log.debug("cache manager stopped");
     }
 
     @CacheStarted

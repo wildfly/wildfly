@@ -41,11 +41,14 @@ import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author Paul Ferraro
+ * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 public class CacheService<K, V> implements Service<Cache<K, V>> {
     private final InjectedValue<CacheContainer> container = new InjectedValue<CacheContainer>();
+    private final InjectedValue<EmbeddedCacheManagerDefaults> defaults = new InjectedValue<EmbeddedCacheManagerDefaults>();
     private final String name;
     private final String template;
+    private final Configuration overrides ;
     private volatile Cache<K, V> cache;
 
     public static ServiceName getServiceName(String container, String cache) {
@@ -53,18 +56,22 @@ public class CacheService<K, V> implements Service<Cache<K, V>> {
     }
 
     ServiceBuilder<Cache<K, V>> build(ServiceTarget target, ServiceName containerName) {
-        return target.addService(containerName.append(this.name), this)
-            .addDependency(containerName, CacheContainer.class, this.container)
-        ;
+
+        ServiceBuilder<Cache<K,V>> builder = target.addService(containerName.append(this.name), this) ;
+        builder.addDependency(containerName, CacheContainer.class, this.container) ;
+        builder.addDependency(EmbeddedCacheManagerDefaultsService.SERVICE_NAME, EmbeddedCacheManagerDefaults.class, this.defaults);
+
+        return builder ;
     }
 
-    public CacheService(String name) {
-        this(name, null);
+    public CacheService(String name, Configuration overrides) {
+        this(name, null, overrides);
     }
 
-    public CacheService(String name, String template) {
+    public CacheService(String name, String template, Configuration overrides) {
         this.name = name;
-        this.template = null;
+        this.template = template;
+        this.overrides = overrides ;
     }
 
     /**
@@ -82,11 +89,26 @@ public class CacheService<K, V> implements Service<Cache<K, V>> {
      */
     @Override
     public void start(StartContext context) throws StartException {
+
         CacheContainer container = this.container.getValue();
+        EmbeddedCacheManagerDefaults defaults = this.defaults.getValue();
+
+        // get the mode from overrides - yes, we store it
+        Configuration.CacheMode mode = this.overrides.getCacheMode() ;
+
+        // set up the cache configuration
+        Configuration configuration = defaults.getDefaultConfiguration(mode) ;
+        configuration.applyOverrides(overrides) ;
+
+        // if template != null, a cache named template is used as the base; otherwise default
         if (this.template != null) {
-            ((EmbeddedCacheManager) container).defineConfiguration(this.name, this.template, new Configuration());
+            ((EmbeddedCacheManager) container).defineConfiguration(this.name, this.template, configuration);
+        } else {
+            ((EmbeddedCacheManager) container).defineConfiguration(this.name, configuration);
         }
+        // get an instance of the defined cache
         this.cache = container.getCache(this.name);
+
     }
 
     /**
@@ -95,6 +117,9 @@ public class CacheService<K, V> implements Service<Cache<K, V>> {
      */
     @Override
     public void stop(StopContext context) {
+        // have to be careful here as we are leaving a named configuration in the cache-container
+        // this may cause problems if the cache name is reused with a different cache type as the
+        // original cache definition will be takes as base config
         this.cache.stop();
     }
 }

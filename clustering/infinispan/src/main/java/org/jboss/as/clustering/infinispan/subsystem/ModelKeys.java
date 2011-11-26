@@ -32,6 +32,7 @@ public class ModelKeys {
     static final String BATCHING = "batching";
     static final String BUCKET_TABLE = "bucket-table";
     static final String CACHE = "cache";
+    static final String CACHE_MODE = "cache-mode";
     static final String CACHE_CONTAINER = "cache-container";
     static final String CLASS = "class";
     static final String CONCURRENCY_LEVEL = "concurrency-level";
