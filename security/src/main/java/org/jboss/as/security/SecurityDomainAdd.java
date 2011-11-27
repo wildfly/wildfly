@@ -242,7 +242,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             applicationPolicy.setMappingInfo(mappingType, mappingInfo);
 
             String moduleName = module.get(MODULE).asString();
-            if(moduleName != null && moduleName.length() > 0 ){
+            if(module.hasDefined(MODULE) && moduleName.length() > 0 ){
                 mappingInfo.setJBossModuleName(moduleName);
             }
         }
