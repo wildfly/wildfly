@@ -119,7 +119,7 @@ public final class Main {
                                 usage();
                                 return null;
                             } else if (CommandLineConstants.VERSION.equals(arg) || CommandLineConstants.SHORT_VERSION.equals(arg)
-                                    || CommandLineConstants.OLD_VERSION.equals(arg)) {
+                                    || CommandLineConstants.OLD_VERSION.equals(arg) || CommandLineConstants.OLD_SHORT_VERSION.equals(arg)) {
                                 System.out.println("\nJBoss Application Server " + getVersionString());
                                 return null;
                             } else if (pcSocketConfig.processPCSocketConfigArgument(arg, args, i)) {
