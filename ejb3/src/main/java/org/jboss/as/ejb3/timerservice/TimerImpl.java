@@ -30,8 +30,6 @@ import java.io.Serializable;
 import java.util.Date;
 
 import javax.ejb.EJBException;
-import javax.ejb.NoMoreTimeoutsException;
-import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.ScheduleExpression;
 import javax.ejb.Timer;
 import javax.ejb.TimerHandle;
@@ -43,11 +41,12 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.timerservice.persistence.TimerEntity;
-import org.jboss.as.ejb3.timerservice.task.TimerTask;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
+import org.jboss.as.ejb3.timerservice.task.TimerTask;
 import org.jboss.invocation.InterceptorContext;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Implementation of EJB3.1 {@link Timer}
@@ -65,27 +64,27 @@ public class TimerImpl implements Timer {
     /**
      * The timer state
      */
-    protected TimerState timerState;
+    protected volatile TimerState timerState;
 
     /**
      * The {@link javax.ejb.TimerService} through which this timer was created
      */
-    protected TimerServiceImpl timerService;
+    protected final TimerServiceImpl timerService;
 
     /**
      * The {@link TimedObjectInvoker} to which this timer corresponds
      */
-    protected TimedObjectInvoker timedObjectInvoker;
+    protected final TimedObjectInvoker timedObjectInvoker;
 
     /**
      * The info which was passed while creating the timer.
      */
-    protected Serializable info;
+    protected final Serializable info;
 
     /**
      * Indicates whether the timer is persistent
      */
-    protected boolean persistent;
+    protected final boolean persistent;
 
     /**
      * A {@link javax.ejb.TimerHandle} for this timer
@@ -95,27 +94,32 @@ public class TimerImpl implements Timer {
     /**
      * The initial (first) expiry date of this timer
      */
-    protected Date initialExpiration;
+    protected final Date initialExpiration;
 
     /**
      * The duration in milli sec. between timeouts
      */
-    protected long intervalDuration;
+    protected final long intervalDuration;
+
+    /**
+     * If this is an entity bean then this is the primary key
+     */
+    protected final Object primaryKey;
 
     /**
      * Next expiry date of this timer
      */
-    protected Date nextExpiration;
+    protected volatile Date nextExpiration;
 
     /**
      * The date of the previous run of this timer
      */
-    protected Date previousRun;
+    protected volatile Date previousRun;
 
     /**
      * If the timer is persistent, then this represents its persistent state.
      */
-    protected TimerEntity persistentState;
+    protected volatile TimerEntity persistentState;
 
     /**
      * Creates a {@link TimerImpl}
@@ -128,8 +132,8 @@ public class TimerImpl implements Timer {
      * @param persistent       True if this timer is persistent. False otherwise
      */
     public TimerImpl(String id, TimerServiceImpl service, Date initialExpiry, long intervalDuration, Serializable info,
-                     boolean persistent) {
-        this(id, service, initialExpiry, intervalDuration, initialExpiry, info, persistent);
+                     boolean persistent, Object primaryKey) {
+        this(id, service, initialExpiry, intervalDuration, initialExpiry, info, persistent, primaryKey);
     }
 
     /**
@@ -144,7 +148,7 @@ public class TimerImpl implements Timer {
      * @param persistent       True if this timer is persistent. False otherwise
      */
     public TimerImpl(String id, TimerServiceImpl service, Date initialExpiry, long intervalDuration, Date nextEpiry,
-                     Serializable info, boolean persistent) {
+                     Serializable info, boolean persistent, Object primaryKey) {
         assert service != null : "service is null";
         assert id != null : "id is null";
 
@@ -158,6 +162,7 @@ public class TimerImpl implements Timer {
         this.intervalDuration = intervalDuration;
         this.nextExpiration = nextEpiry;
         this.previousRun = null;
+        this.primaryKey = primaryKey;
 
         // create a timer handle for this timer
         this.handle = new TimerHandleImpl(this.id, this.timedObjectInvoker.getTimedObjectId(), service);
@@ -174,10 +179,9 @@ public class TimerImpl implements Timer {
      */
     public TimerImpl(TimerEntity persistedTimer, TimerServiceImpl service) {
         this(persistedTimer.getId(), service, persistedTimer.getInitialDate(), persistedTimer.getInterval(),
-                persistedTimer.getNextDate(), null, true);
+                persistedTimer.getNextDate(), persistedTimer.getInfo(), true, persistedTimer.getPrimaryKey());
         this.previousRun = persistedTimer.getPreviousRun();
         this.timerState = persistedTimer.getTimerState();
-        this.info = persistedTimer.getInfo();
     }
 
     /**
@@ -756,5 +760,9 @@ public class TimerImpl implements Timer {
 
         }
 
+    }
+
+    public Object getPrimaryKey() {
+        return primaryKey;
     }
 }

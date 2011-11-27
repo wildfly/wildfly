@@ -26,6 +26,7 @@ import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -73,7 +74,18 @@ public class CmpEntityBeanComponent extends EntityBeanComponent {
         final SimpleInterceptorFactoryContext factoryContext = new SimpleInterceptorFactoryContext();
         factoryContext.getContextData().put(Component.class, this);
         final Interceptor interceptor = relationInterceptorFactory.create(factoryContext);
-        return new CmpEntityBeanComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors, interceptor);
+
+        final Map<Method, Interceptor> timeouts;
+        if (timeoutInterceptors != null) {
+            timeouts = new HashMap<Method, Interceptor>();
+            for (Map.Entry<Method, InterceptorFactory> entry : timeoutInterceptors.entrySet()) {
+                timeouts.put(entry.getKey(), entry.getValue().create(interceptorContext));
+            }
+        } else {
+            timeouts = Collections.emptyMap();
+        }
+
+        return new CmpEntityBeanComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors, timeouts, interceptor);
     }
 
     public void start() {

@@ -22,13 +22,13 @@
 package org.jboss.as.ejb3.timerservice;
 
 import javax.ejb.EJBException;
-import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.Timer;
 import javax.ejb.TimerHandle;
 
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceName;
+
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
@@ -41,7 +41,7 @@ public class TimerHandleImpl implements TimerHandle {
     /**
      * Id of the target {@link TimedObjectInvoker}
      */
-    private String timedObjectId;
+    private final String timedObjectId;
 
     /**
      * The service name of the timer service
@@ -52,7 +52,7 @@ public class TimerHandleImpl implements TimerHandle {
      * Each {@link TimedObjectInvoker} can have multiple timer instances.
      * This id corresponds to one such <i>instance</i>
      */
-    private String id;
+    private final String id;
 
     /**
      * The {@link TimerServiceImpl} to which this timer handle belongs to
@@ -97,7 +97,7 @@ public class TimerHandleImpl implements TimerHandle {
                 throw MESSAGES.timerServiceWithIdNotRegistered(timedObjectId);
             }
         }
-        TimerImpl timer = this.service.getTimer(this);
+        final TimerImpl timer = this.service.getTimer(this);
         if (timer != null && timer.isActive() == false) {
             throw MESSAGES.timerHandleIsNotActive(this);
         }

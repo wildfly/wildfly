@@ -55,7 +55,9 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
+import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.as.ejb3.component.singleton.SingletonComponent;
 import org.jboss.as.ejb3.component.stateful.CurrentSynchronizationCallback;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
@@ -75,8 +77,9 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * MK2 implementation of EJB3.1 {@link TimerService}
@@ -356,13 +359,16 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     @Override
     public Collection<Timer> getTimers() throws IllegalStateException, EJBException {
         handleLifecycleCallback();
+        Object pk = currentPrimaryKey();
         final Set<Timer> activeTimers = new HashSet<Timer>();
         // get all active non-persistent timers for this timerservice
         for (final TimerImpl timer : this.nonPersistentTimers.values()) {
             if (ineligibleTimerStates.contains(timer.getState())) {
                 continue;
             } else if (timer.isActive()) {
-                activeTimers.add(timer);
+                if (timer.getPrimaryKey() == pk) {
+                    activeTimers.add(timer);
+                }
             }
         }
         // get all active timers which are persistent, but haven't yet been
@@ -371,12 +377,18 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             if (ineligibleTimerStates.contains(timer.getState())) {
                 continue;
             } else if (timer.isActive()) {
-                activeTimers.add(timer);
+                if (timer.getPrimaryKey() == pk) {
+                    activeTimers.add(timer);
+                }
             }
         }
 
         // now get all active persistent timers for this timerservice
-        activeTimers.addAll(this.getActivePersistentTimers());
+        for (final TimerImpl timer : this.getActivePersistentTimers()) {
+            if (timer.getPrimaryKey() == pk) {
+                activeTimers.add(timer);
+            }
+        }
         return activeTimers;
     }
 
@@ -408,7 +420,9 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         // create an id for the new timer instance
         UUID uuid = UUID.randomUUID();
         // create the timer
-        TimerImpl timer = new TimerImpl(uuid.toString(), this, initialExpiration, intervalDuration, info, persistent);
+
+
+        TimerImpl timer = new TimerImpl(uuid.toString(), this, initialExpiration, intervalDuration, info, persistent, currentPrimaryKey());
         // if it's persistent, then save it
         if (persistent) {
             this.persistTimer(timer);
@@ -420,6 +434,23 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         this.addTimer(timer);
         // return the newly created timer
         return timer;
+    }
+
+    /**
+     * @return The primary key of the current EJB, or null if not applicable
+     */
+    private Object currentPrimaryKey() {
+
+        final InterceptorContext context = CurrentInvocationContext.get();
+
+        if (context == null) {
+            return null;
+        }
+        final ComponentInstance instance = context.getPrivateData(ComponentInstance.class);
+        if (instance instanceof EntityBeanComponentInstance) {
+            return ((EntityBeanComponentInstance) instance).getPrimaryKey();
+        }
+        return null;
     }
 
     /**
@@ -446,7 +477,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         // generate a id for the timer
         UUID uuid = UUID.randomUUID();
         // create the timer
-        TimerImpl timer = new CalendarTimer(uuid.toString(), this, calendarTimeout, info, persistent, timeoutMethod);
+        TimerImpl timer = new CalendarTimer(uuid.toString(), this, calendarTimeout, info, persistent, timeoutMethod, currentPrimaryKey());
 
         if (persistent) {
             this.persistTimer(timer);
@@ -762,7 +793,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      */
     protected boolean isLifecycleCallbackInvocation() {
         final InterceptorContext currentInvocationContext = CurrentInvocationContext.get();
-        if(currentInvocationContext == null) {
+        if (currentInvocationContext == null) {
             return false;
         }
         // If the method in current invocation context is null,
@@ -817,7 +848,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      *
      * @param timer
      */
-    protected void cancelTimeout(TimerImpl timer) {
+    protected void cancelTimeout(final TimerImpl timer) {
         TimerHandle handle = timer.getTimerHandle();
         java.util.TimerTask timerTask = this.scheduledTimerFutures.get(handle);
         if (timerTask != null) {

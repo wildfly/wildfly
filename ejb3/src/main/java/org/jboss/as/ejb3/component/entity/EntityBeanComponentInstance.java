@@ -23,7 +23,6 @@ package org.jboss.as.ejb3.component.entity;
 
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
-import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -57,8 +56,8 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
     private final Interceptor ejbLoad;
     private final Interceptor ejbPassivate;
 
-    protected EntityBeanComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
-        super(component, instanceReference, preDestroyInterceptor, methodInterceptors, Collections.<Method, Interceptor>emptyMap());
+    protected EntityBeanComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, final Map<Method, Interceptor> timeoutInterceptors) {
+        super(component, instanceReference, preDestroyInterceptor, methodInterceptors, timeoutInterceptors);
         final EntityBeanComponent ejbComponent = (EntityBeanComponent)component;
         this.ejbStore = ejbComponent.createInterceptor(ejbComponent.getEjbStore());
         this.ejbActivate = ejbComponent.createInterceptor(ejbComponent.getEjbActivate());

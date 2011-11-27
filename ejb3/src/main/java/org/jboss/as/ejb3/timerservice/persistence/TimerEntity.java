@@ -21,11 +21,11 @@
  */
 package org.jboss.as.ejb3.timerservice.persistence;
 
-import org.jboss.as.ejb3.timerservice.TimerImpl;
-import org.jboss.as.ejb3.timerservice.TimerState;
-
 import java.io.Serializable;
 import java.util.Date;
+
+import org.jboss.as.ejb3.timerservice.TimerImpl;
+import org.jboss.as.ejb3.timerservice.TimerState;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -47,6 +47,7 @@ public class TimerEntity implements Serializable {
 
     protected Serializable info;
 
+    protected Object primaryKey;
 
     protected TimerState timerState;
 
@@ -63,6 +64,7 @@ public class TimerEntity implements Serializable {
         this.timerState = timer.getState();
         this.timedObjectId = timer.getTimedObjectId();
         this.info = timer.getTimerInfo();
+        this.primaryKey = timer.getPrimaryKey();
     }
 
     public String getId() {
@@ -111,6 +113,14 @@ public class TimerEntity implements Serializable {
 
     public boolean isCalendarTimer() {
         return false;
+    }
+
+    public Object getPrimaryKey() {
+        return primaryKey;
+    }
+
+    public void setPrimaryKey(final Object primaryKey) {
+        this.primaryKey = primaryKey;
     }
 
     @Override

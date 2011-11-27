@@ -31,11 +31,12 @@ import javax.ejb.ScheduleExpression;
 import org.jboss.as.ejb3.timerservice.persistence.CalendarTimerEntity;
 import org.jboss.as.ejb3.timerservice.persistence.TimeoutMethod;
 import org.jboss.as.ejb3.timerservice.persistence.TimerEntity;
+import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
 import org.jboss.as.ejb3.timerservice.task.CalendarTimerTask;
 import org.jboss.as.ejb3.timerservice.task.TimerTask;
-import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
-import org.jboss.logging.Logger;
+
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 /**
  * Represents a {@link javax.ejb.Timer} which is created out a calendar expression
  *
@@ -65,8 +66,8 @@ public class CalendarTimer extends TimerImpl {
      * @param timerService    The timer service to which this timer belongs
      * @param calendarTimeout The {@link CalendarBasedTimeout} from which this {@link CalendarTimer} is being created
      */
-    public CalendarTimer(String id, TimerServiceImpl timerService, CalendarBasedTimeout calendarTimeout) {
-        this(id, timerService, calendarTimeout, null, true);
+    public CalendarTimer(String id, TimerServiceImpl timerService, CalendarBasedTimeout calendarTimeout, Object primaryKey) {
+        this(id, timerService, calendarTimeout, null, true, primaryKey);
     }
 
     /**
@@ -79,26 +80,26 @@ public class CalendarTimer extends TimerImpl {
      * @param persistent      True if this timer is persistent. False otherwise
      */
     public CalendarTimer(String id, TimerServiceImpl timerService, CalendarBasedTimeout calendarTimeout,
-                         Serializable info, boolean persistent) {
-        this(id, timerService, calendarTimeout, info, persistent, null);
+                         Serializable info, boolean persistent, Object primaryKey) {
+        this(id, timerService, calendarTimeout, info, persistent, null, primaryKey);
     }
 
     /**
      * Constructs a {@link CalendarTimer}
      *
-     * @param id                  The id of this timer
-     * @param timerService        The timer service to which this timer belongs
-     * @param calendarTimeout     The {@link CalendarBasedTimeout} from which this {@link CalendarTimer} is being created
-     * @param info                The serializable info which will be made available through {@link javax.ejb.Timer#getInfo()}
-     * @param persistent          True if this timer is persistent. False otherwise
-     * @param timeoutMethod     If this is a non-null value, then this {@link CalendarTimer} is marked as an auto-timer.
-     *                            This <code>timeoutMethod</code> is then considered as the name of the timeout method which has to
-     *                            be invoked when this timer times out.
+     * @param id              The id of this timer
+     * @param timerService    The timer service to which this timer belongs
+     * @param calendarTimeout The {@link CalendarBasedTimeout} from which this {@link CalendarTimer} is being created
+     * @param info            The serializable info which will be made available through {@link javax.ejb.Timer#getInfo()}
+     * @param persistent      True if this timer is persistent. False otherwise
+     * @param timeoutMethod   If this is a non-null value, then this {@link CalendarTimer} is marked as an auto-timer.
+     *                        This <code>timeoutMethod</code> is then considered as the name of the timeout method which has to
+     *                        be invoked when this timer times out.
      */
     public CalendarTimer(String id, TimerServiceImpl timerService, CalendarBasedTimeout calendarTimeout,
-                         Serializable info, boolean persistent, Method timeoutMethod) {
+                         Serializable info, boolean persistent, Method timeoutMethod, Object primaryKey) {
         super(id, timerService, calendarTimeout.getFirstTimeout() == null ? null : calendarTimeout.getFirstTimeout()
-                .getTime(), 0, info, persistent);
+                .getTime(), 0, info, persistent, primaryKey);
         this.calendarTimeout = calendarTimeout;
 
         // compute the next timeout (from "now")

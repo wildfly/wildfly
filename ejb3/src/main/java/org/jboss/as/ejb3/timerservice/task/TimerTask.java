@@ -26,6 +26,7 @@ import java.util.Date;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
 import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
 import org.jboss.as.ejb3.timerservice.TimerState;
+import org.jboss.as.ejb3.timerservice.spi.BeanRemovedException;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
@@ -113,6 +114,9 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
         try {
             // invoke timeout
             this.callTimeout();
+        } catch (BeanRemovedException e) {
+            ROOT_LOGGER.debugf("Removing timer %s as EJB has been removed ", this.timer);
+            timer.cancel();
         } catch (Exception e) {
             ROOT_LOGGER.errorInvokeTimeout(this.timer, e);
             try {

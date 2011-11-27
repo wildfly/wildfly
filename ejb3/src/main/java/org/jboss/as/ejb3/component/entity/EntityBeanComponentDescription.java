@@ -43,6 +43,7 @@ import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanSynchronization
 import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.tx.CMTTxInterceptor;
+import org.jboss.as.ejb3.tx.TimerCMTTxInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassIndex;
@@ -111,6 +112,13 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
         // setup the component create service
         configuration.setComponentCreateServiceFactory(EntityBeanComponentCreateService.FACTORY);
 
+        // add the timer interceptor
+        getConfigurators().add(new ComponentConfigurator() {
+            @Override
+            public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                configuration.addTimeoutInterceptor(TimerCMTTxInterceptor.FACTORY, InterceptorOrder.Component.COMPONENT_CMT_INTERCEPTOR);
+            }
+        });
         return configuration;
     }
 
@@ -202,5 +210,9 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
         this.persistenceType = persistenceType;
     }
 
+    @Override
+    public boolean isTimerServiceApplicable() {
+        return true;
+    }
 
 }

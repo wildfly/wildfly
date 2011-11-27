@@ -24,8 +24,6 @@ package org.jboss.as.ejb3.timerservice;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 
-import javax.ejb.Timer;
-
 import org.jboss.as.ejb3.component.singleton.SingletonComponent;
 import org.jboss.as.ejb3.timerservice.spi.MultiTimeoutMethodTimedObjectInvoker;
 
@@ -49,7 +47,7 @@ public class SingletonTimedObjectInvokerImpl implements MultiTimeoutMethodTimedO
     }
 
     @Override
-    public void callTimeout(final Timer timer, final Method timeoutMethod) throws Exception {
+    public void callTimeout(final TimerImpl timer, final Method timeoutMethod) throws Exception {
         ejbComponent.getComponentInstance().invokeTimeoutMethod(timeoutMethod, timer);
     }
 
@@ -59,8 +57,8 @@ public class SingletonTimedObjectInvokerImpl implements MultiTimeoutMethodTimedO
     }
 
     @Override
-    public void callTimeout(final Timer timer) throws Exception {
-        ejbComponent.getComponentInstance().invokeTimeoutMethod(timer);
+    public void callTimeout(final TimerImpl timer) throws Exception {
+        callTimeout(timer, ejbComponent.getTimeoutMethod());
     }
 
     public ClassLoader getClassLoader() {

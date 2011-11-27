@@ -21,8 +21,9 @@
  */
 package org.jboss.as.ejb3.timerservice.spi;
 
-import javax.ejb.Timer;
 import java.lang.reflect.Method;
+
+import org.jboss.as.ejb3.timerservice.TimerImpl;
 
 /**
  * A {@link MultiTimeoutMethodTimedObjectInvoker} can handle multiple timeout methods.
@@ -32,7 +33,7 @@ import java.lang.reflect.Method;
  * </p>
  * <p>
  * The timer service implementation is responsible for passing the correct timeout method
- * to the {@link #callTimeout(javax.ejb.Timer, java.lang.reflect.Method)}. The timeout method depends on the {@link javax.ejb.Timer}
+ * to the {@link #callTimeout(TimerImpl, java.lang.reflect.Method)}. The timeout method depends on the {@link javax.ejb.Timer}
  * for which the timeout occurred.
  * </p>
  *
@@ -53,5 +54,5 @@ public interface MultiTimeoutMethodTimedObjectInvoker extends TimedObjectInvoker
      * @param timer         the Timer that is passed to ejbTimeout
      * @param timeoutMethod The timeout method
      */
-    void callTimeout(Timer timer, Method timeoutMethod) throws Exception;
+    void callTimeout(TimerImpl timer, Method timeoutMethod) throws Exception;
 }

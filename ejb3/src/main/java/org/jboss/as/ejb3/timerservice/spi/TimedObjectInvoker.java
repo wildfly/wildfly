@@ -21,7 +21,7 @@
  */
 package org.jboss.as.ejb3.timerservice.spi;
 
-import javax.ejb.Timer;
+import org.jboss.as.ejb3.timerservice.TimerImpl;
 
 /**
  * An implementation can invoke the ejbTimeout method on a TimedObject.
@@ -45,7 +45,7 @@ public interface TimedObjectInvoker {
      *
      * @param timer the Timer that is passed to ejbTimeout
      */
-    void callTimeout(Timer timer) throws Exception;
+    void callTimeout(TimerImpl timer) throws Exception;
 
 
     /**

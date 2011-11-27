@@ -28,10 +28,9 @@ import java.rmi.RemoteException;
 import javax.ejb.ConcurrentAccessException;
 import javax.ejb.ConcurrentAccessTimeoutException;
 
-import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.as.ejb3.component.EjbComponentInstance;
-import org.jboss.as.ejb3.component.pool.PooledComponent;
-import org.jboss.as.ejb3.pool.Pool;
+import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
+import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
+import org.jboss.as.ejb3.timerservice.spi.BeanRemovedException;
 import org.jboss.as.ejb3.timerservice.spi.MultiTimeoutMethodTimedObjectInvoker;
 
 /**
@@ -39,25 +38,29 @@ import org.jboss.as.ejb3.timerservice.spi.MultiTimeoutMethodTimedObjectInvoker;
  *
  * @author Stuart Douglas
  */
-public class PooledTimedObjectInvokerImpl implements MultiTimeoutMethodTimedObjectInvoker, Serializable {
+public class EntityTimedObjectInvokerImpl implements MultiTimeoutMethodTimedObjectInvoker, Serializable {
 
-    private final EJBComponent ejbComponent;
-    private final Pool<EjbComponentInstance> pool;
+    private final EntityBeanComponent ejbComponent;
 
     /**
      * String that uniquely identifies a deployment
      */
     private final String deploymentString;
 
-    public PooledTimedObjectInvokerImpl(final EJBComponent ejbComponent, final String deploymentString) {
+    public EntityTimedObjectInvokerImpl(final EntityBeanComponent ejbComponent, final String deploymentString) {
         this.ejbComponent = ejbComponent;
         this.deploymentString = deploymentString;
-        this.pool = ((PooledComponent<EjbComponentInstance>) ejbComponent).getPool();
     }
 
     @Override
     public void callTimeout(final TimerImpl timer, final Method timeoutMethod) throws Exception {
-        final EjbComponentInstance instance = acquireInstance();
+        final EntityBeanComponentInstance instance;
+        try {
+            instance = ejbComponent.getCache().get(timer.getPrimaryKey());
+        } catch (Exception e) {
+            //if we fail to get the EJB we assume that it is becuse the EJB no longer exists
+            throw new BeanRemovedException(e);
+        }
         boolean discarded = false;
         try {
             instance.invokeTimeoutMethod(timeoutMethod, timer);
@@ -72,38 +75,22 @@ public class PooledTimedObjectInvokerImpl implements MultiTimeoutMethodTimedObje
             }
             if (ex instanceof RuntimeException || ex instanceof RemoteException) {
                 discarded = true;
-                if (pool != null) {
-                    pool.discard(instance);
-                }
+                ejbComponent.getCache().discard(instance);
             }
             throw ex;
         } catch (final Error e) {
             discarded = true;
-            if (pool != null) {
-                pool.discard(instance);
-            }
+            ejbComponent.getCache().discard(instance);
             throw e;
         } catch (final Throwable t) {
             discarded = true;
-            if (pool != null) {
-                pool.discard(instance);
-            }
+            ejbComponent.getCache().discard(instance);
             throw new RuntimeException(t);
         } finally {
             if (!discarded) {
-                releaseInstance(instance);
+                ejbComponent.getCache().release(instance, true);
             }
         }
-    }
-
-    private EjbComponentInstance acquireInstance() {
-        final EjbComponentInstance instance;
-        if (pool != null) {
-            instance = pool.get();
-        } else {
-            instance = (EjbComponentInstance) ejbComponent.createInstance();
-        }
-        return instance;
     }
 
     @Override
@@ -116,13 +103,6 @@ public class PooledTimedObjectInvokerImpl implements MultiTimeoutMethodTimedObje
         callTimeout(timer, ejbComponent.getTimeoutMethod());
     }
 
-    private void releaseInstance(final EjbComponentInstance instance) {
-        if (pool != null) {
-            pool.release(instance);
-        } else {
-            instance.destroy();
-        }
-    }
 
     @Override
     public ClassLoader getClassLoader() {
