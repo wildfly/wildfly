@@ -23,6 +23,7 @@
 package org.jboss.as.capedwarf.extension;
 
 import org.jboss.as.capedwarf.deployment.CapedwarfDeploymentProcessor;
+import org.jboss.as.capedwarf.deployment.CapedwarfFiltersDeploymentProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfInitializationProcessor;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -64,6 +65,7 @@ class SubsystemAdd extends AbstractBoottimeAddStepHandler {
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(Phase.PARSE, CapedwarfInitializationProcessor.PRIORITY, new CapedwarfInitializationProcessor());
+                processorTarget.addDeploymentProcessor(Phase.PARSE, CapedwarfFiltersDeploymentProcessor.PRIORITY, new CapedwarfFiltersDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, CapedwarfDeploymentProcessor.PRIORITY, new CapedwarfDeploymentProcessor());
             }
         }, OperationContext.Stage.RUNTIME);

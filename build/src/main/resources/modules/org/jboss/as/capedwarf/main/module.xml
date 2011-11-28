@@ -36,5 +36,9 @@
         <module name="org.jboss.msc"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.vfs"/>
+
+        <module name="org.jboss.as.web"/>
+        <module name="org.jboss.capedwarf"/>
+        <module name="org.jboss.metadata"/>
     </dependencies>
 </module>
