@@ -38,6 +38,7 @@ import java.io.IOException;
  * Date: 05.11.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @MessageBundle(projectCode = "JBAS")
 public interface DomainManagementMessages {
@@ -163,4 +164,199 @@ public interface DomainManagementMessages {
      */
     @Message(id = 15231, value = "User '%s' not found in directory.")
     IOException userNotFoundInDirectory(String username);
+
+    /**
+     * Creates an exception indicating that no java.io.Console is available.
+     *
+     * @return a {@link IllegalStateException} for the error.
+     */
+    @Message(id = 15232, value = "No java.io.Console available to interact with user.")
+    IllegalStateException noConsoleAvailable();
+
+    /**
+     * A message indicating JBOSS_HOME not set.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(id = 15233, value = "JBOSS_HOME environment variable not set.")
+    String jbossHomeNotSet();
+
+    /**
+     * A message indicating no mgmt-users.properties have been foun.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(id = 15234, value = "No mgmt-users.properties files found.")
+    String mgmtUsersPropertiesNotFound();
+
+    /**
+     * A message prompting the user to enter the details of the user being added.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(value = "Enter the details of the new user to add.")
+    String enterNewUserDetails();
+
+    /**
+     * The prompt to obtain the realm from the user.
+     *
+     * @param realm - the default realm.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(value = "Realm (%s)")
+    String realmPrompt(String realm);
+
+    /**
+     * The prompt to obtain the new username from the user.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(value = "Username")
+    String usernamePrompt();
+
+    /**
+     * The prompt to obtain the new username from the user.
+     *
+     * @param defaultUsername - The default username if no value is entered.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(value = "Username (%s)")
+    String usernamePrompt(String defaultUsername);
+
+    /**
+     * The error message if no username is entered.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(id = 15235, value = "No Username entered, exiting.")
+    String noUsernameExiting();
+
+    /**
+     * The prompt to obtain the password from the user.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(value = "Password")
+    String passwordPrompt();
+
+    /**
+     * The error message if no password is entered.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(id = 15236, value = "No Password entered, exiting.")
+    String noPasswordExiting();
+
+    /**
+     * The prompt to obtain the password confirmation from the user.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(value = "Re-enter Password")
+    String passwordConfirmationPrompt();
+
+    /**
+     * The error message if the passwords do not match.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(id = 15237, value = "The passwords do not match.")
+    String passwordMisMatch();
+
+    /**
+     * The error message if the username and password are equal.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(id = 15238, value = "Username must not match the password.")
+    String usernamePasswordMatch();
+
+    /**
+     * The error message if the username is not alpha numeric
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(id = 15239, value = "Only alpha/numeric usernames accepted.")
+    String usernameNotAlphaNumeric();
+
+    /**
+     * Confirmation of the user being added.
+     *
+     * @param username - The new username.
+     * @param realm - The realm the user is being added for.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(value = "About to add user '%s' for realm '%s'")
+    String aboutToAddUser(String username, String realm);
+
+    /**
+     * Prompt to ask user to confirm yes or no.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(value = "Is this correct yes/no?")
+    String isCorrectPrompt();
+
+    /**
+     * Warning that the username is easy to guess.
+     *
+     * @param username - The new username.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(value = "The username '%s' is easy to guess")
+    String usernameEasyToGuess(String username);
+
+    /**
+     * A prompt to double check the user is really sure they want to add this user.
+     *
+     * @param username - The new username.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(value = "Are you sure you want to add user '%s' yes/no?")
+    String sureToAddUser(String username);
+
+    /**
+     * The error message if the confirmation response is invalid.
+     *
+     * TODO - On translation we will need support for checking the possible responses.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(id = 15240, value = "Invalid response. (Valid responses are yes, y, no, and n)")
+    String invalidConfirmationResponse();
+
+    /**
+     * Message to inform user that the new user has been added to the file identified.
+     *
+     * @param username - The new username.
+     * @param fileName - The file the user has been added to.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(value = "Added user '%s' to file '%s'")
+    String addedUser(String username, String fileName);
+
+    /**
+     * The error message if adding the user to the file fails.
+     *
+     * @param file - The name of the file the add failed for.
+     * @param error - The failure message.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(id = 15241, value = "Unable to add user to %s due to error %s")
+    String unableToAddUser(String file, String error);
+
+    /**
+     * The error message header.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(value = "Error")
+    String errorHeader();
 }
