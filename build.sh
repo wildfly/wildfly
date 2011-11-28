@@ -165,7 +165,6 @@ main() {
     #  For each parameter, check for testsuite directives.
     for param in $@ ; do
         case $param in
-            -DallTests)  TESTS=$ALL_TESTS ;;
             -*)      ADDIT_PARAMS="$ADDIT_PARAMS $param";;
             clean)   MVN_GOAL="$MVN_GOAL$param ";;
             test)    MVN_GOAL="$MVN_GOAL$param ";;
