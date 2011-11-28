@@ -119,9 +119,8 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         List<ViewConfiguration> views = componentConfiguration.getViews();
         if (views != null) {
             for (ViewConfiguration view : views) {
-                //TODO: Get rid of this crap, it should not be here
+                //TODO: Move this into a configurator
                 final EJBViewConfiguration ejbView = (EJBViewConfiguration) view;
-                if (ejbView.getMethodIntf() == MethodIntf.LOCAL || ejbView.getMethodIntf() == MethodIntf.REMOTE) {
                     final MethodIntf viewType = ejbView.getMethodIntf();
                     for (Method method : view.getProxyFactory().getCachedMethods()) {
                         // TODO: proxy factory exposes non-public methods, is this a bug in the no-interface view?
@@ -130,10 +129,11 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
                         final Method componentMethod = getComponentMethod(componentConfiguration, method.getName(), method.getParameterTypes());
                         if (componentMethod != null) {
                             this.processTxAttr(ejbComponentDescription, viewType, componentMethod);
+                        } else {
+                            this.processTxAttr(ejbComponentDescription, viewType, method);
                         }
                     }
                 }
-            }
         }
 
         this.timeoutMethod = ejbComponentDescription.getTimeoutMethod();
