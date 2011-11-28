@@ -63,6 +63,7 @@ public class JMXConnectorService implements Service<Void> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("mbean", "connector");
     private static final String SERVER_HOSTNAME = "java.rmi.server.hostname";
     private static final String RMI_BIND_NAME = "jmxrmi";
+    public static final String LEGACY_RMI_BIND_NAME = "jmxconnector";
 
     private static final int BACKLOG = 50;
 
@@ -104,6 +105,7 @@ public class JMXConnectorService implements Service<Void> {
             adapter = new RMIConnectorServer(url, env, rmiServer, injectedMBeanServer.getValue());
             adapter.start();
             registry.rebind(RMI_BIND_NAME, rmiServer.toStub());
+            registry.rebind(LEGACY_RMI_BIND_NAME, rmiServer.toStub());
         } catch (Exception e) {
             throw new StartException(e);
         }
@@ -112,6 +114,7 @@ public class JMXConnectorService implements Service<Void> {
     public synchronized void stop(StopContext context) {
         try {
             registry.unbind(RMI_BIND_NAME);
+            registry.unbind(LEGACY_RMI_BIND_NAME);
         } catch (Exception e) {
             ROOT_LOGGER.cannotUnbindConnector(e);
         } finally {
