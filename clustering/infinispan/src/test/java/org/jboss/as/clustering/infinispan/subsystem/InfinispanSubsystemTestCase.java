@@ -42,7 +42,6 @@ import org.junit.Test;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-//@Ignore
 public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest {
 
     public InfinispanSubsystemTestCase() {
@@ -63,8 +62,16 @@ public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest {
        // Parse the subsystem xml into operations
        List<ModelNode> operations = super.parse(getSubsystemXml());
 
+        /*
+       // print the operations
+       System.out.println("List of operations");
+       for (ModelNode op : operations) {
+           System.out.println("operation = " + op.toString());
+       }
+       */
+
        // Check that we have the expected number of operations
-       Assert.assertEquals(3, operations.size());
+       Assert.assertEquals(8, operations.size());
 
        // Check that each operation has the correct content
        ModelNode addSubsystem = operations.get(0);
@@ -74,6 +81,7 @@ public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest {
        PathElement element = addr.getElement(0);
        Assert.assertEquals(SUBSYSTEM, element.getKey());
        Assert.assertEquals(getMainSubsystemName(), element.getValue());
+
     }
 
     /**
@@ -86,6 +94,9 @@ public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest {
 
        // Read the whole model and make sure it looks as expected
        ModelNode model = services.readWholeModel();
+
+        // System.out.println("model = " + model.asString());
+
        Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(getMainSubsystemName()));
     }
 
