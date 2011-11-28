@@ -34,7 +34,7 @@ public class JPADefaultDatasourceWriteHandler extends AbstractWriteAttributeHand
         final String dataSourceName = resolvedValue.asString();
         final ServiceRegistry registry = context.getServiceRegistry(true);
         ServiceController<?> sc = registry.getRequiredService(JPAService.SERVICE_NAME);
-        JPAService jpaService = JPAService.class.cast(sc.getValue());
+        JPAService jpaService = JPAService.class.cast(sc.getService());
         handbackHolder.setHandback(JPAService.getDefaultDataSourceName());
         jpaService.setDefaultDataSourceName(dataSourceName);
 

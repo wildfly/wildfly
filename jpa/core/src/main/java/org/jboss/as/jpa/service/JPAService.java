@@ -50,7 +50,7 @@ public class JPAService implements Service<Void> {
 
     public static final ServiceName SERVICE_NAME = JPAServiceNames.getJPAServiceName();
 
-    private static String defaultDataSourceName = null;
+    private static volatile String defaultDataSourceName = null;
 
     public static String getDefaultDataSourceName() {
         return defaultDataSourceName;
