@@ -13,9 +13,8 @@ rem # configure these variables, rather than modifying run.bat itself.
 rem #
 
 if not "x%JAVA_OPTS%" == "x" (
-  goto JAVA_OPTS_SET
-) else (
   echo "JAVA_OPTS already set in environment; overriding default settings with values: %JAVA_OPTS%"
+  goto JAVA_OPTS_SET
 )
 
 rem #
