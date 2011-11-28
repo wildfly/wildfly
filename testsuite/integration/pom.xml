@@ -40,6 +40,8 @@
         
         <!-- Used to provide an absolute location for the XSLT scripts. -->
         <xslt.scripts.dir>${jbossas.ts.integ.dir}/src/test/xslt</xslt.scripts.dir>
+        
+        <ts.skipTests>${skipTests}</ts.skipTests>
     </properties>
 
     <profiles>
@@ -191,7 +193,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <skipTests>false</skipTests>
+                    <skipTests>${ts.skipTests}</skipTests>
                     <!-- Prevent test and server output appearing in console. -->
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <enableAssertions>true</enableAssertions>
