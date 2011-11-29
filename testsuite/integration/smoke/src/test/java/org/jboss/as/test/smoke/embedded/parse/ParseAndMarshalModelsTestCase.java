@@ -161,7 +161,7 @@ public class ParseAndMarshalModelsTestCase {
         return ShrinkWrapUtils.createJavaArchive("bogus.jar", ParseAndMarshalModelsTestCase.class.getPackage())
                 .add(new Asset() {
                     public InputStream openStream() {
-                        return new ByteArrayInputStream("Dependencies: org.jboss.staxmapper,org.jboss.as.controller,org.jboss.as.deployment-repository,org.jboss.as.server,org.jboss.as.host-controller,org.jboss.as.domain-management,org.jboss.as.domain-controller\n\n".getBytes());
+                        return new ByteArrayInputStream("Dependencies: org.jboss.staxmapper,org.jboss.as.controller,org.jboss.as.deployment-repository,org.jboss.as.server,org.jboss.as.host-controller,org.jboss.as.domain-management\n\n".getBytes());
                     }
                  }, "META-INF/MANIFEST.MF");
     }

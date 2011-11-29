@@ -62,15 +62,15 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-deployment-repository</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-process-controller</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-protocol</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-domain-controller</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.as</groupId>

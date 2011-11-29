@@ -271,7 +271,6 @@
         <module>deployment-repository</module>
         <module>deployment-scanner</module>
         <module>dist</module>
-        <module>domain-controller</module>
         <module>domain-http</module>
         <module>domain-management</module>
         <module>ee</module>
@@ -821,12 +820,6 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-deployment-scanner</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-domain-controller</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
