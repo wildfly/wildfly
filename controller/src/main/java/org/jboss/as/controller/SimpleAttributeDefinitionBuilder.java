@@ -46,6 +46,10 @@ public class SimpleAttributeDefinitionBuilder {
         return new SimpleAttributeDefinitionBuilder(name, type, allowNull);
     }
 
+    public static SimpleAttributeDefinitionBuilder create(final SimpleAttributeDefinition basis) {
+        return new SimpleAttributeDefinitionBuilder(basis);
+    }
+
     private final String name;
     private final ModelType type;
     private String xmlName;
@@ -55,6 +59,7 @@ public class SimpleAttributeDefinitionBuilder {
     private MeasurementUnit measurementUnit;
     private String[] alternatives;
     private String[] requires;
+    private ParameterCorrector corrector;
     private ParameterValidator validator;
     private AttributeAccess.Flag[] flags;
 
@@ -86,7 +91,7 @@ public class SimpleAttributeDefinitionBuilder {
 
     public SimpleAttributeDefinition build() {
         return new SimpleAttributeDefinition(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
-                                     validator, alternatives, requires, flags);
+                                     corrector, validator, alternatives, requires, flags);
     }
 
     public SimpleAttributeDefinitionBuilder setXmlName(String xmlName) {
@@ -111,6 +116,11 @@ public class SimpleAttributeDefinitionBuilder {
 
     public SimpleAttributeDefinitionBuilder setMeasurementUnit(MeasurementUnit unit) {
         this.measurementUnit = unit;
+        return this;
+    }
+
+    public SimpleAttributeDefinitionBuilder setCorrector(ParameterCorrector corrector) {
+        this.corrector = corrector;
         return this;
     }
 
