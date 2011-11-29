@@ -133,6 +133,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
         connectionDefinitionNode.get(OP).set(ADD);
 
         String poolName = null;
+        String jndiName = null;
         int attributeSize = reader.getAttributeCount();
         boolean isXa = Boolean.FALSE;
         boolean poolDefined = Boolean.FALSE;
@@ -149,7 +150,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                 }
                 case JNDI_NAME: {
                     final Location location = reader.getLocation();
-                    final String jndiName = rawAttributeText(reader, JNDINAME.getXmlName());
+                    jndiName = rawAttributeText(reader, JNDINAME.getXmlName());
                     JNDINAME.parseAndSetParameter(jndiName, connectionDefinitionNode, location);
                     break;
                 }
@@ -182,8 +183,14 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                     break;
             }
         }
-        if (poolName == null || poolName.trim().equals(""))
-            throw new ParserException(bundle.missingValue(POOL_NAME_NAME));
+        if (poolName == null || poolName.trim().equals("")) {
+            if (jndiName != null && jndiName.trim().length() != 0) {
+                poolName = jndiName;
+            } else {
+               throw new ParserException(bundle.missingValue(POOL_NAME_NAME));
+            }
+        }
+
 
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
@@ -365,6 +372,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
 
 
         String poolName = null;
+        String jndiName = null;
         for (int i = 0; i < attributeSize; i++) {
             CommonAdminObject.Attribute attribute = CommonAdminObject.Attribute.forName(reader
                     .getAttributeLocalName(i));
@@ -377,7 +385,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                 }
                 case JNDI_NAME: {
                     final Location location = reader.getLocation();
-                    final String jndiName = rawAttributeText(reader, JNDINAME.getXmlName());
+                    jndiName = rawAttributeText(reader, JNDINAME.getXmlName());
                     JNDINAME.parseAndSetParameter(jndiName, adminObjectNode, location);
                     break;
                 }
@@ -402,9 +410,13 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                     throw new ParserException(bundle.unexpectedAttribute(attribute.getLocalName(), reader.getLocalName()));
             }
         }
-        if (poolName == null || poolName.trim().equals(""))
-            throw new ParserException(bundle.missingValue(POOL_NAME_NAME));
-
+        if (poolName == null || poolName.trim().equals("")) {
+            if (jndiName != null && jndiName.trim().length() != 0) {
+                poolName = jndiName;
+            } else {
+               throw new ParserException(bundle.missingValue(POOL_NAME_NAME));
+            }
+        }
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case END_ELEMENT: {
