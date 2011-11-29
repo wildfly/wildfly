@@ -171,7 +171,6 @@ public class ServerInventoryImpl implements ServerInventory {
     }
 
     public ServerStatus startServer(final String serverName, final ModelNode domainModel) {
-        System.out.println("--- start" + serverName);
         final String processName = ManagedServer.getServerProcessName(serverName);
         final ManagedServer existing = servers.get(processName);
         if(existing != null) { // FIXME
@@ -216,7 +215,6 @@ public class ServerInventoryImpl implements ServerInventory {
     }
 
     public ServerStatus restartServer(String serverName, final int gracefulTimeout, final ModelNode domainModel) {
-        System.out.println("---> restart " + serverName);
         stopServer(serverName, gracefulTimeout);
         ServerStatus status;
         // FIXME total hack; set up some sort of notification scheme
@@ -361,7 +359,6 @@ public class ServerInventoryImpl implements ServerInventory {
     }
 
     private ManagedServer createManagedServer(final String serverName, final ModelNode domainModel) {
-        System.out.println("====" + serverName);
         final ModelNode hostModel = domainModel.require(HOST).require(domainController.getLocalHostInfo().getLocalHostName());
         final ModelCombiner combiner = new ModelCombiner(serverName, domainModel, hostModel, domainController, environment);
         return new ManagedServer(serverName, processControllerClient, managementAddress, combiner);
