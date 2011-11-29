@@ -45,6 +45,12 @@ public final class ConnectorServices {
     private static Map<String, Set<ServiceName>> deploymentServiceNames = new HashMap<String, Set<ServiceName>>();
     private static Map<String, Set<Integer>> deploymentIdentifiers = new HashMap<String, Set<Integer>>();
 
+    /**
+     * A map whose key corresponds to a ra name and whose value is a identifier with which the RA
+     * is registered in the {@link org.jboss.jca.core.spi.rar.ResourceAdapterRepository}
+     */
+    private static Map<String, String> resourceAdapterRepositoryIdentifiers = new HashMap<String, String>();
+
     public static final ServiceName CONNECTOR_CONFIG_SERVICE = ServiceName.JBOSS.append("connector", "config");
 
     public static final ServiceName BEAN_VALIDATION_CONFIG_SERVICE = ServiceName.JBOSS.append("connector", "bean_validation", "config");
@@ -120,7 +126,7 @@ public final class ConnectorServices {
         }
 
         Integer identifier = Integer.valueOf(1);
-        for (;;) {
+        for (; ; ) {
             if (!entries.contains(identifier)) {
                 entries.add(identifier);
                 return identifier;
@@ -195,7 +201,7 @@ public final class ConnectorServices {
         }
 
         Integer identifier = Integer.valueOf(1);
-        for (;;) {
+        for (; ; ) {
             if (!entries.contains(identifier)) {
                 entries.add(identifier);
                 return identifier;
@@ -256,5 +262,35 @@ public final class ConnectorServices {
 
     public static synchronized Set<ServiceName> getResourceAdapterServiceNames(String raName) {
         return resourceAdapterServiceNames.get(raName);
+    }
+
+    /**
+     * Returns the identifier with which the resource adapter named <code>raName</code> is registered
+     * in the {@link org.jboss.jca.core.spi.rar.ResourceAdapterRepository}. Returns null, if there's no
+     * registration for a resource adapter named <code>raName</code>
+     *
+     * @param raName The resource adapter name
+     * @return
+     */
+    public static String getRegisteredResourceAdapterIdentifier(final String raName) {
+        synchronized (resourceAdapterRepositoryIdentifiers) {
+            return resourceAdapterRepositoryIdentifiers.get(raName);
+        }
+    }
+
+    /**
+     * Makes a note of the resource adapter identifier with which a resource adapter named <code>raName</code>
+     * is registered in the {@link org.jboss.jca.core.spi.rar.ResourceAdapterRepository}.
+     * <p/>
+     * Subsequent calls to {@link #getRegisteredResourceAdapterIdentifier(String)} with the passed <code>raName</code>
+     * return the <code>raIdentifier</code>
+     *
+     * @param raName       The resource adapter name
+     * @param raIdentifier The resource adapter identifier
+     */
+    public static void registerResourceAdapterIdentifier(final String raName, final String raIdentifier) {
+        synchronized (resourceAdapterRepositoryIdentifiers) {
+            resourceAdapterRepositoryIdentifiers.put(raName, raIdentifier);
+        }
     }
 }
