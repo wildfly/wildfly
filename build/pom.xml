@@ -775,7 +775,7 @@
 
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-jaxrs</artifactId>
+            <artifactId>jboss-as-host-controller</artifactId>
         </dependency>
 
         <dependency>
@@ -790,7 +790,17 @@
 
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-host-controller</artifactId>
+            <artifactId>jboss-as-jsr77</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-jaxrs</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-jmx</artifactId>
         </dependency>
 
         <dependency>
