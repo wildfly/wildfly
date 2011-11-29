@@ -29,7 +29,6 @@
         <module name="javax.api"/>
         <module name="javax.transaction.api"/>
         <module name="javax.xml.bind.api"/>
-        <module name="org.apache.commons.pool"/>
         <module name="org.apache.xerces" services="import"/>
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.logging"/>
