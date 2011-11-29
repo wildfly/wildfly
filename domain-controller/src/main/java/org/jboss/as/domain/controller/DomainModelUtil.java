@@ -136,20 +136,17 @@ public class DomainModelUtil {
     public static ExtensionContext initializeMasterDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
                                                                   final ContentRepository contentRepository, final FileRepository fileRepository,
                                                                   final DomainController domainController, final UnregisteredHostChannelRegistry registry) {
-        return initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, domainController, registry, domainController.getLocalHostInfo());
+        return initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, true, domainController, registry, domainController.getLocalHostInfo());
     }
 
     public static ExtensionContext initializeSlaveDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
                                                                  final FileRepository fileRepository, final LocalHostControllerInfo hostControllerInfo) {
-        return initializeDomainRegistry(root, configurationPersister, null, fileRepository, null, null, hostControllerInfo);
+        return initializeDomainRegistry(root, configurationPersister, null, fileRepository, false, null, null, hostControllerInfo);
     }
 
     private static ExtensionContext initializeDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
-                                                             final ContentRepository contentRepo, final FileRepository fileRepository,
+                                                             final ContentRepository contentRepo, final FileRepository fileRepository, final boolean isMaster,
                                                              final DomainController domainController, final UnregisteredHostChannelRegistry registry, final LocalHostControllerInfo hostControllerInfo) {
-
-        final boolean isMaster = hostControllerInfo.isMasterDomainController();
-
         final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY);
         final EnumSet<OperationEntry.Flag> deploymentUpload = EnumSet.of(OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY);
 
