@@ -293,4 +293,19 @@ public final class ConnectorServices {
             resourceAdapterRepositoryIdentifiers.put(raName, raIdentifier);
         }
     }
+
+    /**
+     * Clears the mapping between the <code>raName</code> and the resource adapter identifier, with which the resource
+     * adapter is registered with the {@link org.jboss.jca.core.spi.rar.ResourceAdapterRepository}
+     * <p/>
+     * Subsequent calls to {@link #getRegisteredResourceAdapterIdentifier(String)} with the passed <code>raName</code>
+     * return null
+     *
+     * @param raName       The resource adapter name
+     */
+    public static void unregisterResourceAdapterIdentifier(final String raName) {
+        synchronized (resourceAdapterRepositoryIdentifiers) {
+            resourceAdapterRepositoryIdentifiers.remove(raName);
+        }
+    }
 }

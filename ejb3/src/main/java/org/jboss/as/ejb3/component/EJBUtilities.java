@@ -82,7 +82,7 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
     public ActivationSpec createActivationSpecs(final String resourceAdapterName, final Class<?> messageListenerInterface,
                                                 final Properties activationConfigProperties, final ClassLoader classLoader) {
         try {
-            // first get the ra "identifier" (with which it is registed in the resource adapter repository) for the
+            // first get the ra "identifier" (with which it is registered in the resource adapter repository) for the
             // ra name
             final String raIdentifier = ConnectorServices.getRegisteredResourceAdapterIdentifier(resourceAdapterName);
             if (raIdentifier == null) {
