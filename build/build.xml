@@ -599,9 +599,18 @@
 
         <module-def name="org.infinispan">
             <maven-resource group="org.infinispan" artifact="infinispan-core"/>
-            <maven-resource group="org.infinispan" artifact="infinispan-cachestore-jdbc"/>
-            <maven-resource group="org.infinispan" artifact="infinispan-cachestore-remote"/>
-            <maven-resource group="org.infinispan" artifact="infinispan-client-hotrod"/>
+        </module-def>
+
+        <module-def name="org.infinispan.cachestore.jdbc">
+            <maven-resource group="org.infinispan" artifact="infinispan-cachestore-jdbc" />
+        </module-def>
+
+        <module-def name="org.infinispan.cachestore.remote">
+            <maven-resource group="org.infinispan" artifact="infinispan-cachestore-remote" />
+        </module-def>
+
+        <module-def name="org.infinispan.client.hotrod">
+            <maven-resource group="org.infinispan" artifact="infinispan-client-hotrod" />
         </module-def>
 
         <module-def name="org.jacorb">
