@@ -22,8 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -33,6 +31,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ValueManagedReference;
+import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
@@ -40,6 +39,8 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.ImmediateValue;
+
+import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * A basic component implementation.
@@ -54,6 +55,7 @@ public class BasicComponent implements Component {
     private final InterceptorFactory postConstruct;
     private final InterceptorFactory preDestroy;
     private final Map<Method, InterceptorFactory> interceptorFactoryMap;
+    private final NamespaceContextSelector namespaceContextSelector;
 
     private volatile boolean gate;
     private final AtomicBoolean stopping = new AtomicBoolean();
@@ -69,6 +71,7 @@ public class BasicComponent implements Component {
         postConstruct = createService.getPostConstruct();
         preDestroy = createService.getPreDestroy();
         interceptorFactoryMap = createService.getComponentInterceptors();
+        namespaceContextSelector = createService.getNamespaceContextSelector();
     }
 
     /**
@@ -240,5 +243,14 @@ public class BasicComponent implements Component {
     @Override
     public String toString() {
         return getClass().getSimpleName() + " " + componentName;
+    }
+
+    /**
+     *
+     * @return The components namespace context selector, or null if it does not have one
+     */
+    @Override
+    public NamespaceContextSelector getNamespaceContextSelector() {
+        return namespaceContextSelector;
     }
 }

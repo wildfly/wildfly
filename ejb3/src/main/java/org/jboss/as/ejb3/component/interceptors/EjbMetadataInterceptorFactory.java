@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.component.interceptors;
 import javax.ejb.EJBHome;
 
 import org.jboss.as.ee.component.ComponentView;
-import org.jboss.as.ejb3.component.EJBMetaDataImp;
+import org.jboss.ejb.client.EJBMetaDataImpl;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
@@ -32,7 +32,7 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * Interceptor that handles the EJB metadata
+ * Interceptor that handles the EJB metadata for non-IIOP invocations.
  *
  * @author Stuart Douglas
  */
@@ -59,7 +59,7 @@ public class EjbMetadataInterceptorFactory implements InterceptorFactory {
         return new Interceptor() {
             @Override
             public Object processInvocation(final InterceptorContext context) throws Exception {
-                return new EJBMetaDataImp(remoteClass, homeClass, pkClass, session, stateless, (EJBHome) homeView.getValue().createInstance().getInstance());
+                return new EJBMetaDataImpl(remoteClass, homeClass, pkClass, session, stateless, (EJBHome) homeView.getValue().createInstance().getInstance());
             }
         };
     }

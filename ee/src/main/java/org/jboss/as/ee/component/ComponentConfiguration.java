@@ -33,6 +33,7 @@ import java.util.Set;
 
 import org.jboss.as.ee.component.interceptors.OrderedItemContainer;
 import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.msc.service.Service;
@@ -77,6 +78,8 @@ public class ComponentConfiguration {
     private final List<ViewConfiguration> views = new ArrayList<ViewConfiguration>();
 
     private InterceptorFactory namespaceContextInterceptorFactory;
+
+    private NamespaceContextSelector namespaceContextSelector;
 
     public ComponentConfiguration(final ComponentDescription componentDescription, final ClassIndex classIndex, final ClassLoader moduleClassLoder) {
         this.componentDescription = componentDescription;
@@ -369,5 +372,17 @@ public class ComponentConfiguration {
 
     public ClassLoader getModuleClassLoder() {
         return moduleClassLoder;
+    }
+
+    /**
+     *
+     * @return The components namespace context selector, if any
+     */
+    public NamespaceContextSelector getNamespaceContextSelector() {
+        return namespaceContextSelector;
+    }
+
+    public void setNamespaceContextSelector(final NamespaceContextSelector namespaceContextSelector) {
+        this.namespaceContextSelector = namespaceContextSelector;
     }
 }

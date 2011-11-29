@@ -45,47 +45,11 @@ import org.jboss.classfilewriter.util.DescriptorUtils;
  * Utility class responsible for the dynamic generation of bytecodes of
  * IIOP stub classes.
  *
- * @author Unknown
+ * @author Stuart Douglas
  * @author <a href="mailto:reverbel@ime.usp.br">Francisco Reverbel</a>
  */
 public class IIOPStubCompiler {
 
-    /**
-     * Parameter type array for <code>StubStrategy.forMethod()</code>
-     * invocations.
-     */
-    private static final Class[] stubStrategyParams = {
-            String[].class, String[].class, String[].class, String.class,
-            ClassLoader.class
-    };
-
-    /**
-     * Parameter type array for <code>DynamicIIOPStub.invoke()</code>
-     * invocations.
-     */
-    private static final Class[] invokeParams = {
-            String.class, StubStrategy.class, Object[].class
-    };
-
-    /**
-     * Parameter type array for
-     * <code>org.omg.CORBA.ORB.object_to_string()</code> invocations.
-     */
-    private static final Class[] corbaObjectParam = {
-            org.omg.CORBA.Object.class
-    };
-
-    /**
-     * Parameter type array for a method that takes a single string parameter.
-     */
-    private static final Class[] stringParam = {
-            String.class
-    };
-
-    /**
-     * Parameter type array for a method that takes no parameters.
-     */
-    private static final Class[] noParams = {};
     public static final String ID_FIELD_NAME = "$ids";
 
     /**
@@ -126,7 +90,6 @@ public class IIOPStubCompiler {
                                            String idlName,
                                            String strategyField,
                                            String initMethod) {
-        String methodName = m.getName();
         Class returnType = m.getReturnType();
         Class[] paramTypes = m.getParameterTypes();
         Class[] exceptions = m.getExceptionTypes();

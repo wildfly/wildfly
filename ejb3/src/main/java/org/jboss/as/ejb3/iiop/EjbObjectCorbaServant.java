@@ -39,7 +39,9 @@ import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.jacorb.csiv2.idl.SASCurrent;
 import org.jboss.as.jacorb.rmi.RmiIdlUtil;
 import org.jboss.as.jacorb.rmi.marshal.strategy.SkeletonStrategy;
+import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.ejb.client.SessionID;
+import org.jboss.ejb.iiop.HandleImplIIOP;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.InputStreamByteInput;
@@ -133,10 +135,15 @@ public class EjbObjectCorbaServant extends Servant implements InvokeHandler, Loc
     private final MarshallingConfiguration configuration;
 
     /**
+     * The EJB's deployment class loader
+     */
+    private final ClassLoader classLoader;
+
+    /**
      * Constructs an <code>EjbObjectCorbaServant></code>.
      */
     public EjbObjectCorbaServant(final Current poaCurrent, final Map<String, SkeletonStrategy> methodInvokerMap, final String[] repositoryIds,
-                                 final InterfaceDef interfaceDef, final ORB orb, final ComponentView componentView, final MarshallerFactory factory, final MarshallingConfiguration configuration, final TransactionManager transactionManager) {
+                                 final InterfaceDef interfaceDef, final ORB orb, final ComponentView componentView, final MarshallerFactory factory, final MarshallingConfiguration configuration, final TransactionManager transactionManager, final ClassLoader classLoader) {
         this.poaCurrent = poaCurrent;
         this.methodInvokerMap = methodInvokerMap;
         this.repositoryIds = repositoryIds;
@@ -146,6 +153,7 @@ public class EjbObjectCorbaServant extends Servant implements InvokeHandler, Loc
         this.factory = factory;
         this.configuration = configuration;
         this.transactionManager = transactionManager;
+        this.classLoader = classLoader;
 
         SASCurrent sasCurrent;
         try {
@@ -197,97 +205,119 @@ public class EjbObjectCorbaServant extends Servant implements InvokeHandler, Loc
             logger.debug("Unable to find opname '" + opName + "' valid operations:" + methodInvokerMap.keySet());
             throw new BAD_OPERATION(opName);
         }
-
-        org.omg.CORBA_2_3.portable.OutputStream out;
+        final NamespaceContextSelector selector = componentView.getComponent().getNamespaceContextSelector();
+        final ClassLoader oldCl = SecurityActions.getContextClassLoader();
+        NamespaceContextSelector.pushCurrentSelector(selector);
         try {
-            final Object retVal;
+            SecurityActions.setContextClassLoader(classLoader);
 
-            if (opName.equals("_get_handle")) {
-                final javax.ejb.EJBObject obj = (javax.ejb.EJBObject) javax.rmi.PortableRemoteObject.narrow(_this_object(), javax.ejb.EJBObject.class);
-                retVal = new HandleImplIIOP(obj);
-            } else {
-                Transaction tx = null;
-                if (inboundTxCurrent != null)
-                    tx = inboundTxCurrent.getCurrentTransaction();
-                if (tx != null) {
-                    transactionManager.resume(tx);
-                }
-                try {
-                    SimplePrincipal principal = null;
-                    char[] password = null;
-                    if (sasCurrent != null) {
-                        final byte[] username = sasCurrent.get_incoming_username();
-                        final byte[] credential = sasCurrent.get_incoming_password();
-                        String name = new String(username, "UTF-8");
-                        int domainIndex = name.indexOf('@');
-                        if (domainIndex > 0)
-                            name = name.substring(0, domainIndex);
-                        if (name.length() == 0) {
-                            final byte[] incomingName = sasCurrent.get_incoming_principal_name();
-                            if (incomingName.length > 0) {
-                                name = new String(incomingName, "UTF-8");
-                                domainIndex = name.indexOf('@');
-                                if (domainIndex > 0)
-                                    name = name.substring(0, domainIndex);
+            org.omg.CORBA_2_3.portable.OutputStream out;
+            try {
+                final Object retVal;
+
+                if (opName.equals("_get_handle")) {
+                    retVal = new HandleImplIIOP(orb.object_to_string(_this_object()));
+                } else {
+                    Transaction tx = null;
+                    if (inboundTxCurrent != null)
+                        tx = inboundTxCurrent.getCurrentTransaction();
+                    if (tx != null) {
+                        transactionManager.resume(tx);
+                    }
+                    try {
+                        SimplePrincipal principal = null;
+                        char[] password = null;
+                        if (sasCurrent != null) {
+                            final byte[] username = sasCurrent.get_incoming_username();
+                            final byte[] credential = sasCurrent.get_incoming_password();
+                            String name = new String(username, "UTF-8");
+                            int domainIndex = name.indexOf('@');
+                            if (domainIndex > 0)
+                                name = name.substring(0, domainIndex);
+                            if (name.length() == 0) {
+                                final byte[] incomingName = sasCurrent.get_incoming_principal_name();
+                                if (incomingName.length > 0) {
+                                    name = new String(incomingName, "UTF-8");
+                                    domainIndex = name.indexOf('@');
+                                    if (domainIndex > 0)
+                                        name = name.substring(0, domainIndex);
+                                    principal = new SimplePrincipal(name);
+                                    // username==password is a hack until
+                                    // we have a real way to establish trust
+                                    password = name.toCharArray();
+                                }
+                            } else {
                                 principal = new SimplePrincipal(name);
-                                // username==password is a hack until
-                                // we have a real way to establish trust
-                                password = name.toCharArray();
+                                password = new String(credential, "UTF-8").toCharArray();
+                            }
+
+                        }
+                        final Object[] params = op.readParams((org.omg.CORBA_2_3.portable.InputStream) in);
+
+                        if (opName.equals("isIdentical") && params.length == 1) {
+                            //handle isIdential specially
+                            Object val = params[0];
+                            if(val instanceof org.omg.CORBA.Object) {
+                                retVal = handleIsIdentical((org.omg.CORBA.Object)val);
+                            } else {
+                                retVal = false;
                             }
                         } else {
-                            principal = new SimplePrincipal(name);
-                            password = new String(credential, "UTF-8").toCharArray();
+
+                            final SecurityContext sc = SecurityContextFactory.createSecurityContext("CORBA_REMOTE");
+                            sc.getUtil().createSubjectInfo(principal, password, null);
+
+                            final InterceptorContext interceptorContext = new InterceptorContext();
+
+                            //todo: could this be nicer
+                            if (componentView.getComponent() instanceof StatefulSessionComponent) {
+                                final SessionID sessionID = (SessionID) unmarshalIdentifier();
+                                interceptorContext.putPrivateData(SessionID.SESSION_ID_KEY, sessionID);
+                            } else if (componentView.getComponent() instanceof EntityBeanComponent) {
+                                final Object pk = unmarshalIdentifier();
+                                interceptorContext.putPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, pk);
+                            }
+                            interceptorContext.setContextData(new HashMap<String, Object>());
+                            interceptorContext.setParameters(params);
+                            interceptorContext.setMethod(op.getMethod());
+                            interceptorContext.putPrivateData(ComponentView.class, componentView);
+                            interceptorContext.putPrivateData(Component.class, componentView.getComponent());
+                            retVal = componentView.invoke(interceptorContext);
                         }
-
-                    }
-                    final Object[] params = op.readParams((org.omg.CORBA_2_3.portable.InputStream) in);
-
-
-                    final SecurityContext sc = SecurityContextFactory.createSecurityContext("CORBA_REMOTE");
-                    sc.getUtil().createSubjectInfo(principal, password, null);
-
-                    final InterceptorContext interceptorContext = new InterceptorContext();
-
-                    //todo: could this be nicer
-                    if (componentView.getComponent() instanceof StatefulSessionComponent) {
-                        final SessionID sessionID = (SessionID) unmarshalIdentifier();
-                        interceptorContext.putPrivateData(SessionID.SESSION_ID_KEY, sessionID);
-                    } else if (componentView.getComponent() instanceof EntityBeanComponent) {
-                        final Object pk = unmarshalIdentifier();
-                        interceptorContext.putPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, pk);
-                    }
-                    interceptorContext.setContextData(new HashMap<String, Object>());
-                    interceptorContext.setParameters(params);
-                    interceptorContext.setMethod(op.getMethod());
-                    interceptorContext.putPrivateData(ComponentView.class, componentView);
-                    interceptorContext.putPrivateData(Component.class, componentView.getComponent());
-                    retVal = componentView.invoke(interceptorContext);
-                } finally {
-                    if (tx != null) {
-                        if (transactionManager.getStatus() != Status.STATUS_NO_TRANSACTION) {
-                            transactionManager.suspend();
+                    } finally {
+                        if (tx != null) {
+                            if (transactionManager.getStatus() != Status.STATUS_NO_TRANSACTION) {
+                                transactionManager.suspend();
+                            }
                         }
                     }
                 }
+                out = (org.omg.CORBA_2_3.portable.OutputStream)
+                        handler.createReply();
+                if (op.isNonVoid()) {
+                    op.writeRetval(out, retVal);
+                }
+            } catch (Exception e) {
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Exception in EJBObject invocation", e);
+                }
+                if (e instanceof MBeanException) {
+                    e = ((MBeanException) e).getTargetException();
+                }
+                RmiIdlUtil.rethrowIfCorbaSystemException(e);
+                out = (org.omg.CORBA_2_3.portable.OutputStream)
+                        handler.createExceptionReply();
+                op.writeException(out, e);
             }
-            out = (org.omg.CORBA_2_3.portable.OutputStream)
-                    handler.createReply();
-            if (op.isNonVoid()) {
-                op.writeRetval(out, retVal);
-            }
-        } catch (Exception e) {
-            if (logger.isTraceEnabled()) {
-                logger.trace("Exception in EJBObject invocation", e);
-            }
-            if (e instanceof MBeanException) {
-                e = ((MBeanException) e).getTargetException();
-            }
-            RmiIdlUtil.rethrowIfCorbaSystemException(e);
-            out = (org.omg.CORBA_2_3.portable.OutputStream)
-                    handler.createExceptionReply();
-            op.writeException(out, e);
+            return out;
+        } finally {
+            NamespaceContextSelector.popCurrentSelector();
+            SecurityActions.setContextClassLoader(oldCl);
         }
-        return out;
+    }
+
+    private boolean handleIsIdentical(final org.omg.CORBA.Object val) {
+        return val._is_equivalent(val);
     }
 
     private Object unmarshalIdentifier() throws IOException, ClassNotFoundException {

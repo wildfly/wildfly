@@ -22,6 +22,7 @@
 
 package org.jboss.as.ee.component;
 
+import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.msc.service.StopContext;
 
 /**
@@ -63,4 +64,5 @@ public interface Component {
      */
     ComponentInstance createInstance();
 
+    NamespaceContextSelector getNamespaceContextSelector();
 }

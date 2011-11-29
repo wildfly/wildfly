@@ -136,6 +136,7 @@
         <version.org.jboss.com.sun.httpserver>1.0.0.Beta2</version.org.jboss.com.sun.httpserver>
         <version.org.jboss.ejb-client>1.0.0.Beta7</version.org.jboss.ejb-client>
         <version.org.jboss.ejb3.ext-api>2.0.0-beta-1</version.org.jboss.ejb3.ext-api>
+        <version.org.jboss.iiop-client>1.0.0.Beta1</version.org.jboss.iiop-client>
         <version.org.jboss.interceptor>2.0.0.Alpha3</version.org.jboss.interceptor>
         <version.org.jboss.invocation>1.1.1.Final</version.org.jboss.invocation>
         <version.org.jboss.ironjacamar>1.0.5.Final</version.org.jboss.ironjacamar>
@@ -3163,6 +3164,12 @@
 
             <dependency>
                 <groupId>org.jboss</groupId>
+                <artifactId>jboss-iiop-client</artifactId>
+                <version>${version.org.jboss.iiop-client}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss</groupId>
                 <artifactId>staxmapper</artifactId>
                 <version>${version.org.jboss.staxmapper}</version>
             </dependency>
@@ -3403,7 +3410,6 @@
                 <artifactId>jboss-interceptor-spi</artifactId>
                 <version>${version.org.jboss.interceptor}</version>
             </dependency>
-
 
             <dependency>
                 <groupId>org.jboss.ironjacamar</groupId>

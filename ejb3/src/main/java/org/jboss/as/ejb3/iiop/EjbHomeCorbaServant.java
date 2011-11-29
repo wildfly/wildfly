@@ -25,6 +25,7 @@ import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.ejb.EJBMetaData;
 import javax.ejb.HomeHandle;
 import javax.transaction.Status;
 import javax.transaction.Transaction;
@@ -36,6 +37,7 @@ import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.jacorb.csiv2.idl.SASCurrent;
 import org.jboss.as.jacorb.rmi.RmiIdlUtil;
 import org.jboss.as.jacorb.rmi.marshal.strategy.SkeletonStrategy;
+import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
 import org.jboss.security.SecurityContext;
@@ -75,11 +77,6 @@ public class EjbHomeCorbaServant extends Servant implements InvokeHandler, Local
     private final ComponentView componentView;
 
     /**
-     * The orb
-     */
-    private final ORB orb;
-
-    /**
      * The deployment repository that is used to map local EJB representations to CORBA objects
      */
     private final DeploymentRepository deploymentRepository;
@@ -104,7 +101,12 @@ public class EjbHomeCorbaServant extends Servant implements InvokeHandler, Local
      * <code>HomeHandle</code> for the <code>EJBHome</code>
      * implemented by this servant.
      */
-    private HomeHandle homeHandle = null;
+    private volatile HomeHandle homeHandle = null;
+
+    /**
+     * The metadata for this
+     */
+    private volatile EJBMetaData ejbMetaData;
 
     /**
      * A reference to the SASCurrent, or null if the SAS interceptors are not
@@ -123,16 +125,22 @@ public class EjbHomeCorbaServant extends Servant implements InvokeHandler, Local
     private final org.jboss.iiop.tm.InboundTransactionCurrent inboundTxCurrent;
 
     /**
+     * The deployment class loader
+     */
+    private final ClassLoader classLoader;
+
+
+    /**
      * Constructs an <code>EjbHomeCorbaServant></code>.
      */
-    public EjbHomeCorbaServant(final Map<String, SkeletonStrategy> methodInvokerMap, final String[] repositoryIds, final InterfaceDef interfaceDef, final ORB orb, final ComponentView componentView, final DeploymentRepository deploymentRepository, final TransactionManager transactionManager) {
+    public EjbHomeCorbaServant(final Map<String, SkeletonStrategy> methodInvokerMap, final String[] repositoryIds, final InterfaceDef interfaceDef, final ORB orb, final ComponentView componentView, final DeploymentRepository deploymentRepository, final TransactionManager transactionManager, final ClassLoader classLoader) {
         this.methodInvokerMap = methodInvokerMap;
         this.repositoryIds = repositoryIds;
         this.interfaceDef = interfaceDef;
-        this.orb = orb;
         this.componentView = componentView;
         this.deploymentRepository = deploymentRepository;
         this.transactionManager = transactionManager;
+        this.classLoader = classLoader;
         SASCurrent sasCurrent;
         try {
             sasCurrent = (SASCurrent) orb.resolve_initial_references("SASCurrent");
@@ -184,92 +192,109 @@ public class EjbHomeCorbaServant extends Servant implements InvokeHandler, Local
             throw new BAD_OPERATION(opName);
         }
 
-        org.omg.CORBA_2_3.portable.OutputStream out;
+
+        //we have to run this bit of the invocation inside the EJB's naming context
+        //as during the de-serialization process the Handles may look up the ORB and the
+        //HandleDelegate
+
+        final NamespaceContextSelector selector = componentView.getComponent().getNamespaceContextSelector();
+        final ClassLoader oldCl = SecurityActions.getContextClassLoader();
+        NamespaceContextSelector.pushCurrentSelector(selector);
         try {
-            Object retVal;
+            SecurityActions.setContextClassLoader(classLoader);
 
-            // The EJBHome method getHomeHandle() receives special
-            // treatment because the container does not implement it.
-            // The remaining EJBObject methods (getEJBMetaData,
-            // remove(java.lang.Object), and remove(javax.ejb.Handle))
-            // are forwarded to the container.
 
-            if (opName.equals("_get_homeHandle")) {
-                retVal = homeHandle;
-            } else {
-                Transaction tx = null;
-                if (inboundTxCurrent != null) {
-                    tx = inboundTxCurrent.getCurrentTransaction();
-                }
-                if (tx != null) {
-                    transactionManager.resume(tx);
-                }
-                try {
-                    SimplePrincipal principal = null;
-                    char[] password = null;
-                    if (sasCurrent != null) {
-                        final byte[] username = sasCurrent.get_incoming_username();
-                        byte[] credential = sasCurrent.get_incoming_password();
-                        String name = new String(username, "UTF-8");
-                        int domainIndex = name.indexOf('@');
-                        if (domainIndex > 0)
-                            name = name.substring(0, domainIndex);
-                        if (name.length() == 0) {
-                            final byte[] incomingName = sasCurrent.get_incoming_principal_name();
-                            if (incomingName.length > 0) {
-                                name = new String(incomingName, "UTF-8");
-                                domainIndex = name.indexOf('@');
-                                if (domainIndex > 0)
-                                    name = name.substring(0, domainIndex);
-                                principal = new SimplePrincipal(name);
-                                // username==password is a hack until
-                                // we have a real way to establish trust
-                                password = name.toCharArray();
-                            }
-                        } else {
-                            principal = new SimplePrincipal(name);
-                            password = new String(credential, "UTF-8").toCharArray();
-                        }
+            org.omg.CORBA_2_3.portable.OutputStream out;
+            try {
+                Object retVal;
+
+                // The EJBHome method getHomeHandle() receives special
+                // treatment because the container does not implement it.
+                // The remaining EJBObject methods (getEJBMetaData,
+                // remove(java.lang.Object), and remove(javax.ejb.Handle))
+                // are forwarded to the container.
+
+                if (opName.equals("_get_homeHandle")) {
+                    retVal = homeHandle;
+                } else if(opName.equals("_get_EJBMetaData")) {
+                    retVal = ejbMetaData;
+                } else {
+                    Transaction tx = null;
+                    if (inboundTxCurrent != null) {
+                        tx = inboundTxCurrent.getCurrentTransaction();
                     }
-                    final Object[] params = op.readParams((org.omg.CORBA_2_3.portable.InputStream) in);
-
-
-                    final SecurityContext sc = SecurityContextFactory.createSecurityContext("CORBA_REMOTE");
-                    sc.getUtil().createSubjectInfo(principal, password, null);
-
-                    //TODO: deal with the transaction
-                    final InterceptorContext interceptorContext = new InterceptorContext();
-                    interceptorContext.setContextData(new HashMap<String, Object>());
-                    interceptorContext.setParameters(params);
-                    interceptorContext.setMethod(op.getMethod());
-                    interceptorContext.putPrivateData(ComponentView.class, componentView);
-                    interceptorContext.putPrivateData(Component.class, componentView.getComponent());
-                    retVal = componentView.invoke(interceptorContext);
-                } finally {
                     if (tx != null) {
-                        if (transactionManager.getStatus() != Status.STATUS_NO_TRANSACTION) {
-                            transactionManager.suspend();
+                        transactionManager.resume(tx);
+                    }
+                    try {
+                        SimplePrincipal principal = null;
+                        char[] password = null;
+                        if (sasCurrent != null) {
+                            final byte[] username = sasCurrent.get_incoming_username();
+                            byte[] credential = sasCurrent.get_incoming_password();
+                            String name = new String(username, "UTF-8");
+                            int domainIndex = name.indexOf('@');
+                            if (domainIndex > 0)
+                                name = name.substring(0, domainIndex);
+                            if (name.length() == 0) {
+                                final byte[] incomingName = sasCurrent.get_incoming_principal_name();
+                                if (incomingName.length > 0) {
+                                    name = new String(incomingName, "UTF-8");
+                                    domainIndex = name.indexOf('@');
+                                    if (domainIndex > 0)
+                                        name = name.substring(0, domainIndex);
+                                    principal = new SimplePrincipal(name);
+                                    // username==password is a hack until
+                                    // we have a real way to establish trust
+                                    password = name.toCharArray();
+                                }
+                            } else {
+                                principal = new SimplePrincipal(name);
+                                password = new String(credential, "UTF-8").toCharArray();
+                            }
+                        }
+                        final Object[] params = op.readParams((org.omg.CORBA_2_3.portable.InputStream) in);
+
+
+                        final SecurityContext sc = SecurityContextFactory.createSecurityContext("CORBA_REMOTE");
+                        sc.getUtil().createSubjectInfo(principal, password, null);
+
+                        final InterceptorContext interceptorContext = new InterceptorContext();
+                        interceptorContext.setContextData(new HashMap<String, Object>());
+                        interceptorContext.setParameters(params);
+                        interceptorContext.setMethod(op.getMethod());
+                        interceptorContext.putPrivateData(ComponentView.class, componentView);
+                        interceptorContext.putPrivateData(Component.class, componentView.getComponent());
+                        retVal = componentView.invoke(interceptorContext);
+                    } finally {
+                        if (tx != null) {
+                            if (transactionManager.getStatus() != Status.STATUS_NO_TRANSACTION) {
+                                transactionManager.suspend();
+                            }
                         }
                     }
                 }
-            }
 
-            //if this is a remote proxy we need to translate it into a corba object
-            retVal = ProxyTranslater.wrapPotentialProxy(deploymentRepository, retVal);
+                //if this is a remote proxy we need to translate it into a corba object
+                retVal = ProxyTranslater.wrapPotentialProxy(deploymentRepository, retVal);
 
-            out = (org.omg.CORBA_2_3.portable.OutputStream) handler.createReply();
-            if (op.isNonVoid()) {
-                op.writeRetval(out, retVal);
+                out = (org.omg.CORBA_2_3.portable.OutputStream) handler.createReply();
+                if (op.isNonVoid()) {
+                    op.writeRetval(out, retVal);
+                }
+            } catch (Exception e) {
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Exception in EJBHome invocation", e);
+                }
+                RmiIdlUtil.rethrowIfCorbaSystemException(e);
+                out = (org.omg.CORBA_2_3.portable.OutputStream) handler.createExceptionReply();
+                op.writeException(out, e);
             }
-        } catch (Exception e) {
-            if (logger.isTraceEnabled()) {
-                logger.trace("Exception in EJBHome invocation", e);
-            }
-            RmiIdlUtil.rethrowIfCorbaSystemException(e);
-            out = (org.omg.CORBA_2_3.portable.OutputStream) handler.createExceptionReply();
-            op.writeException(out, e);
+            return out;
+        } finally {
+            NamespaceContextSelector.popCurrentSelector();
+            SecurityActions.setContextClassLoader(oldCl);
         }
-        return out;
     }
 
     /**
@@ -307,4 +332,11 @@ public class EjbHomeCorbaServant extends Servant implements InvokeHandler, Local
         }
     }
 
+    public EJBMetaData getEjbMetaData() {
+        return ejbMetaData;
+    }
+
+    public void setEjbMetaData(final EJBMetaData ejbMetaData) {
+        this.ejbMetaData = ejbMetaData;
+    }
 }

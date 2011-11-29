@@ -56,6 +56,7 @@
         <module name="org.jboss.common-core"/>
         <module name="org.jboss.ejb-client"/>
         <module name="org.jboss.ejb3"/>
+        <module name="org.jboss.iiop-client"/>
         <module name="org.jboss.invocation"/>
         <module name="org.jboss.ironjacamar.api"/>
         <module name="org.jboss.jandex"/>

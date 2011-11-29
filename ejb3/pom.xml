@@ -129,6 +129,12 @@ vi:ts=4:sw=4:expandtab
         </dependency>
 
         <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-iiop-client</artifactId>
+            <version>${version.org.jboss.iiop-client}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
         </dependency>

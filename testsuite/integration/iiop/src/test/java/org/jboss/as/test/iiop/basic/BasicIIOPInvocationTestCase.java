@@ -64,9 +64,33 @@ public class BasicIIOPInvocationTestCase {
     @Test
     @OperateOnDeployment("client")
     public void testRemoteIIOPInvocation() throws IOException, NamingException {
-        final InitialContext context = new InitialContext();
-        final ClientEjb ejb = (ClientEjb) context.lookup("java:module/" + ClientEjb.class.getSimpleName());
+        final ClientEjb ejb = client();
         Assert.assertEquals("hello", ejb.getRemoteMessage());
+    }
 
+    @Test
+    @OperateOnDeployment("client")
+    public void testHomeHandle() throws IOException, NamingException {
+        final ClientEjb ejb = client();
+        Assert.assertEquals("hello", ejb.getRemoteViaHomeHandleMessage());
+    }
+
+    @Test
+    @OperateOnDeployment("client")
+    public void testHandle() throws IOException, NamingException {
+        final ClientEjb ejb = client();
+        Assert.assertEquals("hello", ejb.getRemoteViaHandleMessage());
+    }
+
+    @Test
+    @OperateOnDeployment("client")
+    public void testEjbMetadata() throws IOException, NamingException {
+        final ClientEjb ejb = client();
+        Assert.assertEquals("hello", ejb.getRemoteMessageViaEjbMetadata());
+    }
+
+    private ClientEjb client() throws NamingException {
+        final InitialContext context = new InitialContext();
+        return (ClientEjb) context.lookup("java:module/" + ClientEjb.class.getSimpleName());
     }
 }

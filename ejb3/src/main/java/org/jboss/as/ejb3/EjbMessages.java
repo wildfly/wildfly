@@ -1812,4 +1812,7 @@ public interface EjbMessages {
 
     @Message(id=14519, value="Could not find method %s on entity bean")
     RuntimeException couldNotFindEntityBeanMethod(String method);
+
+    @Message(id=14520, value="Could not determine ClassLoader for stub %s")
+    RuntimeException couldNotFindClassLoaderForStub(String stub);
 }

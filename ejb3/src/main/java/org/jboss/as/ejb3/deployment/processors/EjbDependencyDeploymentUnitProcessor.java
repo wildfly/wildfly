@@ -57,6 +57,7 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
      */
     private static final ModuleIdentifier EJB3_TIMERS = ModuleIdentifier.create("org.jboss.as.ejb3");
     private static final ModuleIdentifier EJB_CLIENT = ModuleIdentifier.create("org.jboss.ejb-client");
+    private static final ModuleIdentifier EJB_IIOP_CLIENT = ModuleIdentifier.create("org.jboss.iiop-client");
     private static final ModuleIdentifier JACORB = ModuleIdentifier.create("org.jboss.as.jacorb");
 
 
@@ -79,6 +80,7 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
 
         //we always give them the EJB client
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_CLIENT, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_IIOP_CLIENT, false, false, false));
 
         // fetch the EjbJarMetaData
         //TODO: remove the app client bit after the next EJB release

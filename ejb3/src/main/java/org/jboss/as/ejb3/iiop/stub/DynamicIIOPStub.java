@@ -24,10 +24,10 @@ package org.jboss.as.ejb3.iiop.stub;
 import javax.rmi.CORBA.Util;
 
 import org.jboss.as.ejb3.EjbLogger;
-import org.jboss.as.ejb3.iiop.HandleImplIIOP;
-import org.jboss.as.ejb3.iiop.HomeHandleImplIIOP;
 import org.jboss.as.ejb3.iiop.LocalIIOPInvoker;
 import org.jboss.as.jacorb.rmi.marshal.strategy.StubStrategy;
+import org.jboss.ejb.iiop.HandleImplIIOP;
+import org.jboss.ejb.iiop.HomeHandleImplIIOP;
 import org.omg.CORBA.BAD_OPERATION;
 import org.omg.CORBA.SystemException;
 import org.omg.CORBA.portable.ApplicationException;

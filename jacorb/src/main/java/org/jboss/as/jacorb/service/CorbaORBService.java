@@ -132,9 +132,9 @@ public class CorbaORBService implements Service<ORB> {
             // set the JBossInitialContextFactory ORB.
             JBossInitialContextFactory.setORB(this.orb);
 
-            // bind the ORB to JNDI under java:/jboss/orb.
+            // bind the ORB to JNDI under java:/jboss/ORB.
             ServiceTarget target = context.getChildTarget();
-            CorbaServiceUtil.bindObject(target, "orb", this.orb);
+            CorbaServiceUtil.bindObject(target, "ORB", this.orb);
         } catch (Exception e) {
             throw new StartException(e);
         }

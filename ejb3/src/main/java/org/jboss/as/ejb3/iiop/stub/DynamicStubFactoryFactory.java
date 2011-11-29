@@ -1,5 +1,6 @@
 package org.jboss.as.ejb3.iiop.stub;
 
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.classfilewriter.ClassFile;
 import org.jboss.com.sun.corba.se.impl.presentation.rmi.StubFactoryBase;
 import org.jboss.com.sun.corba.se.impl.presentation.rmi.StubFactoryFactoryDynamicBase;
@@ -13,9 +14,12 @@ public class DynamicStubFactoryFactory extends StubFactoryFactoryDynamicBase {
     @Override
     public PresentationManager.StubFactory makeDynamicStubFactory(final PresentationManager pm, final PresentationManager.ClassData classData, final ClassLoader classLoader) {
         final String stubClassName = classData.getMyClass() + "_Stub";
-        ClassLoader cl = classData.getMyClass().getClassLoader();
+        ClassLoader cl = SecurityActions.getContextClassLoader();
         if (cl == null) {
-            cl = SecurityActions.getContextClassLoader();
+            cl = classData.getMyClass().getClassLoader();
+        }
+        if(cl == null) {
+            throw EjbMessages.MESSAGES.couldNotFindClassLoaderForStub(stubClassName);
         }
         Class<?> theClass;
         try {

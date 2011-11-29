@@ -207,7 +207,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         // Initialize repository ids of home interface
         final String[] homeRepositoryIds = homeInterfaceAnalysis.getAllTypeIds();
 
-        final EjbIIOPService service = new EjbIIOPService(beanMethodMap, beanRepositoryIds, homeMethodMap, homeRepositoryIds, settingsService.isUseQualifiedName());
+        final EjbIIOPService service = new EjbIIOPService(beanMethodMap, beanRepositoryIds, homeMethodMap, homeRepositoryIds, settingsService.isUseQualifiedName(), module);
         final ServiceBuilder<EjbIIOPService> builder = serviceTarget.addService(componentDescription.getServiceName().append(EjbIIOPService.SERVICE_NAME), service);
         builder.addDependency(componentDescription.getCreateServiceName(), EJBComponent.class, service.getEjbComponentInjectedValue());
         builder.addDependency(homeView.getServiceName(), ComponentView.class, service.getHomeView());
