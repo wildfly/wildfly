@@ -530,10 +530,6 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-domain-http-interface"/>
         </module-def>
 
-        <module-def name="org.jboss.as.domain-controller">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-domain-controller"/>
-        </module-def>
-
         <module-def name="org.jboss.as.domain-management">
             <maven-resource group="org.jboss.as" artifact="jboss-as-domain-management"/>
         </module-def>
