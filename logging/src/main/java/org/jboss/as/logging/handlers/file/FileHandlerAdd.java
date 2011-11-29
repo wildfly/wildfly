@@ -24,19 +24,14 @@ package org.jboss.as.logging.handlers.file;
 
 import static org.jboss.as.logging.CommonAttributes.APPEND;
 import static org.jboss.as.logging.CommonAttributes.FILE;
-import static org.jboss.as.logging.CommonAttributes.PATH;
-import static org.jboss.as.logging.CommonAttributes.RELATIVE_TO;
 
 import java.util.logging.Handler;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.logging.handlers.FlushingHandlerAddProperties;
-import org.jboss.as.logging.util.LogServices;
-import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -66,14 +61,7 @@ public class FileHandlerAdd extends FlushingHandlerAddProperties<FileHandlerServ
         final ServiceTarget serviceTarget = context.getServiceTarget();
         final ModelNode file = FILE.resolveModelAttribute(context, model);
         if (file.isDefined()) {
-            final HandlerFileService fileService = new HandlerFileService(PATH.validateOperation(file).asString());
-            final ServiceBuilder<?> fileBuilder = serviceTarget.addService(LogServices.handlerFileName(name), fileService);
-            final ModelNode relativeTo = RELATIVE_TO.resolveModelAttribute(context, file);
-            if (relativeTo.isDefined()) {
-                fileBuilder.addDependency(AbstractPathService.pathNameOf(relativeTo.asString()), String.class, fileService.getRelativeToInjector());
-            }
-            fileBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
-            serviceBuilder.addDependency(LogServices.handlerFileName(name), String.class, service.getFileNameInjector());
+            FileHandlers.addFile(context, serviceBuilder, service, file, name);
         }
     }
 }

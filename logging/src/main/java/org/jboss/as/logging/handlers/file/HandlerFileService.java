@@ -22,6 +22,7 @@
 
 package org.jboss.as.logging.handlers.file;
 
+import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -35,22 +36,29 @@ import org.jboss.msc.value.InjectedValue;
  * @author John Bailey
  */
 public class HandlerFileService implements Service<String> {
+    private static final char SEPARATOR = '/';
     private final InjectedValue<String> relativeTo = new InjectedValue<String>();
-    private final String path;
+    private String path;
 
     private volatile String fileName;
 
-    public HandlerFileService(String path) {
+    public HandlerFileService(final String path) {
         this.path = path;
     }
 
     public synchronized void start(StartContext context) throws StartException {
         final String value = relativeTo.getOptionalValue();
-        fileName = value != null ? value + "/" + path : path;
+        fileName = value != null && !AbstractPathService.isAbsoluteUnixOrWindowsPath(path) ? (value + SEPARATOR + path) : path;
     }
 
     public synchronized void stop(StopContext context) {
         fileName = null;
+    }
+
+    public synchronized void setPath(final String path) {
+        this.path = path;
+        final String value = relativeTo.getOptionalValue();
+        fileName = value != null && !AbstractPathService.isAbsoluteUnixOrWindowsPath(path) ? (value + SEPARATOR + path) : path;
     }
 
     public String getValue() throws IllegalStateException, IllegalArgumentException {

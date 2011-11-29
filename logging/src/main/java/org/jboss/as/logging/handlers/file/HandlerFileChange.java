@@ -23,56 +23,47 @@
 package org.jboss.as.logging.handlers.file;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.logging.CommonAttributes.PATH;
-import static org.jboss.as.logging.CommonAttributes.RELATIVE_TO;
+import static org.jboss.as.logging.CommonAttributes.FILE;
 
-import java.util.List;
-
-import org.jboss.as.controller.AbstractModelUpdateHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.logging.util.LogServices;
-import org.jboss.as.server.services.path.AbstractPathService;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Operation responsible for changing the file attributes of file based logging handlers.
  *
  * @author John Bailey
  */
-public class HandlerFileChange extends AbstractModelUpdateHandler {
+public class HandlerFileChange implements OperationStepHandler {
     public static final String OPERATION_NAME = "change-file";
     public static final HandlerFileChange INSTANCE = new HandlerFileChange();
 
     @Override
-    protected void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        PATH.validateAndSet(operation, model);
-        RELATIVE_TO.validateAndSet(operation, model);
-    }
+    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+        final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
+        final ModelNode originalModel = resource.getModel().clone();
+        final ModelNode model = resource.getModel();
+        FILE.validateAndSet(operation, model);
 
-    @Override
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
-                                  final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String name = address.getLastElement().getValue();
-
-        final ServiceTarget serviceTarget = context.getServiceTarget();
-        final HandlerFileService service = new HandlerFileService(PATH.resolveModelAttribute(context, model).asString());
-        final ServiceBuilder<String> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
-
-        final ModelNode relativeTo = RELATIVE_TO.resolveModelAttribute(context, model);
-        if (relativeTo.isDefined()) {
-            serviceBuilder.addDependency(AbstractPathService.pathNameOf(relativeTo.asString()), String.class, service.getRelativeToInjector());
+        if (context.getType() == OperationContext.Type.SERVER && !context.isBooting()) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+                    final String name = address.getLastElement().getValue();
+                    final ModelNode oldFile = FILE.resolveModelAttribute(context, originalModel);
+                    final ModelNode file = FILE.resolveModelAttribute(context, model);
+                    if (FileHandlers.changeFile(context, oldFile, file, name)) {
+                        context.restartRequired();
+                    }
+                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
+                        FileHandlers.revertFileChange(context, FILE.resolveModelAttribute(context, originalModel), name);
+                    }
+                }
+            }, OperationContext.Stage.RUNTIME);
         }
-        context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
-
-        if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-            context.removeService(LogServices.handlerFileName(name));
-        }
+        context.completeStep();
     }
 }

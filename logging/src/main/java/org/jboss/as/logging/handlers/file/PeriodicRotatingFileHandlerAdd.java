@@ -24,21 +24,15 @@ package org.jboss.as.logging.handlers.file;
 
 import static org.jboss.as.logging.CommonAttributes.APPEND;
 import static org.jboss.as.logging.CommonAttributes.FILE;
-import static org.jboss.as.logging.CommonAttributes.PATH;
-import static org.jboss.as.logging.CommonAttributes.RELATIVE_TO;
 import static org.jboss.as.logging.CommonAttributes.SUFFIX;
 
 import java.util.logging.Handler;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.logging.util.LogServices;
 import org.jboss.as.logging.handlers.FlushingHandlerAddProperties;
-import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -62,15 +56,7 @@ public class PeriodicRotatingFileHandlerAdd extends FlushingHandlerAddProperties
         super.updateRuntime(context, serviceBuilder, name, service, model);
         final ModelNode file = FILE.resolveModelAttribute(context, model);
         if (file.isDefined()) {
-            final ServiceTarget serviceTarget = context.getServiceTarget();
-            final HandlerFileService fileService = new HandlerFileService(PATH.resolveModelAttribute(context, file).asString());
-            final ServiceBuilder<?> fileBuilder = serviceTarget.addService(LogServices.handlerFileName(name), fileService);
-            final ModelNode relativeTo = RELATIVE_TO.resolveModelAttribute(context, file);
-            if (relativeTo.isDefined()) {
-                fileBuilder.addDependency(AbstractPathService.pathNameOf(relativeTo.asString()), String.class, fileService.getRelativeToInjector());
-            }
-            fileBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
-            serviceBuilder.addDependency(LogServices.handlerFileName(name), String.class, service.getFileNameInjector());
+            FileHandlers.addFile(context, serviceBuilder, service, file, name);
         }
         final ModelNode append = APPEND.resolveModelAttribute(context, model);
         if (append.isDefined()) {
