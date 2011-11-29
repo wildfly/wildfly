@@ -38,8 +38,7 @@ public interface ReadyEntityCache {
      *
      * This corresponds to an ejbCreate call on the entity bean.
      *
-     * The newly created object will not be marked as in use. To invoke business methods
-     * on it it should still be acquired using get()
+     * The newly created object will be marked as in use, and must be released in the normal manner
      *
      * @param instance The new instance
      */

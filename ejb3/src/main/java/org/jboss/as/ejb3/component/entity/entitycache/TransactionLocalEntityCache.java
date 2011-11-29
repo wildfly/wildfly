@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.ejb.NoSuchEJBException;
 import javax.transaction.Synchronization;
@@ -37,13 +38,14 @@ import org.jboss.logging.Logger;
 
 /**
  * Cache of entity bean component instances by transaction key
+ *
  * @author Stuart Douglas
  */
 public class TransactionLocalEntityCache implements ReadyEntityCache {
 
 
     private final TransactionSynchronizationRegistry transactionSynchronizationRegistry;
-    private final ConcurrentMap<Object, Map<Object, EntityBeanComponentInstance>> cache = new ConcurrentHashMap<Object, Map<Object, EntityBeanComponentInstance>>(Runtime.getRuntime().availableProcessors());
+    private final ConcurrentMap<Object, Map<Object, CacheEntry>> cache = new ConcurrentHashMap<Object, Map<Object, CacheEntry>>(Runtime.getRuntime().availableProcessors());
     private final EntityBeanComponent component;
 
     private static final Logger logger = Logger.getLogger(TransactionLocalEntityCache.class);
@@ -58,20 +60,20 @@ public class TransactionLocalEntityCache implements ReadyEntityCache {
         if (!isTransactionActive()) {
             return createInstance(key);
         }
-        final Map<Object, EntityBeanComponentInstance> map = prepareCache();
-        EntityBeanComponentInstance instance = map.get(key);
-        if (instance == null) {
-            instance = createInstance(key);
-            map.put(key, instance);
+
+        final Map<Object, CacheEntry> cache = prepareCache();
+        if (!cache.containsKey(key)) {
+            final EntityBeanComponentInstance instance = createInstance(key);
+            create(instance);
         }
-        return instance;
+        return cache.get(key).instance;
     }
 
     @Override
     public void discard(final EntityBeanComponentInstance instance) {
         if (isTransactionActive()) {
             final Object key = transactionSynchronizationRegistry.getTransactionKey();
-            final Map<Object, EntityBeanComponentInstance> map = cache.get(key);
+            final Map<Object, CacheEntry> map = cache.get(key);
             if (map != null) {
                 map.remove(instance.getPrimaryKey());
             }
@@ -81,24 +83,49 @@ public class TransactionLocalEntityCache implements ReadyEntityCache {
     @Override
     public void create(final EntityBeanComponentInstance instance) throws NoSuchEJBException {
         if (isTransactionActive()) {
-            final Map<Object, EntityBeanComponentInstance> map = prepareCache();
-            map.put(instance.getPrimaryKey(), instance);
+            final Map<Object, CacheEntry> map = prepareCache();
+            map.put(instance.getPrimaryKey(), new CacheEntry(instance));
         }
     }
 
     @Override
     public void release(final EntityBeanComponentInstance instance, boolean success) {
-        //TODO: this should probably be somewhere else
-        //roll back unsuccessful removal
-        if (!success && instance.isRemoved()) {
-            instance.setRemoved(false);
+        if (instance.getPrimaryKey() == null) {
+            return;
         }
-        instance.passivate();
-        component.getPool().release(instance);
-        discard(instance);
+        final Object key = transactionSynchronizationRegistry.getTransactionKey();
+        if (key == null) {
+            return;
+        }
+        final Map<Object, CacheEntry> map = cache.get(key);
+        if (map != null) {
+            final CacheEntry cacheEntry = map.get(instance.getPrimaryKey());
+            if (cacheEntry == null) {
+                throw new IllegalArgumentException("Instance [" + instance + "] not found in cache");
+            }
+            if (cacheEntry.referenceCount.decrementAndGet() <= 0) {
+                if (!success && instance.isRemoved()) {
+                    instance.setRemoved(false);
+                }
+                instance.passivate();
+                component.getPool().release(instance);
+                map.remove(instance.getPrimaryKey());
+            } else if (instance.isRemoved() && success) {
+                //the instance has been removed, we need to remove it from the cache
+                //even if someone is still referencing it, as their reference is no longer usable
+                component.getPool().release(instance);
+                map.remove(instance.getPrimaryKey());
+            }
+        }
     }
 
     public void reference(EntityBeanComponentInstance instance) {
+        final Map<Object, CacheEntry> cache = prepareCache();
+        final CacheEntry cacheEntry = cache.get(instance.getPrimaryKey());
+        if (cacheEntry == null) {
+            throw new IllegalArgumentException("Instance [" + instance + "] not found in cache");
+        }
+        cacheEntry.referenceCount.incrementAndGet();
     }
 
     @Override
@@ -110,14 +137,14 @@ public class TransactionLocalEntityCache implements ReadyEntityCache {
     public synchronized void stop() {
     }
 
-    private Map<Object, EntityBeanComponentInstance> prepareCache() {
+    private Map<Object, CacheEntry> prepareCache() {
         final Object key = transactionSynchronizationRegistry.getTransactionKey();
-        Map<Object, EntityBeanComponentInstance> map = cache.get(key);
+        Map<Object, CacheEntry> map = cache.get(key);
         if (map != null) {
             return map;
         }
-        map = Collections.synchronizedMap(new HashMap<Object, EntityBeanComponentInstance>());
-        final Map<Object, EntityBeanComponentInstance> existing = cache.putIfAbsent(key, map);
+        map = Collections.synchronizedMap(new HashMap<Object, CacheEntry>());
+        final Map<Object, CacheEntry> existing = cache.putIfAbsent(key, map);
         if (existing != null) {
             map = existing;
         }
@@ -143,5 +170,14 @@ public class TransactionLocalEntityCache implements ReadyEntityCache {
 
     private boolean isTransactionActive() {
         return transactionSynchronizationRegistry.getTransactionKey() != null;
+    }
+
+    private class CacheEntry {
+        private final AtomicInteger referenceCount = new AtomicInteger(0);
+        private final EntityBeanComponentInstance instance;
+
+        private CacheEntry(EntityBeanComponentInstance instance) {
+            this.instance = instance;
+        }
     }
 }
