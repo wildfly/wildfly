@@ -22,6 +22,10 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
@@ -30,11 +34,14 @@ import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
-
 /**
+ * This module is using message IDs in the range 11500-11599.
+ * <p/>
+ * This file is using the subset 11500-11529 for non-logger messages.
+ * <p/>
+ * See <a href="http://community.jboss.org/docs/DOC-16810">http://community.jboss.org/docs/DOC-16810</a> for the full
+ * list of currently reserved JBAS message id blocks.
+ * <p/>
  * Date: 09.06.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>

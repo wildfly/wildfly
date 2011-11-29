@@ -31,9 +31,17 @@ import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 
 /**
+ * This module is using message IDs in the range 11500-11599.
+ * <p/>
+ * This file is using the subset 11530-11599 for non-logger messages.
+ * <p/>
+ * See <a href="http://community.jboss.org/docs/DOC-16810">http://community.jboss.org/docs/DOC-16810</a> for the full
+ * list of currently reserved JBAS message id blocks.
+ * <p/>
  * Date: 09.06.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -252,4 +260,45 @@ public interface LoggingMessages {
      */
     @Message(id = 11547, value = "Unknown parameter type (%s) for property '%s' on '%s'")
     IllegalArgumentException unknownParameterType(Class<?> type, String propertyName, Class<?> clazz);
+
+    /**
+     * A message indicating the file was not found.
+     *
+     * @param fileName the file name that was not found.
+     *
+     * @return the message.
+     */
+    @Message(id = 11550, value = "File '%s' was not found.")
+    String fileNotFound(String fileName);
+
+    /**
+     * A message indicating the service was not found.
+     *
+     * @param name the name of the service.
+     *
+     * @return the message.
+     */
+    @Message(id = 11551, value = "Service '%s' was not found.")
+    String serviceNotFound(ServiceName name);
+
+    /**
+     * A message indicating an absolute path cannot be specified for relative-to.
+     *
+     * @param relativeTo the invalid absolute path.
+     *
+     * @return the message.
+     */
+    @Message(id = 11552, value = "An absolute path (%s) cannot be specified for relative-to.")
+    String invalidRelativeTo(String relativeTo);
+
+    /**
+     * A message indicating an absolute path cannot be used when a relative-to path is being used.
+     *
+     * @param relativeTo the relative path.
+     * @param path       absolute path.
+     *
+     * @return the message.
+     */
+    @Message(id = 11553, value = "An absolute path (%2$s) cannot be used when a relative-to path (%1$s) is being used.")
+    String invalidPath(String relativeTo, String path);
 }

@@ -27,6 +27,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.logging.handlers.console.Target;
+import org.jboss.as.logging.validators.FileValidator;
 import org.jboss.as.logging.validators.LogLevelValidator;
 import org.jboss.as.logging.validators.OverflowActionValidator;
 import org.jboss.as.logging.validators.SizeValidator;
@@ -72,7 +73,10 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition ENCODING = SimpleAttributeDefinitionBuilder.create("encoding", ModelType.STRING, true).build();
 
-    SimpleAttributeDefinition FILE = SimpleAttributeDefinitionBuilder.create("file", ModelType.OBJECT, true).build();
+    SimpleAttributeDefinition FILE = SimpleAttributeDefinitionBuilder.create("file", ModelType.OBJECT, true).
+            setCorrector(FileCorrector.INSTANCE).
+            setValidator(new FileValidator()).
+            build();
 
     String FILE_HANDLER = "file-handler";
 

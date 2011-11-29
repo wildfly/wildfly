@@ -25,22 +25,21 @@ package org.jboss.as.logging.handlers.file;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.util.logging.Filter;
-import java.util.logging.Handler;
 import java.util.logging.Level;
 
 import org.jboss.as.logging.handlers.FormatterSpec;
-import org.jboss.as.logging.handlers.FlushingHandlerService;
 import org.jboss.logmanager.handlers.FileHandler;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Values;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class FileHandlerService implements FlushingHandlerService {
+public class FileHandlerService extends AbstractFileHandlerService {
 
     private final InjectedValue<String> fileName = new InjectedValue<String>();
 
@@ -79,7 +78,7 @@ public final class FileHandlerService implements FlushingHandlerService {
         value = null;
     }
 
-    public synchronized Handler getValue() throws IllegalStateException {
+    public synchronized FileHandler getValue() throws IllegalStateException {
         return value;
     }
 
@@ -142,7 +141,15 @@ public final class FileHandlerService implements FlushingHandlerService {
         if (handler != null) handler.setAppend(append);
     }
 
+    @Override
     public Injector<String> getFileNameInjector() {
         return fileName;
+    }
+
+    @Override
+    public synchronized void setFile(final String path) throws FileNotFoundException {
+        fileName.setValue(Values.immediateValue(path));
+        final FileHandler handler = value;
+        if (handler != null) handler.setFileName(path);
     }
 }

@@ -22,19 +22,21 @@
 
 package org.jboss.as.logging.handlers.file;
 
+import static org.jboss.as.logging.CommonAttributes.APPEND;
+import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
+import static org.jboss.as.logging.CommonAttributes.FILE;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.logging.handlers.AbstractLogHandlerWriteAttributeHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.handlers.FileHandler;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.jboss.as.logging.CommonAttributes.APPEND;
-import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
 
 /**
  * Date: 12.10.2011
@@ -44,20 +46,21 @@ import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
 public abstract class AbstractFileHandlerWriteAttributeHandler<T extends FileHandler> extends AbstractLogHandlerWriteAttributeHandler<T> {
 
     protected AbstractFileHandlerWriteAttributeHandler(final AttributeDefinition... attributes) {
-        super(join(attributes, APPEND, AUTOFLUSH));
-        // TODO (jrp) consider implementing FILE as well
+        super(join(attributes, APPEND, AUTOFLUSH, FILE));
     }
 
     @Override
     protected boolean doApplyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final String handlerName, final T handler) throws OperationFailedException {
+        boolean requiresRestart = false;
         if (APPEND.getName().equals(attributeName)) {
             handler.setAppend(resolvedValue.asBoolean());
             return true;
         } else if (AUTOFLUSH.getName().equals(attributeName)) {
             handler.setAutoFlush(resolvedValue.asBoolean());
+        } else if (FILE.getName().equals(attributeName)) {
+            requiresRestart = FileHandlers.changeFile(context, currentValue, resolvedValue, handlerName);
         }
-        // TODO (jrp) consider implementing FILE as well
-        return false;
+        return requiresRestart;
     }
 
     @Override
@@ -66,15 +69,14 @@ public abstract class AbstractFileHandlerWriteAttributeHandler<T extends FileHan
             handler.setAppend(valueToRestore.asBoolean());
         } else if (AUTOFLUSH.getName().equals(attributeName)) {
             handler.setAutoFlush(valueToRestore.asBoolean());
+        } else if (FILE.getName().equals(attributeName)) {
+            FileHandlers.revertFileChange(context, valueToRestore, handlerName);
         }
-        // TODO (jrp) consider implementing FILE as well
     }
 
     private static List<AttributeDefinition> join(final AttributeDefinition[] supplied, final AttributeDefinition... added) {
         final List<AttributeDefinition> result = new ArrayList<AttributeDefinition>();
-        for (AttributeDefinition attr : added) {
-            result.add(attr);
-        }
+        Collections.addAll(result, added);
         result.addAll(Arrays.asList(supplied));
         return result;
     }

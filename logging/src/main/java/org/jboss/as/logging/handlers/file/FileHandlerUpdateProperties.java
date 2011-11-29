@@ -24,6 +24,7 @@ package org.jboss.as.logging.handlers.file;
 
 import static org.jboss.as.logging.CommonAttributes.APPEND;
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
+import static org.jboss.as.logging.CommonAttributes.FILE;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -40,13 +41,13 @@ public class FileHandlerUpdateProperties extends HandlerUpdateProperties<FileHan
     public static final FileHandlerUpdateProperties INSTANCE = new FileHandlerUpdateProperties();
 
     private FileHandlerUpdateProperties() {
-        super(APPEND, AUTOFLUSH);
-        // TODO (jrp) consider implementing FILE as well
+        super(APPEND, AUTOFLUSH, FILE);
     }
 
     @Override
     protected boolean applyUpdateToRuntime(final OperationContext context, final String handlerName, final ModelNode model,
                                            final ModelNode originalModel, final FileHandler handler) throws OperationFailedException {
+        boolean requiresRestart = false;
         final ModelNode autoflush = AUTOFLUSH.resolveModelAttribute(context, model);
         if (autoflush.isDefined()) {
             handler.setAutoFlush(autoflush.asBoolean());
@@ -55,21 +56,11 @@ public class FileHandlerUpdateProperties extends HandlerUpdateProperties<FileHan
         if (append.isDefined()) {
             handler.setAppend(append.asBoolean());
         }
-
-        // TODO (jrp) consider implementing FILE as well
-        /** final ServiceTarget serviceTarget = context.getServiceTarget();
-         final ModelNode file = FILE.validateResolvedOperation(model);
-         if (file.isDefined()) {
-         final HandlerFileService fileService = new HandlerFileService(PATH.validateOperation(file).asString());
-         final ServiceBuilder<?> fileBuilder = serviceTarget.addService(LogServices.handlerFileName(name), fileService);
-         final ModelNode relativeTo = RELATIVE_TO.validateResolvedOperation(file);
-         if (relativeTo.isDefined()) {
-         fileBuilder.addDependency(AbstractPathService.pathNameOf(relativeTo.asString()), String.class, fileService.getRelativeToInjector());
-         }
-         fileBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
-         serviceBuilder.addDependency(LogServices.handlerFileName(name), String.class, service.getFileNameInjector());
-         } **/
-        return false;
+        final ModelNode file = FILE.resolveModelAttribute(context, model);
+        if (file.isDefined()) {
+            requiresRestart = FileHandlers.changeFile(context, originalModel.get(FILE.getName()), file, handlerName);
+        }
+        return requiresRestart;
     }
 
     @Override
@@ -81,6 +72,10 @@ public class FileHandlerUpdateProperties extends HandlerUpdateProperties<FileHan
         final ModelNode append = APPEND.resolveModelAttribute(context, originalModel);
         if (append.isDefined()) {
             handler.setAppend(append.asBoolean());
+        }
+        final ModelNode file = FILE.resolveModelAttribute(context, originalModel);
+        if (file.isDefined()) {
+            FileHandlers.revertFileChange(context, file, handlerName);
         }
     }
 }

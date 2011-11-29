@@ -24,6 +24,7 @@ package org.jboss.as.logging.handlers.file;
 
 import static org.jboss.as.logging.CommonAttributes.APPEND;
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
+import static org.jboss.as.logging.CommonAttributes.FILE;
 import static org.jboss.as.logging.CommonAttributes.SUFFIX;
 
 import org.jboss.as.controller.OperationContext;
@@ -41,12 +42,13 @@ public class PeriodicHandlerUpdateProperties extends HandlerUpdateProperties<Per
     public static final PeriodicHandlerUpdateProperties INSTANCE = new PeriodicHandlerUpdateProperties();
 
     private PeriodicHandlerUpdateProperties() {
-        super(APPEND, AUTOFLUSH, SUFFIX);
+        super(APPEND, AUTOFLUSH, FILE, SUFFIX);
     }
 
     @Override
     protected boolean applyUpdateToRuntime(final OperationContext context, final String handlerName, final ModelNode model,
                                            final ModelNode originalModel, final PeriodicRotatingFileHandler handler) throws OperationFailedException {
+        boolean requiresRestart = false;
         final ModelNode autoflush = AUTOFLUSH.resolveModelAttribute(context, model);
         if (autoflush.isDefined()) {
             handler.setAutoFlush(autoflush.asBoolean());
@@ -55,11 +57,15 @@ public class PeriodicHandlerUpdateProperties extends HandlerUpdateProperties<Per
         if (append.isDefined()) {
             handler.setAppend(append.asBoolean());
         }
+        final ModelNode file = FILE.resolveModelAttribute(context, model);
+        if (file.isDefined()) {
+            requiresRestart = FileHandlers.changeFile(context, originalModel.get(FILE.getName()), file, handlerName);
+        }
         final ModelNode suffix = SUFFIX.resolveModelAttribute(context, model);
         if (suffix.isDefined()) {
             handler.setSuffix(suffix.asString());
         }
-        return false;
+        return requiresRestart;
     }
 
     @Override
@@ -76,6 +82,10 @@ public class PeriodicHandlerUpdateProperties extends HandlerUpdateProperties<Per
         final ModelNode suffix = SUFFIX.resolveModelAttribute(context, originalModel);
         if (suffix.isDefined()) {
             handler.setSuffix(suffix.asString());
+        }
+        final ModelNode file = FILE.resolveModelAttribute(context, originalModel);
+        if (file.isDefined()) {
+            FileHandlers.revertFileChange(context, file, handlerName);
         }
     }
 }

@@ -78,13 +78,13 @@ public abstract class AbstractLogHandlerWriteAttributeHandler<T extends Handler>
         final String name = address.getLastElement().getValue();
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
         @SuppressWarnings("unchecked")
-        final ServiceController<Handler> controller = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(name));
+        final ServiceController<T> controller = (ServiceController<T>) serviceRegistry.getService(LogServices.handlerName(name));
         if (controller == null) {
             return false;
         }
         // Attempt to cast handler
         @SuppressWarnings("unchecked")
-        final T handler = (T) controller.getValue();
+        final T handler = controller.getValue();
         if (LEVEL.getName().equals(attributeName)) {
             handler.setLevel(ModelParser.parseLevel(resolvedValue));
         } else if (FILTER.getName().equals(attributeName)) {
