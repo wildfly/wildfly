@@ -35,6 +35,7 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.StopContext;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -115,4 +116,23 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
     public Method getTimeoutMethod() {
         return timeoutMethod;
     }
+
+
+    @Override
+    public void start() {
+        super.start();
+        if(this.pool!=null){
+            this.pool.start();
+        }
+    }
+
+
+    @Override
+    public void stop(StopContext stopContext) {
+        if(this.pool!=null){
+            this.pool.stop();
+        }
+        super.stop(stopContext);
+    }
+
 }
