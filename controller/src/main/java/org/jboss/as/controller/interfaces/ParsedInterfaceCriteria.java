@@ -209,22 +209,41 @@ public final class ParsedInterfaceCriteria {
                 if(nested) {
                     throw new ParsingException(MESSAGES.nestedElementNotAllowed(element));
                 }
-                final ModelNode subModel = property.getValue().get(element.getLocalName());
-                return parseNested(subModel, element == Element.ANY);
+                return parseNested(property.getValue(), element == Element.ANY);
             default:
                 throw new ParsingException(MESSAGES.unknownCriteriaInterfaceType(property.getName()));
         }
     }
 
     private static InterfaceCriteria parseNested(final ModelNode subModel, final boolean any) {
-        if(! subModel.isDefined() && subModel.asInt() == 0) {
+        if(!subModel.isDefined() || subModel.asInt() == 0) {
             return null;
         }
         final Set<InterfaceCriteria> criteriaSet = new HashSet<InterfaceCriteria>();
         for(final Property nestedProperty :  subModel.asPropertyList()) {
-            final InterfaceCriteria criteria = parseCriteria(nestedProperty, true);
-            if(criteria != null) {
-                criteriaSet.add(criteria);
+            final Element element = Element.forName(nestedProperty.getName());
+            switch (element) {
+                case INET_ADDRESS:
+                case NIC :
+                case NIC_MATCH:
+                case SUBNET_MATCH: {
+                    if (nestedProperty.getValue().getType() == ModelType.LIST) {
+                        for (ModelNode item : nestedProperty.getValue().asList()) {
+                            Property prop = new Property(nestedProperty.getName(), item);
+                            InterfaceCriteria itemCriteria = parseCriteria(prop, true);
+                            if(itemCriteria != null) {
+                                criteriaSet.add(itemCriteria);
+                            }
+                        }
+                        break;
+                    } // else drop down into default: block
+                }
+                default: {
+                    final InterfaceCriteria criteria = parseCriteria(nestedProperty, true);
+                    if(criteria != null) {
+                        criteriaSet.add(criteria);
+                    }
+                }
             }
         }
         if(criteriaSet.isEmpty()) {

@@ -24,6 +24,7 @@ package org.jboss.as.server;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.util.List;
 
 import org.jboss.as.server.services.security.VaultReaderException;
 import org.jboss.logging.Message;
@@ -116,4 +117,14 @@ public interface ServerMessages {
     @Message(id = 15806, value = "Connection request to the host-controller was cancelled")
     StartException cancelledHCConnect();
 
+    /**
+     * Creates an exception indicating a string was not a valid name of a running mode.
+     *
+     * @param runningMode the invalid name
+     * @param runningModes the valid names
+     *
+     * @return an exception that can be thrown
+     */
+    @Message(id = 15807, value = "Invalid running mode '%s' -- valid values are %s")
+    IllegalArgumentException invalidRunningMode(String runningMode, List<RunningMode> runningModes);
 }

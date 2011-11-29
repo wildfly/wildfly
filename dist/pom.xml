@@ -42,8 +42,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.jboss.as</groupId> 
-            <artifactId>jboss-as-build</artifactId> 
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-build</artifactId>
             <type>pom</type>
             <scope>provided</scope>
         </dependency>

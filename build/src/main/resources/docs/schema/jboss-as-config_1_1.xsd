@@ -1335,7 +1335,7 @@
 
     <xs:complexType name="address-exclusionType">
         <xs:choice>
-            <xs:element name="inet-address" type="inet-addressType"/>
+            <xs:element name="inet-address" type="inet-addressType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="loopback" type="loopbackType"/>
             <xs:element name="loopback-address" type="loopback-addressType"/>
             <xs:element name="multicast" type="multicastType"/>

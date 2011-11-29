@@ -37,7 +37,6 @@ import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.BootContext;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -112,6 +111,7 @@ public final class ServerService extends AbstractControllerService {
     private final Bootstrap.Configuration configuration;
     private final BootstrapListener bootstrapListener;
     private final ControlledProcessState processState;
+    private final RunningModeControl runningModeControl;
     private volatile ExecutorService queuelessExecutor;
     private volatile ExtensibleConfigurationPersister extensibleConfigurationPersister;
     private final AbstractVaultReader vaultReader;
@@ -123,11 +123,14 @@ public final class ServerService extends AbstractControllerService {
      * @param prepareStep the prepare step to use
      */
     ServerService(final Bootstrap.Configuration configuration, final ControlledProcessState processState,
-                  final OperationStepHandler prepareStep, final BootstrapListener bootstrapListener, AbstractVaultReader vaultReader) {
-        super(OperationContext.Type.SERVER, processState, ServerDescriptionProviders.ROOT_PROVIDER, prepareStep, new RuntimeExpressionResolver(vaultReader));
+                  final OperationStepHandler prepareStep, final BootstrapListener bootstrapListener,
+                  final RunningModeControl runningModeControl, final AbstractVaultReader vaultReader) {
+        super(runningModeControl, null, processState,
+                ServerDescriptionProviders.ROOT_PROVIDER, prepareStep, new RuntimeExpressionResolver(vaultReader));
         this.configuration = configuration;
         this.bootstrapListener = bootstrapListener;
         this.processState = processState;
+        this.runningModeControl = runningModeControl;
         this.vaultReader = vaultReader;
     }
 
@@ -138,8 +141,9 @@ public final class ServerService extends AbstractControllerService {
      * @param configuration the bootstrap configuration
      */
     public static void addService(final ServiceTarget serviceTarget, final Bootstrap.Configuration configuration,
-                                  final ControlledProcessState processState, final BootstrapListener bootstrapListener, final AbstractVaultReader vaultReader) {
-        ServerService service = new ServerService(configuration, processState, null, bootstrapListener, vaultReader);
+                                  final ControlledProcessState processState, final BootstrapListener bootstrapListener,
+                                  final RunningModeControl runningModeControl, final AbstractVaultReader vaultReader) {
+        ServerService service = new ServerService(configuration, processState, null, bootstrapListener, runningModeControl, vaultReader);
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(Services.JBOSS_SERVER_CONTROLLER, service);
         serviceBuilder.addDependency(ServerDeploymentRepository.SERVICE_NAME,ServerDeploymentRepository.class, service.injectedDeploymentRepository);
         serviceBuilder.addDependency(ContentRepository.SERVICE_NAME, ContentRepository.class, service.injectedContentRepository);
@@ -269,7 +273,7 @@ public final class ServerService extends AbstractControllerService {
         ServerControllerModelUtil.updateCoreModel(rootResource.getModel());
         ServerControllerModelUtil.initOperations(rootRegistration, injectedContentRepository.getValue(),
                 extensibleConfigurationPersister, configuration.getServerEnvironment(), processState,
-                vaultReader, queuelessExecutor != null);
+                runningModeControl, vaultReader, queuelessExecutor != null);
 
         // TODO maybe make creating of empty nodes part of the MNR description
         rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MANAGEMENT), Resource.Factory.create());

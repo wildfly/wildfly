@@ -195,13 +195,26 @@ public class ServerControllerUnitTestCase {
 
     protected void populateCritieria(final ModelNode model, final boolean nested) {
         for(final AttributeDefinition def : InterfaceDescription.NESTED_ATTRIBUTES) {
+            final ModelNode node = model.get(def.getName());
             if(def.getType() == ModelType.BOOLEAN) {
-                model.get(def.getName()).set(true);
-            } else {
-                if(nested) {
-                    model.get(def.getName()).add("127.0.0.1");
+                node.set(true);
+            } else if (def == InterfaceDescription.INET_ADDRESS || def == InterfaceDescription.LOOPBACK_ADDRESS) {
+                if (nested && def == InterfaceDescription.INET_ADDRESS) {
+                    node.add("127.0.0.1");
                 } else {
-                    model.get(def.getName()).set("127.0.0.1");
+                    node.set("127.0.0.1");
+                }
+            } else if (def == InterfaceDescription.NIC || def == InterfaceDescription.NIC_MATCH) {
+                if (nested) {
+                    node.add("lo");
+                } else {
+                    node.set("lo");
+                }
+            } else if (def == InterfaceDescription.SUBNET_MATCH) {
+                if (nested) {
+                    node.add("127.0.0.1/24");
+                } else {
+                    node.set("127.0.0.0/24");
                 }
             }
         }
@@ -226,8 +239,8 @@ public class ServerControllerUnitTestCase {
             this.rootRegistration = rootRegistration;
             Properties properties = new Properties();
             properties.put("jboss.home.dir", ".");
-            final ServerEnvironment environment = new ServerEnvironment(properties, new HashMap<String, String>(), null, ServerEnvironment.LaunchType.DOMAIN);
-            ServerControllerModelUtil.initOperations(rootRegistration, null, persister, environment, processState, null, false);
+            final ServerEnvironment environment = new ServerEnvironment(properties, new HashMap<String, String>(), null, ServerEnvironment.LaunchType.DOMAIN, null);
+            ServerControllerModelUtil.initOperations(rootRegistration, null, persister, environment, processState, null, null, false);
         }
 
         @Override

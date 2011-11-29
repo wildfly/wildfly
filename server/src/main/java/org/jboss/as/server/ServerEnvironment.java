@@ -21,6 +21,7 @@
  */
 package org.jboss.as.server;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
@@ -210,13 +211,17 @@ public class ServerEnvironment implements Serializable {
 
     private final boolean standalone;
     private final boolean allowModelControllerExecutor;
+    private final RunningMode initialRunningMode;
 
-    public ServerEnvironment(Properties props, Map<String, String> env, String serverConfig, LaunchType launchType) {
+    public ServerEnvironment(final Properties props, final Map<String, String> env, final String serverConfig,
+                             final LaunchType launchType, final RunningMode initialRunningMode) {
         if (props == null) {
-            throw new IllegalArgumentException("props is null");
+            throw ControllerMessages.MESSAGES.nullVar("props");
         }
         this.launchType = launchType;
         this.standalone = launchType != LaunchType.DOMAIN;
+
+        this.initialRunningMode = initialRunningMode == null ? RunningMode.LIVE : initialRunningMode;
 
         // Calculate host and default server name
         String hostName = props.getProperty(HOST_NAME);
@@ -456,6 +461,10 @@ public class ServerEnvironment implements Serializable {
 
     public boolean isStandalone() {
         return standalone;
+    }
+
+    public RunningMode getInitialRunningMode() {
+        return initialRunningMode;
     }
 
     // package protected for now as this is not a stable API

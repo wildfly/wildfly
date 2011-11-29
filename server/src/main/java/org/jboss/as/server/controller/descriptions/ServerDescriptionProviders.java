@@ -67,14 +67,6 @@ public final class ServerDescriptionProviders {
         }
     };
 
-    public static final DescriptionProvider RELOAD_PROVIDER = new DescriptionProvider() {
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return ServerDescriptions.getServerReloadOperation(locale);
-        }
-    };
-
     public static final DescriptionProvider SYSTEM_PROPERTIES_PROVIDER = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {

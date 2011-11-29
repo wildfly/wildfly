@@ -44,11 +44,16 @@ import org.xnio.Options;
  */
 class RemotingSubsystemAdd extends AbstractAddStepHandler {
 
-    static final RemotingSubsystemAdd INSTANCE = new RemotingSubsystemAdd();
+    static final RemotingSubsystemAdd DOMAIN = new RemotingSubsystemAdd(false);
+    static final RemotingSubsystemAdd SERVER = new RemotingSubsystemAdd(true);
 
-    private RemotingSubsystemAdd() {
+    private final boolean server;
+
+    private RemotingSubsystemAdd(final boolean server) {
+        this.server = server;
     }
 
+    @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         // initialize the connectors
         model.get(CONNECTOR);
@@ -60,6 +65,12 @@ class RemotingSubsystemAdd extends AbstractAddStepHandler {
         RemotingSubsystemRootResource.WORKER_WRITE_THREADS.validateAndSet(operation, model);
     }
 
+    @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return server;
+    }
+
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         launchServices(context, model, verificationHandler, newControllers);
     }

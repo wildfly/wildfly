@@ -1978,11 +1978,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 final String value = reader.getAttributeValue(0);
                 requireNoContent(reader);
                 // todo: validate IP address
-                if(nested) {
-                    subModel.get(localName).add(value);
-                } else {
-                    subModel.get(localName).set(value);
-                }
+                subModel.get(localName).set(value);
                 break;
             }
             case LINK_LOCAL_ADDRESS:
@@ -2604,7 +2600,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 writeInterfaceCriteria(writer, element, Attribute.VALUE, property.getValue(), nested);
                 break;
             case LOOPBACK_ADDRESS:
-                writeInterfaceCriteria(writer, element, Attribute.VALUE, property.getValue(), nested);
+                writeInterfaceCriteria(writer, element, Attribute.VALUE, property.getValue(), false);
                 break;
             case LINK_LOCAL_ADDRESS:
             case LOOPBACK:
@@ -2647,8 +2643,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
-    private static void writeInterfaceCriteria(final XMLExtendedStreamWriter writer, final Element element, final Attribute attribute, final ModelNode subModel, boolean nested) throws XMLStreamException {
-        if(nested) {
+    private static void writeInterfaceCriteria(final XMLExtendedStreamWriter writer, final Element element, final Attribute attribute, final ModelNode subModel, boolean asList) throws XMLStreamException {
+        if(asList) {
             // Nested criteria elements are represented as list in the model
             writeListAsMultipleElements(writer, element, attribute, subModel);
         } else {

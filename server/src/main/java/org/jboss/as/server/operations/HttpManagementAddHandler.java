@@ -71,6 +71,7 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
     public static final HttpManagementAddHandler INSTANCE = new HttpManagementAddHandler();
     public static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
 
+    @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
 
         for (AttributeDefinition definition : HttpManagementResourceDefinition.ATTRIBUTE_DEFINITIONS) {
@@ -78,6 +79,12 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
         }
     }
 
+    @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return true;
+    }
+
+    @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
                                   final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers)
             throws OperationFailedException {

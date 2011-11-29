@@ -22,17 +22,23 @@
 
 package org.jboss.as.server.operations;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.server.RunningMode;
+import org.jboss.as.server.RunningModeControl;
 import org.jboss.as.server.Services;
-import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
+import org.jboss.as.server.controller.descriptions.ServerDescriptions;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 
-import java.util.Collections;
 import java.util.Locale;
 
 /**
@@ -46,12 +52,14 @@ public class ServerReloadHandler implements OperationStepHandler, DescriptionPro
      * The operation name.
      */
     public static final String OPERATION_NAME = "reload";
-    /**
-     * The operation instance.
-     */
-    public static final ServerReloadHandler INSTANCE = new ServerReloadHandler();
 
-    private ServerReloadHandler() {
+    private final RunningModeControl runningModeControl;
+    private DescriptionProvider descriptionProvider;
+
+    private final AttributeDefinition adminOnlyAttribute = new SimpleAttributeDefinition(ModelDescriptionConstants.ADMIN_ONLY, ModelType.BOOLEAN, true);
+
+    public ServerReloadHandler(RunningModeControl runningModeControl) {
+        this.runningModeControl = runningModeControl;
     }
 
     /** {@inheritDoc} */
@@ -60,6 +68,7 @@ public class ServerReloadHandler implements OperationStepHandler, DescriptionPro
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+                final boolean adminOnly = adminOnlyAttribute.resolveModelAttribute(context, operation).asBoolean(false);
                 final ServiceController<?> service = context.getServiceRegistry(true).getRequiredService(Services.JBOSS_AS);
                 if(context.completeStep() == OperationContext.ResultAction.KEEP) {
                     service.addListener(new AbstractServiceListener<Object>() {
@@ -70,6 +79,7 @@ public class ServerReloadHandler implements OperationStepHandler, DescriptionPro
                         public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
                             if (transition == ServiceController.Transition.STOPPING_to_DOWN) {
                                 controller.removeListener(this);
+                                runningModeControl.setRunningMode(adminOnly ? RunningMode.ADMIN_ONLY : RunningMode.LIVE);
                                 controller.setMode(ServiceController.Mode.ACTIVE);
                             }
                         }
@@ -82,6 +92,13 @@ public class ServerReloadHandler implements OperationStepHandler, DescriptionPro
 
     /** {@inheritDoc} */
     public ModelNode getModelDescription(final Locale locale) {
-        return ServerDescriptionProviders.RELOAD_PROVIDER.getModelDescription(locale);
+        return getDescriptionProvider().getModelDescription(locale);
+    }
+
+    private synchronized DescriptionProvider getDescriptionProvider() {
+        if (descriptionProvider == null) {
+            descriptionProvider = new DefaultOperationDescriptionProvider(OPERATION_NAME, ServerDescriptions.getResourceDescriptionResolver("server"), adminOnlyAttribute);
+        }
+        return descriptionProvider;
     }
 }

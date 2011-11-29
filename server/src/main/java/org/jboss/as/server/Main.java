@@ -57,6 +57,8 @@ public final class Main {
     public static void usage() {
         System.out.println("Usage: ./standalone.sh [args...]\n");
         System.out.println("where args include:");
+        System.out.println("    --admin-only                       Set the server's running type to ADMIN_ONLY causing it to open administrative interfaces ");
+        System.out.println("                                       and accept management requests but not start other runtime services or accept end user requests.");
         System.out.println("    -b=<value>                         Set system property jboss.bind.address to the given value");
         System.out.println("    -b <value>                         Set system property jboss.bind.address to the given value");
         System.out.println("    -b<interface>=<value>              Set system property jboss.bind.address.<interface> to the given value");
@@ -135,6 +137,7 @@ public final class Main {
     public static ServerEnvironment determineEnvironment(String[] args, Properties systemProperties, Map<String, String> systemEnvironment, ServerEnvironment.LaunchType launchType) {
         final int argsLength = args.length;
         String serverConfig = null;
+        RunningMode runningMode = RunningMode.LIVE;
         for (int i = 0; i < argsLength; i++) {
             final String arg = args[i];
             try {
@@ -234,6 +237,8 @@ public final class Main {
 
                     systemProperties.setProperty(ServerEnvironment.JBOSS_DEFAULT_MULTICAST_ADDRESS, value);
                     SecurityActions.setSystemProperty(ServerEnvironment.JBOSS_DEFAULT_MULTICAST_ADDRESS, value);
+                } else if (CommandLineConstants.ADMIN_ONLY.equals(arg)) {
+                    runningMode = RunningMode.ADMIN_ONLY;
                 } else {
                     System.err.printf(ServerMessages.MESSAGES.invalidCommandLineOption(arg));
                     System.err.println();
@@ -248,7 +253,7 @@ public final class Main {
             }
         }
 
-        return new ServerEnvironment(systemProperties, systemEnvironment, serverConfig, launchType);
+        return new ServerEnvironment(systemProperties, systemEnvironment, serverConfig, launchType, runningMode);
     }
 
     private static String parseValue(final String arg, final String key) {

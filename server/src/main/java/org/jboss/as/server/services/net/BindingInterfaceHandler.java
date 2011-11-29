@@ -18,6 +18,7 @@
  */
 package org.jboss.as.server.services.net;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
@@ -33,6 +34,11 @@ public class BindingInterfaceHandler extends AbstractBindingWriteHandler {
 
     private BindingInterfaceHandler() {
         super(new StringLengthValidator(1, Integer.MAX_VALUE, true, true));
+    }
+
+    @Override
+    protected boolean requiresRuntime(final OperationContext context) {
+        return true;
     }
 
     @Override

@@ -70,6 +70,12 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
         }
     }
 
+    @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return true;
+    }
+
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
                                   ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
 

@@ -22,6 +22,7 @@
 package org.jboss.as.remoting;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -44,8 +45,6 @@ import org.jboss.msc.service.ServiceName;
  */
 public class RemotingSubsystemRootResource extends SimpleResourceDefinition {
 
-    static final RemotingSubsystemRootResource INSTANCE = new RemotingSubsystemRootResource();
-
     //The defaults for these come from XnioWorker
     static final SimpleAttributeDefinition WORKER_READ_THREADS = createIntAttribute(CommonAttributes.WORKER_READ_THREADS, Attribute.WORKER_READ_THREADS, 1);
     static final SimpleAttributeDefinition WORKER_TASK_CORE_THREADS = createIntAttribute(CommonAttributes.WORKER_TASK_CORE_THREADS, Attribute.WORKER_TASK_CORE_THREADS, 4);
@@ -54,13 +53,14 @@ public class RemotingSubsystemRootResource extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition WORKER_TASK_MAX_THREADS = createIntAttribute(CommonAttributes.WORKER_TASK_MAX_THREADS, Attribute.WORKER_TASK_MAX_THREADS, 16);
     static final SimpleAttributeDefinition WORKER_WRITE_THREADS = createIntAttribute(CommonAttributes.WORKER_WRITE_THREADS, Attribute.WORKER_WRITE_THREADS, 1);
 
-    //private static final
+    private final ExtensionContext.ProcessType processType;
 
-    private RemotingSubsystemRootResource() {
+    public RemotingSubsystemRootResource(final ExtensionContext.ProcessType processType) {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME),
                 RemotingExtension.getResourceDescriptionResolver(RemotingExtension.SUBSYSTEM_NAME),
-                RemotingSubsystemAdd.INSTANCE,
+                processType.isServer() ? RemotingSubsystemAdd.SERVER : RemotingSubsystemAdd.DOMAIN,
                 RemotingSubsystemRemove.INSTANCE);
+        this.processType = processType;
     }
 
     @Override
@@ -74,7 +74,7 @@ public class RemotingSubsystemRootResource extends SimpleResourceDefinition {
     }
 
     private void registerReadWriteIntAttribute(ManagementResourceRegistration resourceRegistration, AttributeDefinition attr) {
-        resourceRegistration.registerReadWriteAttribute(attr, null, new ThreadWriteAttributeHandler(attr));
+        resourceRegistration.registerReadWriteAttribute(attr, null, new ThreadWriteAttributeHandler(attr, processType));
     }
 
     private static SimpleAttributeDefinition createIntAttribute(String name, Attribute attribute, int defaultValue) {
@@ -82,15 +82,17 @@ public class RemotingSubsystemRootResource extends SimpleResourceDefinition {
     }
 
     private static class ThreadWriteAttributeHandler extends RestartParentWriteAttributeHandler {
-
-        ThreadWriteAttributeHandler(AttributeDefinition definition) {
+        private final ExtensionContext.ProcessType processType;
+        ThreadWriteAttributeHandler(AttributeDefinition definition, ExtensionContext.ProcessType processType) {
             super(CommonAttributes.SUBSYSTEM, definition);
+            this.processType = processType;
         }
 
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel,
                 ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-            RemotingSubsystemAdd.INSTANCE.launchServices(context, parentModel, verificationHandler, null);
+            RemotingSubsystemAdd addHandler = processType.isServer() ? RemotingSubsystemAdd.SERVER : RemotingSubsystemAdd.DOMAIN;
+            addHandler.launchServices(context, parentModel, verificationHandler, null);
         }
 
         @Override
