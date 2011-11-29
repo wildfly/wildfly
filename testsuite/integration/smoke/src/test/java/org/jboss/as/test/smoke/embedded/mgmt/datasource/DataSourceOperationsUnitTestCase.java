@@ -211,10 +211,10 @@ public class DataSourceOperationsUnitTestCase {
 
         Assert.assertNotNull(newList);
 
-       boolean containsRightJndiname = false;
-        for(ModelNode result : newList){
+        boolean containsRightJndiname = false;
+        for (ModelNode result : newList) {
             final Map<String, ModelNode> parseChildren = getChildren(result);
-            if (! parseChildren.isEmpty() && parseChildren.get("jndi-name")!= null && parseChildren.get("jndi-name").asString().equals("java:jboss/datasources/MyNewDs")) {
+            if (!parseChildren.isEmpty() && parseChildren.get("jndi-name") != null && parseChildren.get("jndi-name").asString().equals("java:jboss/datasources/MyNewDs")) {
                 containsRightJndiname = true;
             }
         }
@@ -717,9 +717,16 @@ public class DataSourceOperationsUnitTestCase {
 
         Assert.assertNotNull(newList);
 
-        final Map<String, ModelNode> parseChildren = getChildren(newList.get(1));
-        Assert.assertFalse(parseChildren.isEmpty());
-
+        Map<String, ModelNode> parseChildren = null;
+        boolean containsRightJndiname = false;
+        for (ModelNode result : newList) {
+            parseChildren = getChildren(result);
+            if (!parseChildren.isEmpty() && parseChildren.get("jndi-name") != null && parseChildren.get("jndi-name").asString().equals(complexXaDsJndi)) {
+                containsRightJndiname = true;
+                break;
+            }
+        }
+        Assert.assertTrue(containsRightJndiname);
         controlParseChildrenParams(parseChildren, params);
 
         remove(address);
@@ -912,7 +919,7 @@ public class DataSourceOperationsUnitTestCase {
         }
 
         ModelNode dsNode = new ModelNode();
-        dsNode.get("data-source").set(result.get("result"));
+        dsNode.get(childType).set(result.get("result"));
 
         StringWriter strWriter = new StringWriter();
         XMLExtendedStreamWriter writer = XMLExtendedStreamWriterFactory.create(XMLOutputFactory.newFactory()
