@@ -98,10 +98,9 @@ public abstract class HandlerUpdateProperties<T extends Handler> implements Oper
                     final String name = address.getLastElement().getValue();
                     final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
                     @SuppressWarnings("unchecked")
-                    final ServiceController<Handler> controller = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(name));
+                    final ServiceController<T> controller = (ServiceController<T>) serviceRegistry.getService(LogServices.handlerName(name));
                     if (controller != null) {
-                        @SuppressWarnings("unchecked")
-                        final T handler = (T) controller.getValue();
+                        final T handler = controller.getValue();
                         final ModelNode level = LEVEL.resolveModelAttribute(context, model);
                         final ModelNode formatter = FORMATTER.resolveModelAttribute(context, model);
                         final ModelNode encoding = ENCODING.resolveModelAttribute(context, model);
@@ -128,6 +127,8 @@ public abstract class HandlerUpdateProperties<T extends Handler> implements Oper
                         }
 
                         final boolean restartRequired = applyUpdateToRuntime(context, name, model, originalModel, handler);
+                        // Copy the original defined values to the new model if the values are not defined.
+                        copyOriginal(originalModel, model);
 
                         if (restartRequired) {
                             context.reloadRequired();
@@ -220,6 +221,20 @@ public abstract class HandlerUpdateProperties<T extends Handler> implements Oper
     protected void copy(final String name, final ModelNode from, final ModelNode to) {
         if (from.hasDefined(name)) {
             to.get(name).set(from.get(name));
+        }
+    }
+
+    /**
+     * Copies the original defined values that are not defined in the model to the model.
+     *
+     * @param originalModel the original model.
+     * @param model         the new model.
+     */
+    private void copyOriginal(final ModelNode originalModel, final ModelNode model) {
+        for (String key : originalModel.keys()) {
+            if (originalModel.hasDefined(key) && !model.hasDefined(key)) {
+                model.get(key).set(originalModel.get(key));
+            }
         }
     }
 
