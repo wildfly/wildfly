@@ -279,12 +279,12 @@
         <module>ejb3</module>
         <module>embedded</module>
         <module>host-controller</module>
-        <module>j2eemanagement</module>
         <module>jacorb</module>
         <module>jaxrs</module>
         <module>jdr</module>
         <module>jmx</module>
         <module>jpa</module>
+        <module>jsr77</module>
         <module>logging</module>
         <module>mail</module>
         <module>messaging</module>
@@ -886,12 +886,6 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-j2eemanagement</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-jacorb</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -911,6 +905,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-jmx</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-jsr77</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

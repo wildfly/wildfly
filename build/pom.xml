@@ -790,7 +790,7 @@
 
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-j2eemanagement</artifactId>
+            <artifactId>jboss-as-jsr77</artifactId>
         </dependency>
 
         <dependency>
