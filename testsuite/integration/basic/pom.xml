@@ -57,12 +57,26 @@
             <build>
                 <plugins>
 
-                    <!-- Build the target/jbossas server configuration. -->
+                    <!-- Build the target/jbossas-basic server configuration. -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions combine.children="append">
-                            <!-- Copy in some jars. -->
+                            <execution>
+                                <id>build-basic.server</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <ant antfile="${basedir}/../src/test/scripts/basic-integration-build.xml">
+                                            <target name="build-basic-integration"/>
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
+                            <!-- Copy in some jars.
                             <execution>
                                 <id>prepare-jars-basic-integration.server</id>
                                 <phase>process-test-resources</phase>
@@ -74,6 +88,7 @@
                                     </target>
                                 </configuration>
                             </execution>
+                            -->
                         </executions>
                     </plugin>
 
@@ -113,7 +128,7 @@
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
                                         <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
-                                        <jboss.inst>${basedir}/target/jbossas</jboss.inst>
+                                        <jboss.inst>${basedir}/target/jbossas-basic</jboss.inst>
                                     </systemPropertyVariables>
 
                                     <additionalClasspathElements>
@@ -147,7 +162,7 @@
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
-                                        <jboss.inst>${basedir}/target/jbossas</jboss.inst>
+                                        <jboss.inst>${basedir}/target/jbossas-basic</jboss.inst>
                                     </systemPropertyVariables>
 
                                     <additionalClasspathElements>

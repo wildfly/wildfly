@@ -4,8 +4,8 @@
 
 	<container qualifier="jboss" default="true">
 		<configuration>
-			<property name="jbossHome">${basedir}/target/jbossas</property>
-			<property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas</property>
+			<property name="jbossHome">${basedir}/target/jbossas-basic</property>
+			<property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-basic</property>
 			<property name="serverConfig">${jboss.server.config.file.name:standalone.xml}</property>
 			<!-- -Djboss.inst is not necessarily needed, only in case the test case neeeds path to the instance it runs in.
 			     In the future, Arquillian should capable of injecting it into @ArquillianResource File or such. -->

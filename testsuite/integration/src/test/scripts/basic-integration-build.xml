@@ -28,14 +28,16 @@
     <import file="common-targets.xml" as="common"/>
 
     <target name="build-basic-integration" description="Builds server configuration for basic-integration tests">
-        <build-server-config name="jbossas"/>
+        <build-server-config name="basic"/>
 
+        <!--
         <antcall target="changeDefaultDatabase">
-            <param name="server-config" value="jbossas"/>
+            <param name="server-config" value="basic"/>
             <propertyset refid="ds.properties"/>
         </antcall>
+        -->
 
-        <change-ip-addresses name="jbossas" node="${node0}"/>
+        <change-ip-addresses name="basic" node="${node0}"/>
 
         <condition property="basic-jts-tests">
             <equals arg1="${jboss.test.jts}" arg2="true"/>
@@ -44,7 +46,7 @@
     </target>
 
     <target name="build-basic-integration-jts" depends="build-basic-integration" if="basic-jts-tests">
-        <add-jts name="jbossas"/>
+        <add-jts name="basic"/>
     </target>
 
 </project>

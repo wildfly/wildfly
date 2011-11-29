@@ -64,7 +64,7 @@
             <build>
                 <plugins>
 
-                    <!-- Build the target/smoke server configuration. -->
+                    <!-- Build the target/jbossas-smoke server configuration. -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
