@@ -266,7 +266,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             identityTrustInfo.add(entry);
 
             String moduleName = module.get(MODULE).asString();
-            if(moduleName != null && moduleName.length() > 0 ){
+            if(module.hasDefined(MODULE) && moduleName.length() > 0 ){
                 identityTrustInfo.setJBossModuleName(moduleName);
             }
         }
@@ -288,7 +288,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             auditInfo.add(entry);
 
             String moduleName = module.get(MODULE).asString();
-            if(moduleName != null && moduleName.length() > 0 ){
+            if(module.hasDefined(MODULE) && moduleName.length() > 0 ){
                 auditInfo.setJBossModuleName(moduleName);
             }
         }
@@ -312,7 +312,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             aclInfo.add(entry);
 
             String moduleName = module.get(MODULE).asString();
-            if(moduleName != null && moduleName.length() > 0 ){
+            if(module.hasDefined(MODULE) && moduleName.length() > 0 ){
                 aclInfo.setJBossModuleName(moduleName);
             }
 
@@ -417,7 +417,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             AppConfigurationEntry entry = new AppConfigurationEntry(codeName, controlFlag, options);
             container.addAppConfigurationEntry(entry);
             String moduleName = module.get(MODULE).asString();
-            if(moduleName != null && moduleName.length() > 0 ){
+            if(module.hasDefined(MODULE) && moduleName.length() > 0 ){
                 authInfo.setJBossModuleName(moduleName);
             }
         }
