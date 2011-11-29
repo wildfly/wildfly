@@ -235,6 +235,7 @@ public class ModelDescriptionConstants {
     public static final String START_SERVERS = "start-servers";
     public static final String STATUS = "status";
     public static final String STEPS = "steps";
+    public static final String STOP = "stop";
     public static final String STOP_SERVERS = "stop-servers";
     /** The key for {@link AttributeAccess.Storage} fields. */
     public static final String STORAGE = "storage";
