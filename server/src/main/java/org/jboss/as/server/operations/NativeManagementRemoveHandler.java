@@ -43,6 +43,11 @@ public class NativeManagementRemoveHandler extends AbstractRemoveStepHandler {
     }
 
     @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return true;
+    }
+
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
         final ServiceName endpointName = ManagementRemotingServices.MANAGEMENT_ENDPOINT;

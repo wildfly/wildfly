@@ -94,7 +94,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
         }
     }
 
-    private final OperationContext.Type controllerType;
+    private final OperationContextTypeFactory contextTypeFactory;
     private final DescriptionProvider rootDescriptionProvider;
     private final ControlledProcessState processState;
     private final OperationStepHandler prepareStep;
@@ -110,12 +110,15 @@ public abstract class AbstractControllerService implements Service<ModelControll
      * @param processState            the controlled process state
      * @param rootDescriptionProvider the root description provider
      * @param prepareStep             the prepare step to prepend to operation execution
+     *
+     * @deprecated Use one of the other constructor variants
      */
+    @Deprecated
     protected AbstractControllerService(final OperationContext.Type controllerType,
                                         final ControlledProcessState processState,
                                         final DescriptionProvider rootDescriptionProvider,
                                         final OperationStepHandler prepareStep) {
-        this(controllerType, null, processState, rootDescriptionProvider, prepareStep, null);
+        this(new OperationContextTypeFactory.SimpleTypeFactory(controllerType), null, processState, rootDescriptionProvider, prepareStep, null);
     }
 
     /**
@@ -132,7 +135,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
                                         final DescriptionProvider rootDescriptionProvider,
                                         final OperationStepHandler prepareStep,
                                         final ExpressionResolver expressionResolver) {
-        this(controllerType, null, processState, rootDescriptionProvider, prepareStep, expressionResolver);
+        this(new OperationContextTypeFactory.SimpleTypeFactory(controllerType), null, processState, rootDescriptionProvider, prepareStep, expressionResolver);
     }
 
     /**
@@ -148,7 +151,24 @@ public abstract class AbstractControllerService implements Service<ModelControll
     protected AbstractControllerService(final OperationContext.Type controllerType, final ConfigurationPersister configurationPersister,
                                         final ControlledProcessState processState, final DescriptionProvider rootDescriptionProvider,
                                         final OperationStepHandler prepareStep, final ExpressionResolver expressionResolver) {
-        this.controllerType = controllerType;
+        this(new OperationContextTypeFactory.SimpleTypeFactory(controllerType), configurationPersister, processState, rootDescriptionProvider,
+                prepareStep, expressionResolver);
+    }
+
+    /**
+     * Construct a new instance.
+     *
+     * @param contextTypeFactory      the factory for the type of operation context the new controller should create
+     * @param configurationPersister  the configuration persister
+     * @param processState            the controlled process state
+     * @param rootDescriptionProvider the root description provider
+     * @param prepareStep             the prepare step to prepend to operation execution
+     * @param expressionResolver      the expression resolver
+     */
+    protected AbstractControllerService(final OperationContextTypeFactory contextTypeFactory, final ConfigurationPersister configurationPersister,
+                                        final ControlledProcessState processState, final DescriptionProvider rootDescriptionProvider,
+                                        final OperationStepHandler prepareStep, final ExpressionResolver expressionResolver) {
+        this.contextTypeFactory = contextTypeFactory;
         this.configurationPersister = configurationPersister;
         this.rootDescriptionProvider = rootDescriptionProvider;
         this.processState = processState;
@@ -170,7 +190,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
         final ModelControllerImpl controller = new ModelControllerImpl(container, target,
                 ManagementResourceRegistration.Factory.create(rootDescriptionProvider),
                 new ContainerStateMonitor(container, serviceController),
-                configurationPersister, controllerType, prepareStep,
+                configurationPersister, contextTypeFactory, prepareStep,
                 processState, executorService, expressionResolver);
         initModel(controller.getRootResource(), controller.getRootRegistration());
         this.controller = controller;

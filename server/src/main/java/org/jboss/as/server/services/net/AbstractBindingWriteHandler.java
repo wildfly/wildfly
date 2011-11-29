@@ -102,7 +102,7 @@ abstract class AbstractBindingWriteHandler extends WriteAttributeHandlers.WriteA
 
         final boolean restartRequired = requiresRestart();
         boolean setReload = false;
-        if (context.getType() == OperationContext.Type.SERVER) {
+        if (requiresRuntime(context)) {
             if (restartRequired) {
                 context.reloadRequired();
                 setReload = true;
@@ -151,12 +151,16 @@ abstract class AbstractBindingWriteHandler extends WriteAttributeHandlers.WriteA
         }
     }
 
+    protected boolean requiresRuntime(OperationContext context) {
+        return context.getType() == OperationContext.Type.SERVER;
+    }
+
     private void handleBindingReinstall(OperationContext context, String bindingName, ModelNode bindingModel) throws OperationFailedException {
         context.removeService(SOCKET_BINDING.append(bindingName));
         try {
             BindingAddHandler.installBindingService(context, bindingModel, bindingName);
         } catch (UnknownHostException e) {
-            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
+            throw new OperationFailedException(new ModelNode().set(e.toString()));
         }
     }
 

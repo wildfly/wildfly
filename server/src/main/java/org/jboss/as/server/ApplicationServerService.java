@@ -65,6 +65,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
 
     private final List<ServiceActivator> extraServices;
     private final Bootstrap.Configuration configuration;
+    private final RunningModeControl runningModeControl;
     private final ControlledProcessState processState;
     private volatile FutureServiceContainer futureContainer;
     private volatile long startTime;
@@ -72,6 +73,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
     ApplicationServerService(final List<ServiceActivator> extraServices, final Bootstrap.Configuration configuration) {
         this.extraServices = extraServices;
         this.configuration = configuration;
+        runningModeControl = new RunningModeControl(configuration.getServerEnvironment());
         startTime = configuration.getStartTime();
         processState = new ControlledProcessState(configuration.getServerEnvironment().isStandalone());
     }
@@ -131,7 +133,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         ModuleIndexService.addService(serviceTarget);
         final AbstractVaultReader vaultReader = service(AbstractVaultReader.class);
         AS_ROOT_LOGGER.debugf("Using VaultReader %s", vaultReader);
-        ServerService.addService(serviceTarget, configuration, processState, bootstrapListener, vaultReader);
+        ServerService.addService(serviceTarget, configuration, processState, bootstrapListener, runningModeControl, vaultReader);
         final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContext() {
             @Override
             public ServiceTarget getServiceTarget() {

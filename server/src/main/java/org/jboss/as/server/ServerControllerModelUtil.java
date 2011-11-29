@@ -113,6 +113,7 @@ import org.jboss.as.server.operations.LaunchTypeHandler;
 import org.jboss.as.server.operations.NativeRemotingManagementAddHandler;
 import org.jboss.as.server.operations.ProcessTypeHandler;
 import org.jboss.as.server.operations.RootResourceHack;
+import org.jboss.as.server.operations.RunningModeReadHandler;
 import org.jboss.as.server.operations.ServerReloadHandler;
 import org.jboss.as.server.operations.ServerRestartRequiredHandler;
 import org.jboss.as.server.operations.ServerShutdownHandler;
@@ -164,7 +165,7 @@ public class ServerControllerModelUtil {
                                       final ExtensibleConfigurationPersister extensibleConfigurationPersister,
                                       final ServerEnvironment serverEnvironment,
                                       final ControlledProcessState processState,
-                                      final AbstractVaultReader vaultReader,
+                                      RunningModeControl runningModelControl, final AbstractVaultReader vaultReader,
                                       final boolean parallelBoot) {
         // Build up the core model registry
         root.registerReadWriteAttribute(NAME, null, new StringLengthValidatingHandler(1), AttributeAccess.Storage.CONFIGURATION);
@@ -211,6 +212,7 @@ public class ServerControllerModelUtil {
 
         root.registerReadOnlyAttribute(ServerDescriptionConstants.SERVER_STATE, new ServerStateAttributeHandler(processState), Storage.RUNTIME);
         root.registerReadOnlyAttribute(ServerDescriptionConstants.PROCESS_TYPE, ProcessTypeHandler.INSTANCE, Storage.RUNTIME);
+        RunningModeReadHandler.createAndRegister(runningModelControl, root);
         root.registerOperationHandler(ResolveExpressionHandler.OPERATION_NAME, ResolveExpressionHandler.INSTANCE,
                 ResolveExpressionHandler.INSTANCE, EnumSet.of(OperationEntry.Flag.READ_ONLY));
 
@@ -221,8 +223,10 @@ public class ServerControllerModelUtil {
         // Runtime operations
         if (serverEnvironment != null) {
             // Reload op -- does not work on a domain mode server
-            if (serverEnvironment.getLaunchType() != ServerEnvironment.LaunchType.DOMAIN)
-                root.registerOperationHandler(ServerReloadHandler.OPERATION_NAME, ServerReloadHandler.INSTANCE, ServerReloadHandler.INSTANCE, false);
+            if (serverEnvironment.getLaunchType() != ServerEnvironment.LaunchType.DOMAIN)  {
+                ServerReloadHandler reloadHandler = new ServerReloadHandler(runningModelControl);
+                root.registerOperationHandler(ServerReloadHandler.OPERATION_NAME, reloadHandler, reloadHandler);
+            }
 
             // The System.exit() based shutdown command is only valid for a server process directly launched from the command line
             if (serverEnvironment.getLaunchType() == ServerEnvironment.LaunchType.STANDALONE)
@@ -250,15 +254,18 @@ public class ServerControllerModelUtil {
         ManagementResourceRegistration management = root.registerSubModel(PathElement.pathElement(CORE_SERVICE, MANAGEMENT), CommonProviders.MANAGEMENT_WITH_INTERFACES_PROVIDER);
         ManagementResourceRegistration securityRealm = management.registerSubModel(PathElement.pathElement(SECURITY_REALM), CommonProviders.MANAGEMENT_SECURITY_REALM_PROVIDER);
         securityRealm.registerOperationHandler(SecurityRealmAddHandler.OPERATION_NAME, SecurityRealmAddHandler.INSTANCE, SecurityRealmAddHandler.INSTANCE, false);
+        // TODO remove, attribute changes
 
         ManagementResourceRegistration connection = management.registerSubModel(PathElement.pathElement(OUTBOUND_CONNECTION), CommonProviders.MANAGEMENT_OUTBOUND_CONNECTION_PROVIDER);
         connection.registerOperationHandler(ConnectionAddHandler.OPERATION_NAME, ConnectionAddHandler.INSTANCE, ConnectionAddHandler.INSTANCE, false);
+        // TODO remove, attribute changes
 
         // Management Interface protocols
         management.registerSubModel(NativeManagementResourceDefinition.INSTANCE);
 
         ManagementResourceRegistration managementNativeRemoting = management.registerSubModel(PathElement.pathElement(MANAGEMENT_INTERFACE, NATIVE_REMOTING_INTERFACE), CommonProviders.NATIVE_REMOTING_MANAGEMENT_PROVIDER);
         managementNativeRemoting.registerOperationHandler(NativeRemotingManagementAddHandler.OPERATION_NAME, NativeRemotingManagementAddHandler.INSTANCE, NativeRemotingManagementAddHandler.INSTANCE, false);
+        // TODO remove, attribute changes
 
         management.registerSubModel(HttpManagementResourceDefinition.INSTANCE);
 

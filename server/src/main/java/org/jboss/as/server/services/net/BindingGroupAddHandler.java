@@ -66,6 +66,11 @@ public class BindingGroupAddHandler extends AbstractSocketBindingGroupAddHandler
     }
 
     @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return true;
+    }
+
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         int portOffset = SocketBindingGroupResourceDefinition.PORT_OFFSET.resolveModelAttribute(context, model).asInt();

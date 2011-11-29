@@ -344,7 +344,7 @@ public class ParseAndMarshalModelsTestCase {
         final ModelController controller = createController(model, new Setup() {
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
                 ServerControllerModelUtil.updateCoreModel(model);
-                ServerControllerModelUtil.initOperations(rootRegistration, null, persister, null, null, null, false);
+                ServerControllerModelUtil.initOperations(rootRegistration, null, persister, null, null, null, null, false);
             }
         });
 

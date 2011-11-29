@@ -73,6 +73,11 @@ public class HttpManagementWriteAttributeHandler extends AbstractWriteAttributeH
     }
 
     @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return !context.isBooting();
+    }
+
+    @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
         final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
         final ModelNode subModel = resource.getModel();

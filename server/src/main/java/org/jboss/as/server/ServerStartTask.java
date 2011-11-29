@@ -34,10 +34,10 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.server.parsing.StandaloneXml;
 import org.jboss.as.controller.persistence.AbstractConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
+import org.jboss.as.server.parsing.StandaloneXml;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
@@ -72,7 +72,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         properties.setProperty(ServerEnvironment.SERVER_DEPLOY_DIR, properties.getProperty("jboss.domain.deployment.dir"));
         properties.setProperty(ServerEnvironment.SERVER_BASE_DIR, properties.getProperty("jboss.domain.servers.dir") + File.separatorChar + serverName);
         properties.setProperty(ServerEnvironment.CONTROLLER_TEMP_DIR, properties.getProperty("jboss.domain.temp.dir"));
-        providedEnvironment = new ServerEnvironment(properties, System.getenv(), null, ServerEnvironment.LaunchType.DOMAIN);
+        providedEnvironment = new ServerEnvironment(properties, System.getenv(), null, ServerEnvironment.LaunchType.DOMAIN, RunningMode.LIVE);
     }
 
     @Override

@@ -18,6 +18,7 @@
  */
 package org.jboss.as.server.controller.descriptions;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADMIN_ONLY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
@@ -30,6 +31,7 @@ import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.server.deployment.DeploymentRemoveHandler;
 import org.jboss.as.server.operations.ServerReloadHandler;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Model descriptions for deployment resources.
@@ -58,11 +60,8 @@ public class ServerDescriptions {
 
     public static final ModelNode getServerReloadOperation(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(ServerReloadHandler.OPERATION_NAME);
-        root.get(DESCRIPTION).set(bundle.getString("reload"));
-        root.get(REPLY_PROPERTIES).setEmptyObject();
-        return root;
+        return CommonDescriptions.getSingleParamOnlyOperation(bundle, ServerReloadHandler.OPERATION_NAME, null,
+                ADMIN_ONLY, ModelType.BOOLEAN, true);
     }
 
     public static final ModelNode getSystemPropertyDescription(Locale locale) {

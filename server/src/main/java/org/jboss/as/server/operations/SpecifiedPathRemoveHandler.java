@@ -34,6 +34,11 @@ public class SpecifiedPathRemoveHandler extends PathRemoveHandler {
 
     public static SpecifiedPathRemoveHandler INSTANCE = new SpecifiedPathRemoveHandler();
 
+    @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return true;
+    }
+
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         String name = address.getLastElement().getValue();

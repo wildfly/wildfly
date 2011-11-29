@@ -68,6 +68,11 @@ public class NativeManagementWriteAttributeHandler extends AbstractWriteAttribut
     }
 
     @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return !context.isBooting();
+    }
+
+    @Override
     protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
                                            final String attributeName, final ModelNode resolvedValue,
                                            final ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {

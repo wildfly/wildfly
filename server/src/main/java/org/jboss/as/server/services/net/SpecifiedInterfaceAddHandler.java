@@ -45,6 +45,11 @@ public class SpecifiedInterfaceAddHandler extends InterfaceAddHandler {
         super(true);
     }
 
+    @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return true;
+    }
+
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers, String name, ParsedInterfaceCriteria criteria) {
         final ServiceTarget target = context.getServiceTarget();
         ServiceBuilder<NetworkInterfaceBinding> builder = target.addService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(name), createInterfaceService(name, criteria));

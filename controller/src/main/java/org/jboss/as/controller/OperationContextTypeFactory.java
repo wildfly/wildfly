@@ -19,35 +19,40 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.server.services.net;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.operations.common.InterfaceRemoveHandler;
-import org.jboss.dmr.ModelNode;
+package org.jboss.as.controller;
 
 /**
- * Handler for removing a fully-specified interface.
- *
- * @author Brian Stansberry (c) 2011 Red Hat Inc.
- */
-public class SpecifiedInterfaceRemoveHandler extends InterfaceRemoveHandler {
+* Factory for the currently correct {@link OperationContext.Type} for a new {@link OperationContext}.
+*
+* @author Brian Stansberry (c) 2011 Red Hat Inc.
+*/
+public interface OperationContextTypeFactory {
 
-    public static SpecifiedInterfaceRemoveHandler INSTANCE = new SpecifiedInterfaceRemoveHandler();
+    /**
+     * Provides the currently correct type for a new {@link OperationContext}
+     *
+     * @return the type. Will not return {@code null}
+     */
+    OperationContext.Type getOperationContextType();
 
-    protected SpecifiedInterfaceRemoveHandler() {
-    }
+    /** Simple {@code OperationContextTypeFactory} that always returns the type passed to the constructor. */
+    class SimpleTypeFactory implements OperationContextTypeFactory {
 
-    @Override
-    protected boolean requiresRuntime(OperationContext context) {
-        return true;
-    }
+        private final OperationContext.Type type;
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
-        String name = getInterfaceName(operation);
-        context.removeService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(name));
-    }
+        /**
+         * Creates a new {@code SimpleTypeFactory}.
+         *
+         * @param type the type to provide.
+         */
+        public SimpleTypeFactory(OperationContext.Type type) {
+            this.type = type;
+        }
 
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
-        // TODO: Re-Add Services
+        @Override
+        public OperationContext.Type getOperationContextType() {
+            return type;
+        }
     }
 }

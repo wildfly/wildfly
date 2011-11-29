@@ -19,35 +19,40 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.server.services.net;
+
+package org.jboss.as.server;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.operations.common.InterfaceRemoveHandler;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.controller.OperationContextTypeFactory;
 
 /**
- * Handler for removing a fully-specified interface.
+ * Provides control over the server's current {@link RunningMode}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class SpecifiedInterfaceRemoveHandler extends InterfaceRemoveHandler {
+public class RunningModeControl implements OperationContextTypeFactory {
 
-    public static SpecifiedInterfaceRemoveHandler INSTANCE = new SpecifiedInterfaceRemoveHandler();
+    private volatile RunningMode runningMode;
 
-    protected SpecifiedInterfaceRemoveHandler() {
+    RunningModeControl(ServerEnvironment serverEnvironment) {
+        this.runningMode = serverEnvironment.getInitialRunningMode();
+    }
+
+    public RunningMode getRunningMode() {
+        return runningMode;
+    }
+
+    public void setRunningMode(RunningMode runningMode) {
+        this.runningMode = runningMode;
     }
 
     @Override
-    protected boolean requiresRuntime(OperationContext context) {
-        return true;
-    }
-
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
-        String name = getInterfaceName(operation);
-        context.removeService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(name));
-    }
-
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
-        // TODO: Re-Add Services
+    public OperationContext.Type getOperationContextType() {
+        switch (runningMode) {
+            case LIVE:
+                return OperationContext.Type.SERVER;
+            default:
+                return OperationContext.Type.MANAGEMENT;
+        }
     }
 }

@@ -18,6 +18,7 @@
  */
 package org.jboss.as.server.services.net;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
@@ -34,6 +35,11 @@ public class BindingFixedPortHandler extends AbstractBindingWriteHandler {
 
     private BindingFixedPortHandler() {
         super(new ModelTypeValidator(ModelType.BOOLEAN, true, false));
+    }
+
+    @Override
+    protected boolean requiresRuntime(final OperationContext context) {
+        return true;
     }
 
     @Override

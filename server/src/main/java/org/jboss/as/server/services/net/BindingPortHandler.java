@@ -18,6 +18,7 @@
  */
 package org.jboss.as.server.services.net;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.network.SocketBinding;
@@ -34,6 +35,11 @@ public class BindingPortHandler extends AbstractBindingWriteHandler {
 
     private BindingPortHandler() {
         super(new IntRangeValidator(0, 65535, false, true), new IntRangeValidator(0, 65535, false, false));
+    }
+
+    @Override
+    protected boolean requiresRuntime(final OperationContext context) {
+        return true;
     }
 
     @Override

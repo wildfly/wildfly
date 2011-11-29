@@ -60,6 +60,7 @@ public class BindingAddHandler extends SocketBindingAddHandler {
     private BindingAddHandler() {
     }
 
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
@@ -73,6 +74,12 @@ public class BindingAddHandler extends SocketBindingAddHandler {
 
     }
 
+    @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return true;
+    }
+
+    @Override
     protected boolean requiresRuntimeVerification() {
         return false;
     }

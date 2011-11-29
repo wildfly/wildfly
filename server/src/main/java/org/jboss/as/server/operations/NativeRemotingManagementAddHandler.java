@@ -52,10 +52,17 @@ public class NativeRemotingManagementAddHandler extends AbstractAddStepHandler i
     public static final NativeRemotingManagementAddHandler INSTANCE = new NativeRemotingManagementAddHandler();
     public static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
 
+    @Override
     protected void populateModel(ModelNode operation, ModelNode model) {
         model.setEmptyObject();
     }
 
+    @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return true;
+    }
+
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
 
         final ServiceTarget serviceTarget = context.getServiceTarget();

@@ -36,6 +36,7 @@ public class ModelDescriptionConstants {
     public static final String ACCESS_TYPE = "access-type";
     public static final String ADD = "add";
     public static final String ADDRESS = "address";
+    public static final String ADMIN_ONLY = "admin-only";
     public static final String ADVANCED_FILTER = "advanced-filter";
     public static final String ALLOWED = "allowed";
     public static final String ALLOW_RESOURCE_SERVICE_RESTART = "allow-resource-service-restart";

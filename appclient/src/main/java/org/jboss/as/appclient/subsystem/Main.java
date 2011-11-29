@@ -228,7 +228,7 @@ public final class Main {
             }
         }
 
-        ret.environment = new ServerEnvironment(systemProperties, systemEnvironment, appClientConfig, launchType);
+        ret.environment = new ServerEnvironment(systemProperties, systemEnvironment, appClientConfig, launchType, null);
         return ret;
     }
 

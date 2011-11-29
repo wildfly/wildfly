@@ -51,6 +51,7 @@ import org.jboss.as.controller.BootContext;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContextTypeFactory;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
@@ -151,7 +152,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                                          final Map<String, ProxyController> serverProxies,
                                          final PrepareStepHandler prepareStepHandler,
                                          final AbstractVaultReader vaultReader) {
-        super(OperationContext.Type.HOST, processState, DomainDescriptionProviders.ROOT_PROVIDER, prepareStepHandler, new RuntimeExpressionResolver(vaultReader));
+        super(new OperationContextTypeFactory.SimpleTypeFactory(OperationContext.Type.HOST), null, processState, DomainDescriptionProviders.ROOT_PROVIDER, prepareStepHandler, new RuntimeExpressionResolver(vaultReader));
         this.environment = environment;
         this.hostControllerInfo = hostControllerInfo;
         this.localFileRepository = new LocalFileRepository(environment);

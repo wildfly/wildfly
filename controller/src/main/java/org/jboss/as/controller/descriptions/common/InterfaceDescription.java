@@ -33,8 +33,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQ
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -234,6 +238,11 @@ public class InterfaceDescription {
             NIC_MATCH, POINT_TO_POINT, PUBLIC_ADDRESS, SITE_LOCAL_ADDRESS, SUBNET_MATCH, UP, VIRTUAL
     };
 
+
+    public static final Set<AttributeDefinition> NESTED_LIST_ATTRIBUTES = new HashSet<AttributeDefinition>(
+            Arrays.asList(INET_ADDRESS, NIC, NIC_MATCH, SUBNET_MATCH )
+    );
+
     /** The wildcard criteria attributes */
     public static final AttributeDefinition[] WILDCARD_ATTRIBUTES = new AttributeDefinition[] {ANY_ADDRESS, ANY_IPV4_ADDRESS, ANY_IPV6_ADDRESS };
 
@@ -280,7 +289,7 @@ public class InterfaceDescription {
                 final ModelNode valueType = model.get(VALUE_TYPE);
                 for(final AttributeDefinition def : NESTED_ATTRIBUTES) {
                     final AttributeDefinition current;
-                    if(def.getType() == ModelType.STRING) {
+                    if(NESTED_LIST_ATTRIBUTES.contains(def)) {
                         current = wrapAsList(def);
                     } else {
                         current = def;
@@ -351,7 +360,7 @@ public class InterfaceDescription {
                     final String name = def.getName();
                     if(value.hasDefined(name)) {
                         final ModelNode v = value.get(name);
-                        if(def.getType() == ModelType.STRING) {
+                        if(NESTED_LIST_ATTRIBUTES.contains(def)) {
                             if (ModelType.LIST != v.getType()) {
                                 throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidType(v.getType())));
                             }

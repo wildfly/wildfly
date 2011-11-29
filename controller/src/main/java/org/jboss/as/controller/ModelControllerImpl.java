@@ -77,7 +77,7 @@ class ModelControllerImpl implements ModelController {
     private final ContainerStateMonitor stateMonitor;
     private final RootResource model = new RootResource();
     private final ConfigurationPersister persister;
-    private final OperationContext.Type controllerType;
+    private final OperationContextTypeFactory contextTypeFactory;
     private final AtomicBoolean bootingFlag = new AtomicBoolean(true);
     private final OperationStepHandler prepareStep;
     private final ControlledProcessState processState;
@@ -85,7 +85,7 @@ class ModelControllerImpl implements ModelController {
     private final ExpressionResolver expressionResolver;
 
     ModelControllerImpl(final ServiceRegistry serviceRegistry, final ServiceTarget serviceTarget, final ManagementResourceRegistration rootRegistration,
-                        final ContainerStateMonitor stateMonitor, final ConfigurationPersister persister, final OperationContext.Type controllerType,
+                        final ContainerStateMonitor stateMonitor, final ConfigurationPersister persister, final OperationContextTypeFactory contextTypeFactory,
                         final OperationStepHandler prepareStep, final ControlledProcessState processState, final ExecutorService executorService,
                         final ExpressionResolver expressionResolver) {
         this.serviceRegistry = serviceRegistry;
@@ -93,7 +93,7 @@ class ModelControllerImpl implements ModelController {
         this.rootRegistration = rootRegistration;
         this.stateMonitor = stateMonitor;
         this.persister = persister;
-        this.controllerType = controllerType;
+        this.contextTypeFactory = contextTypeFactory;
         this.prepareStep = prepareStep == null ? new DefaultPrepareStepHandler() : prepareStep;
         this.processState = processState;
         this.serviceTarget.addListener(ServiceListener.Inheritance.ALL, stateMonitor);
@@ -109,7 +109,7 @@ class ModelControllerImpl implements ModelController {
         if (restartResourceServices) {
             contextFlags.add(OperationContextImpl.ContextFlag.ALLOW_RESOURCE_SERVICE_RESTART);
         }
-        OperationContextImpl context = new OperationContextImpl(this, controllerType, contextFlags, handler, attachments, model, control, processState, bootingFlag.get());
+        OperationContextImpl context = new OperationContextImpl(this, contextTypeFactory.getOperationContextType(), contextFlags, handler, attachments, model, control, processState, bootingFlag.get());
         ModelNode response = new ModelNode();
         context.addStep(response, operation, prepareStep, OperationContext.Stage.MODEL);
 
@@ -129,7 +129,8 @@ class ModelControllerImpl implements ModelController {
 
     void boot(final List<ModelNode> bootList, final OperationMessageHandler handler, final OperationTransactionControl control) {
 
-        final OperationContextImpl context = new OperationContextImpl(this, controllerType, EnumSet.noneOf(OperationContextImpl.ContextFlag.class),
+        final OperationContextImpl context = new OperationContextImpl(this, contextTypeFactory.getOperationContextType(),
+                EnumSet.noneOf(OperationContextImpl.ContextFlag.class),
                 handler, null, model, control, processState, bootingFlag.get());
 
         // Add to the context all ops prior to the first ExtensionAddHandler as well as all ExtensionAddHandlers; save the rest.
@@ -140,7 +141,8 @@ class ModelControllerImpl implements ModelController {
         if (context.completeStep() == OperationContext.ResultAction.KEEP && postExtensionOps != null) {
 
             // Success. Now any extension handlers are registered. Continue with remaining ops
-            final OperationContextImpl postExtContext = new OperationContextImpl(this, controllerType, EnumSet.noneOf(OperationContextImpl.ContextFlag.class),
+            final OperationContextImpl postExtContext = new OperationContextImpl(this, contextTypeFactory.getOperationContextType(),
+                    EnumSet.noneOf(OperationContextImpl.ContextFlag.class),
                     handler, null, model, control, processState, bootingFlag.get());
 
             for (ParsedBootOp parsedOp : postExtensionOps) {
@@ -187,7 +189,7 @@ class ModelControllerImpl implements ModelController {
         boolean sawExtensionAdd = false;
         List<ParsedBootOp> postExtensionOps = null;
         ParallelExtensionAddHandler parallelExtensionAddHandler = executorService == null ? null : new ParallelExtensionAddHandler(executorService);
-        ParallelBootOperationStepHandler parallelSubsystemHandler = (executorService != null && controllerType == OperationContext.Type.SERVER)
+        ParallelBootOperationStepHandler parallelSubsystemHandler = (executorService != null && contextTypeFactory.getOperationContextType() == OperationContext.Type.SERVER)
                 ? new ParallelBootOperationStepHandler(executorService, rootRegistration, processState) : null;
         boolean registeredParallelSubsystemHandler = false;
         int subsystemIndex = 0;

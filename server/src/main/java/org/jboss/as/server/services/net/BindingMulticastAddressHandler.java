@@ -21,6 +21,7 @@ package org.jboss.as.server.services.net;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.InetAddressValidator;
 import org.jboss.as.network.SocketBinding;
@@ -37,6 +38,11 @@ public class BindingMulticastAddressHandler extends AbstractBindingWriteHandler 
 
     private BindingMulticastAddressHandler() {
         super(new InetAddressValidator(true, true), new InetAddressValidator(true, false));
+    }
+
+    @Override
+    protected boolean requiresRuntime(final OperationContext context) {
+        return true;
     }
 
     @Override
