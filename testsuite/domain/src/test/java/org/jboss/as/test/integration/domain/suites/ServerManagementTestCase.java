@@ -181,6 +181,7 @@ public class ServerManagementTestCase {
         Assert.assertFalse(exists(client, newRunningServerAddress));
     }
 
+    @Ignore("AS7-2653")
     @Test
     public void testDomainLifecycleMethods() throws Throwable {
         Throwable t = null;
