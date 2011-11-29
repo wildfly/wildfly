@@ -22,29 +22,37 @@
 
 package org.jboss.as.test.integration.domain.suites;
 
-import org.jboss.as.controller.client.ModelControllerClient;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-
-import org.jboss.as.arquillian.container.domain.managed.DomainLifecycleUtil;
-import org.jboss.as.controller.client.helpers.domain.DomainClient;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START_SERVERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STOP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STOP_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
+import java.io.IOException;
+
+import org.jboss.as.arquillian.container.domain.managed.DomainLifecycleUtil;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.test.integration.domain.DomainTestSupport;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -53,8 +61,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import java.io.IOException;
 
 /**
  * @author Emanuel Muckenhuber
@@ -175,12 +181,110 @@ public class ServerManagementTestCase {
         Assert.assertFalse(exists(client, newRunningServerAddress));
     }
 
-    static ModelNode executeForResult(final ModelControllerClient client, final ModelNode operation) throws IOException {
+    @Test
+    public void testDomainLifecycleMethods() throws Throwable {
+        Throwable t = null;
+        final DomainClient client = domainMasterLifecycleUtil.getDomainClient();
+        try {
+            executeLifecycleOperation(client, START_SERVERS);
+            waitUntilState(client, "master", "main-one", "STARTED");
+            waitUntilState(client, "master", "main-two", "STARTED");
+            waitUntilState(client, "master", "other-one", "STARTED");
+            waitUntilState(client, "slave", "main-three", "STARTED");
+            waitUntilState(client, "slave", "main-four", "STARTED");
+            waitUntilState(client, "slave", "other-two", "STARTED");
+
+            executeLifecycleOperation(client, STOP_SERVERS);
+            //When stopped auto-start=true -> STOPPED, auto-start=false -> DISABLED
+            waitUntilState(client, "master", "main-one", "STOPPED");
+            waitUntilState(client, "master", "main-two", "DISABLED");
+            waitUntilState(client, "master", "other-one", "DISABLED");
+            waitUntilState(client, "slave", "main-three", "STOPPED");
+            waitUntilState(client, "slave", "main-four", "DISABLED");
+            waitUntilState(client, "slave", "other-two", "STOPPED");
+
+            executeLifecycleOperation(client, "other-server-group", START_SERVERS);
+            //Check the affected servers have been started
+            waitUntilState(client, "master", "other-one", "STARTED");
+            waitUntilState(client, "slave", "other-two", "STARTED");
+            //And that the remaining ones are still stopped
+            waitUntilState(client, "master", "main-one", "STOPPED");
+            waitUntilState(client, "master", "main-two", "DISABLED");
+            waitUntilState(client, "slave", "main-three", "STOPPED");
+            waitUntilState(client, "slave", "main-four", "DISABLED");
+
+            executeLifecycleOperation(client, "other-server-group", RESTART_SERVERS);
+            //Check the affected servers have been started
+            waitUntilState(client, "master", "other-one", "STARTED");
+            waitUntilState(client, "slave", "other-two", "STARTED");
+            //And that the remaining ones are still stopped
+            waitUntilState(client, "master", "main-one", "STOPPED");
+            waitUntilState(client, "master", "main-two", "DISABLED");
+            waitUntilState(client, "slave", "main-three", "STOPPED");
+            waitUntilState(client, "slave", "main-four", "DISABLED");
+
+            executeLifecycleOperation(client, "other-server-group", RESTART_SERVERS);
+            //Check the affected servers have been started
+            waitUntilState(client, "master", "other-one", "STARTED");
+            waitUntilState(client, "slave", "other-two", "STARTED");
+            //And that the remaining ones are still stopped
+            waitUntilState(client, "master", "main-one", "STOPPED");
+            waitUntilState(client, "master", "main-two", "DISABLED");
+            waitUntilState(client, "slave", "main-three", "STOPPED");
+            waitUntilState(client, "slave", "main-four", "DISABLED");
+
+            executeLifecycleOperation(client, "other-server-group", STOP_SERVERS);
+            //When stopped auto-start=true -> STOPPED, auto-start=false -> DISABLED
+            waitUntilState(client, "master", "main-one", "STOPPED");
+            waitUntilState(client, "master", "main-two", "DISABLED");
+            waitUntilState(client, "master", "other-one", "DISABLED");
+            waitUntilState(client, "slave", "main-three", "STOPPED");
+            waitUntilState(client, "slave", "main-four", "DISABLED");
+            waitUntilState(client, "slave", "other-two", "STOPPED");
+        } catch (Throwable thr) {
+            t = thr;
+        } finally {
+            //Set everything back to how it was:
+            try {
+                resetServerToExpectedState(client, "master", "main-one", "STARTED");
+                resetServerToExpectedState(client, "master", "main-two", "DISABLED");
+                resetServerToExpectedState(client, "master", "other-one", "DISABLED");
+                resetServerToExpectedState(client, "slave", "main-three", "STARTED");
+                resetServerToExpectedState(client, "slave", "main-four", "DISABLED");
+                resetServerToExpectedState(client, "slave", "other-two", "STARTED");
+            } catch (Exception e) {
+                if (t == null) {
+                    throw e;
+                }
+                e.printStackTrace();
+            }
+            if (t != null) {
+                throw t;
+            }
+        }
+    }
+
+    private void executeLifecycleOperation(final ModelControllerClient client, String opName) throws IOException {
+        executeLifecycleOperation(client, null, opName);
+    }
+
+    private void executeLifecycleOperation(final ModelControllerClient client, String groupName, String opName) throws IOException {
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(opName);
+        if (groupName == null) {
+            operation.get(OP_ADDR).setEmptyList();
+        } else {
+            operation.get(OP_ADDR).add(SERVER_GROUP, groupName);
+        }
+        final ModelNode result = validateResponse(client.execute(operation));
+    }
+
+    private ModelNode executeForResult(final ModelControllerClient client, final ModelNode operation) throws IOException {
         final ModelNode result = client.execute(operation);
         return validateResponse(result);
     }
 
-    static ModelNode validateResponse(ModelNode response) {
+    private ModelNode validateResponse(ModelNode response) {
 
         if(! SUCCESS.equals(response.get(OUTCOME).asString())) {
             System.out.println("Failed response:");
@@ -192,7 +296,7 @@ public class ServerManagementTestCase {
         return response.get(RESULT);
     }
 
-    static boolean exists(final ModelControllerClient client, final ModelNode address) throws IOException {
+    private boolean exists(final ModelControllerClient client, final ModelNode address) throws IOException {
         final ModelNode parentAddress = new ModelNode();
         final int size = address.asInt();
         for(int i = 0; i < size - 1; i++) {
@@ -213,24 +317,48 @@ public class ServerManagementTestCase {
         return false;
     }
 
-    static void waitUntilState(final ModelControllerClient client, final ModelNode serverAddress, final String state) throws IOException {
+    private void resetServerToExpectedState(final ModelControllerClient client, final String hostName, final String serverName, final String state) throws IOException {
+        final ModelNode serverConfigAddress = new ModelNode().add(HOST, hostName).add(SERVER_CONFIG, serverName);
+        if (!checkState(client, serverConfigAddress, state)) {
+            final ModelNode operation = new ModelNode();
+            operation.get(OP_ADDR).set(serverConfigAddress);
+            if (state.equals("STARTED")) {
+                //start server
+                operation.get(OP).set(START);
+            } else if (state.equals("STOPPED") || state.equals("DISABLED")) {
+                //stop server
+                operation.get(OP).set(STOP);
+            }
+        }
+    }
 
+    private void waitUntilState(final ModelControllerClient client, final String hostName, final String serverName, final String state) throws IOException {
+        ModelNode address = new ModelNode().add(HOST, hostName).add(SERVER_CONFIG, serverName);
+        waitUntilState(client, address, state);
+    }
+
+    private void waitUntilState(final ModelControllerClient client, final ModelNode serverAddress, final String state) throws IOException {
+        for(int i = 0; i < 20; i++) {
+            if (checkState(client, serverAddress, state)) {
+                return;
+            }
+            try {
+                Thread.sleep(500);
+            } catch(InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+        }
+        Assert.fail(serverAddress + " never reached the " + state + " statue");
+    }
+
+    private boolean checkState(final ModelControllerClient client, final ModelNode serverAddress, final String state) throws IOException {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
         operation.get(OP_ADDR).set(serverAddress);
         operation.get(NAME).set("status");
 
-        for(int i = 0; i < 10; i++) {
-            try {
-                Thread.sleep(500);
-            } catch(InterruptedException e) {
-                return;
-            }
-            final ModelNode status = client.execute(operation);
-            if(state.equals(status.asString())) {
-                return;
-            }
-        }
+        ModelNode status = client.execute(operation);
+        return state.equals(status.get(RESULT).asString());
     }
-
 }
