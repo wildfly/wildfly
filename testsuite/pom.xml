@@ -90,8 +90,9 @@
         <udpGroup>230.0.0.4</udpGroup>
 
         <!-- IP stack configs. -->
-        <ip.client.stack>-Djava.net.preferIPv4Stack=true</ip.client.stack>
-        <ip.server.stack>-Djava.net.preferIPv4Stack=true</ip.server.stack>
+        <jvm.args.ip>-Djava.net.preferIPv4Stack=true -Djava.net.preferIPv6Addresses=false</jvm.args.ip>
+        <jvm.args.ip.server>${jvm.args.ip}</jvm.args.ip.server>
+        <jvm.args.ip.client>${jvm.args.ip}</jvm.args.ip.client>
         
         <!-- Security. -->
         <jvm.args.securityManager></jvm.args.securityManager>
@@ -473,6 +474,15 @@
             </properties>
         </profile>
 
+
+        <!-- IPv6. -->
+        <profile>
+            <id>ts.ipv6</id>
+            <activation><property><name>ipv6</name></property></activation>
+            <properties>
+                <jvm.args.ip>-Djava.net.preferIPv4Stack=false -Djava.net.preferIPv6Addresses=true</jvm.args.ip>
+            </properties>
+        </profile>
 
 
         <!-- Security policy. -->
