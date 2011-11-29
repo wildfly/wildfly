@@ -339,25 +339,33 @@ public class DsParser extends AbstractParser {
                 case USE_JAVA_CONTEXT: {
                     final Location location = reader.getLocation();
                     String value = rawAttributeText(reader, USE_JAVA_CONTEXT.getXmlName());
-                    USE_JAVA_CONTEXT.parseAndSetParameter(value, operation, location);
+                    if (value != null) {
+                        USE_JAVA_CONTEXT.parseAndSetParameter(value, operation, location);
+                    }
                     break;
                 }
                 case SPY: {
                     final Location location = reader.getLocation();
                     String value = rawAttributeText(reader, SPY.getXmlName());
-                    SPY.parseAndSetParameter(value, operation, location);
+                    if (value != null) {
+                        SPY.parseAndSetParameter(value, operation, location);
+                    }
                     break;
                 }
                 case USE_CCM: {
                     final Location location = reader.getLocation();
                     String value = rawAttributeText(reader, USE_CCM.getXmlName());
-                    USE_CCM.parseAndSetParameter(value, operation, location);
+                    if (value != null) {
+                        USE_CCM.parseAndSetParameter(value, operation, location);
+                    }
                     break;
                 }
                 case JTA: {
                     final Location location = reader.getLocation();
                     String value = rawAttributeText(reader, JTA.getXmlName());
-                    JTA.parseAndSetParameter(value, operation, location);
+                    if (value != null) {
+                        JTA.parseAndSetParameter(value, operation, location);
+                    }
                     break;
                 }
                 default:
@@ -572,25 +580,33 @@ public class DsParser extends AbstractParser {
                 case USE_JAVA_CONTEXT: {
                     final Location location = reader.getLocation();
                     String value = rawAttributeText(reader, USE_JAVA_CONTEXT.getXmlName());
-                    USE_JAVA_CONTEXT.parseAndSetParameter(value, operation, location);
+                    if (value != null) {
+                        USE_JAVA_CONTEXT.parseAndSetParameter(value, operation, location);
+                    }
                     break;
                 }
                 case SPY: {
                     final Location location = reader.getLocation();
                     String value = rawAttributeText(reader, SPY.getXmlName());
-                    SPY.parseAndSetParameter(value, operation, location);
+                    if (value != null) {
+                        SPY.parseAndSetParameter(value, operation, location);
+                    }
                     break;
                 }
                 case USE_CCM: {
                     final Location location = reader.getLocation();
                     String value = rawAttributeText(reader, USE_CCM.getXmlName());
-                    USE_CCM.parseAndSetParameter(value, operation, location);
+                    if (value != null) {
+                        USE_CCM.parseAndSetParameter(value, operation, location);
+                    }
                     break;
                 }
                 case JTA: {
                     final Location location = reader.getLocation();
                     String value = rawAttributeText(reader, JTA.getXmlName());
-                    JTA.parseAndSetParameter(value, operation, location);
+                    if (value != null) {
+                        JTA.parseAndSetParameter(value, operation, location);
+                    }
                     break;
                 }
                 default:
@@ -841,7 +857,9 @@ public class DsParser extends AbstractParser {
                         }
                         case INTERLEAVING: {
                             final Location location = reader.getLocation();
+                            //tag presence is sufficient to set it to true
                             String value = rawElementText(reader);
+                            value = value == null ? "true" : value;
                             INTERLEAVING.parseAndSetParameter(value, operation, location);
                             break;
                         }
@@ -853,7 +871,9 @@ public class DsParser extends AbstractParser {
                         }
                         case NO_TX_SEPARATE_POOLS: {
                             final Location location = reader.getLocation();
+                            //tag presence is sufficient to set it to true
                             String value = rawElementText(reader);
+                            value = value == null ? "true" : value;
                             NOTXSEPARATEPOOL.parseAndSetParameter(value, operation, location);
                             break;
                         }
@@ -1100,7 +1120,9 @@ public class DsParser extends AbstractParser {
                         }
                         case SET_TX_QUERY_TIMEOUT: {
                             final Location location = reader.getLocation();
+                            //tag presence is sufficient to set it to true
                             String value = rawElementText(reader);
+                            value = value == null ? "true" : value;
                             SETTXQUERYTIMEOUT.parseAndSetParameter(value, operation, location);
                             break;
                         }
@@ -1158,7 +1180,9 @@ public class DsParser extends AbstractParser {
                         }
                         case SHARE_PREPARED_STATEMENTS: {
                             final Location location = reader.getLocation();
+                            //tag presence is sufficient to set it to true
                             String value = rawElementText(reader);
+                            value = value == null ? "true" : value;
                             SHAREPREPAREDSTATEMENTS.parseAndSetParameter(value, operation, location);
                             break;
                         }

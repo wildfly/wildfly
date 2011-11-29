@@ -22,17 +22,29 @@
 
 package org.jboss.as.test.smoke.embedded.mgmt.datasource;
 
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.getChildren;
+import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.testConnection;
+import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.testConnectionXA;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Hashtable;
-import java.util.Iterator;
 
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
@@ -62,21 +74,8 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriterFactory;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.After;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.getChildren;
-import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.testConnection;
-import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.testConnectionXA;
 
 
 /**
@@ -160,10 +159,14 @@ public class DataSourceOperationsUnitTestCase {
 
         Assert.assertNotNull(newList);
 
-        final Map<String, ModelNode> parseChildren = getChildren(newList.get(1));
-        Assert.assertFalse(parseChildren.isEmpty());
-        Assert.assertEquals("java:jboss/datasources/MyNewDs", parseChildren.get("jndi-name").asString());
-
+        boolean containsRightJndiname = false;
+        for(ModelNode result : newList){
+            final Map<String, ModelNode> parseChildren = getChildren(result);
+            if (! parseChildren.isEmpty() && parseChildren.get("jndi-name")!= null && parseChildren.get("jndi-name").asString().equals("java:jboss/datasources/MyNewDs")) {
+                containsRightJndiname = true;
+            }
+        }
+        Assert.assertTrue(containsRightJndiname);
         remove(address);
     }
 
@@ -208,10 +211,14 @@ public class DataSourceOperationsUnitTestCase {
 
         Assert.assertNotNull(newList);
 
-        final Map<String, ModelNode> parseChildren = getChildren(newList.get(1));
-        Assert.assertFalse(parseChildren.isEmpty());
-        Assert.assertEquals("java:jboss/datasources/MyNewDs", parseChildren.get("jndi-name").asString());
-
+       boolean containsRightJndiname = false;
+        for(ModelNode result : newList){
+            final Map<String, ModelNode> parseChildren = getChildren(result);
+            if (! parseChildren.isEmpty() && parseChildren.get("jndi-name")!= null && parseChildren.get("jndi-name").asString().equals("java:jboss/datasources/MyNewDs")) {
+                containsRightJndiname = true;
+            }
+        }
+        Assert.assertTrue(containsRightJndiname);
         remove(address);
     }
 
@@ -265,10 +272,14 @@ public class DataSourceOperationsUnitTestCase {
 
         Assert.assertNotNull(newList);
 
-        final Map<String, ModelNode> parseChildren = getChildren(newList.get(1));
-        Assert.assertFalse(parseChildren.isEmpty());
-        Assert.assertEquals("java:jboss/datasources/MyNewDs", parseChildren.get("jndi-name").asString());
-
+       boolean containsRightJndiname = false;
+        for(ModelNode result : newList){
+            final Map<String, ModelNode> parseChildren = getChildren(result);
+            if (! parseChildren.isEmpty() && parseChildren.get("jndi-name")!= null && parseChildren.get("jndi-name").asString().equals("java:jboss/datasources/MyNewDs")) {
+                containsRightJndiname = true;
+            }
+        }
+        Assert.assertTrue(containsRightJndiname);
         remove(address);
     }
 
@@ -456,7 +467,6 @@ public class DataSourceOperationsUnitTestCase {
      * @throws Exception
      */
     @Test
-    @Ignore("AS7-2786")
     public void DisableAndReEnableXaDs() throws Exception {
         final String dsName = "XaDsNameDisEn";
         final String jndiDsName = "XaJndiDsNameDisEn";
@@ -500,11 +510,7 @@ public class DataSourceOperationsUnitTestCase {
 
         execute(xaDatasourcePropertyOperation);
 
-        final ModelNode operation2 = new ModelNode();
-        operation2.get(OP).set("enable");
-        operation2.get(OP_ADDR).set(address);
-
-        execute(operation2);
+        execute(enableOperation);
 
         testConnectionXA(dsName, getModelControllerClient());
 
@@ -611,7 +617,6 @@ public class DataSourceOperationsUnitTestCase {
      * @throws Exception
      */
     @Test
-    @Ignore("AS7-2775")
     public void testAddComplexDs() throws Exception {
 
         final String complexDs = "complexDs";
@@ -620,18 +625,18 @@ public class DataSourceOperationsUnitTestCase {
         address.add("subsystem", "datasources");
         address.add("data-source", complexDs);
         address.protect();
-        
+
         Hashtable<String,String> params=hashtableWithNonXaParameters(complexDs,complexDsJndi);
 
         final ModelNode operation = new ModelNode();
         operation.get(OP).set("add");
         operation.get(OP_ADDR).set(address);
-        
+
         setOperationParams(operation, params);
         addExtensionProperties(operation);
-        
+
         execute(operation);
-        
+
         final ModelNode datasourcePropertiesAddress = address.clone();
         datasourcePropertiesAddress.add("connection-properties", "char.encoding");
         datasourcePropertiesAddress.protect();
@@ -650,13 +655,20 @@ public class DataSourceOperationsUnitTestCase {
 
         Assert.assertNotNull(newList);
 
-        final Map<String, ModelNode> parseChildren = getChildren(newList.get(1));
-        Assert.assertFalse(parseChildren.isEmpty());
-        
-        controlParseChildrenParams(parseChildren, params);
-         
+
+        Map<String, ModelNode> rightChildren = Collections.emptyMap();
+        for(ModelNode result : newList){
+            final Map<String, ModelNode> parseChildren = getChildren(result);
+            if (! parseChildren.isEmpty() && parseChildren.get("jndi-name")!= null && parseChildren.get("jndi-name").asString().equals("java:jboss/datasources/complexDs")) {
+                rightChildren = parseChildren;
+            }
+        }
+        Assert.assertFalse(rightChildren.isEmpty());
+
+        controlParseChildrenParams(rightChildren, params);
+
         remove(address);
-        
+
     }
     /**
      * AS7-2720 tests for parsing particular XA-datasource in standalone mode
@@ -664,7 +676,6 @@ public class DataSourceOperationsUnitTestCase {
      * @throws Exception
      */
     @Test
-    @Ignore("AS7-2775")
     public void testAddComplexXaDs() throws Exception {
 
         final String complexXaDs = "complexXaDs";
@@ -679,10 +690,10 @@ public class DataSourceOperationsUnitTestCase {
         operation.get(OP).set("add");
         operation.get(OP_ADDR).set(address);
 
-        Hashtable<String,String> params = hashtableWithXaParameters(complexXaDs, complexXaDsJndi) ;       
+        Hashtable<String,String> params = hashtableWithXaParameters(complexXaDs, complexXaDsJndi) ;
         setOperationParams(operation, params);
         addExtensionProperties(operation);
-        
+
         /* TODO: Properties for Extension type parameters not implemented in DRM
          * operation.get("recovery-plugin-properties","Property").set("A");
          */
@@ -697,7 +708,7 @@ public class DataSourceOperationsUnitTestCase {
         xaDatasourcePropertyOperation.get("value").set("jdbc:h2:mem:test");
 
         execute(xaDatasourcePropertyOperation);
-        
+
         final ModelNode operationts = new ModelNode();
         operationts.get(OP).set("take-snapshot");
         execute(operationts);
@@ -708,20 +719,19 @@ public class DataSourceOperationsUnitTestCase {
 
         final Map<String, ModelNode> parseChildren = getChildren(newList.get(1));
         Assert.assertFalse(parseChildren.isEmpty());
-        
+
         controlParseChildrenParams(parseChildren, params);
-        
+
         remove(address);
-        
+
     }
     /**
-     * Returns Hashtable with common parameters for both XA and Non-XA datasource 
-     * 
+     * Returns Hashtable with common parameters for both XA and Non-XA datasource
+     *
      */
     private  Hashtable<String,String> hashtableWithCommonParameters(){
     	Hashtable<String,String> params=new Hashtable<String,String>();
     	//attributes
-    	params.put("enabled","true");
     	params.put("use-java-context","true");
         params.put("spy","false");
         params.put("use-ccm","true");
@@ -763,7 +773,7 @@ public class DataSourceOperationsUnitTestCase {
         params.put("track-statements","NOWARN");
         params.put("prepared-statements-cache-size","30");
         params.put("share-prepared-statements","true");
-    	
+
     	return params;
     }
     /**
@@ -772,10 +782,8 @@ public class DataSourceOperationsUnitTestCase {
      */
     private Hashtable<String,String> hashtableWithXaParameters(String datasourceName,String jndiName){
     	Hashtable<String,String> params=hashtableWithCommonParameters();
-    	//attributes 
-    	params.put("name",datasourceName);
-        params.put("jndi-name", jndiName);
-        params.put("pool-name",datasourceName + "_Pool");
+    	//attributes
+    	params.put("jndi-name", jndiName);
         //common
         params.put("xa-datasource-class","org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource");
         //xa-pool
@@ -792,8 +800,8 @@ public class DataSourceOperationsUnitTestCase {
         params.put("recovery-username","sa");
         params.put("recovery-password","sa");
         params.put("recovery-security-domain","HsqlDbRealm");
-        
-    	
+
+
     	return params;
     }
     /**
@@ -803,15 +811,13 @@ public class DataSourceOperationsUnitTestCase {
     private Hashtable<String,String> hashtableWithNonXaParameters(String datasourceName,String jndiName){
     	Hashtable<String,String> params=hashtableWithCommonParameters();
     	//attributes
-        params.put("name",datasourceName);
         params.put("jndi-name",jndiName);
         params.put("jta","false");
-        params.put("pool-name",datasourceName + "_Pool");
         //common
         params.put("driver-class","org.hsqldb.jdbcDriver");
         params.put("datasource-class","org.jboss.as.connector.subsystems.datasources.ModifiableDataSource");
         params.put("connection-url","jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
-        
+
         return params;
     }
     /**
@@ -832,13 +838,13 @@ public class DataSourceOperationsUnitTestCase {
      * TODO: not implemented jet in DRM
      */
     private void addExtensionProperties(ModelNode operation){
-    	/* 
-        
+    	/*
+
         operation.get("reauth-plugin-properties","Property").set("A");
         operation.get("valid-connection-checker-properties","Property").set("B");
         operation.get("stale-connect,roperties","Property").set("C");
         operation.get("exception-sorter-properties","Property").set("D");
-       */  
+       */
         /*final ModelNode sourcePropertiesAddress = address.clone();
         sourcePropertiesAddress.add("reauth-plugin-properties", "Property");
         sourcePropertiesAddress.protect();
@@ -851,14 +857,14 @@ public class DataSourceOperationsUnitTestCase {
 
     }
     /**
-     * Controls if result of reparsing contains certain parameters 
+     * Controls if result of reparsing contains certain parameters
      * @param parseChildren
      * @param params
      */
     private void controlParseChildrenParams(Map<String,ModelNode> parseChildren,Hashtable<String,String> params){
     	String str;
         Iterator it=params.keySet().iterator();
-        
+
         StringBuffer sb = new StringBuffer();
         String par,child;
         while(it.hasNext()){
@@ -872,7 +878,7 @@ public class DataSourceOperationsUnitTestCase {
         }
         if (sb.length()>0) Assert.fail("There are parsing errors:\n"+sb.toString()+"Parsed configuration:\n"+parseChildren);
     }
-    
+
     private static <T> T lookup(ModelControllerClient client, String name, Class<T> expected) throws Exception {
         //TODO Don't do this FakeJndi stuff once we have remote JNDI working
 
@@ -882,7 +888,7 @@ public class DataSourceOperationsUnitTestCase {
         Object o = mbeanServer.invoke(objectName, "lookup", new Object[] {name}, new String[] {"java.lang.String"});
         return expected.cast(o);
     }
-    
+
     public List<ModelNode> marshalAndReparseDsResources(final String childType) throws Exception {
 
         final ModelNode address = new ModelNode();
