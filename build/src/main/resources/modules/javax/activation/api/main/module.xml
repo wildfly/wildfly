@@ -30,6 +30,7 @@
         </module>
         <module name="com.sun.xml.messaging.saaj"/>
         <module name="org.jboss.ws.native.jbossws-native-core"/>
+        <module name="org.apache.cxf" optional="true"/>
     </dependencies>
 
     <resources>
