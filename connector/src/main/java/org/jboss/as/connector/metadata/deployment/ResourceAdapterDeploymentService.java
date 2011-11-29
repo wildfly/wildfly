@@ -129,6 +129,10 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
             ConnectorServices.unregisterDeployment(raName, deploymentServiceName);
         }
 
+        if (raName != null) {
+            ConnectorServices.unregisterResourceAdapterIdentifier(raName);
+        }
+
         managementRepository.getValue().getConnectors().remove(value.getDeployment().getConnector());
         super.stop(context);
     }
