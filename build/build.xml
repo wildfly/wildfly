@@ -558,6 +558,10 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-host-controller"/>
         </module-def>
 
+        <module-def name="org.jboss.as.jsr77">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-jsr77"/>
+        </module-def>
+
         <module-def name="org.jboss.as.jacorb">
             <maven-resource group="org.jboss.as" artifact="jboss-as-jacorb"/>
         </module-def>

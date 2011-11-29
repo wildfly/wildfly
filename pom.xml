@@ -284,6 +284,7 @@
         <module>jdr</module>
         <module>jmx</module>
         <module>jpa</module>
+        <module>jsr77</module>
         <module>logging</module>
         <module>mail</module>
         <module>messaging</module>
@@ -904,6 +905,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-jmx</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-jsr77</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
