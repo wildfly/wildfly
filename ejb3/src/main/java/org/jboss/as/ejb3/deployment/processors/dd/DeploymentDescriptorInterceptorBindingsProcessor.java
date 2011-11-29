@@ -201,15 +201,11 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
                             methodInterceptors.put(resolvedMethod, list = new ArrayList<InterceptorBindingMetaData>());
                         }
                         list.add(binding);
-                        if (binding.isExcludeDefaultInterceptors() && !methodLevelExcludeDefaultInterceptors.containsKey(resolvedMethod)) {
+                        if (binding.isExcludeDefaultInterceptors()) {
                             methodLevelExcludeDefaultInterceptors.put(resolvedMethod, true);
-                        } else if (!binding.isExcludeDefaultInterceptors()) {
-                            methodLevelExcludeDefaultInterceptors.put(resolvedMethod, false);
                         }
-                        if (binding.isExcludeClassInterceptors() && !methodLevelExcludeClassInterceptors.containsKey(resolvedMethod)) {
+                        if (binding.isExcludeClassInterceptors()) {
                             methodLevelExcludeClassInterceptors.put(resolvedMethod, true);
-                        } else if (!binding.isExcludeClassInterceptors()) {
-                            methodLevelExcludeClassInterceptors.put(resolvedMethod, false);
                         }
 
                         if (binding.isTotalOrdering()) {
