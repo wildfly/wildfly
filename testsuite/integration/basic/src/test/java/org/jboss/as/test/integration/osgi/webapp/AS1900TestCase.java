@@ -34,7 +34,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.HttpTestSupport;
+import org.jboss.as.test.integration.HttpTestSupport;
 import org.jboss.as.test.integration.osgi.webapp.bundle.EndpointFilter;
 import org.jboss.as.test.integration.osgi.webapp.bundle.EndpointServlet;
 import org.jboss.osgi.testing.ManifestBuilder;

@@ -46,7 +46,7 @@
         <echo message="ds.jdbc.user = ${ds.jdbc.user}"/>
         <echo message="ds.jdbc.pass = ${ds.jdbc.pass}"/>
 
-        <property name="server.dir" value="${project.build.directory}/jbossas"/> <!-- Ant will copy actual instances from this "template" (when imlpemented). -->
+        <property name="server.dir" value="${project.build.directory}/jbossas-${server-config}"/> <!-- Ant will copy actual instances from this "template" (when imlpemented). -->
         <property name="config.dir" value="${server.dir}/standalone/configuration"/>
 
         <!-- Copy jar into standalone/deployments. This installs the driver under a new driver name. -->
@@ -83,15 +83,13 @@
 
         <echo message="Add JAXR configuration for ${server-config}"/>
 
-        <property name="server.dir" value="${project.build.directory}/${server-config}"/>
+        <property name="server.dir" value="${project.build.directory}/jbossas-${server-config}"/>
         <property name="config.dir" value="${server.dir}/standalone/configuration"/>
 
-        <!-- change standalone/configuration/standalone.xml file:
-              i.e. update datasource subsystem config
-         -->
+        <!-- change standalone/configuration/standalone.xml -->
         <xslt destdir="${config.dir}"
               extension=".xml.mod"
-              style="${main.basedir}/../../integration/src/test/xslt/addJAXRConfiguration.xsl"
+              style="${jbossas.ts.integ.dir}/src/test/xslt/addJAXRConfiguration.xsl"
               useImplicitFileset="false">
             <fileset dir="${config.dir}">
                 <include name="standalone.xml"/>
@@ -137,7 +135,7 @@
             </copy>
 
             <!-- deploy the UDDI registry and HTTP endpoint services -->
-            <copy todir="@{output.dir}/@{name}/standalone/deployments">
+            <copy todir="@{output.dir}/jbossas-@{name}/standalone/deployments">
                 <fileset dir="@{jboss.dist}/modules/org/jboss/as/jaxr/service/main">
                     <include name="jboss-as-jaxr-service-*.jar"/>
                 </fileset>
