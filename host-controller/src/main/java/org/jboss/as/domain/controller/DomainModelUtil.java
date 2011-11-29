@@ -81,7 +81,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
 import org.jboss.as.domain.controller.operations.ApplyRemoteMasterDomainModelHandler;
-import org.jboss.as.domain.controller.operations.HackDomainServerLifecycleHandlers;
+import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
 import org.jboss.as.domain.controller.operations.ProcessTypeHandler;
 import org.jboss.as.domain.controller.operations.ProfileAddHandler;
 import org.jboss.as.domain.controller.operations.ProfileDescribeHandler;
@@ -181,7 +181,7 @@ public class DomainModelUtil {
         root.registerOperationHandler(ResolveExpressionOnDomainHandler.OPERATION_NAME, ResolveExpressionOnDomainHandler.INSTANCE,
                 ResolveExpressionOnDomainHandler.INSTANCE, EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.DOMAIN_PUSH_TO_SERVERS));
 
-        HackDomainServerLifecycleHandlers.registerDomainHandlers(root);
+        DomainServerLifecycleHandlers.registerDomainHandlers(root);
 
         // System Properties
         ManagementResourceRegistration systemProperties = root.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), DomainDescriptionProviders.SYSTEM_PROPERTY_PROVIDER);
@@ -218,7 +218,7 @@ public class DomainModelUtil {
         serverGroups.registerOperationHandler(REMOVE, ServerGroupRemoveHandler.INSTANCE, ServerGroupRemoveHandler.INSTANCE, false);
         serverGroups.registerReadWriteAttribute(SOCKET_BINDING_GROUP, null, WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE, Storage.CONFIGURATION);
         serverGroups.registerReadWriteAttribute(SOCKET_BINDING_PORT_OFFSET, null, new IntRangeValidatingHandler(0), Storage.CONFIGURATION);
-        HackDomainServerLifecycleHandlers.registerServerGroupHandlers(serverGroups);
+        DomainServerLifecycleHandlers.registerServerGroupHandlers(serverGroups);
 
 
         final ManagementResourceRegistration groupVMs = serverGroups.registerSubModel(PathElement.pathElement(JVM), CommonProviders.JVM_PROVIDER);

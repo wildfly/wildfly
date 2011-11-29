@@ -87,11 +87,11 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
+import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
 import org.jboss.as.domain.management.operations.ConnectionAddHandler;
 import org.jboss.as.domain.management.operations.SecurityRealmAddHandler;
 import org.jboss.as.host.controller.RemoteDomainConnectionService.RemoteFileRepository;
 import org.jboss.as.host.controller.descriptions.HostDescriptionProviders;
-import org.jboss.as.host.controller.operations.DomainServerLifecycleHandlerDelegates;
 import org.jboss.as.host.controller.operations.HostShutdownHandler;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceAddHandler;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceRemoveHandler;
@@ -193,7 +193,7 @@ public class HostModelUtil {
         hostRegistration.registerOperationHandler(ResolveExpressionOnHostHandler.OPERATION_NAME, ResolveExpressionOnHostHandler.INSTANCE,
                 ResolveExpressionOnHostHandler.INSTANCE, EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.DOMAIN_PUSH_TO_SERVERS));
 
-        DomainServerLifecycleHandlerDelegates.initializeDelegates(serverInventory);
+        DomainServerLifecycleHandlers.initializeServerInventory(serverInventory);
 
         // System Properties
         ManagementResourceRegistration sysProps = hostRegistration.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), HostDescriptionProviders.SYSTEM_PROPERTIES_PROVIDER);

@@ -57,7 +57,7 @@ import java.util.ResourceBundle;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.domain.controller.operations.HackDomainServerLifecycleHandlers;
+import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
 import org.jboss.as.server.deployment.DeploymentRemoveHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -172,7 +172,7 @@ public class DomainRootDescription {
     public static ModelNode getRestartServersOperation(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(HackDomainServerLifecycleHandlers.RESTART_SERVERS_NAME);
+        root.get(OPERATION_NAME).set(DomainServerLifecycleHandlers.RESTART_SERVERS_NAME);
         root.get(DESCRIPTION).set(bundle.getString("domain.servers.restart"));
         root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
@@ -181,7 +181,7 @@ public class DomainRootDescription {
     public static ModelNode getStopServersOperation(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(HackDomainServerLifecycleHandlers.STOP_SERVERS_NAME);
+        root.get(OPERATION_NAME).set(DomainServerLifecycleHandlers.STOP_SERVERS_NAME);
         root.get(DESCRIPTION).set(bundle.getString("domain.servers.stop"));
         root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
@@ -190,7 +190,7 @@ public class DomainRootDescription {
     public static ModelNode getStartServersOperation(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(HackDomainServerLifecycleHandlers.START_SERVERS_NAME);
+        root.get(OPERATION_NAME).set(DomainServerLifecycleHandlers.START_SERVERS_NAME);
         root.get(DESCRIPTION).set(bundle.getString("domain.servers.start"));
         root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;

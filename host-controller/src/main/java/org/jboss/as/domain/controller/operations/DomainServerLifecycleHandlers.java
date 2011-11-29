@@ -19,15 +19,19 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.host.controller.operations;
+package org.jboss.as.domain.controller.operations;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START_SERVERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STOP_SERVERS;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,30 +41,63 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.controller.operations.HackDomainServerLifecycleHandlers;
+import org.jboss.as.domain.controller.descriptions.DomainRootDescription;
+import org.jboss.as.domain.controller.descriptions.ServerGroupDescription;
 import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
 /**
- * Does the real work on the ServerInventory for {@link HackDomainServerLifecycleHandlers} to stop/start/restart the
- * servers.
+ * An operation handler for the :stop-servers, :restart-servers and :start-servers commands. This belongs in the
+ * domain model but needs access to the server inventory which is initialized when setting up the host model.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class DomainServerLifecycleHandlerDelegates {
+public class DomainServerLifecycleHandlers {
+
+    public static final String RESTART_SERVERS_NAME = RESTART_SERVERS;
+    public static final String START_SERVERS_NAME = START_SERVERS;
+    public static final String STOP_SERVERS_NAME = STOP_SERVERS;
 
     private static final int TIMEOUT = 10000;
 
-    public static void initializeDelegates(final ServerInventory serverInventory) {
-        HackDomainServerLifecycleHandlers.initialize(new StopServersDelegate(serverInventory), new StartServersDelegate(serverInventory), new RestartServersDelegate(serverInventory));
+    public static void initializeServerInventory(ServerInventory serverInventory) {
+        StopServersLifecycleHandler.DOMAIN_INSTANCE.setServerInventory(serverInventory);
+        StartServersLifecycleHandler.DOMAIN_INSTANCE.setServerInventory(serverInventory);
+        RestartServersLifecycleHandler.DOMAIN_INSTANCE.setServerInventory(serverInventory);
+        StopServersLifecycleHandler.SERVER_GROUP_INSTANCE.setServerInventory(serverInventory);
+        StartServersLifecycleHandler.SERVER_GROUP_INSTANCE.setServerInventory(serverInventory);
+        RestartServersLifecycleHandler.SERVER_GROUP_INSTANCE.setServerInventory(serverInventory);
     }
 
-    private abstract static class LifecycleHandlerDelegate implements OperationStepHandler {
-        final ServerInventory serverInventory;
-        LifecycleHandlerDelegate(ServerInventory serverInventory) {
+    public static void registerDomainHandlers(ManagementResourceRegistration registration) {
+        registration.registerOperationHandler(StopServersLifecycleHandler.OPERATION_NAME, StopServersLifecycleHandler.DOMAIN_INSTANCE, StopServersLifecycleHandler.DOMAIN_INSTANCE);
+        registration.registerOperationHandler(StartServersLifecycleHandler.OPERATION_NAME, StartServersLifecycleHandler.DOMAIN_INSTANCE, StartServersLifecycleHandler.DOMAIN_INSTANCE);
+        registration.registerOperationHandler(RestartServersLifecycleHandler.OPERATION_NAME, RestartServersLifecycleHandler.DOMAIN_INSTANCE, RestartServersLifecycleHandler.DOMAIN_INSTANCE);
+    }
+
+    public static void registerServerGroupHandlers(ManagementResourceRegistration registration) {
+        registration.registerOperationHandler(StopServersLifecycleHandler.OPERATION_NAME, StopServersLifecycleHandler.SERVER_GROUP_INSTANCE, StopServersLifecycleHandler.SERVER_GROUP_INSTANCE);
+        registration.registerOperationHandler(StartServersLifecycleHandler.OPERATION_NAME, StartServersLifecycleHandler.SERVER_GROUP_INSTANCE, StartServersLifecycleHandler.SERVER_GROUP_INSTANCE);
+        registration.registerOperationHandler(RestartServersLifecycleHandler.OPERATION_NAME, RestartServersLifecycleHandler.SERVER_GROUP_INSTANCE, RestartServersLifecycleHandler.SERVER_GROUP_INSTANCE);
+    }
+
+    private abstract static class AbstractHackLifecyleHandler implements OperationStepHandler, DescriptionProvider {
+        volatile ServerInventory serverInventory;
+        final boolean domain;
+
+        protected AbstractHackLifecyleHandler(final boolean domain) {
+            this.domain = domain;
+        }
+
+        /**
+         * To be called when setting up the host model
+         */
+        void setServerInventory(ServerInventory serverInventory) {
             this.serverInventory = serverInventory;
         }
 
@@ -86,12 +123,16 @@ public class DomainServerLifecycleHandlerDelegates {
             }
             return servers;
         }
+
     }
 
+    private static class StopServersLifecycleHandler extends AbstractHackLifecyleHandler {
+        static final String OPERATION_NAME = STOP_SERVERS_NAME;
+        static final StopServersLifecycleHandler DOMAIN_INSTANCE = new StopServersLifecycleHandler(true);
+        static final StopServersLifecycleHandler SERVER_GROUP_INSTANCE = new StopServersLifecycleHandler(false);
 
-    private static class StopServersDelegate extends LifecycleHandlerDelegate {
-        StopServersDelegate(ServerInventory serverInventory) {
-            super(serverInventory);
+        public StopServersLifecycleHandler(final boolean domain) {
+            super(domain);
         }
 
         @Override
@@ -113,11 +154,24 @@ public class DomainServerLifecycleHandlerDelegates {
             }, Stage.RUNTIME);
             context.completeStep();
         }
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            if (domain) {
+                return DomainRootDescription.getStopServersOperation(locale);
+            } else {
+                return ServerGroupDescription.getStopServersOperation(locale);
+            }
+        }
     }
 
-    private static class StartServersDelegate extends LifecycleHandlerDelegate {
-        StartServersDelegate(final ServerInventory serverInventory) {
-            super(serverInventory);
+    private static class StartServersLifecycleHandler extends AbstractHackLifecyleHandler {
+        static final String OPERATION_NAME = START_SERVERS_NAME;
+        static final StartServersLifecycleHandler DOMAIN_INSTANCE = new StartServersLifecycleHandler(true);
+        static final StartServersLifecycleHandler SERVER_GROUP_INSTANCE = new StartServersLifecycleHandler(false);
+
+        public StartServersLifecycleHandler(final boolean domain) {
+            super(domain);
         }
 
         @Override
@@ -147,12 +201,26 @@ public class DomainServerLifecycleHandlerDelegates {
 
             context.completeStep();
         }
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            if (domain) {
+                return DomainRootDescription.getStartServersOperation(locale);
+            } else {
+                return ServerGroupDescription.getStartServersOperation(locale);
+            }
+        }
     }
 
-    private static class RestartServersDelegate extends LifecycleHandlerDelegate {
-        RestartServersDelegate(final ServerInventory serverInventory) {
-            super(serverInventory);
+    private static class RestartServersLifecycleHandler extends AbstractHackLifecyleHandler {
+        static final String OPERATION_NAME = RESTART_SERVERS_NAME;
+        static final RestartServersLifecycleHandler DOMAIN_INSTANCE = new RestartServersLifecycleHandler(true);
+        static final RestartServersLifecycleHandler SERVER_GROUP_INSTANCE = new RestartServersLifecycleHandler(false);
+
+        public RestartServersLifecycleHandler(final boolean domain) {
+            super(domain);
         }
+
 
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
@@ -180,6 +248,15 @@ public class DomainServerLifecycleHandlerDelegates {
                 }
             }, Stage.RUNTIME);
             context.completeStep();
+        }
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            if (domain) {
+                return DomainRootDescription.getRestartServersOperation(locale);
+            } else {
+                return ServerGroupDescription.getRestartServersOperation(locale);
+            }
         }
     }
 }
