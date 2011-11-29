@@ -35,10 +35,6 @@
            <propertyset refid="ds.properties"/>
         </antcall>
 
-        <antcall target="addJAXRConfiguration">
-            <param name="server-config" value="smoke"/>
-        </antcall>
-
         <change-ip-addresses name="smoke" node="${node0}"/>
     </target>
 

@@ -35,7 +35,7 @@ import javax.servlet.http.HttpServlet;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.osgi.StartLevelAware;
-import org.jboss.as.test.HttpTestSupport;
+import org.jboss.as.test.integration.HttpTestSupport;
 import org.jboss.as.test.integration.osgi.OSGiTestSupport;
 import org.jboss.as.test.integration.osgi.webapp.bundle.EndpointServlet;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
