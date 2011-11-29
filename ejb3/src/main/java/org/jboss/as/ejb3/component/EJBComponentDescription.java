@@ -402,7 +402,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         view.getConfigurators().add(new ViewConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration viewConfiguration) throws DeploymentUnitProcessingException {
-                viewConfiguration.addViewInterceptor(new ImmediateInterceptorFactory(LoggingInterceptor.INSTANCE), InterceptorOrder.View.EJB_EXCEPTION_LOGGING_INTERCEPTOR);
+                viewConfiguration.addViewInterceptor(LoggingInterceptor.FACTORY, InterceptorOrder.View.EJB_EXCEPTION_LOGGING_INTERCEPTOR);
 
                 //If this is the EJB 2.x local or home view add the exception transformer interceptor
                 if (view.getMethodIntf() == MethodIntf.LOCAL && EJBLocalObject.class.isAssignableFrom(viewConfiguration.getViewClass())) {

@@ -28,8 +28,10 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.tx.ApplicationExceptionDetails;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactory;
 
 /**
  * Logs any exceptions/errors that happen during invocation of EJB methods, as specified by the
@@ -42,7 +44,7 @@ import org.jboss.invocation.InterceptorContext;
  */
 public class LoggingInterceptor implements Interceptor {
 
-    public static final LoggingInterceptor INSTANCE = new LoggingInterceptor();
+    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new LoggingInterceptor());
 
     private LoggingInterceptor() {
 

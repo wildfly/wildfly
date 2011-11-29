@@ -57,6 +57,7 @@ public class EntityTimedObjectInvokerImpl implements MultiTimeoutMethodTimedObje
         final EntityBeanComponentInstance instance;
         try {
             instance = ejbComponent.getCache().get(timer.getPrimaryKey());
+            ejbComponent.getCache().reference(instance);
         } catch (Exception e) {
             //if we fail to get the EJB we assume that it is becuse the EJB no longer exists
             throw new BeanRemovedException(e);
