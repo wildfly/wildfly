@@ -185,9 +185,13 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
         }
         if (poolName == null || poolName.trim().equals("")) {
             if (jndiName != null && jndiName.trim().length() != 0) {
-                poolName = jndiName;
+                if (jndiName.contains("/")) {
+                    poolName = jndiName.substring(jndiName.lastIndexOf("/") + 1);
+                } else {
+                    poolName = jndiName.substring(jndiName.lastIndexOf(":") + 1);
+                }
             } else {
-               throw new ParserException(bundle.missingValue(POOL_NAME_NAME));
+               throw new ParserException(bundle.missingValue(JNDINAME.getXmlName()));
             }
         }
 
@@ -412,9 +416,13 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
         }
         if (poolName == null || poolName.trim().equals("")) {
             if (jndiName != null && jndiName.trim().length() != 0) {
-                poolName = jndiName;
+                if (jndiName.contains("/")) {
+                    poolName = jndiName.substring(jndiName.lastIndexOf("/") + 1 );
+                } else {
+                    poolName = jndiName.substring(jndiName.lastIndexOf(":") + 1);
+                }
             } else {
-               throw new ParserException(bundle.missingValue(POOL_NAME_NAME));
+               throw new ParserException(bundle.missingValue(JNDINAME.getXmlName()));
             }
         }
         while (reader.hasNext()) {
