@@ -352,7 +352,7 @@ public interface EjbMessages {
      * @return a {@link IllegalStateException} for the error.
      */
     @Message(id = 14331, value = "No resource adapter registered with resource adapter name %s")
-    IllegalStateException failToRegisteredResourceAdapter(String resourceAdapterName);
+    IllegalStateException unknownResourceAdapter(String resourceAdapterName);
 
     /**
      * Creates an exception indicating multiple resource adapter was registered
@@ -1815,4 +1815,16 @@ public interface EjbMessages {
 
     @Message(id=14520, value="Could not determine ClassLoader for stub %s")
     RuntimeException couldNotFindClassLoaderForStub(String stub);
+
+    /**
+     * Creates an exception indicating that there was no message listener of the expected type
+     * in the resource adapter
+     *
+     * @param resourceAdapterName The resource adapter name
+     * @param messageListenerType The message listener type
+     *
+     * @return a {@link IllegalStateException} for the error.
+     */
+    @Message(id = 14521, value = "No message listener of type %s found in resource adapter %s")
+    IllegalStateException unknownMessageListenerType(String resourceAdapterName, String messageListenerType);
 }
