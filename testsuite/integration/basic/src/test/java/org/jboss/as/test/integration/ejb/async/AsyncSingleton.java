@@ -24,17 +24,17 @@ package org.jboss.as.test.integration.ejb.async;
 
 import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
-import javax.ejb.Stateless;
+import javax.ejb.Singleton;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
- * stateful session bean
+ * Singleton
  */
-@Stateless
+@Singleton
 @Asynchronous
-public class AsyncBean {
+public class AsyncSingleton {
 
     public static volatile boolean voidMethodCalled = false;
     public static volatile boolean futureMethodCalled = false;
