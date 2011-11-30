@@ -21,13 +21,13 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.clustering.infinispan.InfinispanLogger.ROOT_LOGGER;
+
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
 import javax.management.MBeanServer;
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.xa.XAResource;
 
 import org.infinispan.config.Configuration;
@@ -56,8 +56,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.tm.XAResourceRecovery;
 import org.jboss.tm.XAResourceRecoveryRegistry;
-
-import static org.jboss.as.clustering.infinispan.InfinispanLogger.ROOT_LOGGER;
 
 /**
  * @author Paul Ferraro
@@ -154,16 +152,7 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
             globalJmx.disable();
         }
 
-        FluentConfiguration.TransactionConfig tx = fluent.transaction();
-        TransactionManager txManager = this.configuration.getTransactionManager();
-        if (txManager != null) {
-            tx.transactionManagerLookup(new TransactionManagerProvider(txManager));
-        }
-
-        TransactionSynchronizationRegistry txSyncRegistry = this.configuration.getTransactionSynchronizationRegistry();
-        if (txSyncRegistry != null) {
-            tx.transactionSynchronizationRegistryLookup(new TransactionSynchronizationRegistryProvider(txSyncRegistry));
-        }
+        this.configureTransactions(defaultConfig);
 
         EmbeddedCacheManager manager = new DefaultCacheManager(global, defaultConfig, false);
         manager.addListener(this);
@@ -172,10 +161,20 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
             Configuration overrides = entry.getValue();
             Configuration configuration = defaults.getDefaultConfiguration(overrides.getCacheMode()).clone();
             configuration.applyOverrides(overrides);
+            this.configureTransactions(configuration);
             manager.defineConfiguration(entry.getKey(), configuration);
         }
         this.container = new DefaultEmbeddedCacheManager(manager, this.configuration.getDefaultCache());
         this.container.start();
+    }
+
+    private void configureTransactions(Configuration config) {
+        boolean transactional = config.isTransactionalCache();
+        boolean synchronizations = transactional && config.isUseSynchronizationForTransactions();
+        config.fluent().transaction()
+            .transactionManagerLookup(transactional ? new TransactionManagerProvider(this.configuration.getTransactionManager()) : null)
+            .transactionSynchronizationRegistryLookup(synchronizations ? new TransactionSynchronizationRegistryProvider(this.configuration.getTransactionSynchronizationRegistry()) : null)
+        ;
     }
 
     /**

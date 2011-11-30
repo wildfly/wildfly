@@ -628,13 +628,13 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
         }
 
         @Override
-        public TransactionManager getTransactionManager() {
-            return this.transactionManager.getOptionalValue();
+        public Value<TransactionManager> getTransactionManager() {
+            return this.transactionManager;
         }
 
         @Override
-        public TransactionSynchronizationRegistry getTransactionSynchronizationRegistry() {
-            return this.transactionSynchronizationRegistry.getOptionalValue();
+        public Value<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistry() {
+            return this.transactionSynchronizationRegistry;
         }
 
         @Override
