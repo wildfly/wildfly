@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.test.clustering.cluster;
 
 import java.io.IOException;
@@ -46,8 +45,10 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 /**
- * Validate the <distributable/> works for single node
+ * Validate the <distributable/> works for a two-node cluster.
+ * 
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
@@ -56,13 +57,23 @@ public class ClusteredWebTestCase {
 
     @BeforeClass
     public static void printSysProps() {
-        Properties sysprops = System.getProperties() ;
-        // System.out.println("system properties:\n" + sysprops) ;
+        Properties sysprops = System.getProperties();
+        System.out.println("System properties:\n" + sysprops);
     }
 
-    @Deployment(name="deployment-0")
+    @Deployment(name = "deployment-0")
     @TargetsContainer("clustering-udp-0")
-    public static Archive<?> deployment() {
+    public static Archive<?> deployment0() {
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
+        war.addClass(SimpleServlet.class);
+        war.addAsWebInfResource(ClusteredWebTestCase.class.getPackage(), "web.xml");
+        System.out.println(war.toString(true));
+        return war;
+    }
+
+    @Deployment(name = "deployment-1")
+    @TargetsContainer("clustering-udp-1")
+    public static Archive<?> deployment1() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
         war.addClass(SimpleServlet.class);
         war.addAsWebInfResource(ClusteredWebTestCase.class.getPackage(), "web.xml");
@@ -72,7 +83,7 @@ public class ClusteredWebTestCase {
 
     @Test
     @OperateOnDeployment("deployment-0")
-    public void test(@ArquillianResource(SimpleServlet.class)URL baseURL) throws ClientProtocolException, IOException {
+    public void test(@ArquillianResource(SimpleServlet.class) URL baseURL) throws ClientProtocolException, IOException {
         DefaultHttpClient client = new DefaultHttpClient();
 
         // returns the URL of the deployment (http://127.0.0.1:8180/distributable)
@@ -80,13 +91,13 @@ public class ClusteredWebTestCase {
         System.out.println("URL = " + url);
 
         try {
-            HttpResponse response = client.execute(new HttpGet(url+"simple"));
+            HttpResponse response = client.execute(new HttpGet(url + "simple"));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(Integer.parseInt(response.getFirstHeader("value").getValue()), 1);
             Assert.assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
             response.getEntity().getContent().close();
 
-            response = client.execute(new HttpGet(url+"simple"));
+            response = client.execute(new HttpGet(url + "simple"));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(Integer.parseInt(response.getFirstHeader("value").getValue()), 2);
             // This won't be true unless we have somewhere to which to replicate
