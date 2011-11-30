@@ -39,6 +39,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
@@ -77,6 +78,7 @@ public class ClusteredWebTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
         war.addClass(SimpleServlet.class);
         war.addAsWebInfResource(ClusteredWebTestCase.class.getPackage(), "web.xml");
+        war.addAsWebInfResource(EmptyAsset.INSTANCE, "force-hashcode-change.txt");
         System.out.println(war.toString(true));
         return war;
     }
