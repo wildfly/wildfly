@@ -92,7 +92,7 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
             // now get the message listeners for this specific ra identifier
             final List<MessageListener> messageListeners = resourceAdapterRepository.getMessageListeners(raIdentifier);
             if (messageListeners == null || messageListeners.isEmpty()) {
-                throw MESSAGES.unknownMessageListenerType(resourceAdapterName, messageListenerInterface.getName());
+                throw MESSAGES.unknownMessageListenerType(messageListenerInterface.getName(), resourceAdapterName);
             }
             MessageListener requiredMessageListener = null;
             // now find the expected message listener from the list of message listeners for this resource adapter
@@ -103,7 +103,7 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
                 }
             }
             if (requiredMessageListener == null) {
-                throw MESSAGES.unknownMessageListenerType(resourceAdapterName, messageListenerInterface.getName());
+                throw MESSAGES.unknownMessageListenerType(messageListenerInterface.getName(), resourceAdapterName);
             }
             // found the message listener, now finally create the activation spec
             final Activation activation = requiredMessageListener.getActivation();
