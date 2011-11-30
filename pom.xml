@@ -134,7 +134,7 @@
         <version.org.jboss.arquillian.core>1.0.0.CR6</version.org.jboss.arquillian.core>
         <version.org.jboss.arquillian.osgi>1.0.0.CR4</version.org.jboss.arquillian.osgi>
         <version.org.jboss.classfilewriter>1.0.0.Final</version.org.jboss.classfilewriter>
-        <version.org.jboss.com.sun.httpserver>1.0.0.Beta2</version.org.jboss.com.sun.httpserver>
+        <version.org.jboss.com.sun.httpserver>1.0.0.Beta3</version.org.jboss.com.sun.httpserver>
         <version.org.jboss.ejb-client>1.0.0.Beta7</version.org.jboss.ejb-client>
         <version.org.jboss.ejb3.ext-api>2.0.0-beta-1</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.iiop-client>1.0.0.Beta1</version.org.jboss.iiop-client>
