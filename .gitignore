@@ -39,4 +39,5 @@ hs_err_pid*.log
 *.h2.db
 # JBoss transaction generated files
 PutObjectStoreDirHere
-
+# ignore mvn-rpmbuild repo
+/.m2
