@@ -166,6 +166,7 @@ public abstract class AbstractEntityManager implements EntityManager {
         try {
             final EntityManager underlyingEntityManager = getEntityManager();
             T result = underlyingEntityManager.find(entityClass, primaryKey, properties);
+            detachNonTxInvocation(underlyingEntityManager);
             return result;
         } finally {
             if (isTraceEnabled) {
@@ -182,6 +183,7 @@ public abstract class AbstractEntityManager implements EntityManager {
         try {
             final EntityManager underlyingEntityManager = getEntityManager();
             T result = underlyingEntityManager.find(entityClass, primaryKey, lockMode);
+            detachNonTxInvocation(underlyingEntityManager);
             return result;
         } finally {
             if (isTraceEnabled) {
@@ -198,6 +200,7 @@ public abstract class AbstractEntityManager implements EntityManager {
         try {
             final EntityManager underlyingEntityManager = getEntityManager();
             T result = underlyingEntityManager.find(entityClass, primaryKey, lockMode, properties);
+            detachNonTxInvocation(underlyingEntityManager);
             return result;
         } finally {
             if (isTraceEnabled) {
@@ -214,6 +217,7 @@ public abstract class AbstractEntityManager implements EntityManager {
         try {
             final EntityManager underlyingEntityManager = getEntityManager();
             T result = getEntityManager().find(entityClass, primaryKey);
+            detachNonTxInvocation(underlyingEntityManager);
             return result;
         } finally {
             if (isTraceEnabled) {
@@ -485,7 +489,9 @@ public abstract class AbstractEntityManager implements EntityManager {
         if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
+            final EntityManager underlyingEntityManager = getEntityManager();
             T result = getEntityManager().getReference(entityClass, primaryKey);
+            detachNonTxInvocation(underlyingEntityManager);
             return result;
         } finally {
             if (isTraceEnabled) {
@@ -660,6 +666,15 @@ public abstract class AbstractEntityManager implements EntityManager {
                 long elapsed = System.currentTimeMillis() - start;
                 ROOT_LOGGER.tracef("setFlushMode took %dms", elapsed);
             }
+        }
+    }
+
+    // perform any cleanup needed after an invocation.
+    // currently used by TransactionScopedEntityManager to autoclose the
+    // underlying entitymanager after each invocation.
+    protected void detachNonTxInvocation(EntityManager underlyingEntityManager) {
+        if (!this.isExtendedPersistenceContext() && !this.isInTx()) {
+            underlyingEntityManager.clear();
         }
     }
 
