@@ -126,7 +126,7 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
     }
 
     ServiceName getResourceAdapterServiceName() {
-        final Collection<ServiceName> serviceNames = ConnectorServices.getResourceAdapterServiceNames(this.resourceAdapterName);
+        final Collection<ServiceName> serviceNames = ConnectorServices.getResourceAdapterDependencies(this.resourceAdapterName);
         if (serviceNames == null || serviceNames.isEmpty()) {
             throw MESSAGES.failToFindResourceAdapter(this.resourceAdapterName);
         }

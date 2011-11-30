@@ -31,6 +31,7 @@ import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 import org.jboss.vfs.VirtualFile;
 
@@ -390,4 +391,25 @@ public interface ConnectorMessages {
      */
     @Message(id = 10461, value = "Failed to load native libraries")
     DeploymentUnitProcessingException failedToLoadNativeLibraries(@Cause Throwable cause);
+
+    /**
+     * Creates an exception indicating that the ServiceName doesn't belong to a resource adapter service
+     *
+     * @param serviceName The service name
+     *
+     * @return an {@link IllegalArgumentException} for the error.
+     */
+    @Message(id = 10462, value = "%s isn't a resource adapter service")
+    IllegalArgumentException notResourceAdapterService(ServiceName serviceName);
+
+    /**
+     * Creates and returns an exception indicating that the param named <code>paramName</code> cannot be null
+     * or empty string.
+     *
+     * @param paramName The param name
+     * @return an {@link IllegalArgumentException} for the exception
+     */
+    @Message(id = 10463, value = "%s cannot be null or empty")
+    IllegalArgumentException stringParamCannotBeNullOrEmpty(final String paramName);
+
 }

@@ -24,6 +24,7 @@ package org.jboss.as.connector;
 
 import org.jboss.msc.service.ServiceName;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -93,6 +94,8 @@ public final class ConnectorServices {
     public static final ServiceName JDBC_DRIVER_REGISTRY_SERVICE = ServiceName.JBOSS.append("jdbc-driver", "registry");
 
     public static final ServiceName CCM_SERVICE = ServiceName.JBOSS.append("cached-connection-manager");
+
+    private static final String RA_SERVICE_NAME_SEPARATOR = "#";
 
     private ConnectorServices() {
     }
@@ -212,56 +215,94 @@ public final class ConnectorServices {
     }
 
     public static synchronized ServiceName registerResourceAdapter(String raName) {
-        if (raName == null)
+        if (raName == null || raName.trim().isEmpty()) {
             throw MESSAGES.undefinedVar("RaName");
-
-        Integer identifier = getResourceAdapterIdentifier(raName);
-        ServiceName serviceName = RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName + "_" + identifier);
-
-        Set<ServiceName> entries = resourceAdapterServiceNames.get(raName);
-
-        if (entries == null) {
-            entries = new HashSet<ServiceName>(1);
-            resourceAdapterServiceNames.put(raName, entries);
         }
+        // There can be multiple activations for the same ra name. For example, multiple resource
+        // adapter elements (with different configs) in the resource adapter subsystem, all pointing to the same ra archive.
+        // The ServiceName for the first activation of a RA with raName *will always* be of the form:
+        // RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName).
+        // Any subsequent activations for the same raname will have a numeric identifier appended to the service name
+        // as follows:
+        // RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName).append(RA_SERVICE_NAME_SEPARATOR).append(<numeric-id>)
 
-        if (entries.contains(serviceName)) {
-            resourceAdapterIdentifiers.get(raName).remove(identifier);
-            throw MESSAGES.serviceAlreadyRegistered(serviceName.getCanonicalName());
+        // Check if this is the first activation for the RA name
+        Set<ServiceName> serviceNamesForRAActivation = resourceAdapterServiceNames.get(raName);
+        if (serviceNamesForRAActivation == null) {
+            serviceNamesForRAActivation = new HashSet<ServiceName>();
+            resourceAdapterServiceNames.put(raName, serviceNamesForRAActivation);
         }
-
-        entries.add(serviceName);
-
+        final ServiceName serviceName;
+        if (serviceNamesForRAActivation.isEmpty()) {
+            // this is the first activation, so the service name *won't* have a numeric identifier
+            serviceName = RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName);
+        } else {
+            // there was already an activation for the raName. So generate a service name with a numeric identifier
+            final Integer nextId = getResourceAdapterIdentifier(raName);
+            serviceName = RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName).append(RA_SERVICE_NAME_SEPARATOR).append(nextId.toString());
+        }
+        serviceNamesForRAActivation.add(serviceName);
         return serviceName;
     }
 
     public static synchronized void unregisterResourceAdapter(String raName, ServiceName serviceName) {
-        if (raName == null)
+        if (raName == null || raName.trim().isEmpty()) {
             throw MESSAGES.undefinedVar("RaName");
+        }
 
-        if (serviceName == null)
+        if (serviceName == null) {
             throw MESSAGES.undefinedVar("ServiceName");
+        }
 
-        Set<ServiceName> entries = resourceAdapterServiceNames.get(raName);
+        final Set<ServiceName> registeredServiceNames = resourceAdapterServiceNames.get(raName);
+        if (registeredServiceNames == null || registeredServiceNames.isEmpty() || !registeredServiceNames.contains(serviceName)) {
+            throw MESSAGES.serviceIsntRegistered(serviceName.getCanonicalName());
+        }
+        // remove the service from the registered service names for this RA
+        registeredServiceNames.remove(serviceName);
 
-        if (entries != null) {
-            if (!entries.contains(serviceName))
-                throw MESSAGES.serviceIsntRegistered(serviceName.getCanonicalName());
-
-            Integer identifier = Integer.valueOf(serviceName.getSimpleName().substring(serviceName.getSimpleName().lastIndexOf("_") + 1));
-            resourceAdapterIdentifiers.get(raName).remove(identifier);
-
-            entries.remove(serviceName);
-
-            if (entries.size() == 0) {
-                resourceAdapterServiceNames.remove(raName);
-                resourceAdapterIdentifiers.remove(raName);
+        // check if the ServiceName contains any numeric identifiers, or if it's just the first activation of a RA.
+        // if the service name has a numeric part, then we need to get that numeric part and unregister that number
+        // from the map which hold the in-use numeric ids.
+        // @see registerResourceAdapter method for more details on how the service names are generated
+        if (!serviceName.equals(RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName))) {
+            final ServiceName baseServiceName = RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName).append(RA_SERVICE_NAME_SEPARATOR);
+            // if the service name doesn't start with the RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName).append(RA_SERVICE_NAME_SEPARATOR)
+            // format, then it isn't a RA service
+            if (!baseServiceName.isParentOf(serviceName)) {
+                throw MESSAGES.notResourceAdapterService(serviceName);
             }
+            // get the service name parts
+            final String[] parts = serviceName.toArray();
+            // get the numerical id which will be the last part of the service name
+            final String lastPart = parts[parts.length - 1];
+            final Integer numericId;
+            try {
+                numericId = Integer.parseInt(lastPart);
+            } catch (NumberFormatException nfe) {
+                throw MESSAGES.notResourceAdapterService(serviceName);
+            }
+            // remove from the numeric id registration map
+            resourceAdapterIdentifiers.get(raName).remove(numericId);
         }
     }
 
-    public static synchronized Set<ServiceName> getResourceAdapterServiceNames(String raName) {
-        return resourceAdapterServiceNames.get(raName);
+    /**
+     * Returns the {@link ServiceName}s of the activations of the resource adapter named <code>raName</code>.
+     * The returned service names can be used by other services to add dependency on the resource adapter activations.
+     *
+     * @param raName The resource adapter name
+     * @return
+     */
+    public static synchronized Set<ServiceName> getResourceAdapterDependencies(final String raName) {
+        if (raName == null || raName.trim().isEmpty()) {
+            throw MESSAGES.stringParamCannotBeNullOrEmpty("resource adapter name");
+        }
+        // For now, we just return a single service name as the dependency service name, even if there
+        // might be multiple activations for the same RA. If the dependent service needs the service name of
+        // a specific activation of the RA, then a different method which accepts specific properties for that
+        // RA activation, will have to be used
+        return Collections.singleton(RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName));
     }
 
     /**
