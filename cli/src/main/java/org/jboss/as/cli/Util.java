@@ -56,6 +56,7 @@ public class Util {
     public static final String FAILURE_DESCRIPTION = "failure-description";
     public static final String FULL_REPLACE_DEPLOYMENT = "full-replace-deployment";
     public static final String IN_SERIES = "in-series";
+    public static final String INCLUDE_DEFAULTS = "include-defaults";
     public static final String INCLUDE_RUNTIME = "include-runtime";
     public static final String INPUT_STREAM_INDEX = "input-stream-index";
     public static final String MIN_OCCURS = "min-occurs";
