@@ -99,13 +99,13 @@ public class ClusteredWebTestCase {
         try {
             HttpResponse response = client.execute(new HttpGet(url + "simple"));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(Integer.parseInt(response.getFirstHeader("value").getValue()), 1);
+            Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader("value").getValue()));
             Assert.assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
             response.getEntity().getContent().close();
 
             response = client.execute(new HttpGet(url + "simple"));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(Integer.parseInt(response.getFirstHeader("value").getValue()), 2);
+            Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
             // This won't be true unless we have somewhere to which to replicate
             Assert.assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
             response.getEntity().getContent().close();

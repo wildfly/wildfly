@@ -19,11 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.test.clustering.single.web;
 
 import java.io.IOException;
 
+import java.net.URL;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
@@ -31,8 +31,10 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -41,13 +43,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Validate the <distributable/> works for single node
+ * Validate the <distributable/> works for single node.
+ * 
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
 @RunAsClient
 public class SimpleWebTestCase {
-    @Deployment
+
+    @Deployment(name = "deployment-single")
     public static Archive<?> deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
         war.addClass(SimpleServlet.class);
@@ -57,18 +61,22 @@ public class SimpleWebTestCase {
     }
 
     @Test
-    public void test() throws ClientProtocolException, IOException {
+    @OperateOnDeployment("deployment-single")
+    public void test(@ArquillianResource(SimpleServlet.class) URL baseURL) throws ClientProtocolException, IOException {
         DefaultHttpClient client = new DefaultHttpClient();
+
+        String url = baseURL.toString() + "simple";
+
         try {
-            HttpResponse response = client.execute(new HttpGet("http://localhost:8080/distributable/simple"));
+            HttpResponse response = client.execute(new HttpGet(url));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(Integer.parseInt(response.getFirstHeader("value").getValue()), 1);
+            Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader("value").getValue()));
             Assert.assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
             response.getEntity().getContent().close();
 
-            response = client.execute(new HttpGet("http://localhost:8080/distributable/simple"));
+            response = client.execute(new HttpGet(url));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(Integer.parseInt(response.getFirstHeader("value").getValue()), 2);
+            Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
             // This won't be true unless we have somewhere to which to replicate
             Assert.assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
             response.getEntity().getContent().close();
@@ -76,5 +84,4 @@ public class SimpleWebTestCase {
             client.getConnectionManager().shutdown();
         }
     }
-
 }
