@@ -25,20 +25,37 @@ package org.jboss.as.test.integration.ejb.security;
 import javax.ejb.EJBAccessException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * User: jpai
  */
 @RunWith(Arquillian.class)
 public class EJBSecurityTestCase {
+    private static Context ctx;
+
+    @AfterClass
+    public static void afterClass() throws NamingException {
+        if (ctx != null)
+            ctx.close();
+    }
+
+    @BeforeClass
+    public static void beforeClass() throws NamingException {
+        ctx = new InitialContext();
+    }
 
     @Deployment
     public static JavaArchive createDeployment() {
@@ -48,9 +65,12 @@ public class EJBSecurityTestCase {
         return jar;
     }
 
+    private static <T> T lookup(final Class<?> beanClass, final Class<T> viewClass) throws NamingException {
+        return viewClass.cast(ctx.lookup("java:module/" + beanClass.getName() + "!" + viewClass.getName()));
+    }
+
     @Test
     public void testDenyAllAnnotation() throws Exception {
-        final Context ctx = new InitialContext();
         final Restriction restrictedBean = (Restriction) ctx.lookup("java:module/" + AnnotatedSLSB.class.getSimpleName() + "!" + Restriction.class.getName());
         try {
             restrictedBean.restrictedMethod();
@@ -93,8 +113,15 @@ public class EJBSecurityTestCase {
     }
 
     @Test
+    public void testEJB2() throws Exception {
+        // AS7-2809: if it deploys we're good
+        final HelloRemote bean = lookup(HelloBean.class, HelloHome.class).create();
+        final String result = bean.sayHello("EJB2");
+        assertEquals("Hello EJB2", result);
+    }
+
+    @Test
     public void testExcludeList() throws Exception {
-        final Context ctx = new InitialContext();
         final FullAccess fullAccessDDBean = (FullAccess) ctx.lookup("java:module/" + DDBasedSLSB.class.getSimpleName() + "!" + FullAccess.class.getName());
         fullAccessDDBean.doAnything();
 
