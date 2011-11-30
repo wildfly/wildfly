@@ -58,6 +58,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.jgroups.JGroupsChannelLookup;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
+import org.infinispan.transaction.TransactionMode;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerDefaults;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerDefaultsService;
 import org.jboss.as.clustering.jgroups.MuxChannel;
@@ -182,20 +183,19 @@ public class SessionTestUtil {
         transport.clusterName("test").globalJmxStatistics().cacheManagerName("container" + containerIndex++).disable();
 
         Configuration config = defaults.getDefaultConfiguration(mode).clone();
-        FluentConfiguration fluent = config.fluent();
-        fluent.syncCommitPhase(true).syncRollbackPhase(true).invocationBatching();
+        config.fluent().syncCommitPhase(true).syncRollbackPhase(true).invocationBatching().transaction().transactionMode(TransactionMode.TRANSACTIONAL).useSynchronization(true);
 
         if (passivationDir != null) {
             // Dodge failures due to ISPN-1470
             // Until this is fixed, we can expect test failures involving cache load preloading and DIST
-            fluent.loaders().passivation(true).preload(!purgeCacheLoader && !mode.isDistributed()).addCacheLoader(new FileCacheStoreConfig().location(passivationDir).fetchPersistentState(mode.isReplicated()).purgeOnStartup(purgeCacheLoader));
-//            fluent.loaders().passivation(true).preload(!purgeCacheLoader).addCacheLoader(new FileCacheStoreConfig().location(passivationDir).fetchPersistentState(mode.isReplicated()).purgeOnStartup(purgeCacheLoader));
+//            fluent.loaders().passivation(true).preload(!purgeCacheLoader && !mode.isDistributed()).addCacheLoader(new FileCacheStoreConfig().location(passivationDir).fetchPersistentState(mode.isReplicated()).purgeOnStartup(purgeCacheLoader));
+            config.fluent().loaders().passivation(true).preload(!purgeCacheLoader).addCacheLoader(new FileCacheStoreConfig().location(passivationDir).fetchPersistentState(mode.isReplicated()).purgeOnStartup(purgeCacheLoader));
         }
 
         final EmbeddedCacheManager container = new DefaultCacheManager(global, config, false);
 
         config = defaults.getDefaultConfiguration(Configuration.CacheMode.REPL_SYNC).clone();
-        config.fluent().syncCommitPhase(true).syncRollbackPhase(true).transaction().invocationBatching();
+        config.fluent().syncCommitPhase(true).syncRollbackPhase(true).transaction().invocationBatching().transaction().transactionMode(TransactionMode.TRANSACTIONAL).useSynchronization(true);
 
         container.defineConfiguration(JVM_ROUTE_CACHE_NAME, CacheContainer.DEFAULT_CACHE_NAME, config);
         
