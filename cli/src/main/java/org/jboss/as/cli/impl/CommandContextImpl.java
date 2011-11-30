@@ -69,6 +69,7 @@ import org.jboss.as.cli.handlers.OperationRequestHandler;
 import org.jboss.as.cli.handlers.PrefixHandler;
 import org.jboss.as.cli.handlers.PrintWorkingNodeHandler;
 import org.jboss.as.cli.handlers.QuitHandler;
+import org.jboss.as.cli.handlers.ReadAttributeHandler;
 import org.jboss.as.cli.handlers.UndeployHandler;
 import org.jboss.as.cli.handlers.VersionHandler;
 import org.jboss.as.cli.handlers.batch.BatchClearHandler;
@@ -267,6 +268,8 @@ class CommandContextImpl implements CommandContext {
         cmdRegistry.registerHandler(new VersionHandler(), "version");
 
         cmdRegistry.registerHandler(new CommandCommandHandler(cmdRegistry), "command");
+
+        cmdRegistry.registerHandler(new ReadAttributeHandler(this), "read-attribute");
 
         // data-source
         cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=datasources/data-source", "jndi-name"), "data-source");
