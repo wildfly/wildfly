@@ -1820,14 +1820,20 @@ public interface EjbMessages {
      * Creates an exception indicating that there was no message listener of the expected type
      * in the resource adapter
      *
-     * @param resourceAdapterName The resource adapter name
      * @param messageListenerType The message listener type
+     * @param resourceAdapterName The resource adapter name
      *
      * @return a {@link IllegalStateException} for the error.
      */
     @Message(id = 14521, value = "No message listener of type %s found in resource adapter %s")
     IllegalStateException unknownMessageListenerType(String resourceAdapterName, String messageListenerType);
 
+    /**
+     * Thrown when a EJB 2 EJB does not implement a method on an EJB 2
+     * @param method The method
+     * @param viewClass The view
+     * @param ejb The ejb
+     */
     @Message(id=14522, value = "Could not find method %s from view %s on EJB class %s")
     DeploymentUnitProcessingException couldNotFindViewMethodOnEjb(final Method method, String viewClass, String ejb);
 }
