@@ -40,6 +40,7 @@ public class JacORBDependencyProcessor implements DeploymentUnitProcessor {
     public static ModuleIdentifier JAVAX_RMI_API_ID = ModuleIdentifier.create("javax.rmi.api");
     public static ModuleIdentifier JACORB_ID = ModuleIdentifier.create("org.jacorb");
 
+
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();

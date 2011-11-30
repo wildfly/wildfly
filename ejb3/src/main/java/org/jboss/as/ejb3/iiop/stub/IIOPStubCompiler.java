@@ -124,15 +124,15 @@ public class IIOPStubCompiler {
                 if (!type.isPrimitive()) {
                     // object or array
                     ca.aload(index);
-                } else if (type.equals(Double.class)) {
+                } else if (type.equals(double.class)) {
                     ca.dload(index);
                     Boxing.boxDouble(ca);
                     index++;
-                } else if (type.equals(Long.class)) {
+                } else if (type.equals(long.class)) {
                     ca.lload(index);
                     Boxing.boxLong(ca);
                     index++;
-                } else if (type.equals(Float.class)) {
+                } else if (type.equals(float.class)) {
                     ca.fload(index);
                     Boxing.boxFloat(ca);
                 } else {

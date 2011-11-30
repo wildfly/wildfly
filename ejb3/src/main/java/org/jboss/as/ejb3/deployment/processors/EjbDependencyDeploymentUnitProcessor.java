@@ -55,7 +55,7 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
      * Needed for timer handle persistence
      * TODO: restrict visibility
      */
-    private static final ModuleIdentifier EJB3_TIMERS = ModuleIdentifier.create("org.jboss.as.ejb3");
+    private static final ModuleIdentifier EJB_SUBSYSTEM = ModuleIdentifier.create("org.jboss.as.ejb3");
     private static final ModuleIdentifier EJB_CLIENT = ModuleIdentifier.create("org.jboss.ejb-client");
     private static final ModuleIdentifier EJB_IIOP_CLIENT = ModuleIdentifier.create("org.jboss.iiop-client");
     private static final ModuleIdentifier JACORB = ModuleIdentifier.create("org.jboss.as.jacorb");
@@ -82,6 +82,14 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_CLIENT, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_IIOP_CLIENT, false, false, false));
 
+        //we always have to add this, as even non-ejb deployments may still lookup IIOP ejb's
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_SUBSYSTEM, false, false, false));
+
+        if (JacORBDeploymentMarker.isJacORBDeployment(deploymentUnit)) {
+            //needed for dynamic IIOP stubs
+            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JACORB, false, false, false));
+        }
+
         // fetch the EjbJarMetaData
         //TODO: remove the app client bit after the next EJB release
         if (!isEjbDeployment(deploymentUnit) && !DeploymentTypeMarker.isType(DeploymentType.APPLICATION_CLIENT, deploymentUnit)) {
@@ -96,12 +104,7 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
             moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, ModuleIdentifier.CLASSPATH, false, false, false));
 
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAEE_MODULE_IDENTIFIER, false, false, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB3_TIMERS, false, false, false));
 
-        if (JacORBDeploymentMarker.isJacORBDeployment(deploymentUnit)) {
-            //needed for dynamic IIOP stubs
-            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JACORB, false, false, false));
-        }
     }
 
     @Override
