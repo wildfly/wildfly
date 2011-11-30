@@ -44,7 +44,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -68,7 +67,8 @@ public class JMXExtension implements Extension {
     private static final String INVOKE_MBEAN_RAW = "invoke-mbean-raw";
     private static final String GET_MBEAN_INFO_RAW = "get-mbean-info-raw";
 
-    static final JMXSubsystemParser parsers = new JMXSubsystemParser();
+    static final JMXSubsystemParser_1_1 parserCurrent = new JMXSubsystemParser_1_1();
+    static final JMXSubsystemParser_1_0 parser10 = new JMXSubsystemParser_1_0();
 
 
     /** {@inheritDoc} */
@@ -84,14 +84,14 @@ public class JMXExtension implements Extension {
         registration.registerOperationHandler(JMXConnectorAdd.OPERATION_NAME, JMXConnectorAdd.INSTANCE, JMXSubsystemProviders.JMX_CONNECTOR_ADD, false);
         registration.registerOperationHandler(JMXConnectorRemove.OPERATION_NAME, JMXConnectorRemove.INSTANCE, JMXSubsystemProviders.JMX_CONNECTOR_REMOVE, false);
 
-        subsystem.registerXMLElementWriter(parsers);
+        subsystem.registerXMLElementWriter(parserCurrent);
     }
 
     /** {@inheritDoc} */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.JMX_1_0.getUriString(), parsers);
-        context.setSubsystemXmlMapping(Namespace.JMX_1_1.getUriString(), parsers);
+        context.setSubsystemXmlMapping(Namespace.JMX_1_0.getUriString(), parser10);
+        context.setSubsystemXmlMapping(Namespace.JMX_1_1.getUriString(), parserCurrent);
     }
 
     private static ModelNode createAddOperation(Boolean showModel) {
@@ -113,35 +113,13 @@ public class JMXExtension implements Extension {
         return connector;
     }
 
-    private static class JMXSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+    private static class JMXSubsystemParser_1_0 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
         /** {@inheritDoc} */
         @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
-            Namespace schemaVer = Namespace.forUri(reader.getNamespaceURI());
-            Boolean showModel = null;
-
-            if (schemaVer == Namespace.JMX_1_0) {
-                ParseUtils.requireNoAttributes(reader);
-            } else {
-                int count = reader.getAttributeCount();
-                for (int i = 0; i < count; i++) {
-                    final String value = reader.getAttributeValue(i);
-                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                    switch (attribute) {
-                        case SHOW_MODEL: {
-                            if (schemaVer == Namespace.JMX_1_0) {
-                                throw ParseUtils.unexpectedAttribute(reader, i);
-                            }
-                            showModel = Boolean.valueOf(value);
-                            break;
-                        } default: {
-                            throw ParseUtils.unexpectedAttribute(reader, i);
-                        }
-                    }
-                }
-            }
-            list.add(createAddOperation(showModel));
+            ParseUtils.requireNoAttributes(reader);
+            list.add(createAddOperation(null));
 
             boolean gotConnector = false;
 
@@ -199,8 +177,98 @@ public class JMXExtension implements Extension {
             ModelNode node = context.getModelNode();
 
             context.startSubsystemElement(schemaVer.getUriString(), false);
+            if (node.hasDefined(CommonAttributes.SERVER_BINDING)) {
+                writer.writeStartElement(Element.JMX_CONNECTOR.getLocalName());
+                writer.writeAttribute(Attribute.REGISTRY_BINDING.getLocalName(), node.get(CommonAttributes.REGISTRY_BINDING).asString());
+                writer.writeAttribute(Attribute.SERVER_BINDING.getLocalName(), node.get(CommonAttributes.SERVER_BINDING).asString());
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
+        }
+    }
+
+    private static class JMXSubsystemParser_1_1 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+
+        /** {@inheritDoc} */
+        @Override
+        public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
+            Boolean showModel = null;
+
+            ParseUtils.requireNoAttributes(reader);
+
+            ModelNode connectorAdd = null;
+            while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                final Element element = Element.forName(reader.getLocalName());
+                switch(element){
+                    case SHOW_MODEL:
+                        if (showModel != null) {
+                            throw ParseUtils.duplicateNamedElement(reader, Element.SHOW_MODEL.getLocalName());
+                        }
+                        showModel = parseShowModelElement(reader);
+                        break;
+                    case JMX_CONNECTOR: {
+                        if (connectorAdd != null) {
+                            throw ParseUtils.duplicateNamedElement(reader, Element.JMX_CONNECTOR.getLocalName());
+                        }
+                        connectorAdd = parseConnector(reader);
+                        break;
+                    } default: {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
+                }
+            }
+            list.add(createAddOperation(showModel));
+            if (connectorAdd != null) {
+                list.add(connectorAdd);
+            }
+        }
+
+
+        boolean parseShowModelElement(XMLExtendedStreamReader reader) throws XMLStreamException {
+            ParseUtils.requireSingleAttribute(reader, CommonAttributes.VALUE);
+            return ParseUtils.readBooleanAttributeElement(reader, CommonAttributes.VALUE);
+        }
+
+        ModelNode parseConnector(XMLExtendedStreamReader reader) throws XMLStreamException {
+            String serverBinding = null;
+            String registryBinding = null;
+            int count = reader.getAttributeCount();
+            for (int i = 0; i < count; i++) {
+                final String value = reader.getAttributeValue(i);
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case SERVER_BINDING: {
+                        serverBinding = value;
+                        break;
+                    } case REGISTRY_BINDING: {
+                        registryBinding = value;
+                        break;
+                    } default: {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+            // Require no content
+            ParseUtils.requireNoContent(reader);
+            if(serverBinding == null) {
+                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SERVER_BINDING));
+            }
+            if(registryBinding == null) {
+                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.REGISTRY_BINDING));
+            }
+            return createAddConnectorOperation(serverBinding, registryBinding);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
+            Namespace schemaVer = Namespace.CURRENT;
+            ModelNode node = context.getModelNode();
+
+            context.startSubsystemElement(schemaVer.getUriString(), false);
             if (node.hasDefined(CommonAttributes.SHOW_MODEL)) {
-                writer.writeAttribute(Attribute.SHOW_MODEL.getLocalName(), node.get(CommonAttributes.SHOW_MODEL).asString());
+                writer.writeEmptyElement(Element.SHOW_MODEL.getLocalName());
+                writer.writeAttribute(Attribute.VALUE.getLocalName(), node.get(CommonAttributes.SHOW_MODEL).asString());
             }
             if (node.hasDefined(CommonAttributes.SERVER_BINDING)) {
                 writer.writeStartElement(Element.JMX_CONNECTOR.getLocalName());
