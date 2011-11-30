@@ -44,6 +44,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -51,10 +52,13 @@ import org.junit.runner.RunWith;
  * Validate the <distributable/> works for a two-node cluster.
  * 
  * @author Paul Ferraro
+ * @author Radoslav Husar
  */
 @RunWith(Arquillian.class)
 @RunAsClient
 public class ClusteredWebTestCase {
+
+    public static final long GRACE_TIME_TO_REPLICATE = 3000; // 3 seconds should be more then enough
 
     @BeforeClass
     public static void printSysProps() {
@@ -85,7 +89,7 @@ public class ClusteredWebTestCase {
 
     @Test
     @OperateOnDeployment("deployment-0")
-    public void test(@ArquillianResource(SimpleServlet.class) URL baseURL) throws ClientProtocolException, IOException {
+    public void testSerialized(@ArquillianResource(SimpleServlet.class) URL baseURL) throws ClientProtocolException, IOException {
         DefaultHttpClient client = new DefaultHttpClient();
 
         // returns the URL of the deployment (http://127.0.0.1:8180/distributable)
@@ -104,6 +108,50 @@ public class ClusteredWebTestCase {
             Assert.assertEquals(Integer.parseInt(response.getFirstHeader("value").getValue()), 2);
             // This won't be true unless we have somewhere to which to replicate
             Assert.assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
+            response.getEntity().getContent().close();
+        } finally {
+            client.getConnectionManager().shutdown();
+        }
+    }
+
+    @Test
+    @Ignore("AS7-2738 and AS7-2837")
+    @OperateOnDeployment("deployment-1") // For change, operate on the 2nd deployment first
+    public void testSessionReplication(@ArquillianResource(SimpleServlet.class) URL baseURL) throws IllegalStateException, IOException, InterruptedException {
+        DefaultHttpClient client = new DefaultHttpClient();
+
+        // ARQ-674 Ouch, hardcoded URL will need fixing. ARQ doesnt support @OperateOnDeployment on 2.
+        String url1 = baseURL.toString() + "simple";
+        String url2 = "http://127.0.0.1:8080/distributable/simple";
+
+        try {
+            HttpResponse response = client.execute(new HttpGet(url1));
+            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader("value").getValue()));
+            response.getEntity().getContent().close();
+
+            // Lets do this twice to have more debug info if failover is slow.
+            response = client.execute(new HttpGet(url1));
+            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
+            response.getEntity().getContent().close();
+
+            // Lets wait for the session to replicate
+            Thread.sleep(GRACE_TIME_TO_REPLICATE);
+
+            // Now check on the 2nd server
+
+            // Note that this DOES rely on the fact that both servers are running on the "same" domain,
+            // which is '127.0.0.0'. Otherwise you will have to spoof cookies. @Rado
+            response = client.execute(new HttpGet(url2));
+            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            Assert.assertEquals(3, Integer.parseInt(response.getFirstHeader("value").getValue()));
+            response.getEntity().getContent().close();
+
+            // Lets do one more check.
+            response = client.execute(new HttpGet(url2));
+            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            Assert.assertEquals(4, Integer.parseInt(response.getFirstHeader("value").getValue()));
             response.getEntity().getContent().close();
         } finally {
             client.getConnectionManager().shutdown();
