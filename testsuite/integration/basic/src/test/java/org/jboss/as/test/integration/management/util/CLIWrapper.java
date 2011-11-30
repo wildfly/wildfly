@@ -302,7 +302,12 @@ public class CLIWrapper implements Runnable {
         String asDist = System.getProperty("jboss.dist");
         String asInst = System.getProperty("jboss.inst");
 
-        cliCommand = "java -Djboss.home.dir=" + asInst +
+        String javaExec = System.getProperty("java.home") + File.separatorChar + "bin" + File.separatorChar + "java";
+        if (javaExec.contains(" ")) {
+            javaExec = "\"" + javaExec + "\"";
+        }
+
+        cliCommand = javaExec + " -Djboss.home.dir=" + asInst +
             " -Djboss.modules.dir=" + asDist + "/modules" +
             " -Djline.WindowsTerminal.directConsole=false" +
             " -jar " + asDist + "/jboss-modules.jar" +
