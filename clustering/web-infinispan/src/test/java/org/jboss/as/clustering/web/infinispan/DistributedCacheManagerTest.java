@@ -322,7 +322,7 @@ public class DistributedCacheManagerTest {
         Map<Object, Object> expectedMap = mock(Map.class);
 
         when(this.sessionCache.getAdvancedCache()).thenReturn(this.sessionCache);
-        when(this.sessionCache.withFlags(Flag.SKIP_REMOTE_LOOKUP)).thenReturn(this.sessionCache);
+        when(this.sessionCache.withFlags(Flag.SKIP_CACHE_LOAD, Flag.SKIP_REMOTE_LOOKUP)).thenReturn(this.sessionCache);
         when(this.sessionCache.remove(key)).thenReturn(expectedMap);
 
         Map<Object, Object> resultMap = operation.invoke(this.sessionCache);
@@ -348,7 +348,7 @@ public class DistributedCacheManagerTest {
         Map<Object, Object> expectedMap = mock(Map.class);
 
         when(this.sessionCache.getAdvancedCache()).thenReturn(this.sessionCache);
-        when(this.sessionCache.withFlags(Flag.CACHE_MODE_LOCAL)).thenReturn(this.sessionCache);
+        when(this.sessionCache.withFlags(Flag.SKIP_CACHE_LOAD, Flag.CACHE_MODE_LOCAL)).thenReturn(this.sessionCache);
         when(this.sessionCache.remove(key)).thenReturn(expectedMap);
 
         Map<Object, Object> resultMap = operation.invoke(this.sessionCache);
@@ -374,7 +374,7 @@ public class DistributedCacheManagerTest {
         Map<Object, Object> expectedMap = mock(Map.class);
 
         when(this.sessionCache.getAdvancedCache()).thenReturn(this.sessionCache);
-        when(this.sessionCache.withFlags(Flag.CACHE_MODE_LOCAL)).thenReturn(this.sessionCache);
+        when(this.sessionCache.withFlags(Flag.SKIP_CACHE_LOAD, Flag.CACHE_MODE_LOCAL)).thenReturn(this.sessionCache);
         when(this.sessionCache.remove(key)).thenReturn(expectedMap);
 
         Map<Object, Object> resultMap = operation.invoke(this.sessionCache);

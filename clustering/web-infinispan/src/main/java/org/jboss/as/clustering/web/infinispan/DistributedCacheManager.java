@@ -326,7 +326,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData,
         Operation<Map<Object, Object>> operation = new Operation<Map<Object, Object>>() {
             @Override
             public Map<Object, Object> invoke(Cache<K, Map<Object, Object>> cache) {
-                return cache.getAdvancedCache().withFlags(local ? Flag.CACHE_MODE_LOCAL : Flag.SKIP_REMOTE_LOOKUP).remove(key);
+                return cache.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD, local ? Flag.CACHE_MODE_LOCAL : Flag.SKIP_REMOTE_LOOKUP).remove(key);
             }
         };
 
