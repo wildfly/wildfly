@@ -30,6 +30,7 @@ import org.infinispan.AbstractDelegatingAdvancedCache;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.config.Configuration;
+import org.infinispan.context.Flag;
 import org.infinispan.manager.AbstractDelegatingEmbeddedCacheManager;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -180,12 +181,9 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
         return this.cm.getGlobalConfiguration().getCacheManagerName();
     }
 
-    class DelegatingCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {
-        private final AdvancedCache<K, V> cache;
-
+    class DelegatingCache<K, V> extends AbstractAdvancedCache<K, V> {
         DelegatingCache(AdvancedCache<K, V> cache) {
             super(cache);
-            this.cache = cache;
         }
 
         DelegatingCache(Cache<K, V> cache) {
@@ -193,13 +191,13 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
         }
 
         @Override
-        public EmbeddedCacheManager getCacheManager() {
-            return DefaultEmbeddedCacheManager.this;
+        protected AdvancedCache<K, V> wrap(AdvancedCache<K, V> cache) {
+            return new DelegatingCache<K, V>(cache);
         }
 
         @Override
-        public AdvancedCache<K, V> getAdvancedCache() {
-            return this;
+        public EmbeddedCacheManager getCacheManager() {
+            return DefaultEmbeddedCacheManager.this;
         }
 
         @Override

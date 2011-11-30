@@ -33,7 +33,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.infinispan.AbstractDelegatingAdvancedCache;
 import org.infinispan.AdvancedCache;
 import org.infinispan.commands.VisitableCommand;
 import org.infinispan.config.ConfigurationException;
@@ -54,9 +53,9 @@ import org.infinispan.notifications.cachelistener.event.Event;
  * AdvancedCache decorator that gracefully handle TCCL switching for cache commands and events.
  * @author Paul Ferraro
  */
-public class ClassLoaderAwareCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {
+public class ClassLoaderAwareCache<K, V> extends AbstractAdvancedCache<K, V> {
 
-    final WeakReference<ClassLoader> classLoaderRef;
+    volatile WeakReference<ClassLoader> classLoaderRef;
 
     public ClassLoaderAwareCache(AdvancedCache<K, V> cache, ClassLoader classLoader) {
         super(cache);
@@ -69,8 +68,13 @@ public class ClassLoaderAwareCache<K, V> extends AbstractDelegatingAdvancedCache
     }
 
     @Override
+    protected AdvancedCache<K, V> wrap(AdvancedCache<K, V> cache) {
+        return new ClassLoaderAwareCache<K, V>(cache, this.getClassLoader());
+    }
+
+    @Override
     public AdvancedCache<K, V> with(ClassLoader classLoader) {
-        // This ain't gonna work twice...
+        this.classLoaderRef = new WeakReference<ClassLoader>(classLoader);
         return this;
     }
 
@@ -83,11 +87,6 @@ public class ClassLoaderAwareCache<K, V> extends AbstractDelegatingAdvancedCache
     @Override
     public ClassLoader getClassLoader() {
         return this.classLoaderRef.get();
-    }
-
-    @Override
-    public AdvancedCache<K, V> getAdvancedCache() {
-        return this;
     }
 
     @Override
