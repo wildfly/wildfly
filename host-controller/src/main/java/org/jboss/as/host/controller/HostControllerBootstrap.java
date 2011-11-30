@@ -91,6 +91,7 @@ public class HostControllerBootstrap {
         AbsolutePathService.addService(HostControllerEnvironment.HOME_DIR, environment.getHomeDir().getAbsolutePath(), serviceTarget);
         AbsolutePathService.addService(HostControllerEnvironment.DOMAIN_CONFIG_DIR, environment.getDomainConfigurationDir().getAbsolutePath(), serviceTarget);
         AbsolutePathService.addService(HostControllerEnvironment.DOMAIN_TEMP_DIR, environment.getDomainTempDir().getAbsolutePath(), serviceTarget);
+        AbsolutePathService.addService(HostControllerEnvironment.CONTROLLER_TEMP_DIR, environment.getDomainTempDir().getAbsolutePath(), serviceTarget);
 
         DomainModelControllerService.addService(serviceTarget, environment, new ControlledProcessState(false));
     }

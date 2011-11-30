@@ -158,6 +158,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         AbsolutePathService.addService(ServerEnvironment.SERVER_DATA_DIR, serverEnvironment.getServerDataDir().getAbsolutePath(), serviceTarget);
         AbsolutePathService.addService(ServerEnvironment.SERVER_LOG_DIR, serverEnvironment.getServerLogDir().getAbsolutePath(), serviceTarget);
         AbsolutePathService.addService(ServerEnvironment.SERVER_TEMP_DIR, serverEnvironment.getServerTempDir().getAbsolutePath(), serviceTarget);
+        AbsolutePathService.addService(ServerEnvironment.CONTROLLER_TEMP_DIR, serverEnvironment.getControllerTempDir().getAbsolutePath(), serviceTarget);
 
         // Add system paths
         AbsolutePathService.addService("user.dir", System.getProperty("user.dir"), serviceTarget);
