@@ -23,8 +23,10 @@ package org.jboss.as.domain.http.server;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 
 import javax.net.ssl.SSLContext;
@@ -95,15 +97,18 @@ public class ManagementHttpServer {
 
     public static ManagementHttpServer create(InetSocketAddress bindAddress, InetSocketAddress secureBindAddress, int backlog, ModelControllerClient modelControllerClient, Executor executor, SecurityRealm securityRealm)
             throws IOException {
+        Map<String, String> configuration = new HashMap<String, String>(1);
+        configuration.put("sun.net.httpserver.maxReqTime", "15"); // HTTP Server to close connections if initial request not received within 15 seconds.
+
         HttpServer httpServer = null;
         if (bindAddress != null) {
-            httpServer = HttpServer.create(bindAddress, backlog);
+            httpServer = HttpServer.create(bindAddress, backlog, configuration);
             httpServer.setExecutor(executor);
         }
 
         HttpServer secureHttpServer = null;
         if (secureBindAddress != null) {
-            secureHttpServer = HttpsServer.create(secureBindAddress, backlog);
+            secureHttpServer = HttpsServer.create(secureBindAddress, backlog, configuration);
             SSLContext context = securityRealm.getSSLContext();
             ((HttpsServer) secureHttpServer).setHttpsConfigurator(new HttpsConfigurator(context) {
 
