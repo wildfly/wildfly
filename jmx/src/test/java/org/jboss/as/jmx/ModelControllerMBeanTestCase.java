@@ -884,7 +884,8 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
     private MBeanServerConnection setupAndGetConnection(BaseAdditionalInitialization additionalInitialization) throws Exception {
 
         // Parse the subsystem xml and install into the controller
-        String subsystemXml = "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\" show-model=\"true\">"
+        String subsystemXml = "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">"
+                + "<show-model value=\"true\"/>"
                 + "    <jmx-connector registry-binding=\"registry\" server-binding=\"server\" />" + "</subsystem>"
                 + additionalInitialization.getExtraXml();
         KernelServices services = super.installInController(additionalInitialization, subsystemXml);

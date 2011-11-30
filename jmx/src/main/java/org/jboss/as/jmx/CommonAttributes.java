@@ -31,4 +31,5 @@ interface CommonAttributes {
     String SERVER_BINDING = "server-binding";
     String REGISTRY_BINDING = "registry-binding";
     String JMX_CONNECTOR = "jmx-connector";
+    String VALUE = "value";
 }
