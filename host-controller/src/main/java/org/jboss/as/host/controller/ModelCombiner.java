@@ -544,6 +544,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
             File serverBaseDir = new File(environment.getDomainServersDir(), serverName);
             sysProps.put(key, serverBaseDir.getAbsolutePath());
         }
+
         // Servers should use the host controller's deployment content repo
         key = ServerEnvironment.SERVER_DEPLOY_DIR;
         if (sysProps.get(key) == null) {

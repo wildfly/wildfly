@@ -76,6 +76,14 @@ public class RealmAuthenticationProviderService implements Service<RealmAuthenti
             }
         } else if (authDir.mkdirs() == false) {
             throw new StartException("Unable to create auth dir.");
+        } else {
+            // As a precaution make perms user restricted for directories created (if the OS allows)
+            authDir.setWritable(false, false);
+            authDir.setWritable(true, true);
+            authDir.setReadable(false, false);
+            authDir.setReadable(true, true);
+            authDir.setExecutable(false, false);
+            authDir.setExecutable(true, true);
         }
 
         realmAuthenticationProvider = new RealmAuthenticationProvider(securityRealmInjectedValue.getOptionalValue(), serverCallbackValue.getOptionalValue(), authDir.getAbsolutePath());

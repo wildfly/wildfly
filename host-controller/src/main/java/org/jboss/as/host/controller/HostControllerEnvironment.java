@@ -98,6 +98,12 @@ public class HostControllerEnvironment {
     public static final String DOMAIN_TEMP_DIR = "jboss.domain.temp.dir";
 
     /**
+     * Common alias between domain and standalone mode. Uses jboss.domain.temp.dir on domain mode,
+     * and jboss.server.temp.dir on standalone server mode.
+     */
+    public static final String CONTROLLER_TEMP_DIR = "jboss.controller.temp.dir";
+
+    /**
      * The default system property used to store bind address information from the command-line (-b).
      */
     public static final String JBOSS_BIND_ADDRESS = "jboss.bind.address";

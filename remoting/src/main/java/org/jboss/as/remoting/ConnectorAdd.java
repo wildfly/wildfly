@@ -81,7 +81,7 @@ public class ConnectorAdd extends AbstractAddStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String connectorName = address.getLastElement().getValue();
-        ServiceName tmpDirPath = ServiceName.JBOSS.append("server", "path", "jboss.home.dir");
+        ServiceName tmpDirPath = ServiceName.JBOSS.append("server", "path", "jboss.controller.temp.dir");
         RemotingServices.installSecurityServices(context.getServiceTarget(), connectorName, null, null, tmpDirPath, verificationHandler, newControllers);
         launchServices(context, address, connectorName, model, verificationHandler, newControllers);
     }

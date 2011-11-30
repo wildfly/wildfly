@@ -142,6 +142,12 @@ public class ServerEnvironment implements Serializable {
     public static final String SERVER_SYSTEM_DEPLOY_DIR = "jboss.server.system.deploy.dir";
 
     /**
+     * Common alias between domain and standalone mode. Uses jboss.domain.temp.dir on domain mode,
+     * and jboss.server.temp.dir on standalone server mode.
+     */
+    public static final String CONTROLLER_TEMP_DIR = "jboss.controller.temp.dir";
+
+    /**
      * Constant that holds the name of the system property for specifying the node name within a cluster.
      */
     public static final String NODE_NAME = "jboss.node.name";
@@ -200,6 +206,8 @@ public class ServerEnvironment implements Serializable {
     private final File serverDeployDir;
     private final File serverLogDir;
     private final File serverTempDir;
+    private final File controllerTempDir;
+
     private final boolean standalone;
     private final boolean allowModelControllerExecutor;
 
@@ -316,6 +324,12 @@ public class ServerEnvironment implements Serializable {
         }
         serverTempDir = tmp;
 
+        tmp = getFileFromProperty(CONTROLLER_TEMP_DIR, props);
+        if (tmp == null) {
+            tmp = new File(serverBaseDir, "tmp");
+        }
+        controllerTempDir = tmp;
+
         boolean allowExecutor = true;
         String maxThreads = SecurityActions.getSystemProperty(BOOTSTRAP_MAX_THREADS);
         if (maxThreads != null && maxThreads.length() > 0) {
@@ -430,6 +444,10 @@ public class ServerEnvironment implements Serializable {
 
     public File getServerTempDir() {
         return serverTempDir;
+    }
+
+    public File getControllerTempDir() {
+        return controllerTempDir;
     }
 
     public LaunchType getLaunchType() {

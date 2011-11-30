@@ -17,7 +17,9 @@
             </includes>
             <excludes>
                 <exclude>**/*.sh</exclude>
-                <exclude>jboss-*/auth</exclude>
+                <exclude>jboss-*/domain/tmp/auth</exclude>
+                <exclude>jboss-*/domain/tmp/auth</exclude>
+                <exclude>**/mgmt-users.properties</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -28,13 +30,22 @@
             </includes>
             <fileMode>0755</fileMode>
         </fileSet>
+         <fileSet>
+            <directory>../build/target</directory>
+            <outputDirectory/>
+            <includes>
+                <include>**/mgmt-users.properties</include>
+            </includes>
+            <fileMode>0600</fileMode>
+        </fileSet>
         <fileSet>
             <directory>../build/target</directory>
             <outputDirectory/>
             <includes>
-                <include>jboss-*/auth</include>
+                <include>jboss-*/domain/tmp/auth</include>
+                <include>jboss-*/standalone//tmp/auth</include>
             </includes>
-            <directoryMode>700</directoryMode>
+            <directoryMode>0700</directoryMode>
         </fileSet>
     </fileSets>
 </assembly>
