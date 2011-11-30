@@ -20,39 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server;
-
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationContextTypeFactory;
+package org.jboss.as.controller;
 
 /**
- * Provides control over the server's current {@link RunningMode}.
- *
- * @author Brian Stansberry (c) 2011 Red Hat Inc.
- */
-public class RunningModeControl implements OperationContextTypeFactory {
-
-    private volatile RunningMode runningMode;
-
-    RunningModeControl(ServerEnvironment serverEnvironment) {
-        this.runningMode = serverEnvironment.getInitialRunningMode();
-    }
-
-    public RunningMode getRunningMode() {
-        return runningMode;
-    }
-
-    public void setRunningMode(RunningMode runningMode) {
-        this.runningMode = runningMode;
-    }
-
-    @Override
-    public OperationContext.Type getOperationContextType() {
-        switch (runningMode) {
-            case LIVE:
-                return OperationContext.Type.SERVER;
-            default:
-                return OperationContext.Type.MANAGEMENT;
-        }
-    }
+* The current running mode of the server.
+*
+* @author Brian Stansberry (c) 2011 Red Hat Inc.
+*/
+public enum RunningMode {
+    /** Normal operations; server has started all configured services and is capable of handling end user requests. */
+    NORMAL,
+    /** The server has only started services necessary to accept and handle administrative requests. */
+    ADMIN_ONLY
 }

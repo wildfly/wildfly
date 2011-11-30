@@ -97,11 +97,12 @@ final class OperationContextImpl extends AbstractOperationContext {
     /** The step that acquired the container monitor  */
     private Step containerMonitorStep;
 
-    OperationContextImpl(final ModelControllerImpl modelController, final Type contextType, final EnumSet<ContextFlag> contextFlags,
+    OperationContextImpl(final ModelControllerImpl modelController, final ProcessType processType,
+                         final RunningMode runningMode, final EnumSet<ContextFlag> contextFlags,
                             final OperationMessageHandler messageHandler, final OperationAttachments attachments,
                             final Resource model, final ModelController.OperationTransactionControl transactionControl,
                             final ControlledProcessState processState, final boolean booting) {
-        super(contextType, transactionControl, processState, booting);
+        super(processType, runningMode, transactionControl, processState, booting);
         this.model = model;
         this.originalModel = model;
         this.modelController = modelController;

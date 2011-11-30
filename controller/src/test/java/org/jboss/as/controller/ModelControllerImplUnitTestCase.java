@@ -152,7 +152,7 @@ public class ModelControllerImplUnitTestCase {
         }
 
         ModelControllerService(final ControlledProcessState processState, final ConfigurationPersister configurationPersister) {
-            super(OperationContext.Type.SERVER, configurationPersister, processState, DESC_PROVIDER, null, ExpressionResolver.DEFAULT);
+            super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.NORMAL), configurationPersister, processState, DESC_PROVIDER, null, ExpressionResolver.DEFAULT);
         }
 
         @Override

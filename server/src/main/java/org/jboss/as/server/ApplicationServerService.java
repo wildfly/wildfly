@@ -35,6 +35,7 @@ import java.util.ServiceLoader;
 import java.util.TreeSet;
 
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.server.deployment.repository.impl.ContentRepositoryImpl;
 import org.jboss.as.server.deployment.repository.impl.ServerDeploymentRepositoryImpl;
 import org.jboss.as.server.mgmt.ShutdownHandler;
@@ -73,7 +74,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
     ApplicationServerService(final List<ServiceActivator> extraServices, final Bootstrap.Configuration configuration) {
         this.extraServices = extraServices;
         this.configuration = configuration;
-        runningModeControl = new RunningModeControl(configuration.getServerEnvironment());
+        runningModeControl = new RunningModeControl(configuration.getServerEnvironment().getInitialRunningMode());
         startTime = configuration.getStartTime();
         processState = new ControlledProcessState(configuration.getServerEnvironment().isStandalone());
     }

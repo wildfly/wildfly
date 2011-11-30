@@ -69,7 +69,6 @@ import javax.xml.namespace.QName;
 
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.AbstractControllerService;
@@ -82,7 +81,10 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
@@ -341,7 +343,7 @@ public class ParseAndMarshalModelsTestCase {
         final List<ModelNode> ops = persister.load();
 
         final ModelNode model = new ModelNode();
-        final ModelController controller = createController(model, new Setup() {
+        final ModelController controller = createController(ProcessType.STANDALONE_SERVER, model, new Setup() {
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
                 ServerControllerModelUtil.updateCoreModel(model);
                 ServerControllerModelUtil.initOperations(rootRegistration, null, persister, null, null, null, null, false);
@@ -374,7 +376,7 @@ public class ParseAndMarshalModelsTestCase {
 
         final ModelNode model = new ModelNode();
 
-        final ModelController controller = createController(model, new Setup() {
+        final ModelController controller = createController(ProcessType.HOST_CONTROLLER, model, new Setup() {
             public void setup(Resource resource, ManagementResourceRegistration root) {
 
                 final Resource host = Resource.Factory.create();
@@ -496,7 +498,7 @@ public class ParseAndMarshalModelsTestCase {
 
 
         final ModelNode model = new ModelNode();
-        final ModelController controller = createController(model, new Setup() {
+        final ModelController controller = createController(ProcessType.HOST_CONTROLLER, model, new Setup() {
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
                 DomainModelUtil.updateCoreModel(resource.getModel());
                 DomainModelUtil.initializeMasterDomainRegistry(rootRegistration, persister, null, new MockFileRepository(), new MockDomainController(), null);
@@ -517,7 +519,7 @@ public class ParseAndMarshalModelsTestCase {
         return model;
     }
 
-    public ModelController createController(final ModelNode model, final Setup registration) throws InterruptedException {
+    public ModelController createController(final ProcessType processType, final ModelNode model, final Setup registration) throws InterruptedException {
         final ServiceController<?> existingController = serviceContainer.getService(ServiceName.of("ModelController"));
         if (existingController != null) {
             final CountDownLatch latch = new CountDownLatch(1);
@@ -537,7 +539,7 @@ public class ParseAndMarshalModelsTestCase {
 
         ServiceTarget target = serviceContainer.subTarget();
         ControlledProcessState processState = new ControlledProcessState(true);
-        ModelControllerService svc = new ModelControllerService(processState, registration, model);
+        ModelControllerService svc = new ModelControllerService(processType, processState, registration, model);
         ServiceBuilder<ModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
         builder.install();
         svc.latch.await();
@@ -659,8 +661,8 @@ public class ParseAndMarshalModelsTestCase {
         private final ModelNode model;
         private final Setup registration;
 
-        ModelControllerService(final ControlledProcessState processState, final Setup registration, final ModelNode model) {
-            super(OperationContext.Type.MANAGEMENT, new NullConfigurationPersister(), processState, getRootDescriptionProvider(), null, ExpressionResolver.DEFAULT);
+        ModelControllerService(final ProcessType processType, final ControlledProcessState processState, final Setup registration, final ModelNode model) {
+            super(processType, new RunningModeControl(RunningMode.ADMIN_ONLY), new NullConfigurationPersister(), processState, getRootDescriptionProvider(), null, ExpressionResolver.DEFAULT);
             this.model = model;
             this.registration = registration;
         }

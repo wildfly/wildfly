@@ -22,24 +22,24 @@
 
 package org.jboss.as.server.operations;
 
+import java.util.Locale;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.server.RunningMode;
-import org.jboss.as.server.RunningModeControl;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.controller.descriptions.ServerDescriptions;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
-
-import java.util.Locale;
 
 /**
  * Server-reload operation handler.
@@ -79,7 +79,7 @@ public class ServerReloadHandler implements OperationStepHandler, DescriptionPro
                         public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
                             if (transition == ServiceController.Transition.STOPPING_to_DOWN) {
                                 controller.removeListener(this);
-                                runningModeControl.setRunningMode(adminOnly ? RunningMode.ADMIN_ONLY : RunningMode.LIVE);
+                                runningModeControl.setRunningMode(adminOnly ? RunningMode.ADMIN_ONLY : RunningMode.NORMAL);
                                 controller.setMode(ServiceController.Mode.ACTIVE);
                             }
                         }

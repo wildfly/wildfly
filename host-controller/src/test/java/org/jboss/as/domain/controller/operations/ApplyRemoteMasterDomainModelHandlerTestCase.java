@@ -22,27 +22,7 @@
 
 package org.jboss.as.domain.controller.operations;
 
-import java.io.InputStream;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ControlledProcessState;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ProxyController;
-import org.jboss.as.controller.ResourceDefinition;
-import org.jboss.as.controller.client.MessageSeverity;
-import org.jboss.as.controller.client.OperationAttachments;
-import org.jboss.as.controller.client.OperationMessageHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_MODEL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
@@ -57,6 +37,31 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.junit.Assert.fail;
+
+import java.io.InputStream;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.client.MessageSeverity;
+import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -70,7 +75,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
-import static org.junit.Assert.fail;
 import org.junit.Test;
 
 /**
@@ -629,6 +633,16 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase {
 
         public boolean hasFailureDescription() {
             return false;
+        }
+
+        @Override
+        public ProcessType getProcessType() {
+            return null;
+        }
+
+        @Override
+        public RunningMode getRunningMode() {
+            return null;
         }
 
         public OperationContext.Type getType() {

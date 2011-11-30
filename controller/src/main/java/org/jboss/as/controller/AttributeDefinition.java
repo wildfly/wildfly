@@ -549,6 +549,16 @@ public abstract class AttributeDefinition {
         }
 
         @Override
+        public ProcessType getProcessType() {
+            return null;
+        }
+
+        @Override
+        public RunningMode getRunningMode() {
+            return null;
+        }
+
+        @Override
         public Type getType() {
             return null;
         }

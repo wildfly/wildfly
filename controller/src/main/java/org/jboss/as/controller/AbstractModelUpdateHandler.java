@@ -86,8 +86,8 @@ public abstract class AbstractModelUpdateHandler implements OperationStepHandler
 
     /**
      * Gets whether {@link #performRuntime(OperationContext, org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode, ServiceVerificationHandler, java.util.List)}}
-     * should be called. This default implementation always returns {@code true}. Subclasses that perform no runtime
-     * update could override and return {@code false}.
+     * should be called. This default implementation returns {@code true} if the {@link OperationContext#getType() context type} is {@link OperationContext.Type#SERVER}.
+     * Subclasses can override for different behavior.
      *
      * @param context operation context
      * @return {@code true} if {@code performRuntime} should be invoked; {@code false} otherwise.

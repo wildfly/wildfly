@@ -22,6 +22,7 @@
 package org.jboss.as.server;
 
 import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
@@ -221,7 +222,7 @@ public class ServerEnvironment implements Serializable {
         this.launchType = launchType;
         this.standalone = launchType != LaunchType.DOMAIN;
 
-        this.initialRunningMode = initialRunningMode == null ? RunningMode.LIVE : initialRunningMode;
+        this.initialRunningMode = initialRunningMode == null ? RunningMode.NORMAL : initialRunningMode;
 
         // Calculate host and default server name
         String hostName = props.getProperty(HOST_NAME);

@@ -22,8 +22,8 @@
 
 package org.jboss.as.controller;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -64,6 +64,8 @@ abstract class AbstractOperationContext implements OperationContext {
     private final ModelController.OperationTransactionControl transactionControl;
     private final ControlledProcessState processState;
     private final boolean booting;
+    private final ProcessType processType;
+    private final RunningMode runningMode;
 
     boolean respectInterruption = true;
 
@@ -80,10 +82,13 @@ abstract class AbstractOperationContext implements OperationContext {
         ALLOW_RESOURCE_SERVICE_RESTART,
     }
 
-    AbstractOperationContext(final Type contextType,
+    AbstractOperationContext(final ProcessType processType,
+                             final RunningMode runningMode,
                              final ModelController.OperationTransactionControl transactionControl,
                              final ControlledProcessState processState, boolean booting) {
-        this.contextType = contextType;
+        this.processType = processType;
+        this.runningMode = runningMode;
+        this.contextType = Type.getType(processType, runningMode);
         this.transactionControl = transactionControl;
         this.processState = processState;
         this.booting = booting;
@@ -435,6 +440,17 @@ abstract class AbstractOperationContext implements OperationContext {
         return ResultAction.KEEP;
     }
 
+    public final ProcessType getProcessType() {
+        assert isControllingThread();
+        return processType;
+    }
+
+    public final RunningMode getRunningMode() {
+        assert isControllingThread();
+        return runningMode;
+    }
+
+    @SuppressWarnings("deprecation")
     public final Type getType() {
         assert isControllingThread();
         return contextType;

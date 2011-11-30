@@ -21,8 +21,7 @@
  */
 package org.jboss.as.server;
 
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ExtensionContext.ProcessType;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.server.ServerEnvironment.LaunchType;
 import org.junit.Assert;
 import org.junit.Test;
@@ -34,9 +33,9 @@ import org.mockito.Mockito;
 public class ServerControllerModelUtilTestCase {
     @Test
     public void testGetProcessType() {
-        testGetProcessType(ServerEnvironment.LaunchType.DOMAIN, ExtensionContext.ProcessType.DOMAIN_SERVER);
-        testGetProcessType(ServerEnvironment.LaunchType.EMBEDDED, ExtensionContext.ProcessType.EMBEDDED);
-        testGetProcessType(ServerEnvironment.LaunchType.STANDALONE, ExtensionContext.ProcessType.STANDALONE_SERVER);
+        testGetProcessType(ServerEnvironment.LaunchType.DOMAIN, ProcessType.DOMAIN_SERVER);
+        testGetProcessType(ServerEnvironment.LaunchType.EMBEDDED, ProcessType.EMBEDDED_SERVER);
+        testGetProcessType(ServerEnvironment.LaunchType.STANDALONE, ProcessType.STANDALONE_SERVER);
     }
 
     private void testGetProcessType(LaunchType launchType, ProcessType processType) {
@@ -48,6 +47,6 @@ public class ServerControllerModelUtilTestCase {
 
     @Test
     public void testGetProcessTypeNull() {
-        Assert.assertEquals(ExtensionContext.ProcessType.EMBEDDED, ServerControllerModelUtil.getProcessType(null));
+        Assert.assertEquals(ProcessType.EMBEDDED_SERVER, ServerControllerModelUtil.getProcessType(null));
     }
 }
