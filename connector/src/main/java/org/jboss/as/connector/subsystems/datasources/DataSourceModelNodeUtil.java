@@ -207,17 +207,17 @@ class DataSourceModelNodeUtil {
         final String urlDelimiter = getStringIfSetOrGetDefault(dataSourceNode, URL_DELIMITER, null);
         final String urlSelectorStrategyClassName = getStringIfSetOrGetDefault(dataSourceNode,
                 URL_SELECTOR_STRATEGY_CLASS_NAME, null);
-        final boolean useJavaContext = getBooleanIfSetOrGetDefault(dataSourceNode, USE_JAVA_CONTEXT, Defaults.USE_JAVA_CONTEXT);
-        final boolean enabled = getBooleanIfSetOrGetDefault(dataSourceNode, ENABLED, Defaults.ENABLED);
+        final Boolean useJavaContext = getBooleanIfSetOrGetDefault(dataSourceNode, USE_JAVA_CONTEXT, Defaults.USE_JAVA_CONTEXT);
+        final Boolean enabled = getBooleanIfSetOrGetDefault(dataSourceNode, ENABLED, Defaults.ENABLED);
         final Integer maxPoolSize = getIntIfSetOrGetDefault(dataSourceNode, MAX_POOL_SIZE, Defaults.MAX_POOL_SIZE);
         final Integer minPoolSize = getIntIfSetOrGetDefault(dataSourceNode, MIN_POOL_SIZE, Defaults.MIN_POOL_SIZE);
-        final boolean prefill = getBooleanIfSetOrGetDefault(dataSourceNode, POOL_PREFILL, Defaults.PREFILL);
-        final boolean useStrictMin = getBooleanIfSetOrGetDefault(dataSourceNode, POOL_USE_STRICT_MIN, Defaults.USE_STRICT_MIN);
-        final boolean interleaving = getBooleanIfSetOrGetDefault(dataSourceNode, INTERLEAVING, Defaults.INTERLEAVING);
-        final boolean noTxSeparatePool = getBooleanIfSetOrGetDefault(dataSourceNode, NOTXSEPARATEPOOL, Defaults.NO_TX_SEPARATE_POOL);
-        final boolean padXid = getBooleanIfSetOrGetDefault(dataSourceNode, PAD_XID, Defaults.PAD_XID);
-        final boolean isSameRmOverride = getBooleanIfSetOrGetDefault(dataSourceNode, SAME_RM_OVERRIDE, Defaults.IS_SAME_RM_OVERRIDE);
-        final boolean wrapXaDataSource = getBooleanIfSetOrGetDefault(dataSourceNode, WRAP_XA_RESOURCE, Defaults.WRAP_XA_RESOURCE);
+        final Boolean prefill = getBooleanIfSetOrGetDefault(dataSourceNode, POOL_PREFILL, Defaults.PREFILL);
+        final Boolean useStrictMin = getBooleanIfSetOrGetDefault(dataSourceNode, POOL_USE_STRICT_MIN, Defaults.USE_STRICT_MIN);
+        final Boolean interleaving = getBooleanIfSetOrGetDefault(dataSourceNode, INTERLEAVING, Defaults.INTERLEAVING);
+        final Boolean noTxSeparatePool = getBooleanIfSetOrGetDefault(dataSourceNode, NOTXSEPARATEPOOL, Defaults.NO_TX_SEPARATE_POOL);
+        final Boolean padXid = getBooleanIfSetOrGetDefault(dataSourceNode, PAD_XID, Defaults.PAD_XID);
+        final Boolean isSameRmOverride = getBooleanIfSetOrGetDefault(dataSourceNode, SAME_RM_OVERRIDE, null); //Defaults.IS_SAME_RM_OVERRIDE);
+        final Boolean wrapXaDataSource = getBooleanIfSetOrGetDefault(dataSourceNode, WRAP_XA_RESOURCE, Defaults.WRAP_XA_RESOURCE);
         final FlushStrategy flushStrategy = dataSourceNode.hasDefined(POOL_FLUSH_STRATEGY.getName()) ? FlushStrategy.forName(dataSourceNode
                 .get(POOL_FLUSH_STRATEGY.getName()).asString()) : Defaults.FLUSH_STRATEGY;
 
@@ -232,7 +232,7 @@ class DataSourceModelNodeUtil {
 
         final DsSecurity security = new DsSecurityImpl(username, password, securityDomain, reauthPlugin);
 
-        final boolean sharePreparedStatements = dataSourceNode.hasDefined(SHAREPREPAREDSTATEMENTS.getName()) ? dataSourceNode.get(
+        final Boolean sharePreparedStatements = dataSourceNode.hasDefined(SHAREPREPAREDSTATEMENTS.getName()) ? dataSourceNode.get(
                 SHAREPREPAREDSTATEMENTS.getName()).asBoolean() : Defaults.SHARE_PREPARED_STATEMENTS;
         final Long preparedStatementsCacheSize = getLongIfSetOrGetDefault(dataSourceNode, PREPAREDSTATEMENTSCACHESIZE, null);
         final Statement.TrackStatementsEnum trackStatements = dataSourceNode.hasDefined(TRACKSTATEMENTS.getName()) ? Statement.TrackStatementsEnum
@@ -246,7 +246,7 @@ class DataSourceModelNodeUtil {
         final Long queryTimeout = getLongIfSetOrGetDefault(dataSourceNode, QUERYTIMEOUT, null);
         final Integer xaResourceTimeout = getIntIfSetOrGetDefault(dataSourceNode, XA_RESOURCE_TIMEOUT, null);
         final Long useTryLock = getLongIfSetOrGetDefault(dataSourceNode, USETRYLOCK, null);
-        final boolean setTxQuertTimeout = getBooleanIfSetOrGetDefault(dataSourceNode, SETTXQUERYTIMEOUT, Defaults.SET_TX_QUERY_TIMEOUT);
+        final Boolean setTxQuertTimeout = getBooleanIfSetOrGetDefault(dataSourceNode, SETTXQUERYTIMEOUT, Defaults.SET_TX_QUERY_TIMEOUT);
         final TimeOut timeOut = new TimeOutImpl(blockingTimeoutMillis, idleTimeoutMinutes, allocationRetry,
                 allocationRetryWaitMillis, xaResourceTimeout, setTxQuertTimeout, queryTimeout, useTryLock);
         final TransactionIsolation transactionIsolation = dataSourceNode.hasDefined(TRANSACTION_ISOLATION.getName()) ? TransactionIsolation
@@ -260,11 +260,11 @@ class DataSourceModelNodeUtil {
                 VALIDCONNECTIONCHECKER_PROPERTIES);
 
         Long backgroundValidationMillis = getLongIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATIONMILLIS, null);
-        final boolean backgroundValidation = getBooleanIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATION, Defaults.BACKGROUND_VALIDATION);
+        final Boolean backgroundValidation = getBooleanIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATION, Defaults.BACKGROUND_VALIDATION);
         boolean useFastFail = getBooleanIfSetOrGetDefault(dataSourceNode, USE_FAST_FAIL, Defaults.USE_FAST_FAIl);
-        final boolean validateOnMatch = getBooleanIfSetOrGetDefault(dataSourceNode, VALIDATEONMATCH, Defaults.VALIDATE_ON_MATCH);
-        final boolean spy = getBooleanIfSetOrGetDefault(dataSourceNode, SPY, Defaults.SPY);
-        final boolean useCcm = getBooleanIfSetOrGetDefault(dataSourceNode, USE_CCM, Defaults.USE_CCM);
+        final Boolean validateOnMatch = getBooleanIfSetOrGetDefault(dataSourceNode, VALIDATEONMATCH, Defaults.VALIDATE_ON_MATCH);
+        final Boolean spy = getBooleanIfSetOrGetDefault(dataSourceNode, SPY, Defaults.SPY);
+        final Boolean useCcm = getBooleanIfSetOrGetDefault(dataSourceNode, USE_CCM, Defaults.USE_CCM);
         final Validation validation = new ValidationImpl(backgroundValidation, backgroundValidationMillis, useFastFail,
                 validConnectionChecker, checkValidConnectionSql, validateOnMatch, staleConnectionChecker, exceptionSorter);
 
@@ -275,7 +275,7 @@ class DataSourceModelNodeUtil {
         final Credential credential = new CredentialImpl(recoveryUsername, recoveryPassword, recoverySecurityDomain);
 
         final Extension recoverPlugin = extractExtension(dataSourceNode, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES);
-        final boolean noRecovery = getBooleanIfSetOrGetDefault(dataSourceNode, NO_RECOVERY, false);
+        final Boolean noRecovery = getBooleanIfSetOrGetDefault(dataSourceNode, NO_RECOVERY, false);
         Recovery recovery = new Recovery(credential, recoverPlugin, noRecovery);
         return new ModifiableXaDataSource(transactionIsolation, timeOut, security, statement, validation, urlDelimiter,
                 urlSelectorStrategyClassName, useJavaContext, poolName, enabled, jndiName, spy, useCcm, xaDataSourceProperty,
@@ -341,8 +341,8 @@ class DataSourceModelNodeUtil {
         }
     }
 
-    private static boolean getBooleanIfSetOrGetDefault(final ModelNode dataSourceNode, final SimpleAttributeDefinition key,
-            final boolean defaultValue) {
+    private static Boolean getBooleanIfSetOrGetDefault(final ModelNode dataSourceNode, final SimpleAttributeDefinition key,
+            final Boolean defaultValue) {
         if (dataSourceNode.hasDefined(key.getName())) {
             return dataSourceNode.get(key.getName()).asBoolean();
         } else {
