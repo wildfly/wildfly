@@ -174,10 +174,19 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
         } catch (ResourceException e) {
             throw new RuntimeException(e);
         }
+
+        if(this.pool!=null) {
+            this.pool.start();
+        }
     }
 
     @Override
     public void stop(final StopContext stopContext) {
+
+        if(this.pool!=null){
+            this.pool.stop();
+        }
+
         resourceAdapter.endpointDeactivation(endpointFactory, activationSpec);
 
         super.stop(stopContext);
