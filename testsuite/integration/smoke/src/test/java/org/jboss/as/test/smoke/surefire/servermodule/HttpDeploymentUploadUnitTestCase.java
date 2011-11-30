@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Authenticator;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.NoSuchElementException;
 
@@ -50,6 +51,8 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.net.ssl.HttpsURLConnection;
 
 /**
  * Test the HTTP API upload functionality to ensure that a deployment is successfully
@@ -82,17 +85,13 @@ public class HttpDeploymentUploadUnitTestCase {
     public void testHttpDeploymentUpload() throws Exception {
         Authenticator.setDefault(getAuthenticator());
 
+        HttpURLConnection connection = null;
         BufferedOutputStream os = null;
         BufferedInputStream is = null;
 
         try {
             // Create the HTTP connection to the upload URL
-            HttpURLConnection connection =(HttpURLConnection) new URL(UPLOAD_URL).openConnection();
-            connection.setDoInput(true);
-            connection.setDoOutput(true);
-            connection.setRequestMethod(POST_REQUEST_METHOD);
-            connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + BOUNDARY_PARAM);
-
+            connection =getHttpURLConnection(UPLOAD_URL, "multipart/form-data; boundary=" + BOUNDARY_PARAM);
 
             // Grab the test WAR file and get a stream to its contents to be included in the POST.
             final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-http-deployment.sar", Simple.class.getPackage());
@@ -110,11 +109,9 @@ public class HttpDeploymentUploadUnitTestCase {
 
             byte[] hash = node.require(RESULT).asBytes();
 
-            connection =(HttpURLConnection) new URL(BASIC_URL).openConnection();
-            connection.setDoInput(true);
-            connection.setDoOutput(true);
-            connection.setRequestMethod(POST_REQUEST_METHOD);
-            connection.setRequestProperty("Content-Type", "application/json");
+            connection.disconnect();
+
+            connection = getHttpURLConnection(BASIC_URL, "application/json");
             os = new BufferedOutputStream(connection.getOutputStream());
 
             writeAddRequest(os, hash);
@@ -124,13 +121,33 @@ public class HttpDeploymentUploadUnitTestCase {
             System.out.println(node);
             assertEquals(SUCCESS, node.require(OUTCOME).asString());
 
-//        } catch (final Exception e) {
-//            fail("Exception not expected: " + e.getMessage());
+            connection.disconnect();
         }
         finally {
             closeQuietly(is);
             closeQuietly(os);
+            try {
+                connection = getHttpURLConnection(BASIC_URL, "application/json");
+                os = new BufferedOutputStream(connection.getOutputStream());
+                writeRemoveRequest(os);
+                ModelNode node = readResult(connection.getInputStream());
+                System.out.println(node);
+                connection.disconnect();
+            } catch (Exception ignored) {
+                ignored.printStackTrace();
+            } finally {
+                closeQuietly(os);
+            }
         }
+    }
+
+    private HttpURLConnection getHttpURLConnection(final String url, final String contentType) throws IOException {
+        HttpURLConnection connection =(HttpURLConnection) new URL(url).openConnection();
+        connection.setDoInput(true);
+        connection.setDoOutput(true);
+        connection.setRequestMethod(POST_REQUEST_METHOD);
+        connection.setRequestProperty("Content-Type", contentType);
+        return connection;
     }
 
     private void writeUploadRequest(final InputStream is, final OutputStream os) throws IOException {
@@ -147,6 +164,16 @@ public class HttpDeploymentUploadUnitTestCase {
         op.get("address").add("deployment", "test-http-deployment.sar");
         op.get("content").get(0).get("hash").set(hash);
         op.get("enabled").set(true);
+
+        os.write(op.toJSONString(true).getBytes());
+        os.flush();
+    }
+
+    private void writeRemoveRequest(BufferedOutputStream os) throws IOException {
+
+        ModelNode op = new ModelNode();
+        op.get("operation").set("remove");
+        op.get("address").add("deployment", "test-http-deployment.sar");
 
         os.write(op.toJSONString(true).getBytes());
         os.flush();
