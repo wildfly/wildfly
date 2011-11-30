@@ -3,6 +3,8 @@ package org.jboss.as.subsystem.test;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.Type;
+import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
@@ -24,6 +26,16 @@ public class AdditionalInitialization extends AdditionalParsers {
      */
     protected OperationContext.Type getType() {
         return Type.SERVER;
+    }
+
+    protected ProcessType getProcessType() {
+        OperationContext.Type contextType = getType();
+        return (contextType == Type.HOST) ? ProcessType.HOST_CONTROLLER : ProcessType.STANDALONE_SERVER;
+    }
+
+    protected RunningMode getRunningMode() {
+        OperationContext.Type contextType = getType();
+        return (contextType == Type.MANAGEMENT) ? RunningMode.ADMIN_ONLY : RunningMode.NORMAL;
     }
 
     /**

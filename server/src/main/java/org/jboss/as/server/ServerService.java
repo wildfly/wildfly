@@ -39,6 +39,8 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
@@ -125,13 +127,28 @@ public final class ServerService extends AbstractControllerService {
     ServerService(final Bootstrap.Configuration configuration, final ControlledProcessState processState,
                   final OperationStepHandler prepareStep, final BootstrapListener bootstrapListener,
                   final RunningModeControl runningModeControl, final AbstractVaultReader vaultReader) {
-        super(runningModeControl, null, processState,
+        super(getProcessType(configuration.getServerEnvironment()), runningModeControl, null, processState,
                 ServerDescriptionProviders.ROOT_PROVIDER, prepareStep, new RuntimeExpressionResolver(vaultReader));
         this.configuration = configuration;
         this.bootstrapListener = bootstrapListener;
         this.processState = processState;
         this.runningModeControl = runningModeControl;
         this.vaultReader = vaultReader;
+    }
+
+    static ProcessType getProcessType(ServerEnvironment serverEnvironment) {
+        if (serverEnvironment != null) {
+            switch (serverEnvironment.getLaunchType()) {
+            case DOMAIN:
+                return ProcessType.DOMAIN_SERVER;
+            case STANDALONE:
+                return ProcessType.STANDALONE_SERVER;
+            case EMBEDDED:
+                return ProcessType.EMBEDDED_SERVER;
+            }
+        }
+
+        return ProcessType.EMBEDDED_SERVER;
     }
 
     /**

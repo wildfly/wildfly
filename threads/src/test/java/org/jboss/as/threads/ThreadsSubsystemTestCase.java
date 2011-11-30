@@ -103,7 +103,10 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -806,7 +809,7 @@ public class ThreadsSubsystemTestCase {
 
         @Override
         public ProcessType getProcessType() {
-            return ProcessType.EMBEDDED;
+            return ProcessType.EMBEDDED_SERVER;
         }
 
         @Override
@@ -908,7 +911,7 @@ public class ThreadsSubsystemTestCase {
         private final CountDownLatch latch = new CountDownLatch(1);
 
         ModelControllerService(final ServiceContainer serviceContainer, final ControlledProcessState processState) {
-            super(OperationContext.Type.SERVER, new TestConfigurationPersister(), processState, NULL_PROVIDER, null, ExpressionResolver.DEFAULT);
+            super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.NORMAL), new TestConfigurationPersister(), processState, NULL_PROVIDER, null, ExpressionResolver.DEFAULT);
         }
 
         @Override

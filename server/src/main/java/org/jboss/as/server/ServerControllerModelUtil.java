@@ -61,6 +61,8 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ExtensionContextImpl;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.ExtensionAddHandler;
@@ -322,18 +324,18 @@ public class ServerControllerModelUtil {
         root.registerOperationHandler(DeployerChainAddHandler.NAME, DeployerChainAddHandler.INSTANCE, DeployerChainAddHandler.INSTANCE, false, EntryType.PRIVATE);
     }
 
-    static ExtensionContext.ProcessType getProcessType(ServerEnvironment serverEnvironment) {
+    static ProcessType getProcessType(ServerEnvironment serverEnvironment) {
         if (serverEnvironment != null) {
             switch (serverEnvironment.getLaunchType()) {
             case DOMAIN:
-                return ExtensionContext.ProcessType.DOMAIN_SERVER;
+                return ProcessType.DOMAIN_SERVER;
             case STANDALONE:
-                return ExtensionContext.ProcessType.STANDALONE_SERVER;
+                return ProcessType.STANDALONE_SERVER;
             case EMBEDDED:
-                return ExtensionContext.ProcessType.EMBEDDED;
+                return ProcessType.EMBEDDED_SERVER;
             }
         }
 
-        return ExtensionContext.ProcessType.EMBEDDED;
+        return ProcessType.EMBEDDED_SERVER;
     }
 }

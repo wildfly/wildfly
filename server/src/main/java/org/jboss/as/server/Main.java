@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
@@ -137,7 +138,7 @@ public final class Main {
     public static ServerEnvironment determineEnvironment(String[] args, Properties systemProperties, Map<String, String> systemEnvironment, ServerEnvironment.LaunchType launchType) {
         final int argsLength = args.length;
         String serverConfig = null;
-        RunningMode runningMode = RunningMode.LIVE;
+        RunningMode runningMode = RunningMode.NORMAL;
         for (int i = 0; i < argsLength; i++) {
             final String arg = args[i];
             try {

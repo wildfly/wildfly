@@ -22,11 +22,11 @@
 package org.jboss.as.remoting;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RestartParentWriteAttributeHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -53,9 +53,9 @@ public class RemotingSubsystemRootResource extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition WORKER_TASK_MAX_THREADS = createIntAttribute(CommonAttributes.WORKER_TASK_MAX_THREADS, Attribute.WORKER_TASK_MAX_THREADS, 16);
     static final SimpleAttributeDefinition WORKER_WRITE_THREADS = createIntAttribute(CommonAttributes.WORKER_WRITE_THREADS, Attribute.WORKER_WRITE_THREADS, 1);
 
-    private final ExtensionContext.ProcessType processType;
+    private final ProcessType processType;
 
-    public RemotingSubsystemRootResource(final ExtensionContext.ProcessType processType) {
+    public RemotingSubsystemRootResource(final ProcessType processType) {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME),
                 RemotingExtension.getResourceDescriptionResolver(RemotingExtension.SUBSYSTEM_NAME),
                 processType.isServer() ? RemotingSubsystemAdd.SERVER : RemotingSubsystemAdd.DOMAIN,
@@ -82,8 +82,8 @@ public class RemotingSubsystemRootResource extends SimpleResourceDefinition {
     }
 
     private static class ThreadWriteAttributeHandler extends RestartParentWriteAttributeHandler {
-        private final ExtensionContext.ProcessType processType;
-        ThreadWriteAttributeHandler(AttributeDefinition definition, ExtensionContext.ProcessType processType) {
+        private final ProcessType processType;
+        ThreadWriteAttributeHandler(AttributeDefinition definition, ProcessType processType) {
             super(CommonAttributes.SUBSYSTEM, definition);
             this.processType = processType;
         }

@@ -19,21 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.controller;
 
-import junit.framework.Assert;
-
-import org.junit.Test;
-
 /**
- * @author David Bosschaert
+ * Provides control over the server's current {@link RunningMode}.
+ *
+ * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ExtensionContextProcessTypeTestCase {
-    @Test
-    public void testIsServer() {
-        Assert.assertTrue(ProcessType.DOMAIN_SERVER.isServer());
-        Assert.assertTrue(ProcessType.EMBEDDED_SERVER.isServer());
-        Assert.assertTrue(ProcessType.STANDALONE_SERVER.isServer());
-        Assert.assertFalse(ProcessType.HOST_CONTROLLER.isServer());
+public class RunningModeControl {
+
+    private volatile RunningMode runningMode;
+
+    public RunningModeControl(final RunningMode initialMode) {
+        this.runningMode = initialMode;
+    }
+
+    public RunningMode getRunningMode() {
+        return runningMode;
+    }
+
+    public void setRunningMode(RunningMode runningMode) {
+        this.runningMode = runningMode;
     }
 }

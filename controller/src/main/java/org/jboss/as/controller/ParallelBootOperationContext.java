@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 import java.io.InputStream;
 import java.util.List;
 
@@ -37,8 +39,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 /**
  * {@link OperationContext} implementation for parallel handling of subsystem operations during boot.
  *
@@ -51,9 +51,8 @@ class ParallelBootOperationContext extends AbstractOperationContext {
 
     ParallelBootOperationContext(final ModelController.OperationTransactionControl transactionControl,
                                  final ControlledProcessState processState, final OperationContext primaryContext,
-                                 final List<ParsedBootOp> runtimeOps,
-                                 final Thread controllingThread) {
-        super(Type.SERVER, transactionControl, processState, true);
+                                 final List<ParsedBootOp> runtimeOps, final Thread controllingThread) {
+        super(primaryContext.getProcessType(), primaryContext.getRunningMode(), transactionControl, processState, true);
         this.primaryContext = primaryContext;
         this.runtimeOps = runtimeOps;
         AbstractOperationContext.controllingThread.set(controllingThread);

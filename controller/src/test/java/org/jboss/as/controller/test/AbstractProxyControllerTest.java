@@ -75,7 +75,10 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationAttachments;
@@ -547,7 +550,8 @@ public abstract class AbstractProxyControllerTest {
         private final InjectedValue<ModelController> proxy = new InjectedValue<ModelController>();
 
         MainModelControllerService(final ServiceContainer serviceContainer, final ControlledProcessState processState) {
-            super(OperationContext.Type.SERVER, new NullConfigurationPersister(), processState, new DescriptionProvider() {
+            super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.NORMAL), new NullConfigurationPersister(), processState,
+                    new DescriptionProvider() {
                 @Override
                 public ModelNode getModelDescription(Locale locale) {
                     ModelNode node = new ModelNode();
@@ -617,7 +621,8 @@ public abstract class AbstractProxyControllerTest {
     public class ProxyModelControllerService extends AbstractControllerService {
 
         ProxyModelControllerService(final ServiceContainer serviceContainer, final ControlledProcessState processState) {
-            super(OperationContext.Type.SERVER, new NullConfigurationPersister(), processState, new DescriptionProvider() {
+            super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.NORMAL), new NullConfigurationPersister(), processState,
+                    new DescriptionProvider() {
                 @Override
                 public ModelNode getModelDescription(Locale locale) {
                     ModelNode node = new ModelNode();

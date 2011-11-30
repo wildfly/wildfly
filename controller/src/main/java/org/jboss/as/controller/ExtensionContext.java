@@ -54,31 +54,4 @@ public interface ExtensionContext {
      */
     ProcessType getProcessType();
 
-    /**
-     * Holds the possible process types. This is used to identify what type of server we are running in.
-     * Extensions can use this information to decide whether certain resources, operations or attributes
-     * need to be present.
-     */
-    public enum ProcessType {
-        DOMAIN_SERVER,
-        EMBEDDED,
-        STANDALONE_SERVER,
-        MASTER_HOST_CONTROLLER,
-        SLAVE_HOST_CONTROLLER;
-
-        /**
-         * Returns true if the process is one of the 3 server variants.
-         *
-         * @return Returns <tt>true</tt> if the process is a server. Returns <tt>false</tt> otherwise.
-         */
-        public boolean isServer() {
-            switch (this) {
-            case DOMAIN_SERVER:
-            case EMBEDDED:
-            case STANDALONE_SERVER:
-                return true;
-            }
-            return false;
-        }
-    }
 }

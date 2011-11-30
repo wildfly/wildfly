@@ -148,11 +148,29 @@ public interface OperationContext {
     boolean hasFailureDescription();
 
     /**
+     * Get the type of process in which this operation is executing.
+     *
+     * @return the process type. Will not be {@code null}
+     */
+    ProcessType getProcessType();
+
+    /**
+     * Gets the running mode of the process.
+     *
+     * @return   the running mode. Will not be {@code null}
+     */
+    RunningMode getRunningMode();
+
+    /**
      * Get the operation context type.  This can be used to determine whether an operation is executing on a
      * server or on a host controller, etc.
      *
      * @return the operation context type
+     *
+     * @deprecated Use {@link OperationContext#getProcessType()} and {@link OperationContext#getRunningMode()}
      */
+    @Deprecated
+    @SuppressWarnings("deprecation")
     Type getType();
 
     /**
@@ -496,7 +514,7 @@ public interface OperationContext {
         VERIFY,
         /**
          * The step performs any actions needed to cause the operation to take effect on the relevant servers
-         * in the domain. Adding a step in this stage is only allowed when the type is {@link Type#HOST}.
+         * in the domain. Adding a step in this stage is only allowed when the process type is {@link ProcessType#HOST_CONTROLLER}.
          */
         DOMAIN,
         /**
@@ -525,7 +543,10 @@ public interface OperationContext {
 
     /**
      * The type of controller this operation is being applied to.
+     *
+     * @deprecated Use {@link OperationContext#getProcessType()} and {@link OperationContext#getRunningMode()}
      */
+    @Deprecated
     enum Type {
         /**
          * A host controller with an active runtime.
@@ -536,9 +557,30 @@ public interface OperationContext {
          */
         SERVER,
         /**
-         * A server instance which is in management-only mode (no runtime container is available).
+         * A server instance which is in {@link RunningMode#ADMIN_ONLY admin-only} mode.
          */
-        MANAGEMENT,
+        MANAGEMENT;
+
+        /**
+         *  Provides the {@code Type} that matches the given {@code processType} and {@code runningMode}.
+         *
+         *  @param processType the process type. Cannot be {@code null}
+         *  @param runningMode the running mode. Cannot be {@code null}
+         *
+         *  @return the type
+         */
+        @SuppressWarnings("deprecation")
+        public static Type getType(final ProcessType processType, final RunningMode runningMode) {
+            if (processType.isServer()) {
+                if (runningMode == RunningMode.NORMAL) {
+                    return SERVER;
+                } else {
+                    return MANAGEMENT;
+                }
+            } else {
+                return HOST;
+            }
+        }
     }
 
     /**

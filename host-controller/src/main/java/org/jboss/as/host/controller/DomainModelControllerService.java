@@ -50,12 +50,13 @@ import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.BootContext;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationContextTypeFactory;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
+import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
@@ -152,7 +153,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
                                          final Map<String, ProxyController> serverProxies,
                                          final PrepareStepHandler prepareStepHandler,
                                          final AbstractVaultReader vaultReader) {
-        super(new OperationContextTypeFactory.SimpleTypeFactory(OperationContext.Type.HOST), null, processState, DomainDescriptionProviders.ROOT_PROVIDER, prepareStepHandler, new RuntimeExpressionResolver(vaultReader));
+        super(ProcessType.HOST_CONTROLLER, new RunningModeControl(RunningMode.NORMAL), null, processState,
+                DomainDescriptionProviders.ROOT_PROVIDER, prepareStepHandler, new RuntimeExpressionResolver(vaultReader));
         this.environment = environment;
         this.hostControllerInfo = hostControllerInfo;
         this.localFileRepository = new LocalFileRepository(environment);

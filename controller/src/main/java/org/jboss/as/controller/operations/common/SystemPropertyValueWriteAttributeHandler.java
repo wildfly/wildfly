@@ -28,6 +28,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.dmr.ModelNode;
 

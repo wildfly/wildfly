@@ -20,16 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server;
+package org.jboss.as.controller;
 
 /**
-* The current running mode of the server.
-*
-* @author Brian Stansberry (c) 2011 Red Hat Inc.
-*/
-public enum RunningMode {
-    /** Normal operations; server has started all configured services and is capable of handling end user requests. */
-    LIVE,
-    /** The server has only started services necessary to accept and handle administrative requests. */
-    ADMIN_ONLY
+ * Holds the possible process types. This is used to identify what type of server we are running in.
+ * {@link Extension}s can use this information to decide whether certain resources, operations or attributes
+ * need to be present. {@link OperationStepHandler}s can use this to determine how to handle operations.
+ */
+public enum ProcessType {
+    DOMAIN_SERVER,
+    EMBEDDED_SERVER,
+    STANDALONE_SERVER,
+    HOST_CONTROLLER;
+
+    /**
+     * Returns true if the process is one of the 3 server variants.
+     *
+     * @return Returns <tt>true</tt> if the process is a server. Returns <tt>false</tt> otherwise.
+     */
+    public boolean isServer() {
+        switch (this) {
+        case DOMAIN_SERVER:
+        case EMBEDDED_SERVER:
+        case STANDALONE_SERVER:
+            return true;
+        }
+        return false;
+    }
 }

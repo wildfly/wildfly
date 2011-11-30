@@ -49,7 +49,6 @@ import javax.xml.stream.XMLStreamReader;
 
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
-
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ControlledProcessState;
@@ -58,12 +57,13 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ExtensionContextImpl;
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.Util;
@@ -251,7 +251,7 @@ public abstract class AbstractSubsystemTest {
         StringConfigurationPersister persister = new StringConfigurationPersister(Collections.<ModelNode>emptyList(), testParser);
 
         Extension extension = mainExtension.getClass().newInstance();
-        extension.initialize(new ExtensionContextImpl(MOCK_RESOURCE_REG, MOCK_RESOURCE_REG, persister, ExtensionContext.ProcessType.EMBEDDED));
+        extension.initialize(new ExtensionContextImpl(MOCK_RESOURCE_REG, MOCK_RESOURCE_REG, persister, ProcessType.EMBEDDED_SERVER));
 
         ConfigurationPersister.PersistenceResource resource = persister.store(model, Collections.<PathAddress>emptySet());
         resource.commit();
@@ -317,7 +317,7 @@ public abstract class AbstractSubsystemTest {
         }
         allOps.addAll(bootOperations);
         StringConfigurationPersister persister = new StringConfigurationPersister(allOps, testParser);
-        ModelControllerService svc = new ModelControllerService(additionalInit.getType(), mainExtension, controllerInitializer, additionalInit, processState, persister, additionalInit.isValidateOperations());
+        ModelControllerService svc = new ModelControllerService(mainExtension, controllerInitializer, additionalInit, processState, persister, additionalInit.isValidateOperations());
         ServiceBuilder<ModelController> builder = target.addService(Services.JBOSS_SERVER_CONTROLLER, svc);
         builder.install();
 
@@ -556,8 +556,9 @@ public abstract class AbstractSubsystemTest {
         volatile ManagementResourceRegistration rootRegistration;
         volatile Exception error;
 
-        ModelControllerService(final OperationContext.Type type, final Extension mainExtension, final ControllerInitializer controllerInitializer, final AdditionalInitialization additionalPreStep, final ControlledProcessState processState, final StringConfigurationPersister persister, boolean validateOps) {
-            super(type, persister, processState, DESC_PROVIDER, null, ExpressionResolver.DEFAULT);
+        ModelControllerService(final Extension mainExtension, final ControllerInitializer controllerInitializer, final AdditionalInitialization additionalPreStep, final ControlledProcessState processState, final StringConfigurationPersister persister, boolean validateOps) {
+            super(additionalPreStep.getProcessType(), new RunningModeControl(additionalPreStep.getRunningMode()), persister,
+                    processState, DESC_PROVIDER, null, ExpressionResolver.DEFAULT);
             this.persister = persister;
             this.additionalInit = additionalPreStep;
             this.mainExtension = mainExtension;
@@ -587,7 +588,7 @@ public abstract class AbstractSubsystemTest {
 
             controllerInitializer.initializeModel(rootResource, rootRegistration);
 
-            ExtensionContext context = new ExtensionContextImpl(rootRegistration, deployments, persister, ExtensionContext.ProcessType.EMBEDDED);
+            ExtensionContext context = new ExtensionContextImpl(rootRegistration, deployments, persister, ProcessType.EMBEDDED_SERVER);
             additionalInit.initializeExtraSubystemsAndModel(context, rootResource, rootRegistration);
             mainExtension.initialize(context);
         }
