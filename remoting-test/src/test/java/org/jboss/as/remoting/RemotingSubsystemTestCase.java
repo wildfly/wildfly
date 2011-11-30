@@ -39,8 +39,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
+import java.io.File;
 import java.io.IOException;
 
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ControllerInitializer;
@@ -49,6 +52,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceNotFoundException;
+import org.jboss.msc.service.ServiceTarget;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -75,6 +79,12 @@ public class RemotingSubsystemTestCase extends AbstractSubsystemBaseTest {
                 @Override
                 protected void setupController(ControllerInitializer controllerInitializer) {
                     controllerInitializer.addSocketBinding("test", port);
+                }
+
+                @Override
+                protected void addExtraServices(ServiceTarget target) {
+                    //Needed for initialization of the RealmAuthenticationProviderService
+                    AbsolutePathService.addService(ServerEnvironment.CONTROLLER_TEMP_DIR, new File("target/temp" + System.currentTimeMillis()).getAbsolutePath(), target);
                 }
 
             },readResource("remoting-with-threads.xml"));
@@ -106,6 +116,12 @@ public class RemotingSubsystemTestCase extends AbstractSubsystemBaseTest {
                 @Override
                 protected void setupController(ControllerInitializer controllerInitializer) {
                     controllerInitializer.addSocketBinding("test", port);
+                }
+
+                @Override
+                protected void addExtraServices(ServiceTarget target) {
+                    //Needed for initialization of the RealmAuthenticationProviderService
+                    AbsolutePathService.addService(ServerEnvironment.CONTROLLER_TEMP_DIR, new File("target/temp" + System.currentTimeMillis()).getAbsolutePath(), target);
                 }
 
             },readResource("remoting-with-threads.xml"));
@@ -147,6 +163,11 @@ public class RemotingSubsystemTestCase extends AbstractSubsystemBaseTest {
                     controllerInitializer.addSocketBinding("test", port);
                 }
 
+                @Override
+                protected void addExtraServices(ServiceTarget target) {
+                    //Needed for initialization of the RealmAuthenticationProviderService
+                    AbsolutePathService.addService(ServerEnvironment.CONTROLLER_TEMP_DIR, new File("target/temp" + System.currentTimeMillis()).getAbsolutePath(), target);
+                }
             },readResource("remoting-with-threads.xml"));
 
         CurrentConnectorAndController current = CurrentConnectorAndController.create(services, RemotingServices.SUBSYSTEM_ENDPOINT, RemotingServices.serverServiceName("test-connector"));
@@ -213,7 +234,7 @@ public class RemotingSubsystemTestCase extends AbstractSubsystemBaseTest {
     /**
      * Tests that the outbound connections configured in the remoting subsytem are processed and services
      * are created for them
-     * 
+     *
      * @throws Exception
      */
     @Test

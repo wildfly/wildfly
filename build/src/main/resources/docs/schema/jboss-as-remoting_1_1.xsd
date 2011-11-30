@@ -36,31 +36,36 @@
             <![CDATA[
                 The configuration of the Remoting subsystem.
 
+                The 'worker-thread-pool' element configures the worker thread pool.
                 The nested "connector" element(s) define connectors for this subsystem.
-                
-                The attributes correspond to the following xnio options:
-                  org.xnio.Options#WORKER_READ_THREADS (normally 1 or maybe 2-3 for an exceptionally busy server)
-                  org.xnio.Options#WORKER_WRITE_THREADS (same)
-                  org.xnio.Options#WORKER_ACCEPT_THREADS (we can just leave this at 1, it doesn't have to be tunable for Remoting)
-                  org.xnio.Options#WORKER_TASK_CORE_THREADS (core pool size)
-                  org.xnio.Options#WORKER_TASK_MAX_THREADS (max pool size)
-                  org.xnio.Options#WORKER_TASK_KEEPALIVE (keepalive time in milliseconds)
-                  org.xnio.Options#WORKER_TASK_LIMIT (worker queue length)
             ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element name="connector" type="connector"/>
-            <xs:element name="outbound-connections" type="outbound-connectionsType" />
-        </xs:choice>
-        <xs:attribute name="worker-read-threads" type="xs:integer" use="optional"/>
-        <xs:attribute name="worker-write-threads" type="xs:integer" use="optional"/>
-        <xs:attribute name="worker-task-core-threads" type="xs:integer" use="optional"/>
-        <xs:attribute name="worker-task-max-threads" type="xs:integer" use="optional"/>
-        <xs:attribute name="worker-task-keepalive" type="xs:integer" use="optional"/>
-        <xs:attribute name="worker-task-limit" type="xs:integer" use="optional"/>
-        
+        <xs:sequence>
+            <xs:element name="worker-thread-pool" type="workerThreadsType" minOccurs="0"/>
+            <xs:element name="connector" type="connector" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="outbound-connections" minOccurs="0" type="outbound-connectionsType" />
+        </xs:sequence>
     </xs:complexType>
+    
+    <xs:complexType name="workerThreadsType">
+        <xs:annotation>
+            <xs:documentation>
+            <![CDATA[
+                The configuration of the worker thread pool.
+
+                The attributes correspond to the following xnio options:
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="read-threads" type="xs:integer" use="optional"/>
+        <xs:attribute name="write-threads" type="xs:integer" use="optional"/>
+        <xs:attribute name="task-core-threads" type="xs:integer" use="optional"/>
+        <xs:attribute name="task-max-threads" type="xs:integer" use="optional"/>
+        <xs:attribute name="task-keepalive" type="xs:integer" use="optional"/>
+        <xs:attribute name="task-limit" type="xs:integer" use="optional"/>
+    </xs:complexType>
+    
 
     <xs:complexType name="connector">
         <xs:annotation>
