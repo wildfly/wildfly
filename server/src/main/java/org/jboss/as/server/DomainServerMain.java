@@ -81,8 +81,8 @@ public final class DomainServerMain {
      * @param args ignored
      */
     public static void main(String[] args) {
-        // TODO: privileged block
-        System.setProperty("log4j.defaultInitOverride", "true");
+
+        SecurityActions.setSystemProperty("log4j.defaultInitOverride", "true");
         new BridgeRepositorySelector().start();
 
         final InputStream initialInput = System.in;
