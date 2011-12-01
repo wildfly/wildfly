@@ -29,8 +29,8 @@ import org.jboss.threads.JBossExecutors;
 /**
  * @author John Bailey
  */
-class FutureServiceContainer extends AsyncFutureTask<ServiceContainer> {
-    FutureServiceContainer() {
+public class FutureServiceContainer extends AsyncFutureTask<ServiceContainer> {
+    public FutureServiceContainer() {
         super(JBossExecutors.directExecutor());
     }
 

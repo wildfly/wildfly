@@ -33,7 +33,6 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.security.cert.TrustAnchor;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -119,7 +118,7 @@ public final class Main {
             } else {
                 try {
                     final HostControllerBootstrap hc = new HostControllerBootstrap(config, authCode);
-                    hc.start();
+                    hc.bootstrap();
                     return hc;
                 } catch(Throwable t) {
                     abort(t);
