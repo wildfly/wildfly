@@ -84,14 +84,14 @@ public class TransactionAttributeMergingProcessor extends AbstractMergingProcess
             if (!entry.getValue().isEmpty()) {
                 //we can't specify both methodIntf and class name
                 final String className = methodIntf == null ? entry.getKey() : null;
-                componentConfiguration.setTransactionAttribute(methodIntf, className, entry.getValue().get(0));
+                componentConfiguration.getTransactionAttributes().setTransactionAttribute(methodIntf, className, entry.getValue().get(0));
             }
         }
 
         for (Map.Entry<Method, List<TransactionAttributeType>> entry : data.getMethodAnnotations().entrySet()) {
             if (!entry.getValue().isEmpty()) {
                 final MethodIdentifier method = MethodIdentifier.getIdentifierForMethod(entry.getKey());
-                componentConfiguration.setTransactionAttribute(methodIntf, entry.getValue().get(0), entry.getKey().getDeclaringClass().getName(), method.getName(), method.getParameterTypes());
+                componentConfiguration.getTransactionAttributes().setTransactionAttribute(methodIntf, entry.getValue().get(0), entry.getKey().getDeclaringClass().getName(), method.getName(), method.getParameterTypes());
             }
         }
     }
@@ -116,16 +116,16 @@ public class TransactionAttributeMergingProcessor extends AbstractMergingProcess
                             final String methodName = method.getMethodName();
                             final MethodIntf methodIntf = this.getMethodIntf(method.getMethodIntf());
                             if (methodName.equals("*")) {
-                                componentConfiguration.setTransactionAttribute(methodIntf, null, txAttr);
+                                componentConfiguration.getTransactionAttributes().setTransactionAttribute(methodIntf, null, txAttr);
                             } else {
 
                                 final MethodParametersMetaData methodParams = method.getMethodParams();
                                 // update the session bean description with the tx attribute info
                                 if (methodParams == null) {
-                                    componentConfiguration.setTransactionAttribute(methodIntf, txAttr, methodName);
+                                    componentConfiguration.getTransactionAttributes().setTransactionAttribute(methodIntf, txAttr, methodName);
                                 } else {
 
-                                    componentConfiguration.setTransactionAttribute(methodIntf, txAttr, null, methodName, this.getMethodParams(methodParams));
+                                    componentConfiguration.getTransactionAttributes().setTransactionAttribute(methodIntf, txAttr, null, methodName, this.getMethodParams(methodParams));
                                 }
                             }
                         }
