@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<connector version="1.5" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/connector_1_5.xsd">
+  <description></description>
+  <display-name>Test resource adapter</display-name>
+  <vendor-name>JBoss</vendor-name>
+  <eis-type>resource-adapter</eis-type>
+  <resourceadapter-version>1.0</resourceadapter-version>
+  <resourceadapter>
+    <resourceadapter-class>org.jboss.as.test.integration.ejb.mdb.resourceadapter.SimpleResourceAdapter</resourceadapter-class>
+    <inbound-resourceadapter>
+      <messageadapter>
+        <messagelistener>
+          <messagelistener-type>org.jboss.as.test.integration.ejb.mdb.resourceadapter.SimpleMessageListener</messagelistener-type>
+          <activationspec>
+            <activationspec-class>org.jboss.as.test.integration.ejb.mdb.resourceadapter.SimpleActivationSpec</activationspec-class>
+            <required-config-property>
+              <config-property-name>someProp</config-property-name>
+            </required-config-property>
+          </activationspec>
+        </messagelistener>
+      </messageadapter>
+    </inbound-resourceadapter>
+  </resourceadapter>
+</connector>
