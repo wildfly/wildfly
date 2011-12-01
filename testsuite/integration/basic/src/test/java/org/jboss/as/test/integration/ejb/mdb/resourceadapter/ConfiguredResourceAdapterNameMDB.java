@@ -41,7 +41,7 @@ import org.jboss.logging.Logger;
         activationConfig = {
                 @ActivationConfigProperty(propertyName = "destination", propertyValue = ConfiguredResourceAdapterNameTestCase.QUEUE_JNDI_NAME)
 })
-@ResourceAdapter(value = "NoRAShouldBeNamedLikeThis.rar")
+@ResourceAdapter(value = "RARNameOverridenInJBossEJB3Xml.rar")
 public class ConfiguredResourceAdapterNameMDB implements MessageListener {
 
     private static final Logger logger = Logger.getLogger(ConfiguredResourceAdapterNameMDB.class);

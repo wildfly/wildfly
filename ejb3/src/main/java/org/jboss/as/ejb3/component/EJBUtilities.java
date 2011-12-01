@@ -31,7 +31,6 @@ import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 import java.beans.IntrospectionException;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -40,7 +39,6 @@ import java.util.Set;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.ejb3.inflow.EndpointDeployer;
 import org.jboss.as.security.service.SimpleSecurityManager;
-import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.rar.Activation;
 import org.jboss.jca.core.spi.rar.MessageListener;
 import org.jboss.jca.core.spi.rar.NotFoundException;
@@ -63,21 +61,13 @@ import org.jboss.util.propertyeditor.PropertyEditors;
 public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
 
 
-    private static final Map<String, String> knownRar = new HashMap<String, String>(1);
-
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb", "utilities");
 
-    private final InjectedValue<MetadataRepository> mdrValue = new InjectedValue<MetadataRepository>();
     private final InjectedValue<ResourceAdapterRepository> resourceAdapterRepositoryValue = new InjectedValue<ResourceAdapterRepository>();
     private final InjectedValue<SimpleSecurityManager> securityManagerValue = new InjectedValue<SimpleSecurityManager>();
     private final InjectedValue<TransactionManager> transactionManagerValue = new InjectedValue<TransactionManager>();
     private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistryValue = new InjectedValue<TransactionSynchronizationRegistry>();
     private final InjectedValue<UserTransaction> userTransactionValue = new InjectedValue<UserTransaction>();
-
-    static {
-        knownRar.put("hornetq-ra", "org.hornetq.ra");
-        knownRar.put("hornetq-ra.rar", "org.hornetq.ra");
-    }
 
     public ActivationSpec createActivationSpecs(final String resourceAdapterName, final Class<?> messageListenerInterface,
                                                 final Properties activationConfigProperties, final ClassLoader classLoader) {
@@ -92,7 +82,7 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
             // now get the message listeners for this specific ra identifier
             final List<MessageListener> messageListeners = resourceAdapterRepository.getMessageListeners(raIdentifier);
             if (messageListeners == null || messageListeners.isEmpty()) {
-                throw MESSAGES.unknownMessageListenerType(resourceAdapterName, messageListenerInterface.getName());
+                throw MESSAGES.unknownMessageListenerType(messageListenerInterface.getName(), resourceAdapterName);
             }
             MessageListener requiredMessageListener = null;
             // now find the expected message listener from the list of message listeners for this resource adapter
@@ -103,7 +93,7 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
                 }
             }
             if (requiredMessageListener == null) {
-                throw MESSAGES.unknownMessageListenerType(resourceAdapterName, messageListenerInterface.getName());
+                throw MESSAGES.unknownMessageListenerType(messageListenerInterface.getName(), resourceAdapterName);
             }
             // found the message listener, now finally create the activation spec
             final Activation activation = requiredMessageListener.getActivation();
@@ -127,14 +117,6 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
         } catch (IntrospectionException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public MetadataRepository getMdr() {
-        return mdrValue.getOptionalValue();
-    }
-
-    public Injector<MetadataRepository> getMdrInjector() {
-        return mdrValue;
     }
 
     public ResourceAdapterRepository getResourceAdapterRepository() {
