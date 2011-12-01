@@ -33,7 +33,6 @@ import javax.transaction.TransactionManager;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
-import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.jacorb.csiv2.idl.SASCurrent;
 import org.jboss.as.jacorb.rmi.RmiIdlUtil;
 import org.jboss.as.jacorb.rmi.marshal.strategy.SkeletonStrategy;
@@ -75,11 +74,6 @@ public class EjbHomeCorbaServant extends Servant implements InvokeHandler, Local
      * The view this servant represents
      */
     private final ComponentView componentView;
-
-    /**
-     * The deployment repository that is used to map local EJB representations to CORBA objects
-     */
-    private final DeploymentRepository deploymentRepository;
 
     /**
      * Mapping from home methods to <code>SkeletonStrategy</code> instances.
@@ -133,12 +127,11 @@ public class EjbHomeCorbaServant extends Servant implements InvokeHandler, Local
     /**
      * Constructs an <code>EjbHomeCorbaServant></code>.
      */
-    public EjbHomeCorbaServant(final Map<String, SkeletonStrategy> methodInvokerMap, final String[] repositoryIds, final InterfaceDef interfaceDef, final ORB orb, final ComponentView componentView, final DeploymentRepository deploymentRepository, final TransactionManager transactionManager, final ClassLoader classLoader) {
+    public EjbHomeCorbaServant(final Map<String, SkeletonStrategy> methodInvokerMap, final String[] repositoryIds, final InterfaceDef interfaceDef, final ORB orb, final ComponentView componentView, final TransactionManager transactionManager, final ClassLoader classLoader) {
         this.methodInvokerMap = methodInvokerMap;
         this.repositoryIds = repositoryIds;
         this.interfaceDef = interfaceDef;
         this.componentView = componentView;
-        this.deploymentRepository = deploymentRepository;
         this.transactionManager = transactionManager;
         this.classLoader = classLoader;
         SASCurrent sasCurrent;
@@ -274,10 +267,6 @@ public class EjbHomeCorbaServant extends Servant implements InvokeHandler, Local
                         }
                     }
                 }
-
-                //if this is a remote proxy we need to translate it into a corba object
-                retVal = ProxyTranslater.wrapPotentialProxy(deploymentRepository, retVal);
-
                 out = (org.omg.CORBA_2_3.portable.OutputStream) handler.createReply();
                 if (op.isNonVoid()) {
                     op.writeRetval(out, retVal);

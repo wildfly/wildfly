@@ -36,7 +36,6 @@ import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
-import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.jacorb.rmi.ir.InterfaceRepository;
 import org.jboss.as.jacorb.rmi.marshal.strategy.SkeletonStrategy;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
@@ -122,11 +121,6 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
      * The corba naming context
      */
     private final InjectedValue<NamingContextExt> corbaNamingContext = new InjectedValue<NamingContextExt>();
-
-    /**
-     * The deployment repository
-     */
-    private final InjectedValue<DeploymentRepository> deploymentRepository = new InjectedValue<DeploymentRepository>();
 
     /**
      * A reference for the ORB.
@@ -333,7 +327,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
             // create CORBA reference to the EJBHome.
             homeServantRegistry = poaRegistry.getValue().getRegistryWithPersistentPOAPerServant();
 
-            final EjbHomeCorbaServant homeServant = new EjbHomeCorbaServant(homeMethodMap, homeRepositoryIds, homeInterfaceDef, orb, homeView.getValue(), deploymentRepository.getValue(), component.getTransactionManager(), module.getClassLoader());
+            final EjbHomeCorbaServant homeServant = new EjbHomeCorbaServant(homeMethodMap, homeRepositoryIds, homeInterfaceDef, orb, homeView.getValue(), component.getTransactionManager(), module.getClassLoader());
 
             homeReferenceFactory = homeServantRegistry.bind(homeServantName(name), homeServant, policies);
 
@@ -534,10 +528,6 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
 
     public InjectedValue<POA> getIrPoa() {
         return irPoa;
-    }
-
-    public InjectedValue<DeploymentRepository> getDeploymentRepository() {
-        return deploymentRepository;
     }
 
     public InjectedValue<ServiceModuleLoader> getServiceModuleLoaderInjectedValue() {

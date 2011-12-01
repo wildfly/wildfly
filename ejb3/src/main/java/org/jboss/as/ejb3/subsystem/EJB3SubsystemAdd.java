@@ -85,6 +85,7 @@ import org.jboss.as.ejb3.deployment.processors.merging.TransactionAttributeMergi
 import org.jboss.as.ejb3.deployment.processors.merging.TransactionManagementMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.security.JaccEjbDeploymentProcessor;
 import org.jboss.as.ejb3.iiop.POARegistry;
+import org.jboss.as.ejb3.iiop.RemoteObjectSubstitutionService;
 import org.jboss.as.ejb3.iiop.stub.DynamicStubFactoryFactory;
 import org.jboss.as.ejb3.remote.DefaultEjbClientContextService;
 import org.jboss.as.ejb3.remote.LocalEjbReceiver;
@@ -99,6 +100,7 @@ import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.txn.service.TxnServices;
+import org.jboss.com.sun.corba.se.impl.javax.rmi.RemoteObjectSubstitutionManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.naming.ejb.EjbNamingContextSetup;
@@ -142,8 +144,20 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
 
+        //setup IIOP related stuff
+        //This goes here rather than in EJB3IIOPAdd as it affects the server when it is acting as an iiop client
         //setup our dynamic stub factory
         DelegatingStubFactoryFactory.setOverridenDynamicFactory(new DynamicStubFactoryFactory());
+
+        //setup the substitution service, that translates between ejb proxies and IIOP stubs
+        final RemoteObjectSubstitutionService substitutionService = new RemoteObjectSubstitutionService();
+        newControllers.add(context.getServiceTarget().addService(RemoteObjectSubstitutionService.SERVICE_NAME, substitutionService)
+                .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, substitutionService.getDeploymentRepositoryInjectedValue())
+                .install());
+
+        RemoteObjectSubstitutionManager.setRemoteObjectSubstitution(substitutionService);
+
+
         //setup ejb: namespace
         EjbNamingContextSetup.setupEjbNamespace();
         //TODO: this is a bit of a hack

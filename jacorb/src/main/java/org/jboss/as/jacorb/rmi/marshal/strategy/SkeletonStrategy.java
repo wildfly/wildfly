@@ -25,6 +25,7 @@ import java.lang.reflect.Method;
 
 import java.rmi.RemoteException;
 
+import org.jboss.com.sun.corba.se.impl.javax.rmi.RemoteObjectSubstitutionManager;
 import org.omg.CORBA.UserException;
 import org.omg.CORBA.portable.IDLEntity;
 import org.omg.CORBA.portable.UnknownException;
@@ -149,7 +150,8 @@ public class SkeletonStrategy {
      * @param retVal the value to be written.
      */
     public void writeRetval(OutputStream out, Object retVal) {
-        retvalWriter.write(out, retVal);
+
+        retvalWriter.write(out, RemoteObjectSubstitutionManager.writeReplaceRemote(retVal));
     }
 
     /**

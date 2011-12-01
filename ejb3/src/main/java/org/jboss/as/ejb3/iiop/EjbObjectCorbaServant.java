@@ -213,7 +213,7 @@ public class EjbObjectCorbaServant extends Servant implements InvokeHandler, Loc
 
             org.omg.CORBA_2_3.portable.OutputStream out;
             try {
-                final Object retVal;
+                Object retVal;
 
                 if (opName.equals("_get_handle")) {
                     retVal = new HandleImplIIOP(orb.object_to_string(_this_object()));
