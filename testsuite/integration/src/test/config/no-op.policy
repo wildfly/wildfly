@@ -1,0 +1,15 @@
+
+// TODO: AS7-2826
+
+// Grant all to AS.
+grant codeBase "file:${jboss.dist}/-" {
+  permission java.security.AllPermission;
+};
+grant codeBase "file:${jboss.inst}/-" {
+  permission java.security.AllPermission;
+};
+
+// Grant all to tests.
+grant codeBase "file:${jbossas.ts.root.dir}/-" {
+  permission java.security.AllPermission;
+};
