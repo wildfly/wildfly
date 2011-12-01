@@ -1,0 +1,27 @@
+<?xml version="1.0"?>  
+   <jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
+                  xmlns="http://java.sun.com/xml/ns/javaee"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd
+                     http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"
+                  version="3.1"
+                  impl-version="2.0">
+    <enterprise-beans>
+        
+        <session>
+            <ejb-name>ResourceRefBean</ejb-name>
+            <!-- This resource-ref has no corresponding res-type specified
+            neither in ejb-jar.xml nor in the bean as a @Resource (see EJBTHREE-1823
+            for the details) -->
+            <resource-ref>
+                <res-ref-name>EJBTHREE-1823_DS</res-ref-name>
+                <jndi-name>java:jboss/datasources/ExampleDS</jndi-name>
+            </resource-ref>
+        </session>
+        
+		<session>
+            <ejb-name>StatelessBean</ejb-name>
+        </session>
+        
+    </enterprise-beans>
+</jboss:ejb-jar>

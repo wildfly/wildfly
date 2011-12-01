@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source.
+ * Copyright (c) 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -19,6 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.test.integration.ee.injection.resource.resourceref;
 
 import javax.naming.InitialContext;
@@ -27,11 +28,14 @@ import javax.sql.DataSource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -41,18 +45,35 @@ import org.junit.runner.RunWith;
  * Tests that @Resource bindings on interceptors that are applied to multiple
  * components without their own naming context work properly, and do not try
  * and create two duplicate bindings in the same namespace.
+ * 
+ * Migration test from EJB Testsuite (ejbthree-1823, ejbthree-1858) to AS7 [JIRA JBQA-5483].
+ * - ResourceHandler when resource-ref type is not specified.
+ * - EJBContext is configured through ejb-jar.xml as a resource-env-ref.
  *
- * @author Stuart Douglas
+ * @author Stuart Douglas, Jaikiran Pai, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
 public class ResourceRefTestCase {
+    private static final Logger log = Logger.getLogger(ResourceRefTestCase.class);
 
     @Deployment
     public static Archive<?> deployment() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "multiple-bindings-superclass.war");
-        war.addAsWebInfResource(getWebXml(),"web.xml");
-        war.addPackage(ResourceRefTestCase.class.getPackage());
-        return war;
+        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "resourcerref.ear");
+        
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "managed-bean.war");
+        war.addAsWebInfResource(ResourceRefTestCase.class.getPackage(),"web.xml", "web.xml");
+        war.addClasses(ResourceRefTestCase.class, DatasourceManagedBean.class);
+        
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "resource-ref-test.jar");
+        jar.addClasses(ResourceRefBean.class, ResourceRefRemote.class, StatelessBean.class, StatelessBeanRemote.class);
+        jar.addAsManifestResource(ResourceRefTestCase.class.getPackage(),"jboss-ejb3.xml", "jboss-ejb3.xml");
+        jar.addAsManifestResource(ResourceRefTestCase.class.getPackage(),"ejb-jar.xml", "ejb-jar.xml");
+        
+        ear.addAsModule(jar);
+        ear.addAsModule(war);
+                
+        log.info(ear.toString(true));
+        return ear;
     }
 
     @Test
@@ -68,26 +89,63 @@ public class ResourceRefTestCase {
         DatasourceManagedBean bean = (DatasourceManagedBean)context.lookup("java:module/datasourceManagedBean");
         Assert.assertNotNull(bean.getDataSource());
     }
+    
+    /**
+     * Test that a resource-ref entry with a res-type does not throw an NPE. Furthermore, the test additional provides a
+     * mappedName for the resource-ref in which case the resource ref will be created in the ENC.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testResourceRefEntriesWithoutResType() throws Exception {
+        // lookup the bean
+        InitialContext context = new InitialContext();
+        ResourceRefRemote bean = (ResourceRefRemote) context.lookup("java:app/resource-ref-test/" + ResourceRefBean.class.getSimpleName() + "!" + ResourceRefRemote.class.getName());
+        Assert.assertNotNull("Bean returned from JNDI is null", bean);
 
+        // test datasource resource-ref which does not have a res-type specified
+        boolean result = bean.isDataSourceAvailableInEnc();
+        Assert.assertTrue("Datasource not bound in ENC of the bean", result);
+    }
+    
+    /**
+     * Test that resource-ref with proper res-type are correctly processed (i.e. no regression is caused by the EJBHTREE-1823
+     * fix)
+     * 
+     * @throws Exception
+     */
+    @Ignore("AS7-2744")
+    @Test
+    public void testResourceRefEntriesWithResType() throws Exception {
+        // lookup the bean
+        InitialContext context = new InitialContext();
+        ResourceRefRemote bean = (ResourceRefRemote) context.lookup("java:app/resource-ref-test/" + ResourceRefBean.class.getSimpleName() + "!" + ResourceRefRemote.class.getName());
+        Assert.assertNotNull("Bean returned from JNDI is null", bean);
 
-    private static StringAsset getWebXml() {
-        return new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "\n" +
-                "<web-app version=\"3.0\"\n" +
-                "         xmlns=\"http://java.sun.com/xml/ns/javaee\"\n" +
-                "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-                "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd\"\n" +
-                "         metadata-complete=\"false\">\n" +
-                "\n" +
-                "    <resource-ref>\n" +
-                "        <res-ref-name>ds</res-ref-name>\n" +
-                "        <lookup-name>java:jboss/datasources/ExampleDS</lookup-name>\n" +
-                "        <injection-target>" +
-                "           <injection-target-class>"+ DatasourceManagedBean.class.getName()+"</injection-target-class>"+
-                "           <injection-target-name>ds</injection-target-name>" +
-                "        </injection-target>\n" +
-                "    </resource-ref>\n" +
-                "\n" +
-                "</web-app>");
+        // test other resource-refs which have res-type specified
+        boolean result = bean.areOtherResourcesAvailableInEnc();
+        Assert.assertTrue("Not all resources bound in ENC of the bean", result);
+
+    }
+    
+    /**
+     * Test that the resources configured through resource-env-ref are bound
+     * correctly
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testResourceEnvRefWithoutInjectionTarget() throws Exception
+    {
+        InitialContext context = new InitialContext();
+       StatelessBeanRemote bean = (StatelessBeanRemote) context.lookup("java:app/resource-ref-test/"+StatelessBean.class.getSimpleName() + "!" + StatelessBeanRemote.class.getName());
+       // check EJBContext through resource-env-ref was handled
+       Assert.assertTrue("resource-env-ref did not handle EJBContext", bean.isEJBContextAvailableThroughResourceEnvRef());
+       // check UserTransaction through resource-env-ref was handled
+       Assert.assertTrue("resource-env-ref did not handle UserTransaction", bean
+             .isUserTransactionAvailableThroughResourceEnvRef());
+       // check some other resource through resource-env-ref was handled
+       Assert.assertTrue("resource-env-ref did not setup the other resource in java:comp/env of the bean", bean
+             .isOtherResourceAvailableThroughResourceEnvRef());
     }
 }
