@@ -154,21 +154,6 @@
             <artifactId>jboss-msc</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.picketbox</groupId>
-            <artifactId>picketbox</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.picketbox</groupId>
-            <artifactId>picketbox-commons</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.picketbox</groupId>
-            <artifactId>picketbox-infinispan</artifactId>
-        </dependency>
-
     </dependencies>
 
     <profiles>
@@ -1519,6 +1504,21 @@
                 <dependency>
                     <groupId>org.w3c.css</groupId>
                     <artifactId>sac</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.picketbox</groupId>
+                    <artifactId>picketbox</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.picketbox</groupId>
+                    <artifactId>picketbox-commons</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.picketbox</groupId>
+                    <artifactId>picketbox-infinispan</artifactId>
                 </dependency>
 
                 <dependency>

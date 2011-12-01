@@ -227,13 +227,6 @@
             <maven-resource group="org.jboss.xnio" artifact="xnio-nio"/>
         </module-def>
 
-        <!-- See RuntimeVaultReader -->
-        <module-def name="org.picketbox">
-            <maven-resource group="org.picketbox" artifact="picketbox"/>
-            <maven-resource group="org.picketbox" artifact="picketbox-infinispan"/>
-            <maven-resource group="org.picketbox" artifact="picketbox-commons"/>
-        </module-def>
-
     </target>
 
     <target name="modules" depends="modules-minimalistic">
@@ -1082,6 +1075,12 @@
 
         <module-def name="org.w3c.css.sac">
             <maven-resource group="org.w3c.css" artifact="sac"/>
+        </module-def>
+
+        <module-def name="org.picketbox">
+            <maven-resource group="org.picketbox" artifact="picketbox"/>
+            <maven-resource group="org.picketbox" artifact="picketbox-infinispan"/>
+            <maven-resource group="org.picketbox" artifact="picketbox-commons"/>
         </module-def>
 
         <module-def name="javax.wsdl4j.api">

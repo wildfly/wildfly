@@ -26,6 +26,7 @@ package org.jboss.as.controller;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public interface VaultReader {
+    boolean isVaultFormat(String encrypted);
 
     /**
      * Unmasks vaulted data. Vaulted data has the format {@code VAULT::vault_block::attribute_name::sharedKey}
