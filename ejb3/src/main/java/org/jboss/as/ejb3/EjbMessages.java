@@ -1827,4 +1827,7 @@ public interface EjbMessages {
      */
     @Message(id = 14521, value = "No message listener of type %s found in resource adapter %s")
     IllegalStateException unknownMessageListenerType(String resourceAdapterName, String messageListenerType);
+
+    @Message(id=14522, value = "Could not find method %s from view %s on EJB class %s")
+    DeploymentUnitProcessingException couldNotFindViewMethodOnEjb(final Method method, String viewClass, String ejb);
 }

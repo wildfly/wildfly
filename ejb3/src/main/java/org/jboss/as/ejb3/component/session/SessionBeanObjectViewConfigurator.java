@@ -24,6 +24,8 @@ package org.jboss.as.ejb3.component.session;
 import java.lang.reflect.Method;
 
 import javax.ejb.EJBException;
+import javax.ejb.EJBLocalObject;
+import javax.ejb.EJBObject;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentStartService;
@@ -34,6 +36,8 @@ import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.ComponentDispatcherInterceptor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.interceptors.GetHomeInterceptorFactory;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -91,11 +95,17 @@ public abstract class SessionBeanObjectViewConfigurator implements ViewConfigura
                         serviceBuilder.addDependency(componentDescription.getEjbHomeView().getServiceName(), ComponentView.class, factory.getViewToCreate());
                     }
                 });
-            } else {
+            } else if (method.getName().equals("getHandle") && method.getParameterTypes().length == 0) {
+                //ignore, handled client side
+            } else if (method.getName().equals("isIdentical") && method.getParameterTypes().length == 1 && (method.getParameterTypes()[0].equals(EJBObject.class) || method.getParameterTypes()[0].equals(EJBLocalObject.class))) {
+                //ignore, handled client side
+            }  else {
                 final Method componentMethod = ClassReflectionIndexUtil.findMethod(index, componentConfiguration.getComponentClass(), MethodIdentifier.getIdentifierForMethod(method));
                 if (componentMethod != null) {
                     configuration.addViewInterceptor(method, new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(componentMethod)), InterceptorOrder.View.COMPONENT_DISPATCHER);
                     configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
+                } else if(method.getDeclaringClass() != Object.class && method.getDeclaringClass() != WriteReplaceInterface.class) {
+                    throw EjbMessages.MESSAGES.couldNotFindViewMethodOnEjb(method, description.getViewClassName(), componentConfiguration.getComponentName());
                 }
             }
         }
