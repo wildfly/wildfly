@@ -68,7 +68,7 @@ public class ArchiveValidationAdd extends AbstractBoottimeAddStepHandler {
             .setDefaultValue(new ModelNode().set(false))
             .setMeasurementUnit(MeasurementUnit.NONE)
             .setRestartAllServices()
-            .setXmlName("fail-on-error")
+            .setXmlName("fail-on-warn")
             .build());
 
         private ArchiveValidationParameters(SimpleAttributeDefinition attribute) {
