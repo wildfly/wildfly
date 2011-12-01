@@ -79,17 +79,19 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         } else {
             appclient = false;
         }
+        if (appclient && operation.hasDefined(WSDL_HOST)) {
+            submodel.get(WSDL_HOST).setExpression(operation.require(WSDL_HOST).asString());
+        }
+        if (operation.hasDefined(WSDL_PORT)) {
+            submodel.get(WSDL_PORT).set(operation.require(WSDL_PORT));
+        }
+        if (operation.hasDefined(WSDL_SECURE_PORT)) {
+            submodel.get(WSDL_SECURE_PORT).set(operation.require(WSDL_SECURE_PORT));
+        }
         if (!appclient) {
-
+            submodel.get(WSDL_HOST).setExpression(operation.require(WSDL_HOST).asString());
             configValidator.validate(operation);
             submodel.get(MODIFY_WSDL_ADDRESS).set(operation.require(MODIFY_WSDL_ADDRESS));
-            submodel.get(WSDL_HOST).setExpression(operation.require(WSDL_HOST).asString());
-            if (operation.has(WSDL_PORT)) {
-                submodel.get(WSDL_PORT).set(operation.require(WSDL_PORT));
-            }
-            if (operation.has(WSDL_SECURE_PORT)) {
-                submodel.get(WSDL_SECURE_PORT).set(operation.require(WSDL_SECURE_PORT));
-            }
             submodel.get(ENDPOINT_CONFIG).setEmptyObject();
             submodel.get(ENDPOINT).setEmptyObject();
         }
@@ -114,16 +116,21 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 WSDeploymentActivator.activate(processorTarget, appclient);
             }
         }, OperationContext.Stage.RUNTIME);
+
+        WSServices.saveContainerRegistry(context.getServiceRegistry(false));
+        ServiceTarget serviceTarget = context.getServiceTarget();
+        if (appclient && model.hasDefined(WSDL_HOST)) {
+            ServerConfigImpl serverConfig = createServerConfig(model, true);
+            newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler));
+        }
         if (!appclient) {
-            WSServices.saveContainerRegistry(context.getServiceRegistry(false));
-            ServiceTarget serviceTarget = context.getServiceTarget();
-            ServerConfigImpl serverConfig = createServerConfig(model);
+            ServerConfigImpl serverConfig = createServerConfig(model, false);
             newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler));
             newControllers.add(EndpointRegistryService.install(serviceTarget, verificationHandler));
         }
     }
 
-    private static ServerConfigImpl createServerConfig(ModelNode configuration) {
+    private static ServerConfigImpl createServerConfig(ModelNode configuration, boolean appclient) {
         final ServerConfigImpl config = ServerConfigImpl.getInstance();
         try {
             ModelNode wsdlHost = configuration.require(WSDL_HOST).resolve();
@@ -131,7 +138,9 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
-        config.setModifySOAPAddress(configuration.require(MODIFY_WSDL_ADDRESS).asBoolean());
+        if (!appclient) {
+            config.setModifySOAPAddress(configuration.require(MODIFY_WSDL_ADDRESS).asBoolean());
+        }
         if (configuration.hasDefined(WSDL_PORT)) {
             config.setWebServicePort(configuration.require(WSDL_PORT).asInt());
         }
