@@ -1827,4 +1827,15 @@ public interface EjbMessages {
      */
     @Message(id = 14521, value = "No message listener of type %s found in resource adapter %s")
     IllegalStateException unknownMessageListenerType(String messageListenerType, String resourceAdapterName);
+
+    /**
+     * Creates and returns an exception indicating that the param named <code>paramName</code> cannot be null
+     * or empty string.
+     *
+     * @param paramName The param name
+     * @return an {@link IllegalArgumentException} for the exception
+     */
+    @Message(id = 14522, value = "%s cannot be null or empty")
+    IllegalArgumentException stringParamCannotBeNullOrEmpty(final String paramName);
+
 }
