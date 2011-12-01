@@ -66,11 +66,14 @@ public class EJBSecurityTestCase {
     }
 
     private static <T> T lookup(final Class<?> beanClass, final Class<T> viewClass) throws NamingException {
-        return viewClass.cast(ctx.lookup("java:module/" + beanClass.getName() + "!" + viewClass.getName()));
+        if (ctx == null)
+            ctx = new InitialContext(); // to circumvent an Arquillian issue
+        return viewClass.cast(ctx.lookup("java:module/" + beanClass.getSimpleName() + "!" + viewClass.getName()));
     }
 
     @Test
     public void testDenyAllAnnotation() throws Exception {
+        final Context ctx = new InitialContext();
         final Restriction restrictedBean = (Restriction) ctx.lookup("java:module/" + AnnotatedSLSB.class.getSimpleName() + "!" + Restriction.class.getName());
         try {
             restrictedBean.restrictedMethod();
@@ -122,6 +125,7 @@ public class EJBSecurityTestCase {
 
     @Test
     public void testExcludeList() throws Exception {
+        final Context ctx = new InitialContext();
         final FullAccess fullAccessDDBean = (FullAccess) ctx.lookup("java:module/" + DDBasedSLSB.class.getSimpleName() + "!" + FullAccess.class.getName());
         fullAccessDDBean.doAnything();
 
