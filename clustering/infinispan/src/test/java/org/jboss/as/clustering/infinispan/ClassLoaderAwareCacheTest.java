@@ -32,6 +32,7 @@ import org.infinispan.AdvancedCache;
 import org.infinispan.commands.VisitableCommand;
 import org.infinispan.commands.read.KeySetCommand;
 import org.infinispan.container.DataContainer;
+import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.notifications.Listener;
@@ -105,7 +106,22 @@ public class ClassLoaderAwareCacheTest {
     public void with() {
         assertSame(this.cache, this.cache.with(Thread.currentThread().getContextClassLoader()));
     }
-    
+
+    @Test
+    public void withFlags() {
+        AdvancedCache<Object, Object> flaggedCache = mock(AdvancedCache.class);
+        
+        when(this.mockCache.withFlags(Flag.CACHE_MODE_LOCAL)).thenReturn(flaggedCache);
+        
+        AdvancedCache<Object, Object> result = this.cache.withFlags(Flag.CACHE_MODE_LOCAL);
+        
+        assertNotSame(this.cache, result);
+        
+        result.clear();
+        
+        verify(flaggedCache).clear();
+    }
+
     @Test
     public void addListener() throws Throwable {
         ArgumentCaptor<ClassLoaderAwareListener> capturedListener = ArgumentCaptor.forClass(ClassLoaderAwareListener.class);
