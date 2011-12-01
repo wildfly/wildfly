@@ -34,4 +34,8 @@ public class HelloBean implements SessionBean {
     @Override
     public void ejbPassivate() throws EJBException, RemoteException {
     }
+
+    public String sayHello(final String name) {
+        return "Hello " + name;
+    }
 }
