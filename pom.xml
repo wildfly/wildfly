@@ -123,7 +123,7 @@
         <version.org.codehaus.jackson>1.6.3</version.org.codehaus.jackson>
         <version.org.codehaus.woodstox.stax2-api>3.1.1</version.org.codehaus.woodstox.stax2-api>
         <version.org.codehaus.woodstox.woodstox-core-asl>4.1.1</version.org.codehaus.woodstox.woodstox-core-asl>
-        <version.org.hibernate>4.0.0.CR6</version.org.hibernate>
+        <version.org.hibernate>4.0.0.CR7</version.org.hibernate>
         <version.org.hibernate.commons.annotations>4.0.0.CR2</version.org.hibernate.commons.annotations>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.1.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
         <version.org.hibernate.validator>4.2.0.Final</version.org.hibernate.validator>
