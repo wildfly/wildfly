@@ -22,16 +22,24 @@
 
 package org.jboss.as.jmx;
 
-/**
- * @author Emanuel Muckenhuber
- */
-interface CommonAttributes {
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.dmr.ModelNode;
 
-    String CONNECTOR = "connector";
-    String JMX = "jmx";
-    String SHOW_MODEL = "show-model";
-    String SERVER_BINDING = "server-binding";
-    String REGISTRY_BINDING = "registry-binding";
-    String JMX_CONNECTOR = "jmx-connector";
-    String VALUE = "value";
+/**
+ * Removes the remoting subsystem
+ *
+ * @author Kabir Khan
+ */
+public class JMXSubsystemRemove extends AbstractRemoveStepHandler {
+
+    static final JMXSubsystemRemove INSTANCE = new JMXSubsystemRemove();
+
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
+        context.removeService(MBeanServerService.SERVICE_NAME);
+    }
+
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
+        // TODO:  RE-ADD SERVICES
+    }
 }

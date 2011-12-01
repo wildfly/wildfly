@@ -32,9 +32,13 @@
 
     <xs:complexType name="subsystem">
       <xs:sequence>
+         <xs:element name="show-model" type="booleanValueType" minOccurs="0"/>
          <xs:element name="jmx-connector" type="jmx-connectorType" minOccurs="0"/>
       </xs:sequence>
-      <xs:attribute name="show-model" use="optional" default="false"/>
+    </xs:complexType>
+
+    <xs:complexType name="booleanValueType">
+      <xs:attribute name="value" type="xs:boolean"/>
     </xs:complexType>
 
     <xs:complexType name="jmx-connectorType">

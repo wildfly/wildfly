@@ -158,9 +158,11 @@
                 </default-workmanager>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jdr:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:jmx:1.1" show-model="true"/>
+            <subsystem xmlns="urn:jboss:domain:jmx:1.1">
+                <show-model value="true"/>
+            </subsystem>
             <subsystem xmlns="urn:jboss:domain:jpa:1.0">
-                 <jpa default-datasource=""/>
+                <jpa default-datasource=""/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:mail:1.0">
                 <mail-session jndi-name="java:jboss/mail/Default">
@@ -529,7 +531,9 @@
                     <protocol type="pbcast.FLUSH"/>
                 </stack>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:jmx:1.1" show-model="true"/>
+            <subsystem xmlns="urn:jboss:domain:jmx:1.1">
+                <show-model value="true"/>
+            </subsystem>
             <subsystem xmlns="urn:jboss:domain:jpa:1.0">
                  <jpa default-datasource=""/>
             </subsystem>

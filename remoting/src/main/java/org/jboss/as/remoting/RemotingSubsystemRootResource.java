@@ -47,12 +47,12 @@ public class RemotingSubsystemRootResource extends SimpleResourceDefinition {
     static final RemotingSubsystemRootResource INSTANCE = new RemotingSubsystemRootResource();
 
     //The defaults for these come from XnioWorker
-    static final SimpleAttributeDefinition WORKER_READ_THREADS = createIntAttribute(CommonAttributes.WORKER_READ_THREADS, 1);
-    static final SimpleAttributeDefinition WORKER_TASK_CORE_THREADS = createIntAttribute(CommonAttributes.WORKER_TASK_CORE_THREADS, 4);
-    static final SimpleAttributeDefinition WORKER_TASK_KEEPALIVE = createIntAttribute(CommonAttributes.WORKER_TASK_KEEPALIVE, 60);
-    static final SimpleAttributeDefinition WORKER_TASK_LIMIT = createIntAttribute(CommonAttributes.WORKER_TASK_LIMIT, 0x4000);
-    static final SimpleAttributeDefinition WORKER_TASK_MAX_THREADS = createIntAttribute(CommonAttributes.WORKER_TASK_MAX_THREADS, 16);
-    static final SimpleAttributeDefinition WORKER_WRITE_THREADS = createIntAttribute(CommonAttributes.WORKER_WRITE_THREADS, 1);
+    static final SimpleAttributeDefinition WORKER_READ_THREADS = createIntAttribute(CommonAttributes.WORKER_READ_THREADS, Attribute.WORKER_READ_THREADS, 1);
+    static final SimpleAttributeDefinition WORKER_TASK_CORE_THREADS = createIntAttribute(CommonAttributes.WORKER_TASK_CORE_THREADS, Attribute.WORKER_TASK_CORE_THREADS, 4);
+    static final SimpleAttributeDefinition WORKER_TASK_KEEPALIVE = createIntAttribute(CommonAttributes.WORKER_TASK_KEEPALIVE, Attribute.WORKER_TASK_KEEPALIVE, 60);
+    static final SimpleAttributeDefinition WORKER_TASK_LIMIT = createIntAttribute(CommonAttributes.WORKER_TASK_LIMIT, Attribute.WORKER_TASK_LIMIT, 0x4000);
+    static final SimpleAttributeDefinition WORKER_TASK_MAX_THREADS = createIntAttribute(CommonAttributes.WORKER_TASK_MAX_THREADS, Attribute.WORKER_TASK_MAX_THREADS, 16);
+    static final SimpleAttributeDefinition WORKER_WRITE_THREADS = createIntAttribute(CommonAttributes.WORKER_WRITE_THREADS, Attribute.WORKER_WRITE_THREADS, 1);
 
     //private static final
 
@@ -77,8 +77,8 @@ public class RemotingSubsystemRootResource extends SimpleResourceDefinition {
         resourceRegistration.registerReadWriteAttribute(attr, null, new ThreadWriteAttributeHandler(attr));
     }
 
-    private static SimpleAttributeDefinition createIntAttribute(String name, int defaultValue) {
-        return SimpleAttributeDefinitionBuilder.create(name, ModelType.INT, true).setDefaultValue(new ModelNode().set(defaultValue)).setValidator(new IntRangeValidator(1)).build();
+    private static SimpleAttributeDefinition createIntAttribute(String name, Attribute attribute, int defaultValue) {
+        return SimpleAttributeDefinitionBuilder.create(name, ModelType.INT, true).setDefaultValue(new ModelNode().set(defaultValue)).setXmlName(attribute.getLocalName()).setValidator(new IntRangeValidator(1)).build();
     }
 
     private static class ThreadWriteAttributeHandler extends RestartParentWriteAttributeHandler {

@@ -127,8 +127,8 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         assertJmxSubsystemAddress(addSubsystem.get(OP_ADDR));
 
         ModelNode addConnector = operations.get(1);
-        Assert.assertEquals(JMXConnectorAdd.OPERATION_NAME, addConnector.get(OP).asString());
-        assertJmxSubsystemAddress(addConnector.get(OP_ADDR));
+        Assert.assertEquals(ADD, addConnector.get(OP).asString());
+        assertJmxConnectorAddress(addConnector.get(OP_ADDR));
         Assert.assertEquals("jmx-connector-registry", addConnector.get(CommonAttributes.REGISTRY_BINDING).asString());
         Assert.assertEquals("jmx-connector-server", addConnector.get(CommonAttributes.SERVER_BINDING).asString());
     }
@@ -197,8 +197,8 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         //Read the whole model and make sure it looks as expected
         ModelNode model = services.readWholeModel();
         Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(JMXExtension.SUBSYSTEM_NAME));
-        Assert.assertEquals("registry", model.get(SUBSYSTEM, JMXExtension.SUBSYSTEM_NAME).require(CommonAttributes.REGISTRY_BINDING).asString());
-        Assert.assertEquals("server", model.get(SUBSYSTEM, JMXExtension.SUBSYSTEM_NAME).require(CommonAttributes.SERVER_BINDING).asString());
+        Assert.assertEquals("registry", model.get(SUBSYSTEM, JMXExtension.SUBSYSTEM_NAME, CommonAttributes.CONNECTOR, CommonAttributes.JMX).require(CommonAttributes.REGISTRY_BINDING).asString());
+        Assert.assertEquals("server", model.get(SUBSYSTEM, JMXExtension.SUBSYSTEM_NAME, CommonAttributes.CONNECTOR, CommonAttributes.JMX).require(CommonAttributes.SERVER_BINDING).asString());
 
         //Make sure that we can connect to the MBean server
         String host = "localhost";
@@ -302,7 +302,8 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
     public void testParseAndMarshalModel1_1WithShowModel() throws Exception {
         //Parse the subsystem xml and install into the first controller
         String subsystemXml =
-                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\" show-model=\"true\">" +
+                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
+                "    <show-model value=\"true\"/>" +
                 "    <jmx-connector registry-binding=\"registry1\" server-binding=\"server1\" />" +
                 "</subsystem>";
 
@@ -320,6 +321,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                 controllerInitializer.addSocketBinding("server1", 12346);
             }
         };
+
 
         KernelServices servicesA = super.installInController(additionalInit, subsystemXml);
         //Get the model and the persisted xml from the first controller
@@ -367,6 +369,16 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
 
     }
 
+    private void assertJmxConnectorAddress(ModelNode address) {
+        PathAddress addr = PathAddress.pathAddress(address);
+        Assert.assertEquals(2, addr.size());
+        PathElement element = addr.getElement(0);
+        Assert.assertEquals(SUBSYSTEM, element.getKey());
+        Assert.assertEquals(JMXExtension.SUBSYSTEM_NAME, element.getValue());
+        element = addr.getElement(1);
+        Assert.assertEquals(CommonAttributes.CONNECTOR, element.getKey());
+        Assert.assertEquals(CommonAttributes.JMX, element.getValue());
+    }
 
     private void assertJmxSubsystemAddress(ModelNode address) {
         PathAddress addr = PathAddress.pathAddress(address);

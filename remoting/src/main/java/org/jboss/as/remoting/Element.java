@@ -57,6 +57,7 @@ public enum Element {
     SERVER_AUTH("server-auth"),
     STRENGTH("strength"),
     SUBSYSTEM("subsystem"),
+    WORKER_THREAD_POOL("worker-thread-pool")
     ;
 
     private final String name;
