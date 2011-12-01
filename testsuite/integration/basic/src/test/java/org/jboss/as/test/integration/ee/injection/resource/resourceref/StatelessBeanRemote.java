@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,18 +22,15 @@
 
 package org.jboss.as.test.integration.ee.injection.resource.resourceref;
 
-import javax.annotation.ManagedBean;
-import javax.sql.DataSource;
-
 /**
- * @author Stuart Douglas
+ * @author Jaikiran Pai
  */
-@ManagedBean("datasourceManagedBean")
-public class DatasourceManagedBean {
+public interface StatelessBeanRemote
+{
 
-    private DataSource ds;
+   boolean isEJBContextAvailableThroughResourceEnvRef();
 
-    public DataSource getDataSource() {
-        return ds;
-    }
+   boolean isUserTransactionAvailableThroughResourceEnvRef();
+
+   boolean isOtherResourceAvailableThroughResourceEnvRef();
 }

@@ -22,18 +22,17 @@
 
 package org.jboss.as.test.integration.ee.injection.resource.resourceref;
 
-import javax.annotation.ManagedBean;
-import javax.sql.DataSource;
+import javax.ejb.Remote;
+import javax.naming.NamingException;
 
 /**
- * @author Stuart Douglas
+ * ResourceRefRemote
+ * 
+ * @author Jaikiran Pai
  */
-@ManagedBean("datasourceManagedBean")
-public class DatasourceManagedBean {
+@Remote
+public interface ResourceRefRemote {
+    public boolean isDataSourceAvailableInEnc() throws NamingException;
 
-    private DataSource ds;
-
-    public DataSource getDataSource() {
-        return ds;
-    }
+    public boolean areOtherResourcesAvailableInEnc() throws NamingException;
 }

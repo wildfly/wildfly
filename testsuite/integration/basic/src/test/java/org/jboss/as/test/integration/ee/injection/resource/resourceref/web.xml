@@ -1,0 +1,16 @@
+<web-app version="3.0"
+         xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+         metadata-complete="false">
+
+    <resource-ref>
+        <res-ref-name>ds</res-ref-name>
+        <lookup-name>java:jboss/datasources/ExampleDS</lookup-name>
+        <injection-target>
+           <injection-target-class>org.jboss.as.test.integration.ee.injection.resource.resourceref.DatasourceManagedBean</injection-target-class>
+           <injection-target-name>ds</injection-target-name>
+        </injection-target>
+    </resource-ref>
+
+</web-app>

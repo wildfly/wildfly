@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-jar
+        xmlns="http://java.sun.com/xml/ns/javaee"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+                            http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd"
+        version="3.0">
+
+   <enterprise-beans>
+
+        <session>
+            <ejb-name>StatelessBean</ejb-name>
+            <business-remote>org.jboss.as.test.integration.ee.injection.resource.resourceref.StatelessBeanRemote</business-remote>
+            <ejb-class>org.jboss.as.test.integration.ee.injection.resource.resourceref.StatelessBean</ejb-class>
+            <session-type>Stateless</session-type>
+            
+            <resource-env-ref>
+                <resource-env-ref-name>MyEJBContext</resource-env-ref-name>
+                <resource-env-ref-type>javax.ejb.EJBContext</resource-env-ref-type>
+            </resource-env-ref>
+
+            <resource-env-ref>
+                <resource-env-ref-name>MyUserTransaction</resource-env-ref-name>
+                <resource-env-ref-type>javax.transaction.UserTransaction</resource-env-ref-type>
+            </resource-env-ref>
+
+            <resource-env-ref>
+                <resource-env-ref-name>MyQueue</resource-env-ref-name>
+                <resource-env-ref-type>javax.jms.Queue</resource-env-ref-type>
+                <mapped-name>java:/queue/test</mapped-name>
+            </resource-env-ref>
+        </session>
+
+   </enterprise-beans>
+</ejb-jar>
