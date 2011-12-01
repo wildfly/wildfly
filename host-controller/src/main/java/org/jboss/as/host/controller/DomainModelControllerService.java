@@ -55,7 +55,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
-import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -84,6 +83,7 @@ import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.remoting.EndpointService;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
+import org.jboss.as.server.BootstrapListener;
 import org.jboss.as.server.RuntimeExpressionResolver;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
@@ -99,7 +99,7 @@ import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 
 /**
- * Creates the service that acts as the {@link org.jboss.as.controller.ModelController} for a host.
+ * Creates the service that acts as the {@link org.jboss.as.controller.ModelController} for a Host Controller process.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
@@ -111,6 +111,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
     private HostControllerConfigurationPersister hostControllerConfigurationPersister;
     private final HostControllerEnvironment environment;
+    private final RunningModeControl runningModeControl;
     private final LocalHostControllerInfoImpl hostControllerInfo;
     private final FileRepository localFileRepository;
     private final RemoteFileRepository remoteFileRepository;
@@ -118,6 +119,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final Map<String, ProxyController> hostProxies;
     private final Map<String, ProxyController> serverProxies;
     private final PrepareStepHandler prepareStepHandler;
+    private final BootstrapListener bootstrapListener;
     private ManagementResourceRegistration modelNodeRegistration;
 
     private final Map<String, Channel> unregisteredHostChannels = new HashMap<String, Channel>();
@@ -130,15 +132,17 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
     public static ServiceController<ModelController> addService(final ServiceTarget serviceTarget,
                                                             final HostControllerEnvironment environment,
-                                                            final ControlledProcessState processState) {
+                                                            final RunningModeControl runningModeControl,
+                                                            final ControlledProcessState processState,
+                                                            final BootstrapListener bootstrapListener) {
         final Map<String, ProxyController> hostProxies = new ConcurrentHashMap<String, ProxyController>();
         final Map<String, ProxyController> serverProxies = new ConcurrentHashMap<String, ProxyController>();
         final LocalHostControllerInfoImpl hostControllerInfo = new LocalHostControllerInfoImpl(processState);
         final AbstractVaultReader vaultReader = service(AbstractVaultReader.class);
         log.debugf("Using VaultReader %s", vaultReader);
         final PrepareStepHandler prepareStepHandler = new PrepareStepHandler(hostControllerInfo, hostProxies, serverProxies);
-        DomainModelControllerService service = new DomainModelControllerService(environment, processState,
-                hostControllerInfo, hostProxies, serverProxies, prepareStepHandler, vaultReader);
+        DomainModelControllerService service = new DomainModelControllerService(environment, runningModeControl, processState,
+                hostControllerInfo, hostProxies, serverProxies, prepareStepHandler, vaultReader, bootstrapListener);
         return serviceTarget.addService(SERVICE_NAME, service)
                 .addDependency(HostControllerBootstrap.SERVICE_NAME_BASE.append("executor"), ExecutorService.class, service.getExecutorServiceInjector())
                 .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerConnectionService.class, service.injectedProcessControllerConnection)
@@ -147,15 +151,18 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     private DomainModelControllerService(final HostControllerEnvironment environment,
+                                         final RunningModeControl runningModeControl,
                                          final ControlledProcessState processState,
                                          final LocalHostControllerInfoImpl hostControllerInfo,
                                          final Map<String, ProxyController> hostProxies,
                                          final Map<String, ProxyController> serverProxies,
                                          final PrepareStepHandler prepareStepHandler,
-                                         final AbstractVaultReader vaultReader) {
-        super(ProcessType.HOST_CONTROLLER, new RunningModeControl(RunningMode.NORMAL), null, processState,
+                                         final AbstractVaultReader vaultReader,
+                                         final BootstrapListener bootstrapListener) {
+        super(ProcessType.HOST_CONTROLLER, runningModeControl, null, processState,
                 DomainDescriptionProviders.ROOT_PROVIDER, prepareStepHandler, new RuntimeExpressionResolver(vaultReader));
         this.environment = environment;
+        this.runningModeControl = runningModeControl;
         this.hostControllerInfo = hostControllerInfo;
         this.localFileRepository = new LocalFileRepository(environment);
         this.remoteFileRepository = new RemoteFileRepository(localFileRepository);
@@ -163,6 +170,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         this.serverProxies = serverProxies;
         this.prepareStepHandler = prepareStepHandler;
         this.vaultReader = vaultReader;
+        this.bootstrapListener = bootstrapListener;
     }
 
     @Override
@@ -251,6 +259,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
     @Override
     public void start(StartContext context) throws StartException {
+        // TODO BootstrapListener
         final ExecutorService executorService = getExecutorServiceInjector().getValue();
         this.hostControllerConfigurationPersister = new HostControllerConfigurationPersister(environment, hostControllerInfo, executorService);
         setConfigurationPersister(hostControllerConfigurationPersister);
@@ -261,8 +270,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
     @Override
     protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
         DomainModelUtil.updateCoreModel(rootResource.getModel());
-        HostModelUtil.createHostRegistry(rootRegistration, hostControllerConfigurationPersister, environment, localFileRepository,
-                hostControllerInfo, new DelegatingServerInventory(), remoteFileRepository, this, this, vaultReader);
+        HostModelUtil.createHostRegistry(rootRegistration, hostControllerConfigurationPersister, environment, runningModeControl,
+                localFileRepository, hostControllerInfo, new DelegatingServerInventory(), remoteFileRepository, this, this, vaultReader);
         this.modelNodeRegistration = rootRegistration;
     }
 
@@ -330,7 +339,11 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
             // TODO when to call hostControllerConfigurationPersister.successful boot? Look into this for standalone as well; may be broken now
         } finally {
-            finishBoot();
+            try {
+                finishBoot();
+            } finally {
+                bootstrapListener.tick();
+            }
         }
     }
 

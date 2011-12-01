@@ -28,6 +28,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.threads.ThreadFactoryService;
 import org.jboss.logging.Logger;
@@ -49,9 +51,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class HostControllerBootstrap {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
     static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("host", "controller");
-    static final int DEFAULT_POOL_SIZE = 20;
     private final ServiceContainer serviceContainer = ServiceContainer.Factory.create("host-controller");
     private final HostControllerEnvironment environment;
     private final byte[] authCode;
@@ -66,66 +66,11 @@ public class HostControllerBootstrap {
      *
      * @throws Exception
      */
-    public void start() throws Exception {
+    public void bootstrap() throws Exception {
 
-        // TODO BootstrapListener
-
-        // The first default services are registered before the bootstrap operations are executed.
-        final ServiceTarget serviceTarget = serviceContainer;
-
-        // Install the process controller client
-        final ProcessControllerConnectionService processControllerClient = new ProcessControllerConnectionService(environment, authCode);
-        serviceTarget.addService(ProcessControllerConnectionService.SERVICE_NAME, processControllerClient).install();
-
-        // Thread Factory and Executor Services
-        final ServiceName threadFactoryServiceName = SERVICE_NAME_BASE.append("thread-factory");
-        final ServiceName executorServiceName = SERVICE_NAME_BASE.append("executor");
-
-        serviceTarget.addService(threadFactoryServiceName, new ThreadFactoryService()).install();
-        final HostControllerExecutorService executorService = new HostControllerExecutorService();
-        serviceTarget.addService(executorServiceName, executorService)
-                .addDependency(threadFactoryServiceName, ThreadFactory.class, executorService.threadFactoryValue)
-                .install();
-
-        // Install required path services. (Only install those identified as required)
-        AbsolutePathService.addService(HostControllerEnvironment.HOME_DIR, environment.getHomeDir().getAbsolutePath(), serviceTarget);
-        AbsolutePathService.addService(HostControllerEnvironment.DOMAIN_CONFIG_DIR, environment.getDomainConfigurationDir().getAbsolutePath(), serviceTarget);
-        AbsolutePathService.addService(HostControllerEnvironment.DOMAIN_TEMP_DIR, environment.getDomainTempDir().getAbsolutePath(), serviceTarget);
-        AbsolutePathService.addService(HostControllerEnvironment.CONTROLLER_TEMP_DIR, environment.getDomainTempDir().getAbsolutePath(), serviceTarget);
-
-        DomainModelControllerService.addService(serviceTarget, environment, new ControlledProcessState(false));
-    }
-
-    static final class HostControllerExecutorService implements Service<Executor> {
-        final InjectedValue<ThreadFactory> threadFactoryValue = new InjectedValue<ThreadFactory>();
-        private ScheduledExecutorService executorService;
-
-        @Override
-        public synchronized void start(final StartContext context) throws StartException {
-            executorService = Executors.newScheduledThreadPool(DEFAULT_POOL_SIZE, threadFactoryValue.getValue());
-        }
-
-        @Override
-        public synchronized void stop(final StopContext context) {
-            context.asynchronous();
-            Thread executorShutdown = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        executorService.shutdown();
-                    } finally {
-                        executorService = null;
-                        context.complete();
-                    }
-                }
-            }, "HostController ExecutorService Shutdown Thread");
-            executorShutdown.start();
-        }
-
-        @Override
-        public synchronized ScheduledExecutorService getValue() throws IllegalStateException {
-            return executorService;
-        }
+        final RunningModeControl runningModeControl = new RunningModeControl(RunningMode.NORMAL);
+        final HostControllerService hcs = new HostControllerService(environment, runningModeControl, authCode);
+        serviceContainer.subTarget().addService(HostControllerService.HC_SERVICE_NAME, hcs).install();
     }
 
 }

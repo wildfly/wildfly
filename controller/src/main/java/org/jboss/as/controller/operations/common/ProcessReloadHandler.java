@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.operations;
+package org.jboss.as.controller.operations.common;
 
 import java.util.Locale;
 
@@ -31,35 +31,44 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.server.Services;
-import org.jboss.as.server.controller.descriptions.ServerDescriptions;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 /**
- * Server-reload operation handler.
+ * Operation handler for process reloads.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ServerReloadHandler implements OperationStepHandler, DescriptionProvider {
+public class ProcessReloadHandler implements OperationStepHandler, DescriptionProvider {
 
     /**
      * The operation name.
      */
     public static final String OPERATION_NAME = "reload";
 
+    private static final AttributeDefinition ADMIN_ONLY = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.ADMIN_ONLY, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode(false)).build();
+
     private final RunningModeControl runningModeControl;
     private DescriptionProvider descriptionProvider;
 
-    private final AttributeDefinition adminOnlyAttribute = new SimpleAttributeDefinition(ModelDescriptionConstants.ADMIN_ONLY, ModelType.BOOLEAN, true);
+    private final ServiceName rootService;
+    private final ResourceDescriptionResolver resourceDescriptionResolver;
 
-    public ServerReloadHandler(RunningModeControl runningModeControl) {
+    public ProcessReloadHandler(final ServiceName rootService, final RunningModeControl runningModeControl,
+                                final ResourceDescriptionResolver resourceDescriptionResolver) {
+        this.rootService = rootService;
         this.runningModeControl = runningModeControl;
+        this.resourceDescriptionResolver = resourceDescriptionResolver;
     }
 
     /** {@inheritDoc} */
@@ -68,8 +77,8 @@ public class ServerReloadHandler implements OperationStepHandler, DescriptionPro
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                final boolean adminOnly = adminOnlyAttribute.resolveModelAttribute(context, operation).asBoolean(false);
-                final ServiceController<?> service = context.getServiceRegistry(true).getRequiredService(Services.JBOSS_AS);
+                final boolean adminOnly = ADMIN_ONLY.resolveModelAttribute(context, operation).asBoolean(false);
+                final ServiceController<?> service = context.getServiceRegistry(true).getRequiredService(rootService);
                 if(context.completeStep() == OperationContext.ResultAction.KEEP) {
                     service.addListener(new AbstractServiceListener<Object>() {
                         public void listenerAdded(final ServiceController<?> controller) {
@@ -97,7 +106,7 @@ public class ServerReloadHandler implements OperationStepHandler, DescriptionPro
 
     private synchronized DescriptionProvider getDescriptionProvider() {
         if (descriptionProvider == null) {
-            descriptionProvider = new DefaultOperationDescriptionProvider(OPERATION_NAME, ServerDescriptions.getResourceDescriptionResolver("server"), adminOnlyAttribute);
+            descriptionProvider = new DefaultOperationDescriptionProvider(OPERATION_NAME, resourceDescriptionResolver, ADMIN_ONLY);
         }
         return descriptionProvider;
     }

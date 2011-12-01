@@ -60,6 +60,8 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.threads.AsyncFuture;
 
 /**
+ * The root service for an Application Server process.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 final class ApplicationServerService implements Service<AsyncFuture<ServiceContainer>> {
@@ -124,7 +126,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
 
         CurrentServiceContainer.setServiceContainer(context.getController().getServiceContainer());
 
-        final BootstrapListener bootstrapListener = new BootstrapListener(container, startTime, serviceTarget, futureContainer, configuration);
+        final BootstrapListener bootstrapListener = new BootstrapListener(container, startTime, serviceTarget, futureContainer, "JBoss AS");
         serviceTarget.addListener(ServiceListener.Inheritance.ALL, bootstrapListener);
         myController.addListener(bootstrapListener);
         ContentRepositoryImpl contentRepository = ContentRepositoryImpl.addService(serviceTarget, serverEnvironment.getServerDeployDir());

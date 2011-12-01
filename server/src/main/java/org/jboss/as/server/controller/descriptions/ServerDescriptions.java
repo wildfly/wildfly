@@ -28,8 +28,8 @@ import java.util.ResourceBundle;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.common.ProcessReloadHandler;
 import org.jboss.as.server.deployment.DeploymentRemoveHandler;
-import org.jboss.as.server.operations.ServerReloadHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -60,7 +60,7 @@ public class ServerDescriptions {
 
     public static final ModelNode getServerReloadOperation(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
-        return CommonDescriptions.getSingleParamOnlyOperation(bundle, ServerReloadHandler.OPERATION_NAME, null,
+        return CommonDescriptions.getSingleParamOnlyOperation(bundle, ProcessReloadHandler.OPERATION_NAME, null,
                 ADMIN_ONLY, ModelType.BOOLEAN, true);
     }
 
