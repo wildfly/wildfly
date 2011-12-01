@@ -27,23 +27,21 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.jmx.CommonAttributes.CONNECTOR;
+import static org.jboss.as.jmx.CommonAttributes.JMX;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -64,8 +62,12 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 public class JMXExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "jmx";
-    private static final String INVOKE_MBEAN_RAW = "invoke-mbean-raw";
-    private static final String GET_MBEAN_INFO_RAW = "get-mbean-info-raw";
+    private static final String RESOURCE_NAME = JMXExtension.class.getPackage().getName() + ".LocalDescriptions";
+
+
+    static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
+        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, JMXExtension.class.getClassLoader(), true, false);
+    }
 
     static final JMXSubsystemParser_1_1 parserCurrent = new JMXSubsystemParser_1_1();
     static final JMXSubsystemParser_1_0 parser10 = new JMXSubsystemParser_1_0();
@@ -74,17 +76,11 @@ public class JMXExtension implements Extension {
     /** {@inheritDoc} */
     @Override
     public void initialize(ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(JMXSubsystemProviders.SUBSYSTEM);
-        // Subsystem operation handlers
-        registration.registerOperationHandler(ADD, JMXSubsystemAdd.INSTANCE, JMXSubsystemProviders.SUBSYTEM_ADD, false);
-        registration.registerOperationHandler(INVOKE_MBEAN_RAW, new InvokeMBeanRaw(), JMXSubsystemProviders.INVOKE_MBEAN_RAW, false);
-        registration.registerOperationHandler(GET_MBEAN_INFO_RAW, new GetMBeanInfoRaw(), JMXSubsystemProviders.GET_MBEAN_INFO_RAW, false);
-        registration.registerOperationHandler(DESCRIBE, JMXDescribeHandler.INSTANCE, JMXDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
-        registration.registerOperationHandler(JMXConnectorAdd.OPERATION_NAME, JMXConnectorAdd.INSTANCE, JMXSubsystemProviders.JMX_CONNECTOR_ADD, false);
-        registration.registerOperationHandler(JMXConnectorRemove.OPERATION_NAME, JMXConnectorRemove.INSTANCE, JMXSubsystemProviders.JMX_CONNECTOR_REMOVE, false);
-
-        subsystem.registerXMLElementWriter(parserCurrent);
+        final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
+        final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(JMXSubsystemRootResource.INSTANCE);
+        subsystem.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        subsystem.registerSubModel(JMXConnectorResource.INSTANCE);
+        registration.registerXMLElementWriter(parserCurrent);
     }
 
     /** {@inheritDoc} */
@@ -106,8 +102,8 @@ public class JMXExtension implements Extension {
 
     private static ModelNode createAddConnectorOperation(String serverBinding, String registryBinding) {
         final ModelNode connector = new ModelNode();
-        connector.get(OP).set(JMXConnectorAdd.OPERATION_NAME);
-        connector.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
+        connector.get(OP).set(ADD);
+        connector.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME).add(CONNECTOR, JMX);
         connector.get(CommonAttributes.SERVER_BINDING).set(serverBinding);
         connector.get(CommonAttributes.REGISTRY_BINDING).set(registryBinding);
         return connector;
@@ -268,34 +264,16 @@ public class JMXExtension implements Extension {
             context.startSubsystemElement(schemaVer.getUriString(), false);
             if (node.hasDefined(CommonAttributes.SHOW_MODEL)) {
                 writer.writeEmptyElement(Element.SHOW_MODEL.getLocalName());
-                writer.writeAttribute(Attribute.VALUE.getLocalName(), node.get(CommonAttributes.SHOW_MODEL).asString());
+                JMXSubsystemRootResource.SHOW_MODEL.marshallAsAttribute(node, writer);
             }
-            if (node.hasDefined(CommonAttributes.SERVER_BINDING)) {
+            if (node.hasDefined(CommonAttributes.CONNECTOR) && node.get(CommonAttributes.CONNECTOR).hasDefined(CommonAttributes.JMX)) {
+                ModelNode connector = node.get(CommonAttributes.CONNECTOR, CommonAttributes.JMX);
                 writer.writeStartElement(Element.JMX_CONNECTOR.getLocalName());
-                writer.writeAttribute(Attribute.REGISTRY_BINDING.getLocalName(), node.get(CommonAttributes.REGISTRY_BINDING).asString());
-                writer.writeAttribute(Attribute.SERVER_BINDING.getLocalName(), node.get(CommonAttributes.SERVER_BINDING).asString());
+                JMXConnectorResource.REGISTRY_BINDING.marshallAsAttribute(connector, writer);
+                JMXConnectorResource.SERVER_BINDING.marshallAsAttribute(connector, writer);
                 writer.writeEndElement();
             }
             writer.writeEndElement();
         }
-    }
-
-    private static class JMXDescribeHandler implements OperationStepHandler, DescriptionProvider {
-        static final JMXDescribeHandler INSTANCE = new JMXDescribeHandler();
-
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
-            context.getResult().add(createAddOperation(model.hasDefined(CommonAttributes.SHOW_MODEL) ? model.get(CommonAttributes.SHOW_MODEL).asBoolean() : null));
-            if (model.hasDefined(CommonAttributes.SERVER_BINDING)) {
-                context.getResult().add(createAddConnectorOperation(model.require(CommonAttributes.SERVER_BINDING).asString(), model.require(CommonAttributes.REGISTRY_BINDING).asString()));
-            }
-            context.completeStep();
-        }
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return CommonDescriptions.getSubsystemDescribeOperation(locale);
-        }
-
     }
 }

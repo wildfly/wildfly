@@ -22,19 +22,8 @@
 
 package org.jboss.as.jmx;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-
 import javax.management.MBeanInfo;
 import javax.management.MBeanServer;
-import javax.management.Notification;
-import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;

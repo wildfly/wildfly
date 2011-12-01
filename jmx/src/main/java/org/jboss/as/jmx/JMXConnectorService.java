@@ -26,7 +26,6 @@ import static org.jboss.as.jmx.JmxMessages.MESSAGES;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.rmi.registry.LocateRegistry;
@@ -167,10 +166,6 @@ public class JMXConnectorService implements Service<Void> {
 
     private int getRmiServerPort() {
         return serverPortBinding.getValue().getSocketAddress().getPort();
-    }
-
-    private InetAddress getRmiRegistryAddress() {
-        return registryPortBinding.getValue().getSocketAddress().getAddress();
     }
 
     private String getRmiRegistryAddressString() {

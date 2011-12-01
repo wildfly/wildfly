@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -43,17 +44,24 @@ class JMXSubsystemAdd extends AbstractAddStepHandler {
         //
     }
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
-        model.get(CommonAttributes.SERVER_BINDING);
-        model.get(CommonAttributes.REGISTRY_BINDING);
-        if (operation.hasDefined(CommonAttributes.SHOW_MODEL)) {
-            model.get(CommonAttributes.SHOW_MODEL).set(operation.get(CommonAttributes.SHOW_MODEL));
-        }
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        JMXSubsystemRootResource.SHOW_MODEL.validateAndSet(operation, model);
+        model.get(CommonAttributes.CONNECTOR).setEmptyObject();
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        launchServices(context, model, verificationHandler, newControllers);
+    }
+
+    void launchServices(OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         // Add the MBean service
         boolean showModel = model.hasDefined(CommonAttributes.SHOW_MODEL) ? model.get(CommonAttributes.SHOW_MODEL).asBoolean() : false;
-        newControllers.add(MBeanServerService.addService(context.getServiceTarget(), showModel, verificationHandler));
+        ServiceController<?> controller = verificationHandler != null ?
+                MBeanServerService.addService(context.getServiceTarget(), showModel, verificationHandler) :
+                    MBeanServerService.addService(context.getServiceTarget(), showModel);
+        if (newControllers != null) {
+            newControllers.add(controller);
+        }
     }
+
 }
