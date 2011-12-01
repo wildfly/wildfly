@@ -43,6 +43,8 @@ public class EJBMethodSecurityAttribute {
     private final Set<String> rolesAllowed;
 
     private EJBMethodSecurityAttribute(final boolean permitAll, final boolean denyAll, final Set<String> rolesAllowed) {
+        if (rolesAllowed == null)
+            throw new NullPointerException("rolesAllowed");
         this.permitAll = permitAll;
         this.denyAll = denyAll;
         this.rolesAllowed = rolesAllowed;
