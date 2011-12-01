@@ -79,13 +79,13 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         } else {
             appclient = false;
         }
-        if (appclient && operation.has(WSDL_HOST)) {
+        if (appclient && operation.hasDefined(WSDL_HOST)) {
             submodel.get(WSDL_HOST).setExpression(operation.require(WSDL_HOST).asString());
         }
-        if (operation.has(WSDL_PORT)) {
+        if (operation.hasDefined(WSDL_PORT)) {
             submodel.get(WSDL_PORT).set(operation.require(WSDL_PORT));
         }
-        if (operation.has(WSDL_SECURE_PORT)) {
+        if (operation.hasDefined(WSDL_SECURE_PORT)) {
             submodel.get(WSDL_SECURE_PORT).set(operation.require(WSDL_SECURE_PORT));
         }
         if (!appclient) {
@@ -119,7 +119,7 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         WSServices.saveContainerRegistry(context.getServiceRegistry(false));
         ServiceTarget serviceTarget = context.getServiceTarget();
-        if (appclient && model.has(WSDL_HOST)) {
+        if (appclient && model.hasDefined(WSDL_HOST)) {
             ServerConfigImpl serverConfig = createServerConfig(model, true);
             newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler));
         }
