@@ -27,9 +27,11 @@ import static org.jboss.as.server.ServerLogger.CONFIG_LOGGER;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.ServiceLoader;
 import java.util.TreeSet;
 
 import org.jboss.as.controller.ControlledProcessState;
@@ -41,6 +43,7 @@ import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ModuleIndexService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.server.services.path.AbsolutePathService;
+import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.as.version.Version;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivator;
@@ -126,7 +129,9 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         ServiceModuleLoader.addService(serviceTarget, configuration);
         ExternalModuleService.addService(serviceTarget);
         ModuleIndexService.addService(serviceTarget);
-        ServerService.addService(serviceTarget, configuration, processState, bootstrapListener, new ServerRuntimeVaultReader());
+        final AbstractVaultReader vaultReader = service(AbstractVaultReader.class);
+        AS_ROOT_LOGGER.debugf("Using VaultReader %s", vaultReader);
+        ServerService.addService(serviceTarget, configuration, processState, bootstrapListener, vaultReader);
         final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContext() {
             @Override
             public ServiceTarget getServiceTarget() {
@@ -195,4 +200,12 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
       }
       return result.toString();
    }
+
+    private static <S> S service(final Class<S> service) {
+        final ServiceLoader<S> serviceLoader = ServiceLoader.load(service);
+        final Iterator<S> it = serviceLoader.iterator();
+        if (it.hasNext())
+            return it.next();
+        return null;
+    }
 }

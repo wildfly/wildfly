@@ -126,7 +126,7 @@ import org.jboss.as.server.services.net.RemoteDestinationOutboundSocketBindingRe
 import org.jboss.as.server.services.net.SocketBindingResourceDefinition;
 import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceRemoveHandler;
-import org.jboss.as.server.services.security.RuntimeVaultReader;
+import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.as.server.services.security.VaultAddHandler;
 import org.jboss.as.server.services.security.VaultRemoveHandler;
 import org.jboss.as.server.services.security.VaultWriteAttributeHandler;
@@ -164,7 +164,7 @@ public class ServerControllerModelUtil {
                                       final ExtensibleConfigurationPersister extensibleConfigurationPersister,
                                       final ServerEnvironment serverEnvironment,
                                       final ControlledProcessState processState,
-                                      final RuntimeVaultReader vaultReader,
+                                      final AbstractVaultReader vaultReader,
                                       final boolean parallelBoot) {
         // Build up the core model registry
         root.registerReadWriteAttribute(NAME, null, new StringLengthValidatingHandler(1), AttributeAccess.Storage.CONFIGURATION);

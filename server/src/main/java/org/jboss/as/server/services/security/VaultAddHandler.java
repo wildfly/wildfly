@@ -43,7 +43,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.security.vault.SecurityVaultException;
 
 /**
  * Handler for the Vault
@@ -62,12 +61,12 @@ public class VaultAddHandler extends AbstractAddStepHandler implements Descripti
 
     private final ParametersValidator validator = new ParametersValidator();
 
-    private final RuntimeVaultReader vaultReader;
+    private final AbstractVaultReader vaultReader;
 
     /**
      * Create the PathAddHandler
      */
-    public VaultAddHandler(RuntimeVaultReader vaultReader) {
+    public VaultAddHandler(AbstractVaultReader vaultReader) {
         this.vaultReader = vaultReader;
         // code is an optional string
         validator.registerValidator(CODE, new ModelTypeValidator(ModelType.STRING, true));
@@ -103,17 +102,18 @@ public class VaultAddHandler extends AbstractAddStepHandler implements Descripti
             vaultClass = model.get(CODE).asString();
         }
 
-        final Map<String, Object> vaultOptions = new HashMap<String, Object>();
-        if (model.hasDefined(VAULT_OPTIONS)) {
-            for (Property prop : model.get(VAULT_OPTIONS).asPropertyList()) {
-                vaultOptions.put(prop.getName(), prop.getValue().asString());
+        if (vaultReader != null) {
+            final Map<String, Object> vaultOptions = new HashMap<String, Object>();
+            if (model.hasDefined(VAULT_OPTIONS)) {
+                for (Property prop : model.get(VAULT_OPTIONS).asPropertyList()) {
+                    vaultOptions.put(prop.getName(), prop.getValue().asString());
+                }
             }
-        }
-
-        try {
-            vaultReader.createVault(vaultClass, vaultOptions);
-        } catch (SecurityVaultException e) {
-            throw ServerMessages.MESSAGES.cannotCreateVault(e, e);
+            try {
+                vaultReader.createVault(vaultClass, vaultOptions);
+            } catch (VaultReaderException e) {
+                throw ServerMessages.MESSAGES.cannotCreateVault(e, e);
+            }
         }
     }
 

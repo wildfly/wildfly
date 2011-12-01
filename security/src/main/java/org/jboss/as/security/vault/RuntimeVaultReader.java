@@ -19,7 +19,7 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.server.services.security;
+package org.jboss.as.security.vault;
 
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
@@ -29,7 +29,8 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
-import org.jboss.as.controller.VaultReader;
+import org.jboss.as.server.services.security.AbstractVaultReader;
+import org.jboss.as.server.services.security.VaultReaderException;
 import org.jboss.security.vault.SecurityVault;
 import org.jboss.security.vault.SecurityVaultException;
 import org.jboss.security.vault.SecurityVaultFactory;
@@ -38,7 +39,7 @@ import org.jboss.security.vault.SecurityVaultFactory;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class RuntimeVaultReader implements VaultReader {
+public class RuntimeVaultReader extends AbstractVaultReader {
 
     private static final Pattern VAULT_PATTERN = Pattern.compile("VAULT::.*::.*::.*");
 
@@ -47,12 +48,12 @@ public class RuntimeVaultReader implements VaultReader {
 
     /**
      * This constructor should remain protected to keep the vault as invisible
-     * as possible
+     * as possible, but it needs to be exposed for service plug-ability.
      */
-    protected RuntimeVaultReader() {
+    public RuntimeVaultReader() {
     }
 
-    void createVault(final String fqn, final Map<String, Object> options) throws SecurityVaultException {
+    protected void createVault(final String fqn, final Map<String, Object> options) throws VaultReaderException {
         Map<String, Object> vaultOptions = new HashMap<String, Object>(options);
         SecurityVault vault = null;
         try {
@@ -69,18 +70,22 @@ public class RuntimeVaultReader implements VaultReader {
         } catch (PrivilegedActionException e) {
             Throwable t = e.getCause();
             if (t instanceof SecurityVaultException) {
-                throw (SecurityVaultException)t;
+                throw new VaultReaderException(t);
             }
             if (t instanceof RuntimeException) {
                 throw (RuntimeException)t;
             }
             throw new RuntimeException(t);
         }
-        vault.init(vaultOptions);
+        try {
+            vault.init(vaultOptions);
+        } catch (SecurityVaultException e) {
+            throw new VaultReaderException(e);
+        }
         this.vault = vault;
     }
 
-    void destroyVault() {
+    protected void destroyVault() {
         //TODO - there are no cleanup methods in the vault itself
         vault = null;
     }

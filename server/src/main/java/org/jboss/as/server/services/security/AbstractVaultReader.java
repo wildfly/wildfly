@@ -19,16 +19,18 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.server;
+package org.jboss.as.server.services.security;
 
-import org.jboss.as.server.services.security.RuntimeVaultReader;
+import java.util.Map;
+
+import org.jboss.as.controller.VaultReader;
 
 /**
- * This class should remain package protected to keep the vault as
- * invisible as possible.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-class ServerRuntimeVaultReader extends RuntimeVaultReader {
+public abstract class AbstractVaultReader implements VaultReader {
+    protected abstract void createVault(final String fqn, final Map<String, Object> options) throws VaultReaderException;
 
+    protected abstract void destroyVault();
 }
