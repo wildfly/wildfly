@@ -159,8 +159,7 @@ public class RolloutPlanParsingTestCase extends TestCase {
         assertEquals(node, headersNode);
     }
 
-
-    @Test
+/*    @Test
     public void testRolloutWithAProp() throws Exception {
 
         parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout prop=value");
@@ -214,11 +213,12 @@ public class RolloutPlanParsingTestCase extends TestCase {
         assertEquals("value1", rollout.getProperty("prop1"));
         assertEquals("value2", rollout.getProperty("prop2"));
     }
-
+*/
     @Test
     public void testRolloutSingleGroupName() throws Exception {
 
-        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout in-series = groupA}");
+        //parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout in-series = groupA}");
+        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout groupA}");
 
         assertTrue(handler.hasAddress());
         assertTrue(handler.hasOperationName());
@@ -253,7 +253,8 @@ public class RolloutPlanParsingTestCase extends TestCase {
     @Test
     public void testRolloutSingleGroupWithProps() throws Exception {
 
-        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout in-series=groupA(rolling-to-servers=true,max-failure-percentage=20)");
+        //parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout in-series=groupA(rolling-to-servers=true,max-failure-percentage=20)");
+        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout groupA(rolling-to-servers=true,max-failure-percentage=20)");
 
         assertTrue(handler.hasAddress());
         assertTrue(handler.hasOperationName());
@@ -291,8 +292,8 @@ public class RolloutPlanParsingTestCase extends TestCase {
     @Test
     public void testNonConcurrentGroups() throws Exception {
 
-        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout in-series=" +
-        		"groupA(rolling-to-servers=true,max-failure-percentage=20), groupB");
+        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout " +
+        		"groupA(rolling-to-servers=true,max-failure-percentage=20) , groupB");
 
         assertTrue(handler.hasAddress());
         assertTrue(handler.hasOperationName());
@@ -334,7 +335,7 @@ public class RolloutPlanParsingTestCase extends TestCase {
     @Test
     public void testTwoConcurrentGroups() throws Exception {
 
-        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout in-series=" +
+        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout " +
                 "groupA(rolling-to-servers=true,max-failure-percentage=20) ^ groupB");
 
         assertTrue(handler.hasAddress());
@@ -379,7 +380,7 @@ public class RolloutPlanParsingTestCase extends TestCase {
     @Test
     public void testMix() throws Exception {
 
-        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout in-series=" +
+        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout " +
                 "groupA(rolling-to-servers=true,max-failure-percentage=20) ^ groupB, groupC," +
                 "groupD(rolling-to-servers=true,max-failed-servers=1) ^ groupE");
 
@@ -441,9 +442,9 @@ public class RolloutPlanParsingTestCase extends TestCase {
     @Test
     public void testMixAgainstWholeRequest() throws Exception {
 
-        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout in-series = " +
+        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout " +
                 "groupA(rolling-to-servers=true,max-failure-percentage=20) ^ groupB, groupC," +
-                "groupD(rolling-to-servers=true,max-failed-servers=1) ^ groupE rollback-across-groups = true}");
+                "groupD(rolling-to-servers=true,max-failed-servers=1) ^ groupE rollback-across-groups}");
 
         assertTrue(handler.hasAddress());
         assertTrue(handler.hasOperationName());
