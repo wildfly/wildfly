@@ -22,19 +22,21 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import static org.jboss.as.ejb3.deployment.processors.ViewInterfaces.getPotentialViewInterfaces;
+
+import javax.ejb.MessageDriven;
+import javax.jms.MessageListener;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.Set;
-
-import javax.ejb.MessageDriven;
-import javax.jms.MessageListener;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
+import org.jboss.as.ejb3.component.messagedriven.DefaultResourceAdapterService;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
@@ -53,9 +55,9 @@ import org.jboss.metadata.ejb.spec.ActivationConfigPropertiesMetaData;
 import org.jboss.metadata.ejb.spec.ActivationConfigPropertyMetaData;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.ejb.spec.MessageDrivenBeanMetaData;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.ejb3.deployment.processors.ViewInterfaces.getPotentialViewInterfaces;
+import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * User: jpai
@@ -143,8 +145,8 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
                 beanClassName = beanClassInfo.name().toString();
                 messageListenerInterfaceName = getMessageListenerInterface(messageBeanAnnotation);
             }
-
-            final MessageDrivenComponentDescription beanDescription = new MessageDrivenComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName, messageListenerInterfaceName, activationConfigProperties);
+            final String defaultResourceAdapterName = this.getDefaultResourceAdapterName(deploymentUnit.getServiceRegistry());
+            final MessageDrivenComponentDescription beanDescription = new MessageDrivenComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName, messageListenerInterfaceName, activationConfigProperties, defaultResourceAdapterName);
             beanDescription.setDeploymentDescriptorEnvironment(deploymentDescriptorEnvironment);
 
             // Add this component description to module description
@@ -236,7 +238,8 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
             messageListenerInterface = MessageListener.class.getName();
         }
         final Properties activationConfigProps = getActivationConfigProperties(mdb.getActivationConfig());
-        final MessageDrivenComponentDescription mdbComponentDescription = new MessageDrivenComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName(), messageListenerInterface, activationConfigProps);
+        final String defaultResourceAdapterName = this.getDefaultResourceAdapterName(deploymentUnit.getServiceRegistry());
+        final MessageDrivenComponentDescription mdbComponentDescription = new MessageDrivenComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName(), messageListenerInterface, activationConfigProps, defaultResourceAdapterName);
         // add it to the ejb jar description
         ejbJarDescription.getEEModuleDescription().addComponent(mdbComponentDescription);
         mdbComponentDescription.setDescriptorData(mdb);
@@ -254,5 +257,16 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
         return props;
     }
 
+    /**
+     * Returns the name of the resource adapter which will be used as the default RA for MDBs (unless overriden by
+     * the MDBs).
+     *
+     * @param serviceRegistry
+     * @return
+     */
+    private String getDefaultResourceAdapterName(final ServiceRegistry serviceRegistry) {
+        final ServiceController<DefaultResourceAdapterService> serviceController = (ServiceController<DefaultResourceAdapterService>) serviceRegistry.getRequiredService(DefaultResourceAdapterService.DEFAULT_RA_NAME_SERVICE_NAME);
+        return serviceController.getValue().getDefaultResourceAdapterName();
+    }
 
 }

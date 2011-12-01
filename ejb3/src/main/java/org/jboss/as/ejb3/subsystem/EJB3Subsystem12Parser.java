@@ -546,6 +546,13 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                 }
             }
         }
+        // if the resource-adapter-ref *hasn't* been explicitly specified, then default it to hornetq-ra
+        if (!ejb3SubsystemAddOperation.hasDefined(EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME)) {
+            final ModelNode defaultRAName = EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME.getDefaultValue();
+            if (defaultRAName != null) {
+                ejb3SubsystemAddOperation.get(EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME).set(defaultRAName);
+            }
+        }
         return mdbModelNode;
 
     }

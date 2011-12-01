@@ -294,7 +294,7 @@ public final class ConnectorServices {
      * @param raName The resource adapter name
      * @return
      */
-    public static synchronized Set<ServiceName> getResourceAdapterDependencies(final String raName) {
+    public static synchronized Set<ServiceName> getResourceAdapterServiceNames(final String raName) {
         if (raName == null || raName.trim().isEmpty()) {
             throw MESSAGES.stringParamCannotBeNullOrEmpty("resource adapter name");
         }
