@@ -33,7 +33,7 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Holds the EJB component level security metadata.
  * <p/>
- * For per method specific security metadata, take a look at {@link EJBMethodSecurityMetaData}
+ * For per method specific security metadata, take a look at {@link EJBMethodSecurityAttribute}
  * <p/>
  * User: Jaikiran Pai
  */

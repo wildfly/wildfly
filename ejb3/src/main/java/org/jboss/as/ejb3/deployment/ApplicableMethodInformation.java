@@ -89,24 +89,24 @@ public class ApplicableMethodInformation<T> {
         assert methodParams != null : "methodParams is null";
 
         ArrayKey methodParamsKey = new ArrayKey((Object[]) methodParams);
-        T txAttr = get(get(get(perViewStyle3, methodIntf), methodName), methodParamsKey);
-        if (txAttr != null)
-            return txAttr;
-        txAttr = get(get(perViewStyle2, methodIntf), methodName);
-        if (txAttr != null)
-            return txAttr;
-        txAttr = get(perViewStyle1, methodIntf);
-        if (txAttr != null)
-            return txAttr;
-        txAttr = get(get(get(style3, className), methodName), methodParamsKey);
-        if (txAttr != null)
-            return txAttr;
-        txAttr = get(style2, methodName);
-        if (txAttr != null)
-            return txAttr;
-        txAttr = get(style1, className);
-        if (txAttr != null)
-            return txAttr;
+        T attr = get(get(get(perViewStyle3, methodIntf), methodName), methodParamsKey);
+        if (attr != null)
+            return attr;
+        attr = get(get(perViewStyle2, methodIntf), methodName);
+        if (attr != null)
+            return attr;
+        attr = get(perViewStyle1, methodIntf);
+        if (attr != null)
+            return attr;
+        attr = get(get(get(style3, className), methodName), methodParamsKey);
+        if (attr != null)
+            return attr;
+        attr = get(style2, methodName);
+        if (attr != null)
+            return attr;
+        attr = get(style1, className);
+        if (attr != null)
+            return attr;
         return defaultAttribute;
     }
 
@@ -116,15 +116,15 @@ public class ApplicableMethodInformation<T> {
         assert methodParams != null : "methodParams is null";
 
         ArrayKey methodParamsKey = new ArrayKey((Object[]) methodParams);
-        T txAttr = get(get(get(perViewStyle3, methodIntf), methodName), methodParamsKey);
-        if (txAttr != null)
-            return txAttr;
-        txAttr = get(get(perViewStyle2, methodIntf), methodName);
-        if (txAttr != null)
-            return txAttr;
-        txAttr = get(perViewStyle1, methodIntf);
-        if (txAttr != null)
-            return txAttr;
+        T attr = get(get(get(perViewStyle3, methodIntf), methodName), methodParamsKey);
+        if (attr != null)
+            return attr;
+        attr = get(get(perViewStyle2, methodIntf), methodName);
+        if (attr != null)
+            return attr;
+        attr = get(perViewStyle1, methodIntf);
+        if (attr != null)
+            return attr;
         return null;
     }
 

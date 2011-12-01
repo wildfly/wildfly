@@ -43,7 +43,7 @@ public class AuthorizationInterceptor implements Interceptor {
     /**
      * EJB method security metadata
      */
-    private final EJBMethodSecurityMetaData ejbMethodSecurityMetaData;
+    private final EJBMethodSecurityAttribute ejbMethodSecurityMetaData;
 
     /**
      * The view class name to which this interceptor is applicable
@@ -55,7 +55,7 @@ public class AuthorizationInterceptor implements Interceptor {
      */
     private final Method viewMethod;
 
-    public AuthorizationInterceptor(final EJBMethodSecurityMetaData ejbMethodSecurityMetaData, final String viewClassName, final Method viewMethod) {
+    public AuthorizationInterceptor(final EJBMethodSecurityAttribute ejbMethodSecurityMetaData, final String viewClassName, final Method viewMethod) {
         if (ejbMethodSecurityMetaData == null) {
             throw MESSAGES.ejbMethodSecurityMetaDataIsNull();
         }

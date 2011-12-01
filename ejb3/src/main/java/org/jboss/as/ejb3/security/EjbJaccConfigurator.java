@@ -53,7 +53,7 @@ public class EjbJaccConfigurator implements ComponentConfigurator {
         boolean permitOnAllViews = true;
         List<EJBMethodPermission> permissions = new ArrayList<EJBMethodPermission>();
         List<EJBMethodPermission> uncheckedPermissions = new ArrayList<EJBMethodPermission>();
-        final ApplicableMethodInformation<EJBMethodSecurityMetaData> perms = component.getMethodPermissions();
+        final ApplicableMethodInformation<EJBMethodSecurityAttribute> perms = component.getMethodPermissions();
         for (ViewDescription view : component.getViews()) {
 
             String viewClassName = view.getViewClassName();
@@ -65,7 +65,7 @@ public class EjbJaccConfigurator implements ComponentConfigurator {
             }
             MethodIntf methodIntf = ((EJBViewDescription) view).getMethodIntf();
             MethodInterfaceType type = getMethodInterfaceType(methodIntf);
-            EJBMethodSecurityMetaData classLevel = perms.getClassLevelAttribute(ejbClassName);
+            EJBMethodSecurityAttribute classLevel = perms.getClassLevelAttribute(ejbClassName);
             if (classLevel != null && !classLevel.isDenyAll()) {
                 denyOnAllViews = false;
             } else {
@@ -86,7 +86,7 @@ public class EjbJaccConfigurator implements ComponentConfigurator {
 
             for (Method method : viewClass.getClassMethods()) {
                 final MethodIdentifier identifier = MethodIdentifier.getIdentifierForMethod(method);
-                EJBMethodSecurityMetaData methodLevel = component.getMethodPermissions().getAttribute(methodIntf, method.getDeclaringClass().getName(), method.getName(), identifier.getParameterTypes());
+                EJBMethodSecurityAttribute methodLevel = component.getMethodPermissions().getAttribute(methodIntf, method.getDeclaringClass().getName(), method.getName(), identifier.getParameterTypes());
                 // check method level
                 if (methodLevel == null) {
                     continue;
