@@ -35,7 +35,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -82,7 +84,7 @@ import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.remoting.EndpointService;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.RuntimeExpressionResolver;
-import org.jboss.as.server.services.security.RuntimeVaultReader;
+import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
@@ -120,7 +122,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final Map<String, ManagementChannel> unregisteredHostChannels = new HashMap<String, ManagementChannel>();
     private final Map<String, ProxyCreatedCallback> proxyCreatedCallbacks = new HashMap<String, ProxyCreatedCallback>();
     private final ExecutorService proxyExecutor = Executors.newCachedThreadPool();
-    private final RuntimeVaultReader vaultReader = new HostRuntimeVaultReader();
+    private final AbstractVaultReader vaultReader;
 
     private volatile ServerInventory serverInventory;
 
@@ -131,7 +133,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
         final Map<String, ProxyController> hostProxies = new ConcurrentHashMap<String, ProxyController>();
         final Map<String, ProxyController> serverProxies = new ConcurrentHashMap<String, ProxyController>();
         final LocalHostControllerInfoImpl hostControllerInfo = new LocalHostControllerInfoImpl(processState);
-        final RuntimeVaultReader vaultReader = new HostRuntimeVaultReader();
+        final AbstractVaultReader vaultReader = service(AbstractVaultReader.class);
+        log.debugf("Using VaultReader %s", vaultReader);
         final PrepareStepHandler prepareStepHandler = new PrepareStepHandler(hostControllerInfo, hostProxies, serverProxies);
         DomainModelControllerService service = new DomainModelControllerService(environment, processState,
                 hostControllerInfo, hostProxies, serverProxies, prepareStepHandler, vaultReader);
@@ -148,7 +151,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                                          final Map<String, ProxyController> hostProxies,
                                          final Map<String, ProxyController> serverProxies,
                                          final PrepareStepHandler prepareStepHandler,
-                                         final RuntimeVaultReader vaultReader) {
+                                         final AbstractVaultReader vaultReader) {
         super(OperationContext.Type.HOST, processState, DomainDescriptionProviders.ROOT_PROVIDER, prepareStepHandler, new RuntimeExpressionResolver(vaultReader));
         this.environment = environment;
         this.hostControllerInfo = hostControllerInfo;
@@ -157,6 +160,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         this.hostProxies = hostProxies;
         this.serverProxies = serverProxies;
         this.prepareStepHandler = prepareStepHandler;
+        this.vaultReader = vaultReader;
     }
 
     @Override
@@ -480,5 +484,13 @@ public class DomainModelControllerService extends AbstractControllerService impl
         public void stopServers(int gracefulTimeout) {
             serverInventory.stopServers(gracefulTimeout);
         }
+    }
+
+    private static <S> S service(final Class<S> service) {
+        final ServiceLoader<S> serviceLoader = ServiceLoader.load(service);
+        final Iterator<S> it = serviceLoader.iterator();
+        if (it.hasNext())
+            return it.next();
+        return null;
     }
 }

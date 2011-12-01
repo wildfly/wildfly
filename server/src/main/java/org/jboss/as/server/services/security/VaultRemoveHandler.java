@@ -39,12 +39,12 @@ public class VaultRemoveHandler extends AbstractRemoveStepHandler implements Des
 
     public static final String OPERATION_NAME = REMOVE;
 
-    private final RuntimeVaultReader vaultReader;
+    private final AbstractVaultReader vaultReader;
 
     /**
      * Create the VaultRemoveHandler
      */
-    public VaultRemoveHandler(RuntimeVaultReader vaultReader) {
+    public VaultRemoveHandler(AbstractVaultReader vaultReader) {
         this.vaultReader = vaultReader;
     }
 
