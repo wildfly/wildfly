@@ -22,7 +22,10 @@
 
 package org.jboss.as.naming;
 
-import org.jboss.as.naming.context.NamespaceContextSelector;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
 
 import javax.naming.Binding;
 import javax.naming.Context;
@@ -32,10 +35,8 @@ import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.spi.ObjectFactory;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
+
+import org.jboss.as.naming.context.NamespaceContextSelector;
 
 /**
  * @author John Bailey
@@ -71,8 +72,12 @@ public class InitialContext extends NamingContext {
                     if (factory != null) {
                         try {
                             return ((Context) factory.getObjectInstance(null, name, this, getEnvironment())).lookup(name);
+                        }catch(NamingException e) {
+                            throw e;
                         } catch (Exception e) {
-                            throw new RuntimeException(e);
+                            NamingException n = new NamingException(e.getMessage());
+                            n.initCause(e);
+                            throw n;
                         }
                     }
                 }

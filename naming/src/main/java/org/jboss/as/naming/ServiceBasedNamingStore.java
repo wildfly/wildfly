@@ -106,7 +106,7 @@ public class ServiceBasedNamingStore implements NamingStore {
         return cpe;
     }
 
-    private Object lookup(final String name, final ServiceName lookupName) throws NameNotFoundException {
+    private Object lookup(final String name, final ServiceName lookupName) throws NamingException {
         final ServiceController<?> controller = serviceRegistry.getService(lookupName);
         final Object object;
         if (controller != null) {
@@ -120,7 +120,13 @@ public class ServiceBasedNamingStore implements NamingStore {
             return null;
         }
         if (object instanceof ManagedReferenceFactory) {
-            return ManagedReferenceFactory.class.cast(object).getReference().getInstance();
+            try {
+                return ManagedReferenceFactory.class.cast(object).getReference().getInstance();
+            } catch (Exception e) {
+                NamingException n = new NamingException(e.getMessage());
+                n.initCause(e);
+                throw n;
+            }
         }
         return object;
     }

@@ -32,15 +32,21 @@ public class WrapperInitialContext implements Context {
 
     @Override
     public Object lookup(final String name) throws NamingException {
-        final int index = name.indexOf('#');
-        if (index != -1) {
-            final String server = name.substring(0, index);
-            final String lookup = name.substring(index + 1);
-            final Hashtable environment = (Hashtable) this.environment.clone();
-            environment.put(Context.PROVIDER_URL, server);
-            return CNCtxFactory.INSTANCE.getInitialContext(environment).lookup(lookup);
-        } else {
-            return CNCtxFactory.INSTANCE.getInitialContext(environment).lookup(name);
+        try {
+            final int index = name.indexOf('#');
+            if (index != -1) {
+                final String server = name.substring(0, index);
+                final String lookup = name.substring(index + 1);
+                final Hashtable environment = (Hashtable) this.environment.clone();
+                environment.put(Context.PROVIDER_URL, server);
+                return CNCtxFactory.INSTANCE.getInitialContext(environment).lookup(lookup);
+            } else {
+                return CNCtxFactory.INSTANCE.getInitialContext(environment).lookup(name);
+            }
+        } catch (NamingException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new NamingException(e.getMessage());
         }
     }
 
