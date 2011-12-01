@@ -82,7 +82,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
                 continue;
             }
             // setup the authorization interceptor
-            EJBMethodSecurityMetaData ejbMethodSecurityMetaData = ejbComponentDescription.getMethodPermissions().getViewAttribute(ejbViewDescription.getMethodIntf(), viewMethod.getName(), MethodIdentifier.getIdentifierForMethod(viewMethod).getParameterTypes());
+            EJBMethodSecurityAttribute ejbMethodSecurityMetaData = ejbComponentDescription.getMethodPermissions().getViewAttribute(ejbViewDescription.getMethodIntf(), viewMethod.getName(), MethodIdentifier.getIdentifierForMethod(viewMethod).getParameterTypes());
             if (ejbMethodSecurityMetaData == null) {
                 ejbMethodSecurityMetaData = ejbComponentDescription.getMethodPermissions().getViewAttribute(MethodIntf.BEAN, viewMethod.getName(), MethodIdentifier.getIdentifierForMethod(viewMethod).getParameterTypes());
             }

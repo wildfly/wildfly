@@ -61,7 +61,7 @@ import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsViewConfigurator;
-import org.jboss.as.ejb3.security.EJBMethodSecurityMetaData;
+import org.jboss.as.ejb3.security.EJBMethodSecurityAttribute;
 import org.jboss.as.ejb3.security.EJBSecurityViewConfigurator;
 import org.jboss.as.ejb3.timerservice.AutoTimer;
 import org.jboss.as.ejb3.timerservice.NonFunctionalTimerService;
@@ -126,7 +126,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
 
 
-    private final ApplicableMethodInformation<EJBMethodSecurityMetaData> methodPermissions;
+    private final ApplicableMethodInformation<EJBMethodSecurityAttribute> methodPermissions;
 
     /**
      * @Schedule methods
@@ -197,7 +197,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         // setup a dependency on EJB remote tx repository service, if this EJB exposes atleast one remote view
         this.addRemoteTransactionsRepositoryDependency();
         this.transactionAttributes = new ApplicableMethodInformation<TransactionAttributeType>(componentName, TransactionAttributeType.REQUIRED);
-        this.methodPermissions = new ApplicableMethodInformation<EJBMethodSecurityMetaData>(componentName, null);
+        this.methodPermissions = new ApplicableMethodInformation<EJBMethodSecurityAttribute>(componentName, null);
     }
 
     public void addLocalHome(final String localHome) {
@@ -623,7 +623,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         return transactionAttributes;
     }
 
-    public ApplicableMethodInformation<EJBMethodSecurityMetaData> getMethodPermissions() {
+    public ApplicableMethodInformation<EJBMethodSecurityAttribute> getMethodPermissions() {
         return methodPermissions;
     }
 
