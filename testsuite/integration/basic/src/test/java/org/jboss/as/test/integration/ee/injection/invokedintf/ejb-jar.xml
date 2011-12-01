@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-jar xmlns="http://java.sun.com/xml/ns/javaee" 
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+   version="3.0" 
+   xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd">
+   <enterprise-beans>
+      <session>
+         <ejb-name>TesterBean</ejb-name>
+         <ejb-ref>
+            <ejb-ref-name>xml1</ejb-ref-name>
+            <ejb-ref-type>Session</ejb-ref-type>
+            <remote>org.jboss.as.test.integration.ee.injection.invokedintf.Remote1</remote>
+            <ejb-link>InvokedBusinessInterfaceBean</ejb-link>
+            <injection-target>
+               <injection-target-class>org.jboss.as.test.integration.ee.injection.invokedintf.TesterBean</injection-target-class>
+               <injection-target-name>xml1</injection-target-name>
+            </injection-target>
+         </ejb-ref>
+         <ejb-ref>
+            <ejb-ref-name>xml2</ejb-ref-name>
+            <ejb-ref-type>Session</ejb-ref-type>
+            <remote>org.jboss.as.test.integration.ee.injection.invokedintf.Remote2</remote>
+            <ejb-link>InvokedBusinessInterfaceBean</ejb-link>
+            <injection-target>
+               <injection-target-class>org.jboss.as.test.integration.ee.injection.invokedintf.TesterBean</injection-target-class>
+               <injection-target-name>xml2</injection-target-name>
+            </injection-target>
+         </ejb-ref>
+      </session>
+   </enterprise-beans>
+</ejb-jar>
