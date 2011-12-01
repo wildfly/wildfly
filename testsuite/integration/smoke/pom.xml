@@ -145,6 +145,49 @@
                 </plugins>
             </build>
         </profile>
+        
+        
+        <!-- With -DnoWebProfile, the all tests will run with standalone-full.xml. -->
+        <!-- This changes the FULL exec so that it includes all tests. -->
+        <profile>
+            <id>webProfileExclusion.profile</id>
+            <activation><property><name>!noWebProfile</name></property></activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <!-- Disable execution with WEB config. -->
+                            <execution>
+                                <id>smoke-web.surefire</id>
+                                <phase>none</phase>
+                                <goals><goal>test</goal></goals>
+                            </execution>
+                            <!-- Run the ALL tests with FULL config. -->
+                            <execution>
+                                <id>smoke-full.surefire</id>
+                                <phase>test</phase>
+                                <goals><goal>test</goal></goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
+                                    </systemPropertyVariables>
+                                    <includes>
+                                        <include>**/*TestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        
+        
 
         <!-- When -Dtest=... is set, only the default surefire execution with standalone-full.xml will run. -->
         <profile>

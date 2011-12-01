@@ -126,7 +126,9 @@
                                 <configuration>
                                     <!-- Tests to execute. Overriden in webProfileExclusion.profile . -->
                                     <excludes>
+                                        <!-- 2nd run tests are run in other execution. -->
                                         <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
+                                        <!-- Tests which need FULL config. -->
                                         <exclude>org/jboss/as/test/integration/ejb/iiop/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/mdb/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/entity/cmp/**/*TestCase*.java</exclude>
@@ -179,58 +181,38 @@
             </build>
         </profile>
         
-        <!-- TODO is this still needed after I (Kabir) did the split in basic.integration.tests.profile? 
-              I disabled it for now
-         -->
-        <!-- Web profile - separation of web~ and full~profile tests. -->
+        <!-- With -DnoWebProfile, the all tests will run with standalone-full.xml. -->
+        <!-- This changes the FULL exec so that it includes all tests. -->
         <profile>
             <id>webProfileExclusion.profile</id>
-            <!-- With -DnoWebProfile, the all tests will run with standalone-full.xml. -->
-            <!--  DISABLED  -->
-            <!-- activation><property><name>!noWebProfile</name></property></activation -->
+            <activation><property><name>!noWebProfile</name></property></activation>
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <!-- Run the tests with web profile. -->
                         <executions>
+                            <!-- Disable execution with WEB config. -->
                             <execution>
-                                <!-- Overrides the default execution. -->
-                                <id>basic-integration-web.surefire</id>
-                                <phase>test</phase>
+                                <id>basic-integration-default-web.surefire</id>
+                                <phase>none</phase>
                                 <goals><goal>test</goal></goals>
-                                <configuration>
-                                    <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables>
-                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
-                                    </systemPropertyVariables>
-                                    <!-- Exclude jacorb, hornetq, jaxr, and webservices. -->
-                                    <excludes>
-                                        <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jacorb/**/*</exclude>
-                                        <exclude>org/jboss/as/test/integration/hornetq/**/*</exclude>
-                                        <exclude>org/jboss/as/test/integration/jaxr/**/*</exclude>
-                                        <exclude>org/jboss/as/test/integration/ws/**/*</exclude>
-                                    </excludes>
-                                </configuration>
                             </execution>
-                            <!-- Run the rest with full profile. -->
+                            <!-- Run the ALL tests with FULL config. -->
                             <execution>
-                                <id>basic-integration-non-web.surefire</id>
+                                <id>basic-integration-default-full.surefire</id>
                                 <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
                                     <systemPropertyVariables>
                                         <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
-                                    <!-- Run only jacorb, hornetq, jaxr, and webservices. -->
                                     <includes>
-                                        <include>org/jboss/as/test/integration/jacorb/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/hornetq/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jaxr/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/ws/**/*TestCase.java</include>
+                                        <include>**/*TestCase.java</include>
                                     </includes>
+                                    <excludes>
+                                        <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
+                                    </excludes>
                                 </configuration>
                             </execution>
                         </executions>
@@ -238,6 +220,8 @@
                 </plugins>
             </build>
         </profile>
+
+
 
         <!-- When -Dtest=... is set, only the default surefire execution with standalone-full.xml will run. -->
         <profile>
