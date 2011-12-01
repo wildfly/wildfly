@@ -302,7 +302,8 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
     public void testParseAndMarshalModel1_1WithShowModel() throws Exception {
         //Parse the subsystem xml and install into the first controller
         String subsystemXml =
-                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\" show-model=\"true\">" +
+                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
+                "    <show-model value=\"true\"/>" +
                 "    <jmx-connector registry-binding=\"registry1\" server-binding=\"server1\" />" +
                 "</subsystem>";
 
@@ -320,6 +321,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                 controllerInitializer.addSocketBinding("server1", 12346);
             }
         };
+
 
         KernelServices servicesA = super.installInController(additionalInit, subsystemXml);
         //Get the model and the persisted xml from the first controller

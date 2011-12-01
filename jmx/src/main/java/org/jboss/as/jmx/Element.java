@@ -33,6 +33,7 @@ enum Element {
     UNKNOWN(null),
 
     JMX_CONNECTOR(CommonAttributes.JMX_CONNECTOR),
+    SHOW_MODEL(CommonAttributes.SHOW_MODEL)
     ;
 
     private final String name;

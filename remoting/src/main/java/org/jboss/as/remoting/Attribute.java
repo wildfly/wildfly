@@ -36,13 +36,14 @@ public enum Attribute {
     SOCKET_BINDING(CommonAttributes.SOCKET_BINDING),
     URI("uri"),
     VALUE(CommonAttributes.VALUE),
-    WORKER_READ_THREADS(CommonAttributes.WORKER_READ_THREADS),
-    WORKER_TASK_CORE_THREADS(CommonAttributes.WORKER_TASK_CORE_THREADS),
-    WORKER_TASK_KEEPALIVE(CommonAttributes.WORKER_TASK_KEEPALIVE),
-    WORKER_TASK_LIMIT(CommonAttributes.WORKER_TASK_LIMIT),
-    WORKER_TASK_MAX_THREADS(CommonAttributes.WORKER_TASK_MAX_THREADS),
-    WORKER_WRITE_THREADS(CommonAttributes.WORKER_WRITE_THREADS)
+    WORKER_READ_THREADS("read-threads"),
+    WORKER_TASK_CORE_THREADS("task-core-threads"),
+    WORKER_TASK_KEEPALIVE("task-keepalive"),
+    WORKER_TASK_LIMIT("task-limit"),
+    WORKER_TASK_MAX_THREADS("task-max-threads"),
+    WORKER_WRITE_THREADS("write-threads")
     ;
+
     private final String name;
 
     Attribute(final String name) {
