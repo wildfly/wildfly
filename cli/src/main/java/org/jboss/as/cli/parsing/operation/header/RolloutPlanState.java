@@ -39,20 +39,25 @@ public class RolloutPlanState extends DefaultParsingState {
     public static final String ID = "ROLLOUT_PLAN_HEADER";
 
     RolloutPlanState() {
-        this(new PropertyListState(' ', ' ', ';', '}'));
+        this(ServerGroupListState.INSTANCE, new PropertyListState(' ', ' ', ';', '}'));
     }
 
-    RolloutPlanState(PropertyListState props) {
+    RolloutPlanState(ServerGroupListState sgList, PropertyListState props) {
         super(ID);
         this.setIgnoreWhitespaces(true);
-        setEnterHandler(new EnterStateCharacterHandler(props));
+        setEnterHandler(new EnterStateCharacterHandler(sgList));
+        setDefaultHandler(new EnterStateCharacterHandler(props));
         setReturnHandler(new CharacterHandler(){
             @Override
             public void handle(ParsingContext ctx) throws CommandFormatException {
                 if(ctx.isEndOfContent()) {
                     return;
                 }
-                ctx.leaveState();
+                final char ch = ctx.getCharacter();
+                if(ch == '}' || ch == ';') {
+                    ctx.leaveState();
+                }
+                //ctx.leaveState();
             }});
     }
 }

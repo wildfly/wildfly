@@ -23,7 +23,6 @@ package org.jboss.as.cli.parsing.operation.header;
 
 
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.Util;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.RolloutPlanGroup;
 import org.jboss.as.cli.operation.impl.RolloutPlanHeader;
@@ -31,6 +30,7 @@ import org.jboss.as.cli.operation.impl.SingleRolloutPlanGroup;
 import org.jboss.as.cli.parsing.ParsingContext;
 import org.jboss.as.cli.parsing.ParsingStateCallbackHandler;
 import org.jboss.as.cli.parsing.operation.HeaderValueState;
+import org.jboss.as.cli.parsing.operation.PropertyState;
 import org.jboss.as.cli.parsing.operation.PropertyValueState;
 
 /**
@@ -69,9 +69,9 @@ public class RolloutPlanHeaderCallbackHandler implements ParsingStateCallbackHan
                 throw new CommandFormatException("Property is missing name at index " + ctx.getLocation());
             }
 
-            if(name.equals(Util.IN_SERIES)) {
-                ctx.enterState(ServerGroupListState.INSTANCE);
-            }
+//            if(name.equals(Util.IN_SERIES)) {
+//                ctx.enterState(ServerGroupListState.INSTANCE);
+//            }
         }
         buffer.setLength(0);
     }
@@ -93,7 +93,18 @@ public class RolloutPlanHeaderCallbackHandler implements ParsingStateCallbackHan
             } else {
                 header.addProperty(name, value);
             }
-            name = null;
+        } else if(PropertyState.ID.equals(id)) {
+            if(name == null && buffer.length() > 0) {
+                if(group != null) {
+                    ((SingleRolloutPlanGroup)group).addProperty(buffer.toString().trim(), "true");
+                } else {
+                    header.addProperty(buffer.toString().trim(), "true");
+                }
+                buffer.setLength(0);
+            } else {
+                name = null;
+                buffer.setLength(0);
+            }
         } else if(ServerGroupNameState.ID.equals(id)) {
             final String groupName = buffer.toString().trim();
             if(groupName.isEmpty()) {
