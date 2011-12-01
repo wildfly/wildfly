@@ -39,8 +39,17 @@ public class RolloutPlanHeader implements OperationRequestHeader {
 
     private static final String HEADER_NAME = "rollout-plan";
 
+    private final String planId;
     private final List<RolloutPlanGroup> groups = new ArrayList<RolloutPlanGroup>();
     private Map<String,String> props;
+
+    public RolloutPlanHeader() {
+        this(null);
+    }
+
+    public RolloutPlanHeader(String planId) {
+        this.planId = planId;
+    }
 
     /* (non-Javadoc)
      * @see org.jboss.as.cli.operation.OperationRequestHeader#getName()

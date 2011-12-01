@@ -32,7 +32,6 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.ModelNodeFormatter;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
-import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.cli.impl.DefaultCompleter;
 import org.jboss.as.cli.operation.CommandLineParser;
 import org.jboss.as.cli.operation.OperationRequestAddress;
