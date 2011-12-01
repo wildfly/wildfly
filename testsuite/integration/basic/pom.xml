@@ -101,6 +101,7 @@
                                         <include>org/jboss/as/test/integration/ejb/iiop/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/*/security/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/mdb/**/*TestCase*.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/pool/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/ejb/entity/cmp/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/ejb/remote/entity/cmp/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/ejb/management/deployments/EjbJarInEarRuntimeResourcesTestCase.java</include>
@@ -134,6 +135,7 @@
                                         <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/iiop/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/mdb/**/*TestCase*.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/pool/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/entity/cmp/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/remote/entity/cmp/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/management/deployments/EjbJarInEarRuntimeResourcesTestCase.java</exclude>
