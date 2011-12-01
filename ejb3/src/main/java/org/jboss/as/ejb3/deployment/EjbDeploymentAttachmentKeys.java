@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.deployment;
 
 import org.jboss.as.ejb3.deployment.processors.EjbInjectionSource;
+import org.jboss.as.ejb3.security.EjbJaccConfig;
 import org.jboss.as.ejb3.subsystem.deployment.InstalledComponent;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
@@ -58,6 +59,8 @@ public class EjbDeploymentAttachmentKeys {
      * components that have been registered with the management API
      */
     public static final AttachmentKey<AttachmentList<InstalledComponent>> MANAGED_COMPONENTS = AttachmentKey.createList(InstalledComponent.class);
+
+    public static final AttachmentKey<AttachmentList<EjbJaccConfig>> JACC_PERMISSIONS = AttachmentKey.createList(EjbJaccConfig.class);
 
 }
 

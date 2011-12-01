@@ -85,7 +85,7 @@ public class AuthorizationInterceptor implements Interceptor {
         }
         final EJBComponent ejbComponent = (EJBComponent) component;
         // check @DenyAll/exclude-list
-        if (ejbMethodSecurityMetaData.isAccessDenied()) {
+        if (ejbMethodSecurityMetaData.isDenyAll()) {
             throw MESSAGES.invocationOfMethodNotAllowed(invokedMethod,ejbComponent.getComponentName());
         }
         // If @PermitAll isn't applicable for the method then check the allowed roles

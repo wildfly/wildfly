@@ -110,6 +110,31 @@ public class ApplicableMethodInformation<T> {
         return defaultAttribute;
     }
 
+    public T getViewAttribute(MethodIntf methodIntf, String methodName, String... methodParams) {
+        assert methodIntf != null : "methodIntf is null";
+        assert methodName != null : "methodName is null";
+        assert methodParams != null : "methodParams is null";
+
+        ArrayKey methodParamsKey = new ArrayKey((Object[]) methodParams);
+        T txAttr = get(get(get(perViewStyle3, methodIntf), methodName), methodParamsKey);
+        if (txAttr != null)
+            return txAttr;
+        txAttr = get(get(perViewStyle2, methodIntf), methodName);
+        if (txAttr != null)
+            return txAttr;
+        txAttr = get(perViewStyle1, methodIntf);
+        if (txAttr != null)
+            return txAttr;
+        return null;
+    }
+
+    /**
+     * @param className The class name
+     * @return The attribute that has been applied directly to the given class
+     */
+    public T getClassLevelAttribute(String className) {
+        return style1.get(className);
+    }
 
 
     /**
@@ -118,7 +143,7 @@ public class ApplicableMethodInformation<T> {
      * @param methodIntf           the method-intf the annotations apply to or null if EJB class itself
      * @param transactionAttribute
      */
-    public void setTransactionAttribute(MethodIntf methodIntf, String className, T transactionAttribute) {
+    public void setAttribute(MethodIntf methodIntf, String className, T transactionAttribute) {
         if (methodIntf != null && className != null)
             throw MESSAGES.bothMethodIntAndClassNameSet(componentName);
         if (methodIntf == null) {
@@ -134,7 +159,7 @@ public class ApplicableMethodInformation<T> {
      * @param transactionAttribute
      * @param methodName
      */
-    public void setTransactionAttribute(MethodIntf methodIntf, T transactionAttribute, String methodName) {
+    public void setAttribute(MethodIntf methodIntf, T transactionAttribute, String methodName) {
         if (methodIntf == null)
             style2.put(methodName, transactionAttribute);
         else
@@ -149,7 +174,7 @@ public class ApplicableMethodInformation<T> {
      * @param methodName
      * @param methodParams
      */
-    public void setTransactionAttribute(MethodIntf methodIntf, T transactionAttribute, final String className, String methodName, String... methodParams) {
+    public void setAttribute(MethodIntf methodIntf, T transactionAttribute, final String className, String methodName, String... methodParams) {
         ArrayKey methodParamsKey = new ArrayKey((Object[]) methodParams);
         if (methodIntf == null)
             style3.pick(className).pick(methodName).put(methodParamsKey, transactionAttribute);

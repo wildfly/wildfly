@@ -22,33 +22,33 @@
 
 package org.jboss.as.ejb3.deployment;
 
-import org.jboss.as.ee.component.Attachments;
-import org.jboss.as.ee.component.EEModuleConfiguration;
+import org.jboss.as.ejb3.security.EjbJaccConfig;
 import org.jboss.as.ejb3.security.EjbJaccService;
 import org.jboss.as.security.deployment.AbstractSecurityDeployer;
 import org.jboss.as.security.service.JaccService;
 import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.AttachmentList;
 
 /**
  * Handles ejb jar deployments
  *
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  */
-public class EjbSecurityDeployer extends AbstractSecurityDeployer<EEModuleConfiguration> {
+public class EjbSecurityDeployer extends AbstractSecurityDeployer<AttachmentList<EjbJaccConfig>> {
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected AttachmentKey<EEModuleConfiguration> getMetaDataType() {
-        return Attachments.EE_MODULE_CONFIGURATION;
+    protected AttachmentKey<AttachmentList<EjbJaccConfig>> getMetaDataType() {
+        return EjbDeploymentAttachmentKeys.JACC_PERMISSIONS;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected JaccService<EEModuleConfiguration> createService(String contextId, EEModuleConfiguration metaData, Boolean standalone) {
+    protected JaccService<AttachmentList<EjbJaccConfig>> createService(String contextId, AttachmentList<EjbJaccConfig> metaData, Boolean standalone) {
         return new EjbJaccService(contextId, metaData, standalone);
     }
 }
