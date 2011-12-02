@@ -20,35 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.ejb.async;
+package org.jboss.as.test.integration.ejb.security.asynchronous;
 
-import javax.ejb.AsyncResult;
-import javax.ejb.Asynchronous;
-import javax.ejb.Stateless;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 /**
- * stateful session bean
+ * @author <a href="mailto:kabir.khan@jboss.org">Kabir Khan</a>
  */
-@Stateless
-@Asynchronous
-public class AsyncBean {
+public interface SecuredStatelessRemote {
 
-    public static volatile boolean voidMethodCalled = false;
-    public static volatile boolean futureMethodCalled = false;
+    Future<Boolean> uncheckedMethod() throws InterruptedException;
 
-    public void asyncMethod(CountDownLatch latch, CountDownLatch latch2) throws InterruptedException {
-        latch.await(5, TimeUnit.SECONDS);
-        voidMethodCalled = true;
-        latch2.countDown();
-    }
+    Future<Boolean> excludedMethod() throws InterruptedException;
 
-    public Future<Boolean> futureMethod(CountDownLatch latch) throws InterruptedException {
-        latch.await(5, TimeUnit.SECONDS);
-        futureMethodCalled = true;
-        return new AsyncResult<Boolean>(true);
-    }
+    Future<Boolean> method() throws InterruptedException, ExecutionException;
 
 }
