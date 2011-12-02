@@ -41,7 +41,7 @@ public class RuntimeExpressionResolver extends ExpressionResolverImpl {
         String expression = node.asString();
         if (expression.length() > 3) {
             expression = expression.substring(2, expression.length() -2);
-            if ( vaultReader.isVaultFormat(expression)) {
+            if (vaultReader != null && vaultReader.isVaultFormat(expression)) {
                 node.set(vaultReader.retrieveFromVault(expression));
             }
         }
