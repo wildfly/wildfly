@@ -151,7 +151,7 @@
         <!-- This changes the FULL exec so that it includes all tests. -->
         <profile>
             <id>webProfileExclusion.profile</id>
-            <activation><property><name>!noWebProfile</name></property></activation>
+            <activation><property><name>noWebProfile</name></property></activation>
             <build>
                 <plugins>
                     <plugin>
