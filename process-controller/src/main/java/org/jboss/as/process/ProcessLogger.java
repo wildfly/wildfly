@@ -36,6 +36,10 @@ import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 /**
+ * This module is using message IDs in the range 12000-12099.
+ * This file is using the subset 12000-12039 for logger messages.
+ * See http://community.jboss.org/docs/DOC-16810 for the full list of
+ * currently reserved JBAS message id blocks.
  * Date: 29.06.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>

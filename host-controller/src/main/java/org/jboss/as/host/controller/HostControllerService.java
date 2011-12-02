@@ -64,6 +64,7 @@ import org.jboss.threads.AsyncFuture;
 public class HostControllerService implements Service<AsyncFuture<ServiceContainer>> {
 
     static final ServiceName HC_SERVICE_NAME = ServiceName.JBOSS.append("host", "controller");
+    static final ServiceName HC_EXECUTOR_SERVICE_NAME = HC_SERVICE_NAME.append("executor");
     static final int DEFAULT_POOL_SIZE = 20;
 
     private final HostControllerEnvironment environment;
@@ -130,11 +131,12 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
 
         // Thread Factory and Executor Services
         final ServiceName threadFactoryServiceName = HC_SERVICE_NAME.append("thread-factory");
-        final ServiceName executorServiceName = HC_SERVICE_NAME.append("executor");
 
-        serviceTarget.addService(threadFactoryServiceName, new ThreadFactoryService()).install();
+        final ThreadFactoryService threadFactoryService = new ThreadFactoryService();
+        threadFactoryService.setThreadGroupName("Host Controller Service Threads");
+        serviceTarget.addService(threadFactoryServiceName, threadFactoryService).install();
         final HostControllerExecutorService executorService = new HostControllerExecutorService();
-        serviceTarget.addService(executorServiceName, executorService)
+        serviceTarget.addService(HC_EXECUTOR_SERVICE_NAME, executorService)
                 .addDependency(threadFactoryServiceName, ThreadFactory.class, executorService.threadFactoryValue)
                 .install();
 

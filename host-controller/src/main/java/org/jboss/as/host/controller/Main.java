@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.ExitCodes;
 import org.jboss.as.process.protocol.StreamUtils;
@@ -60,8 +61,7 @@ public final class Main {
     /**
      * The main method.
      *
-     * @param args
-     *            the command-line arguments
+     * @param args the command-line arguments
      */
     public static void main(String[] args) throws IOException {
         MDC.put("process", "host controller");
@@ -161,6 +161,7 @@ public final class Main {
         boolean cachedDc = false;
         String domainConfig = null;
         String hostConfig = null;
+        RunningMode initialRunningMode = RunningMode.NORMAL;
         Map<String, String> hostSystemProperties = new HashMap<String, String>();
 
         final int argsLength = args.length;
@@ -284,6 +285,8 @@ public final class Main {
                     }
                     hostConfig = val;
 
+                } else if (CommandLineConstants.ADMIN_ONLY.equals(arg)) {
+                    initialRunningMode = RunningMode.ADMIN_ONLY;
                 } else if (arg.startsWith(CommandLineConstants.SYS_PROP)) {
 
                     // set a system property
@@ -347,7 +350,7 @@ public final class Main {
 
         return new HostControllerEnvironment(hostSystemProperties, isRestart,  stdin, stdout, stderr, pmAddress, pmPort,
                 pcSocketConfig.getBindAddress(), pcSocketConfig.getBindPort(), defaultJVM,
-                domainConfig, hostConfig, backupDomainFiles, cachedDc);
+                domainConfig, hostConfig, initialRunningMode, backupDomainFiles, cachedDc);
     }
 
     private static String parseValue(final String arg, final String key) {

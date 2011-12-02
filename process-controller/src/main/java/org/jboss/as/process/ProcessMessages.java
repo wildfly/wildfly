@@ -27,6 +27,11 @@ import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 
 /**
+ * This module is using message IDs in the range 12000-12099.
+ * This file is using the subset 12040-12099 for non-logger messages.
+ * See http://community.jboss.org/docs/DOC-16810 for the full list of
+ * currently reserved JBAS message id blocks.
+ *
  * Date: 29.06.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -164,6 +169,8 @@ interface ProcessMessages {
     /**
      * Instructions for the {@link CommandLineArgument#INTERFACE_BIND_ADDRESS} command line argument.
      *
+     * @param argument the name of the argument
+     *
      * @return the message.
      */
     @Message(id = 12056, value = "No value was provided for argument %s")
@@ -253,4 +260,12 @@ interface ProcessMessages {
      */
     @Message(id = 12065, value = "%s is null")
     IllegalArgumentException nullVar(String varName);
+
+    /**
+     * Instructions for the {@link CommandLineArgument#ADMIN_ONLY} command line argument.
+     *
+     * @return the message.
+     */
+    @Message(id = 12066, value = "Set the host controller's running type to ADMIN_ONLY causing it to open administrative interfaces \nand accept management requests but will not start servers or, if this host controller is \nthe master for the domain, accept incoming connections from slave host controllers.")
+    String argAdminOnly();
 }

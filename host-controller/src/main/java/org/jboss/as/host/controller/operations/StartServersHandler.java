@@ -30,6 +30,8 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.HostControllerEnvironment;
@@ -69,6 +71,12 @@ public class StartServersHandler implements OperationStepHandler, DescriptionPro
         if (!context.isBooting()) {
             throw new OperationFailedException(new ModelNode().set(String.format("Cannot invoke %s after host boot", operation.require(OP))));
         }
+
+        if (context.getRunningMode() == RunningMode.ADMIN_ONLY) {
+            throw new OperationFailedException(new ModelNode(String.format("Cannot start servers when the Host Controller running mode is %s", context.getRunningMode())));
+        }
+
+
         final ModelNode domainModel = Resource.Tools.readModel(context.getRootResource());
         context.addStep(new OperationStepHandler() {
             @Override
@@ -87,7 +95,8 @@ public class StartServersHandler implements OperationStepHandler, DescriptionPro
                 context.completeStep();
             }
         }, OperationContext.Stage.RUNTIME);
-        context.completeStep();
+
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
     @Override

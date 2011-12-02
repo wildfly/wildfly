@@ -47,6 +47,8 @@ import org.jboss.as.process.protocol.ProtocolClient;
 import org.jboss.as.process.protocol.StreamUtils;
 
 /**
+ * A client to the Process Controller.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ProcessControllerClient implements Closeable {

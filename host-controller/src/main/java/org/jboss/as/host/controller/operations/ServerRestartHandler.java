@@ -28,6 +28,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.Resource;
@@ -47,7 +48,7 @@ public class ServerRestartHandler implements OperationStepHandler, DescriptionPr
     private final ServerInventory serverInventory;
 
     /**
-     * Create the ServerAddHandler
+     * Create the ServerRestartHandler
      */
     public ServerRestartHandler(final ServerInventory serverInventory) {
         this.serverInventory = serverInventory;
@@ -59,6 +60,10 @@ public class ServerRestartHandler implements OperationStepHandler, DescriptionPr
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
+        if (context.getRunningMode() == RunningMode.ADMIN_ONLY) {
+            throw new OperationFailedException(new ModelNode(String.format("Cannot start servers when the Host Controller running mode is %s", context.getRunningMode())));
+        }
+
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final PathElement element = address.getLastElement();
         final String serverName = element.getValue();
@@ -67,12 +72,17 @@ public class ServerRestartHandler implements OperationStepHandler, DescriptionPr
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                final ServerStatus origStatus = serverInventory.determineServerStatus(serverName);
+                if (origStatus != ServerStatus.STARTED) {
+                    throw new OperationFailedException(new ModelNode(String.format("Cannot restart server %s as it is not currently started; it is %s", serverName, origStatus)));
+                }
                 final ServerStatus status = serverInventory.restartServer(serverName, -1, model);
                 context.getResult().set(status.toString());
-                context.completeStep();
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.RUNTIME);
-        context.completeStep();
+
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
     @Override

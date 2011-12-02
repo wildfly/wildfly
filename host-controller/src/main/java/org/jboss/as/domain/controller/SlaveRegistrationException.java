@@ -19,7 +19,9 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.domain.controller.operations;
+package org.jboss.as.domain.controller;
+
+import org.jboss.as.controller.RunningMode;
 
 /**
  * Used to propogate error codes as part of the error message when an error occurs registering the a slave host controller.
@@ -27,31 +29,48 @@ package org.jboss.as.domain.controller.operations;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class SlaveRegistrationError {
+public class SlaveRegistrationException extends Exception {
 
     private static final String SEPARATOR = "-$-";
 
     private final ErrorCode errorCode;
     private final String errorMessage;
 
-    private SlaveRegistrationError(ErrorCode errorCode, String errorMessage) {
+    public SlaveRegistrationException(ErrorCode errorCode, String errorMessage) {
+        super(errorMessage);
         this.errorCode = errorCode;
         this.errorMessage = errorMessage;
     }
 
-    public static SlaveRegistrationError parse(String raw) {
+    public static SlaveRegistrationException parse(String raw) {
         int index = raw.indexOf("-$-");
         if (index == -1) {
-            return new SlaveRegistrationError(ErrorCode.NONE, raw);
+            return new SlaveRegistrationException(ErrorCode.NONE, raw);
         }
 
         ErrorCode code = ErrorCode.parseCode(Integer.valueOf(raw.substring(0, index)));
         String msg = raw.substring(index + SEPARATOR.length());
-        return new SlaveRegistrationError(code, msg);
+        return new SlaveRegistrationException(code, msg);
     }
 
-    public static String formatHostAlreadyExists(String msg) {
-        return new SlaveRegistrationError(ErrorCode.HOST_ALREADY_EXISTS, msg).toString();
+    public static SlaveRegistrationException forUnknownError(String msg) {
+        return new SlaveRegistrationException(ErrorCode.NONE, msg);
+    }
+
+    public static SlaveRegistrationException forHostAlreadyExists(String slaveName) {
+        return new SlaveRegistrationException(ErrorCode.HOST_ALREADY_EXISTS, DomainControllerMessages.MESSAGES.slaveAlreadyRegistered(slaveName));
+    }
+
+    public static SlaveRegistrationException forMasterInAdminOnlyMode(RunningMode runningMode) {
+        return new SlaveRegistrationException(ErrorCode.MASTER_IS_ADMIN_ONLY, DomainControllerMessages.MESSAGES.adminOnlyModeCannotAcceptSlaves(runningMode));
+    }
+
+    public static SlaveRegistrationException forHostIsNotMaster() {
+        return new SlaveRegistrationException(ErrorCode.HOST_ALREADY_EXISTS, DomainControllerMessages.MESSAGES.slaveControllerCannotAcceptOtherSlaves());
+    }
+
+    public String marshal() {
+        return errorCode.getCode() + SEPARATOR + errorMessage;
     }
 
     public String toString() {
@@ -68,7 +87,9 @@ public class SlaveRegistrationError {
 
     public enum ErrorCode {
         NONE(0),
-        HOST_ALREADY_EXISTS(1);
+        HOST_ALREADY_EXISTS(1),
+        MASTER_IS_ADMIN_ONLY(2),
+        HOST_IS_NOT_MASTER(3);
 
         private final int code;
 
@@ -85,6 +106,10 @@ public class SlaveRegistrationError {
                 return NONE;
             } else if (code == HOST_ALREADY_EXISTS.getCode()) {
                 return HOST_ALREADY_EXISTS;
+            } else if (code == MASTER_IS_ADMIN_ONLY.getCode()) {
+                return MASTER_IS_ADMIN_ONLY;
+            } else if (code == HOST_IS_NOT_MASTER.getCode()) {
+                return HOST_IS_NOT_MASTER;
             }
             throw new IllegalArgumentException("Invalid code " + code);
         }

@@ -43,6 +43,8 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.threads.JBossThreadFactory;
 
 /**
+ * Provides a client for interacting with the process controller.
+ *
  * @author Emanuel Muckenhuber
  */
 class ProcessControllerConnectionService implements Service<ProcessControllerConnectionService> {

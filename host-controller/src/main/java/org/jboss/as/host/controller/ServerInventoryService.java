@@ -25,12 +25,11 @@ package org.jboss.as.host.controller;
 import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 
 import java.net.InetSocketAddress;
-import java.net.NetworkInterface;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.network.NetworkInterfaceBinding;
-import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -43,7 +42,10 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.AsyncFutureTask;
 
 /**
+ * Service providing the {@link ServerInventory}
+ *
  * @author Emanuel Muckenhuber
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 class ServerInventoryService implements Service<ServerInventory> {
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
@@ -55,9 +57,11 @@ class ServerInventoryService implements Service<ServerInventory> {
     private final DomainController domainController;
     private final HostControllerEnvironment environment;
     private final int port;
+    private final InjectedValue<ExecutorService> executorService = new InjectedValue<ExecutorService>();
+
     private final FutureServerInventory futureInventory = new FutureServerInventory();
 
-    private ServerInventory serverInventory;
+    private ServerInventoryImpl serverInventory;
 
     private ServerInventoryService(final DomainController domainController, final HostControllerEnvironment environment, final int port) {
         this.domainController = domainController;
@@ -65,7 +69,8 @@ class ServerInventoryService implements Service<ServerInventory> {
         this.port = port;
     }
 
-    static Future<ServerInventory> install(final ServiceTarget serviceTarget, final DomainController domainController, final HostControllerEnvironment environment, final String interfaceBinding, final int port){
+    static Future<ServerInventory> install(final ServiceTarget serviceTarget, final DomainController domainController, final HostControllerEnvironment environment,
+                                           final String interfaceBinding, final int port){
         final ServerInventoryCallbackService callbackService = new ServerInventoryCallbackService();
         serviceTarget.addService(ServerInventoryCallbackService.SERVICE_NAME, callbackService)
                 .addDependency(ServerInventoryService.SERVICE_NAME, ServerInventory.class, callbackService.getServerInventoryInjectedValue())
@@ -74,6 +79,7 @@ class ServerInventoryService implements Service<ServerInventory> {
 
         final ServerInventoryService inventory = new ServerInventoryService(domainController, environment, port);
         serviceTarget.addService(ServerInventoryService.SERVICE_NAME, inventory)
+                .addDependency(HostControllerService.HC_EXECUTOR_SERVICE_NAME, ExecutorService.class, inventory.executorService)
                 .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerConnectionService.class, inventory.getClient())
                 .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceBinding), NetworkInterfaceBinding.class, inventory.interfaceBinding)
                 .install();
@@ -96,12 +102,28 @@ class ServerInventoryService implements Service<ServerInventory> {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Stops all servers.
+     *
+     * {@inheritDoc}
+     */
     @Override
-    public synchronized void stop(StopContext context) {
-        this.serverInventory.stopServers(-1); // TODO graceful shutdown // TODO async
-        this.serverInventory = null;
-        client.getValue().setServerInventory(null);
+    public synchronized void stop(final StopContext context) {
+        context.asynchronous();
+        Runnable r = new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    serverInventory.stopServers(-1, true); // TODO graceful shutdown // TODO async
+                    serverInventory = null;
+                    client.getValue().setServerInventory(null);
+                } finally {
+                    context.complete();
+                }
+            }
+        };
+        executorService.getValue().execute(r);
     }
 
     /** {@inheritDoc} */

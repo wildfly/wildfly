@@ -47,6 +47,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.dmr.ModelNode;
 
@@ -128,8 +129,11 @@ public class ReadMasterDomainModelHandler implements OperationStepHandler, Descr
                     try {
                         domainController.registerRemoteHost(proxy);
                         tx.commit();
+                    } catch (SlaveRegistrationException e) {
+                        context.getFailureDescription().set(e.marshal());
+                        tx.rollback();
                     } catch (Exception e) {
-                        context.getFailureDescription().set(SlaveRegistrationError.formatHostAlreadyExists(e.getMessage()));
+                        context.getFailureDescription().set(SlaveRegistrationException.forUnknownError(e.getMessage()).marshal());
                         tx.rollback();
                     }
                 } else {
