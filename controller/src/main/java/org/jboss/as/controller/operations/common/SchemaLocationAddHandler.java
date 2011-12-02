@@ -37,6 +37,7 @@ import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 
 /**
  * Handler for the root resource add-schema-location operation.
@@ -53,7 +54,7 @@ public class SchemaLocationAddHandler extends AbstractModelUpdateHandler impleme
         ModelNode op = new ModelNode();
         op.get(OP).set(OPERATION_NAME);
         op.get(OP_ADDR).set(address);
-        op.get(URI).set(schemaLocation);
+        op.get(URI).set(schemaUrl);
         op.get(SCHEMA_LOCATION).set(schemaLocation);
         return op;
     }
@@ -88,9 +89,9 @@ public class SchemaLocationAddHandler extends AbstractModelUpdateHandler impleme
         stringValidator.validateParameter(SCHEMA_LOCATION, location);
         if (locations.isDefined()) {
             String uriString = uri.asString();
-            for (ModelNode node : locations.asList()) {
-                if (uriString.equals(node.asProperty().getName())) {
-                    throw new OperationFailedException(new ModelNode().set(MESSAGES.schemaAlreadyRegistered(uriString, node.asProperty().getValue().asString())));
+            for (Property prop : locations.asPropertyList()) {
+                if (uriString.equals(prop.getName())) {
+                    throw new OperationFailedException(new ModelNode().set(MESSAGES.schemaAlreadyRegistered(uriString, prop.getValue().asString())));
                 }
             }
         }

@@ -75,7 +75,7 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler, D
     /**
      * Create the ServerAddHandler
      */
-    RemoteDomainControllerAddHandler(final ManagementResourceRegistration rootRegistration,
+    protected RemoteDomainControllerAddHandler(final ManagementResourceRegistration rootRegistration,
                                      final LocalHostControllerInfoImpl hostControllerInfo,
                                      final HostControllerConfigurationPersister overallConfigPersister,
                                      final FileRepository fileRepository) {
@@ -104,6 +104,12 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler, D
             dc.remove(LOCAL);
         }
 
+        initializeDomain(context, remoteDC);
+
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+    }
+
+    protected void initializeDomain(OperationContext context, ModelNode remoteDC) throws OperationFailedException {
         hostControllerInfo.setMasterDomainController(false);
         hostControllerInfo.setRemoteDomainControllerHost(HOST.resolveModelAttribute(context, remoteDC).asString());
         hostControllerInfo.setRemoteDomainControllerPort(PORT.resolveModelAttribute(context, remoteDC).asInt());
@@ -111,10 +117,9 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler, D
         overallConfigPersister.initializeDomainConfigurationPersister(true);
 
         DomainModelUtil.initializeSlaveDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(), fileRepository, hostControllerInfo);
-        context.completeStep();
     }
 
-  //Done by DomainModelControllerService
+    //Done by DomainModelControllerService
 //    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
 //        final ModelNode hostModel = context.readModel(PathAddress.EMPTY_ADDRESS);
 //        final ServiceTarget serviceTarget = context.getServiceTarget();

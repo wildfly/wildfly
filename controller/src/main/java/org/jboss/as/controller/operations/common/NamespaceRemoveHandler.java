@@ -20,9 +20,10 @@ package org.jboss.as.controller.operations.common;
 
 
 import java.util.Locale;
-import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
@@ -41,7 +42,7 @@ import org.jboss.dmr.Property;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class NamespaceRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
+public class NamespaceRemoveHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "remove-namespace";
 
@@ -63,7 +64,10 @@ public class NamespaceRemoveHandler extends AbstractRemoveStepHandler implements
     private NamespaceRemoveHandler() {
     }
 
-    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+
+        final ModelNode model = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
+
         ModelNode param = operation.get(NAMESPACE);
         typeValidator.validateParameter(NAMESPACE, param);
         ModelNode namespaces = model.get(NAMESPACES);
@@ -85,10 +89,6 @@ public class NamespaceRemoveHandler extends AbstractRemoveStepHandler implements
         } else {
             throw new OperationFailedException(new ModelNode().set(MESSAGES.namespaceNotFound(prefix)));
         }
-    }
-
-    protected boolean requiresRuntime(OperationContext context) {
-        return false;
     }
 
     @Override

@@ -74,7 +74,7 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
     /**
      * Create the ServerAddHandler
      */
-    LocalDomainControllerAddHandler(final ManagementResourceRegistration rootRegistration,
+    protected LocalDomainControllerAddHandler(final ManagementResourceRegistration rootRegistration,
                                     final LocalHostControllerInfoImpl hostControllerInfo,
                                     final HostControllerEnvironment environment,
                                     final HostControllerConfigurationPersister overallConfigPersister,
@@ -102,6 +102,12 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
             dc.remove(REMOTE);
         }
 
+        initializeDomain();
+
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+    }
+
+    protected void initializeDomain() {
         hostControllerInfo.setMasterDomainController(true);
         overallConfigPersister.initializeDomainConfigurationPersister(false);
 
@@ -110,8 +116,6 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
 
         DomainModelUtil.initializeMasterDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(),
                 contentRepo, fileRepository, domainController, registry);
-
-        context.completeStep();
     }
 
 

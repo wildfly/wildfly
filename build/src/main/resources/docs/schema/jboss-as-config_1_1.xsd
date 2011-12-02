@@ -70,7 +70,7 @@
                 <xs:element name="system-properties" type="properties-with-boottime" minOccurs="0"/>
                 <xs:element name="paths" type="specified-pathsType" minOccurs="0" maxOccurs="1" />
                 <xs:element name="vault" type="vaultType" minOccurs="0" maxOccurs="1"/>
-                <xs:element name="management" type="host-managementType" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="management" type="host-managementType" minOccurs="1" maxOccurs="1"/>
                 <xs:element name="domain-controller" type="domain-controllerType"/>
                 <xs:element name="interfaces" type="specified-interfacesType" minOccurs="0"/>
                 <xs:element name="jvms" type="jvmsType" minOccurs="0"/>
@@ -157,7 +157,7 @@
         <xs:complexContent>
             <xs:extension base="domain-managementType">
                 <xs:sequence>
-                    <xs:element name="management-interfaces" type="host-management-interfacesType" minOccurs="0"/>
+                    <xs:element name="management-interfaces" type="host-management-interfacesType" minOccurs="1"/>
                 </xs:sequence>
             </xs:extension>
         </xs:complexContent>
@@ -472,10 +472,10 @@
     </xs:complexType>
 
     <xs:complexType name="host-management-interfacesType">
-        <xs:all minOccurs="0">
+        <xs:sequence>
             <xs:element name="native-interface" type="host-native-management-interfaceType"/>
-            <xs:element name="http-interface" type="host-http-management-interfaceType"/>
-        </xs:all>
+            <xs:element name="http-interface" type="host-http-management-interfaceType" minOccurs="0"/>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="management-interfaceType">
@@ -592,11 +592,11 @@
     </xs:complexType>
 
     <xs:complexType name="server-management-interfacesType">
-        <xs:all minOccurs="0">
+        <xs:sequence>
             <xs:element name="native-remoting-interface" type="management-remoting-interfaceType" minOccurs="0"/>
-            <xs:element name="native-interface" type="server-native-management-interfaceType"/>
-            <xs:element name="http-interface" type="server-http-management-interfaceType"/>
-        </xs:all>
+            <xs:element name="native-interface" type="server-native-management-interfaceType" minOccurs="0"/>
+            <xs:element name="http-interface" type="server-http-management-interfaceType" minOccurs="0"/>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="server-native-management-interfaceType">

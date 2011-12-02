@@ -201,7 +201,7 @@ public class StandaloneXml extends CommonXml {
         }
 
         if (element == Element.MANAGEMENT) {
-            parseManagement(reader, address, DOMAIN_1_0, list, true);
+            parseManagement(reader, address, DOMAIN_1_0, list, true, false);
             element = nextElement(reader, DOMAIN_1_0);
         }
 
@@ -308,7 +308,7 @@ public class StandaloneXml extends CommonXml {
         }
 
         if (element == Element.MANAGEMENT) {
-            parseManagement(reader, address, DOMAIN_1_1, list, true);
+            parseManagement(reader, address, DOMAIN_1_1, list, true, false);
             element = nextElement(reader, DOMAIN_1_1);
         }
         // Single profile

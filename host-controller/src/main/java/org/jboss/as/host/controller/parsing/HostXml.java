@@ -49,11 +49,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTION;
 import static org.jboss.as.controller.parsing.Namespace.DOMAIN_1_0;
 import static org.jboss.as.controller.parsing.Namespace.DOMAIN_1_1;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
 import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
 import static org.jboss.as.controller.parsing.ParseUtils.parsePossibleExpression;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNamespace;
@@ -63,6 +63,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -262,7 +263,7 @@ public class HostXml extends CommonXml {
         }
 
         if (element == Element.MANAGEMENT) {
-            parseManagement(reader, address, DOMAIN_1_0, list, true);
+            parseManagement(reader, address, DOMAIN_1_0, list, true, false);
             element = nextElement(reader, DOMAIN_1_0);
         }
         if (element == Element.DOMAIN_CONTROLLER) {
@@ -362,8 +363,10 @@ public class HostXml extends CommonXml {
             element = nextElement(reader, DOMAIN_1_1);
         }
         if (element == Element.MANAGEMENT) {
-            parseManagement(reader, address, DOMAIN_1_1, list, true);
+            parseManagement(reader, address, DOMAIN_1_1, list, true, true);
             element = nextElement(reader, DOMAIN_1_1);
+        } else {
+            throw missingRequiredElement(reader, EnumSet.of(Element.MANAGEMENT));
         }
         if (element == Element.DOMAIN_CONTROLLER) {
             parseDomainController(reader, address, DOMAIN_1_1, list);
@@ -382,36 +385,21 @@ public class HostXml extends CommonXml {
             parseServers(reader, address, DOMAIN_1_1, list);
             element = nextElement(reader, DOMAIN_1_1);
         }
+        if (element != null) {
+            throw unexpectedElement(reader);
+        }
 
     }
-
-        // for ( ;reader.hasNext(); ) {
-        // switch (reader.nextTag()) {
-        // case START_ELEMENT: {
-        // readHeadComment(reader, address, list);
-        // if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {
-        // throw unexpectedElement(reader);
-        // }
-        // switch (Element.forName(reader.getLocalName())) {
-        // default: throw unexpectedElement(reader);
-        // }
-        // }
-        // case END_ELEMENT: {
-        // readTailComment(reader, address, list);
-        // return;
-        // }
-        // default: throw new IllegalStateException();
-        // }
-        // }
 
     protected void parseManagementInterfaces(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
             final List<ModelNode> list) throws XMLStreamException {
 
         requireNoAttributes(reader);
-
+        Set<Element> required = EnumSet.of(Element.NATIVE_INTERFACE);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
             final Element element = Element.forName(reader.getLocalName());
+            required.remove(element);
             switch (element) {
                 case NATIVE_INTERFACE: {
                     switch (expectedNs) {
@@ -437,6 +425,10 @@ public class HostXml extends CommonXml {
                     throw unexpectedElement(reader);
                 }
             }
+        }
+
+        if (!required.isEmpty()) {
+            throw missingRequiredElement(reader, required);
         }
     }
 

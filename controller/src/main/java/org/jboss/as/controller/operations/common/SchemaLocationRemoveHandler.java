@@ -20,15 +20,18 @@ package org.jboss.as.controller.operations.common;
 
 
 import java.util.Locale;
-import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URI;
+
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
@@ -41,7 +44,7 @@ import org.jboss.dmr.Property;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class SchemaLocationRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
+public class SchemaLocationRemoveHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "remove-schema-location";
 
@@ -51,7 +54,7 @@ public class SchemaLocationRemoveHandler extends AbstractRemoveStepHandler imple
         ModelNode op = new ModelNode();
         op.get(OP).set(OPERATION_NAME);
         op.get(OP_ADDR).set(address);
-        op.get(SCHEMA_LOCATION).set(schemaURI);
+        op.get(URI).set(schemaURI);
         return op;
     }
 
@@ -63,9 +66,11 @@ public class SchemaLocationRemoveHandler extends AbstractRemoveStepHandler imple
     private SchemaLocationRemoveHandler() {
     }
 
-    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        ModelNode param = operation.get(SCHEMA_LOCATION);
-        typeValidator.validateParameter(SCHEMA_LOCATION, param);
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+
+        final ModelNode model = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
+        ModelNode param = operation.get(URI);
+        typeValidator.validateParameter(URI, param);
 
         ModelNode locations = model.get(SCHEMA_LOCATIONS);
         Property toRemove = null;
@@ -85,10 +90,8 @@ public class SchemaLocationRemoveHandler extends AbstractRemoveStepHandler imple
         } else {
             throw new OperationFailedException(new ModelNode().set(MESSAGES.schemaNotFound(uri)));
         }
-    }
 
-    protected boolean requiresRuntime(OperationContext context) {
-        return false;
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
     @Override
