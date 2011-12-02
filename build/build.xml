@@ -441,6 +441,10 @@
             <maven-resource group="commons-beanutils" artifact="commons-beanutils"/>
         </module-def>
 
+        <module-def name="org.apache.commons.cli">
+            <maven-resource group="commons-cli" artifact="commons-cli"/>
+        </module-def>
+
         <module-def name="org.apache.commons.codec">
             <maven-resource group="commons-codec" artifact="commons-codec"/>
         </module-def>

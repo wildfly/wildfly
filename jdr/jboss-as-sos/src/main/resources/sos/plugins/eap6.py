@@ -1,11 +1,6 @@
 import os
 import re
 import zipfile
-import platform
-import fnmatch
-import shlex
-import subprocess
-import string
 import urllib2
 
 try:
@@ -14,14 +9,17 @@ except ImportError:
     import simplejson as json
 
 from sos.plugins import Plugin, IndependentPlugin
-from sos.utilities import DirTree, find, md5sum
+from sos.utilities import DirTree, find, checksum
 
 class Request(object):
 
     def __init__(self, resource, operation="read-resource", parameters=None):
         self.resource = resource
         self.operation = operation
-        self.parameters = parameters
+        if parameters:
+            self.parameters = parameters
+        else:
+            self.parameters = {}
 
     def url_parts(self):
         """Generator function to split a url into (key, value) tuples. The url
@@ -48,7 +46,8 @@ class EAP6(Plugin, IndependentPlugin):
           ("home",  "JBoss's installation dir (i.e. JBOSS_HOME)", '', False),
           ("logsize", 'max size (MiB) to collect per log file', '', 15),
           ("stdjar",  'Collect jar statistics for standard jars.', '', True),
-          ("address", 'hostname:port of the management api for jboss', '', 'localhost:9990'),
+          ("host", 'hostname of the management api for jboss', '', 'localhost'),
+          ("port", 'port of the management api for jboss', '', '9990'),
           ("user", 'username for management console', '', None),
           ("pass", 'password for management console', '', None),
           ("appxml",  "comma separated list of application's whose XML descriptors you want. The keyword 'all' will collect all descriptors in the designated profile(s).", '', False),
@@ -95,7 +94,7 @@ class EAP6(Plugin, IndependentPlugin):
         retVal = "?" * 32
 
         try:
-            retVal = md5sum(file, self.__MD5_CHUNK_SIZE)
+            retVal = checksum(file, self.__MD5_CHUNK_SIZE)
         except IOError, ioe:
             self.__alert("ERROR: Unable to open %s for reading.  Error: %s" % (file,ioe))
 
@@ -164,11 +163,17 @@ class EAP6(Plugin, IndependentPlugin):
         return sos.controllerClient.execute(request).toJSONString(True)
 
     def query_http(self, request_obj, postdata=None):
-        host_port = self.getOption('address')
-        username = self.getOption('user')
-        password = self.getOption('pass')
+        # in the case where we are being called from jdr.sh we will likely
+        # get these things via the sos object
+        import sos
 
-        uri = "http://" + host_port + "/management" + request_obj.resource + "?"
+        host = getattr(sos, 'as7_host', None) or self.getOption('host')
+        port = getattr(sos, 'as7_port', None) or self.getOption('port')
+
+        username = self.getOption('user') or getattr(sos, 'as7_user', None)
+        password = self.getOption('pass') or getattr(sos, 'as7_pass', None)
+
+        uri = "http://" + host + ":" + port + "/management"
 
         json_data = {'operation': request_obj.operation,
                      'address': []}
@@ -186,16 +191,13 @@ class EAP6(Plugin, IndependentPlugin):
         opener = urllib2.build_opener()
 
         if username and password:
-            params = {"realm": "PropertiesMgmtSecurityRealm",
-                    "uri": uri,
-                    "user": username,
-                    "passwd": password}
-
-            digest_auth_handler = urllib2.HTTPDigestAuthHandler()
-            digest_auth_handler.add_password(**params)
-
-            basic_auth_handler = urllib2.HTTPBasicAuthHandler()
-            basic_auth_handler.add_password(**params)
+            passwd_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
+            passwd_manager.add_password(realm="ManagementRealm",
+                                        uri=uri,
+                                        user=username,
+                                        passwd=password)
+            digest_auth_handler = urllib2.HTTPDigestAuthHandler(passwd_manager)
+            basic_auth_handler = urllib2.HTTPBasicAuthHandler(passwd_manager)
 
             opener.add_handler(digest_auth_handler)
             opener.add_handler(basic_auth_handler)
@@ -204,9 +206,11 @@ class EAP6(Plugin, IndependentPlugin):
 
         try:
             resp = opener.open(req)
-            resp.read()
+            return resp.read()
         except Exception, e:
-            self.addAlert("Could not query url: %s; error: %s" % (uri, e))
+            err_msg = "Could not query url: %s; error: %s" % (uri, e)
+            self.addAlert(err_msg)
+            return err_msg
 
     def get_online_data(self):
         """
@@ -214,10 +218,13 @@ class EAP6(Plugin, IndependentPlugin):
         information from a running system.
         """
         for caller, outfile in [
-                (Request(resource="/core-service/platform-mbean/type/threading",
-                        operation="dump-all-threads",
-                        parameters={"locked-synchronizers": "true", "locked-monitors": "true"}), "threaddump.json"),
+                # waiting for the fix in AS7
+#                (Request(resource="/core-service/platform-mbean/type/threading",
+#                        operation="dump-all-threads",
+#                        parameters={"locked-synchronizers": "true", "locked-monitors": "true"}), "threaddump.json"),
                 (Request(resource="/", parameters={"recursive": "true"}), "configuration.json"),
+                (Request(resource="/core-service/service-container", operation='dump-services'), "dump-services.json"),
+                (Request(resource="/subsystem/modcluster", operation='read-proxies-configuration'), "cluster-proxies-configuration.json"),
                 ]:
             self.addStringAsFile(self.query(caller), filename=outfile)
 
@@ -237,6 +244,7 @@ class EAP6(Plugin, IndependentPlugin):
             if os.path.exists(path):
                 ## First get everything in the conf dir
                 confDir = os.path.join(path, "configuration")
+                self.addForbiddenPath(os.path.join(confDir, 'mgmt-users.properties'))
 
                 self.doCopyFileOrDir(confDir, sub=(self.__jbossHome, 'JBOSSHOME'))
                 ## Log dir next
@@ -280,22 +288,24 @@ class EAP6(Plugin, IndependentPlugin):
         Obfuscate passwords.
         """
 
+        password_xml_regex = re.compile(r'<password>.*</password>', re.IGNORECASE)
+
         for dir_ in self.__jbossServerConfigDirs:
             path = os.path.join(self.__jbossHome, dir_)
 
-            self.doRegexSub(os.path.join(path,"configuration","login-config.xml"),
-                            re.compile(r'"password".*>.*</module-option>', re.IGNORECASE),
-                            r'"password">********</module-option>')
+            self.doRegexSub(os.path.join(path,"configuration","*.xml"),
+                            password_xml_regex,
+                            r'<password>********</password>')
 
-            tmp = os.path.join(path,"conf", "props")
+            tmp = os.path.join(path,"configuration")
             for propFile in find("*-users.properties", tmp):
                 self.doRegexSub(propFile,
                                 r"=(.*)",
                                 r'=********')
 
 #             Remove PW from -ds.xml files
-            tmp = os.path.join(path, "deploy")
+            tmp = os.path.join(path, "deployments")
             for dsFile in find("*-ds.xml", tmp):
                 self.doRegexSub(dsFile,
-                                re.compile(r"<password.*>.*</password.*>", re.IGNORECASE),
+                                password_xml_regex,
                                 r"<password>********</password>")

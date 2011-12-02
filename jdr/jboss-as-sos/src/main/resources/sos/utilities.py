@@ -33,26 +33,35 @@ import shlex
 import logging
 import zipfile
 import tarfile
+import hashlib
 try:
     from cStringIO import StringIO
 except ImportError:
     from StringIO import StringIO
 import time
 
-try:
-    import hashlib as md5
-except ImportError:
-    import md5
-
-def md5sum(filename, chunk_size=128):
-    """Returns the md5 sum of the supplied filename. The file is read in chunk_size blocks"""
+def checksum(filename, chunk_size=128):
+    """Returns the checksum of the supplied filename. The file is read in
+    chunk_size blocks"""
+    name = get_hash_name()
+    digest = hashlib.new(name)
     fd = open(filename, 'rb')
     data = fd.read(chunk_size)
-    md5_obj = md5.md5()
     while data:
-        md5_obj.update(data)
+        digest.update(data)
         data = fd.read(chunk_size)
-    return md5_obj.hexdigest()
+    return digest.hexdigest()
+
+def get_hash_name():
+    """Returns the algorithm used when computing a hash"""
+    import sos.policies
+    policy = sos.policies.load()
+    try:
+        name = policy.getPreferredHashAlgorithm()
+        hashlib.new(name)
+        return name
+    except:
+        return 'sha256'
 
 class DirTree(object):
     """Builds an ascii representation of a directory structure"""
@@ -424,4 +433,10 @@ def compress(archive, method):
     if not compressed:
         raise last_error
 
+
+def shell_out(cmd):
+    """Uses subprocess.Popen to make a system call and returns stdout.
+    Does not handle exceptions."""
+    p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+    return p.communicate()[0]
 # vim:ts=4 sw=4 et
