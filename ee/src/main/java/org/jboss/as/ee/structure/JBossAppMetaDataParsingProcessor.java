@@ -33,7 +33,7 @@ import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.metadata.merge.JBossAppMetaDataMerger;
 import org.jboss.metadata.parser.jboss.JBossAppMetaDataParser;
-import org.jboss.metadata.parser.util.NoopXmlResolver;
+import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
@@ -65,7 +65,7 @@ public class JBossAppMetaDataParsingProcessor implements DeploymentUnitProcessor
         try {
             inputStream = applicationXmlFile.openStream();
             final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-            inputFactory.setXMLResolver(NoopXmlResolver.create());
+            inputFactory.setXMLResolver(NoopXMLResolver.create());
             XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(inputStream);
             final JBossAppMetaData appMetaData = JBossAppMetaDataParser.parse(xmlReader);
             if (appMetaData != null) {
