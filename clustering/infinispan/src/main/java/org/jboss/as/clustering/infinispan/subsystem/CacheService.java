@@ -32,6 +32,7 @@ import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.TransactionManagerProvider;
 import org.jboss.as.clustering.infinispan.TransactionSynchronizationRegistryProvider;
+import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -39,12 +40,16 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
 
 /**
  * @author Paul Ferraro
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 public class CacheService<K, V> implements Service<Cache<K, V>> {
+
+    private static final Logger log = Logger.getLogger(CacheService.class.getPackage().getName()) ;
+
     private final String name;
     private final String template;
     private final Configuration overrides ;
@@ -101,12 +106,12 @@ public class CacheService<K, V> implements Service<Cache<K, V>> {
         // for transactional caches, our first opportunity to set the providers
         FluentConfiguration.TransactionConfig tx = configuration.fluent().transaction();
         if (configuration.isTransactionalCache()) {
-            TransactionManager txManager = this.configurationHelper.getTransactionManager();
+            Value<TransactionManager> txManager = this.configurationHelper.getTransactionManager();
             if (txManager != null) {
                 tx.transactionManagerLookup(new TransactionManagerProvider(txManager));
             }
             if (configuration.isUseSynchronizationForTransactions()) {
-                TransactionSynchronizationRegistry txSyncRegistry = this.configurationHelper.getTransactionSynchronizationRegistry();
+                Value<TransactionSynchronizationRegistry> txSyncRegistry = this.configurationHelper.getTransactionSynchronizationRegistry();
                 if (txSyncRegistry != null) {
                     tx.transactionSynchronizationRegistryLookup(new TransactionSynchronizationRegistryProvider(txSyncRegistry));
                 }
@@ -115,7 +120,6 @@ public class CacheService<K, V> implements Service<Cache<K, V>> {
                 // set injection
             }
         }
-
 
         // if template != null, a cache named template is used as the base; otherwise default
         if (this.template != null) {
@@ -126,6 +130,8 @@ public class CacheService<K, V> implements Service<Cache<K, V>> {
         // get an instance of the defined cache
         this.cache = container.getCache(this.name);
 
+        // check how the final configuration looks
+        log.debugf("Cache configuration = %s", this.cache.getConfiguration().toXmlString());
     }
 
     /**
@@ -182,13 +188,13 @@ public class CacheService<K, V> implements Service<Cache<K, V>> {
         }
 
         @Override
-        public TransactionManager getTransactionManager() {
-            return this.transactionManager.getOptionalValue();
+        public Value<TransactionManager> getTransactionManager() {
+            return this.transactionManager;
         }
 
         @Override
-        public TransactionSynchronizationRegistry getTransactionSynchronizationRegistry() {
-            return this.transactionSynchronizationRegistry.getOptionalValue();
+        public Value<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistry() {
+            return this.transactionSynchronizationRegistry;
         }
     }
 }
