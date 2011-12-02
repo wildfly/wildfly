@@ -24,7 +24,10 @@ package org.jboss.as.ejb3.component.stateful;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import javax.ejb.CreateException;
+
 import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
+import org.jboss.as.ejb3.component.interceptors.EjbExceptionTransformingInterceptorFactories;
 import org.jboss.as.ejb3.component.interceptors.SessionBeanHomeInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -39,6 +42,7 @@ import org.jboss.invocation.Interceptors;
  * @author Stuart Douglas
  */
 public class StatefulInitMethodInterceptorFactory implements InterceptorFactory {
+
 
     public static final InterceptorFactory INSTANCE = new StatefulInitMethodInterceptorFactory();
 
@@ -62,6 +66,9 @@ public class StatefulInitMethodInterceptorFactory implements InterceptorFactory 
                     try {
                         method.invoke(context.getTarget(), params);
                     } catch (InvocationTargetException e) {
+                        if(CreateException.class.isAssignableFrom(e.getCause().getClass())) {
+                            EjbExceptionTransformingInterceptorFactories.setCreateException((CreateException)e.getCause());
+                        }
                         throw Interceptors.rethrow(e.getCause());
                     }
                 }
@@ -69,4 +76,5 @@ public class StatefulInitMethodInterceptorFactory implements InterceptorFactory 
             }
         };
     }
+
 }
