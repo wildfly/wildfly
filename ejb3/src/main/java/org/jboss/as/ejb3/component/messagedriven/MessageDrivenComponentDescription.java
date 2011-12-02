@@ -197,6 +197,10 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         });
     }
 
+    /**
+     * Adds a interceptor to invoke the {@link MessageDrivenBean#setMessageDrivenContext(javax.ejb.MessageDrivenContext)}
+     * if the MDB implements the {@link MessageDrivenBean} interface
+     */
     private void addSetMessageDrivenContextMethodInvocationInterceptor() {
         // add the setMessageDrivenContext(MessageDrivenContext) method invocation interceptor for MDB
         // implementing the javax.ejb.MessageDrivenBean interface
