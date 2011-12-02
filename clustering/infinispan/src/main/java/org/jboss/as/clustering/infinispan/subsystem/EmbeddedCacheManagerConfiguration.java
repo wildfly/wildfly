@@ -21,9 +21,6 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.infinispan.config.Configuration;
-import org.jboss.msc.value.Value;
-import org.jboss.tm.XAResourceRecoveryRegistry;
 import javax.management.MBeanServer;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
@@ -33,6 +30,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.infinispan.config.Configuration;
+import org.jboss.msc.value.Value;
 import org.jboss.tm.XAResourceRecoveryRegistry;
 
 /**

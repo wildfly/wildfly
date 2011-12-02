@@ -23,9 +23,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.infinispan.InfinispanLogger.ROOT_LOGGER;
 
-import java.util.Map;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ScheduledExecutorService;
 import javax.management.MBeanServer;
 import javax.transaction.xa.XAResource;
 import java.util.Map;

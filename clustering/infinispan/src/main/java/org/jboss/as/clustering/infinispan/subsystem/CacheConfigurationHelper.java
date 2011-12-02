@@ -25,6 +25,7 @@ import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.infinispan.manager.CacheContainer;
+import org.jboss.msc.value.Value;
 
 /**
  * Class to hold all injection targets required for configuring CacheService
@@ -35,6 +36,6 @@ public interface CacheConfigurationHelper {
     String getName();
     CacheContainer getCacheContainer();
     EmbeddedCacheManagerDefaults getEmbeddedCacheManagerDefaults();
-    TransactionManager getTransactionManager();
-    TransactionSynchronizationRegistry getTransactionSynchronizationRegistry();
+    Value<TransactionManager> getTransactionManager();
+    Value<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistry();
 }
