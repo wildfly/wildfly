@@ -43,7 +43,6 @@
         <module name="org.jboss.logmanager"/>
         <module name="org.jboss.logmanager.log4j"/>
         <module name="org.jboss.remoting3"/>
-        <module name="org.jboss.sasl"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.stdio"/>
         <module name="org.jboss.threads"/>
