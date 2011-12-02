@@ -44,11 +44,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.security.AccessController;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivilegedAction;
-import java.security.Provider;
-import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,7 +56,6 @@ import org.jboss.as.process.Main;
 import org.jboss.as.process.ProcessController;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
-import org.jboss.sasl.JBossSaslProvider;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -81,22 +76,12 @@ public class RespawnTestCase {
     private static final String SERVER_ONE = "respawn-one";
     private static final String SERVER_TWO = "respawn-two";
     private static final int HC_PORT = 9999;
-    private static final Provider saslProvider = new JBossSaslProvider();
-
 
     static ProcessController processController;
     static ProcessUtil processUtil;
 
     @BeforeClass
     public static void createProcessController() throws IOException, URISyntaxException, NoSuchAlgorithmException {
-        AccessController.doPrivileged(new PrivilegedAction<Object>() {
-            public Object run() {
-                if (Security.getProperty(saslProvider.getName()) == null) {
-                    Security.insertProviderAt(saslProvider, 1);
-                }
-                return null;
-            }
-        });
 
         final String testName = RespawnTestCase.class.getSimpleName();
         final File domains = new File("target" + File.separator + "domains" + File.separator + testName);

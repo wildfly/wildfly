@@ -25,17 +25,12 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.Provider;
-import java.security.Security;
 import java.util.Map;
 
 import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.remoting3.Endpoint;
-import org.jboss.sasl.JBossSaslProvider;
 import org.xnio.IoUtils;
 
 /**
@@ -79,7 +74,6 @@ public abstract class ManagementClientChannelStrategy {
 
     private static class Establishing extends ManagementClientChannelStrategy {
 
-        private static final Provider saslProvider = new JBossSaslProvider();
         private final Endpoint endpoint;
         private final String hostName;
         private final int port;
@@ -102,15 +96,6 @@ public abstract class ManagementClientChannelStrategy {
 
         @Override
         public ManagementChannel getChannel() throws IOException {
-            AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                public Object run() {
-                    if (Security.getProvider(saslProvider.getName()) == null) {
-                        Security.insertProviderAt(saslProvider, 1);
-                    }
-                    return null;
-                }
-            });
-
 
             final ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
             try {

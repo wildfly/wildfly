@@ -22,11 +22,6 @@
 package org.jboss.as.remoting;
 
 import java.io.File;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.Provider;
-import java.security.Security;
-
 import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.domain.management.SecurityRealm;
@@ -36,7 +31,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.sasl.JBossSaslProvider;
 
 /**
  * The service to make the RealmAuthenticationProvider available.
@@ -58,16 +52,6 @@ public class RealmAuthenticationProviderService implements Service<RealmAuthenti
     }
 
     public void start(StartContext startContext) throws StartException {
-        AccessController.doPrivileged(new PrivilegedAction<Object>() {
-            public Object run() {
-                Provider saslProvider = new JBossSaslProvider();
-                if (Security.getProvider(saslProvider.getName()) == null) {
-                    Security.insertProviderAt(saslProvider, 1);
-                }
-                return null;
-            }
-        });
-
         String path = tmpDirValue.getValue();
         File authDir = new File(path, "auth");
         if (authDir.exists()) {
