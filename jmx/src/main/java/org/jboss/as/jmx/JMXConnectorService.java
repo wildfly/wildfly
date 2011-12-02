@@ -69,12 +69,18 @@ public class JMXConnectorService implements Service<Void> {
     private final InjectedValue<SocketBinding> registryPortBinding = new InjectedValue<SocketBinding>();
     private final InjectedValue<SocketBinding> serverPortBinding = new InjectedValue<SocketBinding>();
 
+    private String passwordFile;
+    private String accessFile;
+
     private RMIConnectorServer adapter;
     private RMIJRMPServerImpl rmiServer;
     private Registry registry;
 
-    public static ServiceController<?> addService(final ServiceTarget target, final String serverBinding, final String registryBinding, final ServiceListener<Object>... listeners) {
+    public static ServiceController<?> addService(final ServiceTarget target, final String serverBinding, final String registryBinding, final String passwordFile, final String accessFile, final ServiceListener<Object>... listeners) {
         JMXConnectorService jmxConnectorService = new JMXConnectorService();
+        jmxConnectorService.passwordFile = passwordFile;
+        jmxConnectorService.accessFile = accessFile;
+
         return target.addService(JMXConnectorService.SERVICE_NAME, jmxConnectorService)
                 .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, jmxConnectorService.getMBeanServerServiceInjector())
                 .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(registryBinding), SocketBinding.class, jmxConnectorService.getRegistryPortBinding())
@@ -88,6 +94,11 @@ public class JMXConnectorService implements Service<Void> {
     public void start(StartContext context) throws StartException {
         log.info("Starting remote JMX connector");
         setRmiServerProperty(serverPortBinding.getValue().getAddress().getHostAddress());
+
+        if((passwordFile != null && accessFile == null)||(passwordFile==null&&accessFile!=null)) {
+            throw new StartException("Need both password-file and access-file to start in secure mode");
+        }
+
         try {
             SocketBinding registryBinding = registryPortBinding.getValue();
             RMIServerSocketFactory registrySocketFactory = new JMXServerSocketFactory(registryBinding);
@@ -96,6 +107,22 @@ public class JMXConnectorService implements Service<Void> {
 
             registry = LocateRegistry.createRegistry(getRmiRegistryPort(), null, registrySocketFactory);
             HashMap<String, Object> env = new HashMap<String, Object>();
+
+            if(passwordFile != null) {
+                // Provide the password file used by the connector server to
+                // perform user authentication. The password file is a properties
+                // based text file specifying username/password pairs.
+                //
+                env.put("jmx.remote.x.password.file", replaceEnvVars(passwordFile));
+
+                // Provide the access level file used by the connector server to
+                // perform user authorization. The access level file is a properties
+                // based text file specifying username/access level pairs where
+                // access level is either "readonly" or "readwrite" access to the
+                // MBeanServer operations.
+                //
+                env.put("jmx.remote.x.access.file", replaceEnvVars(accessFile));
+            }
 
             rmiServer = new RMIJRMPServerImpl(getRmiServerPort(), null, serverSocketFactory, env);
             JMXServiceURL url = buildJMXServiceURL();
@@ -207,5 +234,34 @@ public class JMXConnectorService implements Service<Void> {
         } else {
             System.setProperty(SERVER_HOSTNAME, address);
         }
+    }
+
+    private String replaceEnvVars(String attrValue) {
+        StringBuilder src = new StringBuilder(attrValue);
+        StringBuilder res = new StringBuilder();
+        while(src.length() > 0) {
+            int i = src.indexOf("${");
+            if(i > 0) {
+                res.append(src.substring(0, i));
+                src.delete(0, i);
+            } else if(i < 0) {
+                if(src.length() > 0) {
+                    res.append(src);
+                    src.delete(0, src.length());
+                }
+            } else {
+                int j = src.indexOf("}");
+                String envVar = src.substring(2, j);
+                String value = System.getProperty(envVar);
+                if(value == null) {
+                    value = System.getenv(envVar);
+                }
+                if(value != null) {
+                    res.append(value);
+                }
+                src.delete(0, j+1);
+            }
+        }
+        return res.toString();
     }
 }

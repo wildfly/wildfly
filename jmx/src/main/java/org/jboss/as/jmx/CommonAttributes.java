@@ -29,5 +29,7 @@ interface CommonAttributes {
 
     String SERVER_BINDING = "server-binding";
     String REGISTRY_BINDING = "registry-binding";
+    String PASSWORD_FILE = "password-file";
+    String ACCESS_FILE = "access-file";
     String JMX_CONNECTOR = "jmx-connector";
 }

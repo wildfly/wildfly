@@ -53,16 +53,24 @@ class JMXConnectorAdd implements OperationStepHandler {
 
         final String serverBinding = operation.require(CommonAttributes.SERVER_BINDING).asString();
         final String registryBinding = operation.require(CommonAttributes.REGISTRY_BINDING).asString();
+        final String passwordFile = (operation.hasDefined(CommonAttributes.PASSWORD_FILE) ? operation.get(CommonAttributes.PASSWORD_FILE).asString() : null);
+        final String accessFile = (operation.hasDefined(CommonAttributes.ACCESS_FILE) ? operation.get(CommonAttributes.ACCESS_FILE).asString() : null);
 
         model.get(CommonAttributes.SERVER_BINDING).set(serverBinding);
         model.get(CommonAttributes.REGISTRY_BINDING).set(registryBinding);
+        if(passwordFile != null) {
+            model.get(CommonAttributes.PASSWORD_FILE).set(passwordFile);
+        }
+        if(accessFile != null) {
+            model.get(CommonAttributes.ACCESS_FILE).set(accessFile);
+        }
         if(context.getType() == OperationContext.Type.SERVER) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                     final ServiceTarget target = context.getServiceTarget();
                     final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                    JMXConnectorService.addService(target, serverBinding, registryBinding, verificationHandler);
+                    JMXConnectorService.addService(target, serverBinding, registryBinding, passwordFile, accessFile, verificationHandler);
                     context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
                     if(context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                         context.removeService(JMXConnectorService.SERVICE_NAME);

@@ -27,7 +27,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
@@ -158,6 +161,20 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
     }
 
     @Test
+    public void testParseSubsystem1_0WithBadPasswordFile() throws Exception {
+        //Parse the subsystem xml into operations
+        String subsystemXml =
+                "<subsystem xmlns=\"" + Namespace.JMX_1_0.getUriString() + "\">" +
+                "    <jmx-connector registry-binding=\"registry1\" server-binding=\"server1\" password-file=\"passwords\" />" +
+                "</subsystem>";
+        try {
+            super.parse(subsystemXml);
+            Assert.fail("Should not have parsed bad attribute");
+        } catch (XMLStreamException expected) {
+        }
+    }
+
+    @Test
     public void testInstallIntoController() throws Exception {
         //Parse the subsystem xml and install into the controller
         String subsystemXml =
@@ -181,23 +198,14 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         Assert.assertEquals("registry", model.get(SUBSYSTEM, JMXExtension.SUBSYSTEM_NAME).require(CommonAttributes.REGISTRY_BINDING).asString());
         Assert.assertEquals("server", model.get(SUBSYSTEM, JMXExtension.SUBSYSTEM_NAME).require(CommonAttributes.SERVER_BINDING).asString());
 
-        //Make sure that we can connect to the MBean server
-        String host = "localhost";
-        int port = 12345;
-        String urlString = System.getProperty("jmx.service.url",
-            "service:jmx:rmi:///jndi/rmi://" + host + ":" + port + "/jmxrmi");
-        JMXServiceURL serviceURL = new JMXServiceURL(urlString);
-        JMXConnector jmxConnector = JMXConnectorFactory.connect(serviceURL, null);
-        MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
-        connection.getMBeanCount();
     }
 
 
     @Test
-    public void testParseAndMarshalModel() throws Exception {
+    public void testParseAndMarshalModel1_0() throws Exception {
         //Parse the subsystem xml and install into the first controller
         String subsystemXml =
-                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
+                "<subsystem xmlns=\"" + Namespace.JMX_1_0.getUriString() + "\">" +
                 "    <jmx-connector registry-binding=\"registry1\" server-binding=\"server1\" />" +
                 "</subsystem>";
 
@@ -216,6 +224,111 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         servicesA.shutdown();
 
         System.out.println(marshalled);
+
+        Assert.assertEquals(normalizeXML(subsystemXml), normalizeXML(marshalled));
+
+        //Install the persisted xml from the first controller into a second controller
+        KernelServices servicesB = super.installInController(additionalInit, marshalled);
+        ModelNode modelB = servicesB.readWholeModel();
+
+        //Make sure the models from the two controllers are identical
+        super.compare(modelA, modelB);
+    }
+
+    @Test
+    public void testParseAndMarshalModel1_1() throws Exception {
+        //Parse the subsystem xml and install into the first controller
+        String subsystemXml =
+                "<subsystem xmlns=\"" + Namespace.JMX_1_1.getUriString() + "\">" +
+                "    <jmx-connector registry-binding=\"registry1\" server-binding=\"server1\" />" +
+                "</subsystem>";
+
+        AdditionalInitialization additionalInit = new AdditionalInitialization(){
+            @Override
+            protected void setupController(ControllerInitializer controllerInitializer) {
+                controllerInitializer.addSocketBinding("registry1", 12345);
+                controllerInitializer.addSocketBinding("server1", 12346);
+            }
+        };
+
+        KernelServices servicesA = super.installInController(additionalInit, subsystemXml);
+        //Get the model and the persisted xml from the first controller
+        ModelNode modelA = servicesA.readWholeModel();
+        String marshalled = servicesA.getPersistedSubsystemXml();
+        servicesA.shutdown();
+
+        Assert.assertEquals(normalizeXML(subsystemXml), normalizeXML(marshalled));
+
+        //Install the persisted xml from the first controller into a second controller
+        KernelServices servicesB = super.installInController(additionalInit, marshalled);
+        ModelNode modelB = servicesB.readWholeModel();
+
+        //Make sure the models from the two controllers are identical
+        super.compare(modelA, modelB);
+    }
+
+    @Test
+    public void testParseAndMarshalModelWithSecurity() throws Exception {
+        //Parse the subsystem xml and install into the first controller
+        String subsystemXml =
+                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
+                "    <jmx-connector registry-binding=\"registry1\" server-binding=\"server1\" password-file=\"jmxremote.password\" access-file=\"jmxremote.access\" />" +
+                "</subsystem>";
+
+
+        AdditionalInitialization additionalInit = new AdditionalInitialization(){
+            @Override
+            protected void setupController(ControllerInitializer controllerInitializer) {
+                controllerInitializer.addSocketBinding("registry1", 12345);
+                controllerInitializer.addSocketBinding("server1", 12346);
+            }
+        };
+
+        KernelServices servicesA = super.installInController(additionalInit, subsystemXml);
+        //Get the model and the persisted xml from the first controller
+        ModelNode modelA = servicesA.readWholeModel();
+        String marshalled = servicesA.getPersistedSubsystemXml();
+        servicesA.shutdown();
+
+        Assert.assertEquals(normalizeXML(subsystemXml), normalizeXML(marshalled));
+
+        //Install the persisted xml from the first controller into a second controller
+        KernelServices servicesB = super.installInController(additionalInit, marshalled);
+        ModelNode modelB = servicesB.readWholeModel();
+
+        //Make sure the models from the two controllers are identical
+        super.compare(modelA, modelB);
+    }
+
+    @Test
+    public void testParseAndMarshalModelWithEnvVars() throws Exception {
+        File currentDir = new File(".");
+        String path=currentDir.getAbsolutePath();
+        System.setProperty("security.config.path", path); 
+        System.setProperty("accessFile", "jmxremote.access");
+
+        //Parse the subsystem xml and install into the first controller
+        String subsystemXml =
+                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
+                "    <jmx-connector registry-binding=\"registry1\" server-binding=\"server1\" password-file=\"${security.config.path}/jmxremote.password\" access-file=\"" + path + "/${accessFile}\" />" +
+                "</subsystem>";
+
+
+        AdditionalInitialization additionalInit = new AdditionalInitialization(){
+            @Override
+            protected void setupController(ControllerInitializer controllerInitializer) {
+                controllerInitializer.addSocketBinding("registry1", 12345);
+                controllerInitializer.addSocketBinding("server1", 12346);
+            }
+        };
+
+        KernelServices servicesA = super.installInController(additionalInit, subsystemXml);
+        //Get the model and the persisted xml from the first controller
+        ModelNode modelA = servicesA.readWholeModel();
+        String marshalled = servicesA.getPersistedSubsystemXml();
+        servicesA.shutdown();
+
+        Assert.assertEquals(normalizeXML(subsystemXml), normalizeXML(marshalled));
 
         //Install the persisted xml from the first controller into a second controller
         KernelServices servicesB = super.installInController(additionalInit, marshalled);
@@ -255,6 +368,209 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
 
     }
 
+
+    @Test
+    public void testConnectToUnsecuredMBeanServer() throws Exception {
+        //Parse the subsystem xml and install into the controller
+        String subsystemXml =
+                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
+                "    <jmx-connector registry-binding=\"registry\" server-binding=\"server\" />" +
+                "</subsystem>";
+        KernelServices services = super.installInController(
+                new AdditionalInitialization() {
+
+                    @Override
+                    protected void setupController(ControllerInitializer controllerInitializer) {
+                        controllerInitializer.addSocketBinding("registry", 12345);
+                        controllerInitializer.addSocketBinding("server", 12346);
+                    }
+
+                },subsystemXml);
+
+        //Make sure that we can connect to the MBean server
+        String host = "localhost";
+        int port = 12345;
+        String urlString = System.getProperty("jmx.service.url",
+            "service:jmx:rmi:///jndi/rmi://" + host + ":" + port + "/jmxrmi");
+        JMXServiceURL serviceURL = new JMXServiceURL(urlString);
+
+        
+        // TODO this is horrible - for some reason after the first test the
+        // second time we
+        // start the JMX connector it takes time for it to appear
+        long end = System.currentTimeMillis() + 10000;
+        while (true) {
+            try {
+        	    JMXConnector jmxConnector = JMXConnectorFactory.connect(serviceURL, null);
+	            MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
+	            Assert.assertTrue(connection.getMBeanCount() > 0);
+	            jmxConnector.close();
+	            return;
+            } catch (Exception e) {
+                if (System.currentTimeMillis() >= end) {
+                    services.shutdown();
+                    throw new RuntimeException(e);
+                }
+                Thread.sleep(50);
+            }
+        }
+    }
+
+    @Test
+    public void testConnectUnsecurlyToSecuredMBeanServer() throws Exception {
+        //Parse the subsystem xml and install into the controller
+        String subsystemXml =
+                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
+                "    <jmx-connector registry-binding=\"registry\" server-binding=\"server\" password-file=\"jmxremote.password\" access-file=\"jmxremote.access\" />" +
+                "</subsystem>";
+        KernelServices services = super.installInController(
+                new AdditionalInitialization() {
+
+                    @Override
+                    protected void setupController(ControllerInitializer controllerInitializer) {
+                        controllerInitializer.addSocketBinding("registry", 12345);
+                        controllerInitializer.addSocketBinding("server", 12346);
+                    }
+
+                },subsystemXml);
+
+        //Make sure that we can connect to the MBean server
+        String host = "localhost";
+        int port = 12345;
+        String urlString = System.getProperty("jmx.service.url",
+            "service:jmx:rmi:///jndi/rmi://" + host + ":" + port + "/jmxrmi");
+        JMXServiceURL serviceURL = new JMXServiceURL(urlString);
+
+        // TODO this is horrible - for some reason after the first test the
+        // second time we
+        // start the JMX connector it takes time for it to appear
+        long end = System.currentTimeMillis() + 10000;
+        while (true) {
+            try {
+                JMXConnectorFactory.connect(serviceURL, null);
+                Assert.fail("Should never get here!");
+                return;
+            } catch (SecurityException e) {
+        	    //expected
+        	    return;
+            } catch (Exception e) {
+                if (System.currentTimeMillis() >= end) {
+                    services.shutdown();
+                	throw new RuntimeException(e);
+                }
+                Thread.sleep(50);
+            }
+        }
+    }
+
+    @Test
+    public void testConnectSecurlyToSecuredMBeanServer() throws Exception {
+        //Parse the subsystem xml and install into the controller
+        String subsystemXml =
+                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
+                "    <jmx-connector registry-binding=\"registry\" server-binding=\"server\" password-file=\"jmxremote.password\" access-file=\"jmxremote.access\" />" +
+                "</subsystem>";
+        KernelServices services = super.installInController(
+                new AdditionalInitialization() {
+
+                    @Override
+                    protected void setupController(ControllerInitializer controllerInitializer) {
+                        controllerInitializer.addSocketBinding("registry", 12345);
+                        controllerInitializer.addSocketBinding("server", 12346);
+                    }
+
+                },subsystemXml);
+
+        //Make sure that we can connect to the MBean server
+    	final String username = "controlRole";
+    	final String password = "R&D";
+        String host = "localhost";
+        int port = 12345;
+        String urlString = System.getProperty("jmx.service.url",
+            "service:jmx:rmi:///jndi/rmi://" + host + ":" + port + "/jmxrmi");
+        JMXServiceURL serviceURL = new JMXServiceURL(urlString);
+
+    	HashMap env = new HashMap(); 
+        String[] credentials = new String[] { username , password }; 
+        env.put("jmx.remote.credentials", credentials); 
+        
+        // TODO this is horrible - for some reason after the first test the
+        // second time we
+        // start the JMX connector it takes time for it to appear
+        long end = System.currentTimeMillis() + 10000;
+        while (true) {
+            try {
+                JMXConnector jmxConnector = JMXConnectorFactory.connect(serviceURL, env);
+	            MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
+	            Assert.assertTrue(connection.getMBeanCount() > 0);
+	            jmxConnector.close();
+	            return;
+            } catch (Exception e) {
+                if (System.currentTimeMillis() >= end) {
+                    services.shutdown();
+                	throw new RuntimeException(e);
+                }
+                Thread.sleep(50);
+            }
+        }
+    }
+
+    @Test
+    public void testUseEnvVariableInSecurityAttr() throws Exception {
+        File currentDir = new File(".");
+        String path=currentDir.getAbsolutePath();
+        System.setProperty("security.config.path", path); 
+        System.setProperty("accessFile", "jmxremote.access");
+
+        //Parse the subsystem xml and install into the controller
+        String subsystemXml =
+                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
+                "    <jmx-connector registry-binding=\"registry\" server-binding=\"server\" password-file=\"${security.config.path}/jmxremote.password\" access-file=\"" + path + "/${accessFile}\" />" +
+                "</subsystem>";
+        KernelServices services = super.installInController(
+                new AdditionalInitialization() {
+
+                    @Override
+                    protected void setupController(ControllerInitializer controllerInitializer) {
+                        controllerInitializer.addSocketBinding("registry", 12345);
+                        controllerInitializer.addSocketBinding("server", 12346);
+                    }
+
+                },subsystemXml);
+
+        //Make sure that we can connect to the MBean server
+    	final String username = "controlRole";
+    	final String password = "R&D";
+        String host = "localhost";
+        int port = 12345;
+        String urlString = System.getProperty("jmx.service.url",
+            "service:jmx:rmi:///jndi/rmi://" + host + ":" + port + "/jmxrmi");
+        JMXServiceURL serviceURL = new JMXServiceURL(urlString);
+
+    	HashMap env = new HashMap(); 
+        String[] credentials = new String[] { username , password }; 
+        env.put("jmx.remote.credentials", credentials); 
+        
+        // TODO this is horrible - for some reason after the first test the
+        // second time we
+        // start the JMX connector it takes time for it to appear
+        long end = System.currentTimeMillis() + 10000;
+        while (true) {
+            try {
+                JMXConnector jmxConnector = JMXConnectorFactory.connect(serviceURL, env);
+	            MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
+	            Assert.assertTrue(connection.getMBeanCount() > 0);
+	            jmxConnector.close();
+	            return;
+            } catch (Exception e) {
+                if (System.currentTimeMillis() >= end) {
+                    services.shutdown();
+                	throw new RuntimeException(e);
+                }
+                Thread.sleep(50);
+            }
+        }
+    }
 
     private void assertJmxSubsystemAddress(ModelNode address) {
         PathAddress addr = PathAddress.pathAddress(address);

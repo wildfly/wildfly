@@ -35,8 +35,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQ
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
-import static org.jboss.as.jmx.CommonAttributes.REGISTRY_BINDING;
-import static org.jboss.as.jmx.CommonAttributes.SERVER_BINDING;
+import static org.jboss.as.jmx.CommonAttributes.*;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -74,6 +73,14 @@ public class JMXSubsystemProviders {
             subsystem.get(ATTRIBUTES, SERVER_BINDING, REQUIRED).set(true);
             subsystem.get(ATTRIBUTES, SERVER_BINDING, MIN_OCCURS).set(1);
             subsystem.get(ATTRIBUTES, SERVER_BINDING, MAX_OCCURS).set(1);
+
+            subsystem.get(ATTRIBUTES, PASSWORD_FILE, DESCRIPTION).set(bundle.getString("password.file"));
+            subsystem.get(ATTRIBUTES, PASSWORD_FILE, TYPE).set(ModelType.STRING);
+            subsystem.get(ATTRIBUTES, PASSWORD_FILE, REQUIRED).set(false);
+
+            subsystem.get(ATTRIBUTES, ACCESS_FILE, DESCRIPTION).set(bundle.getString("access.file"));
+            subsystem.get(ATTRIBUTES, ACCESS_FILE, TYPE).set(ModelType.STRING);
+            subsystem.get(ATTRIBUTES, ACCESS_FILE, REQUIRED).set(false);
 
             return subsystem;
         }
@@ -113,6 +120,14 @@ public class JMXSubsystemProviders {
             op.get(REQUEST_PROPERTIES, SERVER_BINDING, REQUIRED).set(true);
             op.get(REQUEST_PROPERTIES, SERVER_BINDING, MIN_OCCURS).set(1);
             op.get(REQUEST_PROPERTIES, SERVER_BINDING, MAX_OCCURS).set(1);
+
+            op.get(REQUEST_PROPERTIES, PASSWORD_FILE, DESCRIPTION).set(bundle.getString("password.file"));
+            op.get(REQUEST_PROPERTIES, PASSWORD_FILE, TYPE).set(ModelType.STRING);
+            op.get(REQUEST_PROPERTIES, PASSWORD_FILE, REQUIRED).set(false);
+
+            op.get(REQUEST_PROPERTIES, ACCESS_FILE, DESCRIPTION).set(bundle.getString("password.file"));
+            op.get(REQUEST_PROPERTIES, ACCESS_FILE, TYPE).set(ModelType.STRING);
+            op.get(REQUEST_PROPERTIES, ACCESS_FILE, REQUIRED).set(false);
 
             op.get(REPLY_PROPERTIES).setEmptyObject();
 

@@ -34,6 +34,8 @@ enum Attribute {
 
     SERVER_BINDING(CommonAttributes.SERVER_BINDING),
     REGISTRY_BINDING(CommonAttributes.REGISTRY_BINDING),
+    PASSWORD_FILE(CommonAttributes.PASSWORD_FILE),
+    ACCESS_FILE(CommonAttributes.ACCESS_FILE),
     ;
     private final String name;
 
