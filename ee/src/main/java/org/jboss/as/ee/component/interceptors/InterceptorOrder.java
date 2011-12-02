@@ -78,7 +78,7 @@ public class
         public static final int JNDI_NAMESPACE_INTERCEPTOR = 0x500;
         public static final int INSTANTIATION_INTERCEPTORS = 0x600;
         public static final int RESOURCE_INJECTION_INTERCEPTORS = 0x700;
-        public static final int EJB_SET_SESSION_CONTEXT_METHOD_INVOCATION_INTERCEPTOR = 0x800;
+        public static final int EJB_SET_CONTEXT_METHOD_INVOCATION_INTERCEPTOR = 0x800;
         public static final int WELD_INJECTION = 0x900;
         public static final int JPA_SFSB_CREATE = 0xA00;
         public static final int DEPENDENCY_INJECTION_COMPLETE = 0xA50;

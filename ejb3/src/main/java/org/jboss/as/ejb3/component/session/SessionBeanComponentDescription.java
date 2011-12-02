@@ -56,7 +56,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.proxy.MethodIdentifier;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.msc.service.ServiceName;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
@@ -393,13 +392,13 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     }
 
     private void addSetSessionContextMethodInvocationInterceptor() {
-        // add the setSessionContext(SessionContext) method invocation interceptor for session bean implementing the javax.ejb.SessionContext
-        // interface
+        // add the setSessionContext(SessionContext) method invocation interceptor for session bean
+        // implementing the javax.ejb.SessionBean interface
         this.getConfigurators().add(new ComponentConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
                 if (SessionBean.class.isAssignableFrom(configuration.getComponentClass())) {
-                    configuration.addPostConstructInterceptor(SessionBeanSetSessionContextMethodInvocationInterceptor.FACTORY, InterceptorOrder.ComponentPostConstruct.EJB_SET_SESSION_CONTEXT_METHOD_INVOCATION_INTERCEPTOR);
+                    configuration.addPostConstructInterceptor(SessionBeanSetSessionContextMethodInvocationInterceptor.FACTORY, InterceptorOrder.ComponentPostConstruct.EJB_SET_CONTEXT_METHOD_INVOCATION_INTERCEPTOR);
                 }
             }
         });
