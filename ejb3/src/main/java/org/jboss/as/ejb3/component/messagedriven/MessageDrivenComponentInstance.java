@@ -55,6 +55,10 @@ public class MessageDrivenComponentInstance extends EjbComponentInstance {
         return (MessageDrivenComponent) super.getComponent();
     }
 
+    /**
+     * Returns a {@link javax.ejb.MessageDrivenContext}
+     * @return
+     */
     @Override
     public EJBContextImpl getEjbContext() {
         return messageDrivenContext;
