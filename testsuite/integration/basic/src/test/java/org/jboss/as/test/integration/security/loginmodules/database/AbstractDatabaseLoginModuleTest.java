@@ -32,6 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.security.Constants.FLAG;
+import static org.jboss.as.security.Constants.MODULE;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 
 import javax.annotation.sql.DataSourceDefinition;
