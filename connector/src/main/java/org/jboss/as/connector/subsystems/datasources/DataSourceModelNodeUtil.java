@@ -271,12 +271,16 @@ class DataSourceModelNodeUtil {
         final String recoveryUsername = getStringIfSetOrGetDefault(dataSourceNode, RECOVERY_USERNAME, null);
         final String recoveryPassword = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, RECOVERY_PASSWORD, null);
         final String recoverySecurityDomain = getStringIfSetOrGetDefault(dataSourceNode, RECOVERY_SECURITY_DOMAIN, null);
+        final Boolean noRecovery = getBooleanIfSetOrGetDefault(dataSourceNode, NO_RECOVERY, null);
 
-        final Credential credential = new CredentialImpl(recoveryUsername, recoveryPassword, recoverySecurityDomain);
+        Recovery recovery = null;
+        if (recoveryUsername != null || recoveryPassword != null || recoverySecurityDomain != null ||
+            (noRecovery != null && noRecovery.booleanValue())) {
+            final Credential credential = new CredentialImpl(recoveryUsername, recoveryPassword, recoverySecurityDomain);
+            final Extension recoverPlugin = extractExtension(dataSourceNode, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES);
 
-        final Extension recoverPlugin = extractExtension(dataSourceNode, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES);
-        final Boolean noRecovery = getBooleanIfSetOrGetDefault(dataSourceNode, NO_RECOVERY, false);
-        Recovery recovery = new Recovery(credential, recoverPlugin, noRecovery);
+            recovery = new Recovery(credential, recoverPlugin, noRecovery);
+        }
         return new ModifiableXaDataSource(transactionIsolation, timeOut, security, statement, validation, urlDelimiter,
                 urlSelectorStrategyClassName, useJavaContext, poolName, enabled, jndiName, spy, useCcm, xaDataSourceProperty,
                 xaDataSourceClass, module, newConnectionSql, xaPool, recovery);
