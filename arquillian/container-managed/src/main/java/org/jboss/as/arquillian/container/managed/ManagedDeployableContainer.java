@@ -16,9 +16,8 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
-import org.jboss.arquillian.container.spi.client.container.LifecycleException;
-import org.jboss.as.arquillian.container.CommonDeployableContainer;
-import org.jboss.sasl.util.UsernamePasswordHashUtil;
+import static org.jboss.as.arquillian.container.Authentication.PASSWORD;
+import static org.jboss.as.arquillian.container.Authentication.USERNAME;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -33,8 +32,9 @@ import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
-import static org.jboss.as.arquillian.container.Authentication.USERNAME;
-import static org.jboss.as.arquillian.container.Authentication.PASSWORD;
+import org.jboss.arquillian.container.spi.client.container.LifecycleException;
+import org.jboss.as.arquillian.container.CommonDeployableContainer;
+import org.jboss.sasl.util.UsernamePasswordHashUtil;
 
 /**
  * JBossAsManagedContainer
@@ -120,6 +120,8 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             cmd.add("org.jboss.logmanager");
             cmd.add("-jaxpmodule");
             cmd.add("javax.xml.jaxp-provider");
+            cmd.add("-mbeanserverbuildermodule");
+            cmd.add("org.jboss.as.jmx");
             cmd.add("org.jboss.as.standalone");
             cmd.add("-server-config");
             cmd.add(config.getServerConfig());

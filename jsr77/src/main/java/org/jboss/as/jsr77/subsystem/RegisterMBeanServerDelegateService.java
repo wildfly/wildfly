@@ -51,12 +51,12 @@ class RegisterMBeanServerDelegateService implements Service<Void>{
     @Override
     public void start(StartContext context) throws StartException {
         server = new JSR77ManagementMBeanServer(injectedController.getValue());
-        injectedMbeanServer.getValue().addDelegate(server);
+        injectedMbeanServer.getValue().addPlugin(server);
     }
 
     @Override
     public void stop(StopContext context) {
-        injectedMbeanServer.getValue().removeDelegate(server);
+        injectedMbeanServer.getValue().removePlugin(server);
         server = null;
     }
 
