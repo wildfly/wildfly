@@ -2,10 +2,14 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
 import java.net.UnknownHostException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
+import org.infinispan.Cache;
 import org.infinispan.client.hotrod.impl.ConfigurationProperties;
 import org.infinispan.config.Configuration;
 import org.infinispan.config.FluentConfiguration;
@@ -30,16 +34,21 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.services.path.AbstractPathService;
+import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.logging.Logger;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Base class for cache add handlers
@@ -47,6 +56,8 @@ import org.jboss.msc.service.ServiceName;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 public class CacheAdd extends AbstractAddStepHandler {
+
+    private static final Logger log = Logger.getLogger(CacheAdd.class.getPackage().getName()) ;
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -420,6 +431,83 @@ public class CacheAdd extends AbstractAddStepHandler {
 
         ModelNode column = table.get(columnKey);
         return column.hasDefined(key) ? column.get(key).asString() : defaultValue;
+    }
+
+    void performCacheRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+
+        // Configuration to hold the operation data
+        Configuration overrides = new Configuration() ;
+
+         // create a list for dependencies which may need to be added during processing
+        List<AdditionalDependency> additionalDeps = new LinkedList<AdditionalDependency>() ;
+
+        // process cache configuration ModelNode describing overrides to defaults
+        processCacheModelNode(model, overrides, additionalDeps) ;
+
+        // get container and cache addresses
+        PathAddress cacheAddress = PathAddress.pathAddress(operation.get(OP_ADDR)) ;
+        PathAddress containerAddress = cacheAddress.subAddress(0, cacheAddress.size()-1) ;
+
+        // get container and cache names
+        String cacheName = cacheAddress.getLastElement().getValue() ;
+        String containerName = containerAddress.getLastElement().getValue() ;
+
+        // get container and cache service names
+        ServiceName containerServiceName = EmbeddedCacheManagerService.getServiceName(containerName) ;
+        ServiceName cacheServiceName = containerServiceName.append(cacheName) ;
+
+        // get container Model
+        Resource rootResource = context.getRootResource() ;
+        ModelNode container = rootResource.navigate(containerAddress).getModel() ;
+
+        // get default cache of the container
+        String defaultCache = container.require(ModelKeys.DEFAULT_CACHE).asString() ;
+
+        // get start mode of the cache
+        StartMode startMode = operation.hasDefined(ModelKeys.START) ? StartMode.valueOf(operation.get(ModelKeys.START).asString()) : StartMode.LAZY;
+
+        // get the JNDI name of the container and its binding info
+        String jndiName = CacheContainerAdd.getContainerJNDIName(container, containerName);
+        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName) ;
+
+        // setup configuration helper
+        CacheService.CacheConfigurationHelperImpl helper = new CacheService.CacheConfigurationHelperImpl(cacheName) ;
+
+        // install the cache service
+        ServiceTarget target = context.getServiceTarget() ;
+        // ServiceName serviceName = EmbeddedCacheManagerService.getServiceName(containerName).append(cacheName) ;
+        CacheService<Object, Object> cacheService = new CacheService<Object, Object>(cacheName, overrides, helper);
+
+        ServiceBuilder<Cache<Object,Object>> builder = target.addService(cacheServiceName, cacheService) ;
+        builder.addDependency(containerServiceName, CacheContainer.class, helper.getCacheContainerInjector()) ;
+        builder.addDependency(EmbeddedCacheManagerDefaultsService.SERVICE_NAME, EmbeddedCacheManagerDefaults.class, helper.getDefaultsInjector());
+        builder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, helper.getTransactionManagerInjector());
+        builder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, helper.getTransactionSynchronizationRegistryInjector());
+        // builder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, XAResourceRecoveryRegistry.class, helper.getXAResourceRecoveryRegistryInjector())
+
+        builder.addDependency(bindInfo.getBinderServiceName()) ;
+
+        // add in any additional dependencies resulting from ModelNode parsing
+        for (AdditionalDependency dep : additionalDeps) {
+            if (dep.hasInjector()) {
+                builder.addDependency(dep.getName(), dep.getType(), dep.getTarget()) ;
+            } else {
+                builder.addDependency(dep.getName());
+            }
+        }
+
+        builder.setInitialMode(startMode.getMode());
+        // add an alias for the default cache
+        if (cacheName.equals(defaultCache)) {
+            builder.addAliases(CacheService.getServiceName(containerName,  null));
+        }
+        // blah
+        if (startMode.getMode() == ServiceController.Mode.ACTIVE) {
+            builder.addListener(verificationHandler);
+        }
+
+        newControllers.add(builder.install());
+        log.debug("cache " + cacheName + " installed for container " + containerName);
     }
 
     /*

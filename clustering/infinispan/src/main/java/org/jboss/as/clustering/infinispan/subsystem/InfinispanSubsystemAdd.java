@@ -69,13 +69,10 @@ public class InfinispanSubsystemAdd extends AbstractAddStepHandler implements De
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) {
-        log.debug("Populating model") ;
         populate(operation, model);
-        log.debug("Populated model: " + model.asString()) ;
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        log.debug("Performing runtime");
         ROOT_LOGGER.activatingSubsystem();
         ServiceTarget target = context.getServiceTarget();
         newControllers.add(target.addService(EmbeddedCacheManagerDefaultsService.SERVICE_NAME, new EmbeddedCacheManagerDefaultsService())
@@ -88,7 +85,6 @@ public class InfinispanSubsystemAdd extends AbstractAddStepHandler implements De
                 .addDependency(EmbeddedCacheManagerService.getServiceName(defaultContainer), EmbeddedCacheManager.class, container)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install());
-        log.debug("Performed runtime");
     }
 
     protected boolean requiresRuntimeVerification() {

@@ -118,22 +118,13 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
         if (source.hasDefined(ModelKeys.TRANSPORT)) {
             target.get(ModelKeys.TRANSPORT).set(source.get(ModelKeys.TRANSPORT));
         }
-        /*
-        ModelNode caches = target.get(ModelKeys.CACHE);
-        for (ModelNode cache : source.require(ModelKeys.CACHE).asList()) {
-            caches.add(cache);
-        }
-        */
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) {
-        log.debug("Populating model");
         populate(operation, model);
-        log.debug("Populated model: " + model.asString());
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        log.debug("Performing runtime") ;
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
 
@@ -177,62 +168,60 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
         // to indicate that a transport needs to be initialised in the enclosing cache container.
         // The transport will only be initialised in EmbeddedCacheManagerService.start() if this value is true.
         // Here, we always assume that a transport may be required and so perform the necessary setup.
-        if (true) {
-            Transport transportConfig = new Transport();
-            String stack = null;
-            if (operation.hasDefined(ModelKeys.TRANSPORT)) {
-                ModelNode transport = operation.get(ModelKeys.TRANSPORT);
-                if (transport.hasDefined(ModelKeys.STACK)) {
-                    stack = transport.get(ModelKeys.STACK).asString();
-                }
-                addExecutorDependency(builder, transport, ModelKeys.EXECUTOR, transportConfig.getExecutorInjector());
-                if (transport.hasDefined(ModelKeys.LOCK_TIMEOUT)) {
-                    transportConfig.setLockTimeout(transport.get(ModelKeys.LOCK_TIMEOUT).asLong());
-                }
-                if (transport.hasDefined(ModelKeys.SITE)) {
-                    transportConfig.setSite(transport.get(ModelKeys.SITE).asString());
-                }
-                if (transport.hasDefined(ModelKeys.RACK)) {
-                    transportConfig.setRack(transport.get(ModelKeys.RACK).asString());
-                }
-                if (transport.hasDefined(ModelKeys.MACHINE)) {
-                    transportConfig.setMachine(transport.get(ModelKeys.MACHINE).asString());
-                }
+        Transport transportConfig = new Transport();
+        String stack = null;
+        if (operation.hasDefined(ModelKeys.TRANSPORT)) {
+            ModelNode transport = operation.get(ModelKeys.TRANSPORT);
+            if (transport.hasDefined(ModelKeys.STACK)) {
+                stack = transport.get(ModelKeys.STACK).asString();
             }
+            addExecutorDependency(builder, transport, ModelKeys.EXECUTOR, transportConfig.getExecutorInjector());
+            if (transport.hasDefined(ModelKeys.LOCK_TIMEOUT)) {
+                transportConfig.setLockTimeout(transport.get(ModelKeys.LOCK_TIMEOUT).asLong());
+            }
+            if (transport.hasDefined(ModelKeys.SITE)) {
+                transportConfig.setSite(transport.get(ModelKeys.SITE).asString());
+            }
+            if (transport.hasDefined(ModelKeys.RACK)) {
+                transportConfig.setRack(transport.get(ModelKeys.RACK).asString());
+            }
+            if (transport.hasDefined(ModelKeys.MACHINE)) {
+                transportConfig.setMachine(transport.get(ModelKeys.MACHINE).asString());
+            }
+        }
 
-            // add a service to identify whether clustered caching is required
-            TransportRequiredService transportRequired = new TransportRequiredService(new AtomicBoolean(false));
-            ServiceName transportRequiredServiceName = TransportRequiredService.getServiceName(name);
-            // System.out.println("Adding TransportRequired service: " + transportRequiredServiceName.toString());
+        // add a service to identify whether clustered caching is required
+        TransportRequiredService transportRequired = new TransportRequiredService(new AtomicBoolean(false));
+        ServiceName transportRequiredServiceName = TransportRequiredService.getServiceName(name);
+        log.debugf("Adding TransportRequired service: %s", transportRequiredServiceName.toString());
 
-            ServiceBuilder transportRequiredBuilder = target.addService(transportRequiredServiceName, transportRequired) ;
-            transportRequiredBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
-            newControllers.add(transportRequiredBuilder.install());
+        ServiceBuilder transportRequiredBuilder = target.addService(transportRequiredServiceName, transportRequired);
+        transportRequiredBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+        newControllers.add(transportRequiredBuilder.install());
 
-            // add a dependency on a service to indicate if transport is required
-            // the CacheManagerService will therefore pick up the reference from its config
-            builder.addDependency(transportRequiredServiceName, AtomicBoolean.class, config.getTransportRequiredInjector());
+        // add a dependency on a service to indicate if transport is required
+        // the CacheManagerService will therefore pick up the reference from its config
+        builder.addDependency(transportRequiredServiceName, AtomicBoolean.class, config.getTransportRequiredInjector());
 
-            // add a dependency on a ChannelService which has the cache-container name
-            builder.addDependency(ChannelService.getServiceName(name), Channel.class, transportConfig.getChannelInjector());
-            config.setTransport(transportConfig);
+        // add an optional dependency on a ChannelService which has the cache-container name
+        builder.addDependency(DependencyType.OPTIONAL, ChannelService.getServiceName(name), Channel.class, transportConfig.getChannelInjector());
+        config.setTransport(transportConfig);
 
-            // add the channel service and set up the appropriate dependencies
+        // add the channel service and set up the appropriate dependencies
+        // but only if the required ChannelFactoryService is installed (i.e. in the ServiceRegistry)
+        if (context.getServiceRegistry(false).getService(ChannelFactoryService.getServiceName(stack)) != null) {
             InjectedValue<ChannelFactory> channelFactory = new InjectedValue<ChannelFactory>();
             newControllers.add(target.addService(ChannelService.getServiceName(name), new ChannelService(name, channelFactory))
                     .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, channelFactory)
                     .setInitialMode(ServiceController.Mode.ON_DEMAND)
                     .install());
         }
-
         addExecutorDependency(builder, operation, ModelKeys.LISTENER_EXECUTOR, config.getListenerExecutorInjector());
         addScheduledExecutorDependency(builder, operation, ModelKeys.EVICTION_EXECUTOR, config.getEvictionExecutorInjector());
         addScheduledExecutorDependency(builder, operation, ModelKeys.REPLICATION_QUEUE_EXECUTOR, config.getReplicationQueueExecutorInjector());
 
         newControllers.add(builder.install());
         log.debug("cache container " + name + " installed");
-
-        log.debug("Performed runtime");
      }
 
     /**

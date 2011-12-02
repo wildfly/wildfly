@@ -105,7 +105,6 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
         TransportConfiguration transport = this.configuration.getTransportConfiguration();
         FluentGlobalConfiguration.TransportConfig fluentTransport = global.fluent().transport();
 
-
         // check if we need a transport
         AtomicBoolean transportRequired = this.configuration.getTransportRequired();
 
@@ -157,6 +156,8 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
         FluentGlobalConfiguration.GlobalJmxStatisticsConfig globalJmx = fluentTransport.globalJmxStatistics();
         globalJmx.cacheManagerName(this.configuration.getName());
 
+
+        // setup default cache configuration
         Configuration defaultConfig = new Configuration();
         FluentConfiguration fluent = defaultConfig.fluent();
 
