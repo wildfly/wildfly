@@ -24,6 +24,7 @@ package org.jboss.as.webservices.deployers;
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
 import static org.jboss.as.ee.component.interceptors.InterceptorOrder.Component.WS_HANDLERS_INTERCEPTOR;
 import static org.jboss.as.webservices.util.ASHelper.getJaxrpcDeployment;
+import static org.jboss.as.webservices.util.ASHelper.getJaxwsEjbs;
 import static org.jboss.as.webservices.util.ASHelper.getOptionalAttachment;
 import static org.jboss.as.webservices.util.ASHelper.getRequiredAttachment;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.WEBSERVICES_METADATA_KEY;
@@ -69,6 +70,7 @@ public final class WSIntegrationProcessorJAXRPC_EJB implements DeploymentUnitPro
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
+        if (isJaxwsEjbDeployment(unit)) return;
         final EjbJarMetaData ejbJarMD = getOptionalAttachment(unit, EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
         final WebservicesMetaData webservicesMD = getOptionalAttachment(unit, WEBSERVICES_METADATA_KEY);
         if (ejbJarMD != null && webservicesMD != null) {
@@ -80,6 +82,10 @@ public final class WSIntegrationProcessorJAXRPC_EJB implements DeploymentUnitPro
     @Override
     public void undeploy(final DeploymentUnit context) {
         // does nothing
+    }
+
+    private static boolean isJaxwsEjbDeployment(final DeploymentUnit unit) {
+        return getJaxwsEjbs(unit).size() > 0;
     }
 
     private static void createJaxrpcDeployment(final DeploymentUnit unit, final WebservicesMetaData webservicesMD, final EEModuleDescription moduleDescription) {
