@@ -140,6 +140,7 @@ import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.vfs.VirtualFile;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -190,12 +191,17 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testStandaloneOSGiOnlyXml() throws Exception {
-        standaloneXmlTest(getOriginalStandaloneXml("standalone-osgi-only.xml"));
+        standaloneXmlTest(getExampleConfigFile("standalone-osgi-only.xml"));
     }
 
     @Test
     public void testStandaloneXtsXml() throws Exception {
-        standaloneXmlTest(getOriginalStandaloneXml("standalone-xts.xml"));
+        standaloneXmlTest(getExampleConfigFile("standalone-xts.xml"));
+    }
+
+    @Test @Ignore("AS7-2901")
+    public void testStandaloneHornetqColocatedXml() throws Exception {
+        standaloneXmlTest(getExampleConfigFile("standalone-hornetq-colocated.xml"));
     }
 
     @Test
@@ -322,7 +328,7 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testDomainOSGiOnlyXml() throws Exception {
-        domainXmlTest(getOriginalDomainXml("domain-osgi-only.xml"));
+        domainXmlTest(getExampleConfigFile("domain-osgi-only.xml"));
     }
 
     @Test
@@ -665,7 +671,7 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     private File getOriginalStandaloneXml(String profile) {
-				File f = new File( System.getProperty("jbossas.project.dir", "../../..") );
+        File f = new File( System.getProperty("jbossas.project.dir", "../../..") );
         f = f.getAbsoluteFile();
         Assert.assertTrue(f.exists());
         f = new File(f, "build");
@@ -688,7 +694,7 @@ public class ParseAndMarshalModelsTestCase {
     private File getDomainConfigDir() {
         //Get the standalone.xml from the build/src directory, since the one in the
         //built server could have changed during running of tests
-				File f = new File( System.getProperty("jbossas.project.dir", "../../..") );
+	File f = new File( System.getProperty("jbossas.project.dir", "../../..") );
         f = f.getAbsoluteFile();
         Assert.assertTrue(f.exists());
         f = new File(f, "build");
@@ -741,6 +747,29 @@ public class ParseAndMarshalModelsTestCase {
         Assert.assertTrue("Not found: " + f.getPath(), f.exists());
         return f;
 
+    }
+
+    private File getExampleConfigFile(String name) {
+        File f = new File( System.getProperty("jbossas.project.dir", "../../..") );
+        f = f.getAbsoluteFile();
+        Assert.assertTrue(f.exists());
+        f = new File(f, "build");
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        f = new File(f, "src");
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        f = new File(f, "main");
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        f = new File(f, "resources");
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        f = new File(f, "docs");
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        f = new File(f, "examples");
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        f = new File(f, "configs");
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        f = new File(f, name);
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        return f;
     }
 
     private void copyFile(final File src, final File dest) throws Exception {
