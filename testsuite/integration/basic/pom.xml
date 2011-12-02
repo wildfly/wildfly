@@ -161,7 +161,7 @@
                                 <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
-                                    <skipTests>false</skipTests>
+                                    <skipTests>${ts.skipTests}</skipTests>
                                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                                     <enableAssertions>true</enableAssertions>
                                     <includes>
