@@ -26,17 +26,12 @@ import random
 import re
 import platform
 import time
-from subprocess import Popen, PIPE, call
 from collections import deque
-
-try:
-    from hashlib import md5
-except ImportError:
-    from md5 import md5
 
 from sos import _sos as _
 from sos.plugins import RedHatPlugin, IndependentPlugin
 from sos.policies import Policy, PackageManager
+from sos.utilities import shell_out
 
 sys.path.insert(0, "/usr/share/rhn/")
 try:
@@ -51,8 +46,10 @@ except:
 class RHELPackageManager(PackageManager):
 
     def _get_rpm_list(self):
-        pkg_list = subprocess.Popen(["rpm", "-qa", "--queryformat", "%{NAME}|%{VERSION}\\n"],
-            stdout=subprocess.PIPE).communicate()[0].splitlines()
+        pkg_list = shell_out(["rpm",
+            "-qa",
+            "--queryformat",
+            "%{NAME}|%{VERSION}\\n"]).splitlines()
         self._rpms = {}
         for pkg in pkg_list:
             name, version = pkg.split("|")
@@ -89,22 +86,10 @@ class RHELPackageManager(PackageManager):
 class RHELPolicy(Policy):
 
     def __init__(self):
-        self.report_file = ""
-        self.report_file_ext = ""
-        self.report_md5 = ""
+        super(RHELPolicy, self).__init__()
         self.reportName = ""
         self.ticketNumber = ""
-        self._parse_uname()
         self.package_manager = RHELPackageManager()
-
-    def _print(self, msg=None):
-        """A wrapper around print that only prints if we are not running in
-        silent mode"""
-        if not self.cInfo['cmdlineopts'].silent:
-            print msg
-
-    def setCommons(self, commons):
-        self.cInfo = commons
 
     def validatePlugin(self, plugin_class):
         "Checks that the plugin will execute given the environment"
@@ -115,29 +100,35 @@ class RHELPolicy(Policy):
         "This method checks to see if we are running on RHEL. It returns True or False."
         return os.path.isfile('/etc/redhat-release')
 
-    def is_root(self):
-        return (os.getuid() == 0)
-
     def preferedArchive(self):
         from sos.utilities import TarFileArchive
         return TarFileArchive
 
+    def getPreferredHashAlgorithm(self):
+        checksum = "md5"
+        try:
+            fp = open("/proc/sys/crypto/fips_enabled", "r")
+        except:
+            return checksum
+
+        fips_enabled = fp.read()
+        if fips_enabled.find("1") >= 0:
+            checksum = "sha256"
+        fp.close()
+        return checksum
+
     def pkgByName(self, name):
         return self.package_manager.pkgByName(name)
 
-    def _system(self, cmd):
-        p = Popen(cmd,
+    def runlevelByService(self, name):
+        from subprocess import Popen, PIPE
+        ret = []
+        p = Popen("LC_ALL=C /sbin/chkconfig --list %s" % name,
                   shell=True,
                   stdout=PIPE,
                   stderr=PIPE,
                   bufsize=-1)
-        stdout, stderr = p.communicate()
-        status = p.returncode
-        return stdout, stderr, status
-
-    def runlevelByService(self, name):
-        ret = []
-        out, err, sts = self._system("LC_ALL=C /sbin/chkconfig --list %s" % name)
+        out, err = p.communicate()
         if err:
             return ret
         for tabs in out.split()[1:]:
@@ -201,7 +192,7 @@ class RHELPolicy(Policy):
         localname = self.rhnUsername()
         if len(localname) == 0: localname = self.hostName()
 
-        if not self.cInfo['cmdlineopts'].batch and not self.cInfo['cmdlineopts'].silent:
+        if not self.commons['cmdlineopts'].batch and not self.commons['cmdlineopts'].silent:
             try:
                 self.reportName = raw_input(_("Please enter your first initial and last name [%s]: ") % localname)
                 self.reportName = re.sub(r"[^a-zA-Z.0-9]", "", self.reportName)
@@ -216,158 +207,23 @@ class RHELPolicy(Policy):
         if len(self.reportName) == 0:
             self.reportName = localname
 
-        if self.cInfo['cmdlineopts'].customerName:
-            self.reportName = self.cInfo['cmdlineopts'].customerName
+        if self.commons['cmdlineopts'].customerName:
+            self.reportName = self.commons['cmdlineopts'].customerName
             self.reportName = re.sub(r"[^a-zA-Z.0-9]", "", self.reportName)
 
-        if self.cInfo['cmdlineopts'].ticketNumber:
-            self.ticketNumber = self.cInfo['cmdlineopts'].ticketNumber
+        if self.commons['cmdlineopts'].ticketNumber:
+            self.ticketNumber = self.commons['cmdlineopts'].ticketNumber
             self.ticketNumber = re.sub(r"[^0-9]", "", self.ticketNumber)
 
         return
 
     def packageResults(self, archive_filename):
         self._print(_("Creating compressed archive..."))
-        self.report_file = archive_filename
-        # actually compress the archive if necessary
 
-    def getArchiveName(self):
-        if len(self.ticketNumber):
-            self.reportName = self.reportName + "." + self.ticketNumber
-        else:
-            self.reportName = self.reportName
-
-        return "sosreport-%s-%s" % (self.reportName, time.strftime("%Y%m%d%H%M%S"))
-
-    def encryptResults(self):
-        # make sure a report exists
-        if not self.report_file:
-           return False
-
-        self._print(_("Encrypting archive..."))
-        gpgname = self.report_file + ".gpg"
-
-        try:
-           keyring = self.cInfo['config'].get("general", "gpg_keyring")
-        except:
-           keyring = "/usr/share/sos/rhsupport.pub"
-
-        try:
-           recipient = self.cInfo['config'].get("general", "gpg_recipient")
-        except:
-           recipient = "support@redhat.com"
-
-        p = Popen("""/usr/bin/gpg --trust-model always --batch --keyring "%s" --no-default-keyring --compress-level 0 --encrypt --recipient "%s" --output "%s" "%s" """ % (keyring, recipient, gpgname, self.report_file),
-                    shell=True, stdout=PIPE, stderr=PIPE, bufsize=-1)
-        stdout, stderr = p.communicate()
-        if p.returncode == 0:
-            os.unlink(self.report_file)
-            self.report_file = gpgname
-        else:
-           self._print(_("There was a problem encrypting your report."))
-           sys.exit(1)
-
-    def displayResults(self, final_filename=None):
-
-        self.report_file = final_filename
-
-        # make sure a report exists
-        if not self.report_file:
-           return False
-
-        # calculate md5
-        fp = open(self.report_file, "r")
-        self.report_md5 = md5(fp.read()).hexdigest()
-        fp.close()
-
-        # store md5 into file
-        fp = open(self.report_file + ".md5", "w")
-        fp.write(self.report_md5 + "\n")
-        fp.close()
-
-        self._print()
-        self._print(_("Your sosreport has been generated and saved in:\n  %s") % self.report_file)
-        self._print()
-        if len(self.report_md5):
-            self._print(_("The md5sum is: ") + self.report_md5)
-            self._print()
-        self._print(_("Please send this file to your support representative."))
-        self._print()
-
-    def uploadResults(self, final_filename):
-
-        self.report_file = final_filename
-
-        # make sure a report exists
-        if not self.report_file:
-            return False
-
-        self._print()
-        # make sure it's readable
-        try:
-            fp = open(self.report_file, "r")
-        except:
-            return False
-
-        # read ftp URL from configuration
-        if self.cInfo['cmdlineopts'].upload:
-            upload_url = self.cInfo['cmdlineopts'].upload
-        else:
-            try:
-               upload_url = self.cInfo['config'].get("general", "ftp_upload_url")
-            except:
-               self._print(_("No URL defined in config file."))
-               return
-
-        from urlparse import urlparse
-        url = urlparse(upload_url)
-
-        if url[0] != "ftp":
-            self._print(_("Cannot upload to specified URL."))
-            return
-
-        # extract username and password from URL, if present
-        if url[1].find("@") > 0:
-            username, host = url[1].split("@", 1)
-            if username.find(":") > 0:
-                username, passwd = username.split(":", 1)
-            else:
-                passwd = None
-        else:
-            username, passwd, host = None, None, url[1]
-
-        # extract port, if present
-        if host.find(":") > 0:
-            host, port = host.split(":", 1)
-            port = int(port)
-        else:
-            port = 21
-
-        path = url[2]
-
-        try:
-            from ftplib import FTP
-            upload_name = os.path.basename(self.report_file)
-
-            ftp = FTP()
-            ftp.connect(host, port)
-            if username and passwd:
-                ftp.login(username, passwd)
-            else:
-                ftp.login()
-            ftp.cwd(path)
-            ftp.set_pasv(True)
-            ftp.storbinary('STOR %s' % upload_name, fp)
-            ftp.quit()
-        except Exception, e:
-            self._print(_("There was a problem uploading your report to Red Hat support. " + str(e)))
-        else:
-            self._print(_("Your report was successfully uploaded to %s with name:" % (upload_url,)))
-            self._print("  " + upload_name)
-            self._print()
-            self._print(_("Please communicate this name to your support representative."))
-            self._print()
-
-        fp.close()
+    def get_msg(self):
+        msg_dict = {"distro": "Red Hat Enterprise Linux"}
+        if os.path.isfile('/etc/fedora-release'):
+           msg_dict['distro'] = 'Fedora'
+        return self.msg % msg_dict
 
 # vim: ts=4 sw=4 et
