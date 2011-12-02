@@ -76,6 +76,7 @@ import org.jboss.as.ejb3.deployment.processors.merging.RemoveMethodMergingProces
 import org.jboss.as.ejb3.deployment.processors.merging.ResourceAdaptorMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.RunAsMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.SecurityDomainMergingProcessor;
+import org.jboss.as.ejb3.deployment.processors.merging.SessionBeanMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.SessionSynchronizationMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.StartupMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.StatefulTimeoutMergingProcessor;
@@ -101,7 +102,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.naming.ejb.EjbNamingContextSetup;
 import org.jboss.ejb.client.naming.ejb.ejbURLContextFactory;
-import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -205,6 +205,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                     processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_STATEFUL_TIMEOUT, new StatefulTimeoutMergingProcessor());
                     processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_SESSION_SYNCHRONIZATION, new SessionSynchronizationMergingProcessor());
                     processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_INIT_METHOD, new InitMethodMergingProcessor());
+                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_SESSION_BEAN, new SessionBeanMergingProcessor());
                     processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_LOCAL_HOME, new SessionBeanHomeProcessor());
 
                     processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_DEPENDS_ON_ANNOTATION, new EjbDependsOnMergingProcessor());

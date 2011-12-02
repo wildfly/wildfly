@@ -42,6 +42,7 @@ import org.jboss.as.ejb3.component.interceptors.GetHomeInterceptorFactory;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.ImmediateInterceptorFactory;
@@ -70,7 +71,8 @@ public abstract class SessionBeanObjectViewConfigurator implements ViewConfigura
                 configuration.addViewInterceptor(method, PRIMARY_KEY_INTERCEPTOR, InterceptorOrder.View.COMPONENT_DISPATCHER);
             } else if (method.getName().equals("remove") && method.getParameterTypes().length == 0) {
                 configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
-                configuration.addViewInterceptor(method, getEjbRemoveInterceptorFactory(), InterceptorOrder.View.SESSION_REMOVE_INTERCEPTOR);
+                Method remove = resolveRemoveMethod(componentConfiguration.getComponentClass(), index, componentConfiguration.getComponentName());
+                configuration.addViewInterceptor(method, getEjbRemoveInterceptorFactory(remove), InterceptorOrder.View.SESSION_REMOVE_INTERCEPTOR);
                 configuration.addViewInterceptor(method, org.jboss.invocation.Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.View.COMPONENT_DISPATCHER);
 
             } else if (method.getName().equals("getEJBLocalHome") && method.getParameterTypes().length == 0) {
@@ -115,7 +117,7 @@ public abstract class SessionBeanObjectViewConfigurator implements ViewConfigura
 
     }
 
-    protected abstract InterceptorFactory getEjbRemoveInterceptorFactory();
+    protected abstract InterceptorFactory getEjbRemoveInterceptorFactory(final Method remove);
 
     private static final InterceptorFactory PRIMARY_KEY_INTERCEPTOR = new ImmediateInterceptorFactory(new Interceptor() {
         @Override
@@ -123,4 +125,19 @@ public abstract class SessionBeanObjectViewConfigurator implements ViewConfigura
             throw new EJBException("Cannot call getPrimaryKey on a session bean");
         }
     });
+
+
+    private Method resolveRemoveMethod(final Class<?> componentClass, final DeploymentReflectionIndex index, final String ejbName) throws DeploymentUnitProcessingException {
+
+        Class<?> clazz = componentClass;
+        while (clazz != Object.class) {
+            final ClassReflectionIndex<?> classIndex = index.getClassIndex(clazz);
+            Method ret = classIndex.getMethod(Void.TYPE, "ejbRemove");
+            if (ret != null) {
+                return ret;
+            }
+            clazz = clazz.getSuperclass();
+        }
+        return null;
+    }
 }

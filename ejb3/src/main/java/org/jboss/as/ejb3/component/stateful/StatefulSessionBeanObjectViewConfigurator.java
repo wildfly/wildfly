@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
+import java.lang.reflect.Method;
+
 import org.jboss.as.ejb3.component.session.SessionBeanObjectViewConfigurator;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.InterceptorFactory;
@@ -33,7 +35,7 @@ public class StatefulSessionBeanObjectViewConfigurator extends SessionBeanObject
     public static final StatefulSessionBeanObjectViewConfigurator INSTANCE = new StatefulSessionBeanObjectViewConfigurator();
 
     @Override
-    protected InterceptorFactory getEjbRemoveInterceptorFactory() {
+    protected InterceptorFactory getEjbRemoveInterceptorFactory(final Method remove) {
         return new ImmediateInterceptorFactory(new StatefulRemoveInterceptor(false));
     }
 
