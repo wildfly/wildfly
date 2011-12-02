@@ -23,12 +23,14 @@
 package org.jboss.as.jdr;
 
 import org.jboss.as.controller.OperationFailedException;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.HelpFormatter;
 
+import static org.jboss.as.jdr.JdrMessages.MESSAGES;
  /**
  * Provides a main for collecting a JDR report from the command line.
  *
@@ -43,9 +45,9 @@ public class CommandLineMain {
     private static final String usage = "jdr.{sh,bat} [options]";
 
     static {
-        options.addOption("H", "help", false, "prints help and exits");
-        options.addOption("h", "host", true, "hostname that the management api is bound to. (default: localhost)");
-        options.addOption("p", "port", true, "port that the management api is bound to. (default: 9990)");
+        options.addOption("h", "help", false, MESSAGES.jdrHelpMessage());
+        options.addOption("H", "host", true, MESSAGES.jdrHostnameMessage());
+        options.addOption("p", "port", true, MESSAGES.jdrPortMessage());
     }
 
     /**

@@ -28,6 +28,7 @@ import org.jboss.logging.Messages;
 
 /**
  * @author Mike M. Clark
+ * @author Jesse Jaggars
  */
 @MessageBundle(projectCode = "JBAS")
 interface JdrMessages {
@@ -48,4 +49,13 @@ interface JdrMessages {
      */
     @Message(value = "Parameter %s may not be null.")
     IllegalArgumentException varNull(String var);
+
+    @Message(value = "Display this message and exit")
+    String jdrHelpMessage();
+
+    @Message(value = "hostname that the management api is bound to. (default: localhost)")
+    String jdrHostnameMessage();
+
+    @Message(value = "port that the management api is bound to. (default: 9990)")
+    String jdrPortMessage();
 }
