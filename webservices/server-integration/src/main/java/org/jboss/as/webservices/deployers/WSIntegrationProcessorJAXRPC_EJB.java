@@ -31,6 +31,7 @@ import static org.jboss.as.webservices.util.WSAttachmentKeys.WEBSERVICES_METADAT
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.xml.rpc.handler.MessageContext;
@@ -121,6 +122,12 @@ public final class WSIntegrationProcessorJAXRPC_EJB implements DeploymentUnitPro
         // process assembly-descriptor DD section
         final EjbJarMetaData ejbJarMD = unit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
         if (ejbJarMD != null && ejbJarMD.getAssemblyDescriptor() != null) {
+            final List<SecurityRoleMetaData> securityRoleMetaDatas = ejbJarMD.getAssemblyDescriptor().getAny(SecurityRoleMetaData.class);
+            if (securityRoleMetaDatas != null) {
+                for (final SecurityRoleMetaData securityRoleMetaData : securityRoleMetaDatas) {
+                    securityRoles.add(securityRoleMetaData.getRoleName());
+                }
+            }
             final SecurityRolesMetaData securityRolesMD = ejbJarMD.getAssemblyDescriptor().getSecurityRoles();
             if (securityRolesMD != null && securityRolesMD.size() > 0) {
                 for (final SecurityRoleMetaData securityRoleMD : securityRolesMD) {
