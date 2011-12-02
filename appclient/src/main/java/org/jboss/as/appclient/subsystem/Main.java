@@ -49,7 +49,6 @@ import org.jboss.logmanager.log4j.BridgeRepositorySelector;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceActivator;
-import org.jboss.sasl.JBossSaslProvider;
 import org.jboss.stdio.StdioContext;
 
 /**
@@ -73,7 +72,6 @@ public final class Main {
      * @param args the command-line arguments
      */
     public static void main(String[] args) {
-        SecurityActions.addProvider(new JBossSaslProvider());
         SecurityActions.setSystemProperty("log4j.defaultInitOverride", "true");
         new BridgeRepositorySelector().start();
 

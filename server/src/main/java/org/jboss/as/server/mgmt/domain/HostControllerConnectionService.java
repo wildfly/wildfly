@@ -27,11 +27,6 @@ import static org.jboss.as.protocol.StreamUtils.safeClose;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.Provider;
-import java.security.Security;
-
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -53,7 +48,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Endpoint;
-import org.jboss.sasl.JBossSaslProvider;
 
 /**
  * Service used to connect to the host controller.  Will maintain the connection for the length of the service life.
@@ -64,7 +58,6 @@ public class HostControllerConnectionService implements Service<ManagementChanne
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "channel");
     private final InjectedValue<InetSocketAddress> hcAddressInjector = new InjectedValue<InetSocketAddress>();
     private final InjectedValue<Endpoint> endpointInjector = new InjectedValue<Endpoint>();
-    private final Provider saslProvider = new JBossSaslProvider();
 
     private volatile ManagementChannel channel;
     private volatile ProtocolChannelClient<ManagementChannel> client;
@@ -88,12 +81,6 @@ public class HostControllerConnectionService implements Service<ManagementChanne
 
     /** {@inheritDoc} */
     public synchronized void start(StartContext context) throws StartException {
-        AccessController.doPrivileged(new PrivilegedAction<Integer>() {
-            public Integer run() {
-                return Security.insertProviderAt(saslProvider, 1);
-            }
-        });
-
         ProtocolChannelClient<ManagementChannel> client;
         try {
             ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();

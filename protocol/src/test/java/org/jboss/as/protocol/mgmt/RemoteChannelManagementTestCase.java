@@ -22,10 +22,6 @@
 package org.jboss.as.protocol.mgmt;
 
 import java.io.IOException;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.Provider;
-import java.security.Security;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,10 +33,8 @@ import org.jboss.as.protocol.mgmt.support.ConcurrentRequestOperationHandler;
 import org.jboss.as.protocol.mgmt.support.RemoteChannelPairSetup;
 import org.jboss.as.protocol.mgmt.support.RemotingChannelPairSetup;
 import org.jboss.as.protocol.mgmt.support.SimpleHandlers;
-import org.jboss.sasl.JBossSaslProvider;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -51,19 +45,9 @@ import org.junit.Test;
 public class RemoteChannelManagementTestCase {
 
     RemotingChannelPairSetup channels;
-    private Provider saslProvider = new JBossSaslProvider();
 
     @Before
     public void start() throws Exception {
-        AccessController.doPrivileged(new PrivilegedAction<Object>() {
-            public Object run() {
-                if (Security.getProvider(saslProvider.getName()) == null) {
-                    Security.insertProviderAt(saslProvider, 1);
-                }
-                return null;
-            }
-        });
-
         channels = new RemoteChannelPairSetup();
         channels.setupRemoting();
         channels.startChannels();
