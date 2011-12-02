@@ -26,6 +26,11 @@ import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 
 /**
+ * This module is using message IDs in the range 10900-10999.
+ * This file is using the subset 10925-10949 for host controller non-logger messages.
+ * See http://community.jboss.org/docs/DOC-16810 for the full list of
+ * currently reserved JBAS message id blocks.
+ *
  * Date: 05.11.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>

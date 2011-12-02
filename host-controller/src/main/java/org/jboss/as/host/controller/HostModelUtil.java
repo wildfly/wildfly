@@ -117,6 +117,7 @@ import org.jboss.as.host.controller.operations.StartServersHandler;
 import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
 import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
 import org.jboss.as.platform.mbean.PlatformMBeanResourceRegistrar;
+import org.jboss.as.server.operations.RunningModeReadHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceRemoveHandler;
 import org.jboss.as.server.services.security.AbstractVaultReader;
@@ -198,6 +199,7 @@ public class HostModelUtil {
                 ResolveExpressionOnHostHandler.INSTANCE, EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.DOMAIN_PUSH_TO_SERVERS));
         ProcessReloadHandler reloadHandler = new ProcessReloadHandler(HostControllerService.HC_SERVICE_NAME, runningModeControl, HostRootDescription.getResourceDescriptionResolver("host"));
         hostRegistration.registerOperationHandler(ProcessReloadHandler.OPERATION_NAME, reloadHandler, reloadHandler);
+        RunningModeReadHandler.createAndRegister(runningModeControl, hostRegistration);
 
         DomainServerLifecycleHandlers.initializeServerInventory(serverInventory);
 

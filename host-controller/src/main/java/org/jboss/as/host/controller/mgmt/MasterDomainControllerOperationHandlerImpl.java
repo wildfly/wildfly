@@ -40,10 +40,10 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandler;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.FileRepository;
+import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry.ProxyCreatedCallback;
 import org.jboss.as.domain.controller.operations.ReadMasterDomainModelHandler;
-import org.jboss.as.domain.controller.operations.SlaveRegistrationError;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
@@ -145,17 +145,18 @@ public class MasterDomainControllerOperationHandlerImpl extends ManagementChanne
                         op.get(HOST).set(hostId);
                         final ModelNode result = MasterDomainControllerOperationHandlerImpl.this.controller.execute(op, OperationMessageHandler.logging, OperationTransactionControl.COMMIT, null);
                         if (result.hasDefined(FAILURE_DESCRIPTION)) {
-                            error = result.get(FAILURE_DESCRIPTION).asString();
+                            error = SlaveRegistrationException.forUnknownError(result.get(FAILURE_DESCRIPTION).asString()).marshal();
                         }
+                    } catch (SlaveRegistrationException e) {
+                        error = e.marshal();
                     } catch (Exception e) {
-                        e.printStackTrace();
-                        error = SlaveRegistrationError.formatHostAlreadyExists(e.getMessage());
+                        error = SlaveRegistrationException.forUnknownError(e.getMessage()).marshal();
                     }
                     final FlushableDataOutput output = writeGenericResponseHeader(context);
                     try {
                         if (error != null) {
                             output.write(DomainControllerProtocol.PARAM_ERROR);
-                            output.writeUTF(SlaveRegistrationError.parse(error).toString());
+                            output.writeUTF(error);
                         } else {
                             output.write(DomainControllerProtocol.PARAM_OK);
                         }
@@ -166,7 +167,6 @@ public class MasterDomainControllerOperationHandlerImpl extends ManagementChanne
                 }
             });
         }
-
     }
 
     private class UnregisterOperation extends AbstractHostRequestHandler {

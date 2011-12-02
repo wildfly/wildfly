@@ -10,6 +10,7 @@ import java.net.InetAddress;
 import java.util.Collections;
 import java.util.Map;
 
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.process.DefaultJvmUtils;
 
@@ -143,10 +144,13 @@ public class HostControllerEnvironment {
     private final PrintStream stdout;
     private final PrintStream stderr;
 
+    private final RunningMode initialRunningMode;
+
 
     public HostControllerEnvironment(Map<String, String> hostSystemProperties, boolean isRestart, InputStream stdin, PrintStream stdout, PrintStream stderr,
                                      InetAddress processControllerAddress, Integer processControllerPort, InetAddress hostControllerAddress,
-                                     Integer hostControllerPort, String defaultJVM, String domainConfig, String hostConfig, boolean backupDomainFiles, boolean useCachedDc) {
+                                     Integer hostControllerPort, String defaultJVM, String domainConfig, String hostConfig,
+                                     RunningMode initialRunningMode, boolean backupDomainFiles, boolean useCachedDc) {
         if (hostSystemProperties == null) {
             throw new IllegalArgumentException("hostSystemProperties is null");
         }
@@ -264,6 +268,7 @@ public class HostControllerEnvironment {
 
         this.backupDomainFiles = backupDomainFiles;
         this.useCachedDc = useCachedDc;
+        this.initialRunningMode = initialRunningMode;
     }
 
     /**
@@ -361,6 +366,10 @@ public class HostControllerEnvironment {
      */
     public boolean isUseCachedDc() {
         return useCachedDc;
+    }
+
+    public RunningMode getInitialRunningMode() {
+        return initialRunningMode;
     }
 
     public File getHomeDir() {

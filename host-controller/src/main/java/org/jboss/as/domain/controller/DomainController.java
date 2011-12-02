@@ -53,9 +53,10 @@ public interface DomainController {
      *
      * @throws IllegalArgumentException if there already exists a host controller with the same id as
      *                                  <code>hostControllerClient</code>
-     * @throws UnsupportedOperationException is the host is not the master domain controller
+     *
+     * @throws SlaveRegistrationException if there is a problem registering the host
      */
-    void registerRemoteHost(final ProxyController hostControllerClient);
+    void registerRemoteHost(final ProxyController hostControllerClient) throws SlaveRegistrationException;
 
     /**
      * Unregisters a previously registered Host Controller.

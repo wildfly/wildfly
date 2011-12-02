@@ -33,7 +33,22 @@ import static org.jboss.as.process.ProcessMessages.MESSAGES;
  */
 enum CommandLineArgument {
 
+    ADMIN_ONLY {
+        @Override
+        public String argument() {
+            return CommandLineConstants.ADMIN_ONLY;
+        }
 
+        @Override
+        public String argumentExample() {
+            return argument();
+        }
+
+        @Override
+        public String instructions() {
+            return MESSAGES.argAdminOnly();
+        }
+    },
     PUBLIC_BIND_ADDRESS {
         @Override
         public String argument() {

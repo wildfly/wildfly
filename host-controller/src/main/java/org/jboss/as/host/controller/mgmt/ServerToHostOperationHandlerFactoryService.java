@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.concurrent.ExecutorService;
 
-import org.jboss.as.host.controller.ManagedServerLifecycleCallback;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
@@ -40,6 +39,7 @@ import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
+import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.server.mgmt.domain.DomainServerProtocol;
 import org.jboss.as.server.mgmt.domain.HostControllerServerClient;
 import org.jboss.logging.Logger;
@@ -69,7 +69,7 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("management", "server", "to", "host", "controller");
 
     private final ExecutorService executorService;
-    private final InjectedValue<ManagedServerLifecycleCallback> callback = new InjectedValue<ManagedServerLifecycleCallback>();
+    private final InjectedValue<ServerInventory> callback = new InjectedValue<ServerInventory>();
 
     private ServerToHostOperationHandlerFactoryService(final ExecutorService executorService) {
         this.executorService = executorService;
@@ -78,7 +78,7 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
     public static void install(final ServiceTarget serviceTarget, final ServiceName serverInventoryName, final ExecutorService executorService) {
         final ServerToHostOperationHandlerFactoryService serverToHost = new ServerToHostOperationHandlerFactoryService(executorService);
         serviceTarget.addService(ServerToHostOperationHandlerFactoryService.SERVICE_NAME, serverToHost)
-            .addDependency(serverInventoryName, ManagedServerLifecycleCallback.class, serverToHost.callback)
+            .addDependency(serverInventoryName, ServerInventory.class, serverToHost.callback)
             .install();
     }
 
@@ -138,7 +138,7 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
                     @Override
                     public void run() {
                         final Channel mgmtChannel = channel;
-                        ServerToHostOperationHandlerFactoryService.this.callback.getValue().serverRegistered(serverName, mgmtChannel, new ManagedServerLifecycleCallback.ProxyCreatedCallback() {
+                        ServerToHostOperationHandlerFactoryService.this.callback.getValue().serverRegistered(serverName, mgmtChannel, new ServerInventory.ProxyCreatedCallback() {
                             @Override
                             public void proxyOperationHandlerCreated(final ManagementMessageHandler handler) {
                                 channel.addCloseHandler(new CloseHandler<Channel>() {

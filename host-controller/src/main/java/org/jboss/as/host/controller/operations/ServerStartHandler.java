@@ -29,6 +29,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
@@ -46,12 +47,6 @@ public class ServerStartHandler implements OperationStepHandler, DescriptionProv
 
     public static final String OPERATION_NAME = "start";
 
-    public static ModelNode getStartServerOperation(String name) {
-        ModelNode op = Util.getEmptyOperation(OPERATION_NAME, new ModelNode());
-        op.get(NAME).set(name);
-
-        return op;
-    }
 
     private final ServerInventory serverInventory;
 
@@ -68,6 +63,10 @@ public class ServerStartHandler implements OperationStepHandler, DescriptionProv
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
+        if (context.getRunningMode() == RunningMode.ADMIN_ONLY) {
+            throw new OperationFailedException(new ModelNode(String.format("Cannot start servers when the Host Controller running mode is %s", context.getRunningMode())));
+        }
+
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final PathElement element = address.getLastElement();
         final String serverName = element.getValue();
@@ -76,12 +75,26 @@ public class ServerStartHandler implements OperationStepHandler, DescriptionProv
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                final ServerStatus status = serverInventory.startServer(serverName, model);
-                context.getResult().set(status.toString());
-                context.completeStep();
+                final ServerStatus origStatus = serverInventory.determineServerStatus(serverName);
+                if (origStatus != ServerStatus.STARTED && origStatus != ServerStatus.STARTING) {
+                    final ServerStatus status = serverInventory.startServer(serverName, model);
+                    context.getResult().set(status.toString());
+                } else {
+                    context.getResult().set(origStatus.toString());
+                }
+
+                context.completeStep(new OperationContext.RollbackHandler() {
+                    @Override
+                    public void handleRollback(OperationContext context, ModelNode operation) {
+                        if (origStatus != ServerStatus.STARTED && origStatus != ServerStatus.STARTING) {
+                            serverInventory.stopServer(serverName, -1);
+                        }
+                    }
+                });
             }
         }, OperationContext.Stage.RUNTIME);
-        context.completeStep();
+
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
     @Override

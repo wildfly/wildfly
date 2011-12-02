@@ -55,6 +55,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -65,9 +66,11 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.DomainControllerMessages;
 import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
+import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
 import org.jboss.as.domain.controller.operations.coordination.PrepareStepHandler;
@@ -107,7 +110,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
 
-    public static final ServiceName SERVICE_NAME = HostControllerBootstrap.SERVICE_NAME_BASE.append("model", "controller");
+    public static final ServiceName SERVICE_NAME = HostControllerService.HC_SERVICE_NAME.append("model", "controller");
 
     private HostControllerConfigurationPersister hostControllerConfigurationPersister;
     private final HostControllerEnvironment environment;
@@ -124,6 +127,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
     private final Map<String, Channel> unregisteredHostChannels = new HashMap<String, Channel>();
     private final Map<String, ProxyCreatedCallback> proxyCreatedCallbacks = new HashMap<String, ProxyCreatedCallback>();
+    // TODO look into using the controller executor
     private final ExecutorService proxyExecutor = Executors.newCachedThreadPool();
     private final AbstractVaultReader vaultReader;
 
@@ -144,7 +148,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         DomainModelControllerService service = new DomainModelControllerService(environment, runningModeControl, processState,
                 hostControllerInfo, hostProxies, serverProxies, prepareStepHandler, vaultReader, bootstrapListener);
         return serviceTarget.addService(SERVICE_NAME, service)
-                .addDependency(HostControllerBootstrap.SERVICE_NAME_BASE.append("executor"), ExecutorService.class, service.getExecutorServiceInjector())
+                .addDependency(HostControllerService.HC_EXECUTOR_SERVICE_NAME, ExecutorService.class, service.getExecutorServiceInjector())
                 .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerConnectionService.class, service.injectedProcessControllerConnection)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
@@ -179,16 +183,20 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     @Override
-    public void registerRemoteHost(ProxyController hostControllerClient) {
+    public void registerRemoteHost(ProxyController hostControllerClient) throws SlaveRegistrationException {
         if (!hostControllerInfo.isMasterDomainController()) {
-            throw new UnsupportedOperationException("Registration of remote hosts is not supported on slave host controllers");
+            throw SlaveRegistrationException.forHostIsNotMaster();
+        }
+
+        if (runningModeControl.getRunningMode() == RunningMode.ADMIN_ONLY) {
+            throw SlaveRegistrationException.forMasterInAdminOnlyMode(runningModeControl.getRunningMode());
         }
         PathAddress pa = hostControllerClient.getProxyNodeAddress();
         PathElement pe = pa.getElement(0);
         ProxyController existingController = modelNodeRegistration.getProxyController(pa);
 
         if (existingController != null || hostControllerInfo.getLocalHostName().equals(pe.getValue())){
-            throw new IllegalArgumentException("There is already a registered host named '" + pe.getValue() + "'");
+            throw SlaveRegistrationException.forHostAlreadyExists(pe.getValue());
         }
         modelNodeRegistration.registerProxyController(pe, hostControllerClient);
         hostProxies.put(pe.getValue(), hostControllerClient);
@@ -259,7 +267,6 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
     @Override
     public void start(StartContext context) throws StartException {
-        // TODO BootstrapListener
         final ExecutorService executorService = getExecutorServiceInjector().getValue();
         this.hostControllerConfigurationPersister = new HostControllerConfigurationPersister(environment, hostControllerInfo, executorService);
         setConfigurationPersister(hostControllerConfigurationPersister);
@@ -284,11 +291,13 @@ public class DomainModelControllerService extends AbstractControllerService impl
         try {
             super.boot(hostControllerConfigurationPersister.load()); // This parses the host.xml and invokes all ops
 
-            //Install the server inventory
+            final RunningMode currentRunningMode = runningModeControl.getRunningMode();
+
+            // Now we know our management interface configuration. Install the server inventory
             Future<ServerInventory> inventoryFuture = ServerInventoryService.install(serviceTarget, this, environment,
                     hostControllerInfo.getNativeManagementInterface(), hostControllerInfo.getNativeManagementPort());
 
-            //Install the core remoting endpoint and listener
+            // Install the core remoting endpoint and listener
             ManagementRemotingServices.installRemotingEndpoint(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
                     hostControllerInfo.getLocalHostName(), EndpointService.EndpointType.MANAGEMENT, null, null);
 
@@ -335,7 +344,9 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 HttpManagementAddHandler.installHttpManagementServices(serviceTarget, hostControllerInfo, environment, null);
             }
 
-            startServers();
+            if (currentRunningMode == RunningMode.NORMAL) {
+                startServers();
+            }
 
             // TODO when to call hostControllerConfigurationPersister.successful boot? Look into this for standalone as well; may be broken now
         } finally {

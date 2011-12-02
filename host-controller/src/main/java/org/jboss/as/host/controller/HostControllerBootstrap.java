@@ -51,7 +51,6 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class HostControllerBootstrap {
 
-    static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("host", "controller");
     private final ServiceContainer serviceContainer = ServiceContainer.Factory.create("host-controller");
     private final HostControllerEnvironment environment;
     private final byte[] authCode;
@@ -68,7 +67,7 @@ public class HostControllerBootstrap {
      */
     public void bootstrap() throws Exception {
 
-        final RunningModeControl runningModeControl = new RunningModeControl(RunningMode.NORMAL);
+        final RunningModeControl runningModeControl = new RunningModeControl(environment.getInitialRunningMode());
         final HostControllerService hcs = new HostControllerService(environment, runningModeControl, authCode);
         serviceContainer.subTarget().addService(HostControllerService.HC_SERVICE_NAME, hcs).install();
     }

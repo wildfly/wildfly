@@ -49,8 +49,8 @@ import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.ExistingChannelModelControllerClient;
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.domain.controller.operations.SlaveRegistrationError;
-import org.jboss.as.domain.controller.operations.SlaveRegistrationError.ErrorCode;
+import org.jboss.as.domain.controller.SlaveRegistrationException;
+import org.jboss.as.domain.controller.SlaveRegistrationException.ErrorCode;
 import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.security.SecretIdentityService;
 import org.jboss.as.domain.management.security.SecurityRealmService;
@@ -240,7 +240,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             throw new IllegalStateException(e);
         }
 
-        SlaveRegistrationError error = null;
+        SlaveRegistrationException error = null;
         try {
             error = new RegisterModelControllerRequest().executeForResult(handler, channel, null);
         } catch (Exception e) {
@@ -384,7 +384,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 
     }
 
-    private class RegisterModelControllerRequest extends RegistryRequest<SlaveRegistrationError> {
+    private class RegisterModelControllerRequest extends RegistryRequest<SlaveRegistrationException> {
 
         @Override
         public byte getOperationType() {
@@ -392,18 +392,18 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         }
 
         @Override
-        protected void sendRequest(ActiveOperation.ResultHandler<SlaveRegistrationError> resultHandler, ManagementRequestContext<Void> voidManagementRequestContext, FlushableDataOutput output) throws IOException {
+        protected void sendRequest(ActiveOperation.ResultHandler<SlaveRegistrationException> resultHandler, ManagementRequestContext<Void> voidManagementRequestContext, FlushableDataOutput output) throws IOException {
             output.write(DomainControllerProtocol.PARAM_HOST_ID);
             output.writeUTF(name);
         }
 
         @Override
-        public void handleRequest(DataInput input, ActiveOperation.ResultHandler<SlaveRegistrationError> resultHandler, ManagementRequestContext<Void> voidManagementRequestContext) throws IOException {
+        public void handleRequest(DataInput input, ActiveOperation.ResultHandler<SlaveRegistrationException> resultHandler, ManagementRequestContext<Void> voidManagementRequestContext) throws IOException {
             byte status = input.readByte();
             if (status == DomainControllerProtocol.PARAM_OK) {
                 resultHandler.done(null);
             } else {
-                resultHandler.done(SlaveRegistrationError.parse(input.readUTF()));
+                resultHandler.done(SlaveRegistrationException.parse(input.readUTF()));
             }
         }
     }

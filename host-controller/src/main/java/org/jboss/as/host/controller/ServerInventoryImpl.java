@@ -80,6 +80,7 @@ public class ServerInventoryImpl implements ServerInventory {
     private final ProcessControllerClient processControllerClient;
     private final InetSocketAddress managementAddress;
     private final DomainController domainController;
+    private final Object shutdownCondition = new Object();
     private volatile CountDownLatch processInventoryLatch;
     private volatile Map<String, ProcessInfo> processInfos;
 
@@ -178,7 +179,10 @@ public class ServerInventoryImpl implements ServerInventory {
         }
         log.infof("Starting server %s", serverName);
         final ManagedServer server = createManagedServer(serverName, domainModel);
-        servers.put(processName, server);
+        synchronized (shutdownCondition) {
+            servers.put(processName, server);
+            shutdownCondition.notifyAll();
+        }
 
         try {
             server.createServerProcess();
@@ -202,7 +206,10 @@ public class ServerInventoryImpl implements ServerInventory {
         }
         log.info("Reconnecting server " + serverName);
         final ManagedServer server = createManagedServer(serverName, domainModel);
-        servers.put(processName, server);
+        synchronized (shutdownCondition) {
+            servers.put(processName, server);
+            shutdownCondition.notifyAll();
+        }
 
         if (running){
             try {
@@ -284,7 +291,10 @@ public class ServerInventoryImpl implements ServerInventory {
             if (!environment.isRestart()){
                 checkState(server, ServerState.STARTING);
             }
-            server.setState(ServerState.STARTED);
+            synchronized (shutdownCondition) {
+                server.setState(ServerState.STARTED);
+                shutdownCondition.notifyAll();
+            }
 
             final PathElement element = PathElement.pathElement(RUNNING_SERVER, server.getServerName());
             final ProxyController serverController = RemoteProxyController.create(Executors.newCachedThreadPool(),
@@ -311,7 +321,10 @@ public class ServerInventoryImpl implements ServerInventory {
             return;
         }
         checkState(server, ServerState.STARTING);
-        server.setState(ServerState.FAILED);
+        synchronized (shutdownCondition) {
+            server.setState(ServerState.FAILED);
+            shutdownCondition.notifyAll();
+        }
     }
 
     /** {@inheritDoc} */
@@ -337,15 +350,51 @@ public class ServerInventoryImpl implements ServerInventory {
                 log.error("Failed to start server " + serverProcessName, e);
             }
         }
-        servers.remove(serverProcessName);
+        synchronized (shutdownCondition) {
+            servers.remove(serverProcessName);
+            shutdownCondition.notifyAll();
+        }
     }
 
     public void stopServers(int gracefulTimeout) {
+        stopServers(gracefulTimeout, false);
+    }
+
+    void stopServers(int gracefulTimeout, boolean blockUntilStopped) {
         Map<String, ProcessInfo> processInfoMap = determineRunningProcesses();
         for (String serverProcessName : processInfoMap.keySet()) {
             if (ManagedServer.isServerProcess(serverProcessName)) {
                 String serverName = ManagedServer.getServerName(serverProcessName);
                 stopServer(serverName, gracefulTimeout);
+            }
+        }
+
+        if (blockUntilStopped) {
+            synchronized (shutdownCondition) {
+                for (;;) {
+                    int count = 0;
+                    for (ManagedServer server : servers.values()) {
+                        switch (server.getState()) {
+                            case FAILED:
+                            case MAX_FAILED:
+                            case STOPPED:
+                                break;
+                            default:
+                                count++;
+                        }
+                    }
+
+                    if (count == 0) {
+                        break;
+                    }
+
+                    try {
+                        shutdownCondition.wait();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
             }
         }
     }

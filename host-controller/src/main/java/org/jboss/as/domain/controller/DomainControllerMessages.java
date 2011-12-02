@@ -22,10 +22,21 @@
 
 package org.jboss.as.domain.controller;
 
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.RunningMode;
+import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
+import org.jboss.logging.Param;
 
 /**
+ * This module is using message IDs in the range 10900-10999.
+ * This file is using the subset 10975-10999 for domain controller non-logger messages.
+ * See http://community.jboss.org/docs/DOC-16810 for the full list of
+ * currently reserved JBAS message id blocks.
+ *
  * Date: 05.11.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -37,4 +48,32 @@ public interface DomainControllerMessages {
      * The messages.
      */
     DomainControllerMessages MESSAGES = Messages.getBundle(DomainControllerMessages.class);
+
+    /**
+     * Creates an exception message indicating this host is a slave and cannot accept registrations from other slaves.
+     *
+     * @return a message for the error.
+     */
+    @Message(id = 14000, value = "Registration of remote hosts is not supported on slave host controllers")
+    String slaveControllerCannotAcceptOtherSlaves();
+
+    /**
+     * Creates an exception message indicating this host is in admin mode and cannot accept registrations from other slaves.
+     *
+     * @param runningMode the host controller's current running mode
+     *
+     * @return a message for the error.
+     */
+    @Message(id = 14001, value = "The master host controller cannot register slave host controllers as it's current running mode is '%s'")
+    String adminOnlyModeCannotAcceptSlaves(RunningMode runningMode);
+
+    /**
+     * Creates an exception message indicating a host cannot register because another host of the same name is already registered.
+     *
+     * @param slaveName the name of the slave
+     *
+     * @return a message for the error.
+     */
+    @Message(id = 14002, value = "There is already a registered host named '%s'")
+    String slaveAlreadyRegistered(String slaveName);
 }
