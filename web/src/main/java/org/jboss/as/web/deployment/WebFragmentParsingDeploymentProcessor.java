@@ -40,7 +40,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.metadata.parser.servlet.WebFragmentMetaDataParser;
-import org.jboss.metadata.parser.util.NoopXmlResolver;
+import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.web.spec.WebFragmentMetaData;
 import org.jboss.vfs.VirtualFile;
 
@@ -76,7 +76,7 @@ public class WebFragmentParsingDeploymentProcessor implements DeploymentUnitProc
                     try {
                         is = webFragment.openStream();
                         final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-                        inputFactory.setXMLResolver(NoopXmlResolver.create());
+                        inputFactory.setXMLResolver(NoopXMLResolver.create());
                         XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
                         webFragments.put(resourceRoot.getRootName(), WebFragmentMetaDataParser.parse(xmlReader));
                     } catch (XMLStreamException e) {

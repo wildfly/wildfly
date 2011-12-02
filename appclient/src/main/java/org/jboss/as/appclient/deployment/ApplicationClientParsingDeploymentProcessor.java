@@ -44,7 +44,7 @@ import org.jboss.metadata.appclient.parser.jboss.JBossClientMetaDataParser;
 import org.jboss.metadata.appclient.parser.spec.ApplicationClientMetaDataParser;
 import org.jboss.metadata.appclient.spec.AppClientEnvironmentRefsGroupMetaData;
 import org.jboss.metadata.appclient.spec.ApplicationClientMetaData;
-import org.jboss.metadata.parser.util.NoopXmlResolver;
+import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.vfs.VirtualFile;
 
 import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
@@ -160,7 +160,7 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
 
     private XMLStreamReader getXMLStreamReader(InputStream is) throws XMLStreamException {
         final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-        inputFactory.setXMLResolver(NoopXmlResolver.create());
+        inputFactory.setXMLResolver(NoopXMLResolver.create());
         XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
         return xmlReader;
     }

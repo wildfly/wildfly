@@ -44,7 +44,7 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
-import org.jboss.metadata.parser.util.NoopXmlResolver;
+import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.modules.Module;
 import org.jboss.vfs.VirtualFile;
@@ -125,7 +125,7 @@ public class JsfManagedBeanProcessor implements DeploymentUnitProcessor {
             try {
                 is = facesConfig.openStream();
                 final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-                inputFactory.setXMLResolver(NoopXmlResolver.create());
+                inputFactory.setXMLResolver(NoopXMLResolver.create());
                 XMLStreamReader parser = inputFactory.createXMLStreamReader(is);
                 StringBuilder className = null;
                 int indent = 0;
