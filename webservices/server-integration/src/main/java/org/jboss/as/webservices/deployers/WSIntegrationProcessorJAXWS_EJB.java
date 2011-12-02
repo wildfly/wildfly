@@ -123,6 +123,12 @@ public final class WSIntegrationProcessorJAXWS_EJB implements DeploymentUnitProc
         // process assembly-descriptor DD section
         final EjbJarMetaData ejbJarMD = unit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
         if (ejbJarMD != null && ejbJarMD.getAssemblyDescriptor() != null) {
+            final List<SecurityRoleMetaData> securityRoleMetaDatas = ejbJarMD.getAssemblyDescriptor().getAny(SecurityRoleMetaData.class);
+            if (securityRoleMetaDatas != null) {
+                for (final SecurityRoleMetaData securityRoleMetaData : securityRoleMetaDatas) {
+                    securityRoles.add(securityRoleMetaData.getRoleName());
+                }
+            }
             final SecurityRolesMetaData securityRolesMD = ejbJarMD.getAssemblyDescriptor().getSecurityRoles();
             if (securityRolesMD != null && securityRolesMD.size() > 0) {
                 for (final SecurityRoleMetaData securityRoleMD : securityRolesMD) {
