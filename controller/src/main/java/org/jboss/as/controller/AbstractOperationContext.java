@@ -328,7 +328,13 @@ abstract class AbstractOperationContext implements OperationContext {
                     // Handler threw OFE before calling completeStep(); that's equivalent to
                     // a request that we set the failure description and call completeStep()
                     step.response.get(FAILURE_DESCRIPTION).set(ofe.getFailureDescription());
-                    ROOT_LOGGER.operationFailed(step.operation.get(OP), step.operation.get(OP_ADDR), step.response.get(FAILURE_DESCRIPTION));
+                    if (isBooting()) {
+                        // An OFE on boot needs to be logged as an ERROR
+                        ROOT_LOGGER.operationFailed(step.operation.get(OP), step.operation.get(OP_ADDR), step.response.get(FAILURE_DESCRIPTION));
+                    } else {
+                        // An OFE post-boot is a client-side mistake and is logged at DEBUG
+                        ROOT_LOGGER.operationFailedOnClientError(step.operation.get(OP), step.operation.get(OP_ADDR), step.response.get(FAILURE_DESCRIPTION));
+                    }
                     completeStep();
                 }
                 else {
