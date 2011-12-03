@@ -76,7 +76,11 @@ import org.jboss.as.ejb3.deployment.processors.merging.RemoveMethodMergingProces
 import org.jboss.as.ejb3.deployment.processors.merging.ResourceAdaptorMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.RunAsMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.SecurityDomainMergingProcessor;
+<<<<<<< HEAD
 import org.jboss.as.ejb3.deployment.processors.merging.SessionBeanMergingProcessor;
+=======
+import org.jboss.as.ejb3.deployment.processors.merging.SecurityRolesMergingProcessor;
+>>>>>>> Process the security-role metadata correctly and take into account the alias roles configured via security-role-ref, while generating security metadata for EJBs
 import org.jboss.as.ejb3.deployment.processors.merging.SessionSynchronizationMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.StartupMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.StatefulTimeoutMergingProcessor;
@@ -206,6 +210,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                     processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_SESSION_SYNCHRONIZATION, new SessionSynchronizationMergingProcessor());
                     processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_INIT_METHOD, new InitMethodMergingProcessor());
                     processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_SESSION_BEAN, new SessionBeanMergingProcessor());
+                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_SECURITY_PRINCIPAL_ROLE_MAPPING_MERGE, new SecurityRolesMergingProcessor());
                     processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_LOCAL_HOME, new SessionBeanHomeProcessor());
 
                     processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_DEPENDS_ON_ANNOTATION, new EjbDependsOnMergingProcessor());
