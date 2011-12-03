@@ -483,7 +483,7 @@ final class OperationContextImpl extends AbstractOperationContext {
             throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
         }
         if (absoluteAddress.size() == 0) {
-            throw MESSAGES.duplicateResource(absoluteAddress);
+            throw MESSAGES.duplicateResourceAddress(absoluteAddress);
         }
         if (!isModelAffected()) {
             takeWriteLock();
@@ -500,7 +500,7 @@ final class OperationContextImpl extends AbstractOperationContext {
             if (! i.hasNext()) {
                 final String key = element.getKey();
                 if(model.hasChild(element)) {
-                    throw MESSAGES.duplicateResource(absoluteAddress);
+                    throw MESSAGES.duplicateResourceAddress(absoluteAddress);
                 } else {
                     final PathAddress parent = absoluteAddress.subAddress(0, absoluteAddress.size() -1);
                     final Set<String> childrenNames = modelController.getRootRegistration().getChildNames(parent);

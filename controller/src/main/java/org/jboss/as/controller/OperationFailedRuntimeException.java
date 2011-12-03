@@ -25,12 +25,17 @@ package org.jboss.as.controller;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Exception indicating an operation has failed due to a client mistake (e.g. an operation with
+ * Runtime exception indicating an operation has failed due to a client mistake (e.g. an operation with
  * invalid parameters was invoked.) Should not be used to report server failures.
+ * <p>
+ * This is a {@link RuntimeException} variant of {@link OperationFailedException} and is intended
+ * for use in cases where the semantics of {@link OperationFailedException} are desired but an
+ * API does not allow a checked exception to be thrown. See https://issues.jboss.org/browse/AS7-2905 .
+ * </p>
  *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class OperationFailedException extends Exception implements OperationClientException {
+class OperationFailedRuntimeException extends RuntimeException implements OperationClientException {
 
     private final ModelNode failureDescription;
 
@@ -44,7 +49,7 @@ public class OperationFailedException extends Exception implements OperationClie
      *
      * @param message the description of the failure
      */
-    public OperationFailedException(final String message) {
+    public OperationFailedRuntimeException(final String message) {
         this(message, new ModelNode(message));
     }
 
@@ -55,53 +60,53 @@ public class OperationFailedException extends Exception implements OperationClie
      * @param message the description of the failure
      * @param cause the cause (which is saved for later retrieval by the {@link #getCause()} method)
      */
-    public OperationFailedException(final String message, final Throwable cause) {
+    public OperationFailedRuntimeException(final String message, final Throwable cause) {
         this(message, cause, new ModelNode(message));
     }
 
     /**
-     * Constructs a {@code OperationFailedException} with no detail message. The cause is not initialized, and may
+     * Constructs a {@code OperationFailedRuntimeException} with no detail message. The cause is not initialized, and may
      * subsequently be initialized by a call to {@link #initCause(Throwable) initCause}.
      *
      * @param description the description of the failure
      */
-    public OperationFailedException(final ModelNode description) {
+    public OperationFailedRuntimeException(final ModelNode description) {
         failureDescription = description;
     }
 
     /**
-     * Constructs a {@code OperationFailedException} with the specified detail message. The cause is not initialized,
+     * Constructs a {@code OperationFailedRuntimeException} with the specified detail message. The cause is not initialized,
      * and may subsequently be initialized by a call to {@link #initCause(Throwable) initCause}.
      *
      * @param msg the detail message
      * @param description the description of the failure
      */
-    public OperationFailedException(final String msg, final ModelNode description) {
+    public OperationFailedRuntimeException(final String msg, final ModelNode description) {
         super(msg);
         failureDescription = description;
     }
 
     /**
-     * Constructs a {@code OperationFailedException} with the specified cause. The detail message is set to:
+     * Constructs a {@code OperationFailedRuntimeException} with the specified cause. The detail message is set to:
      * <pre>(cause == null ? null : cause.toString())</pre>
      * (which typically contains the class and detail message of {@code cause}).
      *
      * @param cause the cause (which is saved for later retrieval by the {@link #getCause()} method)
      * @param description the description of the failure
      */
-    public OperationFailedException(final Throwable cause, final ModelNode description) {
+    public OperationFailedRuntimeException(final Throwable cause, final ModelNode description) {
         super(cause);
         failureDescription = description;
     }
 
     /**
-     * Constructs a {@code OperationFailedException} with the specified detail message and cause.
+     * Constructs a {@code OperationFailedRuntimeException} with the specified detail message and cause.
      *
      * @param msg the detail message
      * @param cause the cause (which is saved for later retrieval by the {@link #getCause()} method)
      * @param description the description of the failure
      */
-    public OperationFailedException(final String msg, final Throwable cause, final ModelNode description) {
+    public OperationFailedRuntimeException(final String msg, final Throwable cause, final ModelNode description) {
         super(msg, cause);
         failureDescription = description;
     }

@@ -23,6 +23,8 @@
 package org.jboss.as.controller;
 
 import java.util.regex.Pattern;
+
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
@@ -83,10 +85,10 @@ public class PathElement {
      */
     PathElement(final String key, final String value) {
         if (key == null || !VALID_KEY_PATTERN.matcher(key).matches()) {
-            throw MESSAGES.invalidKey(key);
+            throw new OperationClientIllegalArgumentException(MESSAGES.invalidPathElementKey(key));
         }
         if (value == null || !VALID_VALUE_PATTERN.matcher(value).matches()) {
-            throw MESSAGES.invalidValue(value);
+            throw new OperationClientIllegalArgumentException(MESSAGES.invalidPathElementValue(value));
         }
         boolean multiTarget = false;
         if(key.equals(WILDCARD_VALUE)) {
@@ -175,5 +177,22 @@ public class PathElement {
     @Override
     public String toString() {
         return "\"" + key + "\" => \"" + value + "\"";
+    }
+
+    /**
+     * AS7-2905. An IAE that implements OperationClientException. Allows PathElement to continue to throw IAE
+     * in case client code expects that failure type, but lets operation handling code detect that the
+     * IAE is a client error.
+     */
+    private static class OperationClientIllegalArgumentException extends IllegalArgumentException implements OperationClientException {
+
+        private OperationClientIllegalArgumentException(final String msg) {
+            super(msg);
+        }
+
+        @Override
+        public ModelNode getFailureDescription() {
+            return new ModelNode(getLocalizedMessage());
+        }
     }
 }

@@ -132,7 +132,7 @@ public class PathAddress implements Iterable<PathElement> {
         return pathAddress(list);
     }
 
-    private static IllegalArgumentException duplicateElement(final String name) {
+    private static OperationFailedRuntimeException duplicateElement(final String name) {
         return MESSAGES.duplicateElement(name);
     }
 
