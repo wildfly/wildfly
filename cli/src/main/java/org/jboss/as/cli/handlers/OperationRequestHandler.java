@@ -99,7 +99,7 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
 
     @Override
     public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {
-        return ((DefaultCallbackHandler)ctx.getParsedCommandLine()).toOperationRequest();
+        return ((DefaultCallbackHandler)ctx.getParsedCommandLine()).toOperationRequest(ctx);
     }
 
     @Override

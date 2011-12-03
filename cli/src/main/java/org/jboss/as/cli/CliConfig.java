@@ -19,20 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.operation;
+package org.jboss.as.cli;
 
-import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandFormatException;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.cli.operation.OperationRequestHeader;
 
 /**
- * Represents a request header.
+ * This interface represents the JBoss CLI configuration.
  *
  * @author Alexey Loubyansky
  */
-public interface OperationRequestHeader {
+public interface CliConfig {
 
-    String getName();
-
-    void addTo(CommandContext ctx, ModelNode headers) throws CommandFormatException;
+    /**
+     * Returns pre-configured rollout plan stored under the id.
+     * If none of the plans matches the id, the method returns null.
+     *
+     * @param id  the id of the plan to return.
+     * @return  the plan matching the id or null if no such plan found.
+     */
+    OperationRequestHeader getRolloutPlan(String id);
 }
