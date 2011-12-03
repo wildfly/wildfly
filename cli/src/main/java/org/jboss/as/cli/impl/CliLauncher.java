@@ -31,6 +31,11 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.security.Security;
+
+import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.handlers.VersionHandler;
 import org.jboss.as.protocol.StreamUtils;
 
@@ -206,13 +211,15 @@ public class CliLauncher {
             } finally {
                 cmdCtx.disconnectController();
             }
+        } catch(Throwable t) {
+            t.printStackTrace();
         } finally {
             System.exit(0);
         }
         System.exit(0);
     }
 
-    private static void processCommands(String[] commands, String defaultControllerHost, int defaultControllerPort, final boolean connect, final String username, final char[] password) {
+    private static void processCommands(String[] commands, String defaultControllerHost, int defaultControllerPort, final boolean connect, final String username, final char[] password) throws CliInitializationException {
 
         final CommandContextImpl cmdCtx = new CommandContextImpl(defaultControllerHost, defaultControllerPort, username, password);
         SecurityActions.addShutdownHook(new Thread(new Runnable() {
@@ -240,7 +247,7 @@ public class CliLauncher {
         }
     }
 
-    private static void processFile(File file, String defaultControllerHost, int defaultControllerPort, final boolean connect, final String username, final char[] password) {
+    private static void processFile(File file, String defaultControllerHost, int defaultControllerPort, final boolean connect, final String username, final char[] password) throws CliInitializationException {
 
         final CommandContextImpl cmdCtx = new CommandContextImpl(defaultControllerHost, defaultControllerPort, username, password);
         SecurityActions.addShutdownHook(new Thread(new Runnable() {
