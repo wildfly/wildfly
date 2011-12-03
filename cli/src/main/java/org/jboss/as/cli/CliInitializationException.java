@@ -19,20 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.operation;
-
-import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandFormatException;
-import org.jboss.dmr.ModelNode;
+package org.jboss.as.cli;
 
 /**
- * Represents a request header.
- *
  * @author Alexey Loubyansky
+ *
  */
-public interface OperationRequestHeader {
+public class CliInitializationException extends CommandLineException {
 
-    String getName();
+    private static final long serialVersionUID = -5802389813870206943L;
 
-    void addTo(CommandContext ctx, ModelNode headers) throws CommandFormatException;
+    /**
+     * @param message
+     * @param cause
+     */
+    public CliInitializationException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    /**
+     * @param message
+     */
+    public CliInitializationException(String message) {
+        super(message);
+    }
+
+    /**
+     * @param cause
+     */
+    public CliInitializationException(Throwable cause) {
+        super(cause);
+    }
 }

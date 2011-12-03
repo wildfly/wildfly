@@ -68,10 +68,6 @@ public class RolloutPlanHeaderCallbackHandler implements ParsingStateCallbackHan
             if(name == null || name.isEmpty()) {
                 throw new CommandFormatException("Property is missing name at index " + ctx.getLocation());
             }
-
-//            if(name.equals(Util.IN_SERIES)) {
-//                ctx.enterState(ServerGroupListState.INSTANCE);
-//            }
         }
         buffer.setLength(0);
     }
@@ -88,10 +84,14 @@ public class RolloutPlanHeaderCallbackHandler implements ParsingStateCallbackHan
                 throw new CommandFormatException("Property '" + name + "' is missing value at index " + ctx.getLocation());
             }
 
-            if(group != null) {
-                ((SingleRolloutPlanGroup)group).addProperty(name, value);
+            if(group == null) {
+                if("id".equals(name)) {
+                    header.setPlanRef(value);
+                } else {
+                    header.addProperty(name, value);
+                }
             } else {
-                header.addProperty(name, value);
+                ((SingleRolloutPlanGroup)group).addProperty(name, value);
             }
         } else if(PropertyState.ID.equals(id)) {
             if(name == null && buffer.length() > 0) {

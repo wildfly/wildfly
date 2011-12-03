@@ -21,12 +21,8 @@
  */
 package org.jboss.as.cli.impl;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -35,7 +31,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -45,15 +40,11 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.RealmCallback;
 import javax.security.sasl.RealmChoiceCallback;
 import javax.security.sasl.SaslException;
-import javax.xml.namespace.QName;
-import javax.xml.stream.FactoryConfigurationError;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.cli.CliConfig;
 import org.jboss.as.cli.CliEvent;
 import org.jboss.as.cli.CliEventListener;
+import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.CommandCompleter;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
@@ -112,22 +103,16 @@ import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.PrefixFormatter;
-import org.jboss.as.cli.operation.impl.ConcurrentRolloutPlanGroup;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationCandidatesProvider;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.jboss.as.cli.operation.impl.DefaultPrefixFormatter;
-import org.jboss.as.cli.operation.impl.RolloutPlanHeader;
-import org.jboss.as.cli.operation.impl.SingleRolloutPlanGroup;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.sasl.callback.DigestHashCallback;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLMapper;
 
 /**
  *
@@ -141,7 +126,8 @@ class CommandContextImpl implements CommandContext {
                 || line.startsWith("..") || line.startsWith(".type");
     }
 
-    private final Config config = new Config();
+    /** the cli configuration */
+    private final CliConfig config;
 
     private final CommandRegistry cmdRegistry = new CommandRegistry();
 
@@ -194,20 +180,23 @@ class CommandContextImpl implements CommandContext {
 
     /**
      * Non-interactive mode
+     * @throws CliInitializationException
      */
-    CommandContextImpl() {
+    CommandContextImpl() throws CliInitializationException {
         this.console = null;
         this.history = null;
         this.operationCandidatesProvider = null;
         this.cmdCompleter = null;
         operationHandler = new OperationRequestHandler();
         initCommands();
+        config = CliConfigImpl.parse(this, new File(SecurityActions.getSystemProperty("user.home"), "jboss-cli.xml"));
     }
 
     /**
      * Non-interactive mode
      */
-    CommandContextImpl(String defaultControllerHost, int defaultControllerPort, String username, char[] password) {
+    CommandContextImpl(String defaultControllerHost, int defaultControllerPort, String username, char[] password)
+        throws CliInitializationException {
         this.console = null;
         this.history = null;
         this.operationCandidatesProvider = null;
@@ -223,18 +212,19 @@ class CommandContextImpl implements CommandContext {
             this.defaultControllerPort = defaultControllerPort;
         }
         initCommands();
+        config = CliConfigImpl.parse(this, new File(SecurityActions.getSystemProperty("user.home"), "jboss-cli.xml"));
     }
 
     /**
      * Interactive mode
      */
     CommandContextImpl(jline.ConsoleReader console, String defaultControllerHost, int defaultControllerPort,
-            String username, char[] password) {
+            String username, char[] password) throws CliInitializationException {
         this.console = console;
 
         console.setUseHistory(true);
         String userHome = SecurityActions.getSystemProperty("user.home");
-        readConfig(new File(userHome, "jboss-cli.xml"));
+        config = CliConfigImpl.parse(this, new File(userHome, "jboss-cli.xml"));
         File historyFile = new File(userHome, ".jboss-cli-history");
         try {
             console.getHistory().setHistoryFile(historyFile);
@@ -261,125 +251,6 @@ class CommandContextImpl implements CommandContext {
             this.defaultControllerPort = defaultControllerPort;
         }
         initCommands();
-    }
-
-    private void readConfig(File f) {
-        if(f == null) {
-            throw new IllegalArgumentException();
-        }
-        if(!f.exists()) {
-            printLine(f.getAbsolutePath() + " doesn't exist.");
-            return;
-        }
-
-        BufferedInputStream input = null;
-        try {
-            final XMLMapper mapper = XMLMapper.Factory.create();
-            mapper.registerRootElement(new QName("urn:jboss:cli:1.0", "jboss-cli"), new XMLElementReader<Config>(){
-                @Override
-                public void readElement(XMLExtendedStreamReader reader, Config config) throws XMLStreamException {
-
-                    RolloutPlanHeader rolloutPlan = null;
-                    boolean concurrent = false;
-                    while (reader.hasNext()) {
-                        int tag = reader.nextTag();
-                        if(tag == XMLStreamConstants.START_ELEMENT) {
-                            final String localName = reader.getLocalName();
-                            if(localName.equals("plan")) {
-                                final String planName = reader.getAttributeValue(null, "name");
-                                if(planName == null) {
-                                    throw new IllegalStateException("Rollout plan is missing required attribute 'name' @" + reader.getLocation().getColumnNumber() + "," + reader.getLocation().getLineNumber());
-                                }
-                                rolloutPlan = new RolloutPlanHeader(planName);
-                                config.addRolloutPlan(rolloutPlan);
-                            } else if(localName.equals("concurrent")) {
-                                concurrent = true;
-                                rolloutPlan.addGroup(new ConcurrentRolloutPlanGroup());
-                            } else if(localName.equals("server-group")) {
-                                final String name = reader.getAttributeValue(null, "name");
-                                if(name == null) {
-                                    throw new IllegalStateException("Server group is missing required attribute 'name' @" + reader.getLocation().getColumnNumber() + "," + reader.getLocation().getLineNumber());
-                                }
-                                final SingleRolloutPlanGroup group = new SingleRolloutPlanGroup();
-                                group.setGroupName(name);
-                                String value = reader.getAttributeValue(null, "rolling-to-servers");
-                                if(value != null) {
-                                    group.addProperty("rolling-to-servers", value);
-                                }
-                                value = reader.getAttributeValue(null, "max-failure-percentage");
-                                if(value != null) {
-                                    group.addProperty("max-failure-percentage", value);
-                                }
-                                value = reader.getAttributeValue(null, "max-failed-servers");
-                                if(value != null) {
-                                    group.addProperty("max-failed-servers", value);
-                                }
-                                if(concurrent) {
-                                    rolloutPlan.addConcurrentGroup(group);
-                                } else {
-                                    rolloutPlan.addGroup(group);
-                                }
-                            }
-                        } else if(tag == XMLStreamConstants.END_ELEMENT) {
-                            final String localName = reader.getLocalName();
-                            if(localName.equals("concurrent")) {
-                                concurrent = false;
-                            } else if(localName.equals("plan")) {
-                                final ModelNode headers = new ModelNode();
-                                try {
-                                    rolloutPlan.addTo(headers);
-                                } catch (CommandFormatException e) {
-                                    e.printStackTrace();
-                                }
-                                System.out.println(headers);
-                                rolloutPlan = null;
-                            }
-                        }
-                    }
-                }});
-
-            FileInputStream is = new FileInputStream(f);
-            input = new BufferedInputStream(is);
-            XMLStreamReader streamReader = XMLInputFactory.newInstance().createXMLStreamReader(input);
-            mapper.parseDocument(config, streamReader);
-            streamReader.close();
-        } catch(Throwable t) {
-            t.printStackTrace();
-/*        } catch(FileNotFoundException e) {
-            return;
-        } catch (XMLStreamException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (FactoryConfigurationError e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-*/        } finally {
-            StreamUtils.safeClose(input);
-        }
-    }
-
-    public static class Config {
-
-        private Map<String, RolloutPlanHeader> rolloutPlans;
-
-        public RolloutPlanHeader getRolloutPlan(String name) {
-            return rolloutPlans == null ? null : rolloutPlans.get(name);
-        }
-
-        public void addRolloutPlan(RolloutPlanHeader rolloutPlan) {
-            if(rolloutPlan == null) {
-                throw new IllegalArgumentException();
-            }
-            if(rolloutPlan.getName() == null) {
-                throw new IllegalArgumentException("Rollout plan is missing the name.");
-            }
-            if(rolloutPlans == null) {
-                rolloutPlans = new HashMap<String, RolloutPlanHeader>();
-            }
-            if(rolloutPlans.put(rolloutPlan.getName(), rolloutPlan) != null) {
-                throw new IllegalArgumentException("Duplicate rollout plan name: '" + rolloutPlan.getName() + "'");
-            }
-        }
     }
 
     private void initCommands() {
@@ -454,7 +325,7 @@ class CommandContextImpl implements CommandContext {
             ModelNode request;
             try {
                 resetArgs(line);
-                request = parsedCmd.toOperationRequest();
+                request = parsedCmd.toOperationRequest(this);
             } catch (CommandFormatException e) {
                 printLine(e.getLocalizedMessage());
                 return;
@@ -862,7 +733,7 @@ class CommandContextImpl implements CommandContext {
 
         if (isOperation(line)) {
             try {
-                ModelNode request = this.parsedCmd.toOperationRequest();
+                ModelNode request = this.parsedCmd.toOperationRequest(this);
                 StringBuilder op = new StringBuilder();
                 op.append(prefixFormatter.format(parsedCmd.getAddress()));
                 op.append(line.substring(line.indexOf(':')));
@@ -910,6 +781,11 @@ class CommandContextImpl implements CommandContext {
             throw new IllegalArgumentException("Listener is null.");
         }
         listeners.add(listener);
+    }
+
+    @Override
+    public CliConfig getConfig() {
+        return config;
     }
 
     protected void setOutputTarget(String filePath) {

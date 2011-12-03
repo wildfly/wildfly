@@ -26,11 +26,15 @@ import java.util.List;
 
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.completion.mock.MockCliConfig;
+import org.jboss.as.cli.completion.mock.MockCommandContext;
 import org.jboss.as.cli.operation.CommandLineParser;
 import org.jboss.as.cli.operation.OperationRequestHeader;
+import org.jboss.as.cli.operation.impl.ConcurrentRolloutPlanGroup;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.jboss.as.cli.operation.impl.RolloutPlanHeader;
+import org.jboss.as.cli.operation.impl.SingleRolloutPlanGroup;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
@@ -42,8 +46,9 @@ import junit.framework.TestCase;
  */
 public class RolloutPlanParsingTestCase extends TestCase {
 
-    private CommandLineParser parser = DefaultOperationRequestParser.INSTANCE;
-    DefaultCallbackHandler handler = new DefaultCallbackHandler();
+    private final CommandLineParser parser = DefaultOperationRequestParser.INSTANCE;
+    private final DefaultCallbackHandler handler = new DefaultCallbackHandler();
+    private final MockCommandContext ctx = new MockCommandContext();
 
     @Test
     public void testHeaderListStart() throws Exception {
@@ -113,7 +118,7 @@ public class RolloutPlanParsingTestCase extends TestCase {
         node.get("name").set("value");
 
         final ModelNode headersNode = new ModelNode();
-        header.addTo(headersNode);
+        header.addTo(ctx, headersNode);
         assertEquals(node, headersNode);
     }
 
@@ -146,7 +151,7 @@ public class RolloutPlanParsingTestCase extends TestCase {
         node.get("name1").set("value1");
 
         ModelNode headersNode = new ModelNode();
-        header.addTo(headersNode);
+        header.addTo(ctx, headersNode);
         assertEquals(node, headersNode);
 
         header = headers.get(1);
@@ -155,7 +160,7 @@ public class RolloutPlanParsingTestCase extends TestCase {
         node.get("name2").set("value2");
 
         headersNode = new ModelNode();
-        header.addTo(headersNode);
+        header.addTo(ctx, headersNode);
         assertEquals(node, headersNode);
     }
 
@@ -246,7 +251,7 @@ public class RolloutPlanParsingTestCase extends TestCase {
         inSeries.add().get(Util.SERVER_GROUP).set(groupA);
 
         final ModelNode headersNode = new ModelNode();
-        header.addTo(headersNode);
+        header.addTo(ctx, headersNode);
         assertEquals(node, headersNode);
     }
 
@@ -285,7 +290,7 @@ public class RolloutPlanParsingTestCase extends TestCase {
         inSeries.add().get(Util.SERVER_GROUP).set(groupA);
 
         final ModelNode headersNode = new ModelNode();
-        header.addTo(headersNode);
+        header.addTo(ctx, headersNode);
         assertEquals(node, headersNode);
     }
 
@@ -328,7 +333,7 @@ public class RolloutPlanParsingTestCase extends TestCase {
         inSeries.add().get(Util.SERVER_GROUP).set(group);
 
         final ModelNode headersNode = new ModelNode();
-        header.addTo(headersNode);
+        header.addTo(ctx, headersNode);
         assertEquals(node, headersNode);
     }
 
@@ -373,7 +378,7 @@ public class RolloutPlanParsingTestCase extends TestCase {
         inSeries.add().set(concurrent);
 
         final ModelNode headersNode = new ModelNode();
-        header.addTo(headersNode);
+        header.addTo(ctx, headersNode);
         assertEquals(node, headersNode);
     }
 
@@ -435,7 +440,7 @@ public class RolloutPlanParsingTestCase extends TestCase {
         inSeries.add().set(concurrent);
 
         final ModelNode headersNode = new ModelNode();
-        header.addTo(headersNode);
+        header.addTo(ctx, headersNode);
         assertEquals(node, headersNode);
     }
 
@@ -464,7 +469,7 @@ public class RolloutPlanParsingTestCase extends TestCase {
         final List<OperationRequestHeader> headers = handler.getHeaders();
         assertEquals(1, headers.size());
 
-        final ModelNode op = handler.toOperationRequest();
+        final ModelNode op = handler.toOperationRequest(ctx);
         assertTrue(op.hasDefined(Util.OPERATION_HEADERS));
         final ModelNode headersNode = op.get(Util.OPERATION_HEADERS);
 
@@ -498,6 +503,88 @@ public class RolloutPlanParsingTestCase extends TestCase {
         cg.get("groupE");
 
         inSeries.add().set(concurrent);
+
+        rolloutPlan.get("rollback-across-groups").set("true");
+
+        assertEquals(expectedHeaders, headersNode);
+    }
+
+    @Test
+    public void testRolloutId() throws Exception {
+
+        RolloutPlanHeader myPlan = new RolloutPlanHeader("myplan");
+
+        ConcurrentRolloutPlanGroup concurrent = new ConcurrentRolloutPlanGroup();
+
+        SingleRolloutPlanGroup group = new SingleRolloutPlanGroup("groupA");
+        group.addProperty("rolling-to-servers", "true");
+        group.addProperty("max-failure-percentage", "20");
+        concurrent.addGroup(group);
+
+        group = new SingleRolloutPlanGroup("groupB");
+        group.addProperty("rolling-to-servers", "false");
+        group.addProperty("max-failed-servers", "2");
+        concurrent.addGroup(group);
+
+        myPlan.addGroup(concurrent);
+
+        group = new SingleRolloutPlanGroup("groupC");
+        myPlan.addGroup(group);
+
+        myPlan.addProperty("rollback-across-groups", "true");
+
+        ((MockCliConfig)ctx.getConfig()).addRolloutPlan(myPlan);
+
+        //parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout in-series = groupA}");
+        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout id = myplan}");
+
+        assertTrue(handler.hasAddress());
+        assertTrue(handler.hasOperationName());
+        assertFalse(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnPropertyListStart());
+        assertFalse(handler.endsOnPropertySeparator());
+        assertFalse(handler.endsOnPropertyValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertFalse(handler.endsOnSeparator());
+        assertFalse(handler.endsOnHeaderListStart());
+        assertFalse(handler.isRequestComplete());
+        assertTrue(handler.hasHeaders());
+
+        final List<OperationRequestHeader> headers = handler.getHeaders();
+        assertEquals(1, headers.size());
+        final OperationRequestHeader header = headers.get(0);
+        assertTrue(header instanceof RolloutPlanHeader);
+
+        final RolloutPlanHeader rollout = (RolloutPlanHeader) header;
+        assertEquals("myplan", rollout.getPlanRef());
+
+        final ModelNode op = handler.toOperationRequest(ctx);
+        assertTrue(op.hasDefined(Util.OPERATION_HEADERS));
+        final ModelNode headersNode = op.get(Util.OPERATION_HEADERS);
+
+        final ModelNode expectedHeaders = new ModelNode();
+        final ModelNode rolloutPlan = expectedHeaders.get(Util.ROLLOUT_PLAN);
+        final ModelNode inSeries = rolloutPlan.get(Util.IN_SERIES);
+
+        ModelNode concurrentNode = new ModelNode();
+        ModelNode cg = concurrentNode.get(Util.CONCURRENT_GROUPS);
+
+        ModelNode groupNode = cg.get("groupA");
+        groupNode.get("rolling-to-servers").set("true");
+        groupNode.get("max-failure-percentage").set("20");
+
+        groupNode = cg.get("groupB");
+        groupNode.get("rolling-to-servers").set("false");
+        groupNode.get("max-failed-servers").set("2");
+
+        inSeries.add().set(concurrentNode);
+
+        ModelNode sg = new ModelNode();
+        groupNode = sg.get(Util.SERVER_GROUP);
+        groupNode.get("groupC");
+        inSeries.add().set(sg);
 
         rolloutPlan.get("rollback-across-groups").set("true");
 

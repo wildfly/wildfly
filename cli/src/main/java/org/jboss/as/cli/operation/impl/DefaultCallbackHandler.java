@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineFormat;
 import org.jboss.as.cli.Util;
@@ -501,9 +502,9 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
         return lastPropValue;
     }
 
-    public ModelNode toOperationRequest() throws CommandFormatException {
+    public ModelNode toOperationRequest(CommandContext ctx) throws CommandFormatException {
         ModelNode request = new ModelNode();
-        ModelNode addressNode = request.get("address");
+        ModelNode addressNode = request.get(Util.ADDRESS);
         if(address.isEmpty()) {
             addressNode.setEmptyList();
         } else {
@@ -523,7 +524,7 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
         if(operationName == null || operationName.isEmpty()) {
             throw new OperationFormatException("The operation name is missing or the format of the operation request is wrong.");
         }
-        request.get("operation").set(operationName);
+        request.get(Util.OPERATION).set(operationName);
 
         for(String propName : props.keySet()) {
             final String value = props.get(propName);
@@ -544,7 +545,7 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
         if(headers != null) {
             final ModelNode headersNode = request.get(Util.OPERATION_HEADERS);
             for(OperationRequestHeader header : headers) {
-                header.addTo(headersNode);
+                header.addTo(ctx, headersNode);
             }
         }
 

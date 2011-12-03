@@ -19,20 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.operation;
+package org.jboss.as.cli.completion.mock;
 
-import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandFormatException;
-import org.jboss.dmr.ModelNode;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.jboss.as.cli.CliConfig;
+import org.jboss.as.cli.operation.OperationRequestHeader;
+import org.jboss.as.cli.operation.impl.RolloutPlanHeader;
 
 /**
- * Represents a request header.
  *
  * @author Alexey Loubyansky
  */
-public interface OperationRequestHeader {
+public class MockCliConfig implements CliConfig {
 
-    String getName();
+    private Map<String,RolloutPlanHeader> rolloutPlans;
 
-    void addTo(CommandContext ctx, ModelNode headers) throws CommandFormatException;
+    /* (non-Javadoc)
+     * @see org.jboss.as.cli.CliConfig#getRolloutPlan(java.lang.String)
+     */
+    @Override
+    public OperationRequestHeader getRolloutPlan(String id) {
+        return rolloutPlans == null ? null : rolloutPlans.get(id);
+    }
+
+    public void addRolloutPlan(RolloutPlanHeader rolloutPlan) {
+        if(rolloutPlans == null) {
+            rolloutPlans = new HashMap<String,RolloutPlanHeader>();
+        }
+        rolloutPlans.put(rolloutPlan.getPlanId(), rolloutPlan);
+    }
 }

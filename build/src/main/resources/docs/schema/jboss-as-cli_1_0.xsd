@@ -67,7 +67,7 @@
             <xs:element name="server-group" type="server-groupType"/>
             <xs:element name="concurrent" type="concurrentType"/>
         </xs:choice>
-        <xs:attribute name="name" type="xs:string" use="required">
+        <xs:attribute name="id" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>
                     Unique name (within the list of the plans) of the rollout plan.
