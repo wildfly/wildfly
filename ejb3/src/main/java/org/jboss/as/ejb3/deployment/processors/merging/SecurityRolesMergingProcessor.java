@@ -30,6 +30,7 @@ import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.metadata.ejb.spec.AssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
@@ -57,8 +58,12 @@ public class SecurityRolesMergingProcessor extends AbstractMergingProcessor<EJBC
     protected void handleDeploymentDescriptor(DeploymentUnit deploymentUnit, DeploymentReflectionIndex deploymentReflectionIndex, Class<?> componentClass, EJBComponentDescription ejbComponentDescription) throws DeploymentUnitProcessingException {
         final EjbJarMetaData ejbJarMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
         if (ejbJarMetaData != null) {
+            final AssemblyDescriptorMetaData assemblyDescriptorMetaData = ejbJarMetaData.getAssemblyDescriptor();
+            if (assemblyDescriptorMetaData == null) {
+                return;
+            }
             // get the mapping between principal to rolename, defined in the assembly descriptor
-            final List<SecurityRoleMetaData> securityRoleMetaDatas = ejbJarMetaData.getAssemblyDescriptor().getAny(SecurityRoleMetaData.class);
+            final List<SecurityRoleMetaData> securityRoleMetaDatas = assemblyDescriptorMetaData.getAny(SecurityRoleMetaData.class);
             final SecurityRolesMetaData roleMappings = new SecurityRolesMetaData();
             if (securityRoleMetaDatas != null) {
                 for (SecurityRoleMetaData securityRoleMetaData : securityRoleMetaDatas) {
