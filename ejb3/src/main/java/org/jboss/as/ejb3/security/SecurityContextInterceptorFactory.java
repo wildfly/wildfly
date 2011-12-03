@@ -59,8 +59,9 @@ public class SecurityContextInterceptorFactory extends ComponentInterceptorFacto
         final String runAsPrincipal = securityMetaData.getRunAsPrincipal();
         final SecurityRolesMetaData securityRoles = securityMetaData.getSecurityRoles();
         Set<String> extraRoles = null;
-        if (securityRoles != null)
+        if (securityRoles != null && runAsPrincipal != null) {
             extraRoles = securityRoles.getSecurityRoleNamesByPrincipal(runAsPrincipal);
+        }
         return new SecurityContextInterceptor(securityManager, securityDomain, runAs, runAsPrincipal, extraRoles);
     }
 }

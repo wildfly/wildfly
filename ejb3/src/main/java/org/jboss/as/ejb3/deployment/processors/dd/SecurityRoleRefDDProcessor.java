@@ -52,13 +52,7 @@ public class SecurityRoleRefDDProcessor extends AbstractEjbXmlDescriptorProcesso
 
     @Override
     protected void processBeanMetaData(final EnterpriseBeanMetaData beanMetaData, final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        SecurityRoleRefsMetaData securityRoleRefs = null;
-        if (beanMetaData instanceof SessionBeanMetaData) {
-            securityRoleRefs = beanMetaData.getSecurityRoleRefs();
-        } else if (beanMetaData instanceof MessageDrivenBeanMetaData) {
-            // TODO: Why doesn't MessageDrivenBeanMetaData have security role refs metadata
-            ROOT_LOGGER.securityRoleForMdbNotImplemented();
-        }
+        final SecurityRoleRefsMetaData securityRoleRefs = beanMetaData.getSecurityRoleRefs();
         if (securityRoleRefs == null) {
             return;
         }
