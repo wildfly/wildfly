@@ -38,10 +38,10 @@ import javax.ejb.Stateless;
 @RunAsPrincipal("jackinabox")
 @SecurityDomain("other")
 public class CallerWithIdentity implements WhoAmI {
-    @EJB(beanName = "StatelessBBean")
-    private WhoAmI beanB;
+    @EJB(beanName = "StatelessABean")
+    private WhoAmI beanA;
 
     public String getCallerPrincipal() {
-        return beanB.getCallerPrincipal();
+        return beanA.getCallerPrincipal();
     }
 }
