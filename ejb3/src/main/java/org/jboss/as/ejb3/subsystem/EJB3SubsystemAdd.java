@@ -76,11 +76,8 @@ import org.jboss.as.ejb3.deployment.processors.merging.RemoveMethodMergingProces
 import org.jboss.as.ejb3.deployment.processors.merging.ResourceAdaptorMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.RunAsMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.SecurityDomainMergingProcessor;
-<<<<<<< HEAD
 import org.jboss.as.ejb3.deployment.processors.merging.SessionBeanMergingProcessor;
-=======
 import org.jboss.as.ejb3.deployment.processors.merging.SecurityRolesMergingProcessor;
->>>>>>> Process the security-role metadata correctly and take into account the alias roles configured via security-role-ref, while generating security metadata for EJBs
 import org.jboss.as.ejb3.deployment.processors.merging.SessionSynchronizationMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.StartupMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.StatefulTimeoutMergingProcessor;
