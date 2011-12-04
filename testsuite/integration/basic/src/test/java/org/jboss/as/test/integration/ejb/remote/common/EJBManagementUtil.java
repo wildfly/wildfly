@@ -42,7 +42,9 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.arquillian.container.Authentication;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -57,9 +59,9 @@ import org.jboss.logging.Logger;
 /**
  * @author Jaikiran Pai
  */
-public class EJBRemoteManagementUtil {
+public class EJBManagementUtil {
 
-    private static final Logger logger = Logger.getLogger(EJBRemoteManagementUtil.class);
+    private static final Logger logger = Logger.getLogger(EJBManagementUtil.class);
 
     /**
      * Returns the EJB remoting connector port that can be used for EJB remote invocations
@@ -156,9 +158,9 @@ public class EJBRemoteManagementUtil {
     }
 
     public static void createLocalOutboundSocket(final String managementServerHostName, final int managementPort,
-                                                  final String socketGroupName, final String outboundSocketName,
-                                                  final String socketBindingRef,
-                                                  final CallbackHandler callbackHandler) {
+                                                 final String socketGroupName, final String outboundSocketName,
+                                                 final String socketBindingRef,
+                                                 final CallbackHandler callbackHandler) {
         final ModelControllerClient modelControllerClient = getModelControllerClient(managementServerHostName, managementPort, callbackHandler);
         try {
             // /socket-binding-group=<group-name>/local-destination-outbound-socket-binding=<name>:add(socket-binding-ref=<ref>)
@@ -186,8 +188,8 @@ public class EJBRemoteManagementUtil {
     }
 
     public static void removeLocalOutboundSocket(final String managementServerHostName, final int managementPort,
-                                                  final String socketGroupName, final String outboundSocketName,
-                                                  final CallbackHandler callbackHandler) {
+                                                 final String socketGroupName, final String outboundSocketName,
+                                                 final CallbackHandler callbackHandler) {
         final ModelControllerClient modelControllerClient = getModelControllerClient(managementServerHostName, managementPort, callbackHandler);
         try {
             // /socket-binding-group=<group-name>/local-destination-outbound-socket-binding=<name>:remove()
@@ -286,6 +288,82 @@ public class EJBRemoteManagementUtil {
             throw new IllegalStateException("jboss.node.name could not be determined");
         }
         return nodeName;
+    }
+
+    /**
+     * Creates a strict max pool in the EJB3 subsystem, with the passed <code>poolName</code> and pool attributes
+     *
+     * @param managementHost The management server host
+     * @param managementPort The management port
+     * @param poolName       Pool name
+     * @param maxPoolSize    Max pool size
+     * @param timeout        Instance acquisition timeout for the pool
+     * @param unit           Instance acquisition timeout unit for the pool
+     */
+    public static void createStrictMaxPool(final String managementHost, final int managementPort,
+                                           final String poolName, final int maxPoolSize,
+                                           final long timeout, final TimeUnit unit) {
+
+        final ModelControllerClient modelControllerClient = getModelControllerClient(managementHost, managementPort, Authentication.getCallbackHandler());
+        try {
+            // first get the remote-connector from the EJB3 subsystem to find the remote connector ref
+            // /subsystem=ejb3/strict-max-bean-instance-pool=<name>:add(....)
+            final ModelNode addStrictMaxPool = new ModelNode();
+            addStrictMaxPool.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
+            final PathAddress strictMaxPoolAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME),
+                    PathElement.pathElement(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL, poolName));
+            addStrictMaxPool.get(OP_ADDR).set(strictMaxPoolAddress.toModelNode());
+
+            // set the params
+            addStrictMaxPool.get(EJB3SubsystemModel.MAX_POOL_SIZE).set(maxPoolSize);
+            addStrictMaxPool.get(EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT).set(timeout);
+            addStrictMaxPool.get(EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT_UNIT).set(unit.name());
+
+            // execute the add operation
+            execute(modelControllerClient, addStrictMaxPool);
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        } finally {
+            // close the controller client connection
+            try {
+                modelControllerClient.close();
+            } catch (IOException e) {
+                logger.warn("Error closing model controller client", e);
+            }
+        }
+
+    }
+
+    /**
+     * Removes an already created strict max pool from the EJB3 subsystem
+     *
+     * @param managementHost The management host
+     * @param managementPort The management port
+     * @param poolName       The name of the pool to be removed
+     */
+    public static void removeStrictMaxPool(final String managementHost, final int managementPort, final String poolName) {
+        final ModelControllerClient modelControllerClient = getModelControllerClient(managementHost, managementPort, Authentication.getCallbackHandler());
+        try {
+            // /subsystem=ejb3/strict-max-bean-instance-pool=<name>:remove()
+            final ModelNode removeStrictMaxPool = new ModelNode();
+            removeStrictMaxPool.get(OP).set(REMOVE);
+            final PathAddress strictMaxPoolAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME),
+                    PathElement.pathElement(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL, poolName));
+            removeStrictMaxPool.get(OP_ADDR).set(strictMaxPoolAddress.toModelNode());
+
+            // execute the remove operation
+            execute(modelControllerClient, removeStrictMaxPool);
+
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        } finally {
+            // close the controller client connection
+            try {
+                modelControllerClient.close();
+            } catch (IOException e) {
+                logger.warn("Error closing model controller client", e);
+            }
+        }
     }
 
     private static ModelControllerClient getModelControllerClient(final String managementServerHostName, final int managementPort, final CallbackHandler handler) {

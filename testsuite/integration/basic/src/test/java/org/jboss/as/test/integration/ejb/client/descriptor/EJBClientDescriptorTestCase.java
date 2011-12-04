@@ -34,7 +34,7 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.container.Authentication;
-import org.jboss.as.test.integration.ejb.remote.common.EJBRemoteManagementUtil;
+import org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -112,11 +112,11 @@ public class EJBClientDescriptorTestCase {
     @AfterClass
     public static void afterClass() throws Exception {
         if (outboundSocketCreated) {
-            EJBRemoteManagementUtil.removeLocalOutboundSocket("localhost", 9999, "standard-sockets", outboundSocketName, Authentication.getCallbackHandler());
+            EJBManagementUtil.removeLocalOutboundSocket("localhost", 9999, "standard-sockets", outboundSocketName, Authentication.getCallbackHandler());
             logger.info("Removed local outbound socket " + outboundSocketName);
         }
         if (outboundConnectionCreated) {
-            EJBRemoteManagementUtil.removeRemoteOutboundConnection("localhost", 9999, outboundConnectionName, Authentication.getCallbackHandler());
+            EJBManagementUtil.removeRemoteOutboundConnection("localhost", 9999, outboundConnectionName, Authentication.getCallbackHandler());
             logger.info("Removed remote outbound connection " + outboundConnectionName);
         }
     }
@@ -124,7 +124,7 @@ public class EJBClientDescriptorTestCase {
     private static void setupRemoteOutboundConnection() throws Exception {
         if (!outboundSocketCreated) {
             final String socketBindingRef = "remoting";
-            EJBRemoteManagementUtil.createLocalOutboundSocket("localhost", 9999, "standard-sockets", outboundSocketName, socketBindingRef, Authentication.getCallbackHandler());
+            EJBManagementUtil.createLocalOutboundSocket("localhost", 9999, "standard-sockets", outboundSocketName, socketBindingRef, Authentication.getCallbackHandler());
             outboundSocketCreated = true;
             logger.info("Created local outbound socket " + outboundSocketName);
         }
@@ -134,7 +134,7 @@ public class EJBClientDescriptorTestCase {
             connectionCreationOptions.put("SSL_ENABLED", "false");
             connectionCreationOptions.put("SASL_POLICY_NOANONYMOUS", "false");
 
-            EJBRemoteManagementUtil.createRemoteOutboundConnection("localhost", 9999, outboundConnectionName, outboundSocketName, connectionCreationOptions, Authentication.getCallbackHandler());
+            EJBManagementUtil.createRemoteOutboundConnection("localhost", 9999, outboundConnectionName, outboundSocketName, connectionCreationOptions, Authentication.getCallbackHandler());
             outboundConnectionCreated = true;
             logger.info("Created remote outbound connection " + outboundConnectionName);
         }
