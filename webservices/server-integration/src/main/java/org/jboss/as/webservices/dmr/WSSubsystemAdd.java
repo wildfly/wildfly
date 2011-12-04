@@ -43,6 +43,7 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.webservices.config.ServerConfigImpl;
 import org.jboss.as.webservices.service.EndpointRegistryService;
+import org.jboss.as.webservices.service.PortComponentLinkService;
 import org.jboss.as.webservices.service.ServerConfigService;
 import org.jboss.as.webservices.util.ModuleClassLoaderProvider;
 import org.jboss.as.webservices.util.WSServices;
@@ -127,6 +128,7 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
             ServerConfigImpl serverConfig = createServerConfig(model, false);
             newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler));
             newControllers.add(EndpointRegistryService.install(serviceTarget, verificationHandler));
+            newControllers.add(PortComponentLinkService.install(serviceTarget, verificationHandler));
         }
     }
 
