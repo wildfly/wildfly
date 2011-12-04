@@ -42,6 +42,7 @@ public final class WSServices {
     public static final ServiceName MODEL_SERVICE = WS_SERVICE.append("model");
     public static final ServiceName ENDPOINT_SERVICE = WS_SERVICE.append("endpoint");
     public static final ServiceName ENDPOINT_PUBLISH_SERVICE = WS_SERVICE.append("endpoint-publish");
+    public static final ServiceName PORT_COMPONENT_LINK_SERVICE = WS_SERVICE.append("port-component-link");
 
     private static WeakReference<ServiceRegistry> registry;
 
