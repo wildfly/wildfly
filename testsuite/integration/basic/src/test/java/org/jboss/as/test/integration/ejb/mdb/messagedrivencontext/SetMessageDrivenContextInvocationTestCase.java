@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.ejb.messagedrivencontext;
+package org.jboss.as.test.integration.ejb.mdb.messagedrivencontext;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
