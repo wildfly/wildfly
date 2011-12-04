@@ -54,7 +54,7 @@ public interface DomainControllerMessages {
      *
      * @return a message for the error.
      */
-    @Message(id = 14000, value = "Registration of remote hosts is not supported on slave host controllers")
+    @Message(id = 10975, value = "Registration of remote hosts is not supported on slave host controllers")
     String slaveControllerCannotAcceptOtherSlaves();
 
     /**
@@ -64,7 +64,7 @@ public interface DomainControllerMessages {
      *
      * @return a message for the error.
      */
-    @Message(id = 14001, value = "The master host controller cannot register slave host controllers as it's current running mode is '%s'")
+    @Message(id = 10976, value = "The master host controller cannot register slave host controllers as it's current running mode is '%s'")
     String adminOnlyModeCannotAcceptSlaves(RunningMode runningMode);
 
     /**
@@ -74,6 +74,6 @@ public interface DomainControllerMessages {
      *
      * @return a message for the error.
      */
-    @Message(id = 14002, value = "There is already a registered host named '%s'")
+    @Message(id = 10977, value = "There is already a registered host named '%s'")
     String slaveAlreadyRegistered(String slaveName);
 }

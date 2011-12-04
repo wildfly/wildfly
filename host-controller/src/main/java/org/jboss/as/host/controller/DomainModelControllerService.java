@@ -66,7 +66,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.controller.DomainControllerMessages;
 import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
@@ -81,6 +80,7 @@ import org.jboss.as.host.controller.operations.HttpManagementAddHandler;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.host.controller.operations.NativeManagementAddHandler;
 import org.jboss.as.host.controller.operations.StartServersHandler;
+import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.ExitCodes;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
@@ -304,22 +304,29 @@ public class DomainModelControllerService extends AbstractControllerService impl
             if (!hostControllerInfo.isMasterDomainController()) {
                 serverInventory = getFuture(inventoryFuture);
 
-                Future<MasterDomainControllerClient> clientFuture = RemoteDomainConnectionService.install(serviceTarget,
-                        getValue(),
-                        hostControllerInfo.getLocalHostName(),
-                        hostControllerInfo.getRemoteDomainControllerHost(),
-                        hostControllerInfo.getRemoteDomainControllertPort(),
-                        hostControllerInfo.getRemoteDomainControllerSecurityRealm(),
-                        remoteFileRepository);
-                MasterDomainControllerClient masterDomainControllerClient = getFuture(clientFuture);
-                //Registers us with the master and gets down the master copy of the domain model to our DC
-                //TODO make sure that the RDCS checks env.isUseCachedDC, and if true falls through to that
-                try {
-                    masterDomainControllerClient.register();
-                } catch (IllegalStateException e) {
-                    //We could not connect to the host
-                    log.error("Could not connect to master. Aborting. Error was: " + e.getMessage());
-                    System.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
+                if (hostControllerInfo.getRemoteDomainControllerHost() != null) {
+                    Future<MasterDomainControllerClient> clientFuture = RemoteDomainConnectionService.install(serviceTarget,
+                            getValue(),
+                            hostControllerInfo.getLocalHostName(),
+                            hostControllerInfo.getRemoteDomainControllerHost(),
+                            hostControllerInfo.getRemoteDomainControllertPort(),
+                            hostControllerInfo.getRemoteDomainControllerSecurityRealm(),
+                            remoteFileRepository);
+                    MasterDomainControllerClient masterDomainControllerClient = getFuture(clientFuture);
+                    //Registers us with the master and gets down the master copy of the domain model to our DC
+                    //TODO make sure that the RDCS checks env.isUseCachedDC, and if true falls through to that
+                    try {
+                        masterDomainControllerClient.register();
+                    } catch (IllegalStateException e) {
+                        //We could not connect to the host
+                        log.error(HostControllerMessages.MESSAGES.cannotConnectToMaster(e));
+                        System.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
+                    }
+                } else if (currentRunningMode != RunningMode.ADMIN_ONLY) {
+                        //We could not connect to the host
+                        log.error(HostControllerMessages.MESSAGES.noDomainControllerConfigurationProvided(currentRunningMode,
+                                CommandLineConstants.ADMIN_ONLY, RunningMode.ADMIN_ONLY));
+                        System.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
                 }
 
             } else {
