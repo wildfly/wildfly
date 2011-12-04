@@ -125,7 +125,7 @@ public class OperationCoordinatorStepHandler {
         // master may overly complicate the security infrastructure. Therefore,
         // the ability to do this is being disabled until it's clear that it's
         // not a problem
-        context.getFailureDescription().set(String.format("Operation %s for address %s can only handled by the " +
+        context.getFailureDescription().set(String.format("Operation %s for address %s can only be handled by the " +
                 "master Domain Controller; this host is not the master Domain Controller",
                 operation.get(OP).asString(), PathAddress.pathAddress(operation.get(OP_ADDR))));
         context.completeStep();

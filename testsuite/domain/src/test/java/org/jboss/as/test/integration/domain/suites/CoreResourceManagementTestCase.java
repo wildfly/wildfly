@@ -143,19 +143,23 @@ public class CoreResourceManagementTestCase {
         DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
         DomainClient slaveClient = domainSlaveLifecycleUtil.getDomainClient();
 
+        ModelNode response = masterClient.execute(getReadChildrenNamesOperation(MAIN_RUNNING_SERVER_ADDRESS, SYSTEM_PROPERTY));
+        ModelNode returnVal = validateResponse(response);
+        int origPropCount = returnVal.asInt();
+
         ModelNode request = getSystemPropertyAddOperation(ROOT_PROP_ADDRESS, "domain", Boolean.FALSE);
-        ModelNode response = masterClient.execute(request);
+        response = masterClient.execute(request);
         validateResponse(response);
 
         // TODO validate response structure
 
         response = masterClient.execute(getReadChildrenNamesOperation(MAIN_RUNNING_SERVER_ADDRESS, SYSTEM_PROPERTY));
-        ModelNode returnVal = validateResponse(response);
-        Assert.assertEquals(2, returnVal.asList().size());
+        returnVal = validateResponse(response);
+        Assert.assertEquals(origPropCount + 1, returnVal.asList().size());
 
         response = masterClient.execute(getReadChildrenNamesOperation(OTHER_RUNNING_SERVER_ADDRESS, SYSTEM_PROPERTY));
         returnVal = validateResponse(response);
-        Assert.assertEquals(2, returnVal.asList().size());
+        Assert.assertEquals(origPropCount + 1, returnVal.asList().size());
 
         response = masterClient.execute(getReadAttributeOperation(MAIN_RUNNING_SERVER_PROP_ADDRESS, VALUE));
         returnVal = validateResponse(response);
@@ -276,7 +280,7 @@ public class CoreResourceManagementTestCase {
 
         response = masterClient.execute(getReadChildrenNamesOperation(MAIN_RUNNING_SERVER_ADDRESS, SYSTEM_PROPERTY));
         returnVal = validateResponse(response);
-        Assert.assertEquals(1, returnVal.asList().size());
+        Assert.assertEquals(origPropCount, returnVal.asList().size());
 
         response = slaveClient.execute(getReadAttributeOperation(OTHER_RUNNING_SERVER_PROP_ADDRESS, VALUE));
         returnVal = validateResponse(response);
@@ -288,7 +292,7 @@ public class CoreResourceManagementTestCase {
 
         response = masterClient.execute(getReadChildrenNamesOperation(MAIN_RUNNING_SERVER_ADDRESS, SYSTEM_PROPERTY));
         returnVal = validateResponse(response);
-        Assert.assertEquals(1, returnVal.asList().size());
+        Assert.assertEquals(origPropCount, returnVal.asList().size());
 
         response = slaveClient.execute(getReadAttributeOperation(OTHER_RUNNING_SERVER_PROP_ADDRESS, VALUE));
         returnVal = validateResponse(response);
@@ -300,7 +304,7 @@ public class CoreResourceManagementTestCase {
 
         response = masterClient.execute(getReadChildrenNamesOperation(MAIN_RUNNING_SERVER_ADDRESS, SYSTEM_PROPERTY));
         returnVal = validateResponse(response);
-        Assert.assertEquals(1, returnVal.asList().size());
+        Assert.assertEquals(origPropCount, returnVal.asList().size());
 
         response = slaveClient.execute(getReadAttributeOperation(OTHER_RUNNING_SERVER_PROP_ADDRESS, VALUE));
         returnVal = validateResponse(response);
@@ -312,11 +316,11 @@ public class CoreResourceManagementTestCase {
 
         response = masterClient.execute(getReadChildrenNamesOperation(MAIN_RUNNING_SERVER_ADDRESS, SYSTEM_PROPERTY));
         returnVal = validateResponse(response);
-        Assert.assertEquals(1, returnVal.asList().size());
+        Assert.assertEquals(origPropCount, returnVal.asList().size());
 
         response = slaveClient.execute(getReadChildrenNamesOperation(OTHER_RUNNING_SERVER_ADDRESS, SYSTEM_PROPERTY));
         returnVal = validateResponse(response);
-        Assert.assertEquals(1, returnVal.asList().size());
+        Assert.assertEquals(origPropCount, returnVal.asList().size());
     }
 
     @Test

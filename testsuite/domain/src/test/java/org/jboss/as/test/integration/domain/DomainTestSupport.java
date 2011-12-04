@@ -36,6 +36,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
@@ -142,6 +143,18 @@ public class DomainTestSupport {
 
         Assert.assertTrue("result exists", response.has(RESULT));
         return response.get(RESULT);
+    }
+
+    public static ModelNode validateFailedResponse(ModelNode response) {
+
+        if(! FAILED.equals(response.get(OUTCOME).asString())) {
+            System.out.println("Response succeeded:");
+            System.out.println(response);
+            Assert.fail(response.get(OUTCOME).toString());
+        }
+
+        Assert.assertTrue("failure description exists", response.has(FAILURE_DESCRIPTION));
+        return response.get(FAILURE_DESCRIPTION);
     }
 
     public static void cleanFile(File file) {
