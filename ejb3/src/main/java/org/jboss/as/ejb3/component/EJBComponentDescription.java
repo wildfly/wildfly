@@ -202,6 +202,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public void addLocalHome(final String localHome) {
         final EjbHomeViewDescription view = new EjbHomeViewDescription(this, localHome, MethodIntf.LOCAL_HOME);
+        view.getConfigurators().add(new Ejb2ViewTypeConfigurator(Ejb2xViewType.LOCAL_HOME));
         getViews().add(view);
         // setup server side view interceptors
         setupViewInterceptors(view);
@@ -215,6 +216,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public void addRemoteHome(final String remoteHome) {
         final EjbHomeViewDescription view = new EjbHomeViewDescription(this, remoteHome, MethodIntf.HOME);
+        view.getConfigurators().add(new Ejb2ViewTypeConfigurator(Ejb2xViewType.HOME));
         getViews().add(view);
         // setup server side view interceptors
         setupViewInterceptors(view);
@@ -229,11 +231,13 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public void addEjbLocalObjectView(final String viewClassName) {
         final EJBViewDescription view = registerView(viewClassName, MethodIntf.LOCAL, true);
+        view.getConfigurators().add(new Ejb2ViewTypeConfigurator(Ejb2xViewType.LOCAL));
         this.ejbLocalView = view;
     }
 
     public void addEjbObjectView(final String viewClassName) {
         final EJBViewDescription view = registerView(viewClassName, MethodIntf.REMOTE, true);
+        view.getConfigurators().add(new Ejb2ViewTypeConfigurator(Ejb2xViewType.REMOTE));
         this.ejbRemoteView = view;
     }
 
@@ -509,6 +513,20 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      */
     public boolean isSecurityEnabled() {
         return this.securityDomain != null;
+    }
+
+    private static class Ejb2ViewTypeConfigurator implements ViewConfigurator {
+        private final Ejb2xViewType local;
+
+        public Ejb2ViewTypeConfigurator(final Ejb2xViewType local) {
+            this.local = local;
+        }
+
+        @Override
+        public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+
+            configuration.putPrivateData(Ejb2xViewType.class, local);
+        }
     }
 
     /**

@@ -50,6 +50,7 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
     private final Method beforeCompletionMethod;
     private final StatefulTimeoutInfo statefulTimeout;
     private final InjectedValue<DefaultAccessTimeoutService> defaultAccessTimeoutService = new InjectedValue<DefaultAccessTimeoutService>();
+    private final InterceptorFactory ejb2XRemoveMethod;
 
     /**
      * Construct a new instance.
@@ -82,6 +83,8 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
             this.beforeCompletion = null;
         }
         this.statefulTimeout = componentDescription.getStatefulTimeout();
+        //the interceptor chain for EJB e.x remove methods
+        this.ejb2XRemoveMethod = Interceptors.getChainedInterceptorFactory(StatefulSessionSynchronizationInterceptor.FACTORY, new ImmediateInterceptorFactory(new StatefulRemoveInterceptor(false)), Interceptors.getTerminalInterceptorFactory());
     }
 
     private static InterceptorFactory invokeMethodOnTarget(final Method method) {
@@ -129,5 +132,9 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
 
     Injector<DefaultAccessTimeoutService> getDefaultAccessTimeoutInjector() {
         return this.defaultAccessTimeoutService;
+    }
+
+    public InterceptorFactory getEjb2XRemoveMethod() {
+        return ejb2XRemoveMethod;
     }
 }

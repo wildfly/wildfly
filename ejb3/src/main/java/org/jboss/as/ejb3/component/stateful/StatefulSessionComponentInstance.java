@@ -54,13 +54,17 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
 
     private boolean isDiscarded = false;
 
+    private final Interceptor ejb2XRemoveInterceptor;
+
     /**
      * Construct a new instance.
      *
      * @param component the component
+     * @param ejb2XRemoveInterceptor
      */
-    protected StatefulSessionComponentInstance(final StatefulSessionComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
+    protected StatefulSessionComponentInstance(final StatefulSessionComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, final Interceptor ejb2XRemoveInterceptor) {
         super(component, instanceReference, preDestroyInterceptor, methodInterceptors, Collections.<Method, Interceptor>emptyMap());
+        this.ejb2XRemoveInterceptor = ejb2XRemoveInterceptor;
 
 
         final UUID uuid = UUID.randomUUID();
@@ -136,6 +140,10 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
 
     public SessionID getId() {
         return id;
+    }
+
+    public Interceptor getEjb2XRemoveInterceptor() {
+        return ejb2XRemoveInterceptor;
     }
 
     @Override

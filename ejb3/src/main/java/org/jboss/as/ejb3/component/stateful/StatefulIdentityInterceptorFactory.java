@@ -21,14 +21,14 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Interceptor for equals / hashCode for SFSB's
@@ -62,7 +62,8 @@ public class StatefulIdentityInterceptorFactory implements InterceptorFactory {
 
         @Override
         public Object processInvocation(final InterceptorContext context) throws Exception {
-            if (context.getMethod().getName().equals("equals") && context.getParameters().length == 1 && context.getMethod().getParameterTypes()[0] == Object.class) {
+            if (context.getMethod().getName().equals("equals")
+                    || context.getMethod().getName().equals("isIdentical")) {
                 final Object other = context.getParameters()[0];
                 final Class<?> proxyType = componentView.getProxyClass();
                 if( proxyType.isAssignableFrom(other.getClass())) {

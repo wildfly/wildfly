@@ -41,7 +41,7 @@ public class SessionBeanMergingProcessor extends AbstractMergingProcessor<Sessio
                 @Override
                 public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
                     if (SessionBean.class.isAssignableFrom(configuration.getComponentClass())) {
-                        configuration.addPostConstructInterceptor(SessionBeanSetSessionContextMethodInvocationInterceptor.FACTORY, InterceptorOrder.ComponentPostConstruct.EJB_SET_SESSION_CONTEXT_METHOD_INVOCATION_INTERCEPTOR);
+                        configuration.addPostConstructInterceptor(SessionBeanSetSessionContextMethodInvocationInterceptor.FACTORY, InterceptorOrder.ComponentPostConstruct.EJB_SET_CONTEXT_METHOD_INVOCATION_INTERCEPTOR);
                     }
                 }
             });

@@ -15,6 +15,7 @@ import javax.ejb.NoMoreTimeoutsException;
 import javax.ejb.NoSuchEJBException;
 import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.ObjectNotFoundException;
+import javax.ejb.RemoveException;
 import javax.ejb.ScheduleExpression;
 import javax.ejb.TimerHandle;
 import javax.interceptor.InvocationContext;
@@ -1846,4 +1847,10 @@ public interface EjbMessages {
      */
     @Message(id = 14523, value = "%s cannot be null or empty")
     IllegalArgumentException stringParamCannotBeNullOrEmpty(final String paramName);
+
+    /**
+     * Exception that is thrown when invoking remove while an EJB is in a transaction
+     */
+    @Message(id=14524, value = "EJB 4.6.4 Cannot remove EJB via EJB 2.x remove() method while participating in a transaction")
+    RemoveException cannotRemoveWhileParticipatingInTransaction();
 }

@@ -152,12 +152,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
         getConfigurators().addFirst(new ComponentConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                final InterceptorFactory interceptorFactory = new ComponentInstanceInterceptorFactory() {
-                    @Override
-                    protected Interceptor create(Component component, InterceptorFactoryContext context) {
-                        return new StatefulSessionSynchronizationInterceptor();
-                    }
-                };
+                final InterceptorFactory interceptorFactory = StatefulSessionSynchronizationInterceptor.FACTORY;
                 configuration.addComponentInterceptor(interceptorFactory, InterceptorOrder.Component.SYNCHRONIZATION_INTERCEPTOR, false);
             }
         });

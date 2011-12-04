@@ -26,10 +26,14 @@ import java.lang.reflect.Method;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.component.Ejb2xViewType;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
@@ -51,9 +55,25 @@ public class StatefulRemoveInterceptor implements Interceptor {
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {
         final Component component = context.getPrivateData(Component.class);
+
+        //if a session bean is participating in a transaction, it
+        //is an error for a client to invoke the remove method
+        //on the session object's home or component interface.
+         final ComponentView view = context.getPrivateData(ComponentView.class);
+        if (view != null) {
+            Ejb2xViewType viewType = view.getPrivateData(Ejb2xViewType.class);
+            if (viewType != null) {
+                //this means it is an EJB 2.x view
+                //which is not allowed to remove while enrolled in a TX
+                final StatefulTransactionMarker marker = context.getPrivateData(StatefulTransactionMarker.class);
+                if(!marker.isFirstInvocation()) {
+                    throw EjbMessages.MESSAGES.cannotRemoveWhileParticipatingInTransaction();
+                }
+            }
+        }
         // just log a WARN and throw back the original exception
         if (component instanceof StatefulSessionComponent == false) {
-            throw MESSAGES.unexpectedComponent(component,StatefulSessionComponent.class);
+            throw MESSAGES.unexpectedComponent(component, StatefulSessionComponent.class);
         }
         final StatefulSessionComponent statefulComponent = (StatefulSessionComponent) component;
         Object invocationResult = null;

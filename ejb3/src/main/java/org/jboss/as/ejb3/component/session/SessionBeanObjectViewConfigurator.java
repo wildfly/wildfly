@@ -70,10 +70,7 @@ public abstract class SessionBeanObjectViewConfigurator implements ViewConfigura
                 configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
                 configuration.addViewInterceptor(method, PRIMARY_KEY_INTERCEPTOR, InterceptorOrder.View.COMPONENT_DISPATCHER);
             } else if (method.getName().equals("remove") && method.getParameterTypes().length == 0) {
-                configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
-                Method remove = resolveRemoveMethod(componentConfiguration.getComponentClass(), index, componentConfiguration.getComponentName());
-                configuration.addViewInterceptor(method, getEjbRemoveInterceptorFactory(remove), InterceptorOrder.View.SESSION_REMOVE_INTERCEPTOR);
-                configuration.addViewInterceptor(method, org.jboss.invocation.Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.View.COMPONENT_DISPATCHER);
+                handleRemoveMethod(componentConfiguration, configuration, index, method);
 
             } else if (method.getName().equals("getEJBLocalHome") && method.getParameterTypes().length == 0) {
                 configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
@@ -100,7 +97,8 @@ public abstract class SessionBeanObjectViewConfigurator implements ViewConfigura
             } else if (method.getName().equals("getHandle") && method.getParameterTypes().length == 0) {
                 //ignore, handled client side
             } else if (method.getName().equals("isIdentical") && method.getParameterTypes().length == 1 && (method.getParameterTypes()[0].equals(EJBObject.class) || method.getParameterTypes()[0].equals(EJBLocalObject.class))) {
-                //ignore, handled client side
+
+                handleIsIdenticalMethod(componentConfiguration, configuration, index, method);
             }  else {
                 final Method componentMethod = ClassReflectionIndexUtil.findMethod(index, componentConfiguration.getComponentClass(), MethodIdentifier.getIdentifierForMethod(method));
                 if (componentMethod != null) {
@@ -117,7 +115,10 @@ public abstract class SessionBeanObjectViewConfigurator implements ViewConfigura
 
     }
 
-    protected abstract InterceptorFactory getEjbRemoveInterceptorFactory(final Method remove);
+    protected abstract void handleIsIdenticalMethod(final ComponentConfiguration componentConfiguration, final ViewConfiguration configuration, final DeploymentReflectionIndex index, final Method method);
+
+    protected abstract void handleRemoveMethod(final ComponentConfiguration componentConfiguration, final ViewConfiguration configuration, final DeploymentReflectionIndex index, final Method method) throws DeploymentUnitProcessingException;
+
 
     private static final InterceptorFactory PRIMARY_KEY_INTERCEPTOR = new ImmediateInterceptorFactory(new Interceptor() {
         @Override
@@ -127,7 +128,7 @@ public abstract class SessionBeanObjectViewConfigurator implements ViewConfigura
     });
 
 
-    private Method resolveRemoveMethod(final Class<?> componentClass, final DeploymentReflectionIndex index, final String ejbName) throws DeploymentUnitProcessingException {
+    protected Method resolveRemoveMethod(final Class<?> componentClass, final DeploymentReflectionIndex index, final String ejbName) throws DeploymentUnitProcessingException {
 
         Class<?> clazz = componentClass;
         while (clazz != Object.class) {
