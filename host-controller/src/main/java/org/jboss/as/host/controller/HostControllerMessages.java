@@ -22,6 +22,8 @@
 
 package org.jboss.as.host.controller;
 
+import org.jboss.as.controller.RunningMode;
+import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 
@@ -42,4 +44,24 @@ public interface HostControllerMessages {
      * The messages.
      */
     HostControllerMessages MESSAGES = Messages.getBundle(HostControllerMessages.class);
+
+    /**
+     * Creates an error message indicating this host is a slave and cannot connect to the master host controller.
+     *
+     * @return a message for the error.
+     */
+    @Message(id = 10925, value = "Could not connect to master. Aborting. Error was: %s")
+    String cannotConnectToMaster(Exception e);
+
+    /**
+     * Creates an error message indicating this host had no domain controller configuration and cannot start
+     * if not in {@link RunningMode#ADMIN_ONLY} mode.
+     *
+     * @return a message for the error.
+     */
+    @Message(id = 10926, value = "No <domain-controller> configuration was provided and the current running mode ('%s') " +
+            "requires access to the Domain Controller host. Startup will be aborted. Use the %s command line argument " +
+            "to start in %s mode if you need to start without a domain controller connection and then use the management " +
+            "tools to configure one.")
+    String noDomainControllerConfigurationProvided(RunningMode currentRunningMode, String adminOnlyCmdLineArg, RunningMode validRunningMode);
 }

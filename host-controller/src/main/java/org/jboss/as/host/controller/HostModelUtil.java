@@ -57,6 +57,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 
 import java.util.EnumSet;
 
+import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -179,8 +180,10 @@ public class HostModelUtil {
         root.registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true, OperationEntry.EntryType.PUBLIC, flags);
         root.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
 
-
         // Other root resource operations
+        root.registerOperationHandler(CompositeOperationHandler.NAME, CompositeOperationHandler.INSTANCE, CompositeOperationHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+
+        // Host root resource operations
         XmlMarshallingHandler xmh = new HostXmlMarshallingHandler(configurationPersister.getHostPersister(), hostControllerInfo);
         hostRegistration.registerOperationHandler(XmlMarshallingHandler.OPERATION_NAME, xmh, xmh, false, OperationEntry.EntryType.PUBLIC, flags);
         hostRegistration.registerOperationHandler(NamespaceAddHandler.OPERATION_NAME, NamespaceAddHandler.INSTANCE, NamespaceAddHandler.INSTANCE, false);

@@ -148,11 +148,11 @@ public class DomainModelUtil {
     private static ExtensionContext initializeDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
                                                              final ContentRepository contentRepo, final FileRepository fileRepository, final boolean isMaster,
                                                              final DomainController domainController, final UnregisteredHostChannelRegistry registry, final LocalHostControllerInfo hostControllerInfo) {
+
         final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY);
         final EnumSet<OperationEntry.Flag> deploymentUpload = EnumSet.of(OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY);
 
         // Other root resource operations
-        root.registerOperationHandler(CompositeOperationHandler.NAME, CompositeOperationHandler.INSTANCE, CompositeOperationHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         XmlMarshallingHandler xmh = new XmlMarshallingHandler(configurationPersister);
         root.registerOperationHandler(XmlMarshallingHandler.OPERATION_NAME, xmh, xmh, false, OperationEntry.EntryType.PUBLIC, readOnly);
         root.registerOperationHandler(NamespaceAddHandler.OPERATION_NAME, NamespaceAddHandler.INSTANCE, NamespaceAddHandler.INSTANCE, false);
