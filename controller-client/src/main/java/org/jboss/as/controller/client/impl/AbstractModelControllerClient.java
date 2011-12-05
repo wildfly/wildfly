@@ -297,6 +297,10 @@ public abstract class AbstractModelControllerClient extends AbstractMessageHandl
 
     }
 
+    /**
+     * Wraps the request execution AsyncFuture in an AsyncFuture impl that handles cancellation by sending a cancellation
+     * request to the remote side.
+     */
     private class DelegatingCancellableAsyncFuture implements AsyncFuture<ModelNode>{
         private final int batchId;
         private final AsyncFuture<ModelNode> delegate;
@@ -374,7 +378,9 @@ public abstract class AbstractModelControllerClient extends AbstractMessageHandl
             }
         }
 
-
+        /**
+         * Request cancelling the remote operation.
+         */
         private class CancelAsyncRequest extends AbstractManagementRequest<ModelNode, OperationExecutionContext> {
 
             @Override
@@ -389,7 +395,7 @@ public abstract class AbstractModelControllerClient extends AbstractMessageHandl
 
             @Override
             public void handleRequest(DataInput input, ActiveOperation.ResultHandler<ModelNode> resultHandler, ManagementRequestContext<OperationExecutionContext> context) throws IOException {
-                // Once the remote operation return cancel the local things
+                // Once the remote operation returns, we can set the cancelled status
                 resultHandler.cancel();
             }
 
