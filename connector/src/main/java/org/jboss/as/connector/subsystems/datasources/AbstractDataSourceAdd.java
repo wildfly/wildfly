@@ -36,6 +36,7 @@ import javax.sql.DataSource;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.pool.PoolMetrics;
 import org.jboss.as.connector.registry.DriverRegistry;
+import org.jboss.as.connector.subsystems.ClearMetricsHandler;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -111,21 +112,17 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                         StatisticsPlugin jdbcStats = deploymentMD.getDataSources()[0].getStatistics();
                         for (String statName : jdbcStats.getNames()) {
                             registration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(jdbcStats));
-                            SUBSYSTEM_DATASOURCES_LOGGER.infof("registering metric: %s", statName);
-
                         }
 
                         StatisticsPlugin poolStats = deploymentMD.getDataSources()[0].getPool().getStatistics();
                         for (String statName : poolStats.getNames()) {
                             registration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
-                            SUBSYSTEM_DATASOURCES_LOGGER.infof("registering metric: %s", statName);
-
                         }
+                        registration.registerOperationHandler("clear-metrics", new ClearMetricsHandler(jdbcStats,poolStats), DataSourcesSubsystemProviders.CLEAR_METRICS_DESC, false);
                         break;
 
+
                     }
-                }
-                switch (transition) {
                     case UP_to_STOP_REQUESTED: {
 
                         CommonDeployment deploymentMD = ((AbstractDataSourceService) controller.getService()).getDeploymentMD();
