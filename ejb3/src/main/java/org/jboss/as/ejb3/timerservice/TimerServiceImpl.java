@@ -182,6 +182,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     @Override
     public synchronized void stop(final StopContext context) {
         suspendTimers();
+        timerPersistence.getValue().timerUndeployed(ejbComponentInjectedValue.getValue().getTimedObjectInvoker().getTimedObjectId());
         started = false;
         this.transactionManager = null;
     }

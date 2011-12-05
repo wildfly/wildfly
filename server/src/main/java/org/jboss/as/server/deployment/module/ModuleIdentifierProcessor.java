@@ -46,17 +46,22 @@ public class ModuleIdentifierProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit parent = deploymentUnit.getParent();
         final DeploymentUnit topLevelDeployment = parent == null ? deploymentUnit : parent;
         final VirtualFile toplevelRoot = topLevelDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+        final ModuleIdentifier moduleIdentifier = createModuleIdentifier(deploymentUnit.getName(), deploymentRoot, topLevelDeployment, toplevelRoot, deploymentUnit.getParent() == null);
 
+
+        deploymentUnit.putAttachment(Attachments.MODULE_IDENTIFIER, moduleIdentifier);
+    }
+
+    public static ModuleIdentifier createModuleIdentifier(final String deploymentUnitName, final ResourceRoot deploymentRoot, final DeploymentUnit topLevelDeployment, final VirtualFile toplevelRoot, final boolean topLevel) {
         // generate the module identifier for the deployment
         final ModuleIdentifier moduleIdentifier;
-        if (deploymentUnit.getParent() == null) {
-            moduleIdentifier = ModuleIdentifier.create(ServiceModuleLoader.MODULE_PREFIX + deploymentUnit.getName());
+        if (topLevel) {
+            moduleIdentifier = ModuleIdentifier.create(ServiceModuleLoader.MODULE_PREFIX + deploymentUnitName);
         } else {
             String relativePath = deploymentRoot.getRoot().getPathNameRelativeTo(toplevelRoot);
-            moduleIdentifier = ModuleIdentifier.create(ServiceModuleLoader.MODULE_PREFIX + topLevelDeployment.getName() + '.'
-                    + relativePath.replace('/', '.'));
+            moduleIdentifier = ModuleIdentifier.create(ServiceModuleLoader.MODULE_PREFIX + topLevelDeployment.getName() + '.' + relativePath.replace('/', '.'));
         }
-        deploymentUnit.putAttachment(Attachments.MODULE_IDENTIFIER, moduleIdentifier);
+        return moduleIdentifier;
     }
 
     @Override

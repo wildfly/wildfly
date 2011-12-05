@@ -22,7 +22,9 @@
 
 package org.jboss.as.server.deployment.module;
 
-import java.util.Collections;
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -40,8 +42,11 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
+import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.vfs.VFS;
+import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -71,9 +76,12 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
     private static final String[] EMPTY_STRING_ARRAY = {};
 
     /**
-     * {@inheritDoc}
+     * We only allow a single deployment at a time to be run through the class path processor.
+     * <p/>
+     * This is because if multiple sibling deployments reference the same item we need to make sure that they end up
+     * with the same external module, and do not both create an external module with the same name.
      */
-    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    public synchronized void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
         //if this has already been handled by the ear class path processor
@@ -81,41 +89,27 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
             return;
         }
 
-        final List<ResourceRoot> resourceRoots = DeploymentUtils.allResourceRoots(deploymentUnit);
+        final ArrayDeque<ResourceRoot> resourceRoots = new ArrayDeque<ResourceRoot>(DeploymentUtils.allResourceRoots(deploymentUnit));
 
         final DeploymentUnit parent = deploymentUnit.getParent();
         final DeploymentUnit topLevelDeployment = parent == null ? deploymentUnit : parent;
         final VirtualFile topLevelRoot = topLevelDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         final ExternalModuleService externalModuleService = topLevelDeployment.getAttachment(Attachments.EXTERNAL_MODULE_SERVICE);
-        final List<AdditionalModuleSpecification> additionalModuleList = topLevelDeployment.getAttachment(Attachments.ADDITIONAL_MODULES);
         final List<ResourceRoot> topLevelResourceRoots = topLevelDeployment.getAttachment(Attachments.RESOURCE_ROOTS);
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        final List<DeploymentUnit> subDeployments;
-        if (deploymentUnit.getParent() == null) {
-            subDeployments = deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
-        } else {
-            subDeployments = deploymentUnit.getParent().getAttachmentList(Attachments.SUB_DEPLOYMENTS);
-        }
-        final Map<VirtualFile, ModuleIdentifier> subDeploymentModules = new HashMap<VirtualFile, ModuleIdentifier>();
-        for (DeploymentUnit deployment : subDeployments) {
-            final ResourceRoot root = deployment.getAttachment(Attachments.DEPLOYMENT_ROOT);
-            final ModuleIdentifier identifier = deployment.getAttachment(Attachments.MODULE_IDENTIFIER);
-            if (root == null || identifier == null) {
-                continue;
+
+        final Map<VirtualFile, ResourceRoot> subDeployments = new HashMap<VirtualFile, ResourceRoot>();
+        for (ResourceRoot root : DeploymentUtils.allResourceRoots(topLevelDeployment)) {
+            if (SubDeploymentMarker.isSubDeployment(root)) {
+                subDeployments.put(root.getRoot(), root);
             }
-            subDeploymentModules.put(root.getRoot(), identifier);
         }
 
         // build a map of the additional module locations
-        final Map<VirtualFile, AdditionalModuleSpecification> additionalModules;
-        if (additionalModuleList == null) {
-            additionalModules = Collections.emptyMap();
-        } else {
-            additionalModules = new HashMap<VirtualFile, AdditionalModuleSpecification>();
-            for (AdditionalModuleSpecification module : additionalModuleList) {
-                for (ResourceRoot additionalModuleResourceRoot : module.getResourceRoots()) {
-                    additionalModules.put(additionalModuleResourceRoot.getRoot(), module);
-                }
+        final Map<VirtualFile, AdditionalModuleSpecification> additionalModules = new HashMap<VirtualFile, AdditionalModuleSpecification>();
+        for (AdditionalModuleSpecification module : topLevelDeployment.getAttachmentList(Attachments.ADDITIONAL_MODULES)) {
+            for (ResourceRoot additionalModuleResourceRoot : module.getResourceRoots()) {
+                additionalModules.put(additionalModuleResourceRoot.getRoot(), module);
             }
         }
         // build a set of ear/lib jars. references to these classes can be ignored as they are already on the class-path
@@ -128,7 +122,8 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
             }
         }
 
-        for (ResourceRoot resourceRoot : resourceRoots) {
+        while (!resourceRoots.isEmpty()) {
+            final ResourceRoot resourceRoot = resourceRoots.pop();
             if (SubDeploymentMarker.isSubDeployment(resourceRoot) && resourceRoot != deploymentRoot) {
                 continue;
             }
@@ -143,29 +138,14 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
             final String[] items = getClassPathEntries(resourceRoot);
             for (String item : items) {
                 //first try and resolve relative to the manifest resource root
-                boolean found = false;
                 final VirtualFile classPathFile = resourceRoot.getRoot().getParent().getChild(item);
                 final VirtualFile topLevelClassPathFile = deploymentRoot.getRoot().getParent().getChild(item);
-                if (isInside(classPathFile, topLevelRoot)) {
-                    if (earLibJars.contains(classPathFile)) {
-                        log.debugf("Class-Path entry %s in %s ignored, as target is in or referenced by /lib", classPathFile,
-                                resourceRoot.getRoot());
-                    } else if (additionalModules.containsKey(classPathFile)) {
-                        target.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, additionalModules.get(classPathFile)
-                                .getModuleIdentifier());
-                    } else if (subDeploymentModules.containsKey(classPathFile)) {
-                        target.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, subDeploymentModules.get(classPathFile));
-                    } else if (additionalModules.containsKey(topLevelClassPathFile)) {
-                        //if not found try resolving the class path entry from the deployment root
-                        target.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, additionalModules.get(topLevelClassPathFile)
-                                .getModuleIdentifier());
-                    } else if (subDeploymentModules.containsKey(topLevelClassPathFile)) {
-                        //if not found try resolving the class path entry from the deployment root
-                        target.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, subDeploymentModules.get(topLevelClassPathFile));
-                    } else if(classPathFile.exists() && classPathFile.isDirectory()) {
 
-                    } else if(topLevelClassPathFile.exists() && topLevelClassPathFile.isDirectory()) {
-
+                if (isInside(classPathFile, topLevelRoot) || isInside(topLevelClassPathFile, topLevelRoot)) {
+                    if (classPathFile.exists()) {
+                        handlingExistingClassPathEntry(deploymentUnit, resourceRoots, topLevelDeployment, topLevelRoot, subDeployments, additionalModules, earLibJars, resourceRoot, target, classPathFile);
+                    } else if (topLevelClassPathFile.exists()) {
+                        handlingExistingClassPathEntry(deploymentUnit, resourceRoots, topLevelDeployment, topLevelRoot, subDeployments, additionalModules, earLibJars, resourceRoot, target, topLevelClassPathFile);
                     } else {
                         log.warn("Class Path entry " + item + " in " + resourceRoot.getRoot() + "  does not point to a valid jar for a Class-Path reference.");
                     }
@@ -181,6 +161,34 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
         }
     }
 
+    private void handlingExistingClassPathEntry(final DeploymentUnit deploymentUnit, final ArrayDeque<ResourceRoot> resourceRoots, final DeploymentUnit topLevelDeployment, final VirtualFile topLevelRoot, final Map<VirtualFile, ResourceRoot> subDeployments, final Map<VirtualFile, AdditionalModuleSpecification> additionalModules, final Set<VirtualFile> earLibJars, final ResourceRoot resourceRoot, final Attachable target, final VirtualFile topLevelClassPathFile) {
+        if (earLibJars.contains(topLevelClassPathFile)) {
+            log.debugf("Class-Path entry %s in %s ignored, as target is in or referenced by /lib", topLevelClassPathFile, resourceRoot.getRoot());
+        } else if (additionalModules.containsKey(topLevelClassPathFile)) {
+            target.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, additionalModules.get(topLevelClassPathFile).getModuleIdentifier());
+        } else if (subDeployments.containsKey(topLevelClassPathFile)) {
+            //now we need to calculate the sub deployment module identifer
+            //unfortunately the sub deployment has not been setup yet, so we cannot just
+            //get it from the sub deployment directly
+            final ResourceRoot otherRoot = subDeployments.get(topLevelClassPathFile);
+            target.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, ModuleIdentifierProcessor.createModuleIdentifier(otherRoot.getRootName(), otherRoot, topLevelDeployment, topLevelRoot, false));
+        } else {
+            createAdditionalModule(deploymentUnit, topLevelDeployment, topLevelRoot, additionalModules, resourceRoot, topLevelClassPathFile, resourceRoots);
+        }
+    }
+
+    private void createAdditionalModule(final DeploymentUnit deploymentUnit, final DeploymentUnit topLevelDeployment, final VirtualFile topLevelRoot, final Map<VirtualFile, AdditionalModuleSpecification> additionalModules, final ResourceRoot resourceRoot, final VirtualFile classPathFile, final ArrayDeque<ResourceRoot> resourceRoots) {
+        final ResourceRoot root = createResourceRoot(deploymentUnit, classPathFile);
+
+        //add this to the list of roots to be processed, so transitive class path entries will be respected
+        resourceRoots.add(root);
+        String pathName = root.getRoot().getPathNameRelativeTo(topLevelRoot);
+        ModuleIdentifier identifier = ModuleIdentifier.create(ServiceModuleLoader.MODULE_PREFIX + topLevelDeployment.getName() + "." + pathName);
+        AdditionalModuleSpecification module = new AdditionalModuleSpecification(identifier, root);
+        topLevelDeployment.addToAttachmentList(Attachments.ADDITIONAL_MODULES, module);
+        additionalModules.put(classPathFile, module);
+    }
+
 
     private static boolean isInside(VirtualFile classPathFile, VirtualFile toplevelRoot) {
         VirtualFile[] parentPaths = classPathFile.getParentFiles();
@@ -194,7 +202,13 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
     }
 
     private static String[] getClassPathEntries(final ResourceRoot resourceRoot) {
-        final Manifest manifest = resourceRoot.getAttachment(Attachments.MANIFEST);
+
+        final Manifest manifest;
+        try {
+            manifest = VFSUtils.getManifest(resourceRoot.getRoot());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         if (manifest == null) {
             // no class path to process!
             return EMPTY_STRING_ARRAY;
@@ -204,10 +218,29 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
             // no entry
             return EMPTY_STRING_ARRAY;
         }
-        if (classPathString.trim().isEmpty()) {
-            return EMPTY_STRING_ARRAY;
+        return classPathString.split("\\s+");
+    }
+
+    /**
+     * Creates a {@link ResourceRoot} for the passed {@link VirtualFile file} and adds it to the list of {@link ResourceRoot}s
+     * in the {@link DeploymentUnit deploymentUnit}
+     *
+     * @param deploymentUnit The deployment unit
+     * @param file           The file for which the resource root will be created
+     * @return Returns the created {@link ResourceRoot}
+     * @throws java.io.IOException
+     */
+    private synchronized ResourceRoot createResourceRoot(final DeploymentUnit deploymentUnit, final VirtualFile file) {
+        try {
+            final Closeable closable = file.isFile() ? VFS.mountZip(file, file, TempFileProviderService.provider()) : null;
+            final MountHandle mountHandle = new MountHandle(closable);
+            final ResourceRoot resourceRoot = new ResourceRoot(file, mountHandle);
+            deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, resourceRoot);
+            ModuleRootMarker.mark(resourceRoot);
+            return resourceRoot;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        return classPathString.trim().split("\\s+");
     }
 
     /**

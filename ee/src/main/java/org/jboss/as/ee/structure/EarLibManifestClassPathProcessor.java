@@ -22,22 +22,8 @@
 
 package org.jboss.as.ee.structure;
 
-import static org.jboss.as.ee.EeLogger.SERVER_DEPLOYMENT_LOGGER;
-
-import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.DeploymentUtils;
-import org.jboss.as.server.deployment.SubDeploymentMarker;
-import org.jboss.as.server.deployment.module.AdditionalModuleProcessor;
-import org.jboss.as.server.deployment.module.ModuleRootMarker;
-import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.server.moduleservice.ExternalModuleService;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.vfs.VirtualFile;
-
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
@@ -46,10 +32,28 @@ import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentUtils;
+import org.jboss.as.server.deployment.SubDeploymentMarker;
+import org.jboss.as.server.deployment.module.ModuleRootMarker;
+import org.jboss.as.server.deployment.module.MountHandle;
+import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.server.deployment.module.TempFileProviderService;
+import org.jboss.as.server.moduleservice.ExternalModuleService;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.vfs.VFS;
+import org.jboss.vfs.VFSUtils;
+import org.jboss.vfs.VirtualFile;
+
+import static org.jboss.as.ee.EeLogger.SERVER_DEPLOYMENT_LOGGER;
+
 /**
  * A processor which adds class path entries for an ears lib directory. Any jars referenced by these class-path entries are
- * merged into the ear's module. This must be run before the {@link AdditionalModuleProcessor} as only jars that are not part of
- * the ears module will be turned into additional modules.
+ * merged into the ear's module.
  *
  * @author Stuart Douglas
  */
@@ -57,7 +61,9 @@ public final class EarLibManifestClassPathProcessor implements DeploymentUnitPro
 
     private static final String[] EMPTY_STRING_ARRAY = {};
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final List<ResourceRoot> resourceRoots = DeploymentUtils.allResourceRoots(deploymentUnit);
@@ -89,15 +95,16 @@ public final class EarLibManifestClassPathProcessor implements DeploymentUnitPro
                 final VirtualFile classPathFile = resourceRoot.getRoot().getParent().getChild(item);
                 if (!classPathFile.exists()) {
                     SERVER_DEPLOYMENT_LOGGER.classPathEntryNotFound(item, resourceRoot.getRoot());
-                }
-                else if (isInside(classPathFile, toplevelRoot)) {
+                } else if (isInside(classPathFile, toplevelRoot)) {
                     if (!files.containsKey(classPathFile)) {
-                        SERVER_DEPLOYMENT_LOGGER.classPathEntryNotAJar(item, resourceRoot.getRoot());
+                        final ResourceRoot root = createResourceRoot(deploymentUnit, classPathFile);
+                        ModuleRootMarker.mark(root);
+                        libResourceRoots.add(root);
                     } else {
                         final ResourceRoot target = files.get(classPathFile);
                         if (SubDeploymentMarker.isSubDeployment(target)) {
                             // for now we do not allow ear Class-Path references to subdeployments
-                            SERVER_DEPLOYMENT_LOGGER.classPathEntryNotASubDeployment(resourceRoot.getRoot());
+                            SERVER_DEPLOYMENT_LOGGER.classPathEntryASubDeployment(resourceRoot.getRoot());
                         } else if (!ModuleRootMarker.isModuleRoot(target)) {
                             // otherwise just add it to the lib dir
                             ModuleRootMarker.mark(target);
@@ -107,7 +114,7 @@ public final class EarLibManifestClassPathProcessor implements DeploymentUnitPro
                         }
                         // otherwise it is already part of lib, so we leave it alone for now
                     }
-                } else if(item.startsWith("/")) {
+                } else if (item.startsWith("/")) {
                     ModuleIdentifier moduleIdentifier = externalModuleService.addExternalModule(item);
                     deploymentUnit.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, moduleIdentifier);
                     SERVER_DEPLOYMENT_LOGGER.debugf("Resource %s added as external jar %s", classPathFile, resourceRoot.getRoot());
@@ -130,7 +137,13 @@ public final class EarLibManifestClassPathProcessor implements DeploymentUnitPro
     }
 
     private static String[] getClassPathEntries(final ResourceRoot resourceRoot) {
-        final Manifest manifest = resourceRoot.getAttachment(Attachments.MANIFEST);
+
+        final Manifest manifest;
+        try {
+            manifest = VFSUtils.getManifest(resourceRoot.getRoot());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         if (manifest == null) {
             // no class path to process!
             return EMPTY_STRING_ARRAY;
@@ -143,7 +156,32 @@ public final class EarLibManifestClassPathProcessor implements DeploymentUnitPro
         return classPathString.split("\\s+");
     }
 
-    /** {@inheritDoc} */
+
+    /**
+     * Creates a {@link ResourceRoot} for the passed {@link VirtualFile file} and adds it to the list of {@link ResourceRoot}s
+     * in the {@link DeploymentUnit deploymentUnit}
+     *
+     * @param deploymentUnit The deployment unit
+     * @param file           The file for which the resource root will be created
+     * @return Returns the created {@link ResourceRoot}
+     * @throws java.io.IOException
+     */
+    private ResourceRoot createResourceRoot(final DeploymentUnit deploymentUnit, final VirtualFile file) {
+        try {
+            final Closeable closable = file.isFile() ? VFS.mountZip(file, file, TempFileProviderService.provider()) : null;
+            final MountHandle mountHandle = new MountHandle(closable);
+            final ResourceRoot resourceRoot = new ResourceRoot(file, mountHandle);
+            deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, resourceRoot);
+            return resourceRoot;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
     public void undeploy(final DeploymentUnit context) {
     }
 }

@@ -22,8 +22,6 @@
 
 package org.jboss.as.ee;
 
-import static org.jboss.logging.Logger.Level.WARN;
-
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
@@ -32,6 +30,8 @@ import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 import org.jboss.vfs.VirtualFile;
+
+import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * Date: 05.11.2011
@@ -90,7 +90,7 @@ public interface EeLogger extends BasicLogger {
      */
     @LogMessage(level = WARN)
     @Message(id = 11003, value = "Class Path entry in %s may not point to a sub deployment.")
-    void classPathEntryNotASubDeployment(VirtualFile file);
+    void classPathEntryASubDeployment(VirtualFile file);
 
     /**
      * Logs a warning message indicating the class path entry, represented by the {@code entry} parameter, was not found

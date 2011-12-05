@@ -130,6 +130,7 @@ public final class Attachments {
      * Module identifiers for Class-Path information
      */
     public static final AttachmentKey<AttachmentList<ModuleIdentifier>> CLASS_PATH_ENTRIES = AttachmentKey.createList(ModuleIdentifier.class);
+
     /**
      * The list of extensions given in the manifest and structure configurations.
      */
