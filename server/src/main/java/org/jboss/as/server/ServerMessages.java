@@ -31,7 +31,6 @@ import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jboss.logging.Param;
 import org.jboss.msc.service.StartException;
-import org.jboss.security.vault.SecurityVaultException;
 
 /**
  * Date: 05.11.2011
