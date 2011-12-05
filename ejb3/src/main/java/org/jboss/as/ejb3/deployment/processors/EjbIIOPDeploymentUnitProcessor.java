@@ -26,16 +26,24 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.ejb.TransactionManagementType;
+
 import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.component.ViewConfiguration;
+import org.jboss.as.ee.component.ViewConfigurator;
+import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.ejb3.iiop.EjbIIOPService;
+import org.jboss.as.ejb3.iiop.EjbIIOPTransactionInterceptor;
 import org.jboss.as.ejb3.iiop.POARegistry;
 import org.jboss.as.ejb3.subsystem.IIOPSettingsService;
 import org.jboss.as.jacorb.deployment.JacORBDeploymentMarker;
@@ -67,7 +75,6 @@ import org.omg.PortableServer.POA;
 
 /**
  * This is the DUP that sets up IIOP for EJB's
- *
  */
 public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
 
@@ -83,11 +90,11 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if(!JacORBDeploymentMarker.isJacORBDeployment(deploymentUnit)) {
+        if (!JacORBDeploymentMarker.isJacORBDeployment(deploymentUnit)) {
             return;
         }
         //TODO: we need some way to enable this by deployment descriptor
-        if(!settingsService.isEnabledByDefault()) {
+        if (!settingsService.isEnabledByDefault()) {
             return;
         }
 
@@ -95,6 +102,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         if (!EjbDeploymentMarker.isEjbDeployment(deploymentUnit)) {
             return;
         }
+
         final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
         final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
@@ -118,6 +126,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
     private void processEjb(final EJBComponentDescription componentDescription, final DeploymentClassIndex classIndex, final DeploymentReflectionIndex deploymentReflectionIndex, final Module module, final ServiceTarget serviceTarget) {
         componentDescription.setExposedViaIiop(true);
 
+
         // Create bean method mappings for container invoker
 
         final EJBViewDescription remoteView = componentDescription.getEjbRemoteView();
@@ -134,6 +143,9 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("Could not load home interface for " + componentDescription.getEJBClassName(), e);
         }
+
+        componentDescription.getEjbHomeView().getConfigurators().add(new IIOPInterceptorViewConfigurator());
+        componentDescription.getEjbRemoteView().getConfigurators().add(new IIOPInterceptorViewConfigurator());
 
 
         final InterfaceAnalysis remoteInterfaceAnalysis;
@@ -230,4 +242,13 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         return deploymentReflectionIndex.getClassIndex(nonMethod.getDeclaringClass()).getMethod(nonMethod);
     }
 
+    private static class IIOPInterceptorViewConfigurator implements ViewConfigurator {
+        @Override
+        public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+            final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
+            if (ejbComponentDescription.getTransactionManagementType() == TransactionManagementType.CONTAINER) {
+                configuration.addViewInterceptor(EjbIIOPTransactionInterceptor.FACTORY, InterceptorOrder.View.EJB_IIOP_TRANSACTION);
+            }
+        }
+    }
 }

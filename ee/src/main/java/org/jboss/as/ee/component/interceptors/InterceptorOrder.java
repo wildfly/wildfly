@@ -114,6 +114,7 @@ public class
     public static final class View {
         public static final int EJB_EXCEPTION_LOGGING_INTERCEPTOR                       = 0x000;
         public static final int TCCL_INTERCEPTOR                                        = 0x001;
+        public static final int EJB_IIOP_TRANSACTION                                    = 0x020;
         public static final int JNDI_NAMESPACE_INTERCEPTOR                              = 0x050;
         public static final int NOT_BUSINESS_METHOD_EXCEPTION                           = 0x100;
         public static final int REMOTE_EXCEPTION_TRANSFORMER                            = 0x200;

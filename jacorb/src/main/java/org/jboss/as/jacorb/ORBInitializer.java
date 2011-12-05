@@ -47,7 +47,8 @@ public enum ORBInitializer {
     TRANSACTIONS("transaction",
             "com.arjuna.ats.jts.orbspecific.jacorb.interceptors.interposition.InterpositionORBInitializerImpl",
             "com.arjuna.ats.jbossatx.jts.InboundTransactionCurrentInitializer",
-            "org.jboss.as.jacorb.tm.TxIORInterceptorInitializer");
+            "org.jboss.as.jacorb.tm.TxIORInterceptorInitializer",
+            "org.jboss.as.jacorb.tm.TxServerInterceptorInitializer");
 
     private final String initializerName;
     private final String[] initializerClasses;

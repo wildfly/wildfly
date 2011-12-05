@@ -2,6 +2,7 @@ package org.jboss.as.ejb3;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.rmi.RemoteException;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;
@@ -1853,4 +1854,8 @@ public interface EjbMessages {
      */
     @Message(id=14524, value = "EJB 4.6.4 Cannot remove EJB via EJB 2.x remove() method while participating in a transaction")
     RemoveException cannotRemoveWhileParticipatingInTransaction();
+
+    @Message(id=14525, value = "Transaction propagation over IIOP is not supported")
+    RemoteException transactionPropagationNotSupported();
+
 }
