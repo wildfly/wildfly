@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
-* @author <a href="tomaz.cerar@gmail.com">Tomaz Cerar</a>
+ * @author <a href="tomaz.cerar@gmail.com">Tomaz Cerar</a>
  */
 public enum Namespace {
     // must be first
@@ -60,7 +60,7 @@ public enum Namespace {
         final Map<String, Namespace> map = new HashMap<String, Namespace>();
         for (Namespace namespace : values()) {
             final String name = namespace.getUriString();
-            if (name != null) map.put(name, namespace);
+            if (name != null) { map.put(name, namespace); }
         }
         MAP = map;
     }

@@ -1,20 +1,7 @@
 package org.jboss.as.mail.extension;
 
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-
-import java.io.IOException;
-import java.util.List;
-
 import junit.framework.Assert;
-
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
@@ -24,14 +11,26 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.util.List;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
 /**
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author <a href="tomaz.cerar@gmail.com">Tomaz Cerar</a>
  */
 public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
     private String SUBSYSTEM_XML =
             " <subsystem xmlns=\"urn:jboss:domain:mail:1.0\">\n" +
                     "            <mail-session jndi-name=\"java:/Mail\" >\n" +
-                    "                <smtp-server outbound-socket-binding-ref=\"mail-smtp\">\n" +
+                    "                <smtp-server outbound-socket-binding-ref=\"mail-smtp\" ssl=\"true\">\n" +
                     "                       <login name=\"nobody\" password=\"pass\"/>\n" +
                     "                </smtp-server>\n" +
                     "                <pop3-server outbound-socket-binding-ref=\"mail-pop3\"/>\n" +
@@ -91,8 +90,8 @@ public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
 
                     super.initializeSocketBindingsOperations(ops);
 
-                    final String[] names = { "mail-imap", "mail-pop3", "mail-smtp"};
-                    final int[] ports = { 432, 1234, 25 };
+                    final String[] names = {"mail-imap", "mail-pop3", "mail-smtp"};
+                    final int[] ports = {432, 1234, 25};
                     for (int i = 0; i < names.length; i++) {
                         final ModelNode op = new ModelNode();
                         op.get(OP).set(ADD);
@@ -110,16 +109,5 @@ public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
             ci.addSocketBinding("make-framework-happy", 59999);
             return ci;
         }
-    }
-
-    @Override
-    protected void compareXml(String configId, String original, String marshalled) throws Exception {
-        //TODO remove this method so we get validation.
-        //The problem is that the parser goes via MailSessionConfig, so this:
-        // <mail-session jndi-name="java:/Mail\">
-        //gets marshalled as
-        // <mail-session debug=false jndi-name="java:/Mail\">
-        //The default value should not be written
-
     }
 }

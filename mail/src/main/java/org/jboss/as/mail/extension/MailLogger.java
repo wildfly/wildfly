@@ -22,17 +22,14 @@
 
 package org.jboss.as.mail.extension;
 
-import static org.jboss.logging.Logger.Level.DEBUG;
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-
-import org.jboss.as.controller.PathAddress;
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
+
+import static org.jboss.logging.Logger.Level.DEBUG;
+import static org.jboss.logging.Logger.Level.INFO;
 
 /**
  * Date: 05.11.2011
@@ -50,7 +47,7 @@ interface MailLogger extends BasicLogger {
     /**
      * Logs an info message indicating a javax.mail.Session was bound into JNDI.
      *
-     * @param jndiName     the JNDI name under which the session was bound.
+     * @param jndiName the JNDI name under which the session was bound.
      */
     @LogMessage(level = INFO)
     @Message(id = 15400, value = "Bound mail session [%s]")
@@ -59,7 +56,7 @@ interface MailLogger extends BasicLogger {
     /**
      * Logs an info message indicating a javax.mail.Session was unbound from JNDI.
      *
-     * @param jndiName     the JNDI name under which the session was bound.
+     * @param jndiName the JNDI name under which the session was bound.
      */
     @LogMessage(level = INFO)
     @Message(id = 15401, value = "Unbound mail session [%s]")
@@ -68,7 +65,7 @@ interface MailLogger extends BasicLogger {
     /**
      * Logs a debug message indicating a javax.mail.Session was removed.
      *
-     * @param jndiName  the JNDI name under which the session had been bound.
+     * @param jndiName the JNDI name under which the session had been bound.
      */
     @LogMessage(level = DEBUG)
     @Message(id = 15402, value = "Removed mail session [%s]")

@@ -1,9 +1,9 @@
 package org.jboss.as.mail.extension;
 
 /**
-* @author Tomaz Cerar
-* @created 22.8.11 11:50
-*/
+ * @author Tomaz Cerar
+ * @created 22.8.11 11:50
+ */
 class Credentials {
     private final String username;
     private final String password;
