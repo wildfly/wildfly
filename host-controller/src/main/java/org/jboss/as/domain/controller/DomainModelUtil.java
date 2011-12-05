@@ -106,6 +106,7 @@ import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymen
 import org.jboss.as.domain.controller.resource.SocketBindingResourceDefinition;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionConstants;
+import org.jboss.as.server.deployment.DeploymentGcHandler;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.as.server.operations.LaunchTypeHandler;
 import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingResourceDefinition;
@@ -182,6 +183,9 @@ public class DomainModelUtil {
                 ResolveExpressionOnDomainHandler.INSTANCE, EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.DOMAIN_PUSH_TO_SERVERS));
 
         DomainServerLifecycleHandlers.registerDomainHandlers(root);
+        DeploymentGcHandler dgh = new DeploymentGcHandler(contentRepo);
+        root.registerOperationHandler(DeploymentGcHandler.OPERATION_NAME, dgh, dgh, false);
+
 
         // System Properties
         ManagementResourceRegistration systemProperties = root.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), DomainDescriptionProviders.SYSTEM_PROPERTY_PROVIDER);
