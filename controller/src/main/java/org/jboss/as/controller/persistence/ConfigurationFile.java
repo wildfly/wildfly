@@ -18,6 +18,8 @@
  */
 package org.jboss.as.controller.persistence;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -35,8 +37,6 @@ import java.util.regex.Pattern;
 
 import org.jboss.as.controller.persistence.ConfigurationPersister.SnapshotInfo;
 import org.jboss.as.protocol.StreamUtils;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * Encapsulates the configuration file and manages its history
@@ -139,16 +139,13 @@ public class ConfigurationFile {
             final File directoryFile = new File(configurationDir, name);
             if (directoryFile.exists()) {
                 mainName = stripPrefixSuffix(name);
-            } else {
-                final File absoluteFile = new File(name);
-                if (absoluteFile.exists()) {
-                    mainName = stripPrefixSuffix(absoluteFile.getName());
-                } else {
-                    throw MESSAGES.fileNotFound(directoryFile.getAbsolutePath(), absoluteFile.getAbsolutePath());
-                }
             }
         }
-        return new File(configurationDir, mainName);
+        if (mainName != null) {
+            return new File(configurationDir, mainName);
+        }
+
+        throw MESSAGES.mainFileNotFound(name != null ? name : rawName, configurationDir);
     }
 
     /**
@@ -254,11 +251,7 @@ public class ConfigurationFile {
         if (directoryFile.exists()) {
             return directoryFile;
         }
-        final File absoluteFile = new File(name);
-        if (absoluteFile.exists()) {
-            return absoluteFile;
-        }
-        throw MESSAGES.fileNotFound(directoryFile.getAbsolutePath(), absoluteFile.getAbsolutePath());
+        throw MESSAGES.fileNotFound(directoryFile.getAbsolutePath());
     }
 
     File getMainFile() {
