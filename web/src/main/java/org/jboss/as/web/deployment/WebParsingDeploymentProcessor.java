@@ -21,13 +21,6 @@
  */
 package org.jboss.as.web.deployment;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -37,15 +30,33 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.metadata.parser.servlet.WebMetaDataParser;
-import org.jboss.metadata.parser.util.NoopXmlResolver;
+import org.jboss.metadata.parser.util.MetaDataElementParser;
+import org.jboss.metadata.parser.util.NoopXMLResolver;
+import org.jboss.metadata.parser.util.XMLResourceResolver;
+import org.jboss.metadata.parser.util.XMLSchemaValidator;
+import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.vfs.VirtualFile;
+import org.xml.sax.SAXException;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * @author Jean-Frederic Clere
+ * @author Thomas.Diesler@jboss.com
  */
 public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
 
     private static final String WEB_XML = "WEB-INF/web.xml";
+    private final boolean schemaValidation;
+
+    public WebParsingDeploymentProcessor() {
+        String property = SecurityActions.getSystemProperty(XMLSchemaValidator.PROPERTY_SCHEMA_VALIDATION, "false");
+        this.schemaValidation = Boolean.parseBoolean(property);
+    }
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -69,10 +80,24 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
             try {
                 is = webXml.openStream();
                 final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-                inputFactory.setXMLResolver(NoopXmlResolver.create());
+                inputFactory.setXMLResolver(NoopXMLResolver.create());
                 final XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
 
-                warMetaData.setWebMetaData(WebMetaDataParser.parse(xmlReader));
+                MetaDataElementParser.DTDInfo dtdInfo = new MetaDataElementParser.DTDInfo();
+                WebMetaData webMetaData = WebMetaDataParser.parse(xmlReader, dtdInfo);
+
+                if (schemaValidation && webMetaData.getSchemaLocation() != null) {
+                    XMLSchemaValidator validator = new XMLSchemaValidator(new XMLResourceResolver());
+                    InputStream xmlInput = webXml.openStream();
+                    try {
+                        validator.validate(webMetaData.getSchemaLocation(), xmlInput);
+                    } catch (SAXException e) {
+                        throw new DeploymentUnitProcessingException("Failed to validate " + webXml, e);
+                    } finally {
+                        xmlInput.close();
+                    }
+                }
+                warMetaData.setWebMetaData(webMetaData);
 
             } catch (XMLStreamException e) {
                 throw new DeploymentUnitProcessingException("Failed to parse " + webXml + " at [" + e.getLocation().getLineNumber() + "," + e.getLocation().getColumnNumber() + "]");

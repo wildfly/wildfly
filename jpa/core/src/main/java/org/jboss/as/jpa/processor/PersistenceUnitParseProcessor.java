@@ -51,7 +51,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.metadata.parser.util.NoopXmlResolver;
+import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -211,7 +211,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             try {
                 is = persistence_xml.openStream();
                 final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-                inputFactory.setXMLResolver(NoopXmlResolver.create());
+                inputFactory.setXMLResolver(NoopXMLResolver.create());
                 XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
                 PersistenceUnitMetadataHolder puHolder = PersistenceUnitXmlParser.parse(xmlReader);
 

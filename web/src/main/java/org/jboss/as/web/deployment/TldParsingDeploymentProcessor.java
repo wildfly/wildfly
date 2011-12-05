@@ -40,7 +40,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.metadata.parser.jsp.TldMetaDataParser;
-import org.jboss.metadata.parser.util.NoopXmlResolver;
+import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.web.spec.TldMetaData;
 import org.jboss.vfs.VirtualFile;
 
@@ -119,7 +119,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
         try {
             is = tld.openStream();
             final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-            inputFactory.setXMLResolver(NoopXmlResolver.create());
+            inputFactory.setXMLResolver(NoopXMLResolver.create());
             XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
             return TldMetaDataParser.parse(xmlReader);
         } catch (XMLStreamException e) {

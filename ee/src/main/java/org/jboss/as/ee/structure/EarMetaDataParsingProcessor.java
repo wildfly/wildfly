@@ -33,7 +33,7 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.metadata.ear.spec.Ear6xMetaData;
 import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.metadata.parser.spec.EarMetaDataParser;
-import org.jboss.metadata.parser.util.NoopXmlResolver;
+import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
@@ -65,7 +65,7 @@ public class EarMetaDataParsingProcessor implements DeploymentUnitProcessor {
         try {
             inputStream = applicationXmlFile.openStream();
             final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-            inputFactory.setXMLResolver(NoopXmlResolver.create());
+            inputFactory.setXMLResolver(NoopXMLResolver.create());
             XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(inputStream);
             final EarMetaData earMetaData = EarMetaDataParser.parse(xmlReader);
             if (earMetaData != null) {
