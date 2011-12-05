@@ -31,7 +31,9 @@ import org.jboss.as.connector.metadata.deployment.ResourceAdapterXmlDeploymentSe
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.pool.PoolMetrics;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
+import org.jboss.as.connector.subsystems.ClearMetricsHandler;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.security.service.SubjectFactoryService;
@@ -164,6 +166,7 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
                                 registration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
                                 SUBSYSTEM_DATASOURCES_LOGGER.infof("registering metric: %s", statName);
                             }
+                            registration.registerOperationHandler("clear-metrics", new ClearMetricsHandler(poolStats), ResourceAdaptersSubsystemProviders.CLEAR_METRICS_DESC, false);
                             break;
 
                         }
