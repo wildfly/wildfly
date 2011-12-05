@@ -223,6 +223,7 @@
         <version.org.jboss.ws.spi>2.0.0.CR1</version.org.jboss.ws.spi>
         <version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>1.0.0.GA</version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>
         <version.org.jboss.xb>2.0.3.GA</version.org.jboss.xb>
+        <version.org.jboss.xml.registry>1.0.0.Beta1</version.org.jboss.xml.registry>
         <version.org.jboss.xnio>3.0.0.CR5</version.org.jboss.xnio>
         <version.org.jboss.xnio.xnio-api>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-nio>
@@ -844,18 +845,6 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-jacorb</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-jaxr</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-jaxr-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -2799,7 +2788,6 @@
                         <groupId>commons-logging</groupId>
                         <artifactId>commons-logging</artifactId>
                     </exclusion>
-                    
                 </exclusions>
             </dependency>
 
@@ -5487,6 +5475,12 @@
                 <groupId>org.jboss.ws.projects</groupId>
                 <artifactId>jaxws-jboss-httpserver-httpspi</artifactId>
                 <version>${version.org.jboss.ws.jaxws-jboss-httpserver-httpspi}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.xml.registry</groupId>
+                <artifactId>jboss-jaxr-client</artifactId>
+                <version>${version.org.jboss.xml.registry}</version>
             </dependency>
 
             <dependency>

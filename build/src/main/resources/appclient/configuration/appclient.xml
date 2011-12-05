@@ -28,12 +28,12 @@
         <extension module="org.jboss.as.ejb3"/>
         <extension module="org.jboss.as.jacorb"/>
         <extension module="org.jboss.as.jpa"/>
-        <extension module="org.jboss.as.jaxr"/>
         <extension module="org.jboss.as.logging"/>
         <extension module="org.jboss.as.naming"/>
         <extension module="org.jboss.as.security"/>
         <extension module="org.jboss.as.transactions"/>
         <extension module="org.jboss.as.webservices"/>
+        <extension module="org.jboss.jaxr.client"/>
     </extensions>
 
     <system-properties>
@@ -105,7 +105,7 @@
         <subsystem xmlns="urn:jboss:domain:ee:1.0">
             <global-modules>
                 <module name="org.apache.ws.scout" slot="main" />
-                <module name="org.jboss.as.jaxr" slot="main"/>
+                <module name="org.jboss.jaxr.client" slot="main"/>
             </global-modules>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:ejb3:1.2" />

@@ -570,6 +570,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.apache.juddi</groupId>
+                    <artifactId>juddi</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.apache.neethi</groupId>
                     <artifactId>neethi</artifactId>
                 </dependency>
@@ -1428,6 +1433,11 @@
                 <dependency>
                     <groupId>org.jboss.ws.native</groupId>
                     <artifactId>jbossws-native-services</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.xml.registry</groupId>
+                    <artifactId>jboss-jaxr-client</artifactId>
                 </dependency>
 
                 <dependency>
