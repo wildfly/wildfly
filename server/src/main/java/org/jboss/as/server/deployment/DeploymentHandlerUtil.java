@@ -25,6 +25,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
 import org.jboss.as.server.services.path.RelativePathService;
@@ -90,6 +91,8 @@ public class DeploymentHandlerUtil {
             //
             final Resource deployment = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
             final ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
+            final ManagementResourceRegistration mutableRegistration = context.getResourceRegistrationForUpdate();
+
             DeploymentModelUtils.cleanup(deployment);
 
             context.addStep(new OperationStepHandler() {
@@ -108,7 +111,7 @@ public class DeploymentHandlerUtil {
                         }
                     } else {
                         final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                        final Collection<ServiceController<?>> controllers = doDeploy(context, deploymentUnitName, managementName, verificationHandler, deployment, registration, contents);
+                        final Collection<ServiceController<?>> controllers = doDeploy(context, deploymentUnitName, managementName, verificationHandler, deployment, registration, mutableRegistration, contents);
 
                         context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
 
@@ -131,7 +134,7 @@ public class DeploymentHandlerUtil {
     }
 
     private static Collection<ServiceController<?>> doDeploy(final OperationContext context, final String deploymentUnitName, final String managementName, final ServiceVerificationHandler verificationHandler,
-                                                             final Resource deploymentResource, final ImmutableManagementResourceRegistration registration, final ContentItem... contents) {
+                                                             final Resource deploymentResource, final ImmutableManagementResourceRegistration registration, final ManagementResourceRegistration mutableRegistration, final ContentItem... contents) {
         final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
         final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
 
@@ -150,7 +153,7 @@ public class DeploymentHandlerUtil {
         }
         controllers.add(contentService);
 
-        final RootDeploymentUnitService service = new RootDeploymentUnitService(deploymentUnitName, managementName, null, registration, deploymentResource, verificationHandler);
+        final RootDeploymentUnitService service = new RootDeploymentUnitService(deploymentUnitName, managementName, null, registration, mutableRegistration, deploymentResource, verificationHandler);
         final ServiceController<DeploymentUnit> deploymentUnitController = serviceTarget.addService(deploymentUnitServiceName, service)
                 .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
                 .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.getServerDeploymentRepositoryInjector())
@@ -178,6 +181,8 @@ public class DeploymentHandlerUtil {
             //
             final Resource deployment = operationContext.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
             final ImmutableManagementResourceRegistration registration = operationContext.getResourceRegistration();
+            final ManagementResourceRegistration mutableRegistration = operationContext.getResourceRegistrationForUpdate();
+
             DeploymentModelUtils.cleanup(deployment);
 
             operationContext.addStep(new OperationStepHandler() {
@@ -190,7 +195,7 @@ public class DeploymentHandlerUtil {
                         @Override
                         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                             ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                            doDeploy(context, deploymentUnitName, managementName, verificationHandler, deployment, registration,  contents);
+                            doDeploy(context, deploymentUnitName, managementName, verificationHandler, deployment, registration, mutableRegistration,  contents);
                             if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                                 if (context.hasFailureDescription()) {
                                     log.infof("Redeploy of deployment \"%s\" was rolled back with failure message %s",
@@ -231,6 +236,8 @@ public class DeploymentHandlerUtil {
             final PathElement path = PathElement.pathElement(DEPLOYMENT, managementName);
             final Resource deployment = operationContext.readResourceForUpdate(PathAddress.EMPTY_ADDRESS.append(path));
             final ImmutableManagementResourceRegistration registration = operationContext.getResourceRegistration().getSubModel(PathAddress.EMPTY_ADDRESS.append(path));
+            final ManagementResourceRegistration mutableRegistration = operationContext.getResourceRegistrationForUpdate().getSubModel(PathAddress.EMPTY_ADDRESS.append(path));
+
             DeploymentModelUtils.cleanup(deployment);
 
             operationContext.addStep(new OperationStepHandler() {
@@ -241,7 +248,7 @@ public class DeploymentHandlerUtil {
                     operationContext.removeService(replacedDeploymentUnitServiceName);
 
                     ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                    final Collection<ServiceController<?>> controllers = doDeploy(context, deploymentUnitName, managementName, verificationHandler, deployment, registration, contents);
+                    final Collection<ServiceController<?>> controllers = doDeploy(context, deploymentUnitName, managementName, verificationHandler, deployment, registration, mutableRegistration, contents);
                     context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
 
                     if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
@@ -254,7 +261,7 @@ public class DeploymentHandlerUtil {
                         final String runtimeName = originalDeployment.require(RUNTIME_NAME).asString();
                         final DeploymentHandlerUtil.ContentItem[] contents = getContents(originalDeployment.require(CONTENT));
                         verificationHandler = new ServiceVerificationHandler();
-                        doDeploy(context, runtimeName, name, verificationHandler, deployment, registration, contents);
+                        doDeploy(context, runtimeName, name, verificationHandler, deployment, registration, mutableRegistration, contents);
 
                         if (context.hasFailureDescription()) {
                             log.infof("Replacement of deployment \"%s\" by deployment \"%s\" was rolled back with failure message %s",
@@ -275,6 +282,7 @@ public class DeploymentHandlerUtil {
         if (context.getType() == OperationContext.Type.SERVER) {
             final Resource deployment = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
             final ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
+            final ManagementResourceRegistration mutableRegistration = context.getResourceRegistrationForUpdate();
             DeploymentModelUtils.cleanup(deployment);
 
             context.addStep(new OperationStepHandler() {
@@ -290,7 +298,7 @@ public class DeploymentHandlerUtil {
                         final String runtimeName = model.require(RUNTIME_NAME).asString();
                         final DeploymentHandlerUtil.ContentItem[] contents = getContents(model.require(CONTENT));
                         final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                        doDeploy(context, runtimeName, name, verificationHandler, deployment, registration, contents);
+                        doDeploy(context, runtimeName, name, verificationHandler, deployment, registration, mutableRegistration, contents);
 
                         if (context.hasFailureDescription()) {
                             log.infof("Undeploy of deployment \"%s\" was rolled back with failure message %s",

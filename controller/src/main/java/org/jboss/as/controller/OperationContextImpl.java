@@ -168,14 +168,15 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (currentStage == null) {
             throw MESSAGES.operationAlreadyComplete();
         }
-        if (currentStage != Stage.MODEL) {
-            throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
-        }
+        //if (currentStage != Stage.MODEL) {
+        //    throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
+        //}
         if (!affectsResourceRegistration) {
             takeWriteLock();
             affectsResourceRegistration = true;
         }
         return modelController.getRootRegistration().getSubModel(address);
+
     }
 
 

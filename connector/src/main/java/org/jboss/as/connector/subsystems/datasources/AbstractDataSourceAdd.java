@@ -34,6 +34,7 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.pool.PoolMetrics;
 import org.jboss.as.connector.registry.DriverRegistry;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -41,6 +42,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -50,7 +52,9 @@ import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.jca.core.api.management.ManagementRepository;
+import org.jboss.jca.core.spi.statistics.StatisticsPlugin;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
+import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -82,6 +86,8 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
         AbstractDataSourceService dataSourceService = createDataSourceService(dsName);
 
+        final ManagementResourceRegistration registration = context.getResourceRegistrationForUpdate();
+
         final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
         final ServiceBuilder<?> dataSourceServiceBuilder = serviceTarget
                 .addService(dataSourceServiceName, dataSourceService)
@@ -94,6 +100,51 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                 .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
                         dataSourceService.getDriverRegistryInjector()).addDependency(NamingService.SERVICE_NAME);
 
+        dataSourceServiceBuilder.addListener(new AbstractServiceListener<Object>() {
+            public void transition(final ServiceController<? extends Object> controller,
+                                   final ServiceController.Transition transition) {
+                switch (transition) {
+                    case STARTING_to_UP: {
+
+                        CommonDeployment deploymentMD = ((AbstractDataSourceService) controller.getService()).getDeploymentMD();
+
+                        StatisticsPlugin jdbcStats = deploymentMD.getDataSources()[0].getStatistics();
+                        for (String statName : jdbcStats.getNames()) {
+                            registration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(jdbcStats));
+                            SUBSYSTEM_DATASOURCES_LOGGER.infof("registering metric: %s", statName);
+
+                        }
+
+                        StatisticsPlugin poolStats = deploymentMD.getDataSources()[0].getPool().getStatistics();
+                        for (String statName : poolStats.getNames()) {
+                            registration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
+                            SUBSYSTEM_DATASOURCES_LOGGER.infof("registering metric: %s", statName);
+
+                        }
+                        break;
+
+                    }
+                }
+                switch (transition) {
+                    case UP_to_STOP_REQUESTED: {
+
+                        CommonDeployment deploymentMD = ((AbstractDataSourceService) controller.getService()).getDeploymentMD();
+
+                        StatisticsPlugin jdbcStats = deploymentMD.getDataSources()[0].getStatistics();
+                        for (String statName : jdbcStats.getNames()) {
+                            registration.unregisterMetric(statName);
+                        }
+
+                        StatisticsPlugin poolStats = deploymentMD.getDataSources()[0].getPool().getStatistics();
+                        for (String statName : poolStats.getNames()) {
+                            registration.unregisterMetric(statName);
+                        }
+                        break;
+
+                    }
+                }
+            }
+        });
         startConfigAndAddDependency(dataSourceServiceBuilder, dataSourceService, dsName, serviceTarget, operation, verificationHandler);
 
         final String driverName = node.asString();
