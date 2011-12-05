@@ -32,6 +32,7 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.ModelNodeFormatter;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
+import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.cli.impl.DefaultCompleter;
 import org.jboss.as.cli.operation.CommandLineParser;
 import org.jboss.as.cli.operation.OperationRequestAddress;
@@ -39,6 +40,7 @@ import org.jboss.as.cli.operation.OperationRequestCompleter;
 import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
+import org.jboss.as.cli.util.SimpleTable;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -50,6 +52,7 @@ public class ReadAttributeHandler extends BaseOperationCommand {
     private final ArgumentWithValue node;
     private final ArgumentWithValue name;
     private final ArgumentWithValue includeDefaults;
+    private final ArgumentWithoutValue verbose;
 
     public ReadAttributeHandler(CommandContext ctx) {
         super(ctx, "read-attribute", true);
@@ -107,6 +110,8 @@ public class ReadAttributeHandler extends BaseOperationCommand {
             }}), "--name");
 
         includeDefaults = new ArgumentWithValue(this, SimpleTabCompleter.BOOLEAN, "--include-defaults");
+
+        verbose = new ArgumentWithoutValue(this, "--verbose", "-v");
     }
 
     /* (non-Javadoc)
@@ -122,19 +127,7 @@ public class ReadAttributeHandler extends BaseOperationCommand {
         }
 
         final OperationRequestAddress address = getAddress(ctx);
-        final ModelNode req = new ModelNode();
-        if(address.isEmpty()) {
-            req.get(Util.ADDRESS).setEmptyList();
-        } else {
-            if(address.endsOnType()) {
-                throw new CommandFormatException("The address ends on a type: " + address.getNodeType());
-            }
-            final ModelNode addrNode = req.get(Util.ADDRESS);
-            for(OperationRequestAddress.Node node : address) {
-                addrNode.add(node.getType(), node.getName());
-            }
-        }
-        req.get(Util.OPERATION).set(Util.READ_ATTRIBUTE);
+        ModelNode req = Util.buildRequest(ctx, address, Util.READ_ATTRIBUTE);
         req.get(Util.NAME).set(name);
 
         final String includeDefaults = this.includeDefaults.getValue(parsedCmd);
@@ -142,16 +135,82 @@ public class ReadAttributeHandler extends BaseOperationCommand {
             req.get(Util.INCLUDE_DEFAULTS).set(includeDefaults);
         }
 
+        if(verbose.isPresent(parsedCmd)) {
+            final ModelNode composite = new ModelNode();
+            composite.get(Util.OPERATION).set(Util.COMPOSITE);
+            composite.get(Util.ADDRESS).setEmptyList();
+            final ModelNode steps = composite.get(Util.STEPS);
+            steps.add(req);
+            steps.add(Util.buildRequest(ctx, address, Util.READ_RESOURCE_DESCRIPTION));
+            req = composite;
+        }
+
         return req;
     }
 
-    protected void handleResponse(CommandContext ctx, ModelNode result, boolean composite) {
-        if (!Util.isSuccess(result)) {
-            ctx.printLine(Util.getFailureDescription(result));
+    protected void handleResponse(CommandContext ctx, ModelNode response, boolean composite) {
+        if (!Util.isSuccess(response)) {
+            ctx.printLine(Util.getFailureDescription(response));
             return;
         }
-        final StringBuilder buf = formatResponse(ctx, result, composite, null);
-        if(buf != null) {
+        if(!response.hasDefined(Util.RESULT)) {
+            return;
+        }
+
+        final ModelNode result = response.get(Util.RESULT);
+
+        if(composite) {
+            final SimpleTable table = new SimpleTable(2);
+            final StringBuilder valueBuf = new StringBuilder();
+            if(result.hasDefined(Util.STEP_1)) {
+                final ModelNode stepOutcome = result.get(Util.STEP_1);
+                if(Util.isSuccess(stepOutcome)) {
+                    if(stepOutcome.hasDefined(Util.RESULT)) {
+                        final ModelNode valueResult = stepOutcome.get(Util.RESULT);
+                        final ModelNodeFormatter formatter = ModelNodeFormatter.Factory.forType(valueResult.getType());
+                        formatter.format(valueBuf, 0, valueResult);
+                    } else {
+                        valueBuf.append("n/a");
+                    }
+                    table.addLine(new String[]{"value", valueBuf.toString()});
+                } else {
+                    ctx.printLine("Failed to get resource description: " + response);
+                }
+            }
+
+            if(result.hasDefined(Util.STEP_2)) {
+                final ModelNode stepOutcome = result.get(Util.STEP_2);
+                if(Util.isSuccess(stepOutcome)) {
+                    if(stepOutcome.hasDefined(Util.RESULT)) {
+                        final ModelNode descrResult = stepOutcome.get(Util.RESULT);
+                        if(descrResult.hasDefined(Util.ATTRIBUTES)) {
+                            ModelNode attributes = descrResult.get(Util.ATTRIBUTES);
+                            final String name = this.name.getValue(ctx.getParsedCommandLine());
+                            if(name == null) {
+                                ctx.printLine("Attribute name is not available in handleResponse.");
+                            } else if(attributes.hasDefined(name)) {
+                                final ModelNode descr = attributes.get(name);
+                                for(String prop : descr.keys()) {
+                                    table.addLine(new String[]{prop, descr.get(prop).asString()});
+                                }
+                            } else {
+                                ctx.printLine("Attribute description is not available.");
+                            }
+                        } else {
+                            ctx.printLine("The resource doesn't provide attribute descriptions.");
+                        }
+                    } else {
+                        ctx.printLine("Result is not available for read-resource-description request: " + response);
+                    }
+                } else {
+                    ctx.printLine("Failed to get resource description: " + response);
+                }
+            }
+            ctx.printLine(table.toString(true));
+        } else {
+            final ModelNodeFormatter formatter = ModelNodeFormatter.Factory.forType(result.getType());
+            final StringBuilder buf = new StringBuilder();
+            formatter.format(buf, 0, result);
             ctx.printLine(buf.toString());
         }
     }

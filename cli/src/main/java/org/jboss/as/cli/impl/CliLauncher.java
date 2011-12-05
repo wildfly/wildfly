@@ -31,9 +31,6 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.Security;
 
 import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.handlers.VersionHandler;

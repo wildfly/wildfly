@@ -23,10 +23,12 @@ package org.jboss.as.cli;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
+import org.jboss.as.cli.operation.OperationRequestAddress.Node;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
@@ -579,5 +581,23 @@ public class Util {
             toSet = new ModelNode().set(value);
         }
         request.get(name).set(toSet);
+    }
+
+    public static ModelNode buildRequest(CommandContext ctx, final OperationRequestAddress address, String operation)
+            throws CommandFormatException {
+        final ModelNode request = new ModelNode();
+        request.get(Util.OPERATION).set(operation);
+        final ModelNode addressNode = request.get(Util.ADDRESS);
+        if (address.isEmpty()) {
+            addressNode.setEmptyList();
+        } else {
+            if(address.endsOnType()) {
+                throw new CommandFormatException("The address ends on a type: " + address.getNodeType());
+            }
+            for(OperationRequestAddress.Node node : address) {
+                addressNode.add(node.getType(), node.getName());
+            }
+        }
+        return request;
     }
 }
