@@ -39,6 +39,7 @@ import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.ContextConfig;
 import org.jboss.as.clustering.web.DistributedCacheManagerFactory;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.security.deployment.AbstractSecurityDeployer;
 import org.jboss.as.security.plugins.SecurityDomainContext;
@@ -153,7 +154,16 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
 
         String pathName;
         if (metaData.getContextRoot() == null) {
-            pathName = "/" + deploymentUnit.getName().substring(0, deploymentUnit.getName().length() - 4);
+
+
+            final EEModuleDescription description = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+            if(description != null) {
+                //if there is a EEModuleDescription we need to take into account that the module name
+                //may have been overriden
+                pathName = "/" + description.getModuleName();
+            } else {
+                pathName = "/" + deploymentUnit.getName().substring(0, deploymentUnit.getName().length() - 4);
+            }
         } else {
             pathName = metaData.getContextRoot();
             if ("/".equals(pathName)) {
