@@ -31,13 +31,8 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.Security;
-
 import org.jboss.as.cli.handlers.VersionHandler;
 import org.jboss.as.protocol.StreamUtils;
-import org.jboss.sasl.JBossSaslProvider;
 
 /**
  *
@@ -47,12 +42,6 @@ public class CliLauncher {
 
     public static void main(String[] args) throws Exception {
         try {
-            AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                public Object run() {
-                    return Security.insertProviderAt(new JBossSaslProvider(), 1);
-                }
-            });
-
             String argError = null;
             String[] commands = null;
             File file = null;

@@ -43,6 +43,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.security.Constants;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 
 /**
  * Utility methods to create/remove simple security domains
@@ -51,7 +52,9 @@ import org.jboss.dmr.ModelNode;
  */
 public class SecurityTest {
 
-    protected static String securityDomain = "ejb3-tests";
+    private static final Logger logger = Logger.getLogger(SecurityTest.class);
+
+    protected static String defaultSecurityDomainName = "ejb3-tests";
 
     // this is removing the security domain after each test so I have to disable it
 //  @AfterClass
@@ -61,41 +64,61 @@ public class SecurityTest {
 //  }
 
     public static void createSecurityDomain() throws Exception {
+        createSecurityDomain(defaultSecurityDomainName);
+    }
+
+    public static void createSecurityDomain(final String securityDomainName) throws Exception {
         final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+        try {
+            final List<ModelNode> updates = new ArrayList<ModelNode>();
+            ModelNode op = new ModelNode();
+            op.get(OP).set(ADD);
+            op.get(OP_ADDR).add(SUBSYSTEM, "security");
+            op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomainName);
+            updates.add(op);
 
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
-        ModelNode op = new ModelNode();
-        op.get(OP).set(ADD);
-        op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
-        updates.add(op);
+            op = new ModelNode();
+            op.get(OP).set(ADD);
+            op.get(OP_ADDR).add(SUBSYSTEM, "security");
+            op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomainName);
+            op.get(OP_ADDR).add(AUTHENTICATION, Constants.CLASSIC);
 
-        op = new ModelNode();
-        op.get(OP).set(ADD);
-        op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
-        op.get(OP_ADDR).add(AUTHENTICATION, Constants.CLASSIC);
+            ModelNode loginModule = op.get(Constants.LOGIN_MODULES).add();
+            loginModule.get(CODE).set("UsersRoles");
+            loginModule.get(FLAG).set("required");
+            op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            updates.add(op);
 
-        ModelNode loginModule = op.get(Constants.LOGIN_MODULES).add();
-        loginModule.get(CODE).set("UsersRoles");
-        loginModule.get(FLAG).set("required");
-        op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        updates.add(op);
-
-        applyUpdates(updates, client);
+            applyUpdates(updates, client);
+        } finally {
+            try {
+                client.close();
+            } catch (Exception e) {
+                // ignore
+                logger.debug("Ignoring exception while closing model controller client", e);
+            }
+        }
     }
 
     public static void removeSecurityDomain() throws Exception {
+        removeSecurityDomain(defaultSecurityDomainName);
+    }
+
+    public static void removeSecurityDomain(final String securityDomainName) throws Exception {
         final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+        try {
+            final List<ModelNode> updates = new ArrayList<ModelNode>();
+            ModelNode op = new ModelNode();
+            op.get(OP).set(REMOVE);
+            op.get(OP_ADDR).add(SUBSYSTEM, "security");
+            op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomainName);
+            updates.add(op);
 
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
-        ModelNode op = new ModelNode();
-        op.get(OP).set(REMOVE);
-        op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
-        updates.add(op);
-
-        applyUpdates(updates, client);
+            applyUpdates(updates, client);
+        } catch (Exception e) {
+            // ignore
+            logger.debug("Ignoring exception while closing model controller client", e);
+        }
     }
 
     public static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws Exception {

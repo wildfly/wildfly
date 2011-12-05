@@ -36,7 +36,6 @@
         <module name="org.jboss.logging"/>
         <module name="org.jboss.as.protocol"/>
         <module name="org.jboss.dmr"/>
-        <module name="org.jboss.sasl"/>
         <module name="javax.api"/>
     </dependencies>
 

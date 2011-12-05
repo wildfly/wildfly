@@ -116,13 +116,12 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData,
         this.invoker = new ForceSynchronousCacheInvoker(invoker);
 
         Configuration configuration = this.sessionCache.getConfiguration();
-
+        Configuration.CacheMode mode = configuration.getCacheMode();
         this.passivationEnabled = configuration.isCacheLoaderPassivation() && !configuration.isCacheLoaderShared();
         List<CacheLoaderConfig> loaders = configuration.getCacheLoaders();
         CacheLoaderConfig loader = !loaders.isEmpty() ? loaders.get(0) : null;
-        this.requiresPurge = (loader != null) && (loader instanceof CacheStoreConfig) ? ((CacheStoreConfig) loader).isPurgeOnStartup() : false;
-
-        this.jvmRouteHandler = configuration.getCacheMode().isDistributed() ? new JvmRouteHandler(registry, jvmRouteCacheSource, this.manager) : null;
+        this.requiresPurge = (loader != null) && (loader instanceof CacheStoreConfig) ? ((CacheStoreConfig) loader).isPurgeOnStartup() && mode.isReplicated() : false;
+        this.jvmRouteHandler = mode.isDistributed() ? new JvmRouteHandler(registry, jvmRouteCacheSource, this.manager) : null;
     }
 
     /**
@@ -132,7 +131,6 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData,
      */
     @Override
     public void start() {
-        this.purge();
         this.sessionCache.addListener(this);
 
         if (this.jvmRouteHandler != null) {
@@ -146,20 +144,6 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData,
                 this.jvmRouteHandler.getCache().putIfAbsent(container.getAddress(), jvmRoute);
             }
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.jboss.web.tomcat.service.session.distributedcache.spi.DistributedCacheManager#stop()
-     */
-    @Override
-    public void stop() {
-        if (this.jvmRouteHandler != null) {
-            this.sessionCache.getCacheManager().removeListener(this.jvmRouteHandler);
-        }
-        this.sessionCache.removeListener(this);
-        this.purge();
     }
 
     private void purge() {
@@ -178,6 +162,20 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData,
 
             this.batch(operation);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see org.jboss.web.tomcat.service.session.distributedcache.spi.DistributedCacheManager#stop()
+     */
+    @Override
+    public void stop() {
+        if (this.jvmRouteHandler != null) {
+            this.sessionCache.getCacheManager().removeListener(this.jvmRouteHandler);
+        }
+        this.sessionCache.removeListener(this);
+        // this.purge();
     }
 
     /**
@@ -326,7 +324,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData,
         Operation<Map<Object, Object>> operation = new Operation<Map<Object, Object>>() {
             @Override
             public Map<Object, Object> invoke(Cache<K, Map<Object, Object>> cache) {
-                return cache.getAdvancedCache().withFlags(local ? Flag.CACHE_MODE_LOCAL : Flag.SKIP_REMOTE_LOOKUP).remove(key);
+                return cache.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD, local ? Flag.CACHE_MODE_LOCAL : Flag.SKIP_REMOTE_LOOKUP).remove(key);
             }
         };
 

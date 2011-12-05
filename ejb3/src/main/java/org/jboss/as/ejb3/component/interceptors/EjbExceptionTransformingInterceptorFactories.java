@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.component.interceptors;
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 
+import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.EJBTransactionRequiredException;
 import javax.ejb.EJBTransactionRolledbackException;
@@ -49,6 +50,14 @@ import org.jboss.invocation.InterceptorFactory;
  */
 public class EjbExceptionTransformingInterceptorFactories {
 
+    /**
+     * We need to return a CreateException to the client.
+     * <p/>
+     * Rather than forcing all create exceptions everywhere to propagate, and generally making a mess, we stash
+     * the exception here, and then re-throw it from the exception transforming interceptor.
+     */
+    private static final ThreadLocal<CreateException> CREATE_EXCEPTION = new ThreadLocal<CreateException>();
+
     public static final InterceptorFactory REMOTE_INSTANCE = new ImmediateInterceptorFactory(new Interceptor() {
         @Override
         public Object processInvocation(final InterceptorContext context) throws Exception {
@@ -63,6 +72,11 @@ public class EjbExceptionTransformingInterceptorFactories {
             } catch (NoSuchEntityException e) {
                 throw new NoSuchObjectException(e.getMessage());
             } catch (EJBException e) {
+                //as the create exception is not propagated the init method interceptor just stashes it in a ThreadLocal
+                CreateException createException = popCreateException();
+                if (createException != null) {
+                    throw createException;
+                }
                 throw new RemoteException("Invocation failed", e);
             }
         }
@@ -81,8 +95,26 @@ public class EjbExceptionTransformingInterceptorFactories {
                 throw new NoSuchObjectLocalException(e.getMessage());
             } catch (NoSuchEntityException e) {
                 throw new NoSuchObjectLocalException(e.getMessage());
+            } catch (EJBException e) {
+                CreateException createException = popCreateException();
+                if (createException != null) {
+                    throw createException;
+                }
+                throw e;
             }
         }
     });
+
+    public static void setCreateException(CreateException exception) {
+        CREATE_EXCEPTION.set(exception);
+    }
+
+    public static CreateException popCreateException() {
+        try {
+            return CREATE_EXCEPTION.get();
+        } finally {
+            CREATE_EXCEPTION.remove();
+        }
+    }
 
 }

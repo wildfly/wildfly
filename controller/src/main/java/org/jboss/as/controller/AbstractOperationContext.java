@@ -323,18 +323,26 @@ abstract class AbstractOperationContext implements OperationContext {
                     SecurityActions.setThreadContextClassLoader(oldTccl);
                 }
 
-            } catch (OperationFailedException ofe) {
-                if (currentStage != Stage.DONE) {
-                    // Handler threw OFE before calling completeStep(); that's equivalent to
+            } catch (Throwable t) {
+                if (! (t instanceof OperationClientException)) {
+                    throw t;
+                } else if (currentStage != Stage.DONE) {
+                    // Handler threw OCE before calling completeStep(); that's equivalent to
                     // a request that we set the failure description and call completeStep()
-                    step.response.get(FAILURE_DESCRIPTION).set(ofe.getFailureDescription());
-                    ROOT_LOGGER.operationFailed(step.operation.get(OP), step.operation.get(OP_ADDR), step.response.get(FAILURE_DESCRIPTION));
+                    final ModelNode failDesc = ((OperationClientException) t).getFailureDescription();
+                    step.response.get(FAILURE_DESCRIPTION).set(failDesc);
+                    if (isBooting()) {
+                        // An OCE on boot needs to be logged as an ERROR
+                        ROOT_LOGGER.operationFailed(step.operation.get(OP), step.operation.get(OP_ADDR), step.response.get(FAILURE_DESCRIPTION));
+                    } else {
+                        // An OFE post-boot is a client-side mistake and is logged at DEBUG
+                        ROOT_LOGGER.operationFailedOnClientError(step.operation.get(OP), step.operation.get(OP_ADDR), step.response.get(FAILURE_DESCRIPTION));
+                    }
                     completeStep();
-                }
-                else {
-                    // Handler threw OFE after calling completeStep()
+                } else {
+                    // Handler threw OCE after calling completeStep()
                     // Throw it on and let standard error handling deal with it
-                    throw ofe;
+                    throw t;
                 }
             }
         } catch (Throwable t) {
@@ -384,6 +392,20 @@ abstract class AbstractOperationContext implements OperationContext {
             }
             // else non-recursive steps get finished off by the succeeding recursive step
         }
+    }
+
+    private void handleOperationFailed(Step step, ModelNode failDesc) {
+        // Handler threw OFE before calling completeStep(); that's equivalent to
+        // a request that we set the failure description and call completeStep()
+        step.response.get(FAILURE_DESCRIPTION).set(failDesc);
+        if (isBooting()) {
+            // An OFE on boot needs to be logged as an ERROR
+            ROOT_LOGGER.operationFailed(step.operation.get(OP), step.operation.get(OP_ADDR), step.response.get(FAILURE_DESCRIPTION));
+        } else {
+            // An OFE post-boot is a client-side mistake and is logged at DEBUG
+            ROOT_LOGGER.operationFailedOnClientError(step.operation.get(OP), step.operation.get(OP_ADDR), step.response.get(FAILURE_DESCRIPTION));
+        }
+        completeStep();
     }
 
     /**

@@ -155,13 +155,6 @@ public interface EjbLogger extends BasicLogger {
     void failToFindSfsbWithId(SessionID sessionId, String componentName);
 
     /**
-     * Logs an warning message indicating security-role-ref for message driven beans isn't yet implemented
-     */
-    @LogMessage(level = WARN)
-    @Message(id = 14109, value = "security-role-ref for message driven beans isn't yet implemented")
-    void securityRoleForMdbNotImplemented();
-
-    /**
      * Logs an warning message indicating Default interceptor class is not listed in the <interceptors> section of ejb-jar.xml and will not be applied"
      */
     @LogMessage(level = WARN)

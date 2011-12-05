@@ -56,8 +56,8 @@ import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.StopContext;
+
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 
 /**
  * Stateful Session Bean
@@ -82,6 +82,9 @@ public class StatefulSessionComponent extends SessionBeanComponent {
     private final Map<EJBBusinessMethod, AccessTimeoutDetails> methodAccessTimeouts;
     private final DefaultAccessTimeoutService defaultAccessTimeoutProvider;
 
+
+    private final InterceptorFactory ejb2XRemoveMethod;
+
     /**
      * Construct a new instance.
      *
@@ -98,6 +101,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
         this.beforeCompletionMethod = ejbComponentCreateService.getBeforeCompletionMethod();
         this.methodAccessTimeouts = ejbComponentCreateService.getMethodApplicableAccessTimeouts();
         this.defaultAccessTimeoutProvider = ejbComponentCreateService.getDefaultAccessTimeoutService();
+        this.ejb2XRemoveMethod = ejbComponentCreateService.getEjb2XRemoveMethod();
 
         final StatefulTimeoutInfo statefulTimeout = ejbComponentCreateService.getStatefulTimeout();
         if (statefulTimeout != null) {
@@ -188,7 +192,8 @@ public class StatefulSessionComponent extends SessionBeanComponent {
 
     @Override
     protected BasicComponentInstance instantiateComponentInstance(final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, final InterceptorFactoryContext interceptorContext) {
-        return new StatefulSessionComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
+
+        return new StatefulSessionComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors, ejb2XRemoveMethod.create(interceptorContext));
     }
 
     /**

@@ -25,7 +25,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CPU_AFFINITY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
@@ -33,16 +32,19 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTBOUND_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRIORITY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -109,12 +111,17 @@ import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
+import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.as.domain.management.operations.ConnectionAddHandler;
 import org.jboss.as.domain.management.operations.SecurityRealmAddHandler;
+import org.jboss.as.host.controller.HostControllerConfigurationPersister;
+import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.descriptions.HostDescriptionProviders;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceAddHandler;
 import org.jboss.as.host.controller.operations.IsMasterHandler;
+import org.jboss.as.host.controller.operations.LocalDomainControllerAddHandler;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
+import org.jboss.as.host.controller.operations.RemoteDomainControllerAddHandler;
 import org.jboss.as.host.controller.operations.ServerAddHandler;
 import org.jboss.as.host.controller.parsing.DomainXml;
 import org.jboss.as.host.controller.parsing.HostXml;
@@ -124,6 +131,8 @@ import org.jboss.as.server.ServerControllerModelUtil;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.as.server.parsing.StandaloneXml;
 import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
+import org.jboss.as.server.services.security.RuntimeVaultReader;
+import org.jboss.as.server.services.security.VaultAddHandler;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -490,6 +499,8 @@ public class ParseAndMarshalModelsTestCase {
         }
         final List<ModelNode> ops = persister.load();
 
+//        System.out.println(ops);
+
         final ModelNode model = new ModelNode();
 
         final ModelController controller = createController(model, new Setup() {
@@ -519,6 +530,11 @@ public class ParseAndMarshalModelsTestCase {
                 ManagementResourceRegistration sysProps = hostRegistration.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), HostDescriptionProviders.SYSTEM_PROPERTIES_PROVIDER);
                 sysProps.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, SystemPropertyAddHandler.INSTANCE_WITH_BOOTTIME, SystemPropertyAddHandler.INSTANCE_WITH_BOOTTIME, false);
 
+                //vault
+                ManagementResourceRegistration vault = hostRegistration.registerSubModel(PathElement.pathElement(CORE_SERVICE, VAULT), CommonProviders.VAULT_PROVIDER);
+                VaultAddHandler vah = new VaultAddHandler(new MockVaultReader());
+                vault.registerOperationHandler(VaultAddHandler.OPERATION_NAME, vah, vah, false);
+
                 // Central Management
                 ManagementResourceRegistration management = hostRegistration.registerSubModel(PathElement.pathElement(CORE_SERVICE, MANAGEMENT), CommonProviders.MANAGEMENT_WITH_INTERFACES_PROVIDER);
                 ManagementResourceRegistration securityRealm = management.registerSubModel(PathElement.pathElement(SECURITY_REALM), CommonProviders.MANAGEMENT_SECURITY_REALM_PROVIDER);
@@ -530,11 +546,11 @@ public class ParseAndMarshalModelsTestCase {
                 management.registerSubModel(new NativeManagementResourceDefinition(hostControllerInfo));
                 management.registerSubModel(new HttpManagementResourceDefinition(hostControllerInfo, null));
 
-                //Extensions
-                ManagementResourceRegistration extensions = hostRegistration.registerSubModel(PathElement.pathElement(EXTENSION), CommonProviders.EXTENSION_PROVIDER);
-                ExtensionContext extensionContext = new ExtensionContextImpl(hostRegistration, null, persister, ExtensionContext.ProcessType.STANDALONE_SERVER);
-                ExtensionAddHandler addExtensionHandler = new ExtensionAddHandler(extensionContext, false);
-                extensions.registerOperationHandler(ExtensionAddHandler.OPERATION_NAME, addExtensionHandler, addExtensionHandler, false);
+                // Domain controller
+                LocalDomainControllerAddHandler localDcAddHandler = new MockLocalDomainControllerAddHandler();
+                hostRegistration.registerOperationHandler(LocalDomainControllerAddHandler.OPERATION_NAME, localDcAddHandler, localDcAddHandler, false);
+                RemoteDomainControllerAddHandler remoteDcAddHandler = new MockRemoteDomainControllerAddHandler();
+                hostRegistration.registerOperationHandler(RemoteDomainControllerAddHandler.OPERATION_NAME, remoteDcAddHandler, remoteDcAddHandler, false);
 
                 // Jvms
                 final ManagementResourceRegistration jvms = hostRegistration.registerSubModel(PathElement.pathElement(JVM), CommonProviders.JVM_PROVIDER);
@@ -590,6 +606,9 @@ public class ParseAndMarshalModelsTestCase {
 
         model.get(HOST, "master", NAME).set("master");
         persister.store(model.get(HOST, "master"), null).commit();
+
+//        System.out.println(model.toString());
+
         return model;
     }
 
@@ -660,6 +679,7 @@ public class ParseAndMarshalModelsTestCase {
 
     private void executeOperations(ModelController controller, List<ModelNode> ops) {
         for (final ModelNode op : ops) {
+            op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
             controller.execute(op, null, null, null);
         }
     }
@@ -899,6 +919,39 @@ public class ParseAndMarshalModelsTestCase {
         }
 
         public void stopLocalHost() {
+        }
+    }
+
+    private static class MockVaultReader extends RuntimeVaultReader {
+    }
+
+    private static class MockLocalDomainControllerAddHandler extends LocalDomainControllerAddHandler {
+
+        /**
+         * Create the ServerAddHandler
+         */
+        protected MockLocalDomainControllerAddHandler() {
+            super(null, null, null, null, null, null, null);
+        }
+
+        @Override
+        protected void initializeDomain() {
+            // no-op
+        }
+    }
+
+    private static class MockRemoteDomainControllerAddHandler extends RemoteDomainControllerAddHandler {
+
+        /**
+         * Create the ServerAddHandler
+         */
+        protected MockRemoteDomainControllerAddHandler() {
+            super(null, null, null, null);
+        }
+
+        @Override
+        protected void initializeDomain(OperationContext context, ModelNode remoteDC) throws OperationFailedException {
+            // no-op
         }
     }
 }

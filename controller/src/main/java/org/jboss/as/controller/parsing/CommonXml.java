@@ -270,11 +270,25 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected void writeNamespaces(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
-        if (!modelNode.hasDefined(NAMESPACES)) {
+        final boolean needXsd = modelNode.hasDefined(SCHEMA_LOCATIONS);
+        final boolean hasNamepaces = modelNode.hasDefined(NAMESPACES);
+        if (!needXsd && !hasNamepaces) {
             return;
         }
-        for (final Property property : modelNode.get(NAMESPACES).asPropertyList()) {
-            writer.writeNamespace(property.getName(), property.getValue().asString());
+
+        boolean wroteXsd = false;
+        final String xsdUri = Namespace.XML_SCHEMA_INSTANCE.getUriString();
+        if (hasNamepaces) {
+            for (final Property property : modelNode.get(NAMESPACES).asPropertyList()) {
+                final String uri = property.getValue().asString();
+                writer.writeNamespace(property.getName(), uri);
+                if (!wroteXsd && xsdUri.equals(uri)) {
+                    wroteXsd = true;
+                }
+            }
+        }
+        if (needXsd && !wroteXsd) {
+            writer.writeNamespace("xsd", xsdUri);
         }
     }
 
@@ -466,13 +480,12 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected void parseManagement(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list,
-            boolean allowInterfaces) throws XMLStreamException {
+                                   boolean allowInterfaces, boolean requireNativeInterface) throws XMLStreamException {
         int securityRealmsCount = 0;
         int connectionsCount = 0;
         int managementInterfacesCount = 0;
 
         final ModelNode managementAddress = address.clone().add(CORE_SERVICE, MANAGEMENT);
-
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
             final Element element = Element.forName(reader.getLocalName());
@@ -509,6 +522,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     throw unexpectedElement(reader);
                 }
             }
+        }
+
+        if (requireNativeInterface && managementInterfacesCount < 1) {
+            throw missingRequiredElement(reader, EnumSet.of(Element.MANAGEMENT_INTERFACES));
         }
     }
 

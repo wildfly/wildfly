@@ -119,10 +119,9 @@ public class EmbeddedCacheManagerDefaultsService implements Service<EmbeddedCach
             if (mode.isSynchronous()) {
                 fluent.sync().replTimeout(17500L);
             } else {
-                FluentConfiguration.AsyncConfig async = fluent.async();
                 // ISPN-835 workaround
                 if (configuration.isFetchInMemoryState()) {
-                    async.useReplQueue(true).replQueueMaxElements(10);
+                    fluent.async().useReplQueue(true).replQueueMaxElements(1);
                 }
             }
             defaults.add(mode, configuration);

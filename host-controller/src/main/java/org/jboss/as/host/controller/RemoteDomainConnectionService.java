@@ -33,9 +33,6 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.Security;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -81,7 +78,6 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.Endpoint;
-import org.jboss.sasl.JBossSaslProvider;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
 
@@ -192,12 +188,6 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     }
 
     private synchronized void connect() {
-        AccessController.doPrivileged(new PrivilegedAction<Object>() {
-            public Object run() {
-                return Security.insertProviderAt(new JBossSaslProvider(), 1);
-            }
-        });
-
 //        if (this.channelClient != null) {
 //            try {
 //                new UnregisterModelControllerRequest().executeForResult(executor, ManagementClientChannelStrategy.create(channel));

@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.component.messagedriven;
 
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
+import javax.ejb.MessageDrivenBean;
 import javax.ejb.TransactionManagementType;
 import javax.resource.spi.ResourceAdapter;
 import java.util.Properties;
@@ -53,6 +54,7 @@ import org.jboss.as.ejb3.tx.TimerCMTTxInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassIndex;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.metadata.ejb.spec.MessageDrivenBeanMetaData;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -89,8 +91,9 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         this.activationProps = activationProps;
 
         registerView(messageListenerInterfaceName, MethodIntf.MESSAGE_ENDPOINT);
-
-
+        // add the interceptor which will invoke the setMessageDrivenContext() method on a MDB which implements
+        // MessageDrivenBean interface
+        this.addSetMessageDrivenContextMethodInvocationInterceptor();
     }
 
     @Override
@@ -190,6 +193,23 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
                 configuration.addViewInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.View.INVOCATION_CONTEXT_INTERCEPTOR);
+            }
+        });
+    }
+
+    /**
+     * Adds a interceptor to invoke the {@link MessageDrivenBean#setMessageDrivenContext(javax.ejb.MessageDrivenContext)}
+     * if the MDB implements the {@link MessageDrivenBean} interface
+     */
+    private void addSetMessageDrivenContextMethodInvocationInterceptor() {
+        // add the setMessageDrivenContext(MessageDrivenContext) method invocation interceptor for MDB
+        // implementing the javax.ejb.MessageDrivenBean interface
+        this.getConfigurators().add(new ComponentConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                if (MessageDrivenBean.class.isAssignableFrom(configuration.getComponentClass())) {
+                    configuration.addPostConstructInterceptor(new ImmediateInterceptorFactory(MessageDrivenBeanSetMessageDrivenContextInterceptor.INSTANCE), InterceptorOrder.ComponentPostConstruct.EJB_SET_CONTEXT_METHOD_INVOCATION_INTERCEPTOR);
+                }
             }
         });
     }

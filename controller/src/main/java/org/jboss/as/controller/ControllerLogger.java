@@ -257,4 +257,15 @@ public interface ControllerLogger extends BasicLogger {
             "process at address %s. The result of this operation will only include the remote process' preliminary response to" +
             "the request.")
     void noFinalProxyOutcomeReceived(ModelNode op, ModelNode opAddress, ModelNode proxyAddress);
+
+    /**
+     * Logs an error message indicating operation failed due to a client error (e.g. an invalid request).
+     *
+     * @param op                 the operation that failed.
+     * @param opAddress          the address the operation failed on.
+     * @param failureDescription the failure description.
+     */
+    @LogMessage(level = Logger.Level.DEBUG)
+    @Message(id = 14616, value = "Operation (%s) failed - address: (%s) - failure description: %s")
+    void operationFailedOnClientError(ModelNode op, ModelNode opAddress, ModelNode failureDescription);
 }

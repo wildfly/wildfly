@@ -125,9 +125,9 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
             throw createFailureException("No deployment with name %s found", name);
         }
 
-        final ModelNode replaceNode = context.readModelForUpdate(address);
+        final ModelNode replaceNode = context.readResourceForUpdate(address).getModel();
         final String replacedRuntimeName = replaceNode.require(RUNTIME_NAME).asString();
-        final String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : replaceNode.require(RUNTIME_NAME).asString();
+        final String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : replacedRuntimeName;
 
         final byte[] hash;
         // clone it, so we can modify it to our own content
@@ -167,7 +167,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
 
         boolean start = replaceNode.get(ENABLED).asBoolean();
 
-        final ModelNode deployNode = context.readModelForUpdate(address);
+        final ModelNode deployNode = context.readResourceForUpdate(address).getModel();
         deployNode.get(NAME).set(name);
         deployNode.get(RUNTIME_NAME).set(runtimeName);
         deployNode.get(CONTENT).set(content);

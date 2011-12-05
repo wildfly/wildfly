@@ -186,10 +186,7 @@ public class SessionTestUtil {
         config.fluent().syncCommitPhase(true).syncRollbackPhase(true).invocationBatching().transaction().transactionMode(TransactionMode.TRANSACTIONAL).useSynchronization(true);
 
         if (passivationDir != null) {
-            // Dodge failures due to ISPN-1470
-            // Until this is fixed, we can expect test failures involving cache load preloading and DIST
-//            fluent.loaders().passivation(true).preload(!purgeCacheLoader && !mode.isDistributed()).addCacheLoader(new FileCacheStoreConfig().location(passivationDir).fetchPersistentState(mode.isReplicated()).purgeOnStartup(purgeCacheLoader));
-            config.fluent().loaders().passivation(true).preload(!purgeCacheLoader).addCacheLoader(new FileCacheStoreConfig().location(passivationDir).fetchPersistentState(mode.isReplicated()).purgeOnStartup(purgeCacheLoader));
+            config.fluent().loaders().passivation(true).preload(!purgeCacheLoader).addCacheLoader(new FileCacheStoreConfig().location(passivationDir).fetchPersistentState(mode.isReplicated()).purgeOnStartup(purgeCacheLoader).purgeSynchronously(true));
         }
 
         final EmbeddedCacheManager container = new DefaultCacheManager(global, config, false);

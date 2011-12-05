@@ -22,10 +22,6 @@ import static org.jboss.as.arquillian.container.Authentication.getCallbackHandle
 import static org.jboss.as.arquillian.container.Authentication.PASSWORD;
 import static org.jboss.as.arquillian.container.Authentication.USERNAME;
 
-import javax.management.MBeanServerConnection;
-import javax.management.remote.JMXConnector;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -37,8 +33,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.security.Provider;
-import java.security.Security;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,7 +54,6 @@ import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
 import org.jboss.dmr.ModelNode;
-import org.jboss.sasl.JBossSaslProvider;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
 
 /**
@@ -73,7 +66,6 @@ public class DomainLifecycleUtil {
     private static final ThreadFactory threadFactory = new AsyncThreadFactory();
 
     private final Logger log = Logger.getLogger(DomainLifecycleUtil.class.getName());
-    private final Provider saslProvider = new JBossSaslProvider();
 
     private Process process;
     private Thread shutdownThread;
@@ -90,15 +82,6 @@ public class DomainLifecycleUtil {
 
 
     public void start() {
-        AccessController.doPrivileged(new PrivilegedAction<Object>() {
-            public Object run() {
-                if (Security.getProperty(saslProvider.getName()) == null) {
-                    Security.insertProviderAt(saslProvider, 1);
-                }
-                return null;
-            }
-        });
-
         try {
             configuration.validate();
 

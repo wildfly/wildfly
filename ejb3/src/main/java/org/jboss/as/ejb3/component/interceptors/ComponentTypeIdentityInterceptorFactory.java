@@ -57,13 +57,14 @@ public class ComponentTypeIdentityInterceptorFactory implements InterceptorFacto
 
         @Override
         public Object processInvocation(final InterceptorContext context) throws Exception {
-            if (context.getMethod().getName().equals("equals") && context.getParameters().length==1 && context.getMethod().getParameterTypes()[0] == Object.class) {
+            if ((context.getMethod().getName().equals("equals"))
+                    || context.getMethod().getName().equals("isIdentical")) {
                 final Object other = context.getParameters()[0];
                 if (other == null) {
                     return false;
                 }
                 final Class<?> proxyType = componentView.getProxyClass();
-                return  proxyType.isAssignableFrom(other.getClass());
+                return proxyType.isAssignableFrom(other.getClass());
             } else if (context.getMethod().getName().equals("hashCode")) {
                 //use the identity of the component view as a hash code
                 return componentView.hashCode();

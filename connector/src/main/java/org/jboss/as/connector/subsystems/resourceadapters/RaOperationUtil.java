@@ -164,12 +164,16 @@ public class RaOperationUtil {
         //TODO This will be cleaned up once it uses attribute definitions
         String recoveryPassword = getResolvedStringIfSetOrGetDefault(context, operation, RECOVERY_PASSWORD.getName(), null);
         final String recoverySecurityDomain = getStringIfSetOrGetDefault(operation, RECOVERY_SECURITY_DOMAIN.getName(), null);
+        final Boolean noRecovery = getBooleanIfSetOrGetDefault(operation, NO_RECOVERY.getName(), null);
 
-        final Credential credential = new CredentialImpl(recoveryUsername, recoveryPassword, recoverySecurityDomain);
+        Recovery recovery = null;
+        if (recoveryUsername != null || recoveryPassword != null || recoverySecurityDomain != null ||
+            (noRecovery != null && noRecovery.booleanValue())) {
+           final Credential credential = new CredentialImpl(recoveryUsername, recoveryPassword, recoverySecurityDomain);
 
-        final Extension recoverPlugin = extractExtension(operation, RECOVERLUGIN_CLASSNAME.getName(), RECOVERLUGIN_PROPERTIES.getName());
-        final boolean noRecovery = getBooleanIfSetOrGetDefault(operation, NO_RECOVERY.getName(), false);
-        Recovery recovery = new Recovery(credential, recoverPlugin, noRecovery);
+           final Extension recoverPlugin = extractExtension(operation, RECOVERLUGIN_CLASSNAME.getName(), RECOVERLUGIN_PROPERTIES.getName());
+           recovery = new Recovery(credential, recoverPlugin, noRecovery);
+        }
         ModifiableConnDef connectionDefinition = new ModifiableConnDef(configProperties, className, jndiName, poolName,
                 enabled, useJavaContext, useCcm, pool, timeOut, validation, security, recovery);
 

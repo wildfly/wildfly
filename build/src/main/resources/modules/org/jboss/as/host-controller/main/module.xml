@@ -50,7 +50,6 @@
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.remoting3"/>
-        <module name="org.jboss.sasl" />
         <module name="org.jboss.stdio"/>
         <module name="org.jboss.threads"/>
         <module name="org.jboss.xnio"/>

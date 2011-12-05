@@ -182,7 +182,7 @@ public interface ControllerMessages {
     String attributeNotWritable(String attributeName);
 
     /**
-     * A message indicating the attribute, represented by the {@code attributeName} parameter,  is a registered child of
+     * A message indicating the attribute, represented by the {@code attributeName} parameter, is a registered child of
      * the resource.
      *
      * @param attributeName the name of the attribute.
@@ -244,10 +244,10 @@ public interface ControllerMessages {
      *
      * @param name the name.
      *
-     * @return an {@link IllegalArgumentException} for the error.
+     * @return an {@link OperationFailedRuntimeException} for the error.
      */
     @Message(id = 14646, value = "Cannot remove %s")
-    IllegalArgumentException cannotRemove(String name);
+    OperationFailedRuntimeException cannotRemove(String name);
 
     /**
      * Creates an exception indicating the file could not be renamed.
@@ -415,10 +415,10 @@ public interface ControllerMessages {
      *
      * @param name the name of the duplicate entry.
      *
-     * @return an {@link IllegalArgumentException} for the error.
+     * @return an {@link OperationFailedRuntimeException} for the error.
      */
     @Message(id = 14662, value = "Duplicate path element '%s' found")
-    IllegalArgumentException duplicateElement(String name);
+    OperationFailedRuntimeException duplicateElement(String name);
 
     /**
      * Creates an exception indicating a duplicate interface declaration.
@@ -461,15 +461,6 @@ public interface ControllerMessages {
      */
     @Message(id = 14666, value = "Duplicate resource %s")
     IllegalStateException duplicateResource(String name);
-
-    /**
-     * Creates an exception indicating the resource is a duplicate.
-     *
-     * @param address the address of the resource.
-     *
-     * @return an {@link IllegalStateException} for the error.
-     */
-    IllegalStateException duplicateResource(PathAddress address);
 
     /**
      * Creates an exception indicating the resource type is a duplicate.
@@ -862,10 +853,10 @@ public interface ControllerMessages {
      *
      * @param key the invalid value.
      *
-     * @return an {@link IllegalArgumentException} for the error.
+     * @return an {@link OperationFailedRuntimeException} for the error.
      */
     @Message(id = 14701, value = "Invalid key specification %s")
-    IllegalArgumentException invalidKey(String key);
+    String invalidPathElementKey(String key);
 
     /**
      * Creates an exception indicating the load factor must be greater than 0 and less than or equal to 1.
@@ -1097,10 +1088,10 @@ public interface ControllerMessages {
      *
      * @param value the invalid value.
      *
-     * @return an {@link IllegalArgumentException} for the error.
+     * @return an {@link OperationFailedRuntimeException} for the error.
      */
     @Message(id = 14719, value = "Invalid value specification %s")
-    IllegalArgumentException invalidValue(String value);
+    String invalidPathElementValue(String value);
 
     /**
      * A message indicating the {@code value} for the parameter, represented by the {@code name} parameter, is invalid.
@@ -1304,10 +1295,10 @@ public interface ControllerMessages {
      *
      * @param name the name.
      *
-     * @return an {@link IllegalStateException} for the error.
+     * @return an {@link OperationFailedRuntimeException} for the error.
      */
     @Message(id = 14738, value = "No child type %s")
-    IllegalStateException noChildType(String name);
+    OperationFailedRuntimeException noChildType(String name);
 
     /**
      * A message indicating no handler for the step operation, represented by the {@code stepOpName} parameter, at
@@ -1615,10 +1606,10 @@ public interface ControllerMessages {
      * @param ancestor the ancestor path.
      * @param address  the address.
      *
-     * @return an {@link IllegalStateException} for the error.
+     * @return an {@link OperationFailedRuntimeException} for the error.
      */
     @Message(id = 14766, value = "Resource %s does not exist; a resource at address %s cannot be created until all ancestor resources have been added")
-    IllegalStateException resourceNotFound(PathAddress ancestor, PathAddress address);
+    OperationFailedRuntimeException resourceNotFound(PathAddress ancestor, PathAddress address);
 
     /**
      * Creates an exception indicating the rollback has already been invoked.
@@ -2027,4 +2018,14 @@ public interface ControllerMessages {
      */
     @Message(id = 14802, value = "Cannot resolve expression '%s' -- %s")
     String cannotResolveExpression(ModelNode toResolve, IllegalStateException e);
+
+    /**
+     * Creates an exception indicating the resource is a duplicate.
+     *
+     * @param address the address of the resource.
+     *
+     * @return an {@link OperationFailedRuntimeException} for the error.
+     */
+    @Message(id = 14803, value = "Duplicate resource %s")
+    OperationFailedRuntimeException duplicateResourceAddress(PathAddress address);
 }

@@ -55,7 +55,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -720,7 +719,7 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase {
                 }
                 if (!i.hasNext()) {
                     if (model.hasChild(element)) {
-                        throw MESSAGES.duplicateResource(relativeAddress);
+                        throw MESSAGES.duplicateResourceAddress(relativeAddress);
                     } else {
                         model.registerChild(element, toAdd);
                         model = toAdd;
