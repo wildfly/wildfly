@@ -1,0 +1,27 @@
+SYNOPSIS
+
+    read-attribute --help |
+                   [--node=node_path] --name=attribute_name [--include-defaults=true|false] [--verbose]
+
+DESCRIPTION
+
+    Prints the value and, depending on the arguments, the description
+    of the attribute of a managed resource.
+
+ARGUMENTS
+
+ --help          - prints this message.
+ 
+ --node          - (optional) the node path of the managed resource
+                   to which the target attribute belongs.
+                   If not present, the current node path (indicated in the prompt) is assumed.
+                
+ --name          - (required) the name of the target attribute.
+ 
+ --include-defaults  - (optional) boolean to enable/disable default reading.
+                       In case it is set to false only the values set by user are returned.
+                       Attributes that were not explicitly initialized, will appear
+                       as not having any value.
+ 
+ --verbose (-v)  - will print all the available meta information about the attribute
+                   in addition to the attribute value.

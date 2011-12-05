@@ -148,24 +148,7 @@ public class LsHandler extends CommandHandlerWithHelp {
             }
 
             if(l.isPresent(parsedCmd)) {
-                final ModelNode request = new ModelNode();
-                request.get(Util.OPERATION).set(Util.READ_RESOURCE_DESCRIPTION);
-                final ModelNode addressNode = request.get(Util.ADDRESS);
-                if (address.isEmpty()) {
-                    addressNode.setEmptyList();
-                } else {
-                    Iterator<Node> iterator = address.iterator();
-                    while (iterator.hasNext()) {
-                        OperationRequestAddress.Node node = iterator.next();
-                        if (node.getName() != null) {
-                            addressNode.add(node.getType(), node.getName());
-                        } else if (iterator.hasNext()) {
-                            throw new OperationFormatException("Expected a node name for type '" + node.getType()
-                                    + "' in path '" + ctx.getPrefixFormatter().format(address) + "'");
-                        }
-                    }
-                }
-                steps.add(request);
+                steps.add(Util.buildRequest(ctx, address, Util.READ_RESOURCE_DESCRIPTION));
             }
 
             try {
@@ -349,7 +332,7 @@ public class LsHandler extends CommandHandlerWithHelp {
         }
         return attrDescr.has(name) ? attrDescr.get(name).asString() : "n/a";
     }
-
+/*
     public static void main(String[] args) throws Exception {
 
         //System.out.printf("%-8s %-11s %-8s %-11s", "name", "type", "required", "access-type");
@@ -358,4 +341,5 @@ public class LsHandler extends CommandHandlerWithHelp {
         t.addLine(new String[]{"some name", "int", "false", "read-only", null});
         System.out.println(t.toString());
     }
+    */
 }
