@@ -209,7 +209,7 @@
                 * lax-boolean-encoding: indicates whether any non-zero CDR encoded boolean value should be interpreted as
                                         true (on) or not (off).
                 * indirection-encoding-disabled: indicates whether indirection encoding for repeated typecodes should be
-                                                 enabled (on) or not (off).
+                                                 disabled (on) or not (off).
                 * strict-check-on-tc-creation: indicates whether the method create_abstract_interface_tc should perform
                                                a validation check on the name parameter (on) or not (off).
                         ]]>
