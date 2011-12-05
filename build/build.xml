@@ -382,6 +382,10 @@
             <maven-resource group="xerces" artifact="xercesImpl"/>
         </module-def>
 
+        <module-def name="org.apache.xml-resolver">
+            <maven-resource group="xml-resolver" artifact="xml-resolver"/>
+        </module-def>
+
     	<module-def name="org.apache.ws.xmlschema">
             <maven-resource group="org.apache.ws.xmlschema" artifact="xmlschema-core"/>
         </module-def>
