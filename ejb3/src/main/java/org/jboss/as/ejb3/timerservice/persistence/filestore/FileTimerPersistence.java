@@ -169,6 +169,7 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
     public void timerUndeployed(final String timedObjectId) {
         final Lock lock = getLock(timedObjectId);
         try {
+            lock.lock();
             locks.remove(timedObjectId);
             timers.remove(timedObjectId);
             directories.remove(timedObjectId);
