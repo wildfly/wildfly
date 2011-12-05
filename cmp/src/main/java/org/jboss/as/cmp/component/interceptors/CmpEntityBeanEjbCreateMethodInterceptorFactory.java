@@ -57,6 +57,9 @@ public class CmpEntityBeanEjbCreateMethodInterceptorFactory extends EntityBeanEj
 
         if (storeManager.getCmpConfig().isInsertAfterEjbPostCreate()) {
             storeManager.createEntity(context.getMethod(), context.getParameters(), cmpInstance.getEjbContext());
+        } else {
+            // Invoke store after post create
+            cmpInstance.store();
         }
 
         final Transaction transaction = component.getTransactionManager().getTransaction();

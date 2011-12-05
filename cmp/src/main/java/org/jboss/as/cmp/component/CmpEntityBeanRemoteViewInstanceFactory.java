@@ -56,6 +56,9 @@ public class CmpEntityBeanRemoteViewInstanceFactory extends EntityBeanRemoteView
 
         if (storeManager.getCmpConfig().isInsertAfterEjbPostCreate()) {
             storeManager.createEntity(ejbPostCreate, params, cmpInstance.getEjbContext());
+        } else {
+            // Invoke store after post create
+            cmpInstance.store();
         }
 
         final Transaction transaction = component.getTransactionManager().getTransaction();
