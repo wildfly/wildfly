@@ -132,6 +132,11 @@ public final class Attachments {
     public static final AttachmentKey<AttachmentList<ModuleIdentifier>> CLASS_PATH_ENTRIES = AttachmentKey.createList(ModuleIdentifier.class);
 
     /**
+     * Resource roots for additional modules referenced via Class-Path
+     */
+    public static final AttachmentKey<AttachmentList<ResourceRoot>> CLASS_PATH_RESOURCE_ROOTS = AttachmentKey.createList(ResourceRoot.class);
+
+    /**
      * The list of extensions given in the manifest and structure configurations.
      */
     public static final AttachmentKey<AttachmentList<ExtensionListEntry>> EXTENSION_LIST_ENTRIES = AttachmentKey.createList(ExtensionListEntry.class);

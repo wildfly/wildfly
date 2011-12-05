@@ -24,6 +24,7 @@ package org.jboss.as.server.deployment.module;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,11 +44,16 @@ import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
+import org.jboss.jandex.Index;
+import org.jboss.jandex.Indexer;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
+import org.jboss.vfs.VirtualFileFilter;
+import org.jboss.vfs.VisitorAttributes;
+import org.jboss.vfs.util.SuffixMatchFilter;
 
 /**
  * A processor which adds class path entries for each manifest entry.
@@ -72,6 +78,8 @@ import org.jboss.vfs.VirtualFile;
 public final class ManifestClassPathProcessor implements DeploymentUnitProcessor {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment");
+
+    private static final Logger logger = Logger.getLogger(ManifestClassPathProcessor.class);
 
     private static final String[] EMPTY_STRING_ARRAY = {};
 
@@ -161,11 +169,17 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
         }
     }
 
-    private void handlingExistingClassPathEntry(final DeploymentUnit deploymentUnit, final ArrayDeque<ResourceRoot> resourceRoots, final DeploymentUnit topLevelDeployment, final VirtualFile topLevelRoot, final Map<VirtualFile, ResourceRoot> subDeployments, final Map<VirtualFile, AdditionalModuleSpecification> additionalModules, final Set<VirtualFile> earLibJars, final ResourceRoot resourceRoot, final Attachable target, final VirtualFile topLevelClassPathFile) {
+    private void handlingExistingClassPathEntry(final DeploymentUnit deploymentUnit, final ArrayDeque<ResourceRoot> resourceRoots, final DeploymentUnit topLevelDeployment, final VirtualFile topLevelRoot, final Map<VirtualFile, ResourceRoot> subDeployments, final Map<VirtualFile, AdditionalModuleSpecification> additionalModules, final Set<VirtualFile> earLibJars, final ResourceRoot resourceRoot, final Attachable target, final VirtualFile topLevelClassPathFile) throws DeploymentUnitProcessingException {
         if (earLibJars.contains(topLevelClassPathFile)) {
             log.debugf("Class-Path entry %s in %s ignored, as target is in or referenced by /lib", topLevelClassPathFile, resourceRoot.getRoot());
         } else if (additionalModules.containsKey(topLevelClassPathFile)) {
-            target.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, additionalModules.get(topLevelClassPathFile).getModuleIdentifier());
+            final AdditionalModuleSpecification moduleSpecification = additionalModules.get(topLevelClassPathFile);
+            target.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, moduleSpecification.getModuleIdentifier());
+            for (final ResourceRoot root : moduleSpecification.getResourceRoots()) {
+                //add this to the list of roots to be processed, so transitive class path entries will be respected
+                resourceRoots.add(root);
+                deploymentUnit.addToAttachmentList(Attachments.CLASS_PATH_RESOURCE_ROOTS, root);
+            }
         } else if (subDeployments.containsKey(topLevelClassPathFile)) {
             //now we need to calculate the sub deployment module identifer
             //unfortunately the sub deployment has not been setup yet, so we cannot just
@@ -177,7 +191,7 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
         }
     }
 
-    private void createAdditionalModule(final DeploymentUnit deploymentUnit, final DeploymentUnit topLevelDeployment, final VirtualFile topLevelRoot, final Map<VirtualFile, AdditionalModuleSpecification> additionalModules, final ResourceRoot resourceRoot, final VirtualFile classPathFile, final ArrayDeque<ResourceRoot> resourceRoots) {
+    private void createAdditionalModule(final DeploymentUnit deploymentUnit, final DeploymentUnit topLevelDeployment, final VirtualFile topLevelRoot, final Map<VirtualFile, AdditionalModuleSpecification> additionalModules, final ResourceRoot resourceRoot, final VirtualFile classPathFile, final ArrayDeque<ResourceRoot> resourceRoots) throws DeploymentUnitProcessingException {
         final ResourceRoot root = createResourceRoot(deploymentUnit, classPathFile);
 
         //add this to the list of roots to be processed, so transitive class path entries will be respected
@@ -187,6 +201,7 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
         AdditionalModuleSpecification module = new AdditionalModuleSpecification(identifier, root);
         topLevelDeployment.addToAttachmentList(Attachments.ADDITIONAL_MODULES, module);
         additionalModules.put(classPathFile, module);
+        deploymentUnit.addToAttachmentList(Attachments.CLASS_PATH_RESOURCE_ROOTS, root);
     }
 
 
@@ -230,16 +245,58 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
      * @return Returns the created {@link ResourceRoot}
      * @throws java.io.IOException
      */
-    private synchronized ResourceRoot createResourceRoot(final DeploymentUnit deploymentUnit, final VirtualFile file) {
+    private synchronized ResourceRoot createResourceRoot(final DeploymentUnit deploymentUnit, final VirtualFile file) throws DeploymentUnitProcessingException {
         try {
             final Closeable closable = file.isFile() ? VFS.mountZip(file, file, TempFileProviderService.provider()) : null;
             final MountHandle mountHandle = new MountHandle(closable);
             final ResourceRoot resourceRoot = new ResourceRoot(file, mountHandle);
             deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, resourceRoot);
             ModuleRootMarker.mark(resourceRoot);
+            indexResourceRoot(resourceRoot);
             return resourceRoot;
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * As the indexer has already run we need to index these manually.
+     * <p/>
+     * The indexer must be run before this processor, as it is required to identify sub deployments
+     *
+     * @param resourceRoot
+     * @throws DeploymentUnitProcessingException
+     *
+     */
+    private static void indexResourceRoot(final ResourceRoot resourceRoot) throws DeploymentUnitProcessingException {
+        final VirtualFile virtualFile = resourceRoot.getRoot();
+        final Indexer indexer = new Indexer();
+        try {
+            final VisitorAttributes visitorAttributes = new VisitorAttributes();
+            visitorAttributes.setLeavesOnly(true);
+            visitorAttributes.setRecurseFilter(new VirtualFileFilter() {
+                public boolean accepts(VirtualFile file) {
+                    return true;
+                }
+            });
+
+            final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class", visitorAttributes));
+            for (VirtualFile classFile : classChildren) {
+                InputStream inputStream = null;
+                try {
+                    inputStream = classFile.openStream();
+                    indexer.index(inputStream);
+                } catch (Exception e) {
+                    logger.warn("Could not index class " + classFile.getPathNameRelativeTo(virtualFile) + " in archive '" + virtualFile + "'", e);
+                } finally {
+                    VFSUtils.safeClose(inputStream);
+                }
+            }
+            final Index index = indexer.complete();
+            resourceRoot.putAttachment(Attachments.ANNOTATION_INDEX, index);
+            logger.tracef("Generated index for archive %s", virtualFile);
+        } catch (Throwable t) {
+            throw new DeploymentUnitProcessingException("Failed to index deployment root for annotations", t);
         }
     }
 

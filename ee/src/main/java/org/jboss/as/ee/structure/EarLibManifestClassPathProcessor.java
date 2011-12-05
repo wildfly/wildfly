@@ -24,6 +24,7 @@ package org.jboss.as.ee.structure;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
@@ -44,10 +45,15 @@ import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.module.TempFileProviderService;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
+import org.jboss.jandex.Index;
+import org.jboss.jandex.Indexer;
+import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
+import org.jboss.vfs.VisitorAttributes;
+import org.jboss.vfs.util.SuffixMatchFilter;
 
 import static org.jboss.as.ee.EeLogger.SERVER_DEPLOYMENT_LOGGER;
 
@@ -60,6 +66,7 @@ import static org.jboss.as.ee.EeLogger.SERVER_DEPLOYMENT_LOGGER;
 public final class EarLibManifestClassPathProcessor implements DeploymentUnitProcessor {
 
     private static final String[] EMPTY_STRING_ARRAY = {};
+    private static final Logger logger = Logger.getLogger(EarLibManifestClassPathProcessor.class);
 
     /**
      * {@inheritDoc}
@@ -166,15 +173,44 @@ public final class EarLibManifestClassPathProcessor implements DeploymentUnitPro
      * @return Returns the created {@link ResourceRoot}
      * @throws java.io.IOException
      */
-    private ResourceRoot createResourceRoot(final DeploymentUnit deploymentUnit, final VirtualFile file) {
+    private ResourceRoot createResourceRoot(final DeploymentUnit deploymentUnit, final VirtualFile file) throws DeploymentUnitProcessingException {
         try {
             final Closeable closable = file.isFile() ? VFS.mountZip(file, file, TempFileProviderService.provider()) : null;
             final MountHandle mountHandle = new MountHandle(closable);
             final ResourceRoot resourceRoot = new ResourceRoot(file, mountHandle);
             deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, resourceRoot);
+            indexResourceRoot(resourceRoot);
+            deploymentUnit.addToAttachmentList(Attachments.CLASS_PATH_RESOURCE_ROOTS, resourceRoot);
             return resourceRoot;
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private static void indexResourceRoot(final ResourceRoot resourceRoot) throws DeploymentUnitProcessingException {
+        final VirtualFile virtualFile = resourceRoot.getRoot();
+        final Indexer indexer = new Indexer();
+        try {
+            final VisitorAttributes visitorAttributes = new VisitorAttributes();
+            visitorAttributes.setLeavesOnly(true);
+
+            final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class", visitorAttributes));
+            for (VirtualFile classFile : classChildren) {
+                InputStream inputStream = null;
+                try {
+                    inputStream = classFile.openStream();
+                    indexer.index(inputStream);
+                } catch (Exception e) {
+                    logger.warn("Could not index class " + classFile.getPathNameRelativeTo(virtualFile) + " in archive '" + virtualFile + "'", e);
+                } finally {
+                    VFSUtils.safeClose(inputStream);
+                }
+            }
+            final Index index = indexer.complete();
+            resourceRoot.putAttachment(Attachments.ANNOTATION_INDEX, index);
+            logger.tracef("Generated index for archive %s", virtualFile);
+        } catch (Throwable t) {
+            throw new DeploymentUnitProcessingException("Failed to index deployment root for annotations", t);
         }
     }
 

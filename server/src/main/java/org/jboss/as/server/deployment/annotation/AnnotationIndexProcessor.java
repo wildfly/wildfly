@@ -22,6 +22,12 @@
 
 package org.jboss.as.server.deployment.annotation;
 
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -38,13 +44,6 @@ import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
 import org.jboss.vfs.VisitorAttributes;
 import org.jboss.vfs.util.SuffixMatchFilter;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Deployment unit processor responsible for creating and attaching an annotation index for a resource root
@@ -66,11 +65,13 @@ public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final List<ResourceRoot> allResourceRoots = new ArrayList<ResourceRoot>();
-        final List<ResourceRoot> resourceRoots = phaseContext.getDeploymentUnit().getAttachment(Attachments.RESOURCE_ROOTS);
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final List<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
         if (resourceRoots != null) {
             allResourceRoots.addAll(resourceRoots);
         }
-        allResourceRoots.add(phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT));
+
+        allResourceRoots.add(deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT));
         for (ResourceRoot resourceRoot : allResourceRoots) {
             if (resourceRoot.getAttachment(Attachments.ANNOTATION_INDEX) != null) {
                 continue;
@@ -132,6 +133,8 @@ public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
                 throw new DeploymentUnitProcessingException("Failed to index deployment root for annotations", t);
             }
         }
+
+
     }
 
     public void undeploy(final DeploymentUnit context) {

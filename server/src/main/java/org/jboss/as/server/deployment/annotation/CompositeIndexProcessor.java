@@ -22,6 +22,9 @@
 
 package org.jboss.as.server.deployment.annotation;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -36,9 +39,6 @@ import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Processor responsible for creating and attaching a {@link CompositeIndex} for a deployment.
@@ -62,7 +62,7 @@ public class CompositeIndexProcessor implements DeploymentUnitProcessor {
 
         final List<ModuleIdentifier> additionalModuleIndexes = deploymentUnit.getAttachmentList(Attachments.ADDITIONAL_ANNOTATION_INDEXES);
         final List<Index> indexes = new ArrayList<Index>();
-        for(ModuleIdentifier moduleIdentifier : additionalModuleIndexes) {
+        for(final ModuleIdentifier moduleIdentifier : additionalModuleIndexes) {
             try {
                 Module module = Module.getBootModuleLoader().loadModule(moduleIdentifier);
                 final CompositeIndex additionalIndex = ModuleIndexBuilder.buildCompositeIndex(module);
@@ -89,6 +89,14 @@ public class CompositeIndexProcessor implements DeploymentUnitProcessor {
                 }
             }
         }
+
+        //we merge all Class-Path annotation indexes into the deployments composite index
+        //this means that if component defining annotations (e.g. @Stateless) are specified in a Class-Path
+        //entry references by two sub deployments this component will be created twice.
+        //the spec expects this behaviour, and explicitly warns not to put component defining annotations
+        //in Class-Path items
+        allResourceRoots.addAll(deploymentUnit.getAttachmentList(Attachments.CLASS_PATH_RESOURCE_ROOTS));
+
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
 
         if(ModuleRootMarker.isModuleRoot(deploymentRoot)) {
