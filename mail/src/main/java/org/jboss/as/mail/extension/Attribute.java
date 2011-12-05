@@ -13,7 +13,8 @@ public enum Attribute {
     PASSWORD(ModelKeys.PASSWORD),
     JNDI_NAME(ModelKeys.JNDI_NAME),
     DEBUG(ModelKeys.DEBUG),
-    OUTBOUND_SOCKET_BINDING_REF(ModelKeys.OUTBOUND_SOCKET_BINDING_REF);
+    OUTBOUND_SOCKET_BINDING_REF(ModelKeys.OUTBOUND_SOCKET_BINDING_REF),
+    SSL(ModelKeys.SSL);
 
     private final String name;
 

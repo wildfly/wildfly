@@ -14,10 +14,9 @@ public class ModelKeys {
     static final String PASSWORD = "password";
     static final String JNDI_NAME = "jndi-name";
     static final String DEBUG = "debug";
-    static final String SERVER_ADDRESS = "address";
-    static final String SERVER_PORT = "port";
     static final String OUTBOUND_SOCKET_BINDING_REF = "outbound-socket-binding-ref";
     static final String CREDENTIALS= "credentials";
+    static final String SSL= "ssl";
 
 
 }

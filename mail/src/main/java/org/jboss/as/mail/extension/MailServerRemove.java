@@ -9,11 +9,11 @@ import org.jboss.dmr.ModelNode;
  * @author Tomaz Cerar
  * @created 19.12.11 21:40
  */
-public class MailSessionRemove extends AbstractRemoveStepHandler {
+public class MailServerRemove extends AbstractRemoveStepHandler {
 
-    public static final MailSessionRemove INSTANCE = new MailSessionRemove();
+    public static final MailServerRemove INSTANCE = new MailServerRemove();
 
-    private MailSessionRemove() {
+    private MailServerRemove() {
     }
 
     @Override

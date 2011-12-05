@@ -3,7 +3,6 @@ package org.jboss.as.mail.extension;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 
 /**
  * Handler responsible for adding the mail subsystem resource to the model
@@ -22,10 +21,7 @@ class MailSubsystemAdd extends AbstractAddStepHandler {
      */
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        //log.info("Populating the model");
         model.setEmptyObject();
-        model.get(ModelKeys.MAIL_SESSION);
+        model.get(MailSubsystemModel.MAIL_SESSION);
     }
-
-
 }

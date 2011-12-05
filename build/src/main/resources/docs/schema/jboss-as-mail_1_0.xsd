@@ -47,6 +47,15 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="ssl" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                    enables use of ssl for this server configuration
+                ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
 </xs:schema>

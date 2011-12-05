@@ -1,11 +1,11 @@
 package org.jboss.as.mail.extension;
 
-import java.util.List;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
@@ -13,15 +13,15 @@ import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.network.OutboundSocketBinding;
-import org.jboss.as.server.services.net.OutboundSocketBindingService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
+
+import java.util.List;
 
 /**
  * @author Tomaz Cerar
@@ -32,7 +32,7 @@ public class MailSessionAdd extends AbstractAddStepHandler {
     static final MailSessionAdd INSTANCE = new MailSessionAdd();
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("mail-session");
 
-    private MailSessionAdd() {
+    protected MailSessionAdd() {
     }
 
     /**
@@ -40,23 +40,7 @@ public class MailSessionAdd extends AbstractAddStepHandler {
      */
     @Override
     protected void populateModel(ModelNode existingModel, ModelNode newModel) throws OperationFailedException {
-        copyModel(existingModel, newModel, ModelKeys.JNDI_NAME, ModelKeys.DEBUG);
-        if (existingModel.hasDefined(ModelKeys.SMTP_SERVER)) {
-            newModel.get(ModelKeys.SMTP_SERVER).set(existingModel.get(ModelKeys.SMTP_SERVER));
-        }
-        if (existingModel.hasDefined(ModelKeys.POP3_SERVER)) {
-            newModel.get(ModelKeys.POP3_SERVER).set(existingModel.get(ModelKeys.POP3_SERVER));
-        }
-        if (existingModel.hasDefined(ModelKeys.IMAP_SERVER)) {
-            newModel.get(ModelKeys.IMAP_SERVER).set(existingModel.get(ModelKeys.IMAP_SERVER));
-        }
-
-    }
-
-    static void copyModel(ModelNode src, ModelNode target, String... params) {
-        for (String p : params) {
-            target.get(p).set(src.get(p).asString());
-        }
+        Util.copyModel(existingModel,newModel,MailSubsystemModel.JNDI_NAME,MailSubsystemModel.DEBUG,MailSubsystemModel.FROM);
     }
 
 
@@ -85,7 +69,8 @@ public class MailSessionAdd extends AbstractAddStepHandler {
         final String jndiName = Util.getJndiName(operation);
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
-        final MailSessionConfig config = Util.from(context, operation);
+        ModelNode fullTree = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+        final MailSessionConfig config = Util.from(context, fullTree);
         final MailSessionService service = new MailSessionService(config);
         final ServiceName serviceName = SERVICE_NAME_BASE.append(jndiName);
         final ServiceBuilder<?> mailSessionBuilder = serviceTarget.addService(serviceName, service);
@@ -94,13 +79,12 @@ public class MailSessionAdd extends AbstractAddStepHandler {
         addOutboundSocketDependency(service, mailSessionBuilder, config.getSmtpServer());
 
         final ManagedReferenceFactory valueManagedReferenceFactory = new ManagedReferenceFactory() {
-
             @Override
             public ManagedReference getReference() {
                 return new ValueManagedReference(new ImmediateValue<Object>(service.getValue()));
             }
         };
-        final ContextNames.BindInfo bindInfo =  ContextNames.bindInfoFor(jndiName);
+        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
         final BinderService binderService = new BinderService(bindInfo.getBindName());
         final ServiceBuilder<?> binderBuilder = serviceTarget
                 .addService(bindInfo.getBinderServiceName(), binderService)

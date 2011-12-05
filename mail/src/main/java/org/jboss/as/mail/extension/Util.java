@@ -8,6 +8,7 @@ import static org.jboss.as.mail.extension.ModelKeys.OUTBOUND_SOCKET_BINDING_REF;
 import static org.jboss.as.mail.extension.ModelKeys.PASSWORD;
 import static org.jboss.as.mail.extension.ModelKeys.POP3_SERVER;
 import static org.jboss.as.mail.extension.ModelKeys.SMTP_SERVER;
+import static org.jboss.as.mail.extension.ModelKeys.SSL;
 import static org.jboss.as.mail.extension.ModelKeys.USERNAME;
 
 import org.jboss.as.controller.OperationContext;
@@ -37,6 +38,7 @@ public class Util {
 
     private static void addServerConfig(final ModelNode operation, final MailSessionServer server, final String name) {
         operation.get(name).get(OUTBOUND_SOCKET_BINDING_REF).set(server.getOutgoingSocketBinding());
+        operation.get(name).get(SSL).set(server.isSslEnabled());
         addCredentials(operation.get(name), server.getCredentials());
     }
 
@@ -50,7 +52,8 @@ public class Util {
     private static MailSessionServer readServerConfig(final OperationContext operationContext, final ModelNode model) throws OperationFailedException {
         final String socket = model.require(OUTBOUND_SOCKET_BINDING_REF).asString();
         final Credentials credentials = readCredentials(operationContext, model);
-        return new MailSessionServer(socket, credentials);
+        boolean ssl = model.get(SSL).asBoolean(false);
+        return new MailSessionServer(socket, credentials,ssl);
     }
 
     private static Credentials readCredentials(final OperationContext operationContext, final ModelNode model) throws OperationFailedException {
@@ -67,19 +70,15 @@ public class Util {
         cfg.setJndiName(model.require(JNDI_NAME).asString());
         cfg.setDebug(model.get(DEBUG).asBoolean(false));
 
-
         if (model.hasDefined(SMTP_SERVER)) {
             cfg.setSmtpServer(readServerConfig(operationContext, model.get(SMTP_SERVER)));
         }
-
         if (model.hasDefined(POP3_SERVER)) {
             cfg.setPop3Server(readServerConfig(operationContext, model.get(POP3_SERVER)));
         }
-
         if (model.hasDefined(IMAP_SERVER)) {
             cfg.setPop3Server(readServerConfig(operationContext, model.get(IMAP_SERVER)));
         }
-
         return cfg;
     }
 

@@ -10,12 +10,11 @@ import java.util.Map;
 public enum Element {
     UNKNOWN(null),
 
-    LOGIN(ModelKeys.LOGIN),
-    MAIL_SESSION(ModelKeys.MAIL_SESSION),
-    SMTP_SERVER(ModelKeys.SMTP_SERVER),
-    POP3_SERVER(ModelKeys.POP3_SERVER),
-    IMAP_SERVER(ModelKeys.IMAP_SERVER),
-    ;
+    LOGIN(MailSubsystemModel.LOGIN),
+    MAIL_SESSION(MailSubsystemModel.MAIL_SESSION),
+    SMTP_SERVER(MailSubsystemModel.SMTP_SERVER),
+    POP3_SERVER(MailSubsystemModel.POP3_SERVER),
+    IMAP_SERVER(MailSubsystemModel.IMAP_SERVER),;
 
     private final String name;
 
@@ -38,7 +37,7 @@ public enum Element {
         final Map<String, Element> map = new HashMap<String, Element>();
         for (Element element : values()) {
             final String name = element.getLocalName();
-            if (name != null) map.put(name, element);
+            if (name != null) { map.put(name, element); }
         }
         elements = map;
     }

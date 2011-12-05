@@ -1,14 +1,5 @@
 package org.jboss.as.mail.extension;
 
-import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.logging.Logger;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-
-import javax.xml.stream.XMLStreamException;
-import java.util.Properties;
-
-import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-
 /**
  * @author <a href="tomaz.cerar@gmail.com">Tomaz Cerar</a>
  * @created 25.7.11 15:48
@@ -16,15 +7,22 @@ import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 public class MailSessionConfig {
     private String jndiName;
     private boolean debug = false;
+    private String from = null;
 
     private MailSessionServer smtpServer;
     private MailSessionServer pop3Server;
     private MailSessionServer imapServer;
 
 
-
     protected MailSessionConfig() {
+    }
 
+    public String getFrom() {
+        return from;
+    }
+
+    public void setFrom(String from) {
+        this.from = from;
     }
 
     public String getJndiName() {

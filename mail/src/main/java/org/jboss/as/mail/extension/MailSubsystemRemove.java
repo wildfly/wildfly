@@ -7,13 +7,13 @@ import org.jboss.dmr.ModelNode;
 
 /**
  * @author Tomaz Cerar
- * @created 19.12.11 21:40
+ * @created 19.12.11 20:31
  */
-public class MailSessionRemove extends AbstractRemoveStepHandler {
+public class MailSubsystemRemove extends AbstractRemoveStepHandler {
 
-    public static final MailSessionRemove INSTANCE = new MailSessionRemove();
+    public static final MailSubsystemRemove INSTANCE = new MailSubsystemRemove();
 
-    private MailSessionRemove() {
+    private MailSubsystemRemove() {
     }
 
     @Override
