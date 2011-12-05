@@ -19,6 +19,8 @@
 package org.jboss.as.domain.controller.operations.deployment;
 
 import java.util.Locale;
+import java.util.NoSuchElementException;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
@@ -90,7 +92,7 @@ public class ServerGroupDeploymentReplaceHandler implements OperationStepHandler
         try {
             // check if the domain deployment exists
             domainDeployment = context.getRootResource().requireChild(deploymentPath);
-        } catch (Exception e) {
+        } catch (NoSuchElementException e) {
             throw operationFailed(String.format("No deployment with name %s found", name));
         }
 

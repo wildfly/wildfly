@@ -22,18 +22,17 @@
 
 package org.jboss.as.controller.registry;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.dmr.ModelNode;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * Standard {@link Resource} implementation.
@@ -93,7 +92,7 @@ class BasicResource implements Resource {
     public Resource requireChild(final PathElement address) {
         final Resource resource = getChild(address);
         if(resource == null) {
-            throw new NoSuchElementException(address.toString());
+            throw new NoSuchResourceException(address);
         }
         return resource;
     }
@@ -101,10 +100,7 @@ class BasicResource implements Resource {
     @Override
     public boolean hasChildren(final String childType) {
         final ResourceProvider provider = getProvider(childType);
-        if(provider == null) {
-            return false;
-        }
-        return provider.hasChildren();
+        return provider != null && provider.hasChildren();
     }
 
     @Override
@@ -179,6 +175,7 @@ class BasicResource implements Resource {
         return false;
     }
 
+    @SuppressWarnings({"CloneDoesntCallSuperClone"})
     @Override
     public Resource clone() {
         final Resource clone = new BasicResource();
@@ -354,6 +351,7 @@ class BasicResource implements Resource {
             return delegate.isProxy();
         }
 
+        @SuppressWarnings({"CloneDoesntCallSuperClone"})
         @Override
         public Resource clone() {
            return delegate.clone();

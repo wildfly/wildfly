@@ -69,7 +69,7 @@ public class OSGiBundleResource implements Resource {
 
     @Override
     public Resource requireChild(PathElement element) {
-        throw new NoSuchElementException();
+        throw new NoSuchResourceException(element);
     }
 
     @Override
@@ -79,7 +79,7 @@ public class OSGiBundleResource implements Resource {
 
     @Override
     public Resource navigate(PathAddress address) {
-        throw new NoSuchElementException();
+        return Resource.Tools.navigate(this, address);
     }
 
     @Override

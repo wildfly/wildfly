@@ -72,7 +72,7 @@ abstract class AbstractPlatformMBeanResource implements Resource.ResourceEntry {
     public Resource requireChild(PathElement address) {
         final Resource resource = getChild(address);
         if (resource == null) {
-            throw new NoSuchElementException(address.toString());
+            throw new NoSuchResourceException(address);
         }
         return resource;
     }

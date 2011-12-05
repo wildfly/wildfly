@@ -96,7 +96,7 @@ public class OSGiRuntimeResource implements Resource {
         if (ModelConstants.BUNDLE.equals(element.getKey())) {
             if (hasBundle(element))
                 return OSGiBundleResource.INSTANCE;
-            throw new NoSuchElementException(element.toString());
+            throw new NoSuchResourceException(element);
         } else {
             return delegate.requireChild(element);
         }
@@ -114,7 +114,7 @@ public class OSGiRuntimeResource implements Resource {
     public Resource navigate(PathAddress address) {
         if (address.size() > 0 && ModelConstants.BUNDLE.equals(address.getElement(0).getKey())) {
             if (address.size() > 1) {
-                throw new NoSuchElementException(address.subAddress(1).toString());
+                throw new NoSuchResourceException(address.getElement(1));
             }
             return OSGiBundleResource.INSTANCE;
         } else {

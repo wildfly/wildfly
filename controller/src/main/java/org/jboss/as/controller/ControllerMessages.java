@@ -2039,4 +2039,24 @@ public interface ControllerMessages {
      */
     @Message(id = 14804, value = "Cannot remove resource before removing child resources %s")
     OperationFailedException cannotRemoveResourceWithChildren(List<PathElement> children);
+
+    /**
+     * Creates an exception indicating a resource cannot be found.
+     *
+     * @param pathAddress the address for the resource.
+     *
+     * @return an {@link OperationFailedRuntimeException} for the error.
+     */
+    @Message(id = 14807, value = "Management resource '%s' not found")
+    OperationFailedRuntimeException managementResourceNotFound(PathAddress pathAddress);
+
+    /**
+     * Creates an exception message indicating a child resource cannot be found.
+     *
+     * @param childAddress the address element for the child.
+     *
+     * @return an message for the error.
+     */
+    @Message(id = 14808, value = "Child resource '%s' not found")
+    String childResourceNotFound(PathElement childAddress);
 }
