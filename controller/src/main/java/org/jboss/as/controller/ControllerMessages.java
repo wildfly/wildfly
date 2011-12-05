@@ -52,6 +52,9 @@ import org.jboss.msc.service.StartException;
 /**
  * Date: 02.11.2011
  *
+ * Reserved logging id ranges from: http://community.jboss.org/wiki/LoggingIds: 14600 - 14899
+ *
+ *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @MessageBundle(projectCode = "JBAS")
@@ -621,15 +624,14 @@ public interface ControllerMessages {
     ConfigurationPersistenceException failedToWriteConfiguration(@Cause Throwable cause);
 
     /**
-     * Creates an exception indicating neither {@code path1} nor {@code path2} exist.
+     * Creates an exception indicating {@code path1} does not exist.
      *
      * @param path1 the first non-existing path.
-     * @param path2 the second non-existing path.
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14681, value = "Neither %s nor %s exist")
-    IllegalArgumentException fileNotFound(String path1, String path2);
+    @Message(id = 14681, value = "%s does not exist")
+    IllegalArgumentException fileNotFound(String path1);
 
     /**
      * Creates an exception indicating no files beginning with the {@code prefix} were found in the directory,
@@ -2039,6 +2041,17 @@ public interface ControllerMessages {
      */
     @Message(id = 14804, value = "Cannot remove resource before removing child resources %s")
     OperationFailedException cannotRemoveResourceWithChildren(List<PathElement> children);
+
+    /**
+     * Creates an exception indicating the canonical file for the main file could not be found.
+     *
+     * @param name  the main file.
+     * @param configurationDir the configuration directory
+     *
+     * @return an {@link IllegalStateException} for the error.
+     */
+    @Message(id = 14805, value = "Could not get main file: %s. Specified files must be relative to the configuration dir: %s")
+    IllegalStateException mainFileNotFound(String name, File configurationDir);
 
     /**
      * Creates an exception indicating a resource cannot be found.
