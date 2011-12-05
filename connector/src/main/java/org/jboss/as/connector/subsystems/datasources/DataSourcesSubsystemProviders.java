@@ -682,6 +682,18 @@ class DataSourcesSubsystemProviders {
         }
     };
 
+     static DescriptionProvider CLEAR_METRICS_DESC = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode operation = new ModelNode();
+            operation.get(OPERATION_NAME).set("clear-metrics");
+            operation.get(DESCRIPTION).set(bundle.getString("data-source.clear-metrics"));
+            return operation;
+        }
+    };
+
+
     static DescriptionProvider XA_DATA_SOURCE_DESC = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(final Locale locale) {

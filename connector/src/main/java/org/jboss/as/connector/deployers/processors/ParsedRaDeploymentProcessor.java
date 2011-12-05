@@ -29,7 +29,9 @@ import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
 import org.jboss.as.connector.pool.PoolMetrics;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
+import org.jboss.as.connector.subsystems.ClearMetricsHandler;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.server.deployment.Attachments;
@@ -153,6 +155,8 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                             for (String statName : poolStats.getNames()) {
                                 registration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
                             }
+                            registration.registerOperationHandler("clear-metrics", new ClearMetricsHandler(poolStats), ResourceAdaptersSubsystemProviders.CLEAR_METRICS_DESC, false);
+
                             break;
 
                         }
