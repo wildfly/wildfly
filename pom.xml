@@ -151,7 +151,7 @@
         <version.org.jboss.jboss-vfs>3.1.0.CR1</version.org.jboss.jboss-vfs>
         <version.org.jboss.jsfunit.jsfunit>2.0.0.Beta1</version.org.jboss.jsfunit.jsfunit>
         <version.org.jboss.logging.jboss-logging>3.1.0.CR2</version.org.jboss.logging.jboss-logging>
-        <version.org.jboss.logging.jboss-logging-tools>1.0.0.CR4</version.org.jboss.logging.jboss-logging-tools>
+        <version.org.jboss.logging.jboss-logging-tools>1.0.0.CR5</version.org.jboss.logging.jboss-logging-tools>
         <version.org.jboss.logmanager.jboss-logmanager>1.2.0.GA</version.org.jboss.logmanager.jboss-logmanager>
         <version.org.jboss.logmanager.jboss-logmanager-log4j>1.0.0.GA</version.org.jboss.logmanager.jboss-logmanager-log4j>
         <version.org.jboss.management.console>1.0.0.Beta25</version.org.jboss.management.console>
