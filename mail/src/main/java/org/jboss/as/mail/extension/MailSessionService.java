@@ -1,17 +1,6 @@
 package org.jboss.as.mail.extension;
 
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.URLName;
-
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
@@ -20,6 +9,20 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+
+import javax.mail.Address;
+import javax.mail.Message;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.URLName;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Service that provides a javax.mail.Session.
@@ -53,64 +56,48 @@ public class MailSessionService implements Service<Session> {
         return new MapInjector<String, OutboundSocketBinding>(socketBindings, name);
     }
 
-    /*
-    Name                    Type        Description
-    mail.debug              boolean     The initial debug mode. Default is false.
-    mail.from               String      The return email address of the current user, used by the InternetAddress method getLocalAddress.
-    mail.mime.address.strict boolean    The MimeMessage class uses the InternetAddress method parseHeader to parse headers in messages. This property controls the strict flag passed to the parseHeader method. The default is true.
-    mail.host               String      The default host name of the mail server for both Stores and Transports. Used if the mail.protocol.host property isn't set.
-    mail.store.protocol     String      Specifies the default message access protocol. The Session method getStore() returns a Store object that implements this protocol. By default the first Store provider in the configuration files is returned.
-    mail.transport.protocol String      Specifies the default message transport protocol. The Session method getTransport() returns a Transport object that implements this protocol. By default the first Transport provider in the configuration files is returned.
-    mail.user               String      The default user name to use when connecting to the mail server. Used if the mail.protocol.user property isn't set.
-    mail.protocol.class     String      Specifies the fully qualified class name of the provider for the specified protocol. Used in cases where more than one provider for a given protocol exists; this property can be used to specify which provider to use by default. The provider must still be listed in a configuration file.
-    mail.protocol.host      String      The host name of the mail server for the specified protocol. Overrides the mail.host property.
-    mail.protocol.port      int         The port number of the mail server for the specified protocol. If not specified the protocol's default port number is used.
-    mail.protocol.user      String      The user name to use when connecting to mail servers using the specified protocol. Overrides the mail.user property.
+    /**
+     * Configures mail session properties
+     *
+     * @return Properties for session
+     * @throws StartException if socket binding could not be found
+     * @see {http://javamail.kenai.com/nonav/javadocs/com/sun/mail/smtp/package-summary.html}
+     * @see {http://javamail.kenai.com/nonav/javadocs/com/sun/mail/pop3/package-summary.html}
+     * @see {http://javamail.kenai.com/nonav/javadocs/com/sun/mail/imap/package-summary.html}
      */
-    private Properties getProperties() throws StartException  {
+    private Properties getProperties() throws StartException {
         Properties props = new Properties();
 
         if (config.getSmtpServer() != null) {
-            props.put("mail.transport.protocol", "smtp");
-            InetSocketAddress socketAddress = getServerSocketAddress(config.getSmtpServer());
-            props.put(getHostKey("smtp"), socketAddress.getAddress().getHostName());
-            props.put(getPortKey("smtp"), socketAddress.getPort());
+            props.setProperty("mail.transport.protocol", "smtp");
+            setServerProps(props, config.getSmtpServer(), "smtp");
+            if (config.getSmtpServer().isSslEnabled()) {
+                props.setProperty("mail.smtp.starttls.enable", "true");
+            }
         }
         if (config.getImapServer() != null) {
-            InetSocketAddress socketAddress = getServerSocketAddress(config.getImapServer());
-            props.put(getHostKey("imap"), socketAddress.getAddress().getHostName());
-            props.put(getPortKey("imap"), socketAddress.getPort());
+            setServerProps(props, config.getImapServer(), "imap");
         }
         if (config.getPop3Server() != null) {
-            InetSocketAddress socketAddress = getServerSocketAddress(config.getPop3Server());
-            props.put(getHostKey("pop3"), socketAddress.getAddress().getHostName());
-            props.put(getPortKey("pop3"), socketAddress.getPort());
+            setServerProps(props, config.getPop3Server(), "pop3");
         }
-
-        props.put("mail.debug", config.isDebug());
-        //todo maybe add mail.from
-
+        props.setProperty("mail.debug", String.valueOf(config.isDebug()));
         log.tracef("props: %s", props);
-
         return props;
     }
 
-   private void setAuthentication(final Session session) {
-        setAuthForServer(session, config.getSmtpServer(), "smtp");
-        setAuthForServer(session, config.getPop3Server(), "pop3");
-        setAuthForServer(session, config.getImapServer(), "imap");
-    }
-
-    private void setAuthForServer(final Session session, final MailSessionServer server, final String protocol) {
-        if (server != null) {
-            final String host = String.class.cast(props.get(getHostKey(protocol)));
-            final int port = Integer.class.cast(props.get(getPortKey(protocol)));
-            Credentials c = server.getCredentials();
-            URLName urlName = new URLName(protocol, host, port, "", c != null ? c.getUsername() : null, c != null ? c.getPassword() : null);
-            if (c != null) {
-                session.setPasswordAuthentication(urlName, new PasswordAuthentication(c.getUsername(), c.getPassword()));
-            }
+    private void setServerProps(Properties props, final MailSessionServer server, final String protocol) throws StartException {
+        InetSocketAddress socketAddress = getServerSocketAddress(server);
+        props.setProperty(getHostKey(protocol), socketAddress.getAddress().getHostName());
+        props.setProperty(getPortKey(protocol), String.valueOf(socketAddress.getPort()));
+        if (server.isSslEnabled()) {
+            props.setProperty(getPropKey(protocol, "ssl.enable"), "true");
         }
+        if (server.getCredentials() != null) {
+            props.setProperty(getPropKey(protocol, "auth"), "true");
+            props.setProperty(getPropKey(protocol, "user"), server.getCredentials().getUsername());
+        }
+        props.setProperty(getPropKey(protocol, "debug"), String.valueOf(config.isDebug()));
     }
 
     private InetSocketAddress getServerSocketAddress(MailSessionServer server) throws StartException {
@@ -130,10 +117,10 @@ public class MailSessionService implements Service<Session> {
 
 
     public Session getValue() throws IllegalStateException, IllegalArgumentException {
-        final Session session = Session.getInstance(props);
-        setAuthentication(session);
+        final Session session = Session.getInstance(props, new PasswordAuthentication());
         return session;
     }
+
 
     private static String getHostKey(final String protocol) {
         return new StringBuilder("mail.").append(protocol).append(".host").toString();
@@ -141,5 +128,51 @@ public class MailSessionService implements Service<Session> {
 
     private static String getPortKey(final String protocol) {
         return new StringBuilder("mail.").append(protocol).append(".port").toString();
+    }
+
+    private static String getPropKey(final String protocol, final String name) {
+        return new StringBuilder("mail.").append(protocol).append(".").append(name).toString();
+    }
+
+    /*
+     * for testing purposes only!
+     * @param session
+     */
+    /*private static void sendMail(Session session) {
+        Message msg = new MimeMessage(session);
+        try {
+            InternetAddress addressFrom = new InternetAddress("tomaz@cerar.net");
+            msg.setFrom(addressFrom);
+            msg.setRecipients(Message.RecipientType.TO, new Address[]{new InternetAddress("tomaz.cerar@gmail.com")});
+            msg.setSubject("Test Jboss AS7 mail subsystem");
+            msg.setContent("Testing mail subsystem, loerm ipsum", "text/plain");
+            Transport.send(msg);
+        } catch (Exception e) {
+            log.error("could not send mail", e);
+        }
+    }*/
+
+    /**
+     * @author Tomaz Cerar
+     * @created 5.12.11 16:22
+     */
+    public class PasswordAuthentication extends javax.mail.Authenticator {
+        @Override
+        protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
+            String protocol = getRequestingProtocol();
+            Credentials c = null;
+            if ("smtp".equals(protocol)){
+                c = config.getSmtpServer().getCredentials();
+            }else if ("pop3".equals(protocol)){
+                c = config.getPop3Server().getCredentials();
+            }else if ("imap".equals(protocol)){
+                c = config.getImapServer().getCredentials();
+            }
+
+            if (c!=null){
+                return new javax.mail.PasswordAuthentication(c.getUsername(), c.getPassword());
+            }
+            return null;
+        }
     }
 }
