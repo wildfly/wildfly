@@ -35,6 +35,7 @@ import javax.management.ReflectionException;
 import javax.management.loading.ClassLoaderRepository;
 
 import org.jboss.as.jmx.model.Constants;
+import org.jboss.as.server.jmx.MBeanServerPlugin;
 
 /**
  *

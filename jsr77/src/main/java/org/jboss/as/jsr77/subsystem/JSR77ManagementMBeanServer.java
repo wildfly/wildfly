@@ -47,8 +47,8 @@ import javax.management.ReflectionException;
 import javax.management.loading.ClassLoaderRepository;
 
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.jmx.MBeanServerPlugin;
 import org.jboss.as.jsr77.managedobject.ManagedObjectHandlerRegistry;
+import org.jboss.as.server.jmx.MBeanServerPlugin;
 
 
 /**

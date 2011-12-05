@@ -50,18 +50,22 @@ import javax.management.QueryExp;
 import javax.management.ReflectionException;
 import javax.management.loading.ClassLoaderRepository;
 
+import org.jboss.as.server.jmx.MBeanServerPlugin;
+import org.jboss.as.server.jmx.PluggableMBeanServer;
+
 /**
  * An MBeanServer supporting {@link MBeanServerPlugin}s. At it's core is the original platform mbean server wrapped in TCCL behaviour.
+ * <em>Note:</em> If this class name changes ModelCombiner must be updated.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class PluggableMBeanServer implements MBeanServer {
+class PluggableMBeanServerImpl implements PluggableMBeanServer {
 
     private final MBeanServer rootMBeanServer;
 
     private final Set<MBeanServerPlugin> delegates = new CopyOnWriteArraySet<MBeanServerPlugin>();
 
-    PluggableMBeanServer(MBeanServer rootMBeanServer) {
+    PluggableMBeanServerImpl(MBeanServer rootMBeanServer) {
         this.rootMBeanServer = new TcclMBeanServer(rootMBeanServer);
     }
 

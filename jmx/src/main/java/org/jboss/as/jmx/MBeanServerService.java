@@ -29,6 +29,8 @@ import javax.management.MBeanServer;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.jmx.model.ModelControllerMBeanServerPlugin;
 import org.jboss.as.server.Services;
+import org.jboss.as.server.jmx.MBeanServerPlugin;
+import org.jboss.as.server.jmx.PluggableMBeanServer;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
@@ -72,7 +74,7 @@ public class MBeanServerService implements Service<PluggableMBeanServer> {
     public synchronized void start(final StartContext context) throws StartException {
         //If the platform MBeanServer was set up to be the PluggableMBeanServer, use that otherwise create a new one and delegate
         MBeanServer platform = ManagementFactory.getPlatformMBeanServer();
-        PluggableMBeanServer pluggable = platform instanceof PluggableMBeanServer ? (PluggableMBeanServer)platform : new PluggableMBeanServer(platform);
+        PluggableMBeanServerImpl pluggable = platform instanceof PluggableMBeanServerImpl ? (PluggableMBeanServerImpl)platform : new PluggableMBeanServerImpl(platform);
         if (showModel) {
             showModelPlugin = new ModelControllerMBeanServerPlugin(modelControllerValue.getValue());
             pluggable.addPlugin(showModelPlugin);

@@ -50,6 +50,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -76,6 +77,7 @@ import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.host.controller.ManagedServer.ManagedServerBootConfiguration;
 import org.jboss.as.process.DefaultJvmUtils;
 import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.jmx.PluggableMBeanServer;
 import org.jboss.as.server.services.net.BindingGroupAddHandler;
 import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingAddHandler;
 import org.jboss.as.server.services.net.RemoteDestinationOutboundSocketBindingAddHandler;
@@ -230,8 +232,10 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         command.add("org.jboss.logmanager");
         command.add("-jaxpmodule");
         command.add("javax.xml.jaxp-provider");
-        command.add("-mbeanserverbuildermodule");
-        command.add("org.jboss.as.jmx");
+        if (ManagementFactory.getPlatformMBeanServer() instanceof PluggableMBeanServer){
+            command.add("-mbeanserverbuildermodule");
+            command.add("org.jboss.as.jmx");
+        }
         command.add("org.jboss.as.server");
 
         return command;
