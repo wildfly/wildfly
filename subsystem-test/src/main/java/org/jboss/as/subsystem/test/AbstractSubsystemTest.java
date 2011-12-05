@@ -851,6 +851,10 @@ public abstract class AbstractSubsystemTest {
         }
 
         @Override
+        public void unregisterMetric(String attributeName) {
+        }
+
+        @Override
         public void registerProxyController(PathElement address, ProxyController proxyController) {
         }
 

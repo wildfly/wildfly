@@ -295,6 +295,15 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      */
     void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags);
 
+
+    /**
+     * Remove that the given attribute as metric if present.
+     *
+     * @param attributeName the name of the attribute. Cannot be {@code null}
+     *
+     */
+    void unregisterMetric(String attributeName);
+
     /**
      * Register a proxy controller.
      *
