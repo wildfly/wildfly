@@ -30,7 +30,7 @@ import javax.management.ObjectName;
  */
 public class Constants {
 
-    public static final String DOMAIN = "jboss.model";
+    public static final String DOMAIN = "jboss.as";
     public static final ObjectName ROOT_MODEL_NAME;
     static {
         try {
