@@ -22,7 +22,7 @@
 package org.jboss.as.jsr77.subsystem;
 
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.jmx.PluggableMBeanServer;
+import org.jboss.as.server.jmx.PluggableMBeanServer;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;

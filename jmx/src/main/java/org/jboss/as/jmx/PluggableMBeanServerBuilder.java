@@ -29,7 +29,7 @@ import javax.management.MBeanServerDelegate;
  * <p>To use this builder, specify {@code -mbeanserverbuildermodule=org.jboss.as.jmx} when bootstrapping
  * jboss-modules, which in turn sets {@code -Djavax.management.builder.initial=org.jboss.as.jmx.PluggableMBeanServerBuilder}
  * (loaded from this module's {code META-INF/services/javax.management.MBeanServerBuilder}. This builder
- * returns an instance of {@link PluggableMBeanServer} which can be used to set the MBeanServer chain, meaning that the
+ * returns an instance of {@link PluggableMBeanServerImpl} which can be used to set the MBeanServer chain, meaning that the
  * platform mbean server gets the extra functionality for TCCL, ModelController and whatever other behaviour we want to add.</p>
  *
  * <p>If the {@code -mbeanserverbuildermodule} option is not specified, the additional behaviour is only added to
@@ -44,6 +44,6 @@ public class PluggableMBeanServerBuilder extends MBeanServerBuilder {
 
     @Override
     public MBeanServer newMBeanServer(String defaultDomain, MBeanServer outer, MBeanServerDelegate delegate) {
-        return new PluggableMBeanServer(super.newMBeanServer(defaultDomain, outer, delegate));
+        return new PluggableMBeanServerImpl(super.newMBeanServer(defaultDomain, outer, delegate));
     }
 }
