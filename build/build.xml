@@ -25,29 +25,21 @@
     <import file="lib.xml"/>
 
     <property name="output.dir" value="target/jboss-as-${jboss.as.release.version}"/>
+
+    <target name="base" depends="clean-target, modules-minimalistic, copy-files, make-dirs"/>
+
     <target name="copy-files">
         <copy todir="${output.dir}">
             <fileset dir="src/main/resources">
                 <include name="LICENSE.txt"/>
                 <include name="README.txt"/>
                 <include name="copyright.txt"/>
-            </fileset>
-            <fileset dir="src/main/resources">
-                <include name="bin/**"/>
-            </fileset>
-            <fileset dir="src/main/resources">
-                <include name="docs/**"/>
-            </fileset>
-            <fileset dir="src/main/resources">
-                <include name="domain/**"/>
-            </fileset>
-            <fileset dir="src/main/resources">
-                <include name="standalone/**"/>
-            </fileset>
-            <fileset dir="src/main/resources">
                 <include name="appclient/**"/>
-            </fileset>
-            <fileset dir="src/main/resources">
+                <include name="bin/**"/>
+                <include name="docs/**"/>
+                <include name="domain/**"/>
+                <include name="standalone/configuration/**.properties"/>
+                <include name="standalone/deployments/**"/>
                 <include name="welcome-content/**"/>
             </fileset>
         </copy>
@@ -59,6 +51,23 @@
         <!-- These files contain digested passwords, which should not be visible to external users -->
         <chmod perm="600" file="${output.dir}/domain/configuration/mgmt-users.properties"/>
         <chmod perm="600" file="${output.dir}/standalone/configuration/mgmt-users.properties"/>
+    </target>
+
+    <target name="copy-standalone" description="Copy all standard configurations">
+        <copy todir="${output.dir}">
+            <fileset dir="src/main/resources">
+                <include name="standalone/configuration/**.xml"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="copy-standalone-minimalistic">
+        <copy tofile="${output.dir}/standalone/configuration/standalone.xml" file="src/main/resources/docs/examples/configs/standalone-minimalistic.xml"/>
+        <copy todir="${output.dir}/docs/examples/configs">
+            <fileset dir="src/main/resources/standalone/configuration">
+                <include name="**.xml"/>
+            </fileset>
+        </copy>
     </target>
 
     <target name="make-dirs">
@@ -76,7 +85,7 @@
         <copy file="${org.jboss.seam.integration:jboss-seam-int-jbossas:jar}" tofile="${output.dir}/modules/org/jboss/integration/ext-content/main/bundled/jboss-seam-int.jar"/>
     </target>
 
-    <target name="minimalistic" depends="clean-target, modules-minimalistic, copy-files, make-dirs"/>
+    <target name="minimalistic" depends="base, copy-standalone-minimalistic"/>
 
     <target name="modules-minimalistic">
 
@@ -1177,5 +1186,5 @@
         <delete file="maven-ant-tasks.jar"/>
     </target>
 
-    <target name="all" depends="minimalistic, modules, bundles, create-ext-content"/>
+    <target name="all" depends="base, copy-standalone, modules, bundles, create-ext-content"/>
 </project>
