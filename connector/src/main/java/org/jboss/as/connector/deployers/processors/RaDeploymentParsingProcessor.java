@@ -66,7 +66,8 @@ public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
      */
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final ResourceRoot deploymentRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
 
         final VirtualFile file = deploymentRoot.getRoot();
         if (file == null || !file.exists())
@@ -97,7 +98,13 @@ public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
             }
             File root = file.getPhysicalFile();
             URL url = root.toURI().toURL();
-            String deploymentName = file.getName().substring(0, file.getName().indexOf(".rar"));
+            String prefix = "";
+
+            if (deploymentUnit.getParent() != null) {
+                prefix = deploymentUnit.getParent().getName() + "#";
+            }
+
+            String deploymentName = prefix + file.getName().substring(0, file.getName().indexOf(".rar"));
             ConnectorXmlDescriptor xmlDescriptor = new ConnectorXmlDescriptor(result, root, url, deploymentName);
             phaseContext.getDeploymentUnit().putAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
 
