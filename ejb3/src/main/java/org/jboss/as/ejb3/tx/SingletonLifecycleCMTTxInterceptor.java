@@ -53,7 +53,7 @@ public class SingletonLifecycleCMTTxInterceptor extends CMTTxInterceptor impleme
             //singleton beans lifecyle methods must treat REQUIRED as REQUIRES_NEW
             case REQUIRED:
             case REQUIRES_NEW:
-                return requiresNew(invocation, component);
+                return requiresNew(invocation, component, getMethodIntf(invocation));
             case SUPPORTS:
                 return supports(invocation, component);
             default:

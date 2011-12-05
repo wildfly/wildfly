@@ -174,9 +174,7 @@ public class CMTTxInterceptor implements Interceptor {
         throw (Exception) t;
     }
 
-    public Object processInvocation(InterceptorContext invocation) throws Exception {
-        final EJBComponent component = (EJBComponent) invocation.getPrivateData(Component.class);
-
+    protected MethodIntf getMethodIntf(InterceptorContext invocation) throws Exception {
         //for timer invocations there is no view, so the methodInf is attached directly
         //to the context. Otherwise we retrive it from the invoked view
         MethodIntf methodIntf = invocation.getPrivateData(MethodIntf.class);
@@ -189,6 +187,12 @@ public class CMTTxInterceptor implements Interceptor {
             }
         }
 
+        return methodIntf;
+    }
+
+    public Object processInvocation(InterceptorContext invocation) throws Exception {
+        final EJBComponent component = (EJBComponent) invocation.getPrivateData(Component.class);
+        final MethodIntf methodIntf = getMethodIntf(invocation);
         final TransactionAttributeType attr = component.getTransactionAttributeType(methodIntf, invocation.getMethod());
         switch (attr) {
             case MANDATORY:
@@ -198,9 +202,9 @@ public class CMTTxInterceptor implements Interceptor {
             case NOT_SUPPORTED:
                 return notSupported(invocation, component);
             case REQUIRED:
-                return required(invocation, component);
+                return required(invocation, component, methodIntf);
             case REQUIRES_NEW:
-                return requiresNew(invocation, component);
+                return requiresNew(invocation, component, methodIntf);
             case SUPPORTS:
                 return supports(invocation, component);
             default:
@@ -300,10 +304,10 @@ public class CMTTxInterceptor implements Interceptor {
         }
     }
 
-    protected Object required(final InterceptorContext invocation, final EJBComponent component) throws Exception {
+    protected Object required(final InterceptorContext invocation, final EJBComponent component, final MethodIntf methodIntf) throws Exception {
         final TransactionManager tm = component.getTransactionManager();
         final int oldTimeout = getCurrentTransactionTimeout(component);
-        final int timeout = component.getTransactionTimeout(invocation.getMethod());
+        final int timeout = component.getTransactionTimeout(methodIntf, invocation.getMethod());
 
         try {
             if (timeout != -1) {
@@ -324,10 +328,10 @@ public class CMTTxInterceptor implements Interceptor {
         }
     }
 
-    protected Object requiresNew(InterceptorContext invocation, final EJBComponent component) throws Exception {
+    protected Object requiresNew(InterceptorContext invocation, final EJBComponent component, final MethodIntf methodIntf) throws Exception {
         final TransactionManager tm = component.getTransactionManager();
         int oldTimeout = getCurrentTransactionTimeout(component);
-        int timeout = component.getTransactionTimeout(invocation.getMethod());
+        int timeout = component.getTransactionTimeout(methodIntf, invocation.getMethod());
 
         try {
             if (timeout != -1 && tm != null) {

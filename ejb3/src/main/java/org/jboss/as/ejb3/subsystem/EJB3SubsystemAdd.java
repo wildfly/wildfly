@@ -86,6 +86,7 @@ import org.jboss.as.ejb3.deployment.processors.merging.StartupMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.StatefulTimeoutMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.TransactionAttributeMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.TransactionManagementMergingProcessor;
+import org.jboss.as.ejb3.deployment.processors.merging.TransactionTimeoutMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.security.JaccEjbDeploymentProcessor;
 import org.jboss.as.ejb3.iiop.POARegistry;
 import org.jboss.as.ejb3.iiop.RemoteObjectSubstitutionService;
