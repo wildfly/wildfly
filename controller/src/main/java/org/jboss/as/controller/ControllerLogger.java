@@ -50,6 +50,11 @@ public interface ControllerLogger extends BasicLogger {
     ControllerLogger ROOT_LOGGER = Logger.getMessageLogger(ControllerLogger.class, ControllerLogger.class.getPackage().getName());
 
     /**
+     * Logger for management operation messages.
+     */
+    ControllerLogger MGMT_OP_LOGGER = Logger.getMessageLogger(ControllerLogger.class, ControllerLogger.class.getPackage().getName() + ".management-operation");
+
+    /**
      * A logger with the category {@code org.jboss.as.server}
      */
     ControllerLogger SERVER_LOGGER = Logger.getMessageLogger(ControllerLogger.class, "org.jboss.as.server");

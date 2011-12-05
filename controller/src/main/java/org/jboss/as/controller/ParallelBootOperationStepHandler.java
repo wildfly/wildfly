@@ -22,6 +22,9 @@
 
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -34,9 +37,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-
-import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * Special handler that executes subsystem boot operations in parallel.
@@ -151,9 +151,9 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
             Thread.currentThread().interrupt();
         }
 
-        if (ROOT_LOGGER.isDebugEnabled()) {
+        if (MGMT_OP_LOGGER.isDebugEnabled()) {
             long elapsed = System.currentTimeMillis() - start;
-            ROOT_LOGGER.debugf("Ran subsystem model operations in [%d] ms", elapsed);
+            MGMT_OP_LOGGER.debugf("Ran subsystem model operations in [%d] ms", elapsed);
         }
 
         // Continue boot
@@ -182,13 +182,13 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                 } else {
                     failureDesc = MESSAGES.subsystemBootOperationFailed(entry.getKey());
                 }
-                ROOT_LOGGER.error(failureDesc);
+                MGMT_OP_LOGGER.error(failureDesc);
                 if (!failureRecorded) {
                     context.getFailureDescription().set(failureDesc);
                     failureRecorded = true;
                 }
             } else {
-                ROOT_LOGGER.debugf("Stage %s boot ops for subsystem %s succeeded", stage, entry.getKey());
+                MGMT_OP_LOGGER.debugf("Stage %s boot ops for subsystem %s succeeded", stage, entry.getKey());
             }
         }
     }
@@ -202,10 +202,10 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
             if (txControl.transaction != null) {
                 if (resultAction == OperationContext.ResultAction.KEEP) {
                     txControl.transaction.commit();
-                    ROOT_LOGGER.debugf("Committed transaction for %s subsystem %s stage boot operations", entry.getKey(), stage);
+                    MGMT_OP_LOGGER.debugf("Committed transaction for %s subsystem %s stage boot operations", entry.getKey(), stage);
                 } else {
                     txControl.transaction.rollback();
-                    ROOT_LOGGER.debugf("Rolled back transaction for %s subsystem %s stage boot operations", entry.getKey(), stage);
+                    MGMT_OP_LOGGER.debugf("Rolled back transaction for %s subsystem %s stage boot operations", entry.getKey(), stage);
                 }
             }
         }
@@ -251,9 +251,9 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                     Thread.currentThread().interrupt();
                 }
 
-                if (ROOT_LOGGER.isDebugEnabled()) {
+                if (MGMT_OP_LOGGER.isDebugEnabled()) {
                     long elapsed = System.currentTimeMillis() - start;
-                    ROOT_LOGGER.debugf("Ran subsystem runtime operations in [%d] ms", elapsed);
+                    MGMT_OP_LOGGER.debugf("Ran subsystem runtime operations in [%d] ms", elapsed);
                 }
 
                 // Continue boot
@@ -308,7 +308,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                 }
                 operationContext.completeStep();
             } catch (Exception e) {
-                ROOT_LOGGER.failedSubsystemBootOperations(e, subsystemName);
+                MGMT_OP_LOGGER.failedSubsystemBootOperations(e, subsystemName);
                 if (!transactionControl.signalled) {
                     ModelNode failure = new ModelNode();
                     failure.get(ModelDescriptionConstants.SUCCESS).set(false);

@@ -49,7 +49,7 @@ public class BroadcastGroupRemove extends AbstractRemoveStepHandler implements D
     }
 
     @Override
-    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         context.reloadRequired();
     }
 

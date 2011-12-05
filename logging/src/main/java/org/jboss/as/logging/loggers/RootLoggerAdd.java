@@ -37,6 +37,7 @@ import org.jboss.as.logging.LoggingExtension;
 import org.jboss.as.logging.util.LogServices;
 import org.jboss.as.logging.util.ModelParser;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -64,27 +65,23 @@ public class RootLoggerAdd extends AbstractAddStepHandler {
         final ModelNode handlers = HANDLERS.resolveModelAttribute(context, model);
         final ModelNode filter = FILTER.resolveModelAttribute(context, model);
         final ServiceTarget target = context.getServiceTarget();
-        try {
 
-            final RootLoggerService service = new RootLoggerService();
-            if (level.isDefined()) service.setLevel(ModelParser.parseLevel(level));
-            if (filter.isDefined()) service.setFilter(ModelParser.parseFilter(context, filter));
-            newControllers.add(target.addService(LogServices.loggerName(name), service)
-                    .addListener(verificationHandler)
-                    .setInitialMode(ServiceController.Mode.ACTIVE)
-                    .install());
+        final RootLoggerService service = new RootLoggerService();
+        if (level.isDefined()) service.setLevel(ModelParser.parseLevel(level));
+        if (filter.isDefined()) service.setFilter(ModelParser.parseFilter(context, filter));
 
-
-        } catch (Throwable t) {
-            throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
+        ServiceBuilder builder = target.addService(LogServices.loggerName(name), service).setInitialMode(ServiceController.Mode.ACTIVE);
+        if (verificationHandler != null) {
+            builder.addListener(verificationHandler);
         }
-        try {
-            // install logger handler services
-            if (handlers.isDefined()) {
-                newControllers.addAll(LoggerAssignHandler.installHandlers(target, name, handlers, verificationHandler));
-            }
-        } catch (Throwable t) {
-            throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
+        ServiceController<?> controller = builder.install();
+        if (newControllers != null) {
+            newControllers.add(controller);
+        }
+
+        // install logger handler services
+        if (handlers.isDefined()) {
+            newControllers.addAll(LoggerAssignHandler.installHandlers(target, name, handlers, verificationHandler));
         }
     }
 }

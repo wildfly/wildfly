@@ -22,7 +22,7 @@
 
 package org.jboss.as.controller;
 
-import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
@@ -120,9 +120,9 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
                         try {
                             revertUpdateToRuntime(context, operation, attributeName, valueToRestore, resolvedValue, handback.handback);
                         } catch (Exception e) {
-                            ROOT_LOGGER.errorRevertingOperation(e, getClass().getSimpleName(),
+                            MGMT_OP_LOGGER.errorRevertingOperation(e, getClass().getSimpleName(),
                                     operation.require(ModelDescriptionConstants.OP).asString(),
-                                    PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)));
+                                    PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
                         }
                         if (restartRequired) {
                             context.revertReloadRequired();

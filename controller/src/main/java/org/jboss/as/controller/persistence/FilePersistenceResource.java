@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.persistence;
 
+import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
@@ -86,7 +87,7 @@ public class FilePersistenceResource implements ConfigurationPersister.Persisten
                 safeClose(is);
             }
         } catch (Exception e) {
-            ROOT_LOGGER.failedToStoreConfiguration(e, fileName.getName());
+            MGMT_OP_LOGGER.failedToStoreConfiguration(e, fileName.getName());
         }
     }
 

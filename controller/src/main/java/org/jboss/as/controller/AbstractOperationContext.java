@@ -22,8 +22,8 @@
 
 package org.jboss.as.controller;
 
-import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -242,7 +242,7 @@ abstract class AbstractOperationContext implements OperationContext {
             try {
                 persistenceResource = createPersistenceResource();
             } catch (ConfigurationPersistenceException e) {
-                ROOT_LOGGER.failedToPersistConfigurationChange(e);
+                MGMT_OP_LOGGER.failedToPersistConfigurationChange(e);
                 if (response != null) {
                     response.get(OUTCOME).set(FAILED);
                     response.get(FAILURE_DESCRIPTION).set(MESSAGES.failedToPersistConfigurationChange(e.getLocalizedMessage()));
@@ -255,8 +255,8 @@ abstract class AbstractOperationContext implements OperationContext {
         // Allow any containing TransactionControl to vote
         final AtomicReference<ResultAction> ref = new AtomicReference<ResultAction>(transactionControl == null ? ResultAction.KEEP : ResultAction.ROLLBACK);
         if (transactionControl != null) {
-            if (ROOT_LOGGER.isTraceEnabled()) {
-                ROOT_LOGGER.trace("Prepared response is " + response);
+            if (MGMT_OP_LOGGER.isTraceEnabled()) {
+                MGMT_OP_LOGGER.trace("Prepared response is " + response);
             }
             transactionControl.operationPrepared(new ModelController.OperationTransaction() {
                 public void commit() {
@@ -333,10 +333,10 @@ abstract class AbstractOperationContext implements OperationContext {
                     step.response.get(FAILURE_DESCRIPTION).set(failDesc);
                     if (isBooting()) {
                         // An OCE on boot needs to be logged as an ERROR
-                        ROOT_LOGGER.operationFailed(step.operation.get(OP), step.operation.get(OP_ADDR), step.response.get(FAILURE_DESCRIPTION));
+                        MGMT_OP_LOGGER.operationFailed(step.operation.get(OP), step.operation.get(OP_ADDR), step.response.get(FAILURE_DESCRIPTION));
                     } else {
                         // An OFE post-boot is a client-side mistake and is logged at DEBUG
-                        ROOT_LOGGER.operationFailedOnClientError(step.operation.get(OP), step.operation.get(OP_ADDR), step.response.get(FAILURE_DESCRIPTION));
+                        MGMT_OP_LOGGER.operationFailedOnClientError(step.operation.get(OP), step.operation.get(OP_ADDR), step.response.get(FAILURE_DESCRIPTION));
                     }
                     completeStep();
                 } else {
@@ -347,10 +347,10 @@ abstract class AbstractOperationContext implements OperationContext {
             }
         } catch (Throwable t) {
             if (t instanceof StackOverflowError) {
-                ROOT_LOGGER.operationFailed(t, step.operation.get(OP), step.operation.get(OP_ADDR), AbstractControllerService.BOOT_STACK_SIZE_PROPERTY,
+                MGMT_OP_LOGGER.operationFailed(t, step.operation.get(OP), step.operation.get(OP_ADDR), AbstractControllerService.BOOT_STACK_SIZE_PROPERTY,
                         AbstractControllerService.DEFAULT_BOOT_STACK_SIZE);
             } else {
-                ROOT_LOGGER.operationFailed(t, step.operation.get(OP), step.operation.get(OP_ADDR));
+                MGMT_OP_LOGGER.operationFailed(t, step.operation.get(OP), step.operation.get(OP_ADDR));
             }
             // If this block is entered, then the step failed
             // The question is, did it fail before or after calling completeStep()?
@@ -400,10 +400,10 @@ abstract class AbstractOperationContext implements OperationContext {
         step.response.get(FAILURE_DESCRIPTION).set(failDesc);
         if (isBooting()) {
             // An OFE on boot needs to be logged as an ERROR
-            ROOT_LOGGER.operationFailed(step.operation.get(OP), step.operation.get(OP_ADDR), step.response.get(FAILURE_DESCRIPTION));
+            MGMT_OP_LOGGER.operationFailed(step.operation.get(OP), step.operation.get(OP_ADDR), step.response.get(FAILURE_DESCRIPTION));
         } else {
             // An OFE post-boot is a client-side mistake and is logged at DEBUG
-            ROOT_LOGGER.operationFailedOnClientError(step.operation.get(OP), step.operation.get(OP_ADDR), step.response.get(FAILURE_DESCRIPTION));
+            MGMT_OP_LOGGER.operationFailedOnClientError(step.operation.get(OP), step.operation.get(OP_ADDR), step.response.get(FAILURE_DESCRIPTION));
         }
         completeStep();
     }

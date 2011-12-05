@@ -22,7 +22,7 @@
 
 package org.jboss.as.controller;
 
-import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 import java.io.InputStream;
@@ -128,7 +128,7 @@ final class OperationContextImpl extends AbstractOperationContext {
     @Override
     void awaitModelControllerContainerMonitor() throws InterruptedException {
         if (affectsRuntime) {
-            ROOT_LOGGER.debugf("Entered VERIFY stage; waiting for service container to settle");
+            MGMT_OP_LOGGER.debugf("Entered VERIFY stage; waiting for service container to settle");
             // First wait until any removals we've initiated have begun processing, otherwise
             // the ContainerStateMonitor may not have gotten the notification causing it to untick
             final Map<ServiceName, ServiceController<?>> map = realRemovingControllers;

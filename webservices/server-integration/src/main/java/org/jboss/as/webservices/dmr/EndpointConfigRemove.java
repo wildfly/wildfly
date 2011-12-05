@@ -43,7 +43,7 @@ public class EndpointConfigRemove extends AbstractRemoveStepHandler {
     static final EndpointConfigRemove INSTANCE = new EndpointConfigRemove();
 
     @Override
-    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
         ServiceController<?> configService = context.getServiceRegistry(true).getService(WSServices.CONFIG_SERVICE);
         if (configService != null) {
@@ -62,5 +62,10 @@ public class EndpointConfigRemove extends AbstractRemoveStepHandler {
                 config.getEndpointConfigs().remove(target);
             }
         }
+    }
+
+    @Override
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        EndpointConfigAdd.INSTANCE.performRuntime(context, operation, model, null, null);
     }
 }

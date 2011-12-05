@@ -46,6 +46,7 @@ import org.jboss.msc.service.ServiceRegistry;
  */
 public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler {
 
+
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
 
         final ServiceRegistry registry = context.getServiceRegistry(true);

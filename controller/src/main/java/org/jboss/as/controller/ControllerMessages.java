@@ -25,6 +25,7 @@ package org.jboss.as.controller;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 
@@ -2028,4 +2029,14 @@ public interface ControllerMessages {
      */
     @Message(id = 14803, value = "Duplicate resource %s")
     OperationFailedRuntimeException duplicateResourceAddress(PathAddress address);
+
+    /**
+     * Creates an exception indicating a resource cannot be removed due to the existence of child resources.
+     *
+     * @param children the address elements for the children.
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 14804, value = "Cannot remove resource before removing child resources %s")
+    OperationFailedException cannotRemoveResourceWithChildren(List<PathElement> children);
 }

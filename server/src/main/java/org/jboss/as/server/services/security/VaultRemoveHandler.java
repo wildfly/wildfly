@@ -54,12 +54,17 @@ public class VaultRemoveHandler extends AbstractRemoveStepHandler implements Des
     }
 
     @Override
-    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected boolean requiresRuntime(OperationContext context) {
+        return true;
+    }
+
+    @Override
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         vaultReader.destroyVault();
     }
 
     @Override
-    protected boolean requiresRuntime(OperationContext context) {
-        return false;
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        new VaultAddHandler(vaultReader).performRuntime(context, operation, model, null, null);
     }
 }

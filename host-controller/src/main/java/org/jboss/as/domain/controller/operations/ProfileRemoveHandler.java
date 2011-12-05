@@ -39,15 +39,14 @@ public class ProfileRemoveHandler extends AbstractRemoveStepHandler implements D
 
     public static final ProfileRemoveHandler INSTANCE = new ProfileRemoveHandler();
 
-    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        if (context.readModel(PathAddress.EMPTY_ADDRESS).get(SUBSYSTEM).keys().size() > 0) { // TODO replace with a reasonable check
-            throw new OperationFailedException(new ModelNode().set("subsytems are not empty"));
-        }
-        super.performRemove(context, operation, model);
-    }
-
+    @Override
     protected boolean requiresRuntime(OperationContext context) {
         return false;
+    }
+
+    @Override
+    protected boolean requireNoChildResources() {
+        return true;
     }
 
     @Override

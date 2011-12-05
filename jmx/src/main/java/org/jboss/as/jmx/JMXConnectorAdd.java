@@ -58,7 +58,10 @@ class JMXConnectorAdd extends AbstractAddStepHandler {
 
     void launchServices(OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         final ServiceTarget target = context.getServiceTarget();
-        JMXConnectorService.addService(target, model.require(CommonAttributes.SERVER_BINDING).asString(), model.require(CommonAttributes.REGISTRY_BINDING).asString(), verificationHandler);
-        context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
+        ServiceController<?> controller = JMXConnectorService.addService(target, model.require(CommonAttributes.SERVER_BINDING).asString(),
+                model.require(CommonAttributes.REGISTRY_BINDING).asString(), verificationHandler);
+        if (newControllers != null) {
+            newControllers.add(controller);
+        }
     }
 }
