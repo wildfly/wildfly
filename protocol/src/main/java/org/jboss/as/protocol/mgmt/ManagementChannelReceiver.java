@@ -73,7 +73,7 @@ public abstract class ManagementChannelReceiver implements ManagementMessageHand
             final ManagementProtocolHeader header = ManagementProtocolHeader.parse(input);
             final byte type = header.getType();
             if(type == ManagementProtocol.TYPE_PING) {
-                // Handle ping/pong directly
+                // Handle legacy ping/pong directly
                 ROOT_LOGGER.tracef("Received ping on %s", this);
                 handlePing(channel, header);
             } else if (type == ManagementProtocol.TYPE_BYE_BYE) {
@@ -119,7 +119,6 @@ public abstract class ManagementChannelReceiver implements ManagementMessageHand
 
     @Override
     public void handleError(final Channel channel, final IOException error) {
-        error.printStackTrace();
         ROOT_LOGGER.tracef(error, "%s error handling incoming data", this);
         try {
             channel.close();

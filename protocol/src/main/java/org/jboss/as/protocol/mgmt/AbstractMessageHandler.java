@@ -50,8 +50,9 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
     private final Map<Integer, ActiveRequest> requests = Collections.synchronizedMap(new HashMap<Integer, ActiveRequest>());
 
     protected AbstractMessageHandler(final ExecutorService executorService) {
+        super(executorService);
         if(executorService == null) {
-            throw new IllegalArgumentException();
+            throw ProtocolMessages.MESSAGES.nullExecutor();
         }
         this.executorService = executorService;
     }
@@ -191,10 +192,8 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
                     return writeHeader(header, os);
                 }
             });
-        } catch (IOException e) {
-            resultHandler.failed(e);
         } catch (Exception e) {
-            resultHandler.failed(new IOException(e));
+            resultHandler.failed(e);
         } finally {
             // none
         }
@@ -267,11 +266,8 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
                 }
 
             });
-        } catch (IOException e) {
-            resultHandler.failed(e);
-            safeWriteErrorResponse(channel, header, e);
         } catch (Exception e) {
-            resultHandler.failed(new IOException(e));
+            resultHandler.failed(e);
             safeWriteErrorResponse(channel, header, e);
         } finally {
             // none
