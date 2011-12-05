@@ -706,14 +706,6 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-jacorb"/>
         </module-def>
 
-        <module-def name="org.jboss.as.jaxr">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-jaxr"/>
-        </module-def>
-
-        <module-def name="org.jboss.as.jaxr.service">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-jaxr-service"/>
-        </module-def>
-
         <module-def name="org.jboss.as.jaxrs">
             <maven-resource group="org.jboss.as" artifact="jboss-as-jaxrs"/>
         </module-def>
@@ -875,6 +867,10 @@
 
         <module-def name="org.jboss.jaxbintros">
             <maven-resource group="jboss.jaxbintros" artifact="jboss-jaxb-intros"/>
+        </module-def>
+
+        <module-def name="org.jboss.jaxr.client">
+            <maven-resource group="org.jboss.xml.registry" artifact="jboss-jaxr-client"/>
         </module-def>
 
         <module-def name="org.jboss.jsfunit.core">
