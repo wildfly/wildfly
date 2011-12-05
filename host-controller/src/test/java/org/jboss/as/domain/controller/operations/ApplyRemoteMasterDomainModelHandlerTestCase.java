@@ -960,6 +960,11 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase {
 
         }
 
+        @Override
+        public void unregisterMetric(String attributeName) {
+
+        }
+
         public void registerProxyController(PathElement address, ProxyController proxyController) {
 
         }

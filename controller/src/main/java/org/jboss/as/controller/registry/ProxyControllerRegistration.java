@@ -152,6 +152,11 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
     }
 
     @Override
+    public void unregisterMetric(String attributeName) {
+        alreadyRegistered();
+    }
+
+    @Override
     public void registerProxyController(final PathElement address, final ProxyController proxyController) throws IllegalArgumentException {
         throw alreadyRegistered();
     }

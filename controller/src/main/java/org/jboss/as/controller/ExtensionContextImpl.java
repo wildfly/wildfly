@@ -393,6 +393,12 @@ public final class ExtensionContextImpl implements ExtensionContext {
         }
 
         @Override
+        public void unregisterMetric(String attributeName) {
+            deployments.unregisterMetric(attributeName);
+            subdeployments.unregisterMetric(attributeName);
+        }
+
+        @Override
         public void registerProxyController(PathElement address, ProxyController proxyController) {
             deployments.registerProxyController(address, proxyController);
             subdeployments.registerProxyController(address, proxyController);

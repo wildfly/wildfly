@@ -66,6 +66,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
 
     private String raName;
     private ServiceName deploymentServiceName;
+    private CommonDeployment raxmlDeployment = null;
 
     public ResourceAdapterXmlDeploymentService(ConnectorXmlDescriptor connectorXmlDescriptor, ResourceAdapter raxml,
                                                Module module, final String deployment, final ServiceName deploymentServiceName) {
@@ -95,7 +96,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
 
             raDeployer.setConfiguration(config.getValue());
 
-            CommonDeployment raxmlDeployment = null;
+
             try {
                 WritableServiceBasedNamingStore.pushOwner(container.subTarget());
                 try {
@@ -141,6 +142,10 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
 
         managementRepository.getValue().getConnectors().remove(value.getDeployment().getConnector());
         super.stop(context);
+    }
+
+    public CommonDeployment getRaxmlDeployment() {
+        return raxmlDeployment;
     }
 
     private class AS7RaXmlDeployer extends AbstractAS7RaDeployer {
