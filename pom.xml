@@ -120,6 +120,7 @@
         <version.org.apache.ws.xmlschema>2.0</version.org.apache.ws.xmlschema>
         <version.org.apache.xalan>2.7.1.jbossorg-1</version.org.apache.xalan>
         <version.org.apache.xerces>2.9.1-jbossas-1</version.org.apache.xerces>
+        <version.org.apache.xml-resolver>1.2</version.org.apache.xml-resolver>
         <version.org.codehaus.jackson>1.6.3</version.org.codehaus.jackson>
         <version.org.codehaus.woodstox.stax2-api>3.1.1</version.org.codehaus.woodstox.stax2-api>
         <version.org.codehaus.woodstox.woodstox-core-asl>4.1.1</version.org.codehaus.woodstox.woodstox-core-asl>
@@ -482,7 +483,6 @@
                                             <exclude>trove:trove</exclude>
                                             <exclude>woodstox:wstx-lgpl</exclude>
                                             <exclude>xml-apis:xml-apis</exclude>
-                                            <exclude>xml-resolver:xml-resolver</exclude>
                                         </excludes>
                                     </bannedDependencies>
                                 </rules>
@@ -5797,6 +5797,12 @@
                 <groupId>xalan</groupId>
                 <artifactId>xalan</artifactId>
                 <version>${version.org.apache.xalan}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>xml-resolver</groupId>
+                <artifactId>xml-resolver</artifactId>
+                <version>${version.org.apache.xml-resolver}</version>
             </dependency>
 
             <dependency>
