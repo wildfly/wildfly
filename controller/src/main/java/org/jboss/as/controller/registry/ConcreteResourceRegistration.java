@@ -75,6 +75,32 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
         this.runtimeOnly = runtimeOnly;
     }
 
+    private ConcreteResourceRegistration(final String valueString, final NodeSubregistry parent, final ResourceDefinition provider, final boolean runtimeOnly,
+                                          final Map<String, NodeSubregistry> children,
+                                          final Map<String, OperationEntry> operations,
+                                          final Map<String, AttributeAccess> attributes) {
+        super(valueString, parent);
+        childrenUpdater.clear(this);
+        operationsUpdater.clear(this);
+        attributesUpdater.clear(this);
+        descriptionProviderUpdater.set(this, provider);
+        this.runtimeOnly = runtimeOnly;
+        for (Map.Entry<String, NodeSubregistry> child : children.entrySet()) {
+            childrenUpdater.put(this, child.getKey(), child.getValue());
+        }
+
+        for (Map.Entry<String, OperationEntry> operation : operations.entrySet()) {
+            operationsUpdater.put(this, operation.getKey(), operation.getValue());
+        }
+
+        for (Map.Entry<String, AttributeAccess> attribute : attributes.entrySet()) {
+            attributesUpdater.put(this, attribute.getKey(), attribute.getValue());
+        }
+
+    }
+
+
+
     @Override
     public boolean isRuntimeOnly() {
         return runtimeOnly;
@@ -103,6 +129,12 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
         resourceDefinition.registerAttributes(resourceRegistration);
         resourceDefinition.registerOperations(resourceRegistration);
         return resourceRegistration;
+    }
+
+    @Override
+    public ManagementResourceRegistration clone() {
+        ManagementResourceRegistration cloned = new ConcreteResourceRegistration(valueString, parent, descriptionProviderUpdater.get(this), runtimeOnly, children, operations, attributes);
+        return cloned;
     }
 
     @Override
@@ -257,6 +289,11 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
         if (attributesUpdater.putIfAbsent(this, attributeName, aa) != null) {
             throw alreadyRegistered("attribute", attributeName);
         }
+    }
+
+    @Override
+    public void unregisterMetric(String attributeName) {
+        attributesUpdater.remove(this, attributeName);
     }
 
     @Override

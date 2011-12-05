@@ -68,6 +68,8 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
     private final IronJacamar ijmd;
     private final String deploymentName;
 
+    private CommonDeployment deploymentMD;
+
     public ResourceAdapterActivatorService(final Connector cmd, final IronJacamar ijmd, ClassLoader cl,
             final String deploymentName) {
         this.cmd = cmd;
@@ -81,7 +83,6 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
 
         String pathname = "file://RaActivator" + deploymentName;
 
-        CommonDeployment deploymentMD;
         try {
             ResourceAdapterActivator activator = new ResourceAdapterActivator(context.getChildTarget(), new URL(pathname), deploymentName,
                     new File(pathname), cl, cmd, ijmd);
@@ -119,6 +120,10 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
     @Override
     public void stop(StopContext context) {
         DEPLOYMENT_CONNECTOR_LOGGER.debugf("Stopping service %s", ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE);
+    }
+
+    public CommonDeployment getDeploymentMD() {
+        return deploymentMD;
     }
 
     private class ResourceAdapterActivator extends AbstractAS7RaDeployer {

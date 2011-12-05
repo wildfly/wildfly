@@ -137,6 +137,10 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         sqlDataSource = null;
     }
 
+    public CommonDeployment getDeploymentMD() {
+        return deploymentMD;
+    }
+
     public synchronized DataSource getValue() throws IllegalStateException, IllegalArgumentException {
         return sqlDataSource;
     }

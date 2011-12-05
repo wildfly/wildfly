@@ -82,6 +82,12 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
     }
 
     @Override
+    public ManagementResourceRegistration clone() {
+        ManagementResourceRegistration cloned = new ProxyControllerRegistration(valueString, parent, proxyController);
+        return cloned;
+    }
+
+    @Override
     public void registerSubModel(final PathElement address, final ManagementResourceRegistration subModel) {
         throw alreadyRegistered();
     }
@@ -139,6 +145,11 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
     @Override
     public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
         throw alreadyRegistered();
+    }
+
+    @Override
+    public void unregisterMetric(String attributeName) {
+        alreadyRegistered();
     }
 
     @Override

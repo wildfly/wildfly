@@ -853,6 +853,11 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase {
             return null;
         }
 
+        @Override
+        public ManagementResourceRegistration clone() {
+            return this;
+        }
+
         public void registerSubModel(PathElement address, ManagementResourceRegistration subModel) {
         }
 
@@ -909,6 +914,11 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase {
         }
 
         public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
+
+        }
+
+        @Override
+        public void unregisterMetric(String attributeName) {
 
         }
 

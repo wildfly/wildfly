@@ -46,8 +46,8 @@ import org.jboss.as.controller.registry.OperationEntry.EntryType;
  */
 abstract class AbstractResourceRegistration implements ManagementResourceRegistration {
 
-    private final String valueString;
-    private final NodeSubregistry parent;
+    protected final String valueString;
+    protected final NodeSubregistry parent;
 
     AbstractResourceRegistration(final String valueString, final NodeSubregistry parent) {
         this.valueString = valueString;
@@ -97,6 +97,11 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
     /** {@inheritDoc} */
     @Override
     public abstract void unregisterProxyController(PathElement address);
+
+/** {@inheritDoc} */
+    @Override
+    public abstract ManagementResourceRegistration clone();
+
 
     /** {@inheritDoc} */
     @Override

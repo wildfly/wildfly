@@ -235,6 +235,12 @@ public final class ExtensionContextImpl implements ExtensionContext {
         }
 
         @Override
+        public ManagementResourceRegistration clone() {
+            ManagementResourceRegistration cloned = new DeploymentManagementResourceRegistration(deployments, subdeployments);
+            return cloned;
+        }
+
+        @Override
         public void registerSubModel(PathElement address, ManagementResourceRegistration subModel) {
             deployments.registerSubModel(address, subModel);
             subdeployments.registerSubModel(address, subModel);
@@ -322,6 +328,12 @@ public final class ExtensionContextImpl implements ExtensionContext {
         public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
             deployments.registerMetric(attributeName, metricHandler, flags);
             subdeployments.registerMetric(attributeName, metricHandler, flags);
+        }
+
+        @Override
+        public void unregisterMetric(String attributeName) {
+            deployments.unregisterMetric(attributeName);
+            subdeployments.unregisterMetric(attributeName);
         }
 
         @Override
