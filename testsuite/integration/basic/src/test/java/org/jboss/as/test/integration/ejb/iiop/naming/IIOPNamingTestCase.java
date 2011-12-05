@@ -16,6 +16,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -108,7 +109,7 @@ public class IIOPNamingTestCase {
         }
     }
 
-    @Test
+    @Test @Ignore("AS7-2923")
     public void testIIOPNamingIIOPInvocation() throws NamingException, RemoteException {
         final Properties prope = new Properties();
         prope.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.cosnaming.CNCtxFactory");
@@ -120,7 +121,7 @@ public class IIOPNamingTestCase {
         Assert.assertEquals("hello", result.hello());
     }
 
-    @Test
+    @Test @Ignore("AS7-2923")
     public void testStatefulIIOPNamingIIOPInvocation() throws NamingException, RemoteException, RemoveException {
         final Properties prope = new Properties();
         prope.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.cosnaming.CNCtxFactory");
