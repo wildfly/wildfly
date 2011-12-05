@@ -727,6 +727,10 @@ public class ParseAndMarshalModelsTestCase {
             throw new RuntimeException("NYI: org.jboss.as.test.surefire.xml.ParseAndMarshalModelsTestCase.MockContentRepository.removeContent");
         }
 
+        @Override
+        public void purgeContent(List<byte[]> hashes) {
+        }
+
     }
 
     private static class MockFileRepository implements FileRepository {
