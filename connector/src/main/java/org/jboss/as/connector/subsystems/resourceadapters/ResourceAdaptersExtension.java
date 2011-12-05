@@ -90,6 +90,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import java.util.List;
 import java.util.Map;
 
+import javax.resource.spi.TransactionSupport;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
@@ -115,6 +116,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.jca.common.api.metadata.common.CommonConnDef;
 import org.jboss.jca.common.api.metadata.common.Recovery;
+import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
 import org.jboss.staxmapper.XMLElementReader;
@@ -243,11 +245,16 @@ public class ResourceAdaptersExtension implements Extension {
             BOOTSTRAPCONTEXT.marshallAsElement(ra, false, streamWriter);
             TRANSACTIONSUPPORT.marshallAsElement(ra, false, streamWriter);
             writeNewConfigProperties(streamWriter, ra);
-
+            TransactionSupportEnum transactionSupport = ra.hasDefined(TRANSACTIONSUPPORT.getName()) ? TransactionSupportEnum
+                .valueOf(ra.get(TRANSACTIONSUPPORT.getName()).asString()) : null;
+            boolean isXa = false;
+            if (transactionSupport == TransactionSupportEnum.XATransaction) {
+                isXa = true;
+            }
             if (ra.hasDefined(CONNECTIONDEFINITIONS_NAME)) {
                 streamWriter.writeStartElement(ResourceAdapter.Tag.CONNECTION_DEFINITIONS.getLocalName());
                 for (Property conDef : ra.get(CONNECTIONDEFINITIONS_NAME).asPropertyList()) {
-                    writeConDef(streamWriter, conDef.getValue(), conDef.getName());
+                    writeConDef(streamWriter, conDef.getValue(), conDef.getName(), isXa);
                 }
                 streamWriter.writeEndElement();
             }
@@ -308,7 +315,7 @@ public class ResourceAdaptersExtension implements Extension {
 
         }
 
-        private void writeConDef(XMLExtendedStreamWriter streamWriter, ModelNode conDef, final String poolName) throws XMLStreamException {
+        private void writeConDef(XMLExtendedStreamWriter streamWriter, ModelNode conDef, final String poolName, final boolean isXa) throws XMLStreamException {
             streamWriter.writeStartElement(ResourceAdapter.Tag.CONNECTION_DEFINITION.getLocalName());
             CLASS_NAME.marshallAsAttribute(conDef, false, streamWriter);
             JNDINAME.marshallAsAttribute(conDef, false, streamWriter);
@@ -323,9 +330,7 @@ public class ResourceAdaptersExtension implements Extension {
             if (conDef.hasDefined(MAX_POOL_SIZE.getName()) || conDef.hasDefined(MIN_POOL_SIZE.getName()) ||
                 conDef.hasDefined(POOL_USE_STRICT_MIN.getName()) || conDef.hasDefined(POOL_PREFILL.getName()) ||
                 conDef.hasDefined(POOL_FLUSH_STRATEGY.getName())) {
-                if (conDef.hasDefined(INTERLEAVING.getName()) || conDef.hasDefined(WRAP_XA_RESOURCE.getName()) ||
-                    conDef.hasDefined(NOTXSEPARATEPOOL.getName()) || conDef.hasDefined(PAD_XID.getName()) ||
-                    conDef.hasDefined(SAME_RM_OVERRIDE.getName())) {
+                if (isXa) {
 
                     streamWriter.writeStartElement(CommonConnDef.Tag.XA_POOL.getLocalName());
                     MIN_POOL_SIZE.marshallAsElement(conDef, false, streamWriter);
