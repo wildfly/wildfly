@@ -192,19 +192,19 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
         }
 
         ModelControllerClient client = ctx.getModelControllerClient();
-        final ModelNode result;
+        final ModelNode response;
         try {
-            result = client.execute(request);
+            response = client.execute(request);
         } catch (Exception e) {
             ctx.printLine("Failed to perform operation: " + e.getLocalizedMessage());
             return;
         }
-        handleResponse(ctx, result, Util.COMPOSITE.equals(request.get(Util.OPERATION).asString()));
+        handleResponse(ctx, response, Util.COMPOSITE.equals(request.get(Util.OPERATION).asString()));
     }
 
-    protected void handleResponse(CommandContext ctx, ModelNode result, boolean composite) {
-        if (!Util.isSuccess(result)) {
-            ctx.printLine(Util.getFailureDescription(result));
+    protected void handleResponse(CommandContext ctx, ModelNode response, boolean composite) {
+        if (!Util.isSuccess(response)) {
+            ctx.printLine(Util.getFailureDescription(response));
             return;
         }
     }
