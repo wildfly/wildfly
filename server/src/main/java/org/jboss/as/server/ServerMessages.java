@@ -25,12 +25,12 @@ package org.jboss.as.server;
 import java.io.InputStream;
 import java.net.URL;
 
+import org.jboss.as.server.services.security.VaultReaderException;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jboss.logging.Param;
 import org.jboss.msc.service.StartException;
-import org.jboss.security.vault.SecurityVaultException;
 
 /**
  * Date: 05.11.2011
@@ -96,7 +96,7 @@ public interface ServerMessages {
      * @return a RuntimeException wrapper
      */
     @Message(id = 15804, value = "Error initializing vault --  %s")
-    RuntimeException cannotCreateVault(@Param SecurityVaultException cause, SecurityVaultException msg);
+    RuntimeException cannotCreateVault(@Param VaultReaderException cause, VaultReaderException msg);
 
     /**
      * Creates an error message indicating that connecting to the HC failed.

@@ -213,7 +213,8 @@ public abstract class AbstractModelControllerClient extends AbstractMessageHandl
                             StreamUtils.safeClose(output);
                         }
                     } finally {
-                        StreamUtils.safeClose(is);
+                        // the caller is responsible for closing the input streams
+                        // StreamUtils.safeClose(is);
                     }
                 }
             });
@@ -224,7 +225,6 @@ public abstract class AbstractModelControllerClient extends AbstractMessageHandl
             // Hmm, a null input-stream should be a failure?
             if(is != null) {
                 StreamUtils.copyStream(is, bout);
-                is.close();
             }
             return bout;
         }

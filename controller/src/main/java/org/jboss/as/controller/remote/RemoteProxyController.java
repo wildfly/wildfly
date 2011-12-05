@@ -241,7 +241,8 @@ public class RemoteProxyController extends AbstractMessageHandler<Void, RemotePr
                             StreamUtils.safeClose(output);
                         }
                     } finally {
-                        StreamUtils.safeClose(is);
+                        // the caller is responsible for closing the input streams
+                        // StreamUtils.safeClose(is);
                     }
                 }
             });
@@ -251,7 +252,6 @@ public class RemoteProxyController extends AbstractMessageHandler<Void, RemotePr
             final ByteArrayOutputStream bout = new ByteArrayOutputStream();
             if(is != null) {
                 StreamUtils.copyStream(is, bout);
-                is.close();
             }
             return bout;
         }
