@@ -56,21 +56,25 @@ public class ManagementChannel extends ProtocolChannel {
         return receiver;
     }
 
-    public void sendByeBye() throws IOException {
-        ROOT_LOGGER.tracef("Closing %s by sending bye bye", this);
-        ManagementByeByeHeader byeByeHeader = new ManagementByeByeHeader(ManagementProtocol.VERSION);
-        try {
-            SimpleDataOutput out = new SimpleDataOutput(Marshalling.createByteOutput(writeMessage()));
-            try {
-                byeByeHeader.write(out);
-            } finally {
-                IoUtils.safeClose(out);
-            }
-        } catch (IOException ignore) {
-            //
-        } finally {
-            ROOT_LOGGER.tracef("Invoking close on %s", this);
-        }
+//    We close when we receive a bye-bye request, however it seems to work not sending it and just closing the channel
+//    TODO: need to validate that for older AS versions the channels are really closed though
+//
+//    public void sendByeBye() throws IOException {
+//        ROOT_LOGGER.tracef("Closing %s by sending bye bye", this);
+//        ManagementByeByeHeader byeByeHeader = new ManagementByeByeHeader(ManagementProtocol.VERSION);
+//        try {
+//            SimpleDataOutput out = new SimpleDataOutput(Marshalling.createByteOutput(writeMessage()));
+//            try {
+//                byeByeHeader.write(out);
+//            } finally {
+//                IoUtils.safeClose(out);
+//            }
+//        } catch (IOException ignore) {
+//            //
+//        } finally {
+//            ROOT_LOGGER.tracef("Invoking close on %s", this);
+//        }
+//
+//    }
 
-    }
 }

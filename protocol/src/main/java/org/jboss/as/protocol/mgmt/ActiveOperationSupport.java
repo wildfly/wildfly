@@ -23,6 +23,7 @@
 package org.jboss.as.protocol.mgmt;
 
 import org.jboss.as.protocol.ProtocolLogger;
+import org.jboss.as.protocol.ProtocolMessages;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
 
@@ -67,12 +68,8 @@ class ActiveOperationSupport<T, A> {
     private final ManagementBatchIdManager operationIdManager = ManagementBatchIdManager.DEFAULT;
     private final ConcurrentMap<Integer, ActiveOperationImpl<T, A>> activeRequests = new ConcurrentHashMap<Integer, ActiveOperationImpl<T, A>>();
 
-    protected ActiveOperationSupport() {
-        this(directExecutor);
-    }
-
     protected ActiveOperationSupport(final Executor executor) {
-        this.executor = executor;
+        this.executor = executor != null ? executor : directExecutor;
     }
 
     /**
@@ -109,7 +106,7 @@ class ActiveOperationSupport<T, A> {
     }
 
     /**
-     * Register an active operation with a specific operatino id.
+     * Register an active operation with a specific operation id.
      *
      * @param id the operation id
      * @param attachment the shared attachment
@@ -120,7 +117,7 @@ class ActiveOperationSupport<T, A> {
         final ActiveOperationImpl<T, A> request = new ActiveOperationImpl(id, attachment, callback);
         final ActiveOperation<?, ?> existing =  activeRequests.putIfAbsent(id, request);
         if(existing != null) {
-            throw new IllegalStateException();
+            throw ProtocolMessages.MESSAGES.noActiveOperation(id);
         }
         return request;
     }

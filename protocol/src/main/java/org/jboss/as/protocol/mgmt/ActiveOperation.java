@@ -30,8 +30,14 @@ import java.io.IOException;
 /**
  * Encapsulates information about a currently active operation, which
  * can require multiple messages exchanged between the client and the
- * server. An operation is seen as active until one of the completion
- * methods on the {@code ActiveOperation.ResultHandler} are called.
+ * server.
+ *
+ * An attachment is optional, but can be used to maintain a shared state between multiple requests.
+ * It can be accessed using the {@link org.jboss.as.protocol.mgmt.ManagementRequestContext#getAttachment()}
+ * from the request handler.
+ *
+ * An operation is seen as active until one of the completion
+ * methods on the {@link ActiveOperation.ResultHandler} are called.
  *
  * @param <T> the result type
  * @param <A> the attachment type
@@ -43,7 +49,7 @@ public interface ActiveOperation<T, A> {
     /**
      * Get the batch id.
      *
-     * @return the request id
+     * @return the batch id
      */
     Integer getOperationId();
 
@@ -69,7 +75,7 @@ public interface ActiveOperation<T, A> {
     AsyncFuture<T> getResult();
 
     /**
-     * Handler to mark the operation as completed.
+     * Handler for the result or to mark the operation as completed/failed.
      *
      * @param <T> the result type
      */
@@ -97,10 +103,30 @@ public interface ActiveOperation<T, A> {
         void cancel();
     }
 
+    /**
+     * A callback indicating when an operation is complete.
+     *
+     * @param <T> the result type
+     */
     public interface CompletedCallback<T> {
 
+        /**
+         * The operation completed successfully.
+         *
+         * @param result the result
+         */
         void completed(T result);
+
+        /**
+         * The operation failed.
+         *
+         * @param e the failure
+         */
         void failed(Exception e);
+
+        /**
+         * The operation was cancelled before being able to complete.
+         */
         void cancelled();
     }
 

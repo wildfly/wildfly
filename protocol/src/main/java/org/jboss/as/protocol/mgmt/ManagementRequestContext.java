@@ -43,8 +43,9 @@ public interface ManagementRequestContext<A> {
 
     /**
      * Get the attachment.
+     * {@see org.jboss.as.protocol.mgmt.ActiveOperation#getAttachment()}
      *
-     * @return the attachment
+     * @return the attachment, can be {@code null}
      */
     A getAttachment();
 

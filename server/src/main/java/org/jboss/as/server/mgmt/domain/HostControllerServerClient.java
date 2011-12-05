@@ -36,6 +36,7 @@ import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
+import org.jboss.as.server.ServerMessages;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -132,12 +133,12 @@ public class HostControllerServerClient implements Service<HostControllerServerC
 
                 @Override
                 public void failed(Exception e) {
-                    callback.failed(new StartException(e));
+                    callback.failed(ServerMessages.MESSAGES.failedToConnectToHC(e));
                 }
 
                 @Override
                 public void cancelled() {
-                    callback.failed(new StartException());
+                    callback.failed(ServerMessages.MESSAGES.cancelledHCConnect());
                 }
             });
             return super.executeRequest(request, channel, support);
