@@ -228,6 +228,7 @@
 
 
         <!-- When -Dtest=... is set, only the default surefire execution with standalone-full.xml will run. -->
+	<!--
         <profile>
             <id>onlyOneSurefireExecution.basic.profile</id>
             <activation><property><name>test</name></property></activation>
@@ -245,6 +246,7 @@
                 </plugins>
             </build>
         </profile>
+	-->
 
     </profiles>
 </project>
