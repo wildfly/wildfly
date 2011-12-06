@@ -90,7 +90,16 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
                     XMLSchemaValidator validator = new XMLSchemaValidator(new XMLResourceResolver());
                     InputStream xmlInput = webXml.openStream();
                     try {
-                        validator.validate(webMetaData.getSchemaLocation(), xmlInput);
+                        if (webMetaData.is23())
+                            validator.validate("-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN", xmlInput);
+                        else if(webMetaData.is24())
+                            validator.validate("http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd", xmlInput);
+                        else if (webMetaData.is25())
+                            validator.validate("http://java.sun.com/xml/ns/j2ee/web-app_2_5.xsd", xmlInput);
+                        else if (webMetaData.is30())
+                            validator.validate("http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd", xmlInput);
+                        else
+                            validator.validate("-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN", xmlInput);
                     } catch (SAXException e) {
                         throw new DeploymentUnitProcessingException("Failed to validate " + webXml, e);
                     } finally {
