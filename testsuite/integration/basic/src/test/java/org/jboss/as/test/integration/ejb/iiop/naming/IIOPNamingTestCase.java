@@ -29,6 +29,7 @@ import static org.junit.matchers.JUnitMatchers.containsString;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("AS7-2923")
 public class IIOPNamingTestCase {
 
 
@@ -116,7 +117,7 @@ public class IIOPNamingTestCase {
         }
     }
 
-    @Test @Ignore("AS7-2923")
+    @Test 
     public void testIIOPNamingIIOPInvocation() throws NamingException, RemoteException {
         final Properties prope = new Properties();
         prope.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.cosnaming.CNCtxFactory");
@@ -128,7 +129,7 @@ public class IIOPNamingTestCase {
         Assert.assertEquals("hello", result.hello());
     }
 
-    @Test @Ignore("AS7-2923")
+    @Test 
     public void testStatefulIIOPNamingIIOPInvocation() throws NamingException, RemoteException, RemoveException {
         final Properties prope = new Properties();
         prope.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.cosnaming.CNCtxFactory");
