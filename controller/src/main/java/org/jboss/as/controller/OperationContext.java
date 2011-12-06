@@ -570,7 +570,7 @@ public interface OperationContext {
          *  @return the type
          */
         @SuppressWarnings("deprecation")
-        public static Type getType(final ProcessType processType, final RunningMode runningMode) {
+        static Type getType(final ProcessType processType, final RunningMode runningMode) {
             if (processType.isServer()) {
                 if (runningMode == RunningMode.NORMAL) {
                     return SERVER;
