@@ -49,10 +49,10 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
  * @author <a href="stefano.maestri@redhat.com">Stefano Maestri</a>
- *         Test casae for AS7-1452: Resource Adapter config-property value passed incorrectly
+ *         Test case for AS7-1452: Resource Adapter config-property value passed incorrectly
  */
 @RunWith(Arquillian.class)
-@Ignore("")
+@Ignore("AS7-1415")
 public class AS7_1452TestCase {
 	
 	private static ModelControllerClient client;

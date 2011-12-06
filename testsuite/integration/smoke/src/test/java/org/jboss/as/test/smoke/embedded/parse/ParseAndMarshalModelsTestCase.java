@@ -195,7 +195,7 @@ public class ParseAndMarshalModelsTestCase {
         if (file.exists()) {
             file.delete();
         }
-        copyFile(getOriginalStandaloneXml("standalone-ds-prop.xml"), file);
+        copyFile(getTestXml("standalone-ds-prop.xml"), file);
     	ModelNode node=loadServerModel(file);
       
         final String complexDs = "complexDs";
@@ -214,7 +214,7 @@ public class ParseAndMarshalModelsTestCase {
     }
     @Test
     public void testStandaloneDsPropXml() throws Exception {
-        standaloneXmlTest(getOriginalStandaloneXml("standalone-ds-prop.xml"));
+        standaloneXmlTest(getTestXml("standalone-ds-prop.xml"));
     }
     @Test
     public void testStandaloneXml() throws Exception {
@@ -260,7 +260,7 @@ public class ParseAndMarshalModelsTestCase {
     }
     @Test
     public void testDomainDsPropXml() throws Exception {
-        domainXmlTest(getOriginalDomainXml("domain-ds.xml"));
+        domainXmlTest(getTestXml("domain-ds.xml"));
     }
     @Test
     public void testDomainDsXml() throws Exception {
@@ -268,7 +268,7 @@ public class ParseAndMarshalModelsTestCase {
         if (file.exists()) {
             file.delete();
         }
-        copyFile(getOriginalDomainXml("domain-ds.xml"), file);
+        copyFile(getTestXml("domain-ds.xml"), file);
     	ModelNode node=loadDomainModel(file);
       
         final String complexDs = "complexDs";
@@ -625,6 +625,21 @@ public class ParseAndMarshalModelsTestCase {
         f = new File(f, "standalone");
         Assert.assertTrue("Not found: " + f.getPath(), f.exists());
         f = new File(f, "configuration");
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        f = new File(f, profile);
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        return f;
+    }
+    private File getTestXml(final String profile) {
+    	File f = new File( System.getProperty("jbossas.ts.submodule.dir") );
+        Assert.assertTrue(f.exists());
+        f = new File(f, "src");
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        f = new File(f, "test");
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        f = new File(f, "resources");
+        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
+        f = new File(f, "test-configs");
         Assert.assertTrue("Not found: " + f.getPath(), f.exists());
         f = new File(f, profile);
         Assert.assertTrue("Not found: " + f.getPath(), f.exists());
