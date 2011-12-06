@@ -343,9 +343,10 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
             // TODO look into adding some of these services in the handlers, but ON-DEMAND.
             // Then here just add some simple service that demands them
-            NativeManagementAddHandler.installNativeManagementServices(serviceTarget, hostControllerInfo, null, null);
 
             ServerToHostOperationHandlerFactoryService.install(serviceTarget, ServerInventoryService.SERVICE_NAME, proxyExecutor);
+
+            NativeManagementAddHandler.installNativeManagementServices(serviceTarget, hostControllerInfo, null, null);
 
             if (hostControllerInfo.getHttpManagementInterface() != null) {
                 HttpManagementAddHandler.installHttpManagementServices(serviceTarget, hostControllerInfo, environment, null);
