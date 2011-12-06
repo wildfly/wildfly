@@ -113,100 +113,97 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
             this.writeNoSuchEJBFailureMessage(channel, invocationId, appName, moduleName, distinctName, beanName, null);
             return;
         }
-        final ClassLoader tccl = SecurityActions.getContextClassLoader();
-        try {
-            //set the correct TCCL for unmarshalling
-            SecurityActions.setContextClassLoader(ejbDeploymentInformation.getDeploymentClassLoader());
-            // now switch the CL to the EJB deployment's CL so that the unmarshaller can use the
-            // correct CL for the rest of the unmarshalling of the stream
-            classLoaderProvider.switchClassLoader(ejbDeploymentInformation.getDeploymentClassLoader());
-            // read the Locator
-            final EJBLocator locator;
-            try {
-                locator = (EJBLocator) unMarshaller.readObject();
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-            final String viewClassName = locator.getViewType().getName();
-            if (!ejbDeploymentInformation.getViewNames().contains(viewClassName)) {
-                this.writeNoSuchEJBFailureMessage(channel, invocationId, appName, moduleName, distinctName, beanName, viewClassName);
-                return;
-            }
-            // TODO: Add a check for remote view
-            final ComponentView componentView = ejbDeploymentInformation.getView(viewClassName);
-            final Method invokedMethod = this.findMethod(componentView, methodName, methodParamTypes);
-            if (invokedMethod == null) {
-                this.writeNoSuchEJBMethodFailureMessage(channel, invocationId, appName, moduleName, distinctName, beanName, viewClassName, methodName, methodParamTypes);
-                return;
-            }
 
-            final Object[] methodParams = new Object[methodParamTypes.length];
-            // un-marshall the method arguments
-            if (methodParamTypes.length > 0) {
-                for (int i = 0; i < methodParamTypes.length; i++) {
-                    try {
-                        methodParams[i] = unMarshaller.readObject();
-                    } catch (ClassNotFoundException cnfe) {
-                        // TODO: Write out invocation failure to channel outstream
-                        throw new RuntimeException(cnfe);
-                    }
+        // now switch the CL to the EJB deployment's CL so that the unmarshaller can use the
+        // correct CL for the rest of the unmarshalling of the stream
+        classLoaderProvider.switchClassLoader(ejbDeploymentInformation.getDeploymentClassLoader());
+        // read the Locator
+        final EJBLocator locator;
+        try {
+            locator = (EJBLocator) unMarshaller.readObject();
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        final String viewClassName = locator.getViewType().getName();
+        if (!ejbDeploymentInformation.getViewNames().contains(viewClassName)) {
+            this.writeNoSuchEJBFailureMessage(channel, invocationId, appName, moduleName, distinctName, beanName, viewClassName);
+            return;
+        }
+        // TODO: Add a check for remote view
+        final ComponentView componentView = ejbDeploymentInformation.getView(viewClassName);
+        final Method invokedMethod = this.findMethod(componentView, methodName, methodParamTypes);
+        if (invokedMethod == null) {
+            this.writeNoSuchEJBMethodFailureMessage(channel, invocationId, appName, moduleName, distinctName, beanName, viewClassName, methodName, methodParamTypes);
+            return;
+        }
+
+        final Object[] methodParams = new Object[methodParamTypes.length];
+        // un-marshall the method arguments
+        if (methodParamTypes.length > 0) {
+            for (int i = 0; i < methodParamTypes.length; i++) {
+                try {
+                    methodParams[i] = unMarshaller.readObject();
+                } catch (ClassNotFoundException cnfe) {
+                    // TODO: Write out invocation failure to channel outstream
+                    throw new RuntimeException(cnfe);
                 }
             }
-            unMarshaller.finish();
+        }
+        unMarshaller.finish();
 
-            // invoke the method and write out the response on a separate thread
-            executorService.submit(new Runnable() {
+        // invoke the method and write out the response on a separate thread
+        executorService.submit(new Runnable() {
 
-                @Override
-                public void run() {
-                    // check if it's async. If yes, then notify the client that's it's async method (so that
-                    // it can unblock if necessary)
-                    if (componentView.isAsynchronous(invokedMethod)) {
-                        try {
-                            MethodInvocationMessageHandler.this.writeAsyncMethodNotification(channel, invocationId);
-                        } catch (Throwable t) {
-                            // catch Throwable, so that we don't skip invoking the method, just because we
-                            // failed to send a notification to the client that the method is an async method
-                            logger.warn("Method " + invokedMethod + " was a async method but the client could not be informed about the same. This will mean that the client might block till the method completes", t);
-                        }
-                    }
-
-                    // invoke the method
-                    Object result = null;
+            @Override
+            public void run() {
+                // check if it's async. If yes, then notify the client that's it's async method (so that
+                // it can unblock if necessary)
+                if (componentView.isAsynchronous(invokedMethod)) {
                     try {
-                        result = invokeMethod(componentView, invokedMethod, methodParams, locator, attachments);
-                    } catch (Throwable throwable) {
-                        try {
-                            // write out the failure
-                            MethodInvocationMessageHandler.this.writeException(channel, invocationId, throwable, attachments);
-                        } catch (IOException ioe) {
-                            // we couldn't write out a method invocation failure message. So let's atleast log the
-                            // actual method invocation exception, for debugging/reference
-                            logger.error("Error invoking method " + invokedMethod + " on bean named " + beanName
-                                    + " for appname " + appName + " modulename " + moduleName + " distinctname " + distinctName, throwable);
-                            // now log why we couldn't send back the method invocation failure message
-                            logger.error("Could not write method invocation failure for method " + invokedMethod + " on bean named " + beanName
-                                    + " for appname " + appName + " modulename " + moduleName + " distinctname " + distinctName + " due to ", ioe);
-                            // close the channel
-                            IoUtils.safeClose(channel);
-                            return;
-                        }
+                        MethodInvocationMessageHandler.this.writeAsyncMethodNotification(channel, invocationId);
+                    } catch (Throwable t) {
+                        // catch Throwable, so that we don't skip invoking the method, just because we
+                        // failed to send a notification to the client that the method is an async method
+                        logger.warn("Method " + invokedMethod + " was a async method but the client could not be informed about the same. This will mean that the client might block till the method completes", t);
                     }
-                    // write out the (successful) method invocation result to the channel output stream
+                }
+
+                // invoke the method
+                Object result = null;
+                try {
+                    result = invokeMethod(componentView, invokedMethod, methodParams, locator, attachments);
+                } catch (Throwable throwable) {
                     try {
-                        writeMethodInvocationResponse(channel, invocationId, result, attachments);
+                        // write out the failure
+                        MethodInvocationMessageHandler.this.writeException(channel, invocationId, throwable, attachments);
                     } catch (IOException ioe) {
-                        logger.error("Could not write method invocation result for method " + invokedMethod + " on bean named " + beanName
+                        // we couldn't write out a method invocation failure message. So let's atleast log the
+                        // actual method invocation exception, for debugging/reference
+                        logger.error("Error invoking method " + invokedMethod + " on bean named " + beanName
+                                + " for appname " + appName + " modulename " + moduleName + " distinctname " + distinctName, throwable);
+                        // now log why we couldn't send back the method invocation failure message
+                        logger.error("Could not write method invocation failure for method " + invokedMethod + " on bean named " + beanName
                                 + " for appname " + appName + " modulename " + moduleName + " distinctname " + distinctName + " due to ", ioe);
                         // close the channel
                         IoUtils.safeClose(channel);
                         return;
                     }
                 }
-            });
-        } finally {
-            SecurityActions.setContextClassLoader(tccl);
-        }
+                // write out the (successful) method invocation result to the channel output stream
+                try {
+                    writeMethodInvocationResponse(channel, invocationId, result, attachments);
+                } catch (IOException ioe) {
+                    logger.error("Could not write method invocation result for method " + invokedMethod + " on bean named " + beanName
+                            + " for appname " + appName + " modulename " + moduleName + " distinctname " + distinctName + " due to ", ioe);
+                    // close the channel
+                    IoUtils.safeClose(channel);
+                    return;
+                }
+            }
+        });
+
+
+
 
     }
 
