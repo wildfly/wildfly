@@ -24,7 +24,6 @@ package org.jboss.as.server.deployment.repository.api;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 
 import org.jboss.msc.service.ServiceName;
 import org.jboss.vfs.VirtualFile;
@@ -74,11 +73,4 @@ public interface ContentRepository {
      * @param hash the hash. Cannot be {@code null}
      */
     void removeContent(byte[] hash);
-
-    /**
-     * Remove all content from the repository that does not exisit in the given hashes
-     *
-     * @param hashes the hashes of the deployments to keep
-     */
-    void purgeContent(List<byte[]> hashes);
 }

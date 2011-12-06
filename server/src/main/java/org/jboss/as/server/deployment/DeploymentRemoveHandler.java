@@ -18,18 +18,22 @@
  */
 package org.jboss.as.server.deployment;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+
+import java.util.List;
 import java.util.Locale;
-import org.jboss.as.controller.AbstractRemoveStepHandler;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.controller.descriptions.ServerDescriptions;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
@@ -45,12 +49,18 @@ public class DeploymentRemoveHandler implements OperationStepHandler, Descriptio
 
     public static final String OPERATION_NAME = REMOVE;
 
-    public static final DeploymentRemoveHandler INSTANCE = new DeploymentRemoveHandler();
+    private final ContentRepository contentRepository;
+    private final boolean standalone;
 
-    private DeploymentRemoveHandler() {
+    public DeploymentRemoveHandler(ContentRepository contentRepository, boolean standalone) {
+        this.contentRepository = contentRepository;
+        this.standalone = standalone;
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+        final List<byte[]> removedHashes = DeploymentUtils.getDeploymentHash(resource);
+
         final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
 
         context.removeResource(PathAddress.EMPTY_ADDRESS);
@@ -80,8 +90,20 @@ public class DeploymentRemoveHandler implements OperationStepHandler, Descriptio
                             log.infof("Undeploy of deployment \"%s\" was rolled back with no failure message",
                                     deploymentUnitName);
                         }
-                    } else if (enabled) {
-                        log.infof("Undeployed \"%s\"", deploymentUnitName);
+                    } else {
+                        if (enabled) {
+                            log.infof("Undeployed \"%s\"", deploymentUnitName);
+                        }
+                        if (standalone) {
+                            for (byte[] hash : removedHashes) {
+                                try {
+                                    contentRepository.removeContent(hash);
+                                } catch (Exception e) {
+                                    //TODO
+                                    log.infof(e, "Exception occurred removing %s", hash);
+                                }
+                            }
+                        }
                     }
                 }
             }, OperationContext.Stage.RUNTIME);

@@ -22,16 +22,16 @@
 
 package org.jboss.as.server.deployment.repository.impl;
 
+import static org.jboss.logging.Logger.Level.INFO;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 
-import static org.jboss.logging.Logger.Level.INFO;
-
 /**
- * Date: 05.11.2011
+ * The reserved message id's as per http://community.jboss.org/wiki/LoggingIds are: 14900 - 14999
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
@@ -52,4 +52,8 @@ interface DeploymentRepositoryLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 14900, value = "Content added at location %s")
     void contentAdded(String path);
+
+    @LogMessage(level = INFO)
+    @Message(id = 14901, value = "Content removed from location %s")
+    void contentRemoved(String path);
 }
