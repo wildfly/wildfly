@@ -145,13 +145,17 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                 case ENABLED: {
                     final Location location = reader.getLocation();
                     String value = rawAttributeText(reader, ENABLED.getXmlName());
-                    ENABLED.parseAndSetParameter(value, connectionDefinitionNode, location);
+                    if (value != null) {
+                        ENABLED.parseAndSetParameter(value, connectionDefinitionNode, location);
+                    }
                     break;
                 }
                 case JNDI_NAME: {
                     final Location location = reader.getLocation();
                     jndiName = rawAttributeText(reader, JNDINAME.getXmlName());
-                    JNDINAME.parseAndSetParameter(jndiName, connectionDefinitionNode, location);
+                    if(jndiName != null) {
+                        JNDINAME.parseAndSetParameter(jndiName, connectionDefinitionNode, location);
+                    }
                     break;
                 }
                 case POOL_NAME: {
@@ -162,21 +166,27 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                 case USE_JAVA_CONTEXT: {
                     final Location location = reader.getLocation();
                     String value = rawAttributeText(reader, USE_JAVA_CONTEXT.getXmlName());
-                    USE_JAVA_CONTEXT.parseAndSetParameter(value, connectionDefinitionNode, location);
+                    if (value != null) {
+                        USE_JAVA_CONTEXT.parseAndSetParameter(value, connectionDefinitionNode, location);
+                    }
                     break;
                 }
 
                 case USE_CCM: {
                     final Location location = reader.getLocation();
                     String value = rawAttributeText(reader, USE_CCM.getXmlName());
-                    USE_CCM.parseAndSetParameter(value, connectionDefinitionNode, location);
+                    if (value != null) {
+                        USE_CCM.parseAndSetParameter(value, connectionDefinitionNode, location);
+                    }
                     break;
                 }
 
                 case CLASS_NAME: {
                     final Location location = reader.getLocation();
                     String value = rawAttributeText(reader, CLASS_NAME.getXmlName());
-                    CLASS_NAME.parseAndSetParameter(value, connectionDefinitionNode, location);
+                    if (value != null) {
+                        CLASS_NAME.parseAndSetParameter(value, connectionDefinitionNode, location);
+                    }
                     break;
                 }
                 default:
@@ -384,13 +394,17 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                 case ENABLED: {
                     final Location location = reader.getLocation();
                     String value = rawAttributeText(reader, ENABLED.getXmlName());
-                    ENABLED.parseAndSetParameter(value, adminObjectNode, location);
+                    if (value != null) {
+                        ENABLED.parseAndSetParameter(value, adminObjectNode, location);
+                    }
                     break;
                 }
                 case JNDI_NAME: {
                     final Location location = reader.getLocation();
                     jndiName = rawAttributeText(reader, JNDINAME.getXmlName());
-                    JNDINAME.parseAndSetParameter(jndiName, adminObjectNode, location);
+                    if (jndiName != null) {
+                        JNDINAME.parseAndSetParameter(jndiName, adminObjectNode, location);
+                    }
                     break;
                 }
                 case POOL_NAME: {
@@ -401,13 +415,17 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                 case USE_JAVA_CONTEXT: {
                     final Location location = reader.getLocation();
                     String value = rawAttributeText(reader, USE_JAVA_CONTEXT.getXmlName());
-                    USE_JAVA_CONTEXT.parseAndSetParameter(value, adminObjectNode, location);
+                    if (value != null) {
+                        USE_JAVA_CONTEXT.parseAndSetParameter(value, adminObjectNode, location);
+                    }
                     break;
                 }
                 case CLASS_NAME: {
                     final Location location = reader.getLocation();
                     String value = rawAttributeText(reader, CLASS_NAME.getXmlName());
-                    CLASS_NAME.parseAndSetParameter(value, adminObjectNode, location);
+                    if (value != null) {
+                        CLASS_NAME.parseAndSetParameter(value, adminObjectNode, location);
+                    }
                     break;
                 }
                 default:
@@ -631,7 +649,9 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                 case NO_RECOVERY: {
                     final Location location = reader.getLocation();
                     String value = rawAttributeText(reader, NO_RECOVERY.getXmlName());
-                    NO_RECOVERY.parseAndSetParameter(value, node, location);
+                    if (value != null) {
+                        NO_RECOVERY.parseAndSetParameter(value, node, location);
+                    }
                     break;
                 }
                 default:
