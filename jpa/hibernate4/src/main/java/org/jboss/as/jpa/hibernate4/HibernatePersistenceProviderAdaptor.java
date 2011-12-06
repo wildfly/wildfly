@@ -45,7 +45,6 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
 
 
     private volatile JBossAppServerJtaPlatform appServerJtaPlatform;
-    private final HibernateManagementAdaptor hibernateManagementAdaptor = new HibernateManagementAdaptor();
 
     @Override
     public void injectJtaManager(JtaManager jtaManager) {
@@ -118,7 +117,7 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
 
     @Override
     public ManagementAdaptor getManagementAdaptor() {
-        return hibernateManagementAdaptor;
+        return HibernateManagementAdaptor.getInstance();
     }
 
 }
