@@ -21,6 +21,13 @@
  */
 package org.jboss.as.web.deployment;
 
+import java.io.IOException;
+import java.io.InputStream;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -31,18 +38,11 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.metadata.parser.servlet.WebMetaDataParser;
 import org.jboss.metadata.parser.util.MetaDataElementParser;
-import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.parser.util.XMLResourceResolver;
 import org.jboss.metadata.parser.util.XMLSchemaValidator;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.vfs.VirtualFile;
 import org.xml.sax.SAXException;
-
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * @author Jean-Frederic Clere
@@ -80,10 +80,10 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
             try {
                 is = webXml.openStream();
                 final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-                inputFactory.setXMLResolver(NoopXMLResolver.create());
-                final XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
 
                 MetaDataElementParser.DTDInfo dtdInfo = new MetaDataElementParser.DTDInfo();
+                inputFactory.setXMLResolver(dtdInfo);
+                final XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
                 WebMetaData webMetaData = WebMetaDataParser.parse(xmlReader, dtdInfo);
 
                 if (schemaValidation && webMetaData.getSchemaLocation() != null) {
