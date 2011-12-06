@@ -29,6 +29,7 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.ParseException;
 
 import static org.jboss.as.jdr.JdrMessages.MESSAGES;
  /**
@@ -61,7 +62,7 @@ public class CommandLineMain {
         String host = "localhost";
 
         try {
-            CommandLine line = parser.parse(options, args);
+            CommandLine line = parser.parse(options, args, true);
 
             if (line.hasOption("help")) {
                 formatter.printHelp(usage, options);
@@ -74,7 +75,8 @@ public class CommandLineMain {
             if (line.hasOption("port")) {
                 port = line.getOptionValue("port");
             }
-        } catch (Exception e) {
+        } catch (ParseException e) {
+            System.out.println(e.getMessage());
             formatter.printHelp(usage, options);
             return;
         }

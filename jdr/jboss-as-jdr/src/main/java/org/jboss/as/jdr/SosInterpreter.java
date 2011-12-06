@@ -39,6 +39,7 @@ import static org.jboss.as.jdr.JdrMessages.MESSAGES;
  * for running sosreport.
  *
  * @author Mike M. Clark
+ * @author Jesse Jaggars
  */
 public class SosInterpreter {
 
@@ -58,16 +59,6 @@ public class SosInterpreter {
         return collect(null, null, null, null);
     }
 
-    /**
-     * Sets up a String global variable for sosreport
-     */
-    private void setSosVariable(PythonInterpreter interpreter, String name, String value) {
-        if (value != null) {
-            interpreter.set(name, value);
-            interpreter.exec("sos." + name + " = " + name);
-        }
-    }
-
     public JdrReport collect(String username, String password, String host, String port) throws OperationFailedException {
         ROOT_LOGGER.startingCollection();
         Date startTime = new Date();
@@ -75,12 +66,9 @@ public class SosInterpreter {
         String homeDir = getJbossHomeDir();
         if (homeDir == null) {
             ROOT_LOGGER.jbossHomeNotSet();
-            throw new OperationFailedException(MESSAGES.jbossHomeNotSet(), new ModelNode().set(MESSAGES.jbossHomeNotSet()));
+            throw new OperationFailedException(MESSAGES.jbossHomeNotSet(),
+                    new ModelNode().set(MESSAGES.jbossHomeNotSet()));
         }
-
-        PythonInterpreter interpreter = new PythonInterpreter();
-        interpreter.exec("import sys");
-        interpreter.exec("import shlex");
 
         String pyLocation = getPythonScriptLocation();
         ROOT_LOGGER.debug("Location of JDR scripts: " + pyLocation);
@@ -90,32 +78,24 @@ public class SosInterpreter {
         ROOT_LOGGER.debug("locationDir = " + locationDir);
         ROOT_LOGGER.debug("homeDir = " + SosInterpreter.cleanPath(homeDir));
 
-        PyObject report = new PyObject();
+        String pathToReport = "";
+        PythonInterpreter interpreter = new PythonInterpreter();
+
         try {
-            interpreter.exec("sys.path.append(\"" + pyLocation + "\")");
-            interpreter.exec("import sos");
+            SoSReport reporter = new SoSReport(interpreter, pyLocation);
+            reporter.setUsername(username);
+            reporter.setPassword(password);
+            reporter.setHostname(host);
+            reporter.setPort(port);
+            reporter.setHome(homeDir);
+            reporter.setTmpDir(locationDir);
+            reporter.setCompressionType(CompressionType.ZIP);
+            pathToReport = reporter.execute();
 
-            // If we have a controller client, use it to
-            // get runtime information.
-            if (controllerClient != null) {
-                interpreter.set("controller_client_proxy",
-                        new ModelControllerClientProxy(controllerClient));
-                interpreter.exec("sos.controllerClient = controller_client_proxy");
-            }
-
-            setSosVariable(interpreter, "as7_user", username);
-            setSosVariable(interpreter, "as7_pass", password);
-            setSosVariable(interpreter, "as7_host", host);
-            setSosVariable(interpreter, "as7_port", port);
-
-            interpreter.exec("from sos.sosreport import main");
-            interpreter.exec("args = shlex.split('-k eap6.home=\"" + homeDir + "\" --tmp-dir=\"" + locationDir + "\" -o eap6 --batch --report --compression-type=zip --silent')");
-            interpreter.exec("reportLocation = main(args)");
-            report = interpreter.get("reportLocation");
-            interpreter.cleanup();
         } catch (Throwable t) {
-            interpreter.cleanup();
             ROOT_LOGGER.pythonExceptionEncountered(t);
+        } finally {
+            interpreter.cleanup();
         }
 
         Date endTime = new Date();
@@ -124,7 +104,7 @@ public class SosInterpreter {
         JdrReport result = new JdrReport();
         result.setStartTime(startTime);
         result.setEndTime(endTime);
-        result.setLocation(report.asString());
+        result.setLocation(pathToReport);
         return result;
     }
 

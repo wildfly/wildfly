@@ -74,7 +74,7 @@ class EAP6(Plugin, IndependentPlugin):
 
         if self.getOption("home"):
             ## Prefer this value first over the ENV
-            self.__jbossHome=self.getOption("home")
+            self.__jbossHome=self.getOption(("home", "as7_home"))
             self.addAlert("INFO: The JBoss installation directory supplied to SOS is " +
                           self.__jbossHome)
         elif os.environ.get("JBOSS_HOME"):
@@ -142,13 +142,16 @@ class EAP6(Plugin, IndependentPlugin):
         try:
             return self.query_java(request_obj)
         # ImportError is when we try to import java stuff
-        # AttributeError is when we try to access sos.controllerClient
+        # we raise an AttributeError if the controller_client_proxy is
+        # unavailable
         except (ImportError, AttributeError):
             return self.query_http(request_obj)
 
     def query_java(self, request_obj):
         from org.jboss.dmr import ModelNode
-        import sos
+        controller_client = self.getOption('controller_client_proxy')
+        if not controller_client:
+            raise AttributeError
 
         request = ModelNode()
         request.get("operation").set(request_obj.operation)
@@ -160,20 +163,16 @@ class EAP6(Plugin, IndependentPlugin):
             for key, value in request_obj.parameters.iteritems():
                 request.get(key).set(value)
 
-        return sos.controllerClient.execute(request).toJSONString(True)
+        return controller_client.execute(request).toJSONString(True)
 
     def query_http(self, request_obj, postdata=None):
-        # in the case where we are being called from jdr.sh we will likely
-        # get these things via the sos object
-        import sos
+        host = self.getOption(('host', 'as7_host'))
+        port = self.getOption(('port', 'as7_port'))
 
-        host = getattr(sos, 'as7_host', None) or self.getOption('host')
-        port = getattr(sos, 'as7_port', None) or self.getOption('port')
+        username = self.getOption(('user', 'as7_user'), None)
+        password = self.getOption(('pass', 'as7_pass'), None)
 
-        username = self.getOption('user') or getattr(sos, 'as7_user', None)
-        password = self.getOption('pass') or getattr(sos, 'as7_pass', None)
-
-        uri = "http://" + host + ":" + port + "/management"
+        uri = "http://%s:%s/management" % (host,port)
 
         json_data = {'operation': request_obj.operation,
                      'address': []}
@@ -262,6 +261,7 @@ class EAP6(Plugin, IndependentPlugin):
                     self.addCopySpec(deployFile, sub=(self.__jbossHome, 'JBOSSHOME'))
 
     def setup(self):
+
         ## We need to know where JBoss is installed and if we can't find it we
         ## must exit immediately.
         if not self.__getJbossHome():
