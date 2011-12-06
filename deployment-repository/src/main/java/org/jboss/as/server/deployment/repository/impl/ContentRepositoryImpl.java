@@ -36,9 +36,6 @@ import java.io.InputStream;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.msc.service.Service;
@@ -207,8 +204,20 @@ public class ContentRepositoryImpl implements ContentRepository, Service<Content
     @Override
     public void removeContent(byte[] hash) {
         File file = getDeploymentContentFile(hash, true);
-        if(!file.delete())
+        if(!file.delete()) {
             file.deleteOnExit();
+        }
+        File parent = file.getParentFile();
+        if (!parent.delete()) {
+            parent.deleteOnExit();
+        }
+        parent = parent.getParentFile();
+        if (parent.list().length == 0) {
+            if (!parent.delete()) {
+                parent.deleteOnExit();
+            }
+        }
+        ROOT_LOGGER.contentRemoved(file.getAbsolutePath());
     }
 
     protected static void safeClose(final Closeable closeable) {
@@ -234,42 +243,5 @@ public class ContentRepositoryImpl implements ContentRepository, Service<Content
     @Override
     public ContentRepository getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
-    }
-
-    @Override
-    public void purgeContent(final List<byte[]> hashes) {
-
-        //Set does not like bytes as a key
-        Set<String> stringHashes = new HashSet<String>();
-        for (byte[] b : hashes) {
-            stringHashes.add(HashUtil.bytesToHexString(b));
-        }
-
-        final File root = getRepoRoot();
-        for (String top : root.list()) {
-            if (top.length() == 2) {
-                final File topDir = new File(root, top);
-                if (topDir.isDirectory()) {
-                    for (String inner : topDir.list()) {
-                        if (!stringHashes.contains(top + inner)) {
-                            final File staleDeployment = new File(topDir, inner);
-                            deleteFileRecursively(staleDeployment);
-                            if (topDir.list().length == 0) {
-                                topDir.delete();
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void deleteFileRecursively(final File file) {
-        if (file.isDirectory()) {
-            for (String name : file.list()) {
-                deleteFileRecursively(new File(file, name));
-            }
-        }
-        file.delete();
     }
 }

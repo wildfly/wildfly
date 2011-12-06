@@ -18,22 +18,31 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContext.ResultAction;
+import org.jboss.as.controller.OperationContext.Stage;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.descriptions.DomainRootDescription;
+import org.jboss.as.server.deployment.DeploymentUtils;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 
 /**
  * Handles removal of a deployment from the model. This can be used at either the domain deployments level
@@ -43,11 +52,16 @@ import org.jboss.dmr.ModelNode;
  */
 public class DeploymentRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
 
+    private static final Logger log = Logger.getLogger("org.jboss.as.deployment");
+
     public static final String OPERATION_NAME = REMOVE;
 
-    public static final DeploymentRemoveHandler INSTANCE = new DeploymentRemoveHandler();
+    private static final String DEPLOYMENT_HASHES = "DEPLOYMENT_HASHES";
 
-    private DeploymentRemoveHandler() {
+    private final ContentRepository contentRepository;
+
+    public DeploymentRemoveHandler(ContentRepository contentRepository) {
+        this.contentRepository = contentRepository;
     }
 
     protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -69,11 +83,40 @@ public class DeploymentRemoveHandler extends AbstractRemoveStepHandler implement
                 throw new OperationFailedException(new ModelNode().set(msg));
             }
         }
+
+        List<byte[]> deploymentHashes = DeploymentUtils.getDeploymentHash(context.readResource(PathAddress.EMPTY_ADDRESS));
+
+        //HACK since we don't seem to be able to read the original resource containing the removed elements from from the RUNTIME stage
+        operation.get(OPERATION_HEADERS, DEPLOYMENT_HASHES).setEmptyList();
+        for (byte[] hash : deploymentHashes) {
+            operation.get(OPERATION_HEADERS, DEPLOYMENT_HASHES).add(hash);
+        }
+
         super.performRemove(context, operation, model);
     }
 
     protected boolean requiresRuntime(OperationContext context) {
-        return false;
+        return true;
+    }
+
+    @Override
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        context.addStep(new OperationStepHandler() {
+
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                if (context.completeStep() != ResultAction.ROLLBACK) {
+                    for (ModelNode node : operation.get(OPERATION_HEADERS, DEPLOYMENT_HASHES).asList()) {
+                        try {
+                            contentRepository.removeContent(node.asBytes());
+                        } catch (Exception e) {
+                            log.debugf(e, "Exception occurred removing %s", node.asBytes());
+                        }
+                    }
+                }
+                operation.get(OPERATION_HEADERS).remove("DEPLOYMENT_HASHES");
+            }
+        }, Stage.RUNTIME);
     }
 
     @Override

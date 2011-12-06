@@ -21,10 +21,15 @@
  */
 package org.jboss.as.server.deployment;
 
-import org.jboss.as.server.deployment.module.ResourceRoot;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Helper class with static methods related to deployment
@@ -71,6 +76,20 @@ public final class DeploymentUtils {
             parent = unit.getParent();
         }
         return unit;
+    }
+
+    public static List<byte[]> getDeploymentHash(Resource deployment) {
+        List<byte[]> hashes = new ArrayList<byte[]>();
+        final ModelNode model = deployment.getModel();
+        if (model.hasDefined(CONTENT)) {
+            for (ModelNode contentElement : model.get(CONTENT).asList()) {
+                if (contentElement.hasDefined(HASH)) {
+                    final byte[] hash = contentElement.get(HASH).asBytes();
+                    hashes.add(hash);
+                }
+            }
+        }
+        return hashes;
     }
 
     private DeploymentUtils() {

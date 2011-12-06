@@ -1440,11 +1440,6 @@ public class FileSystemDeploymentServiceUnitTestCase {
                 }
             };
         }
-
-        @Override
-        public void purgeContent(List<byte[]> hashes) {
-        }
-
     }
 
     private static class MockServerController implements ModelControllerClient {
