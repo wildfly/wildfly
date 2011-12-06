@@ -33,7 +33,6 @@ import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.Remoting;
 import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.xnio.OptionMap;
-import org.xnio.Options;
 
 /**
  * An MSC service for Remoting endpoints.
@@ -69,7 +68,7 @@ public final class EndpointService implements Service<Endpoint> {
             boolean ok = false;
             endpoint = Remoting.createEndpoint(endpointName, optionMap);
             try {
-                endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
+                endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.EMPTY);
                 ok = true;
             } finally {
                 if (! ok) {
