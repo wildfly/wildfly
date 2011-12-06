@@ -25,6 +25,7 @@ import static org.xnio.Options.SASL_MECHANISMS;
 import static org.xnio.Options.SASL_POLICY_NOANONYMOUS;
 import static org.xnio.Options.SASL_POLICY_NOPLAINTEXT;
 import static org.xnio.Options.SASL_PROPERTIES;
+import static org.xnio.Options.SSL_ENABLED;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -117,6 +118,8 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
         builder.set(SASL_MECHANISMS, Sequence.of(mechanisms));
         builder.set(SASL_PROPERTIES, Sequence.of(properties));
 
+        builder.set(SSL_ENABLED, isEnableSSL());
+
         return builder.getMap();
     }
 
@@ -207,6 +210,18 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
                 return false;
             }
         };
+    }
+
+    /**
+     * Indicates if SSL should be enabled based on the associated security realm.
+     *
+     * If enabled this RealmAuthenticationProvider will also need to supply a XnioSSL instance to
+     * wrap the SSLConext.
+     *
+     * @return true if an SSL identity has been defined for the associated security realm.
+     */
+    private boolean isEnableSSL() {
+        return false;
     }
 
     private boolean digestMd5Supported() {
