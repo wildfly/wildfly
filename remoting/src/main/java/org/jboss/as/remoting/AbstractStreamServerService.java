@@ -51,9 +51,7 @@ public abstract class AbstractStreamServerService implements Service<AcceptingCh
     private final Logger log = Logger.getLogger("org.jboss.as.remoting");
 
     @SuppressWarnings("rawtypes")
-    //private final InjectedValue<ChannelListener> connectorValue = new InjectedValue<ChannelListener>();
-    private final InjectedValue<ServerAuthenticationProvider> authenticationProviderValue = new InjectedValue<ServerAuthenticationProvider>();
-    private final InjectedValue<OptionMap> optionMapInjectedValue = new InjectedValue<OptionMap>();
+    private final InjectedValue<RemotingSecurityProvider> securityProviderValue = new InjectedValue<RemotingSecurityProvider>();
     private final InjectedValue<Endpoint> endpointValue = new InjectedValue<Endpoint>();
     private final InjectedValue<SocketBindingManager> socketBindingManagerValue = new InjectedValue<SocketBindingManager>();
     private final OptionMap connectorPropertiesOptionMap;
@@ -75,12 +73,8 @@ public abstract class AbstractStreamServerService implements Service<AcceptingCh
 //        return connectorValue;
 //    }
 
-    public InjectedValue<ServerAuthenticationProvider> getAuthenticationProviderInjector() {
-        return authenticationProviderValue;
-    }
-
-    public InjectedValue<OptionMap> getOptionMapInjectedValue() {
-        return optionMapInjectedValue;
+    public InjectedValue<RemotingSecurityProvider> getSecurityProviderInjector() {
+        return securityProviderValue;
     }
 
     public InjectedValue<Endpoint> getEndpointInjector() {
@@ -95,13 +89,14 @@ public abstract class AbstractStreamServerService implements Service<AcceptingCh
     public void start(final StartContext context) throws StartException {
         try {
             NetworkServerProvider networkServerProvider = endpointValue.getValue().getConnectionProviderInterface("remote", NetworkServerProvider.class);
-            ServerAuthenticationProvider sap = authenticationProviderValue.getValue();
+            RemotingSecurityProvider rsp = securityProviderValue.getValue();
+            ServerAuthenticationProvider sap = rsp.getServerAuthenticationProvider();
             OptionMap.Builder builder = OptionMap.builder();
             if (connectorPropertiesOptionMap != null) {
                 builder.addAll(connectorPropertiesOptionMap);
             }
-            builder.addAll(optionMapInjectedValue.getValue());
-            streamServer = networkServerProvider.createServer(getSocketAddress(), builder.getMap(), sap, null);
+            builder.addAll(rsp.getOptionMap());
+            streamServer = networkServerProvider.createServer(getSocketAddress(), builder.getMap(), sap, rsp.getXnioSsl());
             SocketBindingManager sbm = socketBindingManagerValue.getOptionalValue();
             if (sbm != null) {
                 managedBinding = registerSocketBinding(sbm);

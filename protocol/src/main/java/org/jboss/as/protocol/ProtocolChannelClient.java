@@ -29,13 +29,9 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -45,7 +41,6 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
-import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.Registration;
@@ -57,7 +52,6 @@ import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Property;
 import org.xnio.Sequence;
-import org.xnio.OptionMap.Builder;
 
 /**
  * This class is not thread safe and should only be used by one thread
@@ -96,7 +90,7 @@ public class ProtocolChannelClient implements Closeable {
             return new ProtocolChannelClient(false, endpoint, null, configuration);
         } else {
             endpoint = Remoting.createEndpoint(configuration.getEndpointName(), configuration.getOptionMap());
-            Registration providerRegistration = endpoint.addConnectionProvider(configuration.getUri().getScheme(), new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
+            Registration providerRegistration = endpoint.addConnectionProvider(configuration.getUri().getScheme(), new RemoteConnectionProviderFactory(), OptionMap.EMPTY);
             return new ProtocolChannelClient(true, endpoint, providerRegistration, configuration);
         }
     }
@@ -121,6 +115,9 @@ public class ProtocolChannelClient implements Closeable {
             }
         }
         builder.set(Options.SASL_PROPERTIES, Sequence.of(tempProperties));
+
+        builder.set(Options.SSL_ENABLED, true);
+        builder.set(Options.SSL_STARTTLS, true);
 
         CallbackHandler actualHandler = handler != null ? handler : new AnonymousCallbackHandler();
         WrapperCallbackHandler wrapperHandler = new WrapperCallbackHandler(actualHandler);

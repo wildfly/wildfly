@@ -116,7 +116,7 @@ public class SecurityRealmService implements Service<SecurityRealmService>, Secu
 
     public SSLContext getSSLContext() {
         SSLIdentityService service = sslIdentity.getOptionalValue();
-        if (sslIdentity != null) {
+        if (service != null) {
             return service.getSSLContext();
         }
 
