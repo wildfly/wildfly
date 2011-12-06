@@ -114,6 +114,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
             return;
         }
         final ClassLoader tccl = SecurityActions.getContextClassLoader();
+        Runnable runnable = null;
         try {
             //set the correct TCCL for unmarshalling
             SecurityActions.setContextClassLoader(ejbDeploymentInformation.getDeploymentClassLoader());
@@ -154,8 +155,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
             }
             unMarshaller.finish();
 
-            // invoke the method and write out the response on a separate thread
-            executorService.submit(new Runnable() {
+            runnable = new Runnable() {
 
                 @Override
                 public void run() {
@@ -203,10 +203,13 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                         return;
                     }
                 }
-            });
+            };
         } finally {
             SecurityActions.setContextClassLoader(tccl);
         }
+        // invoke the method and write out the response on a separate thread
+        executorService.submit(runnable);
+
 
     }
 
