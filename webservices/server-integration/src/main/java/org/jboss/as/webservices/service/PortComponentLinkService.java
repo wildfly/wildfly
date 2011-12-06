@@ -54,7 +54,7 @@ public final class PortComponentLinkService implements Service<WebAppController>
 
     private final ServiceName name;
     private final InjectedValue<VirtualHost> hostInjector = new InjectedValue<VirtualHost>();
-    private WebAppController pclwa;
+    private volatile WebAppController pclwa;
     private final InjectedValue<ServerConfig> serverConfigInjectorValue = new InjectedValue<ServerConfig>();
     private static final String DEFAULT_HOST_NAME = "default-host";
 
