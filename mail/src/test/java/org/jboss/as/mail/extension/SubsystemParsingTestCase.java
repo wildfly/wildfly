@@ -2,54 +2,35 @@ package org.jboss.as.mail.extension;
 
 
 import junit.framework.Assert;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.operations.common.InterfaceAddHandler;
-import org.jboss.as.controller.operations.common.SocketBindingGroupRemoveHandler;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
-import org.jboss.as.server.services.net.BindingGroupAddHandler;
-import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingResourceDefinition;
-import org.jboss.as.server.services.net.RemoteDestinationOutboundSocketBindingResourceDefinition;
-import org.jboss.as.server.services.net.SocketBindingResourceDefinition;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ControllerInitializer;
-import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceTarget;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INET_ADDRESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 /**
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author <a href="tomaz.cerar@gmail.com">Tomaz Cerar</a>
  */
 public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
     private String SUBSYSTEM_XML =
             " <subsystem xmlns=\"urn:jboss:domain:mail:1.0\">\n" +
                     "            <mail-session jndi-name=\"java:/Mail\" >\n" +
-                    "                <smtp-server outbound-socket-binding-ref=\"mail-smtp\">\n" +
+                    "                <smtp-server outbound-socket-binding-ref=\"mail-smtp\" ssl=\"true\">\n" +
                     "                       <login name=\"nobody\" password=\"pass\"/>\n" +
                     "                </smtp-server>\n" +
                     "                <pop3-server outbound-socket-binding-ref=\"mail-pop3\"/>\n" +
@@ -109,8 +90,8 @@ public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
 
                     super.initializeSocketBindingsOperations(ops);
 
-                    final String[] names = { "mail-imap", "mail-pop3", "mail-smtp"};
-                    final int[] ports = { 432, 1234, 25 };
+                    final String[] names = {"mail-imap", "mail-pop3", "mail-smtp"};
+                    final int[] ports = {432, 1234, 25};
                     for (int i = 0; i < names.length; i++) {
                         final ModelNode op = new ModelNode();
                         op.get(OP).set(ADD);

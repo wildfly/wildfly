@@ -13,6 +13,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -40,8 +41,6 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
         ModelNode model = context.getModelNode();
         List<Property> sessions = model.get(ModelKeys.MAIL_SESSION).asPropertyList();
 
-        /*List<Property> props = mailSession.getValue().asPropertyList();
-        log.info("properties: "+props);*/
         for (Property mailSession : sessions) {
             String jndi = mailSession.getName();
             log.tracef("jndi: %s", jndi);
@@ -52,11 +51,8 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
             if (sessionData.hasDefined(ModelKeys.DEBUG)) {
                 writer.writeAttribute(Attribute.DEBUG.getLocalName(), sessionData.get(ModelKeys.DEBUG).asString());
             }
-
-
             if (sessionData.hasDefined(ModelKeys.SMTP_SERVER)) {
                 writeServerModel(writer, sessionData, ModelKeys.SMTP_SERVER);
-
             }
             if (sessionData.hasDefined(ModelKeys.POP3_SERVER)) {
                 writeServerModel(writer, sessionData, ModelKeys.POP3_SERVER);
@@ -65,15 +61,9 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
             if (sessionData.hasDefined(ModelKeys.IMAP_SERVER)) {
                 writeServerModel(writer, sessionData, ModelKeys.IMAP_SERVER);
             }
-
-
-            //writer.writeEndElement();
-
             writer.writeEndElement();
         }
-
         writer.writeEndElement();
-
     }
 
     private void writeServerModel(XMLExtendedStreamWriter writer, ModelNode sessionData, final String name) throws XMLStreamException {
@@ -83,6 +73,10 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
             writer.writeStartElement(Element.forName(name).getLocalName());
         } else {
             writer.writeEmptyElement(Element.forName(name).getLocalName());
+        }
+        boolean sslDefined = server.get(ModelKeys.SSL).asBoolean(false);
+        if (sslDefined) {
+            writer.writeAttribute(Attribute.SSL.getLocalName(), server.get(ModelKeys.SSL).asString());
         }
         writer.writeAttribute(Attribute.OUTBOUND_SOCKET_BINDING_REF.getLocalName(), server.get(ModelKeys.OUTBOUND_SOCKET_BINDING_REF).asString());
         if (credentials) {
@@ -208,9 +202,26 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
     }
 
     private MailSessionServer parseServerConfig(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        String[] attributes = ParseUtils.requireAttributes(reader, Attribute.OUTBOUND_SOCKET_BINDING_REF.getLocalName());
+
+        String socketBindingRef = null;
         String username = null;
         String password = null;
+        boolean ssl = false;
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            Attribute attr = Attribute.forName(reader.getAttributeLocalName(i));
+            String value = reader.getAttributeValue(i);
+            if (attr == Attribute.OUTBOUND_SOCKET_BINDING_REF) {
+                socketBindingRef = value;
+            }
+            if (attr == Attribute.SSL) {
+                ssl = Boolean.parseBoolean(value.trim());
+
+            }
+        }
+        if (socketBindingRef == null) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.OUTBOUND_SOCKET_BINDING_REF.getLocalName()));
+        }
+
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
@@ -227,9 +238,7 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
                     break;
                 }
             }
-
-
         }
-        return new MailSessionServer(attributes[0], username, password);
+        return new MailSessionServer(socketBindingRef, username, password, ssl);
     }
 }
