@@ -28,10 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.ResultAction;
-import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -50,7 +48,7 @@ import org.jboss.logging.Logger;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
+public class DeploymentRemoveHandler implements OperationStepHandler, DescriptionProvider {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.deployment");
 
@@ -64,13 +62,42 @@ public class DeploymentRemoveHandler extends AbstractRemoveStepHandler implement
         this.contentRepository = contentRepository;
     }
 
-    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        final String deploymentName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
+        checkCanRemove(context, operation);
+        final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+        List<byte[]> deploymentHashes = DeploymentUtils.getDeploymentHash(resource);
+
+        //HACK since we don't seem to be able to read the original resource containing the removed elements from from the RUNTIME stage
+        operation.get(OPERATION_HEADERS, DEPLOYMENT_HASHES).setEmptyList();
+        for (byte[] hash : deploymentHashes) {
+            operation.get(OPERATION_HEADERS, DEPLOYMENT_HASHES).add(hash);
+        }
+
+        context.removeResource(PathAddress.EMPTY_ADDRESS);
+
+        context.addStep(new OperationStepHandler() {
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+
+                if (context.completeStep() != ResultAction.ROLLBACK) {
+                    for (ModelNode node : operation.get(OPERATION_HEADERS, DEPLOYMENT_HASHES).asList()) {
+                        try {
+                            contentRepository.removeContent(node.asBytes());
+                        } catch (Exception e) {
+                            log.debugf(e, "Exception occurred removing %s", node.asBytes());
+                        }
+                    }
+                }
+            }
+        }, OperationContext.Stage.RUNTIME);
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+    }
+
+    protected void checkCanRemove(OperationContext context, ModelNode operation) throws OperationFailedException {
+        final String deploymentName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
         final Resource root = context.getRootResource();
 
         if(root.hasChild(PathElement.pathElement(SERVER_GROUP))) {
-
             final List<String> badGroups = new ArrayList<String>();
             for(final Resource.ResourceEntry entry : root.getChildren(SERVER_GROUP)) {
                 if(entry.hasChild(PathElement.pathElement(DEPLOYMENT, deploymentName))) {
@@ -83,40 +110,6 @@ public class DeploymentRemoveHandler extends AbstractRemoveStepHandler implement
                 throw new OperationFailedException(new ModelNode().set(msg));
             }
         }
-
-        List<byte[]> deploymentHashes = DeploymentUtils.getDeploymentHash(context.readResource(PathAddress.EMPTY_ADDRESS));
-
-        //HACK since we don't seem to be able to read the original resource containing the removed elements from from the RUNTIME stage
-        operation.get(OPERATION_HEADERS, DEPLOYMENT_HASHES).setEmptyList();
-        for (byte[] hash : deploymentHashes) {
-            operation.get(OPERATION_HEADERS, DEPLOYMENT_HASHES).add(hash);
-        }
-
-        super.performRemove(context, operation, model);
-    }
-
-    protected boolean requiresRuntime(OperationContext context) {
-        return true;
-    }
-
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        context.addStep(new OperationStepHandler() {
-
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                if (context.completeStep() != ResultAction.ROLLBACK) {
-                    for (ModelNode node : operation.get(OPERATION_HEADERS, DEPLOYMENT_HASHES).asList()) {
-                        try {
-                            contentRepository.removeContent(node.asBytes());
-                        } catch (Exception e) {
-                            log.debugf(e, "Exception occurred removing %s", node.asBytes());
-                        }
-                    }
-                }
-                operation.get(OPERATION_HEADERS).remove("DEPLOYMENT_HASHES");
-            }
-        }, Stage.RUNTIME);
     }
 
     @Override
