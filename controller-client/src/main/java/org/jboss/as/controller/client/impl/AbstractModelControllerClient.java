@@ -39,18 +39,15 @@ import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
 import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
-import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
-import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.MessageOutputStream;
 import org.jboss.threads.AsyncFuture;
 
 
@@ -76,32 +73,38 @@ public abstract class AbstractModelControllerClient extends AbstractMessageHandl
         super(executorService);
     }
 
-    protected abstract ManagementClientChannelStrategy getClientChannelStrategy() throws IOException;
+    /**
+     * Get the send channel.
+     *
+     * @return the channel
+     * @throws IOException
+     */
+    protected abstract Channel getChannel() throws IOException;
 
     @Override
     public ModelNode execute(final ModelNode operation) throws IOException {
-        return executeForResult(OperationExecutionContext.create(operation, getClientChannelStrategy().getChannel()));
+        return executeForResult(OperationExecutionContext.create(operation));
     }
 
     @Override
     public ModelNode execute(final Operation operation) throws IOException {
-        return executeForResult(OperationExecutionContext.create(operation, getClientChannelStrategy().getChannel()));
+        return executeForResult(OperationExecutionContext.create(operation));
     }
 
     @Override
     public ModelNode execute(final ModelNode operation, final OperationMessageHandler messageHandler) throws IOException {
-        return executeForResult(OperationExecutionContext.create(operation, messageHandler, getClientChannelStrategy().getChannel()));
+        return executeForResult(OperationExecutionContext.create(operation, messageHandler));
     }
 
     @Override
     public ModelNode execute(Operation operation, OperationMessageHandler messageHandler) throws IOException {
-        return executeForResult(OperationExecutionContext.create(operation, messageHandler, getClientChannelStrategy().getChannel()));
+        return executeForResult(OperationExecutionContext.create(operation, messageHandler));
     }
 
     @Override
     public AsyncFuture<ModelNode> executeAsync(final ModelNode operation, final OperationMessageHandler messageHandler) {
         try {
-            return execute(OperationExecutionContext.create(operation, messageHandler, getClientChannelStrategy().getChannel()));
+            return execute(OperationExecutionContext.create(operation, messageHandler));
         } catch (IOException e)  {
             throw new RuntimeException(e);
         }
@@ -110,11 +113,10 @@ public abstract class AbstractModelControllerClient extends AbstractMessageHandl
     @Override
     public AsyncFuture<ModelNode> executeAsync(final Operation operation, final OperationMessageHandler messageHandler) {
         try {
-            return execute(OperationExecutionContext.create(operation, messageHandler, getClientChannelStrategy().getChannel()));
+            return execute(OperationExecutionContext.create(operation, messageHandler));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     @Override
@@ -251,20 +253,17 @@ public abstract class AbstractModelControllerClient extends AbstractMessageHandl
 
     protected AsyncFuture<ModelNode> executeRequest(final ManagementRequest<ModelNode, OperationExecutionContext> request, final OperationExecutionContext attachment) throws IOException {
         final ActiveOperation<ModelNode, OperationExecutionContext> support = super.registerActiveOperation(attachment);
-        return new DelegatingCancellableAsyncFuture(super.executeRequest(request, attachment.getChannel(), support), support.getOperationId());
+        return new DelegatingCancellableAsyncFuture(super.executeRequest(request, getChannel(), support), support.getOperationId());
     }
 
     static class OperationExecutionContext {
 
         private final Operation operation;
         private final OperationMessageHandler handler;
-        // Associate a channel with an operation, this is somehow needed for older AS 7.0.x releases
-        private final Channel channel;
 
-        OperationExecutionContext(final Operation operation, final OperationMessageHandler handler, final Channel channel) {
+        OperationExecutionContext(final Operation operation, final OperationMessageHandler handler) {
             this.operation = operation;
             this.handler = handler != null ? handler : NO_OP_HANDLER;
-            this.channel = channel;
         }
 
         Operation getOperation() {
@@ -275,24 +274,20 @@ public abstract class AbstractModelControllerClient extends AbstractMessageHandl
             return handler;
         }
 
-        Channel getChannel() throws IOException {
-            return channel;
+        static OperationExecutionContext create(final ModelNode operation) {
+            return create(new OperationBuilder(operation).build(), NO_OP_HANDLER);
         }
 
-        static OperationExecutionContext create(final ModelNode operation, final Channel channel) {
-            return create(new OperationBuilder(operation).build(), NO_OP_HANDLER, channel);
+        static OperationExecutionContext create(final Operation operation) {
+            return create(operation, NO_OP_HANDLER);
         }
 
-        static OperationExecutionContext create(final Operation operation, final Channel channel) {
-            return create(operation, NO_OP_HANDLER, channel);
+        static OperationExecutionContext create(final ModelNode operation, final OperationMessageHandler handler) {
+            return create(new OperationBuilder(operation).build(), handler);
         }
 
-        static OperationExecutionContext create(final ModelNode operation, final OperationMessageHandler handler, final Channel channel) {
-            return create(new OperationBuilder(operation).build(), handler, channel);
-        }
-
-        static OperationExecutionContext create(final Operation operation, final OperationMessageHandler handler, final Channel channel) {
-            return new OperationExecutionContext(operation, handler, channel);
+        static OperationExecutionContext create(final Operation operation, final OperationMessageHandler handler) {
+            return new OperationExecutionContext(operation, handler);
         }
 
     }
@@ -370,8 +365,7 @@ public abstract class AbstractModelControllerClient extends AbstractMessageHandl
             try {
                 final ActiveOperation<ModelNode, OperationExecutionContext> support = AbstractModelControllerClient.this.getActiveOperation(batchId);
                 if(support != null) {
-                    final OperationExecutionContext attachment = support.getAttachment();
-                    AbstractModelControllerClient.this.executeRequest(new CancelAsyncRequest(), attachment.getChannel(), support);
+                    AbstractModelControllerClient.this.executeRequest(new CancelAsyncRequest(), getChannel(), support);
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -398,7 +392,6 @@ public abstract class AbstractModelControllerClient extends AbstractMessageHandl
                 // Once the remote operation returns, we can set the cancelled status
                 resultHandler.cancel();
             }
-
         }
     }
 
