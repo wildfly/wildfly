@@ -444,26 +444,21 @@ public class CacheAdd extends AbstractAddStepHandler {
         // process cache configuration ModelNode describing overrides to defaults
         processCacheModelNode(model, overrides, additionalDeps) ;
 
-        // get container and cache addresses
+        // get all required addresses, names and service names
         PathAddress cacheAddress = PathAddress.pathAddress(operation.get(OP_ADDR)) ;
         PathAddress containerAddress = cacheAddress.subAddress(0, cacheAddress.size()-1) ;
-
-        // get container and cache names
         String cacheName = cacheAddress.getLastElement().getValue() ;
         String containerName = containerAddress.getLastElement().getValue() ;
-
-        // get container and cache service names
         ServiceName containerServiceName = EmbeddedCacheManagerService.getServiceName(containerName) ;
         ServiceName cacheServiceName = containerServiceName.append(cacheName) ;
+        ServiceName cacheConfigurationServiceName = CacheConfigurationService.getServiceName(containerName, cacheName);
 
         // get container Model
         Resource rootResource = context.getRootResource() ;
         ModelNode container = rootResource.navigate(containerAddress).getModel() ;
 
-        // get default cache of the container
+        // get default cache of the container and start mode
         String defaultCache = container.require(ModelKeys.DEFAULT_CACHE).asString() ;
-
-        // get start mode of the cache
         StartMode startMode = operation.hasDefined(ModelKeys.START) ? StartMode.valueOf(operation.get(ModelKeys.START).asString()) : StartMode.LAZY;
 
         // get the JNDI name of the container and its binding info
@@ -471,43 +466,56 @@ public class CacheAdd extends AbstractAddStepHandler {
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName) ;
 
         // setup configuration helper
-        CacheService.CacheConfigurationHelperImpl helper = new CacheService.CacheConfigurationHelperImpl(cacheName) ;
+        CacheConfigurationService.CacheConfigurationHelperImpl helper = new CacheConfigurationService.CacheConfigurationHelperImpl(cacheName) ;
 
-        // install the cache service
+        // install the cache configuration service (configures a cache)
         ServiceTarget target = context.getServiceTarget() ;
-        // ServiceName serviceName = EmbeddedCacheManagerService.getServiceName(containerName).append(cacheName) ;
-        CacheService<Object, Object> cacheService = new CacheService<Object, Object>(cacheName, overrides, helper);
+        CacheConfigurationService cacheConfigurationService = new CacheConfigurationService(cacheName, overrides, helper);
 
-        ServiceBuilder<Cache<Object,Object>> builder = target.addService(cacheServiceName, cacheService) ;
-        builder.addDependency(containerServiceName, CacheContainer.class, helper.getCacheContainerInjector()) ;
-        builder.addDependency(EmbeddedCacheManagerDefaultsService.SERVICE_NAME, EmbeddedCacheManagerDefaults.class, helper.getDefaultsInjector());
-        builder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, helper.getTransactionManagerInjector());
-        builder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, helper.getTransactionSynchronizationRegistryInjector());
-        // builder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, XAResourceRecoveryRegistry.class, helper.getXAResourceRecoveryRegistryInjector())
-
-        builder.addDependency(bindInfo.getBinderServiceName()) ;
-
+        ServiceBuilder<Configuration> builder1 = target.addService(cacheConfigurationServiceName, cacheConfigurationService) ;
+        builder1.addDependency(containerServiceName, CacheContainer.class, helper.getCacheContainerInjector()) ;
+        builder1.addDependency(EmbeddedCacheManagerDefaultsService.SERVICE_NAME, EmbeddedCacheManagerDefaults.class, helper.getDefaultsInjector());
+        builder1.addDependency(ServiceBuilder.DependencyType.OPTIONAL, TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, helper.getTransactionManagerInjector());
+        builder1.addDependency(ServiceBuilder.DependencyType.OPTIONAL, TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, helper.getTransactionSynchronizationRegistryInjector());
+        // builder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, XAResourceRecoveryRegistry.class, helper.getXAResourceRecoveryRegistryInjector());
+        builder1.addDependency(bindInfo.getBinderServiceName()) ;
         // add in any additional dependencies resulting from ModelNode parsing
         for (AdditionalDependency dep : additionalDeps) {
             if (dep.hasInjector()) {
-                builder.addDependency(dep.getName(), dep.getType(), dep.getTarget()) ;
+                builder1.addDependency(dep.getName(), dep.getType(), dep.getTarget()) ;
             } else {
-                builder.addDependency(dep.getName());
+                builder1.addDependency(dep.getName());
             }
         }
-
-        builder.setInitialMode(startMode.getMode());
+        // cache configuration service always started on demand
+        builder1.setInitialMode(ServiceController.Mode.ON_DEMAND);
         // add an alias for the default cache
         if (cacheName.equals(defaultCache)) {
-            builder.addAliases(CacheService.getServiceName(containerName,  null));
+            builder1.addAliases(CacheConfigurationService.getServiceName(containerName, null));
         }
-        // blah
-        if (startMode.getMode() == ServiceController.Mode.ACTIVE) {
-            builder.addListener(verificationHandler);
+        newControllers.add(builder1.install());
+        log.debug("cache configuration service for " + cacheName + " installed for container " + containerName);
+
+        // now install the corresponding cache service (starts a configured cache)
+        CacheService<Object, Object> cacheService = new CacheService<Object, Object>(cacheName);
+
+        ServiceBuilder<Cache<Object,Object>> builder2 = target.addService(cacheServiceName, cacheService) ;
+        builder2.addDependency(containerServiceName, CacheContainer.class, cacheService.getCacheContainerInjector()) ;
+        builder2.addDependency(cacheConfigurationServiceName);
+        builder2.setInitialMode(startMode.getMode());
+
+        // add an alias for the default cache
+        if (cacheName.equals(defaultCache)) {
+            builder2.addAliases(CacheService.getServiceName(containerName,  null));
         }
 
-        newControllers.add(builder.install());
-        log.debug("cache " + cacheName + " installed for container " + containerName);
+        // blah
+        if (startMode.getMode() == ServiceController.Mode.ACTIVE) {
+            builder2.addListener(verificationHandler);
+        }
+
+        newControllers.add(builder2.install());
+        log.debug("cache service for cache " + cacheName + " installed for container " + containerName);
     }
 
     /*
