@@ -50,25 +50,16 @@ public class CacheService<K, V> implements Service<Cache<K, V>> {
 
     private static final Logger log = Logger.getLogger(CacheService.class.getPackage().getName()) ;
 
+    private final InjectedValue<CacheContainer> container = new InjectedValue<CacheContainer>();
     private final String name;
-    private final String template;
-    private final Configuration overrides ;
-    private final CacheConfigurationHelper configurationHelper;
     private volatile Cache<K, V> cache;
 
     public static ServiceName getServiceName(String container, String cache) {
         return EmbeddedCacheManagerService.getServiceName(container).append((cache != null) ? cache : CacheContainer.DEFAULT_CACHE_NAME);
     }
 
-    public CacheService(String name, Configuration overrides, CacheConfigurationHelper configurationHelper) {
-        this(name, null, overrides, configurationHelper);
-    }
-
-    public CacheService(String name, String template, Configuration overrides, CacheConfigurationHelper configurationHelper) {
+    public CacheService(String name) {
         this.name = name;
-        this.template = template;
-        this.overrides = overrides ;
-        this.configurationHelper = configurationHelper;
     }
 
     /**
@@ -80,6 +71,14 @@ public class CacheService<K, V> implements Service<Cache<K, V>> {
         return this.cache;
     }
 
+    public Injector<CacheContainer> getCacheContainerInjector() {
+        return this.container;
+    }
+
+    public CacheContainer getCacheContainer() {
+        return this.container.getValue();
+    }
+
     /**
      * {@inheritDoc}
      * @see org.jboss.msc.service.Service#start(org.jboss.msc.service.StartContext)
@@ -87,51 +86,13 @@ public class CacheService<K, V> implements Service<Cache<K, V>> {
     @Override
     public void start(StartContext context) throws StartException {
 
-        CacheContainer container = this.configurationHelper.getCacheContainer();
-        EmbeddedCacheManagerDefaults defaults = this.configurationHelper.getEmbeddedCacheManagerDefaults();
+        CacheContainer container = this.getCacheContainer();
 
-        // set up the cache configuration
-        Configuration.CacheMode mode = this.overrides.getCacheMode() ;
-        Configuration configuration = defaults.getDefaultConfiguration(mode);
-        configuration.applyOverrides(overrides);
-
-        // check for missing dependencies
-        if (configuration.isTransactionalCache() && configurationHelper.getTransactionManager() == null) {
-            throw new StartException("Missing dependency: transaction manager required") ;
-        }
-        if (configuration.isUseSynchronizationForTransactions() && configurationHelper.getTransactionSynchronizationRegistry() == null) {
-            throw new StartException("Missing dependency: transaction synchronization registry provider required") ;
-        }
-
-        // for transactional caches, our first opportunity to set the providers
-        FluentConfiguration.TransactionConfig tx = configuration.fluent().transaction();
-        if (configuration.isTransactionalCache()) {
-            Value<TransactionManager> txManager = this.configurationHelper.getTransactionManager();
-            if (txManager != null) {
-                tx.transactionManagerLookup(new TransactionManagerProvider(txManager));
-            }
-            if (configuration.isUseSynchronizationForTransactions()) {
-                Value<TransactionSynchronizationRegistry> txSyncRegistry = this.configurationHelper.getTransactionSynchronizationRegistry();
-                if (txSyncRegistry != null) {
-                    tx.transactionSynchronizationRegistryLookup(new TransactionSynchronizationRegistryProvider(txSyncRegistry));
-                }
-            }
-            if (configuration.isTransactionRecoveryEnabled()) {
-                // set injection
-            }
-        }
-
-        // if template != null, a cache named template is used as the base; otherwise default
-        if (this.template != null) {
-            ((EmbeddedCacheManager) container).defineConfiguration(this.name, this.template, configuration);
-        } else {
-            ((EmbeddedCacheManager) container).defineConfiguration(this.name, configuration);
-        }
         // get an instance of the defined cache
         this.cache = container.getCache(this.name);
 
-        // check how the final configuration looks
-        log.debugf("Cache configuration = %s", this.cache.getConfiguration().toXmlString());
+        // advertise
+        log.debugf("Cache %s started", this.name);
     }
 
     /**
@@ -144,57 +105,7 @@ public class CacheService<K, V> implements Service<Cache<K, V>> {
         // this may cause problems if the cache name is reused with a different cache type as the
         // original cache definition will be takes as base config
         this.cache.stop();
-    }
 
-    static class CacheConfigurationHelperImpl implements CacheConfigurationHelper {
-        private final InjectedValue<CacheContainer> container = new InjectedValue<CacheContainer>();
-        private final InjectedValue<EmbeddedCacheManagerDefaults> defaults = new InjectedValue<EmbeddedCacheManagerDefaults>();
-        private final InjectedValue<TransactionManager> transactionManager = new InjectedValue<TransactionManager>();
-        private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistry = new InjectedValue<TransactionSynchronizationRegistry>();
-        private final String name;
-
-        CacheConfigurationHelperImpl(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String getName() {
-            return this.name;
-        }
-
-        Injector<CacheContainer> getCacheContainerInjector() {
-            return this.container;
-        }
-
-        Injector<EmbeddedCacheManagerDefaults> getDefaultsInjector() {
-            return this.defaults;
-        }
-        Injector<TransactionManager> getTransactionManagerInjector() {
-            return this.transactionManager;
-        }
-
-        Injector<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistryInjector() {
-            return this.transactionSynchronizationRegistry;
-        }
-
-        @Override
-        public CacheContainer getCacheContainer() {
-            return this.container.getValue();
-        }
-
-        @Override
-        public EmbeddedCacheManagerDefaults getEmbeddedCacheManagerDefaults() {
-            return this.defaults.getValue();
-        }
-
-        @Override
-        public Value<TransactionManager> getTransactionManager() {
-            return this.transactionManager;
-        }
-
-        @Override
-        public Value<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistry() {
-            return this.transactionSynchronizationRegistry;
-        }
+        log.debugf("Cache %s stopped", this.name);
     }
 }
