@@ -190,7 +190,6 @@
         
 
         <!-- When -Dtest=... is set, only the default surefire execution with standalone-full.xml will run. -->
-	<!--
         <profile>
             <id>onlyOneSurefireExecution.smoke.profile</id>
             <activation><property><name>test</name></property></activation>
@@ -200,14 +199,13 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions>
-                            <execution><id>smoke-full.surefire</id><phase>none</phase></execution>
+                            <execution><id>smoke-full.surefire</id><phase>test</phase></execution>
                             <execution><id>smoke-web.surefire</id><phase>none</phase></execution>
                         </executions>
                     </plugin>
                 </plugins>
             </build>
         </profile>
-	-->
 
     </profiles>
 </project>
