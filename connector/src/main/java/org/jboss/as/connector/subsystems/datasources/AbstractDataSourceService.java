@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.naming.Reference;
 import javax.resource.ResourceException;
 import javax.resource.spi.ManagedConnectionFactory;
 import javax.sql.DataSource;
@@ -275,7 +276,12 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
         @Override
         protected String[] bindConnectionFactory(String deployment, final String jndi, Object cf) throws Throwable {
-            // don't register because it's one durin add operation
+            // AS7-2222: Just hack it
+            if (cf instanceof javax.resource.Referenceable) {
+                ((javax.resource.Referenceable)cf).setReference(new Reference(jndi));
+            }
+
+            // don't register because it's one during add operation
             return new String[] { jndi };
         }
 
