@@ -94,7 +94,10 @@ public class SimpleTable {
     }
 
     public String toString(boolean order) {
-        StringBuilder buf = new StringBuilder();
+        return append(new StringBuilder(), order).toString();
+    }
+
+    public StringBuilder append(StringBuilder buf, boolean order) {
         Formatter formatter = new Formatter(buf);
         final StringBuilder formatBuf = new StringBuilder();
         for(int length : columnLengths) {
@@ -122,6 +125,6 @@ public class SimpleTable {
             buf.append('\n');
             formatter.format(format, (Object[])lines.get(i));
         }
-        return buf.toString();
+        return buf;
     }
 }

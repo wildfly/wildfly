@@ -4,21 +4,28 @@ SYNOPSIS
 
 DESCRIPTION
 
-    Lists the contents of a node path.
+    Lists the contents of a node path. Which includes node types and attributes,
+    if the node path ends on a node name, or node names if the node path ends on a node type.
 
 ARGUMENTS
 
- node-path    - optional, the node path the contents of which should be printed.
+ node-path    - (optional) the node path the contents of which to print.
                 If not specified, the contents of the current node path (indicated in the prompt) will be printed.
                 The node path can end on either node type (in this case the contents will be the child node names)
-                or the node name (in this case the contents will be the child node types).
+                or the node name (in this case the contents will be the child node types and attributes).
                 If the node path has no contents, nothing will be printed.
 
-                If specified, the node-path is expected to follow the following format:
+                If specified, the node-path is expected to follow format:
                 [node-type [=node-name (,node-type[=node-name])*]].
 
- -l           - by default the result is printed in columns using the whole width of the terminal,
-                the -l switch will make it printed one name per line.  
+ -l           - (optional) by default the result consists of a list of names and is printed in columns
+                using the whole width of the terminal.
+                If the node path ends on a node name, the -l switch will print two tables:
+                - one for attributes displaying the name, value and type of the attributes;
+                - one for child types displaying the type name, min and max allowed occurrences
+                  of instances of those types in the domain configuration.
+                If the node path ends on a node type, the -l switch will print all the available
+                child names one per line, i.e. in a column.  
 				
 The following navigation signs are supported in the node-path:
  /      - the root node (e.g. 'cd /' or 'cd /some=thing');
