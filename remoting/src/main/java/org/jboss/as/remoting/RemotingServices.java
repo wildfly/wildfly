@@ -38,7 +38,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
-import org.jboss.remoting3.security.ServerAuthenticationProvider;
 import org.xnio.OptionMap;
 
 /**
@@ -153,25 +152,18 @@ public class RemotingServices {
                                                  final ServiceName tmpDirService,
                                                  final ServiceVerificationHandler verificationHandler,
                                                  final List<ServiceController<?>> newControllers) {
-        final ServiceName authProviderName = RealmAuthenticationProviderService.createName(connectorName);
-        final ServiceName optionMapName = RealmOptionMapService.createName(connectorName);
+        final ServiceName securityProviderName = RealmSecurityProviderService.createName(connectorName);
 
-        final RealmAuthenticationProviderService raps = new RealmAuthenticationProviderService();
-        ServiceBuilder<?> builder = serviceTarget.addService(authProviderName, raps);
+        final RealmSecurityProviderService rsps = new RealmSecurityProviderService();
+        ServiceBuilder<?> builder = serviceTarget.addService(securityProviderName, rsps);
         if (securityRealmName != null) {
-            builder.addDependency(securityRealmName, SecurityRealm.class, raps.getSecurityRealmInjectedValue());
+            builder.addDependency(securityRealmName, SecurityRealm.class, rsps.getSecurityRealmInjectedValue());
         }
         if (serverCallbackServiceName != null) {
-            builder.addDependency(serverCallbackServiceName, CallbackHandler.class, raps.getServerCallbackValue());
+            builder.addDependency(serverCallbackServiceName, CallbackHandler.class, rsps.getServerCallbackValue());
         }
-        builder.addDependency(tmpDirService, String.class, raps.getTmpDirValue());
+        builder.addDependency(tmpDirService, String.class, rsps.getTmpDirValue());
         addController(newControllers, verificationHandler, builder);
-
-        RealmOptionMapService roms = new RealmOptionMapService();
-        builder = serviceTarget.addService(optionMapName, roms)
-                .addDependency(authProviderName, RealmAuthenticationProvider.class, roms.getRealmAuthenticationProviderInjectedValue());
-        addController(newControllers, verificationHandler, builder);
-
     }
 
     private static void installConnectorServices(ServiceTarget serviceTarget,
@@ -184,15 +176,13 @@ public class RemotingServices {
                 final ServiceVerificationHandler verificationHandler,
                 final List<ServiceController<?>> newControllers) {
 
-        final ServiceName authProviderName = RealmAuthenticationProviderService.createName(connectorName);
-        final ServiceName optionMapName = RealmOptionMapService.createName(connectorName);
+        final ServiceName securityProviderName = RealmSecurityProviderService.createName(connectorName);
         if (isNetworkInterfaceBinding) {
             final InjectedNetworkBindingStreamServerService streamServerService = new InjectedNetworkBindingStreamServerService(connectorPropertiesOptionMap, port);
             addController(newControllers,
                     verificationHandler,
                     serviceTarget.addService(serverServiceName(connectorName), streamServerService)
-                        .addDependency(authProviderName, ServerAuthenticationProvider.class, streamServerService.getAuthenticationProviderInjector())
-                        .addDependency(optionMapName, OptionMap.class, streamServerService.getOptionMapInjectedValue())
+                        .addDependency(securityProviderName, RemotingSecurityProvider.class, streamServerService.getSecurityProviderInjector())
                         .addDependency(endpointName, Endpoint.class, streamServerService.getEndpointInjector())
                         .addDependency(bindingName, NetworkInterfaceBinding.class, streamServerService.getInterfaceBindingInjector())
                         .addDependency(ServiceBuilder.DependencyType.OPTIONAL, SocketBindingManager.SOCKET_BINDING_MANAGER, SocketBindingManager.class, streamServerService.getSocketBindingManagerInjector()));
@@ -201,8 +191,7 @@ public class RemotingServices {
             addController(newControllers,
                     verificationHandler,
                     serviceTarget.addService(serverServiceName(connectorName), streamServerService)
-                        .addDependency(authProviderName, ServerAuthenticationProvider.class, streamServerService.getAuthenticationProviderInjector())
-                        .addDependency(optionMapName, OptionMap.class, streamServerService.getOptionMapInjectedValue())
+                        .addDependency(securityProviderName, RemotingSecurityProvider.class, streamServerService.getSecurityProviderInjector())
                         .addDependency(endpointName, Endpoint.class, streamServerService.getEndpointInjector())
                         .addDependency(bindingName, SocketBinding.class, streamServerService.getSocketBindingInjector())
                         .addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER, SocketBindingManager.class, streamServerService.getSocketBindingManagerInjector()));
@@ -210,10 +199,8 @@ public class RemotingServices {
     }
 
     public static void removeConnectorServices(final OperationContext context, final String connectorName) {
-        final ServiceName authProviderName = RealmAuthenticationProviderService.createName(connectorName);
-        final ServiceName optionMapName = RealmOptionMapService.createName(connectorName);
+        final ServiceName securityProviderName = RealmSecurityProviderService.createName(connectorName);
         context.removeService(serverServiceName(connectorName));
-        context.removeService(optionMapName);
-        context.removeService(authProviderName);
+        context.removeService(securityProviderName);
     }
 }

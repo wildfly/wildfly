@@ -26,6 +26,7 @@ import static org.xnio.Options.SASL_POLICY_NOANONYMOUS;
 import static org.xnio.Options.SASL_POLICY_NOPLAINTEXT;
 import static org.xnio.Options.SASL_PROPERTIES;
 import static org.xnio.Options.SSL_ENABLED;
+import static org.xnio.Options.SSL_STARTTLS;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -33,6 +34,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import javax.net.ssl.SSLContext;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -43,6 +45,7 @@ import javax.security.sasl.RealmCallback;
 import javax.security.sasl.SaslException;
 
 import org.jboss.as.domain.management.SecurityRealm;
+import org.jboss.remoting3.Remoting;
 import org.jboss.remoting3.security.ServerAuthenticationProvider;
 import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
@@ -50,6 +53,9 @@ import org.xnio.OptionMap;
 import org.xnio.OptionMap.Builder;
 import org.xnio.Property;
 import org.xnio.Sequence;
+import org.xnio.Xnio;
+import org.xnio.ssl.JsseXnioSsl;
+import org.xnio.ssl.XnioSsl;
 
 /**
  * A Remoting ServerAuthenticationProvider that wraps a management domain security realm.
@@ -61,7 +67,7 @@ import org.xnio.Sequence;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class RealmAuthenticationProvider implements ServerAuthenticationProvider {
+public class RealmSecurityProvider implements RemotingSecurityProvider {
 
     static final String REALM_PROPERTY = "com.sun.security.sasl.digest.realm";
     static final String PRE_DIGESTED_PROPERTY = "org.jboss.sasl.digest.pre_digested";
@@ -79,13 +85,18 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
     private final CallbackHandler serverCallbackHandler;
     private final String tokensDir;
 
-    public RealmAuthenticationProvider(final SecurityRealm realm, final CallbackHandler serverCallbackHandler, final String tokensDir) {
+    public RealmSecurityProvider(final SecurityRealm realm, final CallbackHandler serverCallbackHandler, final String tokensDir) {
         this.realm = realm;
         this.serverCallbackHandler = serverCallbackHandler;
         this.tokensDir = tokensDir;
     }
 
-    OptionMap getSaslOptionMap() {
+    /*
+     * RemotingSecurityProvider methods.
+     */
+
+    @Override
+    public OptionMap getOptionMap() {
         List<String> mechanisms = new LinkedList<String>();
         Set<Property> properties = new HashSet<Property>();
         Builder builder = OptionMap.builder();
@@ -118,10 +129,39 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
         builder.set(SASL_MECHANISMS, Sequence.of(mechanisms));
         builder.set(SASL_PROPERTIES, Sequence.of(properties));
 
-        builder.set(SSL_ENABLED, isEnableSSL());
+        boolean enableSSL = isEnableSSL();
+        builder.set(SSL_ENABLED, enableSSL);
+        if (enableSSL) {
+            builder.set(SSL_STARTTLS, true);
+        }
 
         return builder.getMap();
     }
+
+    @Override
+    public ServerAuthenticationProvider getServerAuthenticationProvider() {
+        return new ServerAuthenticationProvider() {
+
+            @Override
+            public CallbackHandler getCallbackHandler(String mechanismName) {
+                return RealmSecurityProvider.this.getCallbackHandler(mechanismName);
+            }
+        };
+    }
+
+    @Override
+    public XnioSsl getXnioSsl() {
+        final SSLContext sslContext;
+        if (realm == null || (sslContext = realm.getSSLContext()) == null) {
+            return null;
+        }
+
+        return new JsseXnioSsl(Xnio.getInstance(Remoting.class.getClassLoader()), OptionMap.EMPTY, sslContext);
+    }
+
+    /*
+     * Internal methods.
+     */
 
     public CallbackHandler getCallbackHandler(String mechanismName) {
         // TODO - Once authorization is in place we may be able to relax the realm check to
@@ -221,7 +261,7 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
      * @return true if an SSL identity has been defined for the associated security realm.
      */
     private boolean isEnableSSL() {
-        return false;
+        return (realm != null && realm.getSSLContext() != null);
     }
 
     private boolean digestMd5Supported() {
@@ -274,6 +314,5 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
         }
         return false;
     }
-
 
 }
