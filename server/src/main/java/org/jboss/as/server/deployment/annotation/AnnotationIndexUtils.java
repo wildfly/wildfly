@@ -35,6 +35,8 @@ import org.jboss.jandex.Index;
 /**
  * Utility class that allows easy access to all annotation Indexes in a deployment.
  *
+ * Note that this will not resolve indexes from Class-Path entries
+ *
  * @author Stuart Douglas
  * @author Ales Justin
  */
@@ -42,12 +44,9 @@ public class AnnotationIndexUtils {
 
     public static Map<ResourceRoot, Index> getAnnotationIndexes(final DeploymentUnit deploymentUnit) {
         final List<ResourceRoot> allResourceRoots = new ArrayList<ResourceRoot>();
-        final Boolean processChildren = deploymentUnit.getAttachment(Attachments.PROCESS_CHILD_ANNOTATION_INDEX);
-        if(processChildren == null || processChildren) {
-            final List<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
-            if (resourceRoots != null) {
-                allResourceRoots.addAll(resourceRoots);
-            }
+        final List<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
+        if (resourceRoots != null) {
+            allResourceRoots.addAll(resourceRoots);
         }
         allResourceRoots.add(deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT));
         Map<ResourceRoot, Index> indexes = new HashMap<ResourceRoot, Index>();
