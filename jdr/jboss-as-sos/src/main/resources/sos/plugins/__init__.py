@@ -291,12 +291,28 @@ class Plugin(object):
         return self.getOption(optionname)
 
     def getOption(self, optionname, default=0):
-        ''' see whether the named option is enabled.
-        '''
+        """Returns the first value that matches 'optionname' in parameters
+        passed in via the command line or set via set_option or via the
+        global_plugin_options dictionary, in that order.
+
+        optionaname may be iterable, in which case the first option that matches
+        any of the option names is returned."""
+
+        def _check(key):
+            try:
+                iter(optionname)
+                return key in optionname
+            except Exception:
+                return key == optionname
+
         for name, parms in izip(self.optNames, self.optParms):
-            if name == optionname:
+            if _check(name):
                 return parms['enabled']
-        # nonexistent options aren't enabled.
+
+        for key, value in self.cInfo.get('global_plugin_options', {}).iteritems():
+            if _check(key):
+                return value
+
         return default
 
     def getOptionAsList(self, optionname, delimiter=",", default=None):

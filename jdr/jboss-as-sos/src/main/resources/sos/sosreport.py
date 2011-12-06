@@ -112,75 +112,6 @@ class SosOption(Option):
         else:
             Option.take_action(self, action, dest, opt, value, values, parser)
 
-def parse_options(opts):
-    """ Parse command line options """
-
-    parser = OptionParserExtended(option_class=SosOption)
-    parser.add_option("-l", "--list-plugins", action="store_true",
-                         dest="listPlugins", default=False,
-                         help="list plugins and available plugin options")
-    parser.add_option("-n", "--skip-plugins", action="extend",
-                         dest="noplugins", type="string",
-                         help="skip these plugins", default = deque())
-    parser.add_option("-e", "--enable-plugins", action="extend",
-                         dest="enableplugins", type="string",
-                         help="enable these plugins", default = deque())
-    parser.add_option("-o", "--only-plugins", action="extend",
-                         dest="onlyplugins", type="string",
-                         help="enable these plugins only", default = deque())
-    parser.add_option("-k", action="append",
-                         dest="plugopts", type="string",
-                         help="plugin options in plugname.option=value format (see -l)")
-    parser.add_option("-a", "--alloptions", action="store_true",
-                         dest="usealloptions", default=False,
-                         help="enable all options for loaded plugins")
-    parser.add_option("-u", "--upload", action="store",
-                         dest="upload", default=False,
-                         help="upload the report to an ftp server")
-    parser.add_option("--batch", action="store_true",
-                         dest="batch", default=False,
-                         help="do not ask any question (batch mode)")
-    parser.add_option("--no-colors", action="store_true",
-                         dest="nocolors", default=False,
-                         help="do not use terminal colors for text")
-    parser.add_option("-v", "--verbose", action="count",
-                         dest="verbosity",
-                         help="increase verbosity")
-    parser.add_option("", "--silent", action="store_true",
-                         dest="silent", default=False,
-                         help="Only display FATAL errors on stdout")
-    parser.add_option("--debug", action="count",
-                         dest="debug",
-                         help="enabling debugging through python debugger")
-    parser.add_option("--ticket-number", action="store",
-                         dest="ticketNumber",
-                         help="set ticket number")
-    parser.add_option("--name", action="store",
-                         dest="customerName",
-                         help="define customer name")
-    parser.add_option("--config-file", action="store",
-                         dest="config_file",
-                         help="specify alternate configuration file")
-    parser.add_option("--tmp-dir", action="store",
-                         dest="tmp_dir",
-                         help="specify alternate temporary directory", default=tempfile.gettempdir())
-    parser.add_option("--diagnose", action="store_true",
-                         dest="diagnose",
-                         help="enable diagnostics", default=False)
-    parser.add_option("--analyze", action="store_true",
-                         dest="analyze",
-                         help="enable analyzations", default=False)
-    parser.add_option("--report", action="store_true",
-                         dest="report",
-                         help="Enable html/xml reporting", default=False)
-    parser.add_option("--profile", action="store_true",
-                         dest="profiler",
-                         help="turn on profiling", default=False)
-    parser.add_option("-z", "--compression-type", dest="compression_type",
-                        help="compression technology to use [auto, zip, gzip, bzip2, xz] (default=auto)",
-                        default="auto")
-
-    return parser.parse_args(opts)
 
 
 class XmlReport(object):
@@ -272,6 +203,7 @@ class SoSReport(object):
         self.skipped_plugins = deque()
         self.all_options = deque()
         self.xml_report = XmlReport()
+        self.global_plugin_options = {}
 
         try:
             import signal
@@ -280,20 +212,13 @@ class SoSReport(object):
             pass # not available in java, but we don't care
 
 
-        self.opts, self.args = parse_options(opts)
+        self.opts, self.args = self.parse_options(opts)
         self.tempfile_util = TempFileUtil(tmp_dir=self.opts.tmp_dir)
         self._set_debug()
         self._read_config()
         self.policy = sos.policies.load()
         self._is_root = self.policy.is_root()
         self._set_directories()
-        self._setup_logging()
-        self.policy.setCommons(self.get_commons())
-        self.print_header()
-        self.load_plugins()
-        self._set_tunables()
-        self._check_for_unknown_plugins()
-        self._set_plugin_options()
 
     def print_header(self):
         self.ui_log.info("\n%s\n" % _("sosreport (version %s)" % (__version__,)))
@@ -308,7 +233,8 @@ class SoSReport(object):
                 'verbosity': self.opts.verbosity,
                 'xmlreport': self.xml_report,
                 'cmdlineopts': self.opts,
-                'config': self.config
+                'config': self.config,
+                'global_plugin_options': self.global_plugin_options,
                 }
 
     def get_temp_file(self):
@@ -893,38 +819,129 @@ class SoSReport(object):
             self.soslog.error(_("no valid plugins were enabled"))
             self._exit(1)
 
+    def parse_options(self, opts):
+        """ Parse command line options """
+
+        self.parser = parser = OptionParserExtended(option_class=SosOption)
+        parser.add_option("-l", "--list-plugins", action="store_true",
+                             dest="listPlugins", default=False,
+                             help="list plugins and available plugin options")
+        parser.add_option("-n", "--skip-plugins", action="extend",
+                             dest="noplugins", type="string",
+                             help="skip these plugins", default = deque())
+        parser.add_option("-e", "--enable-plugins", action="extend",
+                             dest="enableplugins", type="string",
+                             help="enable these plugins", default = deque())
+        parser.add_option("-o", "--only-plugins", action="extend",
+                             dest="onlyplugins", type="string",
+                             help="enable these plugins only", default = deque())
+        parser.add_option("-k", action="append",
+                             dest="plugopts", type="string",
+                             help="plugin options in plugname.option=value format (see -l)")
+        parser.add_option("-a", "--alloptions", action="store_true",
+                             dest="usealloptions", default=False,
+                             help="enable all options for loaded plugins")
+        parser.add_option("-u", "--upload", action="store",
+                             dest="upload", default=False,
+                             help="upload the report to an ftp server")
+        parser.add_option("--batch", action="store_true",
+                             dest="batch", default=False,
+                             help="do not ask any question (batch mode)")
+        parser.add_option("--no-colors", action="store_true",
+                             dest="nocolors", default=False,
+                             help="do not use terminal colors for text")
+        parser.add_option("-v", "--verbose", action="count",
+                             dest="verbosity",
+                             help="increase verbosity")
+        parser.add_option("", "--silent", action="store_true",
+                             dest="silent", default=False,
+                             help="Only display FATAL errors on stdout")
+        parser.add_option("--debug", action="count",
+                             dest="debug",
+                             help="enabling debugging through python debugger")
+        parser.add_option("--ticket-number", action="store",
+                             dest="ticketNumber",
+                             help="set ticket number")
+        parser.add_option("--name", action="store",
+                             dest="customerName",
+                             help="define customer name")
+        parser.add_option("--config-file", action="store",
+                             dest="config_file",
+                             help="specify alternate configuration file")
+        parser.add_option("--tmp-dir", action="store",
+                             dest="tmp_dir",
+                             help="specify alternate temporary directory", default=tempfile.gettempdir())
+        parser.add_option("--diagnose", action="store_true",
+                             dest="diagnose",
+                             help="enable diagnostics", default=False)
+        parser.add_option("--analyze", action="store_true",
+                             dest="analyze",
+                             help="enable analyzations", default=False)
+        parser.add_option("--report", action="store_true",
+                             dest="report",
+                             help="Enable html/xml reporting", default=False)
+        parser.add_option("--profile", action="store_true",
+                             dest="profiler",
+                             help="turn on profiling", default=False)
+        parser.add_option("-z", "--compression-type", dest="compression_type",
+                            help="compression technology to use [auto, zip, gzip, bzip2, xz] (default=auto)",
+                            default="auto")
+
+        return parser.parse_args(opts)
+
+    def set_option(self, name, value=None):
+        """Allows setting of 'command line options' without passing in a
+        command line. Name should be the command line option name of the
+        option to set."""
+        if self.parser.has_option(name):
+            option = self.parser.get_option(name)
+            option.process(name, value, self.opts, self.parser)
+
+    def set_global_plugin_option(self, key, value):
+        self.global_plugin_options[key] = value;
+
+    def execute(self):
+        try:
+            self._setup_logging()
+            self.policy.setCommons(self.get_commons())
+            self.print_header()
+            self.load_plugins()
+            self._set_tunables()
+            self._check_for_unknown_plugins()
+            self._set_plugin_options()
+
+            if self.opts.listPlugins:
+                self.list_plugins()
+
+            self.ensure_plugins()
+            self.batch()
+
+            if self.opts.diagnose:
+                self.diagnose()
+
+            self.prework()
+            self.setup()
+
+            self.ui_log.info(_(" Running plugins. Please wait ..."))
+            self.ui_log.info("")
+
+            self.copy_stuff()
+
+            self.ui_log.info("")
+
+            if self.opts.report:
+                self.report()
+                self.html_report()
+                self.plain_report()
+
+            self.postproc()
+            self.version()
+
+            return self.final_work()
+        except SystemExit:
+            return None
+
 def main(args):
     """The main entry point"""
-    try:
-        sos = SoSReport(args)
-
-        if sos.opts.listPlugins:
-            sos.list_plugins()
-
-        sos.ensure_plugins()
-        sos.batch()
-
-        if sos.opts.diagnose:
-            sos.diagnose()
-
-        sos.prework()
-        sos.setup()
-
-        sos.ui_log.info(_(" Running plugins. Please wait ..."))
-        sos.ui_log.info("")
-
-        sos.copy_stuff()
-
-        sos.ui_log.info("")
-
-        if sos.opts.report:
-            sos.report()
-            sos.html_report()
-            sos.plain_report()
-
-        sos.postproc()
-        sos.version()
-
-        return sos.final_work()
-    except SystemExit:
-        return None
+    sos = SoSReport(args)
+    sos.execute()
