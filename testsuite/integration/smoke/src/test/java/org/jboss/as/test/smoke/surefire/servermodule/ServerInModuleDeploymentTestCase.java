@@ -86,17 +86,34 @@ public class ServerInModuleDeploymentTestCase  {
 
             @Override
             public void initialDeploy() {
-                Future<?> future = manager.execute(manager.newDeploymentPlan()
-                        .add("test-deployment.sar", archive.as(ZipExporter.class).exportAsInputStream()).deploy("test-deployment.sar")
-                        .build());
-                awaitDeploymentExecution(future);
+                final InputStream is = archive.as(ZipExporter.class).exportAsInputStream();
+                try {
+                    Future<?> future = manager.execute(manager.newDeploymentPlan()
+                            .add("test-deployment.sar", is).deploy("test-deployment.sar").build());
+                    awaitDeploymentExecution(future);
+                } finally {
+                    if(is != null) try {
+                        is.close();
+                    } catch (IOException ignore) {
+                        //
+                    }
+                }
             }
 
             @Override
             public void fullReplace() {
-                Future<?> future = manager.execute(manager.newDeploymentPlan()
-                        .replace("test-deployment.sar", archive.as(ZipExporter.class).exportAsInputStream()).build());
-                awaitDeploymentExecution(future);
+                final InputStream is = archive.as(ZipExporter.class).exportAsInputStream();
+                try {
+                    Future<?> future = manager.execute(manager.newDeploymentPlan()
+                            .replace("test-deployment.sar", is).build());
+                    awaitDeploymentExecution(future);
+                } finally {
+                    if(is != null) try {
+                        is.close();
+                    } catch (IOException ignore) {
+                        //
+                    }
+                }
             }
 
             @Override

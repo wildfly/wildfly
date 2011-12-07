@@ -16,6 +16,7 @@
  */
 package org.jboss.as.arquillian.container;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.Future;
 
@@ -48,12 +49,21 @@ public class ArchiveDeployer {
 
     public String deploy(Archive<?> archive) throws DeploymentException {
         try {
-            InputStream input = archive.as(ZipExporter.class).exportAsInputStream();
-            DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
-            builder = builder.add(archive.getName(), input).andDeploy();
-            DeploymentPlan plan = builder.build();
-            DeploymentAction deployAction = builder.getLastAction();
-            return executeDeploymentPlan(plan, deployAction);
+            final InputStream input = archive.as(ZipExporter.class).exportAsInputStream();
+            try {
+                DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
+                builder = builder.add(archive.getName(), input).andDeploy();
+                DeploymentPlan plan = builder.build();
+                DeploymentAction deployAction = builder.getLastAction();
+                return executeDeploymentPlan(plan, deployAction);
+            } finally {
+                if(input != null) try {
+                    input.close();
+                } catch (IOException e) {
+                    log.warnf(e, "Failed to close resource %s", input);
+                }
+            }
+
         } catch (Exception e) {
             throw new DeploymentException("Could not deploy to container", e);
         }

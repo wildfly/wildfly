@@ -175,7 +175,7 @@ public interface DeploymentPlanBuilder {
      *             name given to an other deployment content presently available
      *             on the server
      * @param stream <code>InputStream</code> from which the new content should be read
-     * This stream will be closed following the call to to {@link ServerDeploymentManager#execute(DeploymentPlan)}
+     * This stream has to be closed by the caller.
      *
      * @return a builder that can continue building the overall deployment plan
      *
@@ -206,7 +206,7 @@ public interface DeploymentPlanBuilder {
      *                   would need to have distinct {@code name} values but
      *                   would have the same {@code commonName}
      * @param stream <code>InputStream</code> from which the new content should be read
-     * This stream will be closed following the call to to {@link ServerDeploymentManager#execute(DeploymentPlan)}
+     * This stream has to be closed by the caller.
      *
      * @return a builder that can continue building the overall deployment plan
      */
@@ -337,7 +337,7 @@ public interface DeploymentPlanBuilder {
      *
      * @param name name that should be given to the new content
      * @param stream <code>InputStream</code> from which the new content should be read
-     * This stream will be closed following the call to to {@link ServerDeploymentManager#execute(DeploymentPlan)}
+     * This stream has to be closed by the caller.
      *
      * @return a builder that can continue building the overall deployment plan
      *
@@ -368,7 +368,7 @@ public interface DeploymentPlanBuilder {
      *                   would need to have distinct {@code name} values but
      *                   would have the same {@code commonName}
      * @param stream <code>InputStream</code> from which the new content should be read.
-     * This stream will be closed following the call to to {@link ServerDeploymentManager#execute(DeploymentPlan)}
+     * This stream has to be closed by the caller.
      *
      * @return a builder that can continue building the overall deployment plan
      *

@@ -109,9 +109,17 @@ public class EmbeddedStandAloneServerFactory {
             @Override
             public void deploy(File file) throws IOException, ExecutionException, InterruptedException {
                 // the current deployment manager only accepts jar input stream, so hack one together
-                execute(serverDeploymentManager.newDeploymentPlan()
-                        .add(file.getName(), VFSUtils.createJarFileInputStream(VFS.getChild(file.toURI()))).andDeploy()
-                        .build());
+                final InputStream is = VFSUtils.createJarFileInputStream(VFS.getChild(file.toURI()));
+                try {
+                    execute(serverDeploymentManager.newDeploymentPlan().add(file.getName(), is).andDeploy().build());
+                } finally {
+                    if(is != null) try {
+                        is.close();
+                    } catch (IOException ignore) {
+                        //
+                    }
+                }
+
             }
 
             private ServerDeploymentPlanResult execute(DeploymentPlan deploymentPlan) throws ExecutionException, InterruptedException {
