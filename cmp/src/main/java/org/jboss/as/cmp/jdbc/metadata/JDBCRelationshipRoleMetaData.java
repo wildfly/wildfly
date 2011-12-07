@@ -377,9 +377,14 @@ public final class JDBCRelationshipRoleMetaData {
 
         // no field overrides, we're done
         final List<ParsedCmpField> keyFields = parsedRole.getKeyFields();
-        if (keyFields == null || keyFields.isEmpty()) {
+        if (keyFields == null) {
             return loadKeyFields();
         }
+
+        if(keyFields.isEmpty()) {
+            return Collections.EMPTY_MAP;
+        }
+
         if (relationMetaData.isForeignKeyMappingStyle() && isMultiplicityMany()) {
             throw new RuntimeException("Role: " + relationshipRoleName + " with multiplicity many using " +
                     "foreign-key mapping is not allowed to have key-fields");
