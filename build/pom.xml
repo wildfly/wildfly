@@ -1776,102 +1776,24 @@
                         <version>2.8.1</version>
                         <executions>
                             <execution>
-                                <id>javadocDist</id>
+                                <id>javadocs-dist</id>
+                                <goals>
+                                    <goal>aggregate-jar</goal>
+                                </goals>
                                 <phase>validate</phase>
-                                <goals><goal>aggregate-jar</goal></goals>
                                 <configuration>
-                                    <includeDependencySources>true</includeDependencySources>
-                                    <dependencySourceIncludes>
-                                        <include>com.h2database.h2:*</include>
-                                        <include>javaee.api:*</include>
-                                        <include>javax.activation.api:*</include>
-                                        <include>javax.annotation.api:*</include>
-                                        <include>javax.api:*</include>
-                                        <include>javax.ejb.api:*</include>
-                                        <include>javax.el.api:*</include>
-                                        <include>javax.enterprise.api:*</include>
-                                        <include>javax.enterprise.deploy.api:*</include>
-                                        <include>javax.faces.api:*</include>
-                                        <include>javax.faces.api:*</include>
-                                        <include>javax.inject.api:*</include>
-                                        <include>javax.interceptor.api:*</include>
-                                        <include>javax.jms.api:*</include>
-                                        <include>javax.jws.api:*</include>
-                                        <include>javax.mail.api:*</include>
-                                        <include>javax.management.j2ee.api:*</include>
-                                        <include>javax.persistence.api:*</include>
-                                        <include>javax.resource.api:*</include>
-                                        <include>javax.rmi.api:*</include>
-                                        <include>javax.security.auth.message.api:*</include>
-                                        <include>javax.security.jacc.api:*</include>
-                                        <include>javax.servlet.api:*</include>
-                                        <include>javax.servlet.jsp.api:*</include>
-                                        <include>javax.servlet.jstl.api:*</include>
-                                        <include>javax.transaction.api:*</include>
-                                        <include>javax.validation.api:*</include>
-                                        <include>javax.wsdl4j.api:*</include>
-                                        <include>javax.ws.rs.api:*</include>
-                                        <include>javax.xml.bind.api:*</include>
-                                        <include>javax.xml.jaxp-provider:*</include>
-                                        <include>javax.xml.registry.api:*</include>
-                                        <include>javax.xml.rpc.api:*</include>
-                                        <include>javax.xml.soap.api:*</include>
-                                        <include>javax.xml.stream.api:*</include>
-                                        <include>javax.xml.ws.api:*</include>
-                                        <include>org.apache.commons.configuration:*</include>
-                                        <include>org.apache.juddi.juddi-client:*</include>
-                                        <include>org.apache.juddi.scout:*</include>
-                                        <include>org.apache.juddi.uddi-ws:*</include>
-                                        <include>org.apache.xalan:*</include>
-                                        <include>org.apache.xerces:*</include>
-                                        <include>org.dom4j:*</include>
-                                        <include>org.hibernate.envers:*</include>
-                                        <include>org.hibernate:*</include>
-                                        <include>org.hibernate.validator:*</include>
-                                        <include>org.hornetq:*</include>
-                                        <include>org.infinispan:*</include>
-                                        <include>org.jboss.as.controller-client:*</include>
-                                        <include>org.jboss.com.sun.httpserver:*</include>
-                                        <include>org.jboss.dmr:*</include>
-                                        <include>org.jboss.ejb-client:*</include>
-                                        <include>org.jboss.invocation:*</include>
-                                        <include>org.jboss.logging:*</include>
-                                        <include>org.jboss.logging.jul-to-slf4j-stub:*</include>
-                                        <include>org.jboss.logmanager:*</include>
-                                        <include>org.jboss.marshalling:*</include>
-                                        <include>org.jboss.modules:*</include>
-                                        <include>org.jboss.msc:*</include>
-                                        <include>org.jboss.remote-naming:*</include>
-                                        <include>org.jboss.remoting3:*</include>
-                                        <include>org.jboss.remoting3.remoting-jmx:*</include>
-                                        <include>org.jboss.sasl:*</include>
-                                        <include>org.jboss.threads:*</include>
-                                        <include>org.jboss.vfs:*</include>
-                                        <include>org.jboss.weld.api:*</include>
-                                        <include>org.jboss.ws.api:*</include>
-                                        <include>org.jboss.xnio:*</include>
-                                        <include>org.jboss.xts:*</include>
-                                        <include>org.jdom:*</include>
-                                        <include>org.jgroups:*</include>
-                                        <include>org.joda.time:*</include>
-                                        <include>org.omg.api:*</include>
-                                        <include>org.osgi.core:*</include>
-                                        <include>org.picketbox:*</include>
-                                        <include>org.picketlink:*</include>
-                                        <include>org.slf4j.ext:*</include>
-                                        <include>org.slf4j:*</include>
-                                        <include>org.slf4j.jcl-over-slf4j:*</include>
-                                        <include>sun.jdk:*</include>
-                                    </dependencySourceIncludes>
+                                   <includeDependencySources>true</includeDependencySources>
+                                   <dependencySourceIncludes>
+                                       <include>org.jboss.spec.javax.servlet:*</include>
+                                       <include>org.jboss.spec.javax.ejb:*</include>
+                                   </dependencySourceIncludes>
                                 </configuration>
                             </execution>
                         </executions>
                     </plugin>
                 </plugins>
-
             </build>
         </profile>
-
     </profiles>
 
 </project>
