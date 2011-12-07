@@ -130,7 +130,6 @@ public class MasterDomainControllerOperationHandlerImpl extends ManagementChanne
     private class RegisterOperation extends AbstractHostRequestHandler {
         String error;
 
-
         @Override
         void handleRequest(final String hostId, final DataInput input, final ManagementRequestContext<Void> context) throws IOException {
             context.executeAsync(new ManagementRequestContext.AsyncTask<Void>() {
