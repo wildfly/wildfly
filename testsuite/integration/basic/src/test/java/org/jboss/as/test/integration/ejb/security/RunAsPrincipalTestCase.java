@@ -27,9 +27,9 @@ import org.junit.Test;
 import org.jboss.logging.Logger;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.integration.ejb.security.runasprincipal.Caller;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.CallerWithIdentity;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.WhoAmI;
-import org.jboss.as.test.integration.ejb.security.SecurityTest;
 import org.jboss.security.client.SecurityClient;
 import org.jboss.security.client.SecurityClientFactory;
 import org.jboss.shrinkwrap.api.Archive;
@@ -45,14 +45,14 @@ import javax.naming.InitialContext;
 
 /**
  * Migration of test from EJB3 testsuite [JBQA-5451] Testing calling with runasprincipal annotation (ejbthree1945)
- * 
+ *
  * @author Carlo de Wolf, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
 public class RunAsPrincipalTestCase extends SecurityTest {
 
     private static final Logger log = Logger.getLogger(RunAsPrincipalTestCase.class);
-    
+
     @Deployment
     public static Archive<?> runAsDeployment() {
         // FIXME hack to get things prepared before the deployment happens
@@ -77,19 +77,22 @@ public class RunAsPrincipalTestCase extends SecurityTest {
         log.info(war.toString(true));
         return war;
     }
-    
-    private WhoAmI lookupBean() throws Exception {
+
+    private WhoAmI lookupCallerWithIdentity() throws Exception {
         return (WhoAmI)new InitialContext().lookup("java:module/" + CallerWithIdentity.class.getSimpleName() + "!" + WhoAmI.class.getName());
     }
 
-    @Ignore("AS7-2852")
+    private WhoAmI lookupCaller() throws Exception {
+        return (WhoAmI)new InitialContext().lookup("java:module/" + Caller.class.getSimpleName() + "!" + WhoAmI.class.getName());
+    }
+
     @Test
     public void testJackInABox() throws Exception {
         SecurityClient client = SecurityClientFactory.getSecurityClient();
         client.setSimple("thomas", "valid");
         client.login();
         try {
-            WhoAmI bean =  lookupBean();
+            WhoAmI bean =  lookupCallerWithIdentity();
             String actual = bean.getCallerPrincipal();
             Assert.assertEquals("jackinabox", actual);
         } finally {
@@ -100,7 +103,7 @@ public class RunAsPrincipalTestCase extends SecurityTest {
     @Ignore("AS7-2852")
     @Test
     public void testRunAsPrincipal() throws Exception {
-        WhoAmI bean = lookupBean();
+        WhoAmI bean = lookupCaller();
         try {
             String actual = bean.getCallerPrincipal();
             Assert.fail("Expected EJBAccessException and it was get identity: " + actual);
@@ -110,12 +113,12 @@ public class RunAsPrincipalTestCase extends SecurityTest {
     }
 
     @Test
-    public void testThomas() throws Exception {
+    public void testAnonymous() throws Exception {
         SecurityClient client = SecurityClientFactory.getSecurityClient();
         client.setSimple("thomas", "valid");
         client.login();
         try {
-            WhoAmI bean = lookupBean();
+            WhoAmI bean = lookupCaller();
             String actual = bean.getCallerPrincipal();
             Assert.assertEquals("anonymous", actual);
         } finally {
