@@ -144,6 +144,9 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
 
             final String[] items = getClassPathEntries(resourceRoot);
             for (final String item : items) {
+                if(item.isEmpty()) {
+                    continue;
+                }
                 //first try and resolve relative to the manifest resource root
                 final VirtualFile classPathFile = resourceRoot.getRoot().getParent().getChild(item);
                 //then resolve relative to the deployment root
