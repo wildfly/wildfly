@@ -134,7 +134,7 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
                 }
 
                 @Override
-                protected void handleShutdownChannel(Channel channel) {
+                protected void handleChannelReset(Channel channel) {
                     resetChannel(channel);
                 }
 

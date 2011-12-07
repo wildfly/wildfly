@@ -30,12 +30,10 @@ import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageInputStream;
 import org.jboss.remoting3.MessageOutputStream;
 
-import java.io.Closeable;
 import java.io.DataInput;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Base receiver class for the management protocol support.
@@ -75,7 +73,7 @@ public abstract class ManagementChannelReceiver implements ManagementMessageHand
             } else if (type == ManagementProtocol.TYPE_BYE_BYE) {
                 // Close the channel
                 ROOT_LOGGER.tracef("Received bye bye on %s, closing", this);
-                handleShutdownChannel(channel);
+                handleChannelReset(channel);
             } else {
                 // Handle a message
                 handleMessage(channel, input, header);
@@ -128,7 +126,7 @@ public abstract class ManagementChannelReceiver implements ManagementMessageHand
      *
      * @param channel the channel the bye-bye message was received
      */
-    protected void handleShutdownChannel(Channel channel) {
+    protected void handleChannelReset(Channel channel) {
         //
     }
 
@@ -144,7 +142,7 @@ public abstract class ManagementChannelReceiver implements ManagementMessageHand
 
     @Override
     public boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return false;
     }
 
     /**

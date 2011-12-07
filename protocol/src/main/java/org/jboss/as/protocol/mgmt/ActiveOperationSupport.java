@@ -26,7 +26,11 @@ import org.jboss.as.protocol.ProtocolLogger;
 import org.jboss.as.protocol.ProtocolMessages;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
+import org.xnio.Cancellable;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
@@ -35,7 +39,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * Management operation support, which encapsulates all active operations.
+ * Management operation support encapsulating active operations.
  *
  * @author Emanuel Muckenhuber
  */
@@ -192,8 +196,10 @@ class ActiveOperationSupport<T, A> {
      * Cancel all currently active operations.
      */
     protected void cancelAllActiveOperations() {
+        final List<ActiveOperationImpl<T, A>> operations = new ArrayList<ActiveOperationImpl<T, A>>();
         for(final ActiveOperationImpl<T, A> activeOperation : activeRequests.values()) {
-            activeOperation.cancel();
+            activeOperation.asyncCancel(false);
+            operations.add(activeOperation);
         }
     }
 
@@ -242,10 +248,14 @@ class ActiveOperationSupport<T, A> {
         }
     }
 
+    private static final List<Cancellable> CANCEL_REQUESTED = Collections.emptyList();
+
     protected class ActiveOperationImpl<T, A> extends AsyncFutureTask<T> implements ActiveOperation<T, A> {
 
         private final A attachment;
         private final Integer operationId;
+        private List<Cancellable> cancellables;
+
         private ResultHandler<T> completionHandler = new ResultHandler<T>() {
             @Override
             public boolean done(T result) {
@@ -299,7 +309,7 @@ class ActiveOperationSupport<T, A> {
                 public void handleCancelled(AsyncFuture<? extends T> asyncFuture, Object attachment) {
                     removeActiveOperation(operationId);
                     callback.cancelled();
-                    ProtocolLogger.ROOT_LOGGER.infof("cancelled operation (%d) attachment: (%s) this: %s.", getOperationId(), getAttachment(), ActiveOperationSupport.this);
+                    ProtocolLogger.ROOT_LOGGER.debugf("cancelled operation (%d) attachment: (%s) this: %s.", getOperationId(), getAttachment(), ActiveOperationSupport.this);
                 }
             }, null);
         }
@@ -326,13 +336,44 @@ class ActiveOperationSupport<T, A> {
 
         @Override
         public void asyncCancel(boolean interruptionDesired) {
-            // TODO also interrupt associated threads
+            final List<Cancellable> cancellables;
+            synchronized (this) {
+                cancellables = this.cancellables;
+                if (cancellables == null || cancellables == CANCEL_REQUESTED) {
+                    return;
+                }
+                this.cancellables = CANCEL_REQUESTED;
+            }
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
+                    for (Cancellable cancellable : cancellables) {
+                        cancellable.cancel();
+                    }
                     setCancelled();
                 }
             });
+        }
+
+        @Override
+        public void addCancellable(final Cancellable cancellable) {
+            // Perhaps just use the IOFuture from XNIO...
+            synchronized (lock) {
+                switch (getStatus()) {
+                    case CANCELLED:
+                        break;
+                    case WAITING:
+                        final List<Cancellable> cancellables = this.cancellables;
+                        if (cancellables == CANCEL_REQUESTED) {
+                            break;
+                        } else {
+                            ((cancellables == null) ? (this.cancellables = new ArrayList<Cancellable>()) : cancellables).add(cancellable);
+                        }
+                    default:
+                        return;
+                }
+            }
+            cancellable.cancel();
         }
 
         public boolean cancel() {

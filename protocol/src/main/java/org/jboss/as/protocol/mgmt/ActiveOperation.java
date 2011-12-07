@@ -23,6 +23,7 @@
 package org.jboss.as.protocol.mgmt;
 
 import org.jboss.threads.AsyncFuture;
+import org.xnio.Cancellable;
 import org.xnio.IoFuture;
 
 import java.io.IOException;
@@ -73,6 +74,13 @@ public interface ActiveOperation<T, A> {
      * @return the future result
      */
     AsyncFuture<T> getResult();
+
+    /**
+     * Add a cancellation handler.
+     *
+     * @param cancellable the cancel handler
+     */
+    void addCancellable(final Cancellable cancellable);
 
     /**
      * Handler for the result or to mark the operation as completed/failed.

@@ -29,6 +29,7 @@ import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.MessageOutputStream;
 import org.jboss.threads.AsyncFuture;
+import org.xnio.Cancellable;
 
 import java.io.DataInput;
 import java.io.IOException;
@@ -38,6 +39,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -106,6 +108,7 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
             if(request == null) {
                 ProtocolLogger.CONNECTION_LOGGER.noSuchRequest(response.getResponseId(), channel);
             } else if(response.getError() != null) {
+                // Actually we could move this in the response handler
                 request.context.getResultHandler().failed(new IOException(response.getError()));
             } else {
                 handleMessage(channel, input, header, request.context, request.handler);
@@ -177,10 +180,9 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
                 @Override
                 public void executeAsync(final AsyncTask<A> task) {
                     final ManagementRequestContext<A> context = this;
-                    // TODO register cancellable tasks as part of the ActiveOperation
-                    getExecutor().execute(new Runnable() {
+                    final AsyncTaskRunner runner = new AsyncTaskRunner() {
                         @Override
-                        public void run() {
+                        protected void doExecute() {
                             try {
                                 task.execute(context);
                             } catch (Exception e) {
@@ -188,7 +190,9 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
                                 requests.remove(requestId);
                             }
                         }
-                    });
+                    };
+                    support.addCancellable(runner);
+                    getExecutor().execute(runner);
                 }
 
                 @Override
@@ -257,10 +261,9 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
                 @Override
                 public void executeAsync(final AsyncTask<A> task) {
                     final ManagementRequestContext<A> context = this;
-                    // TODO register cancellable tasks as part of the ActiveOperation
-                    getExecutor().execute(new Runnable() {
+                    final AsyncTaskRunner runner = new AsyncTaskRunner() {
                         @Override
-                        public void run() {
+                        protected void doExecute() {
                             try {
                                 task.execute(context);
                             } catch (Exception e) {
@@ -270,7 +273,9 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
                                 }
                             }
                         }
-                    });
+                    };
+                    support.addCancellable(runner);
+                    getExecutor().execute(runner);
                 }
 
                 @Override
@@ -385,6 +390,41 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
         ActiveRequest(ActiveOperation<T, A> context, ManagementRequestHandler<T, A> handler) {
             this.context = context;
             this.handler = handler;
+        }
+    }
+
+    private abstract static class AsyncTaskRunner implements Runnable, Cancellable {
+
+        private final AtomicBoolean cancelled = new AtomicBoolean(false);
+        private volatile Thread thread;
+
+        @Override
+        public Cancellable cancel() {
+            if(cancelled.compareAndSet(false, true)) {
+                final Thread thread = this.thread;
+                if(thread != null) {
+                    thread.interrupt();
+                }
+            }
+            return this;
+        }
+
+        /**
+         * Execute...
+         */
+        protected abstract void doExecute();
+
+        @Override
+        public void run() {
+            if(cancelled.get()) {
+                return;
+            }
+            this.thread = Thread.currentThread();
+            try {
+                doExecute();
+            } finally {
+                this.thread = null;
+            }
         }
     }
 

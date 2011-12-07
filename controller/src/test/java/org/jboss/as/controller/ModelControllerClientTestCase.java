@@ -259,6 +259,7 @@ public class ModelControllerClientTestCase {
     @Test
     public void testCancelAsynchronousOperation() throws Exception {
         final CountDownLatch executeLatch = new CountDownLatch(1);
+        final CountDownLatch interrupted = new CountDownLatch(1);
         MockModelController controller = new MockModelController() {
             @Override
             public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {
@@ -273,7 +274,7 @@ public class ModelControllerClientTestCase {
                     result.get("testing").set(operation.get("test"));
                     return result;
                 } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+                    interrupted.countDown();
                     throw new RuntimeException(e);
                 }
             }
@@ -300,7 +301,8 @@ public class ModelControllerClientTestCase {
                         }
                     });
             executeLatch.await();
-            Assert.assertTrue(resultFuture.cancel(false));
+            resultFuture.cancel(false);
+            interrupted.await();
         } finally {
             IoUtils.safeClose(client);
         }
