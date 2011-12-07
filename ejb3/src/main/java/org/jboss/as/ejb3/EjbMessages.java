@@ -1858,4 +1858,7 @@ public interface EjbMessages {
     @Message(id=14525, value = "Transaction propagation over IIOP is not supported")
     RemoteException transactionPropagationNotSupported();
 
+    @Message(id=14526, value = "Cannot call method %s in afterCompletion callback")
+    IllegalStateException cannotCallMethodInAfterCompletion(String methodName);
+
 }
