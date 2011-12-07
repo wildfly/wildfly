@@ -19,11 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.jpa.beanvalidation;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.sql.SQLException;
+package org.jboss.as.test.integration.jpa.hibernate.envers;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -44,17 +40,19 @@ import org.junit.runner.RunWith;
  * @author Madhumita Sadhukhan
  */
 @RunWith(Arquillian.class)
-public class TestBeanValidationJPAInheritance {
+public class ValidityAuditStrategyonInheritanceTestCase {
 
-    private static final String ARCHIVE_NAME = "jpa_TestBeanValidationJPAInheritance";
+    private static final String ARCHIVE_NAME = "jpa_TestValidityAuditStrategyonInheritance";
 
     private static final String persistence_xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> "
             + "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">"
             + "  <persistence-unit name=\"myPlayer\">" + "    <description>Persistence Unit." + "    </description>"
-            + "    <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>"
-            + "    <validation-mode>CALLBACK</validation-mode>" + "    <properties> "
+            + "    <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" + "    <properties> "
             + "      <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" + "    </properties>"
-            + "  </persistence-unit>" + "</persistence>";
+            + "    <properties> " + "      <property name=\"org.hibernate.envers.audit_strategy\" "
+            + "      value=\"org.hibernate.envers.strategy.ValidityAuditStrategy\"/>"
+            + "      <property name=\"org.hibernate.envers.audit_strategy_validity_revend_timestamp_field_name\" "
+            + "      value=\"REVEND_VALIDITY\"/>" + "    </properties>" + "  </persistence-unit>" + "</persistence>";
 
     @ArquillianResource
     private static InitialContext iniCtx;
@@ -67,7 +65,7 @@ public class TestBeanValidationJPAInheritance {
     @Deployment
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
-        jar.addClasses(Player.class, SoccerPlayer.class, SLSBInheritance.class);
+        jar.addClasses(Player.class, SoccerPlayer.class, SLSBAuditInheritance.class);
         jar.add(new StringAsset(persistence_xml), "META-INF/persistence.xml");
         return jar;
     }
@@ -77,27 +75,26 @@ public class TestBeanValidationJPAInheritance {
                 .cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + beanName + "!" + interfaceType.getName()));
     }
 
-    /* Ensure that bean validation works for inheritance across persistent objects */
-
+    /* Ensure that auditing works for inherited attributes */
     @Test
-    public void testConstraintValidationforJPA() throws NamingException, SQLException {
+    public void testValidityStrategyonInheritance() throws Exception {
 
-        SLSBInheritance slsb = lookup("SLSBInheritance", SLSBInheritance.class);
+        SLSBAuditInheritance slsb = lookup("SLSBAuditInheritance", SLSBAuditInheritance.class);
 
-        try {
-            SoccerPlayer socplayer = slsb.createSoccerPlayer("LEONARDO", "", "SOCCER", "REAL MADRID");
+        SoccerPlayer socplayer = slsb.createSoccerPlayer("LEONARDO", "MESSI", "SOCCER", "REAL MADRID");
 
-            socplayer.setFirstName("Christiano");
-            socplayer.setLastName("");
-            socplayer.setGame("FOOTBALL");
-            socplayer = slsb.updateSoccerPlayer(socplayer);
-        } catch (Exception e) {
+        socplayer.setFirstName("Christiano");
+        socplayer.setLastName("Ronaldo");
+        socplayer.setGame("FOOTBALL");
+        // update Player
+        socplayer = slsb.updateSoccerPlayer(socplayer);
 
-            StringWriter w = new StringWriter();
-            e.printStackTrace(new PrintWriter(w));
-            String stacktrace = w.toString();
-            Assert.assertTrue(stacktrace.contains("interpolatedMessage='may not be empty', propertyPath=lastName"));
-        }
+        SoccerPlayer val = slsb.retrieveSoccerPlayerbyId(socplayer.getId());
+        Assert.assertNotNull(val);
+        Assert.assertEquals("LEONARDO", val.getFirstName());
+        Assert.assertEquals("MESSI", val.getLastName());
+
+        Assert.assertNull(val.getGame());
 
     }
 
