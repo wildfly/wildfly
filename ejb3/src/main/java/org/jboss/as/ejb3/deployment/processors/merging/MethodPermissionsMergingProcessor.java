@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
@@ -153,7 +154,7 @@ public class MethodPermissionsMergingProcessor extends AbstractMergingProcessor<
                 final MethodPermissionsMetaData methodPermissions = assemblyDescriptor.getMethodPermissionsByEjbName(componentConfiguration.getEJBName());
                 if (methodPermissions != null) {
                     for (final MethodPermissionMetaData methodPermissionMetaData : methodPermissions) {
-                        final EJBMethodSecurityAttribute ejbMethodSecurityMetaData;
+                        EJBMethodSecurityAttribute ejbMethodSecurityMetaData;
                         // EJB 3.1 FR 17.3.2.2 The unchecked element is used instead of a role name in the method-permission element to indicate that all roles are permitted.
                         if (methodPermissionMetaData.isNotChecked())
                             ejbMethodSecurityMetaData = EJBMethodSecurityAttribute.permitAll();
@@ -164,15 +165,21 @@ public class MethodPermissionsMergingProcessor extends AbstractMergingProcessor<
                             final String methodName = method.getMethodName();
                             final MethodIntf methodIntf = this.getMethodIntf(method.getMethodIntf());
                             if (methodName.equals("*")) {
+                                final EJBMethodSecurityAttribute existingRoles = componentConfiguration.getMethodPermissions().getAttributeStyle1(methodIntf, null);
+                                ejbMethodSecurityMetaData = mergeExistingRoles(ejbMethodSecurityMetaData, existingRoles);
                                 componentConfiguration.getMethodPermissions().setAttribute(methodIntf, null, ejbMethodSecurityMetaData);
                             } else {
 
                                 final MethodParametersMetaData methodParams = method.getMethodParams();
                                 // update the session bean description with the tx attribute info
                                 if (methodParams == null) {
+
+                                    final EJBMethodSecurityAttribute existingRoles = componentConfiguration.getMethodPermissions().getAttributeStyle2(methodIntf, methodName);
+                                    ejbMethodSecurityMetaData = mergeExistingRoles(ejbMethodSecurityMetaData, existingRoles);
                                     componentConfiguration.getMethodPermissions().setAttribute(methodIntf, ejbMethodSecurityMetaData, methodName);
                                 } else {
-
+                                    final EJBMethodSecurityAttribute existingRoles = componentConfiguration.getMethodPermissions().getAttributeStyle3(methodIntf, null, methodName, this.getMethodParams(methodParams));
+                                    ejbMethodSecurityMetaData = mergeExistingRoles(ejbMethodSecurityMetaData, existingRoles);
                                     componentConfiguration.getMethodPermissions().setAttribute(methodIntf, ejbMethodSecurityMetaData, null, methodName, this.getMethodParams(methodParams));
                                 }
                             }
@@ -182,5 +189,14 @@ public class MethodPermissionsMergingProcessor extends AbstractMergingProcessor<
 
             }
         }
+    }
+
+    private EJBMethodSecurityAttribute mergeExistingRoles(EJBMethodSecurityAttribute ejbMethodSecurityMetaData, final EJBMethodSecurityAttribute existingRoles) {
+        if (existingRoles != null && !existingRoles.getRolesAllowed().isEmpty()) {
+            final Set<String> roles = new HashSet<String>(existingRoles.getRolesAllowed());
+            roles.addAll(ejbMethodSecurityMetaData.getRolesAllowed());
+            ejbMethodSecurityMetaData = EJBMethodSecurityAttribute.rolesAllowed(roles);
+        }
+        return ejbMethodSecurityMetaData;
     }
 }
