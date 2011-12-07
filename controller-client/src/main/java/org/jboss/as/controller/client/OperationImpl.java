@@ -21,10 +21,12 @@
  */
 package org.jboss.as.controller.client;
 
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
 import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,12 +34,23 @@ import java.util.List;
 
 class OperationImpl implements Operation {
 
+    private final boolean autoCloseStreams;
     private final ModelNode operation;
     private final List<InputStream> inputStreams;
 
     OperationImpl(final ModelNode operation, final List<InputStream> inputStreams) {
+        this(operation, inputStreams, false);
+    }
+
+    OperationImpl(final ModelNode operation, final List<InputStream> inputStreams, final boolean autoCloseStreams) {
         this.operation = operation;
         this.inputStreams = inputStreams;
+        this.autoCloseStreams = autoCloseStreams;
+    }
+
+    @Override
+    public boolean isAutoCloseStreams() {
+        return autoCloseStreams;
     }
 
     @Override
@@ -53,7 +66,6 @@ class OperationImpl implements Operation {
         return Collections.unmodifiableList(inputStreams);
     }
 
-
     @Override
     public Operation clone() {
         List<InputStream> streamsCopy = inputStreams == null ? null : new ArrayList<InputStream>(inputStreams);
@@ -67,5 +79,13 @@ class OperationImpl implements Operation {
         }
         List<InputStream> streamsCopy = inputStreams == null ? null : new ArrayList<InputStream>(inputStreams);
         return new OperationImpl(operation, streamsCopy);
+    }
+
+    @Override
+    public void close() throws IOException {
+        final List<InputStream> streams = getInputStreams();
+        for(final InputStream stream : streams) {
+            StreamUtils.safeClose(stream);
+        }
     }
 }

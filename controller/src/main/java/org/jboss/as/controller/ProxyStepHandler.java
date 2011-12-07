@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -170,6 +171,11 @@ public class ProxyStepHandler implements OperationStepHandler {
         }
 
         @Override
+        public boolean isAutoCloseStreams() {
+            return false;
+        }
+
+        @Override
         public List<InputStream> getInputStreams() {
             int count = context.getAttachmentStreamCount();
             List<InputStream> result = new ArrayList<InputStream>(count);
@@ -177,6 +183,11 @@ public class ProxyStepHandler implements OperationStepHandler {
                 result.add(context.getAttachmentStream(i));
             }
             return result;
+        }
+
+        @Override
+        public void close() throws IOException {
+            //
         }
     }
 }

@@ -252,11 +252,11 @@ public abstract class AbstractModelControllerClient extends AbstractMessageHandl
     }
 
     protected AsyncFuture<ModelNode> executeRequest(final ManagementRequest<ModelNode, OperationExecutionContext> request, final OperationExecutionContext attachment) throws IOException {
-        final ActiveOperation<ModelNode, OperationExecutionContext> support = super.registerActiveOperation(attachment);
+        final ActiveOperation<ModelNode, OperationExecutionContext> support = super.registerActiveOperation(attachment, attachment);
         return new DelegatingCancellableAsyncFuture(super.executeRequest(request, getChannel(), support), support.getOperationId());
     }
 
-    static class OperationExecutionContext {
+    static class OperationExecutionContext implements ActiveOperation.CompletedCallback<ModelNode> {
 
         private final Operation operation;
         private final OperationMessageHandler handler;
@@ -272,6 +272,27 @@ public abstract class AbstractModelControllerClient extends AbstractMessageHandl
 
         OperationMessageHandler getOperationMessageHandler() {
             return handler;
+        }
+
+        @Override
+        public void completed(ModelNode result) {
+            closeAttachments();
+        }
+
+        @Override
+        public void failed(Exception e) {
+            closeAttachments();
+        }
+
+        @Override
+        public void cancelled() {
+            closeAttachments();
+        }
+
+        private void closeAttachments() {
+            if(operation.isAutoCloseStreams()) {
+                StreamUtils.safeClose(operation);
+            }
         }
 
         static OperationExecutionContext create(final ModelNode operation) {
