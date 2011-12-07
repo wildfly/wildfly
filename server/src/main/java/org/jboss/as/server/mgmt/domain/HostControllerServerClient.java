@@ -34,6 +34,7 @@ import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
+import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.server.ServerMessages;
@@ -74,9 +75,8 @@ public class HostControllerServerClient implements Service<HostControllerServerC
 
     /** {@inheritDoc} */
     public void start(final StartContext context) throws StartException {
-        final ManagementChannel channel = hcChannel.getValue();
+        final Channel channel = hcChannel.getValue();
         final HostControllerServerHandler handler = new HostControllerServerHandler(controller.getValue(), executor);
-        channel.setReceiver(handler);
         channel.addCloseHandler(new CloseHandler<Channel>() {
             @Override
             public void handleClose(final Channel closed, final IOException exception) {
@@ -90,7 +90,7 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         } catch (Exception e) {
             throw new StartException("Failed to send registration message to host controller", e);
         }
-        channel.startReceiving();
+        channel.receiveMessage(ManagementChannelReceiver.createDelegating(handler));
     }
 
     /** {@inheritDoc} */

@@ -78,16 +78,12 @@ public class MasterDomainControllerOperationHandlerImpl extends ManagementChanne
 
     private volatile ManagementMessageHandler proxyHandler;
 
-    private final ManagementChannel mgmtChannel;
-
     public MasterDomainControllerOperationHandlerImpl(final ExecutorService executorService, final ModelController controller,
-                                                      final UnregisteredHostChannelRegistry registry, final DomainController domainController,
-                                                      final ManagementChannel channel) {
+                                                      final UnregisteredHostChannelRegistry registry, final DomainController domainController) {
         this.domainController = domainController;
         this.controller = controller;
         this.registry = registry;
         this.clientHandler = new LocalOperationHandler(controller, executorService);
-        this.mgmtChannel = channel;
     }
 
     @Override

@@ -35,20 +35,16 @@ import java.util.concurrent.Executors;
  * @version $Revision: 1.1 $
  */
 public class ExistingChannelModelControllerClient extends AbstractModelControllerClient {
-    private final ManagementChannel channel;
+    private final Channel channel;
 
-    public ExistingChannelModelControllerClient(final ManagementChannel channel) {
+    public ExistingChannelModelControllerClient(final Channel channel) {
         super(Executors.newCachedThreadPool()); // TODO
         this.channel = channel;
     }
 
     @Override
     protected Channel getChannel() throws IOException {
-        return getClientChannelStrategy().getChannel();
-    }
-
-    protected ManagementClientChannelStrategy getClientChannelStrategy() {
-        return ManagementClientChannelStrategy.create(channel);
+        return channel;
     }
 
     @Override

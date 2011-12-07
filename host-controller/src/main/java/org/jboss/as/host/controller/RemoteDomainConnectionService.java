@@ -103,7 +103,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     /** Used to invoke ModelController ops on the master */
     private volatile ModelControllerClient masterProxy;
     private final AtomicBoolean shutdown = new AtomicBoolean();
-    private volatile ManagementChannel channel;
+    private volatile Channel channel;
     private volatile AbstractMessageHandler handler;
     private final ExecutorService executor = Executors.newCachedThreadPool();
     private final AtomicBoolean connected = new AtomicBoolean(false);
@@ -211,7 +211,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 
         try {
             configuration.setUri(new URI("remote://" + host.getHostAddress() + ":" + port));
-            configuration.setChannelFactory(new ManagementChannelFactory(ManagementChannelReceiver.createDelegating(this.handler)));
+            configuration.setChannelFactory(new ManagementChannelFactory(null));
             client = ProtocolChannelClient.create(configuration);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -227,16 +227,13 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             client.connect(handler);
             this.channelClient = client;
 
-            ManagementChannel channel = client.openChannel(ManagementRemotingServices.DOMAIN_CHANNEL);
-            this.channel = channel;
-
+            channel = client.openChannel(ManagementRemotingServices.DOMAIN_CHANNEL);
             channel.addCloseHandler(new CloseHandler<Channel>() {
                 public void handleClose(final Channel closed, final IOException exception) {
                     connectionClosed();
                 }
             });
-
-            channel.startReceiving();
+            channel.receiveMessage(ManagementChannelReceiver.createDelegating(this.handler));
 
             masterProxy = new ExistingChannelModelControllerClient(channel);
         } catch (IOException e) {

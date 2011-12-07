@@ -45,6 +45,7 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.ServiceActivator;
+import org.jboss.remoting3.Channel;
 
 /**
  * Represents a managed server.
@@ -97,7 +98,7 @@ class ManagedServer {
     private final ManagedServerBootConfiguration bootConfiguration;
     private final byte[] authKey;
     private volatile ServerState state;
-    private volatile ManagementChannel serverManagementChannel;
+    private volatile Channel serverManagementChannel;
 
     public ManagedServer(final String serverName, final ProcessControllerClient processControllerClient,
             final InetSocketAddress managementSocket, final ManagedServerBootConfiguration bootConfiguration) {
@@ -127,7 +128,7 @@ class ManagedServer {
         return serverProcessName;
     }
 
-    ManagementChannel getServerManagementChannel() {
+    Channel getServerManagementChannel() {
         return serverManagementChannel;
     }
 
@@ -139,7 +140,7 @@ class ManagedServer {
         this.state = state;
     }
 
-    void setServerManagementChannel(ManagementChannel serverManagementChannel) {
+    void setServerManagementChannel(Channel serverManagementChannel) {
         this.serverManagementChannel = serverManagementChannel;
     }
 

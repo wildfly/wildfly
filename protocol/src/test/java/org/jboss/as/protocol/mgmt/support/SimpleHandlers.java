@@ -204,21 +204,20 @@ public class SimpleHandlers {
             return super.executeRequest(request, channel, support);
         }
 
-        public static SimpleClient create(final ManagementChannel channel, final ExecutorService executorService) {
+        public static SimpleClient create(final Channel channel, final ExecutorService executorService) {
             final SimpleClient client = new SimpleClient(channel, executorService);
-            channel.setReceiver(ManagementChannelReceiver.createDelegating(client));
             channel.addCloseHandler(new CloseHandler<Channel>() {
                 @Override
                 public void handleClose(Channel closed, IOException exception) {
                     client.shutdown();
                 }
             });
-            channel.startReceiving();
+            channel.receiveMessage(ManagementChannelReceiver.createDelegating(client));
             return client;
         }
 
         public static SimpleClient create(final RemotingChannelPairSetup setup) {
-            final ManagementChannel channel = setup.getClientChannel();
+            final Channel channel = setup.getClientChannel();
             return create(channel, setup.getExecutorService());
         }
 

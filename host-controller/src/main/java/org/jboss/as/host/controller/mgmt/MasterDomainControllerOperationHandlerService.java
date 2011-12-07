@@ -54,7 +54,7 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
 
     @Override
     public Channel.Key initialize(final ManagementChannel channel) {
-        final MasterDomainControllerOperationHandlerImpl handler = new MasterDomainControllerOperationHandlerImpl(getExecutor(), getController(), registry, domainController, channel);
+        final MasterDomainControllerOperationHandlerImpl handler = new MasterDomainControllerOperationHandlerImpl(getExecutor(), getController(), registry, domainController);
         final Channel.Receiver receiver = handler;
         channel.setReceiver(receiver);
         return channel.addCloseHandler(new CloseHandler<Channel>() {

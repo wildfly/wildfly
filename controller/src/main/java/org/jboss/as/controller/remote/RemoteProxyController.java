@@ -58,6 +58,7 @@ import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
 import org.jboss.dmr.ModelNode;
+import org.jboss.remoting3.Channel;
 
 /**
  *
@@ -66,11 +67,11 @@ import org.jboss.dmr.ModelNode;
 public class RemoteProxyController extends AbstractMessageHandler<Void, RemoteProxyController.ExecuteRequestContext> implements ProxyController {
 
     private final PathAddress pathAddress;
-    private final ManagementChannel channel;
+    private final Channel channel;
     private final ProxyOperationAddressTranslator addressTranslator;
 
     private RemoteProxyController(final ExecutorService executorService, final PathAddress pathAddress,
-                                  final ProxyOperationAddressTranslator addressTranslator, final ManagementChannel channel) {
+                                  final ProxyOperationAddressTranslator addressTranslator, final Channel channel) {
         super(executorService);
         this.pathAddress = pathAddress;
         this.channel = channel;
@@ -86,7 +87,7 @@ public class RemoteProxyController extends AbstractMessageHandler<Void, RemotePr
      * @param channel the channel to use for communication
      * @return the proxy controller
      */
-    public static RemoteProxyController create(final ExecutorService executorService, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator, final ManagementChannel channel) {
+    public static RemoteProxyController create(final ExecutorService executorService, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator, final Channel channel) {
         return new RemoteProxyController(executorService, pathAddress, addressTranslator, channel);
     }
 

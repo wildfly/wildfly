@@ -45,7 +45,6 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.ExistingChannelModelControllerClient;
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandler;
 import org.jboss.as.controller.support.RemoteChannelPairSetup;
-import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
 import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementProtocolHeader;
@@ -83,6 +82,13 @@ public class ModelControllerClientTestCase {
         handler.setDelegate(null);
     }
 
+    private ModelControllerClient createTestClient() {
+        final Channel clientChannel = channels.getClientChannel();
+        final ExistingChannelModelControllerClient client = new ExistingChannelModelControllerClient(clientChannel);
+        clientChannel.receiveMessage(ManagementChannelReceiver.createDelegating(client));
+        return client;
+    }
+
     @Test @Ignore("OperationMessageHandlerProxy turned off temporarily")
     public void testSynchronousOperationMessageHandler() throws Exception {
 
@@ -103,10 +109,7 @@ public class ModelControllerClientTestCase {
         // Set the handler
         handler.setDelegate(new ModelControllerClientOperationHandler(controller, channels.getExecutorService()));
 
-        ManagementChannel clientChannel = channels.getClientChannel();
-        ExistingChannelModelControllerClient client = new ExistingChannelModelControllerClient(clientChannel);
-        clientChannel.setReceiver(ManagementChannelReceiver.createDelegating(client));
-        clientChannel.startReceiving();
+        final ModelControllerClient client = createTestClient();
         try {
             ModelNode operation = new ModelNode();
             operation.get("test").set("123");
@@ -183,10 +186,7 @@ public class ModelControllerClientTestCase {
         // Set the handler
         handler.setDelegate(new ModelControllerClientOperationHandler(controller, channels.getExecutorService()));
 
-        ManagementChannel clientChannel = channels.getClientChannel();
-        ExistingChannelModelControllerClient client = new ExistingChannelModelControllerClient(clientChannel);
-        clientChannel.setReceiver(ManagementChannelReceiver.createDelegating(client));
-        clientChannel.startReceiving();
+        final ModelControllerClient client = createTestClient();
         try {
             ModelNode operation = new ModelNode();
             operation.get("test").set("123");
@@ -227,10 +227,7 @@ public class ModelControllerClientTestCase {
         // Set the handler
         handler.setDelegate(new ModelControllerClientOperationHandler(controller, channels.getExecutorService()));
 
-        ManagementChannel clientChannel = channels.getClientChannel();
-        ExistingChannelModelControllerClient client = new ExistingChannelModelControllerClient(clientChannel);
-        clientChannel.setReceiver(ManagementChannelReceiver.createDelegating(client));
-        clientChannel.startReceiving();
+        final ModelControllerClient client = createTestClient();
         try {
 
             ModelNode operation = new ModelNode();
@@ -284,10 +281,7 @@ public class ModelControllerClientTestCase {
         // Set the handler
         handler.setDelegate(new ModelControllerClientOperationHandler(controller, channels.getExecutorService()));
 
-        ManagementChannel clientChannel = channels.getClientChannel();
-        ExistingChannelModelControllerClient client = new ExistingChannelModelControllerClient(clientChannel);
-        clientChannel.setReceiver(ManagementChannelReceiver.createDelegating(client));
-        clientChannel.startReceiving();
+        final ModelControllerClient client = createTestClient();
         try {
             ModelNode operation = new ModelNode();
             operation.get("test").set("123");

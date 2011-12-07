@@ -393,7 +393,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
     @Override
     public synchronized ProxyController popChannelAndCreateProxy(final String hostName) {
-        ManagementChannel channel = unregisteredHostChannels.remove(hostName);
+        final Channel channel = unregisteredHostChannels.remove(hostName);
         if (channel == null) {
             throw new IllegalArgumentException("No channel for host " + hostName);
         }
