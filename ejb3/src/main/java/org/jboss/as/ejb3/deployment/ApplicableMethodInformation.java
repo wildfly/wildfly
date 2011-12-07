@@ -140,16 +140,26 @@ public class ApplicableMethodInformation<T> {
     /**
      * Style 1 (13.3.7.2.1 @1)
      *
-     * @param methodIntf           the method-intf the annotations apply to or null if EJB class itself
-     * @param transactionAttribute
+     * @param methodIntf the method-intf the annotations apply to or null if EJB class itself
+     * @param attribute
      */
-    public void setAttribute(MethodIntf methodIntf, String className, T transactionAttribute) {
+    public void setAttribute(MethodIntf methodIntf, String className, T attribute) {
         if (methodIntf != null && className != null)
             throw MESSAGES.bothMethodIntAndClassNameSet(componentName);
         if (methodIntf == null) {
-            style1.put(className, transactionAttribute);
+            style1.put(className, attribute);
         } else
-            perViewStyle1.put(methodIntf, transactionAttribute);
+            perViewStyle1.put(methodIntf, attribute);
+    }
+
+    public T getAttributeStyle1(MethodIntf methodIntf, String className) {
+        if (methodIntf != null && className != null)
+            throw MESSAGES.bothMethodIntAndClassNameSet(componentName);
+        if (methodIntf == null) {
+            return style1.get(className);
+        } else {
+            return perViewStyle1.get(methodIntf);
+        }
     }
 
     /**
@@ -166,6 +176,13 @@ public class ApplicableMethodInformation<T> {
             perViewStyle2.pick(methodIntf).put(methodName, transactionAttribute);
     }
 
+    public T getAttributeStyle2(MethodIntf methodIntf, String methodName) {
+        if (methodIntf == null)
+            return style2.get(methodName);
+        else
+            return perViewStyle2.pick(methodIntf).get(methodName);
+    }
+
     /**
      * Style 3 (13.3.7.2.1 @3)
      *
@@ -180,6 +197,14 @@ public class ApplicableMethodInformation<T> {
             style3.pick(className).pick(methodName).put(methodParamsKey, transactionAttribute);
         else
             perViewStyle3.pick(methodIntf).pick(methodName).put(methodParamsKey, transactionAttribute);
+    }
+
+    public T getAttributeStyle3(MethodIntf methodIntf, final String className, String methodName, String... methodParams) {
+        ArrayKey methodParamsKey = new ArrayKey((Object[]) methodParams);
+        if (methodIntf == null)
+            return style3.pick(className).pick(methodName).get(methodParamsKey);
+        else
+            return perViewStyle3.pick(methodIntf).pick(methodName).get(methodParamsKey);
     }
 
     public T getDefaultAttribute() {
