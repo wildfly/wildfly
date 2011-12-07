@@ -38,7 +38,6 @@
         <module name="org.apache.ant"/>
         <module name="org.apache.commons.collections"/>
         <module name="org.dom4j"/>
-        <module name="org.infinispan"/>
         <module name="org.javassist"/>
         <module name="org.jboss.as.jpa.hibernate" slot="4"/>
         <module name="org.jboss.logging"/>
