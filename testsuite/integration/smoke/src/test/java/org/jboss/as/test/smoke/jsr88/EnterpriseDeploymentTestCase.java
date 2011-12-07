@@ -186,35 +186,37 @@ public class EnterpriseDeploymentTestCase {
 
             // Test getNonRunningModules
             modules = manager.getNonRunningModules(ModuleType.EAR, targets);
-            assertEquals(0, modules.length);
+            assertEquals("non-running EAR modules count expected to be zero " + modules, 0, modules.length);
 
             // Test getRunningModules
             modules = manager.getRunningModules(ModuleType.EAR, targets);
-            assertEquals(1, modules.length);
+            assertEquals("running EAR modules count expected to be one " + modules, 1, modules.length);
 
             targetModuleID = modules[0];
             moduleID = targetModuleID.getModuleID();
             assertTrue("Ends with deployment-app.ear", moduleID.endsWith("deployment-app.ear"));
 
-            manager.stop(modules);
+            ProgressObject operationProgress = manager.stop(modules);
+            awaitCompletion(operationProgress, TIMEOUT);
 
             // Test getRunningModules
             modules = manager.getRunningModules(ModuleType.EAR, targets);
-            assertEquals(0, modules.length);
+            assertEquals("after stopping deployment-app.ear, running EAR modules count expected to be zero" + modules, 0, modules.length);
 
             // Test getNonRunningModules
             modules = manager.getNonRunningModules(ModuleType.EAR, targets);
-            assertEquals(1, modules.length);
+            assertEquals("after stopping deployment-app.ear, non-running EAR modules count expected to be one" + modules,1, modules.length);
 
-            manager.start(modules);
+            operationProgress = manager.start(modules);
+            awaitCompletion(operationProgress, TIMEOUT);
 
             // Test getNonRunningModules
             modules = manager.getNonRunningModules(ModuleType.EAR, targets);
-            assertEquals(0, modules.length);
+            assertEquals("after starting deployment-app.ear, non-running EAR modules count expected to be zero" + modules,0, modules.length);
 
             // Test getRunningModules
             modules = manager.getRunningModules(ModuleType.EAR, targets);
-            assertEquals(1, modules.length);
+            assertEquals("after starting deployment-app.ear, running EAR modules count expected to be one" , 1, modules.length);
 
         } finally {
             jsr88Undeploy(manager, targetModules);
