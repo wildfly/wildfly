@@ -37,6 +37,7 @@
         <module name="org.hibernate.validator"/>
         <module name="org.infinispan"/>
         <module name="org.jboss.as.jpa.spi"/>
+        <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.logging"/>
