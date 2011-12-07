@@ -18,355 +18,287 @@
  */
 package org.jboss.as.controller.client.impl;
 
-import static org.jboss.as.controller.client.ControllerClientLogger.ROOT_LOGGER;
-import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
-
-import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
+import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
+import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
-import org.jboss.as.protocol.mgmt.ManagementBatchIdManager;
-import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
-import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
+import org.jboss.as.protocol.mgmt.ManagementProtocol;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
+import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
-import org.jboss.as.protocol.mgmt.ManagementResponseHandler;
-import org.jboss.as.protocol.mgmt.ProtocolUtils;
-import org.jboss.as.protocol.mgmt.RequestProcessingException;
+import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
+import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
+import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.CloseHandler;
 import org.jboss.threads.AsyncFuture;
 
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
-public abstract class AbstractModelControllerClient implements ModelControllerClient, ManagementOperationHandler {
-    private final Map<Integer, ExecuteRequestContext> activeRequests = Collections.synchronizedMap(new HashMap<Integer, ExecuteRequestContext>());
-    protected final ExecutorService executor = Executors.newCachedThreadPool();
+public abstract class AbstractModelControllerClient extends AbstractMessageHandler<ModelNode, AbstractModelControllerClient.OperationExecutionContext> implements ModelControllerClient {
 
-    @Override
-    public void close() throws IOException {
-        executor.shutdown();
-        try {
-            executor.awaitTermination(2, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+    private static ManagementRequestHandler<ModelNode, OperationExecutionContext> MESSAGE_HANDLER = new HandleReportRequestHandler();
+    private static ManagementRequestHandler<ModelNode, OperationExecutionContext> GET_INPUT_STREAM = new ReadAttachmentInputStreamRequestHandler();
+
+    private static final OperationMessageHandler NO_OP_HANDLER = new OperationMessageHandler() {
+
+        @Override
+        public void handleReport(MessageSeverity severity, String message) {
+            //
         }
-        executor.shutdownNow();
+
+    };
+
+    protected AbstractModelControllerClient(final ExecutorService executorService) {
+        super(executorService);
+    }
+
+    /**
+     * Get the send channel.
+     *
+     * @return the channel
+     * @throws IOException
+     */
+    protected abstract Channel getChannel() throws IOException;
+
+    @Override
+    public ModelNode execute(final ModelNode operation) throws IOException {
+        return executeForResult(OperationExecutionContext.create(operation));
     }
 
     @Override
-    public ModelNode execute(ModelNode operation) throws IOException {
-        return execute(operation, null);
+    public ModelNode execute(final Operation operation) throws IOException {
+        return executeForResult(OperationExecutionContext.create(operation));
     }
 
     @Override
-    public ModelNode execute(Operation operation) throws IOException {
-        return execute(operation, null);
-    }
-
-    @Override
-    public ModelNode execute(ModelNode operation, OperationMessageHandler messageHandler) throws IOException {
-        return executeSynch(operation, null, messageHandler);
+    public ModelNode execute(final ModelNode operation, final OperationMessageHandler messageHandler) throws IOException {
+        return executeForResult(OperationExecutionContext.create(operation, messageHandler));
     }
 
     @Override
     public ModelNode execute(Operation operation, OperationMessageHandler messageHandler) throws IOException {
-        return executeSynch(operation.getOperation(), operation, messageHandler);
+        return executeForResult(OperationExecutionContext.create(operation, messageHandler));
     }
 
     @Override
-    public AsyncFuture<ModelNode> executeAsync(ModelNode operation, OperationMessageHandler messageHandler) {
-        return executeAsync(operation, null, messageHandler);
-    }
-
-    @Override
-    public AsyncFuture<ModelNode> executeAsync(Operation operation, OperationMessageHandler messageHandler) {
-        return executeAsync(operation.getOperation(), operation, messageHandler);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public ManagementRequestHandler getRequestHandler(final byte id) {
-        if (id == ModelControllerProtocol.HANDLE_REPORT_REQUEST) {
-            return new HandleReportRequestHandler();
-        } else if (id == ModelControllerProtocol.GET_INPUTSTREAM_REQUEST) {
-            return new ReadAttachmentInputStreamRequestHandler();
-        }
-        return null;
-    }
-
-    protected abstract ManagementClientChannelStrategy getClientChannelStrategy() throws URISyntaxException, IOException;
-
-    private ModelNode executeSynch(ModelNode operation, OperationAttachments attachments, OperationMessageHandler messageHandler) throws IOException {
-        final int batchId = ManagementBatchIdManager.DEFAULT.createBatchId();
-
+    public AsyncFuture<ModelNode> executeAsync(final ModelNode operation, final OperationMessageHandler messageHandler) {
         try {
-            return new ExecuteRequest(batchId, false, operation, messageHandler, attachments).executeForResult(executor, getClientChannelStrategy());
-        } catch (Exception e) {
-            ManagementBatchIdManager.DEFAULT.freeBatchId(batchId);
-            Throwable cause = e;
-            if (e instanceof ExecutionException) {
-                cause = e.getCause();
-            }
-            if (cause instanceof IOException) {
-                throw (IOException)cause;
-            }
-            if (cause instanceof RuntimeException) {
-                throw (RuntimeException)cause;
-            }
-            throw new IOException(cause);
-        }
-    }
-
-    private AsyncFuture<ModelNode> executeAsync(ModelNode operation, OperationAttachments attachments, OperationMessageHandler messageHandler) {
-        final int batchId = ManagementBatchIdManager.DEFAULT.createBatchId();
-        try {
-            return new DelegatingCancellableAsyncFuture(new ExecuteRequest(batchId, true, operation, messageHandler, attachments).execute(executor, getClientChannelStrategy()), batchId);
-        } catch (Exception e) {
-            ManagementBatchIdManager.DEFAULT.freeBatchId(batchId);
-            if (e instanceof RuntimeException) {
-                throw (RuntimeException)e;
-            }
+            return execute(OperationExecutionContext.create(operation, messageHandler));
+        } catch (IOException e)  {
             throw new RuntimeException(e);
         }
     }
 
+    @Override
+    public AsyncFuture<ModelNode> executeAsync(final Operation operation, final OperationMessageHandler messageHandler) {
+        try {
+            return execute(OperationExecutionContext.create(operation, messageHandler));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    protected ManagementRequestHandler<ModelNode, OperationExecutionContext> getRequestHandler(byte operationType) {
+        if (operationType == ModelControllerProtocol.HANDLE_REPORT_REQUEST) {
+            return MESSAGE_HANDLER;
+        } else if (operationType == ModelControllerProtocol.GET_INPUTSTREAM_REQUEST) {
+            return GET_INPUT_STREAM;
+        }
+        return super.getRequestHandler(operationType);
+    }
+
     /**
-     * Propagates an execute() call from this proxy controller to the remote target controller
+     * Execute for result.
+     *
+     * @param executionContext the execution context
+     * @return the result
+     * @throws IOException for any error
      */
-    private class ExecuteRequest extends ManagementRequest<ModelNode> {
-
-        private final ExecuteRequestContext executeRequestContext;
-        private final ModelNode operation;
-        private final boolean async;
-
-        ExecuteRequest(final int batchId, final boolean async, final ModelNode operation, final OperationMessageHandler messageHandler, final OperationAttachments attachments) {
-            super(batchId);
-            this.operation = operation;
-            this.async = async;
-            executeRequestContext = new ExecuteRequestContext(this, messageHandler, attachments);
+    private ModelNode executeForResult(final OperationExecutionContext executionContext) throws IOException {
+        try {
+            return execute(executionContext).get();
+        } catch(Exception e) {
+            throw new IOException(e);
         }
+    }
 
-        @Override
-        protected byte getRequestCode() {
-            return async ? ModelControllerProtocol.EXECUTE_ASYNC_CLIENT_REQUEST : ModelControllerProtocol.EXECUTE_CLIENT_REQUEST;
-        }
+    /**
+     * Execute a request.
+     *
+     * @param executionContext the execution context
+     * @return the future result
+     */
+    private AsyncFuture<ModelNode> execute(final OperationExecutionContext executionContext) throws IOException {
+        return executeRequest(new AbstractManagementRequest<ModelNode, OperationExecutionContext>() {
 
-        protected CloseHandler<Channel> getRequestCloseHandler(){
-            return executeRequestContext.getRequestCloseHandler();
-        }
+            @Override
+            public byte getOperationType() {
+                return ModelControllerProtocol.EXECUTE_ASYNC_CLIENT_REQUEST;
+            }
 
-        @Override
-        protected void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
-            try {
-                ROOT_LOGGER.tracef("Client writing request %d", getBatchId());
-                activeRequests.put(getBatchId(), executeRequestContext);
-
+            @Override
+            protected void sendRequest(final ActiveOperation.ResultHandler<ModelNode> resultHandler,
+                                       final ManagementRequestContext<OperationExecutionContext> context,
+                                       final FlushableDataOutput output) throws IOException {
+                // Write the operation
+                final List<InputStream> streams = executionContext.operation.getInputStreams();
+                final ModelNode operation = executionContext.operation.getOperation();
+                int inputStreamLength = 0;
+                if (streams != null) {
+                    inputStreamLength = streams.size();
+                }
                 output.write(ModelControllerProtocol.PARAM_OPERATION);
                 operation.writeExternal(output);
                 output.write(ModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
-                int inputStreamLength = 0;
-                if (executeRequestContext.getAttachments() != null) {
-                    List<InputStream> streams = executeRequestContext.getAttachments().getInputStreams();
-                    if (streams != null) {
-                        inputStreamLength = streams.size();
-                    }
-                }
                 output.writeInt(inputStreamLength);
-                ROOT_LOGGER.tracef("Client wrote request %d successfully", getBatchId());
-            } catch (Exception e) {
-                ROOT_LOGGER.tracef(e, "Client wrote request %d with error", getBatchId());
-                setError(e);
-                if (e instanceof IOException) {
-                    throw (IOException)e;
-                }
-                if (e instanceof RuntimeException) {
-                    throw (RuntimeException)e;
-                }
-                throw new IOException(e);
             }
-        }
 
-        protected ManagementResponseHandler<ModelNode> getResponseHandler() {
-            return new ManagementResponseHandler<ModelNode>() {
+            @Override
+            public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<ModelNode> resultHandler, final ManagementRequestContext<OperationExecutionContext> context) throws IOException {
+                expectHeader(input, ModelControllerProtocol.PARAM_RESPONSE);
+                final ModelNode node = new ModelNode();
+                node.readExternal(input);
+                resultHandler.done(node);
+                expectHeader(input, ManagementProtocol.RESPONSE_END);
+            }
+        }, executionContext);
+    }
+
+    private static class ReadAttachmentInputStreamRequestHandler implements ManagementRequestHandler<ModelNode, OperationExecutionContext> {
+
+        @Override
+        public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<ModelNode> resultHandler,
+                              final ManagementRequestContext<OperationExecutionContext> context) throws IOException {
+            // Read the inputStream index
+            expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAM_INDEX);
+            final int index = input.readInt();
+            context.executeAsync(new ManagementRequestContext.AsyncTask<OperationExecutionContext>() {
                 @Override
-                protected ModelNode readResponse(final DataInput input) throws IOException {
-                    ROOT_LOGGER.tracef("Client reading response %d", getBatchId());
+                public void execute(final ManagementRequestContext<OperationExecutionContext> context) throws Exception {
+                    final OperationExecutionContext exec = context.getAttachment();
+                    final ManagementRequestHeader header = ManagementRequestHeader.class.cast(context.getRequestHeader());
+                    final ManagementResponseHeader response = new ManagementResponseHeader(header.getVersion(), header.getRequestId(), null);
+                    final InputStream is = exec.getOperation().getInputStreams().get(index);
                     try {
-                        ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_RESPONSE);
-                        ModelNode node = new ModelNode();
-                        node.readExternal(input);
-                        ROOT_LOGGER.tracef("Client read response %d successfully", getBatchId());
-                        return node;
-                    } catch (Exception e) {
-                        ROOT_LOGGER.tracef(e, "Client read response %d with error", getBatchId());
-                        //super.setError(new ClientException(e));
-                        setError(e);
-                        if (e instanceof IOException) {
-                            throw (IOException)e;
+                        final ByteArrayOutputStream bout = copyStream(is);
+                        final FlushableDataOutput output = context.writeMessage(response);
+                        try {
+                            output.writeByte(ModelControllerProtocol.PARAM_INPUTSTREAM_LENGTH);
+                            output.writeInt(bout.size());
+                            output.writeByte(ModelControllerProtocol.PARAM_INPUTSTREAM_CONTENTS);
+                            output.write(bout.toByteArray());
+                            output.writeByte(ManagementProtocol.RESPONSE_END);
+                            output.close();
+                        } finally {
+                            StreamUtils.safeClose(output);
                         }
-                        if (e instanceof RuntimeException) {
-                            throw (RuntimeException)e;
-                        }
-                        throw new IOException(e);
                     } finally {
-                        ManagementBatchIdManager.DEFAULT.freeBatchId(getBatchId());
-                        activeRequests.remove(getBatchId());
-                        executeRequestContext.done();
+                        // the caller is responsible for closing the input streams
+                        // StreamUtils.safeClose(is);
                     }
                 }
-            };
+            });
         }
 
-        @Override
-        protected void setError(final Exception e) {
-            super.setError(e instanceof IOException ? e : new IOException(e));
+        protected ByteArrayOutputStream copyStream(final InputStream is) throws IOException {
+            final ByteArrayOutputStream bout = new ByteArrayOutputStream();
+            // Hmm, a null input-stream should be a failure?
+            if(is != null) {
+                StreamUtils.copyStream(is, bout);
+            }
+            return bout;
         }
+
+    }
+
+    private static class HandleReportRequestHandler implements ManagementRequestHandler<ModelNode, OperationExecutionContext> {
+
+        @Override
+        public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<ModelNode> resultHandler, final ManagementRequestContext<OperationExecutionContext> context) throws IOException {
+            expectHeader(input, ModelControllerProtocol.PARAM_MESSAGE_SEVERITY);
+            final MessageSeverity severity = Enum.valueOf(MessageSeverity.class, input.readUTF());
+            expectHeader(input, ModelControllerProtocol.PARAM_MESSAGE);
+            final String message = input.readUTF();
+            expectHeader(input, ManagementProtocol.REQUEST_END);
+
+            final OperationExecutionContext requestContext = context.getAttachment();
+            // perhaps execute async
+            final OperationMessageHandler handler = requestContext.getOperationMessageHandler();
+            handler.handleReport(severity, message);
+        }
+
+    }
+
+    protected AsyncFuture<ModelNode> executeRequest(final ManagementRequest<ModelNode, OperationExecutionContext> request, final OperationExecutionContext attachment) throws IOException {
+        final ActiveOperation<ModelNode, OperationExecutionContext> support = super.registerActiveOperation(attachment);
+        return new DelegatingCancellableAsyncFuture(super.executeRequest(request, getChannel(), support), support.getOperationId());
+    }
+
+    static class OperationExecutionContext {
+
+        private final Operation operation;
+        private final OperationMessageHandler handler;
+
+        OperationExecutionContext(final Operation operation, final OperationMessageHandler handler) {
+            this.operation = operation;
+            this.handler = handler != null ? handler : NO_OP_HANDLER;
+        }
+
+        Operation getOperation() {
+            return operation;
+        }
+
+        OperationMessageHandler getOperationMessageHandler() {
+            return handler;
+        }
+
+        static OperationExecutionContext create(final ModelNode operation) {
+            return create(new OperationBuilder(operation).build(), NO_OP_HANDLER);
+        }
+
+        static OperationExecutionContext create(final Operation operation) {
+            return create(operation, NO_OP_HANDLER);
+        }
+
+        static OperationExecutionContext create(final ModelNode operation, final OperationMessageHandler handler) {
+            return create(new OperationBuilder(operation).build(), handler);
+        }
+
+        static OperationExecutionContext create(final Operation operation, final OperationMessageHandler handler) {
+            return new OperationExecutionContext(operation, handler);
+        }
+
     }
 
     /**
-     * Handles {@link OperationMessageHandler#handleReport(org.jboss.as.controller.client.MessageSeverity, String)} calls
-     * done in the remote target controller
+     * Wraps the request execution AsyncFuture in an AsyncFuture impl that handles cancellation by sending a cancellation
+     * request to the remote side.
      */
-    private class HandleReportRequestHandler extends ManagementRequestHandler {
-
-        @Override
-        protected void readRequest(final DataInput input) throws IOException {
-            int batchId = getHeader().getBatchId();
-            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_MESSAGE_SEVERITY);
-            MessageSeverity severity = Enum.valueOf(MessageSeverity.class, input.readUTF());
-            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_MESSAGE);
-            String message = input.readUTF();
-
-            ExecuteRequestContext requestContext = activeRequests.get(batchId);
-            if (requestContext == null) {
-                throw MESSAGES.noActiveRequest(batchId);
-            }
-            if (requestContext.getMessageHandler() != null) {
-                requestContext.getMessageHandler().handleReport(severity, message);
-            }
-        }
-
-        protected void processRequest() {
-
-        }
-    }
-
-    /**
-     * Handles reads on the inputstreams returned by {@link OperationAttachments#getInputStreams()}
-     * done in the remote target controller
-     */
-    private class ReadAttachmentInputStreamRequestHandler extends ManagementRequestHandler {
-        InputStream attachmentInput;
-        byte[] bytes;
-        @Override
-        protected void readRequest(final DataInput input) throws IOException {
-            int batchId = getHeader().getBatchId();
-            ROOT_LOGGER.tracef("Client got inputstream request %d",  batchId);
-            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAM_INDEX);
-            int index = input.readInt();
-
-            ExecuteRequestContext requestContext = activeRequests.get(batchId);
-            if (requestContext == null) {
-                throw MESSAGES.noActiveRequest(batchId);
-            }
-            InputStream in = requestContext.getAttachments().getInputStreams().get(index);
-            attachmentInput = in != null ? new BufferedInputStream(in) : null;
-        }
-
-        protected void processRequest() throws RequestProcessingException {
-            try {
-                ByteArrayOutputStream bout = new ByteArrayOutputStream();
-                if (attachmentInput != null) {
-                    int i = attachmentInput.read();
-                    while (i != -1) {
-                        bout.write(i);
-                        i = attachmentInput.read();
-                    }
-                }
-                bytes = bout.toByteArray();
-            } catch (IOException e) {
-                throw new RequestProcessingException(e);
-            } finally {
-                //Think the caller is responsible for closing these
-                //IoUtils.safeClose(attachmentInput);
-            }
-        }
-
-
-        @Override
-        protected void writeResponse(final FlushableDataOutput output) throws IOException {
-            output.write(ModelControllerProtocol.PARAM_INPUTSTREAM_LENGTH);
-            output.writeInt(bytes.length);
-            output.write(ModelControllerProtocol.PARAM_INPUTSTREAM_CONTENTS);
-            output.write(bytes);
-            ROOT_LOGGER.tracef("Client handled inputstream request %d",  getHeader().getBatchId());
-        }
-    }
-
-    private static class ExecuteRequestContext {
-        final ExecuteRequest executeRequest;
-        final OperationMessageHandler messageHandler;
-        final OperationAttachments attachments;
-        volatile boolean done;
-
-        ExecuteRequestContext(final ExecuteRequest executeRequest, final OperationMessageHandler messageHandler, final OperationAttachments attachments) {
-            this.executeRequest = executeRequest;
-            this.messageHandler = messageHandler;
-            this.attachments = attachments;
-        }
-
-        CloseHandler<Channel> getRequestCloseHandler(){
-            return new CloseHandler<Channel>() {
-                public void handleClose(final Channel closed, final IOException exception) {
-                    if (!done) {
-                        executeRequest.setError(MESSAGES.channelClosed(exception));
-                    }
-                }
-            };
-        }
-
-        OperationMessageHandler getMessageHandler() {
-            return messageHandler;
-        }
-
-        OperationAttachments getAttachments() {
-            return attachments;
-        }
-
-        void done() {
-            this.done = true;
-        }
-    }
-
     private class DelegatingCancellableAsyncFuture implements AsyncFuture<ModelNode>{
-        private final AsyncFuture<ModelNode> delegate;
         private final int batchId;
-        private volatile boolean isCancelled;
+        private final AsyncFuture<ModelNode> delegate;
 
         public DelegatingCancellableAsyncFuture(AsyncFuture<ModelNode> delegate, int batchId) {
             this.delegate = delegate;
@@ -385,8 +317,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
             return delegate.getUninterruptibly();
         }
 
-        public ModelNode getUninterruptibly(long timeout, TimeUnit unit) throws CancellationException, ExecutionException,
-                TimeoutException {
+        public ModelNode getUninterruptibly(long timeout, TimeUnit unit) throws CancellationException, ExecutionException, TimeoutException {
             return delegate.getUninterruptibly(timeout, unit);
         }
 
@@ -420,53 +351,49 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
 
         @Override
         public boolean isCancelled() {
-            return isCancelled;
+            return delegate.getStatus() == Status.CANCELLED;
         }
 
         @Override
         public boolean cancel(boolean interruptionDesired) {
-            if (!activeRequests.containsKey(batchId)) {
-                return false;
-            }
-            try {
-                new CancelAsyncRequest().executeForResult(executor, getClientChannelStrategy());
-                if (isDone()) {
-                    isCancelled = false;
-                }
-                isCancelled = true;
-                return isCancelled;
-            } catch (Exception e) {
-                e.printStackTrace();
-                return false;
-            }
+            asyncCancel(interruptionDesired);
+            return awaitUninterruptibly() == Status.CANCELLED;
         }
 
         @Override
         public void asyncCancel(boolean interruptionDesired) {
             try {
-                new CancelAsyncRequest().execute(executor, getClientChannelStrategy());
+                final ActiveOperation<ModelNode, OperationExecutionContext> support = AbstractModelControllerClient.this.getActiveOperation(batchId);
+                if(support != null) {
+                    AbstractModelControllerClient.this.executeRequest(new CancelAsyncRequest(), getChannel(), support);
+                }
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
 
-
-        private class CancelAsyncRequest extends ManagementRequest<Void>{
-
-            public CancelAsyncRequest() {
-                super(batchId);
-            }
+        /**
+         * Request cancelling the remote operation.
+         */
+        private class CancelAsyncRequest extends AbstractManagementRequest<ModelNode, OperationExecutionContext> {
 
             @Override
-            protected byte getRequestCode() {
+            public byte getOperationType() {
                 return ModelControllerProtocol.CANCEL_ASYNC_REQUEST;
             }
 
+            @Override
+            protected void sendRequest(ActiveOperation.ResultHandler<ModelNode> resultHandler, ManagementRequestContext<OperationExecutionContext> context, FlushableDataOutput output) throws IOException {
+                //
+            }
 
             @Override
-            protected ManagementResponseHandler<Void> getResponseHandler() {
-                return ManagementResponseHandler.EMPTY_RESPONSE;
+            public void handleRequest(DataInput input, ActiveOperation.ResultHandler<ModelNode> resultHandler, ManagementRequestContext<OperationExecutionContext> context) throws IOException {
+                // Once the remote operation returns, we can set the cancelled status
+                resultHandler.cancel();
             }
         }
     }
+
+
 }

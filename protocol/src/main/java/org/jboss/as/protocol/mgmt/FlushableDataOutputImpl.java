@@ -19,16 +19,15 @@
 package org.jboss.as.protocol.mgmt;
 
 import java.io.Closeable;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
-import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.SimpleDataOutput;
-import org.jboss.remoting3.MessageOutputStream;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
 class FlushableDataOutputImpl implements FlushableDataOutput, Closeable {
 
@@ -38,8 +37,9 @@ class FlushableDataOutputImpl implements FlushableDataOutput, Closeable {
         this.output = output;
     }
 
-    static FlushableDataOutputImpl create(MessageOutputStream output) {
-        return new FlushableDataOutputImpl(new SimpleDataOutput(Marshalling.createByteOutput(output)));
+    static FlushableDataOutput create(OutputStream output) {
+        return new FlushableDataOutputImpl2(new DataOutputStream(output));
+        // return new FlushableDataOutputImpl(new SimpleDataOutput(Marshalling.createByteOutput(output)));
     }
 
     /**

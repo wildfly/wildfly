@@ -26,11 +26,22 @@ import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
 
 import java.io.DataInput;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
-import org.jboss.as.controller.remote.ManagementOperationHandlerFactory;
 import org.jboss.as.host.controller.ManagedServerLifecycleCallback;
-import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
-import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
+import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.mgmt.FlushableDataOutput;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
+import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
+import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
+import org.jboss.as.protocol.mgmt.ManagementProtocol;
+import org.jboss.as.protocol.mgmt.ManagementProtocolHeader;
+import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
+import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
+import org.jboss.as.protocol.mgmt.ProtocolUtils;
+import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
 import org.jboss.as.server.mgmt.domain.DomainServerProtocol;
 import org.jboss.as.server.mgmt.domain.HostControllerServerClient;
 import org.jboss.logging.Logger;
@@ -41,6 +52,10 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.CloseHandler;
+import org.jboss.remoting3.HandleableCloseable;
+import org.jboss.remoting3.MessageOutputStream;
 
 /**
  * Operation handler responsible for requests coming in from server processes on the host controller.
@@ -50,22 +65,23 @@ import org.jboss.msc.value.InjectedValue;
  * @author Emanuel Muckenhuber
  * @author Kabir Khan
  */
-public class ServerToHostOperationHandlerFactoryService implements ManagementOperationHandlerFactory, Service<ManagementOperationHandlerFactory> {
+public class ServerToHostOperationHandlerFactoryService implements ManagementChannelInitialization, Service<ManagementChannelInitialization> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller.mgmt");
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("management", "server", "to", "host", "controller");
 
+    private final ExecutorService executorService;
     private final InjectedValue<ManagedServerLifecycleCallback> callback = new InjectedValue<ManagedServerLifecycleCallback>();
 
-    private ServerToHostOperationHandlerFactoryService() {
+    private ServerToHostOperationHandlerFactoryService(final ExecutorService executorService) {
+        this.executorService = executorService;
     }
 
-    public static void install(ServiceTarget serviceTarget, ServiceName serverInventoryName) {
-        final ServerToHostOperationHandlerFactoryService serverToHost = new ServerToHostOperationHandlerFactoryService();
+    public static void install(final ServiceTarget serviceTarget, final ServiceName serverInventoryName, final ExecutorService executorService) {
+        final ServerToHostOperationHandlerFactoryService serverToHost = new ServerToHostOperationHandlerFactoryService(executorService);
         serviceTarget.addService(ServerToHostOperationHandlerFactoryService.SERVICE_NAME, serverToHost)
             .addDependency(serverInventoryName, ManagedServerLifecycleCallback.class, serverToHost.callback)
             .install();
-
     }
 
     /** {@inheritDoc} */
@@ -82,48 +98,105 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementOpe
 
     /** {@inheritDoc} */
     @Override
-    public ManagementOperationHandlerFactory getValue() throws IllegalStateException, IllegalArgumentException {
+    public ManagementChannelInitialization getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 
     @Override
-    public ManagementOperationHandler createOperationHandler() {
-        return new ServerToHostOperationHandler();
+    public HandleableCloseable.Key initialize(final ManagementChannel channel) {
+        final Channel.Receiver receiver = new InitialMessageHandler(channel, executorService);
+        channel.setReceiver(receiver);
+        return null;
     }
 
-    private class ServerToHostOperationHandler implements ManagementOperationHandler {
-        private volatile ManagementOperationHandler proxyOperationHandler;
+    private class InitialMessageHandler extends ManagementChannelReceiver {
 
-        public ManagementRequestHandler getRequestHandler(final byte id) {
-            if (id == DomainServerProtocol.REGISTER_REQUEST) {
-                return new ServerRegisterCommand();
-            }
-            if (proxyOperationHandler != null) {
-                ManagementRequestHandler handler = proxyOperationHandler.getRequestHandler(id);
-                if (handler != null) {
-                    return handler;
-                }
-            }
-            return null;
+        private final ExecutorService executorService;
+        private final ManagementChannel mgmtChannel;
+
+        private InitialMessageHandler(final ManagementChannel channel, ExecutorService executorService) {
+            this.mgmtChannel = channel;
+            this.executorService = executorService;
         }
 
-        private class ServerRegisterCommand extends ManagementRequestHandler {
-            String serverName;
-            @Override
-            protected void readRequest(final DataInput input) throws IOException {
-                expectHeader(input, DomainServerProtocol.PARAM_SERVER_NAME);
-                serverName = input.readUTF();
-                log.infof("Server [%s] registered using connection [%s]", serverName, getChannel());
+        @Override
+        public void handleMessage(final Channel channel, final DataInput input, final ManagementProtocolHeader header) throws IOException {
+            final byte type = header.getType();
+            if(type == ManagementProtocol.TYPE_REQUEST) {
+                final ManagementRequestHeader request = (ManagementRequestHeader) header;
+                handleMessage(channel, input, request);
+            } else {
+                safeWriteResponse(channel, header, new IOException("unrecognized type " + type));
+                channel.close();
             }
+        }
 
-            protected void processRequest() {
-                ServerToHostOperationHandlerFactoryService.this.callback.getValue().serverRegistered(serverName, getChannel(), new ManagedServerLifecycleCallback.ProxyCreatedCallback() {
+        public void handleMessage(final Channel channel, final DataInput input, final ManagementRequestHeader header) throws IOException {
+            final byte type = header.getOperationId();
+            if (type == DomainServerProtocol.REGISTER_REQUEST) {
+                expectHeader(input, DomainServerProtocol.PARAM_SERVER_NAME);
+                final String serverName = input.readUTF();
+
+                log.infof("Server [%s] registered using connection [%s]", serverName, channel);
+                executorService.execute(new Runnable() {
                     @Override
-                    public void proxyOperationHandlerCreated(ManagementOperationHandler handler) {
-                        proxyOperationHandler = handler;
+                    public void run() {
+                        final ManagementChannel mgmtChannel = new ManagementChannel(serverName, channel);
+                        ServerToHostOperationHandlerFactoryService.this.callback.getValue().serverRegistered(serverName, mgmtChannel, new ManagedServerLifecycleCallback.ProxyCreatedCallback() {
+                            @Override
+                            public void proxyOperationHandlerCreated(final ManagementMessageHandler handler) {
+                                channel.addCloseHandler(new CloseHandler<Channel>() {
+                                    @Override
+                                    public void handleClose(Channel closed, IOException exception) {
+                                        handler.shutdown();
+                                    }
+                                });
+                                final Channel.Receiver receiver = ManagementChannelReceiver.createDelegating(handler);
+                                mgmtChannel.receiveMessage(receiver);
+                                // Send the response once the server is fully registered
+                                safeWriteResponse(channel, header, null);
+                            }
+                        });
                     }
                 });
+
+            } else {
+                safeWriteResponse(channel, header, new IOException("unrecognized type " + type));
+                channel.close();
+            }
+        }
+
+        @Override
+        protected Channel.Receiver next() {
+            return null; // next is proxyOperationHandlerCreated
+        }
+    }
+
+    protected static void safeWriteResponse(final Channel channel, final ManagementProtocolHeader header, final Exception error) {
+        if(header.getType() == ManagementProtocol.TYPE_REQUEST) {
+            try {
+                writeResponse(channel, (ManagementRequestHeader) header, error);
+            } catch(IOException ioe) {
+               ioe.printStackTrace();
             }
         }
     }
+
+    protected static void writeResponse(final Channel channel, final ManagementRequestHeader header, final Exception error) throws IOException {
+        final ManagementResponseHeader response = ManagementResponseHeader.create(header, error);
+        final MessageOutputStream output = channel.writeMessage();
+        try {
+            writeHeader(response, output);
+            output.close();
+        } finally {
+            StreamUtils.safeClose(output);
+        }
+    }
+
+    protected static void writeHeader(final ManagementProtocolHeader header, final OutputStream os) throws IOException {
+        final FlushableDataOutput output = ProtocolUtils.wrapAsDataOutput(os);
+        header.write(output);
+        output.flush();
+    }
+
 }

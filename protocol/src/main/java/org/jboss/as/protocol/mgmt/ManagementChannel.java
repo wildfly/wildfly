@@ -19,368 +19,62 @@
 package org.jboss.as.protocol.mgmt;
 
 import static org.jboss.as.protocol.ProtocolLogger.ROOT_LOGGER;
-import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
-import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.marshalling.Marshalling;
-import org.jboss.marshalling.SimpleDataInput;
 import org.jboss.marshalling.SimpleDataOutput;
 import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.CloseHandler;
-import org.jboss.remoting3.MessageInputStream;
 import org.xnio.IoUtils;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
 public class ManagementChannel extends ProtocolChannel {
 
-    private final RequestReceiver requestReceiver = new RequestReceiver();
-    private final ResponseReceiver responseReceiver = new ResponseReceiver();
-    private final AtomicBoolean byeByeSent = new AtomicBoolean();
-    private volatile long lastResponseReceived;
-    private AtomicBoolean awaitingPong = new AtomicBoolean();
-    private volatile boolean receivedByeBye;
+    private volatile Receiver receiver;
 
-    ManagementChannel(String name, Channel channel) {
+    public ManagementChannel(String name, Channel channel) {
         super(name, channel);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void close() throws IOException {
-        sendByeBye();
-        super.close();
+    public void setReceiver(final ManagementMessageHandler handler) {
+        final Receiver receiver = ManagementChannelReceiver.createDelegating(handler);
+        setReceiver(receiver);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void writeShutdown() throws IOException {
-        sendByeBye();
-        super.close();
-    }
-
-    public void sendByeBye() throws IOException {
-        if (receivedByeBye) {
-            return;
-        }
-        if(!byeByeSent.compareAndSet(false, true)) {
-            return;
-        }
-        ROOT_LOGGER.tracef("Closing %s by sending bye bye", this);
-        ManagementByeByeHeader byeByeHeader = new ManagementByeByeHeader(ManagementProtocol.VERSION);
-
-        try {
-            SimpleDataOutput out = new SimpleDataOutput(Marshalling.createByteOutput(writeMessage()));
-            try {
-                byeByeHeader.write(out);
-            } finally {
-                IoUtils.safeClose(out);
-            }
-        } catch (IOException ignore) {
-        } finally {
-            ROOT_LOGGER.tracef("Invoking close on %s", this);
-            super.close();
-        }
-    }
-
-    public void setOperationHandler(final ManagementOperationHandler handler) {
-        requestReceiver.setOperationHandler(handler);
+    public void setReceiver(Receiver receiver) {
+        this.receiver = receiver;
     }
 
     @Override
-    protected void doHandle(final MessageInputStream message) {
-        ROOT_LOGGER.tracef("%s handling incoming data", this);
-        final SimpleDataInput input = new SimpleDataInput(Marshalling.createByteInput(message));
-        Exception error = null;
-        ManagementRequestHeader requestHeader = null;
-        ManagementRequestHandler requestHandler = null;
-        boolean wasPing = false;
-        try {
-            ManagementProtocolHeader header;
-            header = ManagementProtocolHeader.parse(input);
-
-            switch (header.getType()) {
-            case ManagementProtocol.TYPE_REQUEST:
-                requestHeader = (ManagementRequestHeader)header;
-                requestHandler = requestReceiver.readRequest(requestHeader, input);
-                break;
-            case ManagementProtocol.TYPE_RESPONSE:
-                gotIncomingResponse();
-                responseReceiver.handleResponse((ManagementResponseHeader)header, input);
-                break;
-            case ManagementProtocol.TYPE_BYE_BYE:
-                ROOT_LOGGER.tracef("Received bye bye on %s, closing", this);
-                receivedByeBye = true;
-                close();
-                break;
-            case ManagementProtocol.TYPE_PING:
-                wasPing = true;
-                ROOT_LOGGER.tracef("Received ping on %s", this);
-                break;
-            case ManagementProtocol.TYPE_PONG:
-                ROOT_LOGGER.tracef("Received pong on %s", this);
-                gotIncomingResponse();
-                break;
-            }
-        } catch (Exception e) {
-            error = e;
-            ROOT_LOGGER.tracef(e, "%s error handling incoming data", this);
-        } finally {
-            ROOT_LOGGER.tracef("%s done handling incoming data", this);
-            try {
-                //Consume the rest of the output if any
-                while (input.read() != -1) {
-                }
-
-            } catch (IOException ignore) {
-            }
-            IoUtils.safeClose(input);
-            IoUtils.safeClose(message);
+    protected Receiver getReceiver() {
+        if(receiver == null) {
+            throw new IllegalStateException();
         }
-
-        if (requestHeader != null) {
-            if (error == null) {
-                try {
-                    requestReceiver.processRequest(requestHeader, requestHandler);
-                } catch (Exception e) {
-                    error = e;
-                }
-            }
-
-            if (error != null) {
-                ROOT_LOGGER.tracef(error, "Error processing request %s", this);
-            }
-            requestReceiver.writeResponse(requestHeader, requestHandler, error);
-        } else if (wasPing) {
-            ROOT_LOGGER.tracef("Sending pong on %s", this);
-            ManagementPongHeader pongHeader = new ManagementPongHeader(ManagementProtocol.VERSION);
-            sendHeaderAndCloseOnError(pongHeader);
-        }
+        return receiver;
     }
 
-    private void gotIncomingResponse() {
-        ROOT_LOGGER.tracef("Resetting ping/response status on %s", this);
-        lastResponseReceived = System.currentTimeMillis();
-        awaitingPong.set(false);
-    }
+//    We close when we receive a bye-bye request, however it seems to work not sending it and just closing the channel
+//    TODO: need to validate that for older AS versions the channels are really closed though
+//
+//    public void sendByeBye() throws IOException {
+//        ROOT_LOGGER.tracef("Closing %s by sending bye bye", this);
+//        ManagementByeByeHeader byeByeHeader = new ManagementByeByeHeader(ManagementProtocol.VERSION);
+//        try {
+//            SimpleDataOutput out = new SimpleDataOutput(Marshalling.createByteOutput(writeMessage()));
+//            try {
+//                byeByeHeader.write(out);
+//            } finally {
+//                IoUtils.safeClose(out);
+//            }
+//        } catch (IOException ignore) {
+//            //
+//        } finally {
+//            ROOT_LOGGER.tracef("Invoking close on %s", this);
+//        }
+//
+//    }
 
-    void executeRequest(ManagementRequest<?> request, ManagementResponseHandler<?> responseHandler) throws IOException {
-        addCloseHandler(request, responseHandler);
-        responseReceiver.registerResponseHandler(request.getCurrentRequestId(), responseHandler);
-        final FlushableDataOutputImpl output = FlushableDataOutputImpl.create(this.writeMessage());
-        try {
-            final ManagementRequestHeader managementRequestHeader = new ManagementRequestHeader(ManagementProtocol.VERSION, request.getCurrentRequestId(), request.getBatchId(), request.getRequestCode());
-            managementRequestHeader.write(output);
-
-            request.writeRequest(this, output);
-        } catch (Exception e) {
-            responseHandler.removeCloseHandler();
-            if (e instanceof RuntimeException) throw (RuntimeException)e;
-            if (e instanceof IOException) throw (IOException)e;
-            throw new IOException(e);
-        } finally {
-            IoUtils.safeClose(output);
-        }
-    }
-
-    private void addCloseHandler(ManagementRequest<?> request, ManagementResponseHandler<?> responseHandler) {
-        final CloseHandler<Channel> closeHandler = request.getRequestCloseHandler();
-        if (closeHandler != null) {
-            final Key closeKey = addCloseHandler(closeHandler);
-            responseHandler.setCloseKey(closeKey);
-        }
-    }
-
-    void throwFormattedException(Exception e) throws IOException {
-        //e.printStackTrace();
-        if (e instanceof IOException) {
-            throw (IOException)e;
-        }
-        if (e instanceof RuntimeException) {
-            throw (RuntimeException)e;
-        }
-        throw new IOException(e);
-
-    }
-
-    void ping(long timeOut) {
-        if (awaitingPong.get()) {
-            if (System.currentTimeMillis() - lastResponseReceived > timeOut) {
-                try {
-                    //We received no ping within the timeout
-                    ROOT_LOGGER.tracef("Closing %s did not receive any pong within %dms", this, timeOut);
-                    close();
-                } catch (IOException ignore) {
-                }
-            }
-        } else {
-            ROOT_LOGGER.tracef("No data received recently on %s, pinging to determine if the other end is alive", this);
-            awaitingPong.set(true);
-            ManagementPingHeader pingHeader = new ManagementPingHeader(ManagementProtocol.VERSION);
-            sendHeaderAndCloseOnError(pingHeader);
-        }
-    }
-
-    private void sendHeaderAndCloseOnError(ManagementProtocolHeader header) {
-        boolean ok = false;
-        try {
-            SimpleDataOutput out = new SimpleDataOutput(Marshalling.createByteOutput(writeMessage()));
-            try {
-                header.write(out);
-                ok = true;
-            }finally {
-                IoUtils.safeClose(out);
-            }
-        } catch (IOException ingore) {
-        } finally {
-            if (!ok) {
-                ROOT_LOGGER.tracef("Error sending 0x%X on %s, closing channel", header.getType(), this);
-                IoUtils.safeClose(this);
-            }
-        }
-    }
-
-    private class RequestReceiver {
-        private volatile ManagementOperationHandler operationHandler;
-
-        private ManagementRequestHandler readRequest(final ManagementRequestHeader header, final DataInput input) throws IOException {
-            ROOT_LOGGER.tracef("%s reading request %d(%d)", ManagementChannel.this, header.getBatchId(), header.getRequestId());
-            Exception error = null;
-            try {
-                final ManagementRequestHandler requestHandler;
-                //Read request
-                requestHandler = getRequestHandler(header);
-                requestHandler.setContextInfo(ManagementChannel.this, header);
-                requestHandler.readRequest(input);
-                expectHeader(input, ManagementProtocol.REQUEST_END);
-                return requestHandler;
-            } finally {
-                if (error == null) {
-                    ROOT_LOGGER.tracef("%s finished reading request %d", ManagementChannel.this, header.getBatchId());
-                } else {
-                    ROOT_LOGGER.tracef(error, "%s finished reading request %d with error", ManagementChannel.this, header.getBatchId());
-                }
-            }
-        }
-
-        private void processRequest(ManagementRequestHeader requestHeader, ManagementRequestHandler requestHandler) throws RequestProcessingException {
-            ROOT_LOGGER.tracef("%s processing request %d", ManagementChannel.this, requestHeader.getBatchId());
-            try {
-                requestHandler.processRequest();
-                ROOT_LOGGER.tracef("%s finished processing request %d", ManagementChannel.this, requestHeader.getBatchId());
-            } catch (Exception e) {
-                ROOT_LOGGER.tracef(e, "%s finished processing request %d with error", ManagementChannel.this, requestHeader.getBatchId());
-            }
-        }
-
-
-        private void writeResponse(ManagementRequestHeader requestHeader, ManagementRequestHandler requestHandler, Exception error) {
-            ROOT_LOGGER.tracef("%s writing response %d", ManagementChannel.this, requestHeader.getBatchId());
-            final FlushableDataOutputImpl output;
-            try {
-                output = FlushableDataOutputImpl.create(writeMessage());
-            } catch (Exception e) {
-                ROOT_LOGGER.tracef(e, "%s could not open output stream for request %d", ManagementChannel.this, requestHeader.getBatchId());
-                return;
-            }
-            try {
-                writeResponseHeader(requestHeader, output, error);
-
-                if (error == null && requestHandler != null) {
-                    requestHandler.writeResponse(output);
-                }
-                output.writeByte(ManagementProtocol.RESPONSE_END);
-            } catch (Exception e) {
-                ROOT_LOGGER.tracef(e, "%s finished writing response %d with error", ManagementChannel.this, requestHeader.getBatchId());
-            } finally {
-                ROOT_LOGGER.tracef("%s finished writing response %d", ManagementChannel.this, requestHeader.getBatchId());
-                IoUtils.safeClose(output);
-            }
-        }
-
-        private ManagementRequestHandler getRequestHandler(final ManagementRequestHeader header) throws IOException {
-            try {
-                ManagementOperationHandler operationHandler = this.operationHandler;
-                if (operationHandler == null) {
-                    throw MESSAGES.operationHandlerNotSet();
-                }
-                ManagementRequestHandler requestHandler = operationHandler.getRequestHandler(header.getOperationId());
-                if (requestHandler == null) {
-                    throw MESSAGES.requestHandlerIdNotFound(header.getOperationId(), operationHandler);
-                }
-                return requestHandler;
-            } catch (IOException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new IOException(e);
-            }
-        }
-
-        private void writeResponseHeader(final ManagementRequestHeader header, DataOutput output, Exception exception) throws IOException {
-            final int workingVersion = Math.min(ManagementProtocol.VERSION, header.getVersion());
-            try {
-                // Now write the response header
-                final ManagementResponseHeader responseHeader = new ManagementResponseHeader(workingVersion, header.getRequestId(), formatException(exception));
-                responseHeader.write(output);
-            } catch (IOException e) {
-                throw e;
-            } catch (Throwable t) {
-                throw MESSAGES.failedToWriteManagementResponseHeaders(t);
-            }
-        }
-
-        private void setOperationHandler(final ManagementOperationHandler operationHandler) {
-            this.operationHandler = operationHandler;
-        }
-
-        private String formatException(Exception exception) {
-            if (exception == null) {
-                return null;
-            }
-            return exception.getMessage();
-        }
-    }
-
-    private class ResponseReceiver {
-
-        private final Map<Integer, ManagementResponseHandler<?>> responseHandlers = Collections.synchronizedMap(new HashMap<Integer, ManagementResponseHandler<?>>());
-
-        private void registerResponseHandler(final int requestId, final ManagementResponseHandler<?> handler) throws IOException {
-            if (responseHandlers.put(requestId, handler) != null) {
-                throw MESSAGES.responseHandlerAlreadyRegistered();
-            }
-        }
-
-        private void handleResponse(ManagementResponseHeader header, DataInput input) throws IOException {
-            ROOT_LOGGER.tracef("%s handling response %d", ManagementChannel.this, header.getResponseId());
-            ManagementResponseHandler<?> responseHandler = responseHandlers.remove(header.getResponseId());
-            if (responseHandler == null) {
-                throw MESSAGES.responseHandlerNotFound(header.getResponseId());
-            }
-            try {
-                responseHandler.setContextInfo(header, ManagementChannel.this);
-                responseHandler.readResponse(input);
-                expectHeader(input, ManagementProtocol.RESPONSE_END);
-            } catch (Exception e) {
-                throwFormattedException(e);
-            } finally {
-                responseHandler.removeCloseHandler();
-                ROOT_LOGGER.tracef("%s handled response %d", ManagementChannel.this, header.getResponseId());
-            }
-        }
-    }
 }

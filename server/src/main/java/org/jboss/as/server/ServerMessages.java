@@ -30,6 +30,7 @@ import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jboss.logging.Param;
+import org.jboss.msc.service.StartException;
 
 /**
  * Date: 05.11.2011
@@ -96,4 +97,23 @@ public interface ServerMessages {
      */
     @Message(id = 15804, value = "Error initializing vault --  %s")
     RuntimeException cannotCreateVault(@Param VaultReaderException cause, VaultReaderException msg);
+
+    /**
+     * Creates an error message indicating that connecting to the HC failed.
+     *
+     * @param e the problem
+     * @return a StartException
+     */
+    @Message(id = 15805, value = "Failed to connect to the host-controller")
+    StartException failedToConnectToHC(@Param Exception e);
+
+    /**
+     * Creates an error message indicating that the operation connecting to the
+     * HC got cancelled before it could complete.
+     *
+     * @return a StartException
+     */
+    @Message(id = 15806, value = "Connection request to the host-controller was cancelled")
+    StartException cancelledHCConnect();
+
 }

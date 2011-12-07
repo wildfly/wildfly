@@ -35,6 +35,7 @@ import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Unmarshaller;
+import org.jboss.remoting3.Channel;
 
 /**
  * Date: 21.07.2011
@@ -201,4 +202,9 @@ public interface ProtocolLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 12117, value = "Connection timeout property is no longer needed for client")
     void connectTimeoutPropertyNotNeeded();
+
+    @LogMessage(level = WARN)
+    @Message(id = 12118, value = "No such request (%d) associated with channel %s")
+    void noSuchRequest(int requestId, Channel channel);
+
 }

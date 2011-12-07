@@ -27,7 +27,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 /**
- * DomainClientProtocol header used for management requests.  Provides the default header fields from
+ * ManagementProtocol header used for management requests.  Provides the default header fields from
  * {@link ManagementProtocolHeader} as well as a field to identify who the
  * request should be handled by.
  *
@@ -35,10 +35,11 @@ import java.io.IOException;
  * @author Kabir Khan
  */
 public class ManagementRequestHeader extends ManagementProtocolHeader {
+
     private int requestId;
     private int batchId;
     private byte operationId;
-    //TODO still unused, put in the protocol for when we get round to doing requests not expecting a response
+    // Actually not needed
     private boolean oneWay;
 
     /**
@@ -49,7 +50,7 @@ public class ManagementRequestHeader extends ManagementProtocolHeader {
      * @param batchId The batch id
      * @param operationId The operation to invoke on the server
      */
-    ManagementRequestHeader(final int version, final  int requestId, final int batchId, final byte operationId) {
+    public ManagementRequestHeader(final int version, final  int requestId, final int batchId, final byte operationId) {
         super(version);
         this.requestId = requestId;
         this.batchId = batchId;
@@ -116,7 +117,7 @@ public class ManagementRequestHeader extends ManagementProtocolHeader {
     }
 
     @Override
-    byte getType() {
+    public byte getType() {
         return ManagementProtocol.TYPE_REQUEST;
     }
 }
