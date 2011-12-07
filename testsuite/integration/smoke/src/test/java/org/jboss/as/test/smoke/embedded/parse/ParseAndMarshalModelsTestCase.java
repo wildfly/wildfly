@@ -62,6 +62,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.ObjectName;
 import javax.xml.namespace.QName;
@@ -131,12 +132,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
-import org.jboss.msc.service.AbstractServiceListener;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.*;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.vfs.VirtualFile;
@@ -179,6 +175,17 @@ public class ParseAndMarshalModelsTestCase {
     @After
     public void cleanup() throws Exception {
         ManagementFactory.getPlatformMBeanServer().unregisterMBean(new ObjectName("jboss.msc:type=container,name=test"));
+        if (serviceContainer != null) {
+            serviceContainer.shutdown();
+            try {
+                serviceContainer.awaitTermination(5, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            finally {
+                serviceContainer = null;
+            }
+        }
     }
 
     @Test
@@ -838,6 +845,19 @@ public class ParseAndMarshalModelsTestCase {
             super(OperationContext.Type.MANAGEMENT, new NullConfigurationPersister(), processState, getRootDescriptionProvider(), null, ExpressionResolver.DEFAULT);
             this.model = model;
             this.registration = registration;
+        }
+
+        @Override
+        public void start(StartContext context) throws StartException {
+            try {
+                super.start(context);
+            } catch (RuntimeException e) {
+                latch.countDown();
+                throw e;
+            } catch (StartException e) {
+                latch.countDown();
+                throw e;
+            }
         }
 
         @Override

@@ -27,6 +27,7 @@ import com.sun.xml.internal.rngom.nc.NameClass;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import javax.naming.Binding;
 import javax.naming.CompositeName;
 import javax.naming.Context;
@@ -47,14 +48,40 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
  * @author John Bailey
  */
 public class ServiceBasedNamingStoreTestCase {
-    private final ServiceContainer container = ServiceContainer.Factory.create();
-    private final ServiceBasedNamingStore store = new ServiceBasedNamingStore(container, ServiceName.JBOSS);
+
+    private ServiceContainer container;
+    private ServiceBasedNamingStore store;
+
+    @Before
+    public void setupServiceContainer() {
+        container = ServiceContainer.Factory.create();
+        store = new ServiceBasedNamingStore(container, ServiceName.JBOSS);
+    }
+
+    @After
+    public void shutdownServiceContainer() {
+        if (container != null) {
+            container.shutdown();
+            try {
+                container.awaitTermination(5, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            finally {
+                container = null;
+            }
+        }
+        store = null;
+    }
 
     @Test
     public void testLookupBase() throws Exception {

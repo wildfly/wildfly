@@ -35,6 +35,8 @@ import org.jboss.msc.service.ServiceController;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -42,11 +44,13 @@ import org.junit.Test;
  * @author John Bailey
  */
 public class WritableServiceBasedNamingStoreTestCase {
-    private final ServiceContainer container = ServiceContainer.Factory.create();
-    private final WritableServiceBasedNamingStore store = new WritableServiceBasedNamingStore(container, ContextNames.JAVA_CONTEXT_SERVICE_NAME);
+    private ServiceContainer container;
+    private WritableServiceBasedNamingStore store;
 
     @Before
     public void setup() throws Exception {
+        container = ServiceContainer.Factory.create();
+        store = new WritableServiceBasedNamingStore(container, ContextNames.JAVA_CONTEXT_SERVICE_NAME);
         final CountDownLatch latch = new CountDownLatch(1);
         container.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME, new NamingStoreService(store))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
@@ -67,6 +71,22 @@ public class WritableServiceBasedNamingStoreTestCase {
                 })
                 .install();
         latch.await(10, TimeUnit.SECONDS);
+    }
+
+    @After
+    public void shutdownServiceContainer() {
+        if (container != null) {
+            container.shutdown();
+            try {
+                container.awaitTermination(5, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            finally {
+                container = null;
+            }
+        }
+        store = null;
     }
 
     @Test
