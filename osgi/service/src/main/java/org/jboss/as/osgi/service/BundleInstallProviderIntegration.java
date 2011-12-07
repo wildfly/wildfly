@@ -44,6 +44,7 @@ import org.jboss.osgi.framework.BundleManagerService;
 import org.jboss.osgi.framework.Services;
 import org.osgi.framework.BundleException;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.Future;
 
@@ -105,12 +106,19 @@ public class BundleInstallProviderIntegration implements BundleInstallProvider {
 
             // Build and execute the deployment plan
             InputStream inputStream = dep.getRoot().openStream();
-            DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
-            builder = builder.add(contextName, inputStream).andDeploy();
-            DeploymentPlan plan = builder.build();
-            DeploymentAction deployAction = builder.getLastAction();
-            executeDeploymentPlan(plan, deployAction);
-
+            try {
+                DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
+                builder = builder.add(contextName, inputStream).andDeploy();
+                DeploymentPlan plan = builder.build();
+                DeploymentAction deployAction = builder.getLastAction();
+                executeDeploymentPlan(plan, deployAction);
+            } finally {
+                if(inputStream != null) try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    ROOT_LOGGER.debugf(e, "Failed to close resource %s", inputStream);
+                }
+            }
         } catch (RuntimeException rte) {
             throw rte;
         } catch (BundleException ex) {
