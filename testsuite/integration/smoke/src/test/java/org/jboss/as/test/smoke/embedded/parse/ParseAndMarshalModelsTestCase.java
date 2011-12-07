@@ -189,33 +189,7 @@ public class ParseAndMarshalModelsTestCase {
             }
         }
     }
-    @Test
-    public void testStandaloneDsXml() throws Exception {
-    	File file = new File("target/standalone-copy.xml");
-        if (file.exists()) {
-            file.delete();
-        }
-        copyFile(getTestXml("standalone-ds-prop.xml"), file);
-    	ModelNode node=loadServerModel(file);
-      
-        final String complexDs = "complexDs";
-        final String complexDsJndi = "java:jboss/datasources/" + complexDs;
-        Hashtable<String,String> params=hashtableWithNonXaParameters(complexDs,complexDsJndi);
-        ModelNode modelDs=node.get("subsystem", "datasources","data-source",complexDs+"_Pool");
-        controlExpectedParameters(modelDs,params);
-        Assert.assertEquals(modelDs.asString(),"UTF-8",modelDs.get("connection-properties","char.encoding","value").asString());
-        
-        final String complexXaDs = "complexXaDs";
-        final String complexXaDsJndi = "java:jboss/xa-datasources/" + complexXaDs;
-        params=hashtableWithXaParameters(complexXaDs,complexXaDsJndi);
-        ModelNode modelXaDs=node.get("subsystem", "datasources","xa-data-source",complexXaDs+"_Pool");
-        controlExpectedParameters(modelXaDs,params);
-        Assert.assertEquals(modelXaDs.asString(),"jdbc:h2:mem:test",modelXaDs.get("xa-datasource-properties","URL","value").asString());
-    }
-    @Test
-    public void testStandaloneDsPropXml() throws Exception {
-        standaloneXmlTest(getTestXml("standalone-ds-prop.xml"));
-    }
+    
     @Test
     public void testStandaloneXml() throws Exception {
         standaloneXmlTest(getOriginalStandaloneXml("standalone.xml"));
@@ -258,34 +232,7 @@ public class ParseAndMarshalModelsTestCase {
 
         compare(originalModel, reparsedModel);
     }
-    @Test
-    public void testDomainDsPropXml() throws Exception {
-        domainXmlTest(getTestXml("domain-ds.xml"));
-    }
-    @Test
-    public void testDomainDsXml() throws Exception {
-    	File file = new File("target/domain-copy.xml");
-        if (file.exists()) {
-            file.delete();
-        }
-        copyFile(getTestXml("domain-ds.xml"), file);
-    	ModelNode node=loadDomainModel(file);
-      
-        final String complexDs = "complexDs";
-        final String complexDsJndi = "java:jboss/datasources/" + complexDs;
-        Hashtable<String,String> params=hashtableWithNonXaParameters(complexDs,complexDsJndi);
-        ModelNode modelDs=node.get("profile","default","subsystem", "datasources","data-source",complexDs+"_Pool");
-        controlExpectedParameters(modelDs,params);
-        Assert.assertEquals(modelDs.asString(),"UTF-8",modelDs.get("connection-properties","char.encoding","value").asString());
-        
-        final String complexXaDs = "complexXaDs";
-        final String complexXaDsJndi = "java:jboss/xa-datasources/" + complexXaDs;
-        params=hashtableWithXaParameters(complexXaDs,complexXaDsJndi);
-        ModelNode modelXaDs=node.get("profile","ha","subsystem", "datasources","xa-data-source",complexXaDs+"_Pool");
-        controlExpectedParameters(modelXaDs,params);
-        Assert.assertEquals(modelXaDs.asString(),"jdbc:h2:mem:test",modelXaDs.get("xa-datasource-properties","URL","value").asString());
-        
-    }
+    
     @Test
     public void testDomainXml() throws Exception {
         domainXmlTest(getOriginalDomainXml("domain.xml"));
@@ -630,22 +577,7 @@ public class ParseAndMarshalModelsTestCase {
         Assert.assertTrue("Not found: " + f.getPath(), f.exists());
         return f;
     }
-    private File getTestXml(final String profile) {
-    	File f = new File( System.getProperty("jbossas.ts.submodule.dir") );
-        Assert.assertTrue(f.exists());
-        f = new File(f, "src");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "test");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "resources");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "test-configs");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, profile);
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        return f;
-    }
-
+    
     private File getDomainConfigDir() {
         //Get the standalone.xml from the build/src directory, since the one in the
         //built server could have changed during running of tests
@@ -888,121 +820,5 @@ public class ParseAndMarshalModelsTestCase {
         protected void initializeDomain(OperationContext context, ModelNode remoteDC) throws OperationFailedException {
             // no-op
         }
-    }
-    /**
-     * Returns Hashtable with common parameters for both XA and Non-XA datasource 
-     * 
-     */
-    private  Hashtable<String,String> hashtableWithCommonParameters(String datasourceName,String jndiName){
-    	Hashtable<String,String> params=new Hashtable<String,String>();
-    	//attributes
-    	params.put("use-java-context","true");
-        params.put("spy","false");
-        params.put("use-ccm","true");
-        params.put("jndi-name", jndiName);
-        //common elements
-        params.put("driver-name","h2");
-        params.put("new-connection-sql","select 1");
-        params.put("transaction-isolation","TRANSACTION_READ_COMMITTED");
-        params.put("url-delimiter",":");
-        params.put("url-selector-strategy-class-name","someClass");
-        //pool
-        params.put("min-pool-size","1");
-        params.put("max-pool-size","5");
-        params.put("pool-prefill","true");
-        params.put("pool-use-strict-min","true");
-        params.put("flush-strategy","EntirePool");
-        //security
-        params.put("user-name","sa");
-        params.put("password","sa");
-        params.put("security-domain","HsqlDbRealm");
-        params.put("reauth-plugin-class-name","someClass1");
-        //validation
-        params.put("valid-connection-checker-class-name","someClass2");
-        params.put("check-valid-connection-sql","select 1");
-        params.put("validate-on-match","true");
-        params.put("background-validation","true");
-        params.put("background-validation-millis","2000");
-        params.put("use-fast-fail","true");
-        params.put("stale-connection-checker-class-name","someClass3");
-        params.put("exception-sorter-class-name","someClass4");
-        //time-out
-        params.put("blocking-timeout-wait-millis","20000");
-        params.put("idle-timeout-minutes","4");
-        params.put("set-tx-query-timeout","true");
-        params.put("query-timeout","120");
-        params.put("use-try-lock","100");
-        params.put("allocation-retry","2");
-        params.put("allocation-retry-wait-millis","3000");
-        //statement
-        params.put("track-statements","nowarn");
-        params.put("prepared-statements-cache-size","30");
-        params.put("share-prepared-statements","true");
-    	
-    	return params;
-    }
-    /**
-     * Returns a Hashtable, containing parameters for XA datasource
-     * @param datasourceName
-     */
-    private Hashtable<String,String> hashtableWithXaParameters(String datasourceName,String jndiName){
-    	Hashtable<String,String> params=hashtableWithCommonParameters(datasourceName, jndiName);
-    	//attributes 
-        //common
-        params.put("xa-datasource-class","org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource");
-        //xa-pool
-        params.put("same-rm-override","true");
-        params.put("interleaving","true");
-        params.put("no-tx-separate-pool","true");
-        params.put("pad-xid","true");
-        params.put("wrap-xa-resource","true");
-        //time-out
-        params.put("xa-resource-timeout","120");
-        //recovery
-        params.put("no-recovery","false");
-        params.put("recovery-plugin-class-name","someClass5");
-        params.put("recovery-username","sa");
-        params.put("recovery-password","sa");
-        params.put("recovery-security-domain","HsqlDbRealm");
-        
-    	
-    	return params;
-    }
-    /**
-     * Returns a Hashtable, containing parameters for non XA datasource
-     * @param datasourceName
-     */
-    private Hashtable<String,String> hashtableWithNonXaParameters(String datasourceName,String jndiName){
-    	Hashtable<String,String> params=hashtableWithCommonParameters(datasourceName, jndiName);
-    	//attributes
-        params.put("jta","false");
-        //common
-        params.put("driver-class","org.hsqldb.jdbcDriver");
-        params.put("datasource-class","org.jboss.as.connector.subsystems.datasources.ModifiableDataSource");
-        params.put("connection-url","jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
-        
-        return params;
-    }
-    /**
-     * Controls if result of parsing contains certain parameters 
-     * @param parseChildren
-     * @param params
-     */
-    private void controlExpectedParameters(ModelNode node,Hashtable<String,String> params){
-    	String str;
-        Iterator it=params.keySet().iterator();
-        
-        StringBuffer sb = new StringBuffer();
-        String par,child;
-        while(it.hasNext()){
-        	str=(String)it.next();
-        	par=params.get(str);
-        	if (node.get(str)==null) sb.append("Parameter <"+str+"> is not set, but must be set to '"+par+"' \n");
-        	else{
-        		child= node.get(str).asString();
-        		if (!child.equals(par)) sb.append("Parameter <"+str+"> is set to '"+child+"', but must be set to '"+par+"' \n");
-        	}
-        }
-        if (sb.length()>0) Assert.fail("There are parsing errors:\n"+sb.toString()+"Parsed configuration:\n"+node);
     }
 }
