@@ -50,7 +50,8 @@ public final class EEModuleInitialProcessor implements DeploymentUnitProcessor {
         if(earApplicationName != null) {
             appName = earApplicationName;
         } else {
-            appName = moduleName;
+            //an appname of null means use the module name
+            appName = null;
         }
         deploymentUnit.putAttachment(Attachments.EE_MODULE_DESCRIPTION, new EEModuleDescription(appName, moduleName, earApplicationName));
     }

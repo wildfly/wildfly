@@ -147,6 +147,12 @@ public final class EEModuleDescription {
      * @see {@link #getEarApplicationName()}
      */
     public String getApplicationName() {
+        //if no application name is set just return the module name
+        //this means that if the module name is changed the application name
+        //will change as well
+        if(applicationName == null) {
+            return moduleName;
+        }
         return applicationName;
     }
 
