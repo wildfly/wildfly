@@ -116,7 +116,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                                     applicationClientDeploymentServiceInjectedValue.getValue().getDeploymentCompleteLatch().await();
 
                                     try {
-                                        NamespaceContextSelector.pushCurrentSelector(namespaceContextSelectorInjectedValue);
+                                        NamespaceContextSelector.setDefault(namespaceContextSelectorInjectedValue);
                                         //do static injection etc
                                         //TODO: this should be better
                                         instance = applicationClientComponent.getValue().createInstance();
@@ -125,7 +125,6 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                                         if (previousSelector != null) {
                                             EJBClientContext.setSelector(previousSelector);
                                         }
-                                        NamespaceContextSelector.popCurrentSelector();
                                     }
                                 }  catch (Exception e) {
                                     ROOT_LOGGER.exceptionRunningAppClient(e, e.getClass().getSimpleName());
