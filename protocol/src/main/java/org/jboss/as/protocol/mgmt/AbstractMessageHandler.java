@@ -26,6 +26,7 @@ import org.jboss.as.protocol.ProtocolLogger;
 import org.jboss.as.protocol.ProtocolMessages;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.MessageOutputStream;
 import org.jboss.threads.AsyncFuture;
 
@@ -192,6 +193,17 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
                     return writeHeader(header, os);
                 }
             });
+
+            channel.addCloseHandler(new CloseHandler<Channel>() {
+                @Override
+                public void handleClose(Channel closed, IOException e) {
+                    if (channel == closed) {
+                        IOException failure = e == null ? new IOException("Channel closed") : e;
+                        resultHandler.failed(failure);
+                    }
+                }
+            });
+
         } catch (Exception e) {
             resultHandler.failed(e);
         } finally {
