@@ -35,8 +35,9 @@
         <module name="javax.transaction.api"/>
         <module name="org.hibernate" slot="3" optional="true"/>  <!-- org.hibernate:3 must be created manually with Hibernate 3 jars -->
         <module name="org.hibernate.validator"/>
+        <module name="org.infinispan"/>
         <module name="org.jboss.as.jpa.spi"/>
-        <module name="org.jboss.as.naming"/>
+        <module name="org.jboss.as.server"/>
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.msc"/>

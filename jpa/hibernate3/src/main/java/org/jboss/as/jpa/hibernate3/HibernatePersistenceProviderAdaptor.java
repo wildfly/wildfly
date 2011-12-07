@@ -23,16 +23,16 @@
 package org.jboss.as.jpa.hibernate3;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 import org.hibernate.cfg.Configuration;
 import org.jboss.as.jpa.spi.JtaManager;
 import org.jboss.as.jpa.spi.ManagementAdaptor;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
-import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -42,6 +42,12 @@ import org.jboss.msc.service.ServiceName;
  */
 public class HibernatePersistenceProviderAdaptor implements PersistenceProviderAdaptor {
 
+    private static final String DEFAULT_REGION_FACTORY = "org.jboss.as.jpa.hibernate.cache.infinispan.InfinispanRegionFactory";
+    private static final String DEFAULT_CACHE_CONTAINER = "hibernate";
+    private static final String DEFAULT_ENTITY_CACHE = "entity";
+    private static final String DEFAULT_COLLECTION_CACHE = "entity";
+    private static final String DEFAULT_QUERY_CACHE = "local-query";
+    private static final String DEFAULT_TIMESTAMPS_CACHE = "timestamps";
     public static final String SCANNER = "hibernate.ejb.resource_scanner";
     private static final String HIBERNATE_ANNOTATION_SCANNER_CLASS = "org.jboss.as.jpa.hibernate3.HibernateAnnotationScanner";
 
@@ -74,29 +80,41 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
 
     @Override
     public Iterable<ServiceName> getProviderDependencies(PersistenceUnitMetadata pu) {
-        //
-        String cacheManager = pu.getProperties().getProperty("hibernate.cache.infinispan.cachemanager");
-        String useCache = pu.getProperties().getProperty("hibernate.cache.use_second_level_cache");
-        String regionFactoryClass = pu.getProperties().getProperty("hibernate.cache.region.factory_class");
-        if ((useCache != null && useCache.equalsIgnoreCase("true")) ||
-            cacheManager != null) {
-            if (regionFactoryClass == null) {
-                regionFactoryClass = "org.hibernate.cache.infinispan.JndiInfinispanRegionFactory";
-                pu.getProperties().put("hibernate.cache.region.factory_class", regionFactoryClass);
-            }
-            if (cacheManager == null) {
-                cacheManager = "java:jboss/infinispan/hibernate";
-                pu.getProperties().put("hibernate.cache.infinispan.cachemanager", cacheManager);
-            }
-            if (pu.getProperties().getProperty("hibernate.cache.region_prefix") == null) {
+        Properties properties = pu.getProperties();
+        if (Boolean.parseBoolean(properties.getProperty("hibernate.cache.use_second_level_cache"))) {
+            if (properties.getProperty("hibernate.cache.region_prefix") == null) {
                 // cache entries for this PU will be identified by scoped pu name + Entity class name
-                pu.getProperties().put("hibernate.cache.region_prefix", pu.getScopedPersistenceUnitName());
+                properties.put("hibernate.cache.region_prefix", pu.getScopedPersistenceUnitName());
             }
-            ArrayList<ServiceName> result = new ArrayList<ServiceName>();
-            result.add(ContextNames.bindInfoFor(toJndiName(cacheManager).toString()).getBinderServiceName());
-            return result;
+            String regionFactory = properties.getProperty("hibernate.cache.region.factory_class");
+            if (regionFactory == null) {
+                regionFactory = DEFAULT_REGION_FACTORY;
+                properties.setProperty("hibernate.cache.region.factory_class", regionFactory);
+            }
+            if (regionFactory.equals(DEFAULT_REGION_FACTORY)) {
+                // Set infinispan defaults
+                String container = properties.getProperty("hibernate.cache.infinispan.container");
+                if (container == null) {
+                    container = DEFAULT_CACHE_CONTAINER;
+                    properties.setProperty("hibernate.cache.infinispan.container", container);
+                }
+                String entity = properties.getProperty("hibernate.cache.infinispan.entity.cfg", DEFAULT_ENTITY_CACHE);
+                String collection = properties.getProperty("hibernate.cache.infinispan.collection.cfg", DEFAULT_COLLECTION_CACHE);
+                String query = properties.getProperty("hibernate.cache.infinispan.query.cfg", DEFAULT_QUERY_CACHE);
+                String timestamps = properties.getProperty("hibernate.cache.infinispan.timestamps.cfg", DEFAULT_TIMESTAMPS_CACHE);
+                Set<ServiceName> result = new HashSet<ServiceName>();
+                result.add(this.getCacheConfigServiceName(container, entity));
+                result.add(this.getCacheConfigServiceName(container, collection));
+                result.add(this.getCacheConfigServiceName(container, timestamps));
+                result.add(this.getCacheConfigServiceName(container, query));
+                return result;
+            }
         }
         return null;
+    }
+
+    private ServiceName getCacheConfigServiceName(String container, String cache) {
+        return ServiceName.JBOSS.append("infinispan", container, "config", cache);
     }
 
     private void putPropertyIfAbsent(Map properties, String property, Object value) {
@@ -105,15 +123,11 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
         }
     }
 
-    private static JndiName toJndiName(String value) {
-        return value.startsWith("java:") ? JndiName.of(value) : JndiName.of("java:jboss").append(value.startsWith("/") ? value.substring(1) : value);
-    }
-
     @Override
     public void beforeCreateContainerEntityManagerFactory(PersistenceUnitMetadata pu) {
         if (pu.getProperties().containsKey(SCANNER)) {
             try {
-                Class scanner = Configuration.class.getClassLoader().loadClass(HIBERNATE_ANNOTATION_SCANNER_CLASS);
+                Class<?> scanner = Configuration.class.getClassLoader().loadClass(HIBERNATE_ANNOTATION_SCANNER_CLASS);
                 // get method for public static void setThreadLocalPersistenceUnitMetadata(final PersistenceUnitMetadata pu) {
                 Method setThreadLocalPersistenceUnitMetadata = scanner.getMethod("setThreadLocalPersistenceUnitMetadata", PersistenceUnitMetadata.class);
                 setThreadLocalPersistenceUnitMetadata.invoke(null, pu);
@@ -128,9 +142,9 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
         if (pu.getProperties().containsKey(SCANNER)) {
             // clear backdoor annotation scanner access to pu
             try {
-                Class scanner = Configuration.class.getClassLoader().loadClass(HIBERNATE_ANNOTATION_SCANNER_CLASS);
+                Class<?> scanner = Configuration.class.getClassLoader().loadClass(HIBERNATE_ANNOTATION_SCANNER_CLASS);
                 // get method for public static void clearThreadLocalPersistenceUnitMetadata() {
-                Method clearThreadLocalPersistenceUnitMetadata = scanner.getMethod("clearThreadLocalPersistenceUnitMetadata", null);
+                Method clearThreadLocalPersistenceUnitMetadata = scanner.getMethod("clearThreadLocalPersistenceUnitMetadata");
                 clearThreadLocalPersistenceUnitMetadata.invoke(null);
             } catch (Throwable ignore) {
             }
@@ -141,6 +155,5 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
     public ManagementAdaptor getManagementAdaptor() {
         return null;
     }
-
 }
 

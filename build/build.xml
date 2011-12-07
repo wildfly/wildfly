@@ -578,7 +578,6 @@
             <maven-resource group="org.hibernate" artifact="hibernate-core" />
             <maven-resource group="org.hibernate.common" artifact="hibernate-commons-annotations" />
             <maven-resource group="org.hibernate" artifact="hibernate-entitymanager" />
-            <maven-resource group="org.hibernate" artifact="hibernate-infinispan" />
         </module-def>
 
         <module-def name="org.hibernate.envers">
@@ -732,10 +731,14 @@
 
         <module-def name="org.jboss.as.jpa.hibernate" slot="3">
             <maven-resource group="org.jboss.as" artifact="jboss-as-jpa-hibernate3"/>
+            <maven-resource group="org.hibernate" artifact="hibernate-infinispan"/>
+            <maven-resource group="org.jboss.as" artifact="jboss-as-jpa-hibernate-infinispan"/>
         </module-def>
 
         <module-def name="org.jboss.as.jpa.hibernate" slot="4">
             <maven-resource group="org.jboss.as" artifact="jboss-as-jpa-hibernate4"/>
+            <maven-resource group="org.hibernate" artifact="hibernate-infinispan"/>
+            <maven-resource group="org.jboss.as" artifact="jboss-as-jpa-hibernate-infinispan"/>
         </module-def>
 
         <module-def name="org.jboss.as.jpa.openjpa">
