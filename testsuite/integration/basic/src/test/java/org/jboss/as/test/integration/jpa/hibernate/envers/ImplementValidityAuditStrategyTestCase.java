@@ -42,11 +42,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
+ * This testcase verifies whether Envers/Auditing functions properly when implemented with Validity Audit Strategy
+ * 
  * @author Madhumita Sadhukhan
  */
 @RunWith(Arquillian.class)
 public class ImplementValidityAuditStrategyTestCase {
-    private static final String ARCHIVE_NAME = "jpa_BasicSelectiveEnversTestCase";
+    private static final String ARCHIVE_NAME = "jpa_ImplementValidityAuditStrategyTestCase";
 
     private static final String persistence_xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> "
             + "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">"
@@ -90,7 +92,6 @@ public class ImplementValidityAuditStrategyTestCase {
         o2.setName("BIKANER");
 
         slsbvalidityOrg.updateOrg(o2);
-        // slsbvalidityOrg.deleteOrg( o2 );
 
         Organization ret1 = slsbvalidityOrg.retrieveOldOrgbyId(o2.getId());
         // check that property startDate is audited

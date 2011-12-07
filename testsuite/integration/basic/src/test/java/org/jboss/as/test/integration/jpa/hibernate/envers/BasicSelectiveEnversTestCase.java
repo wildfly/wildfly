@@ -91,7 +91,7 @@ public class BasicSelectiveEnversTestCase {
         testEnversOperationonDelete(o1, slsbOrg);
     }
 
-    public void testSelectiveEnversOperationonAuditedandNonAuditedProperty(Organization o2, SLSBOrg slsbOrg) throws Exception {
+    private void testSelectiveEnversOperationonAuditedandNonAuditedProperty(Organization o2, SLSBOrg slsbOrg) throws Exception {
 
         Organization ret1 = slsbOrg.retrieveOldOrgbyId(o2.getId());
         // check that property startDate is audited
@@ -102,7 +102,7 @@ public class BasicSelectiveEnversTestCase {
 
     }
 
-    public void testSelectiveEnversOperationonFetchbyEntityName(Organization o2, SLSBOrg slsbOrg) throws Exception {
+    private void testSelectiveEnversOperationonFetchbyEntityName(Organization o2, SLSBOrg slsbOrg) throws Exception {
 
         Organization ret1 = slsbOrg.retrieveOldOrgbyEntityName(Organization.class.getName(), o2.getId());
         // check that fetch by Entityname works
@@ -111,7 +111,7 @@ public class BasicSelectiveEnversTestCase {
 
     }
 
-    public void testEnversOperationonDelete(Organization o1, SLSBOrg slsbOrg) throws Exception {
+    private void testEnversOperationonDelete(Organization o1, SLSBOrg slsbOrg) throws Exception {
 
         Organization ret1 = slsbOrg.retrieveDeletedOrgbyId(o1.getId());
         // check that revisions of deleted entity can be retrieved
