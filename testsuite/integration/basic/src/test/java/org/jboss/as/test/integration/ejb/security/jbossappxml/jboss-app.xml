@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE jboss-app PUBLIC "-//JBoss//DTD J2EE Application 4.2//EN" "http://www.jboss.org/j2ee/dtd/jboss-app_4_2.dtd">
+<jboss-app>
+  <security-domain>mydomain</security-domain>
+  <security-role>
+    <role-name>Administrator</role-name>
+    <principal-name>j2ee</principal-name>
+  </security-role>
+  <security-role>
+    <role-name>Manager</role-name>
+    <principal-name>javajoe</principal-name>
+  </security-role>
+  <security-role>
+    <role-name>Employee</role-name>
+    <principal-name>javajoe</principal-name>
+    <principal-name>j2ee</principal-name>
+  </security-role>
+</jboss-app>

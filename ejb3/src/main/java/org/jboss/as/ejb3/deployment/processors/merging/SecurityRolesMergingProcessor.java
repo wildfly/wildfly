@@ -25,20 +25,26 @@ package org.jboss.as.ejb3.deployment.processors.merging;
 import java.util.List;
 
 import org.jboss.as.ee.component.EEApplicationClasses;
+import org.jboss.as.ee.structure.Attachments;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.metadata.ear.jboss.JBossAppMetaData;
+import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.metadata.ejb.spec.AssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
+import org.jboss.metadata.merge.javaee.spec.SecurityRolesMetaDataMerger;
 
 /**
  * A processor which sets the {@link EJBComponentDescription#setSecurityRoles(org.jboss.metadata.javaee.spec.SecurityRolesMetaData)}
  * with the principal to role mapping defined in the assembly descriptor section of the jboss-ejb3.xml via elements from
- * urn:security-roles namespace
+ * urn:security-roles namespace.
+ *
+ * Additionally, we also merge the security roles metadata from the ear.
  *
  * @author Jaikiran Pai
  * @see {@link org.jboss.as.ejb3.security.parser.SecurityRoleMetaDataParser}
@@ -56,6 +62,7 @@ public class SecurityRolesMergingProcessor extends AbstractMergingProcessor<EJBC
 
     @Override
     protected void handleDeploymentDescriptor(DeploymentUnit deploymentUnit, DeploymentReflectionIndex deploymentReflectionIndex, Class<?> componentClass, EJBComponentDescription ejbComponentDescription) throws DeploymentUnitProcessingException {
+        final SecurityRolesMetaData roleMappings = new SecurityRolesMetaData();
         final EjbJarMetaData ejbJarMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
         if (ejbJarMetaData != null) {
             final AssemblyDescriptorMetaData assemblyDescriptorMetaData = ejbJarMetaData.getAssemblyDescriptor();
@@ -64,14 +71,41 @@ public class SecurityRolesMergingProcessor extends AbstractMergingProcessor<EJBC
             }
             // get the mapping between principal to rolename, defined in the assembly descriptor
             final List<SecurityRoleMetaData> securityRoleMetaDatas = assemblyDescriptorMetaData.getAny(SecurityRoleMetaData.class);
-            final SecurityRolesMetaData roleMappings = new SecurityRolesMetaData();
             if (securityRoleMetaDatas != null) {
                 for (SecurityRoleMetaData securityRoleMetaData : securityRoleMetaDatas) {
                     roleMappings.add(securityRoleMetaData);
                 }
             }
-            // add it to the EJB component description
-            ejbComponentDescription.setSecurityRoles(roleMappings);
         }
+        //Let us look at the ear metadata also
+        DeploymentUnit parent = deploymentUnit.getParent();
+        if(parent != null){
+            final EarMetaData earMetaData = parent.getAttachment(Attachments.EAR_METADATA);
+            final JBossAppMetaData jbossAppMetaData = parent.getAttachment(Attachments.JBOSS_APP_METADATA);
+            if(earMetaData != null  || jbossAppMetaData != null){
+                if(earMetaData != null && jbossAppMetaData == null){
+                    SecurityRolesMetaData earSecurityRolesMetaData = earMetaData.getSecurityRoles();
+                    if(earSecurityRolesMetaData != null){
+                        SecurityRolesMetaDataMerger.merge(roleMappings, roleMappings, earSecurityRolesMetaData);
+                    }
+                }
+                if(earMetaData == null && jbossAppMetaData != null){
+                    SecurityRolesMetaData jbossAppSecurityRolesMetaData = jbossAppMetaData.getSecurityRoles();
+                    if(jbossAppSecurityRolesMetaData != null){
+                        SecurityRolesMetaDataMerger.merge(roleMappings, roleMappings, jbossAppSecurityRolesMetaData);
+                    }
+                }
+                if(earMetaData != null && jbossAppMetaData != null){
+                    SecurityRolesMetaData earSecurityRolesMetaData = earMetaData.getSecurityRoles();
+                    SecurityRolesMetaData jbossAppSecurityRolesMetaData = jbossAppMetaData.getSecurityRoles();
+
+                    SecurityRolesMetaData earLevelMergedSecurityRolesMD = new SecurityRolesMetaData();
+                    SecurityRolesMetaDataMerger.merge(earLevelMergedSecurityRolesMD, jbossAppSecurityRolesMetaData, earSecurityRolesMetaData);
+                    SecurityRolesMetaDataMerger.merge(roleMappings, roleMappings, earLevelMergedSecurityRolesMD);
+                }
+            }
+        }
+        // add it to the EJB component description
+        ejbComponentDescription.setSecurityRoles(roleMappings);
     }
 }

@@ -26,6 +26,7 @@ import java.util.List;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.metadata.ClassAnnotationInformation;
+import org.jboss.as.ee.structure.Attachments;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.security.metadata.EJBBoundSecurityMetaData;
@@ -33,8 +34,10 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.ejb3.annotation.SecurityDomain;
+import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.metadata.ejb.spec.AssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
+
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 
 /**
@@ -68,7 +71,7 @@ public class SecurityDomainMergingProcessor extends AbstractMergingProcessor<EJB
 
     @Override
     protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final EJBComponentDescription description) throws DeploymentUnitProcessingException {
-        String securityDomain = null;
+        String securityDomain = getJBossAppSecurityDomain(deploymentUnit);
         String globalSecurityDomain = null;
         final EjbJarMetaData ejbJarMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
         if (ejbJarMetaData != null) {
@@ -94,5 +97,22 @@ public class SecurityDomainMergingProcessor extends AbstractMergingProcessor<EJB
             description.setSecurityDomain(securityDomain);
         else if (globalSecurityDomain != null)
             description.setSecurityDomain(globalSecurityDomain);
+    }
+
+    /**
+     * Try to obtain the security domain configured in jboss-app.xml at the ear level if available
+     * @param deploymentUnit
+     * @return
+     */
+    private String getJBossAppSecurityDomain(final DeploymentUnit deploymentUnit){
+        String securityDomain = null;
+        DeploymentUnit parent = deploymentUnit.getParent();
+        if(parent != null){
+            final JBossAppMetaData jbossAppMetaData = parent.getAttachment(Attachments.JBOSS_APP_METADATA);
+            if(jbossAppMetaData != null){
+                securityDomain = jbossAppMetaData.getSecurityDomain();
+            }
+        }
+        return securityDomain;
     }
 }

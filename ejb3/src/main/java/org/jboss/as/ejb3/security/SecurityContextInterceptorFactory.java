@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.security;
 
+import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.ee.component.Component;
@@ -35,9 +36,9 @@ import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * @author Anil Saldhana
  */
 public class SecurityContextInterceptorFactory extends ComponentInterceptorFactory {
-
 
     @Override
     protected Interceptor create(final Component component, final InterceptorFactoryContext context) {
@@ -59,9 +60,16 @@ public class SecurityContextInterceptorFactory extends ComponentInterceptorFacto
         final String runAsPrincipal = securityMetaData.getRunAsPrincipal();
         final SecurityRolesMetaData securityRoles = securityMetaData.getSecurityRoles();
         Set<String> extraRoles = null;
+        Map<String,Set<String>> principalVsRolesMap = null;
         if (securityRoles != null && runAsPrincipal != null) {
+            principalVsRolesMap = securityRoles.getPrincipalVersusRolesMap();
             extraRoles = securityRoles.getSecurityRoleNamesByPrincipal(runAsPrincipal);
         }
-        return new SecurityContextInterceptor(securityManager, securityDomain, runAs, runAsPrincipal, extraRoles);
+        SecurityContextInterceptorHolder holder = new SecurityContextInterceptorHolder();
+        holder.setSecurityManager(securityManager).setSecurityDomain(securityDomain)
+        .setRunAs(runAs).setRunAsPrincipal(runAsPrincipal)
+        .setExtraRoles(extraRoles).setPrincipalVsRolesMap(principalVsRolesMap);
+
+        return new SecurityContextInterceptor(holder);
     }
 }
