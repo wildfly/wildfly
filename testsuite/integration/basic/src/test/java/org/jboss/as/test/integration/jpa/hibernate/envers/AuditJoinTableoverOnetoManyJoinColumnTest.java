@@ -103,7 +103,7 @@ public class AuditJoinTableoverOnetoManyJoinColumnTest {
 
     }
 
-    public void testRevisionDatafromAuditJoinTable(Customer c1, SLSBAudit sb) throws Exception {
+    private void testRevisionDatafromAuditJoinTable(Customer c1, SLSBAudit sb) throws Exception {
 
         // fetch REV
         List<Object> custHistory = sb.verifyRevision(c1.getId());
@@ -131,7 +131,7 @@ public class AuditJoinTableoverOnetoManyJoinColumnTest {
 
     }
 
-    public void testRevisionTypefromAuditJoinTable(Customer c1, SLSBAudit sb) throws Exception {
+    private void testRevisionTypefromAuditJoinTable(Customer c1, SLSBAudit sb) throws Exception {
 
         // fetch REVType
         List<Object> custRevision = sb.verifyRevisionType(c1.getId());
@@ -149,7 +149,7 @@ public class AuditJoinTableoverOnetoManyJoinColumnTest {
 
     }
 
-    public void testOtherFieldslikeForeignKeysfromAuditJoinTable(Customer c1, SLSBAudit sb) throws Exception {
+    private void testOtherFieldslikeForeignKeysfromAuditJoinTable(Customer c1, SLSBAudit sb) throws Exception {
 
         List<Object> phHistory = sb.verifyOtherFields(c1.getId());
         Assert.assertNotNull(phHistory);

@@ -100,7 +100,6 @@ public class AuditJoinTableoverBidirectionalTest {
         p3.setCustomer(c1);
         slsbAudit.updatePhone(p3);
         c1.getPhones().add(p3);
-        System.out.println("PhoneList size::" + c1.getPhones().size());
 
         slsbAudit.updateCustomer(c1);
 
