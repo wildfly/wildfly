@@ -24,29 +24,32 @@ package org.jboss.as.ejb3.security;
 import static java.security.AccessController.doPrivileged;
 
 import java.security.PrivilegedAction;
-import java.util.Set;
 
 import javax.ejb.EJBAccessException;
 
-import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.security.SecurityRolesAssociation;
 
 /**
  * Establish the security context.
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * @author Anil Saldhana
  */
 public class SecurityContextInterceptor implements Interceptor {
     private final PrivilegedAction<Void> pushAction;
     private final PrivilegedAction<Void> popAction;
 
-    public SecurityContextInterceptor(final SimpleSecurityManager securityManager, final String securityDomain, final String runAs, final String runAsPrincipal, final Set<String> extraRoles) {
+    public SecurityContextInterceptor(final SecurityContextInterceptorHolder holder) {
         this.pushAction = new PrivilegedAction<Void>() {
             @Override
             public Void run() {
                 try {
-                    securityManager.push(securityDomain, runAs, runAsPrincipal, extraRoles);
+                    holder.securityManager.push(holder.securityDomain, holder.runAs, holder.runAsPrincipal, holder.extraRoles);
+                    if(holder.principalVsRolesMap != null){
+                        SecurityRolesAssociation.setSecurityRoles(holder.principalVsRolesMap);
+                    }
                 } catch (SecurityException e) {
                     throw new EJBAccessException(e.getMessage());
                 }
@@ -56,7 +59,7 @@ public class SecurityContextInterceptor implements Interceptor {
         this.popAction = new PrivilegedAction<Void>() {
             @Override
             public Void run() {
-                securityManager.pop();
+                holder.securityManager.pop();
                 return null;
             }
         };
