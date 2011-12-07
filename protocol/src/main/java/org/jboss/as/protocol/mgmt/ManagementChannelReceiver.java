@@ -34,6 +34,7 @@ import java.io.Closeable;
 import java.io.DataInput;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -56,11 +57,6 @@ public abstract class ManagementChannelReceiver implements ManagementMessageHand
             @Override
             public void handleMessage(Channel channel, DataInput input, ManagementProtocolHeader header) throws IOException {
                 handler.handleMessage(channel, input, header);
-            }
-
-            @Override
-            public void handleShutdownChannel(Channel channel) {
-                handler.handleShutdownChannel(channel);
             }
         };
     }
@@ -127,9 +123,28 @@ public abstract class ManagementChannelReceiver implements ManagementMessageHand
         }
     }
 
+    /**
+     * Handle the legacy bye-bye notification.
+     *
+     * @param channel the channel the bye-bye message was received
+     */
+    protected void handleShutdownChannel(Channel channel) {
+        //
+    }
+
     @Override
     public void shutdown() {
         //
+    }
+
+    @Override
+    public void shutdownNow() {
+        //
+    }
+
+    @Override
+    public boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     /**

@@ -22,8 +22,6 @@
 package org.jboss.as.controller.remote;
 
 import org.jboss.as.controller.client.impl.AbstractModelControllerClient;
-import org.jboss.as.protocol.mgmt.ManagementChannel;
-import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.remoting3.Channel;
 
 import java.io.IOException;
@@ -49,6 +47,6 @@ public class ExistingChannelModelControllerClient extends AbstractModelControlle
 
     @Override
     public void close() throws IOException {
-        super.shutdown();
+        super.shutdownNow();
     }
 }

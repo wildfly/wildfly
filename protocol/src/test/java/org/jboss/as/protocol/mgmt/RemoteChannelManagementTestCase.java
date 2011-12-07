@@ -21,8 +21,10 @@
 */
 package org.jboss.as.protocol.mgmt;
 
+import java.io.DataInput;
 import java.io.IOException;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -193,6 +195,34 @@ public class RemoteChannelManagementTestCase {
             //
         }
         Assert.assertEquals(future.getStatus(), AsyncFuture.Status.CANCELLED);
+    }
+
+    @Test
+    public void testAwaitCompletion() throws Exception {
+        final CountDownLatch latch = new CountDownLatch(1);
+        final SimpleClient client = SimpleClient.create(channels);
+        final SimpleHandlers.Request request = new SimpleHandlers.Request(SimpleHandlers.SIMPLE_REQUEST, 600) {
+            @Override
+            public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<Integer> resultHandler, final ManagementRequestContext<Void> context) throws IOException {
+                final int i = input.readInt();
+                context.executeAsync(new ManagementRequestContext.AsyncTask<Void>() {
+                    @Override
+                    public void execute(ManagementRequestContext<Void> voidManagementRequestContext) throws Exception {
+                        latch.await();
+                        resultHandler.done(i);
+                    }
+                });
+            }
+        };
+        final AsyncFuture<Integer> future = client.execute(request);
+        final AsyncFuture.Status completed = future.await(1, TimeUnit.SECONDS);
+        Assert.assertEquals(completed, AsyncFuture.Status.WAITING);
+        client.shutdown();
+        boolean done = client.awaitCompletion(1, TimeUnit.SECONDS);
+        Assert.assertFalse(done);
+        latch.countDown();
+        done = client.awaitCompletion(2, TimeUnit.SECONDS);
+        Assert.assertTrue(done);
     }
 
 }

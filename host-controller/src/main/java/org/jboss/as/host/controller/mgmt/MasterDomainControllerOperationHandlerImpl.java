@@ -56,12 +56,10 @@ import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
-import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.as.protocol.mgmt.RequestProcessingException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
-import org.jboss.remoting3.MessageOutputStream;
 
 /**
  * Handles for requests from slave DC to master DC on the 'domain' channel.
@@ -118,11 +116,6 @@ public class MasterDomainControllerOperationHandlerImpl extends ManagementChanne
         }
     }
 
-    @Override
-    public void handleShutdownChannel(Channel channel) {
-        //
-    }
-
     private class RegisterOperation extends AbstractHostRequestHandler {
         String error;
 
@@ -140,7 +133,7 @@ public class MasterDomainControllerOperationHandlerImpl extends ManagementChanne
                                 mgmtChannel.addCloseHandler(new CloseHandler<Channel>() {
                                     @Override
                                     public void handleClose(Channel closed, IOException exception) {
-                                        handler.shutdown();
+                                        handler.shutdownNow();
                                     }
                                 });
                             }

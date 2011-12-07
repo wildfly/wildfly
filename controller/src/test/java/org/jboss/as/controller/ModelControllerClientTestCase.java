@@ -32,6 +32,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -344,14 +345,24 @@ public class ModelControllerClientTestCase {
         }
 
         @Override
-        public void handleShutdownChannel(Channel channel) {
-            //
-        }
-
-        @Override
         public void shutdown() {
             if(delegate != null) {
                 delegate.shutdown();
+            }
+        }
+
+        @Override
+        public boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException {
+            if(delegate != null) {
+                return delegate.awaitCompletion(timeout, unit);
+            }
+            return true;
+        }
+
+        @Override
+        public void shutdownNow() {
+            if(delegate != null) {
+                delegate.shutdownNow();
             }
         }
     }

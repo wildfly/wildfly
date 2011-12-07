@@ -341,7 +341,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         final AbstractMessageHandler handler = this.handler;
         if(handler != null) {
             // discard all active operations
-            handler.shutdown();
+            handler.shutdownNow();
         }
 
         if (!shutdown.get()) {

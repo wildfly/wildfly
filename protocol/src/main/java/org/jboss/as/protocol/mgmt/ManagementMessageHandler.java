@@ -26,6 +26,7 @@ import org.jboss.remoting3.Channel;
 
 import java.io.DataInput;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Emanuel Muckenhuber
@@ -43,16 +44,23 @@ public interface ManagementMessageHandler {
     void handleMessage(Channel channel, DataInput input, ManagementProtocolHeader header) throws IOException;
 
     /**
-     * Handle a shutdown notification on a channel. This usually signals to not
-     * create new sessions using this channel.
-     *
-     * @param channel the channel
-     */
-    void handleShutdownChannel(Channel channel);
-
-    /**
-     * Shutdown all active operations.
+     * Don't allow new operations, but still allow requests for existing ones.
      */
     void shutdown();
+
+    /**
+     * This will attempt to cancel all active operations, without waiting for their completion.
+     */
+    void shutdownNow();
+
+    /**
+     * Await the completion of all currently active operations.
+     *
+     * @param timeout the timeout
+     * @param unit the time unit
+     * @return {@code } false if the timeout was reached and there were still active operations
+     * @throws InterruptedException
+     */
+    boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException;
 
 }

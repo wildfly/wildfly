@@ -37,6 +37,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -111,26 +112,24 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
             }
         } else {
             // Handle requests (or other messages)
-            final ManagementRequestHeader requestHeader = validateRequest(header);
-            final ActiveOperation<T, A> support = getActiveOperation(requestHeader);
-            if(support == null) {
-                safeWriteErrorResponse(channel, header, ProtocolMessages.MESSAGES.responseHandlerNotFound(requestHeader.getBatchId()));
-                return; // TODO we might want to close the channel?
-            }
-            final ManagementRequestHandler<T, A> handler = getRequestHandler(requestHeader.getOperationId());
-            if(handler == null) {
-                safeWriteErrorResponse(channel, header, ProtocolMessages.MESSAGES.responseHandlerNotFound(requestHeader.getBatchId()));
-                // TODO This might also be a failure for the current active operation?
-                return; // TODO we might want to close the channel?
-            } else {
-                handleMessage(channel, input, requestHeader, support, handler);
+            try {
+                final ManagementRequestHeader requestHeader = validateRequest(header);
+                final ActiveOperation<T, A> support = getActiveOperation(requestHeader);
+                if(support == null) {
+                    safeWriteErrorResponse(channel, header, ProtocolMessages.MESSAGES.responseHandlerNotFound(requestHeader.getBatchId()));
+                    return;
+                }
+                final ManagementRequestHandler<T, A> handler = getRequestHandler(requestHeader.getOperationId());
+                if(handler == null) {
+                    // TODO This might also be a failure for the current active operation?
+                    safeWriteErrorResponse(channel, header, ProtocolMessages.MESSAGES.responseHandlerNotFound(requestHeader.getBatchId()));
+                } else {
+                    handleMessage(channel, input, requestHeader, support, handler);
+                }
+            } catch (Exception e) {
+                safeWriteErrorResponse(channel, header, e);
             }
         }
-    }
-
-    @Override
-    public void handleShutdownChannel(Channel channel) {
-        // TODO associate request with the channel...
     }
 
     /**
@@ -211,8 +210,6 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
 
         } catch (Exception e) {
             resultHandler.failed(e);
-        } finally {
-            // none
         }
         return support.getResult();
     }
@@ -286,17 +283,32 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
         } catch (Exception e) {
             resultHandler.failed(e);
             safeWriteErrorResponse(channel, header, e);
-        } finally {
-            // none
         }
     }
 
     /**
-     * Shutdown active operation.
+     * {@inheritDoc}
      */
     @Override
     public void shutdown() {
+        super.shutdown();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void shutdownNow() {
+        shutdown();
         cancelAllActiveOperations();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException {
+        return super.awaitCompletion(timeout, unit);
     }
 
     /**
@@ -311,7 +323,7 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
             try {
                 writeErrorResponse(channel, (ManagementRequestHeader) header, error);
             } catch(IOException ioe) {
-                //
+                ProtocolLogger.ROOT_LOGGER.tracef(ioe, "failed to write error response for %s on channel: %s", header, channel);
             }
         }
     }

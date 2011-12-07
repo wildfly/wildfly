@@ -355,14 +355,13 @@ public interface ProtocolMessages {
     IOException writesAlreadyShutdown();
 
     /**
-     * Creates an exception indicating that no active operation with the given
-     * id is registered.
+     * Creates an exception indicating that the operation id is already taken.
      *
      * @param operationId the operation id
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 12172, value = "No active operation with id %d registered")
-    IllegalStateException noActiveOperation(int operationId);
+    @Message(id = 12172, value = "Operation with id %d already registered")
+    IllegalStateException operationIdAlreadyExists(int operationId);
 
     @Message(id = 12173, value = "Null executor")
     IllegalArgumentException nullExecutor();

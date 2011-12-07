@@ -67,7 +67,7 @@ public class RemoteChannelProxyControllerTestCase extends AbstractProxyControlle
         clientChannel.addCloseHandler(new CloseHandler<Channel>() {
             @Override
             public void handleClose(Channel closed, IOException exception) {
-                proxyController.shutdown();
+                proxyController.shutdownNow();
             }
         });
         clientChannel.receiveMessage(ManagementChannelReceiver.createDelegating(proxyController));

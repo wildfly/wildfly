@@ -26,7 +26,6 @@ import java.io.DataInput;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
@@ -80,7 +79,7 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         channel.addCloseHandler(new CloseHandler<Channel>() {
             @Override
             public void handleClose(final Channel closed, final IOException exception) {
-                handler.shutdown();
+                handler.shutdownNow();
             }
         });
         // Notify MSC asynchronously when the server gets registered

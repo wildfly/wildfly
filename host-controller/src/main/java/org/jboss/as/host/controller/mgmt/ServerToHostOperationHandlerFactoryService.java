@@ -145,7 +145,7 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
                                 channel.addCloseHandler(new CloseHandler<Channel>() {
                                     @Override
                                     public void handleClose(Channel closed, IOException exception) {
-                                        handler.shutdown();
+                                        handler.shutdownNow();
                                     }
                                 });
                                 final Channel.Receiver receiver = ManagementChannelReceiver.createDelegating(handler);
@@ -161,11 +161,6 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
                 safeWriteResponse(channel, header, new IOException("unrecognized type " + type));
                 channel.close();
             }
-        }
-
-        @Override
-        public void handleShutdownChannel(Channel channel) {
-            //
         }
 
         @Override

@@ -24,6 +24,7 @@ package org.jboss.as.controller.client.impl;
 
 import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
 
+import java.io.DataInput;
 import java.io.IOException;
 import java.net.URI;
 
@@ -32,6 +33,7 @@ import org.jboss.as.controller.client.ModelControllerClientConfiguration;
 import org.jboss.as.protocol.ProtocolChannelSetup;
 import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
+import org.jboss.as.protocol.mgmt.ManagementProtocolHeader;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.Remoting;
@@ -70,18 +72,7 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
                 strategy.close();
                 strategy = null;
             }
-            super.shutdown();
-        }
-    }
-
-    @Override
-    public synchronized void handleShutdownChannel(Channel channel) {
-        if (closed) {
-            return;
-        }
-        if(strategy != null) {
-            // Notify the channel strategy to not use this channel any more
-            strategy.switchChannel(channel);
+            super.shutdownNow();
         }
     }
 
@@ -101,8 +92,7 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
                 configuration.setEndpointName("management-client");
 
                 final ProtocolChannelSetup setup = ProtocolChannelSetup.create(configuration);
-                final Channel.Receiver receiver = ManagementChannelReceiver.createDelegating(this);
-                strategy = ManagementClientChannelStrategy.create(setup, receiver, clientConfiguration.getCallbackHandler(), clientConfiguration.getSaslOptions());
+                strategy = ManagementClientChannelStrategy.create(setup, this, clientConfiguration.getCallbackHandler(), clientConfiguration.getSaslOptions());
             } catch (IOException e) {
                 throw e;
             } catch (RuntimeException e) {

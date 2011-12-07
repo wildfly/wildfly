@@ -26,12 +26,11 @@ import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
-import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
 import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementProtocolHeader;
@@ -209,11 +208,19 @@ public class SimpleHandlers {
             channel.addCloseHandler(new CloseHandler<Channel>() {
                 @Override
                 public void handleClose(Channel closed, IOException exception) {
-                    client.shutdown();
+                    client.shutdownNow();
                 }
             });
             channel.receiveMessage(ManagementChannelReceiver.createDelegating(client));
             return client;
+        }
+
+        public void shutdown() {
+            super.shutdown();
+        }
+
+        public boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException {
+            return super.awaitCompletion(timeout, unit);
         }
 
         public static SimpleClient create(final RemotingChannelPairSetup setup) {

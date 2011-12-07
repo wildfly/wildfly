@@ -25,12 +25,10 @@ package org.jboss.as.controller.remote;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
-import org.jboss.as.protocol.mgmt.ManagementProtocolHeader;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.HandleableCloseable;
 
-import java.io.DataInput;
 import java.io.IOException;
 
 /**
@@ -48,7 +46,7 @@ public class ModelControllerClientOperationHandlerFactoryService extends Abstrac
         return channel.addCloseHandler(new CloseHandler<Channel>() {
             @Override
             public void handleClose(Channel closed, IOException exception) {
-                handler.shutdown();
+                handler.shutdownNow();
             }
         });
     }

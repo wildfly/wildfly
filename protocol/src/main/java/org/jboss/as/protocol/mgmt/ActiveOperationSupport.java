@@ -30,9 +30,12 @@ import org.jboss.threads.AsyncFutureTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * Management operation support.
+ * Management operation support, which encapsulates all active operations.
  *
  * @author Emanuel Muckenhuber
  */
@@ -65,8 +68,14 @@ class ActiveOperationSupport<T, A> {
     };
 
     private final Executor executor;
-    private final ManagementBatchIdManager operationIdManager = ManagementBatchIdManager.DEFAULT;
     private final ConcurrentMap<Integer, ActiveOperationImpl<T, A>> activeRequests = new ConcurrentHashMap<Integer, ActiveOperationImpl<T, A>>();
+    private final ManagementBatchIdManager operationIdManager = new ManagementBatchIdManager.DefaultManagementBatchIdManager();
+
+    private final ReentrantLock lock = new ReentrantLock();
+    private final Condition condition = lock.newCondition();
+    // mutable variables, have to be guarded by the lock
+    private int activeCount = 0;
+    private volatile boolean shutdown = false;
 
     protected ActiveOperationSupport(final Executor executor) {
         this.executor = executor != null ? executor : directExecutor;
@@ -90,16 +99,15 @@ class ActiveOperationSupport<T, A> {
      * @return the active operation
      */
     protected ActiveOperation<T, A> registerActiveOperation(A attachment, ActiveOperation.CompletedCallback<T> callback) {
-        final Integer i = operationIdManager.createBatchId();
-        return registerActiveOperation(i, attachment, callback);
+        return registerActiveOperation(null, attachment, callback);
     }
 
     /**
      * Register an active operation with a specific operation id.
      *
      * @param id the operation id
-     * @param attachment the shared attachemnt
-     * @return
+     * @param attachment the shared attachment
+     * @return the created active operation
      */
     protected ActiveOperation<T, A> registerActiveOperation(final Integer id, A attachment) {
         return registerActiveOperation(id, attachment, NO_OP_CALLBACK);
@@ -111,15 +119,33 @@ class ActiveOperationSupport<T, A> {
      * @param id the operation id
      * @param attachment the shared attachment
      * @param callback the completed callback
-     * @return the active operation
+     * @return the created active operation
      */
     protected ActiveOperation<T, A> registerActiveOperation(final Integer id, A attachment, ActiveOperation.CompletedCallback<T> callback) {
-        final ActiveOperationImpl<T, A> request = new ActiveOperationImpl(id, attachment, callback);
-        final ActiveOperation<?, ?> existing =  activeRequests.putIfAbsent(id, request);
-        if(existing != null) {
-            throw ProtocolMessages.MESSAGES.noActiveOperation(id);
+        lock.lock(); try {
+            // Check that we still allow registration
+            assert ! shutdown;
+            final Integer operationId;
+            if(id == null) {
+                // If we did not get a operationId, create a new one
+                operationId = operationIdManager.createBatchId();
+            } else {
+                // Check that the operationId is not already taken
+                if(! operationIdManager.lockBatchId(id)) {
+                    throw ProtocolMessages.MESSAGES.operationIdAlreadyExists(id);
+                }
+                operationId = id;
+            }
+            final ActiveOperationImpl<T, A> request = new ActiveOperationImpl(operationId, attachment, callback);
+            final ActiveOperation<?, ?> existing =  activeRequests.putIfAbsent(operationId, request);
+            if(existing != null) {
+                throw ProtocolMessages.MESSAGES.operationIdAlreadyExists(operationId);
+            }
+            activeCount++; // condition.signalAll();
+            return request;
+        } finally {
+            lock.unlock();
         }
-        return request;
     }
 
     /**
@@ -148,12 +174,18 @@ class ActiveOperationSupport<T, A> {
      * @param id the operation id
      * @return the removed active operation, {@code null} if there was no registered operation
      */
-    protected ActiveOperation<T, A> removeActiveOperation(final Integer id) {
-        final ActiveOperation<T, A> removed = activeRequests.remove(id);
-        if(removed != null) {
-            operationIdManager.freeBatchId(id);
+    private ActiveOperation<T, A> removeActiveOperation(final Integer id) {
+        lock.lock(); try {
+            final ActiveOperation<T, A> removed = activeRequests.remove(id);
+            if(removed != null) {
+                activeCount--;
+                operationIdManager.freeBatchId(id);
+                condition.signalAll();
+            }
+            return removed;
+        } finally {
+            lock.unlock();
         }
-        return removed;
     }
 
     /**
@@ -166,17 +198,48 @@ class ActiveOperationSupport<T, A> {
     }
 
     /**
-     * Cancel a specific operation.
+     * Is shutdown.
      *
-     * @param id the operation id
-     * @return {@code true} if the operation was cancelled, {@code false} otherwise
+     * @return {@code true} if the shutdown method was called, {@code false} otherwise
      */
-    protected boolean cancelActiveOperation(final Integer id) {
-        final ActiveOperationImpl<T, A> request = activeRequests.get(id);
-        if(request != null) {
-            return request.cancel();
+    protected boolean isShutdown() {
+        return shutdown;
+    }
+
+    /**
+     * Prevent new active operations get registered.
+     */
+    protected void shutdown() {
+        lock.lock(); try {
+            shutdown = true;
+        } finally {
+            lock.unlock();
         }
-        return false;
+    }
+
+    /**
+     * Await the completion of all currently active operations.
+     *
+     * @param timeout the timeout
+     * @param unit the time unit
+     * @return {@code } false if the timeout was reached and there were still active operations
+     * @throws InterruptedException
+     */
+    protected boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException {
+        long deadline = unit.toMillis(timeout) + System.currentTimeMillis();
+        lock.lock(); try {
+            assert shutdown;
+            while(activeCount != 0) {
+                long remaining = deadline - System.currentTimeMillis();
+                if (remaining <= 0) {
+                    return activeCount == 0;
+                }
+                condition.await(remaining, TimeUnit.MILLISECONDS);
+            }
+            return activeCount == 0;
+        } finally {
+            lock.unlock();
+        }
     }
 
     protected class ActiveOperationImpl<T, A> extends AsyncFutureTask<T> implements ActiveOperation<T, A> {

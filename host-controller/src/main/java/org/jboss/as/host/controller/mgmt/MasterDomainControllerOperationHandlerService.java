@@ -30,7 +30,6 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
-import org.jboss.remoting3.HandleableCloseable;
 
 import java.io.IOException;
 
@@ -60,7 +59,7 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
         return channel.addCloseHandler(new CloseHandler<Channel>() {
             @Override
             public void handleClose(Channel closed, IOException exception) {
-                handler.shutdown();
+                handler.shutdownNow();
             }
         });
     }
