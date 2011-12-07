@@ -27,6 +27,8 @@ import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.ejb.EJBMetaData;
+import javax.ejb.HomeHandle;
 import javax.management.MBeanException;
 import javax.transaction.Status;
 import javax.transaction.Transaction;
@@ -49,6 +51,7 @@ import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.Unmarshaller;
 import org.jboss.security.SecurityContext;
+import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SecurityContextFactory;
 import org.jboss.security.SimplePrincipal;
 import org.omg.CORBA.BAD_OPERATION;
@@ -74,9 +77,9 @@ import org.omg.PortableServer.Servant;
  * @author <a href="mailto:reverbel@ime.usp.br">Francisco Reverbel</a>
  * @author Stuart Douglas
  */
-public class EjbObjectCorbaServant extends Servant implements InvokeHandler, LocalIIOPInvoker {
+public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOPInvoker {
 
-    private static final Logger logger = Logger.getLogger(EjbObjectCorbaServant.class);
+    private static final Logger logger = Logger.getLogger(EjbCorbaServant.class);
 
     /**
      * The injected component view
@@ -110,6 +113,26 @@ public class EjbObjectCorbaServant extends Servant implements InvokeHandler, Loc
      */
     private final InterfaceDef interfaceDef;
 
+    /**
+     * The security domain for CORBA invocations
+     */
+    private final String securityDomain;
+
+    /**
+     * If true this is the servant for an EJBHome object
+     */
+    private final boolean home;
+
+    /**
+     * <code>HomeHandle</code> for the <code>EJBHome</code>
+     * implemented by this servant.
+     */
+    private volatile HomeHandle homeHandle = null;
+
+    /**
+     * The metadata for this
+     */
+    private volatile EJBMetaData ejbMetaData;
 
     /**
      * A reference to the SASCurrent, or null if the SAS interceptors are not
@@ -142,8 +165,8 @@ public class EjbObjectCorbaServant extends Servant implements InvokeHandler, Loc
     /**
      * Constructs an <code>EjbObjectCorbaServant></code>.
      */
-    public EjbObjectCorbaServant(final Current poaCurrent, final Map<String, SkeletonStrategy> methodInvokerMap, final String[] repositoryIds,
-                                 final InterfaceDef interfaceDef, final ORB orb, final ComponentView componentView, final MarshallerFactory factory, final MarshallingConfiguration configuration, final TransactionManager transactionManager, final ClassLoader classLoader) {
+    public EjbCorbaServant(final Current poaCurrent, final Map<String, SkeletonStrategy> methodInvokerMap, final String[] repositoryIds,
+                           final InterfaceDef interfaceDef, final ORB orb, final ComponentView componentView, final MarshallerFactory factory, final MarshallingConfiguration configuration, final TransactionManager transactionManager, final ClassLoader classLoader, final boolean home, final String securityDomain) {
         this.poaCurrent = poaCurrent;
         this.methodInvokerMap = methodInvokerMap;
         this.repositoryIds = repositoryIds;
@@ -154,6 +177,8 @@ public class EjbObjectCorbaServant extends Servant implements InvokeHandler, Loc
         this.configuration = configuration;
         this.transactionManager = transactionManager;
         this.classLoader = classLoader;
+        this.home = home;
+        this.securityDomain = securityDomain;
 
         SASCurrent sasCurrent;
         try {
@@ -170,6 +195,7 @@ public class EjbObjectCorbaServant extends Servant implements InvokeHandler, Loc
         }
         this.inboundTxCurrent = inboundTxCurrent;
     }
+
 
     /**
      * Returns an IR object describing the bean's remote interface.
@@ -210,13 +236,17 @@ public class EjbObjectCorbaServant extends Servant implements InvokeHandler, Loc
         NamespaceContextSelector.pushCurrentSelector(selector);
         try {
             SecurityActions.setContextClassLoader(classLoader);
-
+            SecurityContext sc = null;
             org.omg.CORBA_2_3.portable.OutputStream out;
             try {
                 Object retVal;
 
-                if (opName.equals("_get_handle")) {
+                if (!home && opName.equals("_get_handle")) {
                     retVal = new HandleImplIIOP(orb.object_to_string(_this_object()));
+                } else if (home && opName.equals("_get_homeHandle")) {
+                    retVal = homeHandle;
+                } else if (home && opName.equals("_get_EJBMetaData")) {
+                    retVal = ejbMetaData;
                 } else {
                     Transaction tx = null;
                     if (inboundTxCurrent != null)
@@ -250,39 +280,39 @@ public class EjbObjectCorbaServant extends Servant implements InvokeHandler, Loc
                                 principal = new SimplePrincipal(name);
                                 password = new String(credential, "UTF-8").toCharArray();
                             }
-
+                            if(securityDomain != null) {
+                                sc = SecurityContextFactory.createSecurityContext(securityDomain);
+                                sc.getUtil().createSubjectInfo(principal, password, null);
+                            }
                         }
                         final Object[] params = op.readParams((org.omg.CORBA_2_3.portable.InputStream) in);
 
-                        if (opName.equals("isIdentical") && params.length == 1) {
+                        if (!home && opName.equals("isIdentical") && params.length == 1) {
                             //handle isIdential specially
                             Object val = params[0];
-                            if(val instanceof org.omg.CORBA.Object) {
-                                retVal = handleIsIdentical((org.omg.CORBA.Object)val);
+                            if (val instanceof org.omg.CORBA.Object) {
+                                retVal = handleIsIdentical((org.omg.CORBA.Object) val);
                             } else {
                                 retVal = false;
                             }
                         } else {
 
-                            final SecurityContext sc = SecurityContextFactory.createSecurityContext("CORBA_REMOTE");
-                            sc.getUtil().createSubjectInfo(principal, password, null);
-
-                            final InterceptorContext interceptorContext = new InterceptorContext();
-
-                            //todo: could this be nicer
-                            if (componentView.getComponent() instanceof StatefulSessionComponent) {
-                                final SessionID sessionID = (SessionID) unmarshalIdentifier();
-                                interceptorContext.putPrivateData(SessionID.SESSION_ID_KEY, sessionID);
-                            } else if (componentView.getComponent() instanceof EntityBeanComponent) {
-                                final Object pk = unmarshalIdentifier();
-                                interceptorContext.putPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, pk);
+                            if (sc != null) {
+                                SecurityContextAssociation.setSecurityContext(sc);
                             }
-                            interceptorContext.setContextData(new HashMap<String, Object>());
-                            interceptorContext.setParameters(params);
-                            interceptorContext.setMethod(op.getMethod());
-                            interceptorContext.putPrivateData(ComponentView.class, componentView);
-                            interceptorContext.putPrivateData(Component.class, componentView.getComponent());
-                            retVal = componentView.invoke(interceptorContext);
+                            try {
+                                final InterceptorContext interceptorContext = new InterceptorContext();
+
+                                if (sc != null) {
+                                    interceptorContext.putPrivateData(SecurityContext.class, sc);
+                                }
+                                prepareInterceptorContext(op, params, interceptorContext);
+                                retVal = componentView.invoke(interceptorContext);
+                            } finally {
+                                if (sc != null) {
+                                    SecurityContextAssociation.clearSecurityContext();
+                                }
+                            }
                         }
                     } finally {
                         if (tx != null) {
@@ -291,6 +321,7 @@ public class EjbObjectCorbaServant extends Servant implements InvokeHandler, Loc
                             }
                         }
                     }
+
                 }
                 out = (org.omg.CORBA_2_3.portable.OutputStream)
                         handler.createReply();
@@ -314,6 +345,23 @@ public class EjbObjectCorbaServant extends Servant implements InvokeHandler, Loc
             NamespaceContextSelector.popCurrentSelector();
             SecurityActions.setContextClassLoader(oldCl);
         }
+    }
+
+    private void prepareInterceptorContext(final SkeletonStrategy op, final Object[] params, final InterceptorContext interceptorContext) throws IOException, ClassNotFoundException {
+        if (!home) {
+            if (componentView.getComponent() instanceof StatefulSessionComponent) {
+                final SessionID sessionID = (SessionID) unmarshalIdentifier();
+                interceptorContext.putPrivateData(SessionID.SESSION_ID_KEY, sessionID);
+            } else if (componentView.getComponent() instanceof EntityBeanComponent) {
+                final Object pk = unmarshalIdentifier();
+                interceptorContext.putPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, pk);
+            }
+        }
+        interceptorContext.setContextData(new HashMap<String, Object>());
+        interceptorContext.setParameters(params);
+        interceptorContext.setMethod(op.getMethod());
+        interceptorContext.putPrivateData(ComponentView.class, componentView);
+        interceptorContext.putPrivateData(Component.class, componentView.getComponent());
     }
 
     private boolean handleIsIdentical(final org.omg.CORBA.Object val) {
@@ -361,21 +409,7 @@ public class EjbObjectCorbaServant extends Servant implements InvokeHandler, Loc
         }
         try {
             final InterceptorContext interceptorContext = new InterceptorContext();
-            //todo: could this be nicer
-            if (componentView.getComponent() instanceof StatefulSessionComponent) {
-                final SessionID sessionID = (SessionID) unmarshalIdentifier();
-                interceptorContext.putPrivateData(SessionID.SESSION_ID_KEY, sessionID);
-            } else if (componentView.getComponent() instanceof EntityBeanComponent) {
-                final Object pk = unmarshalIdentifier();
-                interceptorContext.putPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, pk);
-            }
-            //TODO: deal with the transaction
-
-            interceptorContext.setContextData(new HashMap<String, Object>());
-            interceptorContext.setParameters(arguments);
-            interceptorContext.setMethod(op.getMethod());
-            interceptorContext.putPrivateData(ComponentView.class, componentView);
-            interceptorContext.putPrivateData(Component.class, componentView.getComponent());
+            prepareInterceptorContext(op, arguments, interceptorContext);
             return componentView.invoke(interceptorContext);
         } finally {
             if (tx != null) {
@@ -387,4 +421,11 @@ public class EjbObjectCorbaServant extends Servant implements InvokeHandler, Loc
 
     }
 
+    public void setHomeHandle(final HomeHandle homeHandle) {
+        this.homeHandle = homeHandle;
+    }
+
+    public void setEjbMetaData(final EJBMetaData ejbMetaData) {
+        this.ejbMetaData = ejbMetaData;
+    }
 }
