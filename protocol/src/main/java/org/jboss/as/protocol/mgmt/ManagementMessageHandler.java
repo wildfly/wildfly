@@ -43,6 +43,14 @@ public interface ManagementMessageHandler {
     void handleMessage(Channel channel, DataInput input, ManagementProtocolHeader header) throws IOException;
 
     /**
+     * Handle a shutdown notification on a channel. This usually signals to not
+     * create new sessions using this channel.
+     *
+     * @param channel the channel
+     */
+    void handleShutdownChannel(Channel channel);
+
+    /**
      * Shutdown all active operations.
      */
     void shutdown();

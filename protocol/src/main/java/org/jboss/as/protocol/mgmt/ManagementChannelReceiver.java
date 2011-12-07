@@ -41,9 +41,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @author Emanuel Muckenhuber
  */
-public abstract class ManagementChannelReceiver implements ManagementMessageHandler, Channel.Receiver, Closeable {
-
-    private final AtomicBoolean closed = new AtomicBoolean(false);
+public abstract class ManagementChannelReceiver implements ManagementMessageHandler, Channel.Receiver {
 
     /**
      * Create a {@code ManagementChannelReceiver} which is delegating protocol messages to
@@ -59,14 +57,16 @@ public abstract class ManagementChannelReceiver implements ManagementMessageHand
             public void handleMessage(Channel channel, DataInput input, ManagementProtocolHeader header) throws IOException {
                 handler.handleMessage(channel, input, header);
             }
+
+            @Override
+            public void handleShutdownChannel(Channel channel) {
+                handler.handleShutdownChannel(channel);
+            }
         };
     }
 
     @Override
     public void handleMessage(final Channel channel, final MessageInputStream message) {
-        if(isClosed()) {
-            return;
-        }
         try {
             ROOT_LOGGER.tracef("%s handling incoming data", this);
             final DataInput input = new SimpleDataInput(Marshalling.createByteInput(message));
@@ -79,7 +79,7 @@ public abstract class ManagementChannelReceiver implements ManagementMessageHand
             } else if (type == ManagementProtocol.TYPE_BYE_BYE) {
                 // Close the channel
                 ROOT_LOGGER.tracef("Received bye bye on %s, closing", this);
-                close(true);
+                handleShutdownChannel(channel);
             } else {
                 // Handle a message
                 handleMessage(channel, input, header);
@@ -94,18 +94,9 @@ public abstract class ManagementChannelReceiver implements ManagementMessageHand
             ROOT_LOGGER.tracef("%s done handling incoming data", this);
         }
         final Channel.Receiver next = next();
-        if(! isClosed() && next != null) {
+        if(next != null) {
             channel.receiveMessage(next);
         }
-    }
-
-    /**
-     * Check whether the channel was closed or not.
-     *
-     * @return if the channel was closed
-     */
-    public boolean isClosed() {
-        return closed.get();
     }
 
     /**
@@ -137,44 +128,8 @@ public abstract class ManagementChannelReceiver implements ManagementMessageHand
     }
 
     @Override
-    public void close() throws IOException {
-        close(false);
-    }
-
-    /**
-     * Internally close this handler.
-     *
-     * @param receivedByeBye whether the {@code ManagementProtocol#TYPE_BYE_BYE} operation was received.
-     * @throws IOException
-     */
-    protected void doClose(final boolean receivedByeBye) throws IOException {
-        //
-    }
-
-    @Override
     public void shutdown() {
         //
-    }
-
-    /**
-     * Close this handler.
-     *
-     * @param receivedByeBye whether the {@code ManagementProtocol#TYPE_BYE_BYE} operation was received.
-     * @throws IOException
-     */
-    protected void close(final boolean receivedByeBye) throws IOException {
-        if(closed.compareAndSet(false, true)) {
-            doClose(receivedByeBye);
-        }
-    }
-
-    /**
-     * Ensure that the channel is still open.
-     */
-    protected void ensureOpen() {
-        if(isClosed()) {
-            throw new IllegalStateException("handler closed");
-        }
     }
 
     /**

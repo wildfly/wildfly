@@ -91,6 +91,17 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
         }
     }
 
+    @Override
+    public synchronized void handleShutdownChannel(Channel channel) {
+        if (closed) {
+            return;
+        }
+        if(strategy != null) {
+            // Notify the channel strategy to not use this channel any more
+            strategy.switchChannel(channel);
+        }
+    }
+
     protected synchronized Channel getChannel() throws IOException {
         if (closed) {
             throw MESSAGES.objectIsClosed( ModelControllerClient.class.getSimpleName());

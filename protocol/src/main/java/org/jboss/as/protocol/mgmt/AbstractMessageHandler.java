@@ -128,6 +128,11 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
         }
     }
 
+    @Override
+    public void handleShutdownChannel(Channel channel) {
+        // TODO associate request with the channel...
+    }
+
     /**
      * Execute a request.
      *

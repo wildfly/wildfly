@@ -167,6 +167,11 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
         }
 
         @Override
+        public void handleShutdownChannel(Channel channel) {
+            //
+        }
+
+        @Override
         protected Channel.Receiver next() {
             return null; // next is proxyOperationHandlerCreated
         }

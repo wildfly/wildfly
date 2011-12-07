@@ -605,6 +605,11 @@ public class RemoteProxyControllerProtocolTestCase {
         }
 
         @Override
+        public void handleShutdownChannel(Channel channel) {
+            //
+        }
+
+        @Override
         public void shutdown() {
             if(delegate != null) {
                 delegate.shutdown();

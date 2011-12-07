@@ -55,6 +55,13 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
     public abstract Channel getChannel() throws IOException;
 
     /**
+     * Notify the channel strategy to switch to a new channel.
+     *
+     * @param old the cold channel
+     */
+    public abstract void switchChannel(Channel old);
+
+    /**
      * Create a new client channel strategy.
      *
      * @param channel the existing channel
@@ -95,6 +102,11 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
         @Override
         public Channel getChannel() throws IOException {
             return channel;
+        }
+
+        @Override
+        public void switchChannel(Channel old) {
+            // not in our control
         }
 
         @Override
@@ -167,6 +179,15 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
                 }
             }
             return channel;
+        }
+
+        @Override
+        public void switchChannel(Channel old) {
+            synchronized (this) {
+                if(channel == old) {
+                    channel = null;
+                }
+            }
         }
 
         @Override

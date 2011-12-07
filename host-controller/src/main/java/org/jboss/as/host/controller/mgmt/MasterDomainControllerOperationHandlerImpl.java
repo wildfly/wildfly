@@ -122,6 +122,11 @@ public class MasterDomainControllerOperationHandlerImpl extends ManagementChanne
         }
     }
 
+    @Override
+    public void handleShutdownChannel(Channel channel) {
+        //
+    }
+
     private class RegisterOperation extends AbstractHostRequestHandler {
         String error;
 
