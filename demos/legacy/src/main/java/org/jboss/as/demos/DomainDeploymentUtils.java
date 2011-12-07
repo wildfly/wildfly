@@ -98,7 +98,7 @@ public class DomainDeploymentUtils implements Closeable {
 
     public synchronized void deploy()  throws DuplicateDeploymentNameException, IOException, ExecutionException, InterruptedException  {
         ModelNode op = new ModelNode();
-        OperationBuilder builder = new OperationBuilder(op);
+        OperationBuilder builder = new OperationBuilder(op, true);
         op.get(ClientConstants.OP).set("composite");
         op.get(ClientConstants.OP_ADDR).setEmptyList();
         ModelNode steps = op.get("steps");

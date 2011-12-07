@@ -440,6 +440,16 @@ public class RemoteProxyControllerProtocolTestCase {
                 streams.add(null);
                 return streams;
             }
+
+            @Override
+            public boolean isAutoCloseStreams() {
+                return false;
+            }
+
+            @Override
+            public void close() throws IOException {
+                //
+            }
         };
 
         CommitProxyOperationControl commitControl = new CommitProxyOperationControl();

@@ -113,7 +113,7 @@ public class AbstractMgmtTestBase {
         steps[2] = builder.buildRequest();
         ModelNode compositeOp = createCompositeNode(steps);
 
-        OperationBuilder ob = new OperationBuilder(compositeOp);
+        OperationBuilder ob = new OperationBuilder(compositeOp, true);
         ob.addInputStream(new FileInputStream(getBrokenWar()));
 
         return modelControllerClient.execute(ob.build());

@@ -39,24 +39,30 @@ public class OperationBuilder {
 
     private final ModelNode operation;
     private volatile List<InputStream> inputStreams;
+    private boolean autoCloseStreams = false;
 
     public OperationBuilder(final ModelNode operation) {
+        this(operation, false);
+    }
+
+    public OperationBuilder(final ModelNode operation, boolean autoCloseStreams) {
         if (operation == null) {
             throw MESSAGES.nullVar("operation");
         }
         this.operation = operation;
+        this.autoCloseStreams = autoCloseStreams;
     }
 
     /**
-     * Associate an input stream with the operation.
+     * Associate an input stream with the operation. Closing the input stream
+     * is the responsibility of the caller.
      *
-     * @param in  the input stream. Cannot be {@code null}.
-     *
+     * @param in  the input stream. Cannot be {@code null}
      * @return a builder than can be used to continue building the operation
      */
-    public OperationBuilder addInputStream(InputStream in) {
+    public OperationBuilder addInputStream(final InputStream in) {
         if(in == null) {
-            throw new IllegalArgumentException("null input stream");
+            throw MESSAGES.nullVar("input-stream");
         }
         if (inputStreams == null) {
             inputStreams = new ArrayList<InputStream>();
@@ -76,12 +82,21 @@ public class OperationBuilder {
     }
 
     /**
+     * Automatically try to close the stream, once the operation finished executing.
+     *
+     * @param autoCloseStreams whether to close the streams or not
+     */
+    public void setAutoCloseStreams(boolean autoCloseStreams) {
+        this.autoCloseStreams = autoCloseStreams;
+    }
+
+    /**
      * Builds the operation.
      *
      * @return the operation
      */
     public Operation build() {
-        return new OperationImpl(operation, inputStreams);
+        return new OperationImpl(operation, inputStreams, autoCloseStreams);
     }
 
     /**
@@ -92,6 +107,17 @@ public class OperationBuilder {
      */
     public static OperationBuilder create(final ModelNode operation) {
         return new OperationBuilder(operation);
+    }
+
+    /**
+     * Create an operation builder.
+     *
+     * @param operation the operation
+     * @param autoCloseStreams whether streams should be automatically closed
+     * @return the builder
+     */
+    public static OperationBuilder create(final ModelNode operation, final boolean autoCloseStreams) {
+        return new OperationBuilder(operation, autoCloseStreams);
     }
 
 }

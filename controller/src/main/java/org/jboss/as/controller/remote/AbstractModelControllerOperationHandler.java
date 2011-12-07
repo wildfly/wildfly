@@ -115,10 +115,20 @@ public abstract class AbstractModelControllerOperationHandler<T, A> extends Abst
         }
 
         @Override
+        public boolean isAutoCloseStreams() {
+            return false;
+        }
+
+        @Override
         public List<InputStream> getInputStreams() {
             List<InputStream> result = new ArrayList<InputStream>();
             result.addAll(proxiedStreams);
             return Collections.unmodifiableList(result);
+        }
+
+        @Override
+        public void close() throws IOException {
+            //
         }
 
         void shutdown(Exception error) {

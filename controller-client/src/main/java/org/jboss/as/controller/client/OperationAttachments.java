@@ -21,15 +21,27 @@
 */
 package org.jboss.as.controller.client;
 
+import java.io.Closeable;
 import java.io.InputStream;
 import java.util.List;
 
 /**
+ * The operation attachments. This interface extends {@code Closeable}
+ * which can be used to close all associated input streams with
+ * this attachment.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
-public interface OperationAttachments {
+public interface OperationAttachments extends Closeable {
+
+    /**
+     * Flag indicating whether the streams should be automatically closed
+     * once the operation completed.
+     *
+     * @return {@code true} if the streams are going to be closed, false otherwise
+     */
+    boolean isAutoCloseStreams();
+
     /**
      * Input streams associated with the operation
      *

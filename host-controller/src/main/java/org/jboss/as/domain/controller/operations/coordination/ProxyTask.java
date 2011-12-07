@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -213,6 +214,11 @@ class ProxyTask implements Callable<ModelNode> {
         }
 
         @Override
+        public boolean isAutoCloseStreams() {
+            return false;
+        }
+
+        @Override
         public List<InputStream> getInputStreams() {
             int count = context.getAttachmentStreamCount();
             List<InputStream> result = new ArrayList<InputStream>(count);
@@ -220,6 +226,11 @@ class ProxyTask implements Callable<ModelNode> {
                 result.add(context.getAttachmentStream(i));
             }
             return result;
+        }
+
+        @Override
+        public void close() throws IOException {
+            //
         }
     }
 }

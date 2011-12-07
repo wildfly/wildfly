@@ -51,8 +51,12 @@ public interface ModelControllerClient extends Closeable {
      * @throws IOException if an I/O error occurs while executing the operation
      */
     ModelNode execute(ModelNode operation) throws IOException;
+
     /**
      * Execute an operation synchronously.
+     *
+     * Note that associated input-streams have to be closed by the caller, after the
+     * operation completed {@link OperationAttachments#isAutoCloseStreams()}.
      *
      * @param operation the operation to execute
      * @return the result of the operation
@@ -73,6 +77,9 @@ public interface ModelControllerClient extends Closeable {
     /**
      * Execute an operation synchronously, optionally receiving progress reports.
      *
+     * Note that associated input-streams have to be closed by the caller, after the
+     * operation completed {@link OperationAttachments#isAutoCloseStreams()}.
+     *
      * @param operation the operation to execute
      * @param messageHandler the message handler to use for operation progress reporting, or {@code null} for none
      * @return the result of the operation
@@ -91,6 +98,9 @@ public interface ModelControllerClient extends Closeable {
 
     /**
      * Execute an operation.
+     *
+     * Note that associated input-streams have to be closed by the caller, after the
+     * operation completed {@link OperationAttachments#isAutoCloseStreams()}.
      *
      * @param operation the operation to execute
      * @param messageHandler the message handler to use for operation progress reporting, or {@code null} for none

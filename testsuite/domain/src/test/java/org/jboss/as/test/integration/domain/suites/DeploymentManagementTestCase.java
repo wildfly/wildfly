@@ -231,7 +231,7 @@ public class DeploymentManagementTestCase {
         ModelNode content = new ModelNode();
         content.get(INPUT_STREAM_INDEX).set(0);
         ModelNode composite = createDeploymentOperation(content, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS, OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
-        OperationBuilder builder = new OperationBuilder(composite);
+        OperationBuilder builder = new OperationBuilder(composite, true);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
         executeOnMaster(builder.build());
@@ -258,7 +258,7 @@ public class DeploymentManagementTestCase {
     public void testUploadStream() throws Exception {
         ModelNode op = getEmptyOperation(UPLOAD_DEPLOYMENT_STREAM, ROOT_ADDRESS);
         op.get(INPUT_STREAM_INDEX).set(0);
-        OperationBuilder builder = new OperationBuilder(op);
+        OperationBuilder builder = new OperationBuilder(op, true);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
         byte[] hash = executeOnMaster(builder.build()).asBytes();
@@ -280,7 +280,7 @@ public class DeploymentManagementTestCase {
     public void testDomainAddOnly() throws Exception {
         ModelNode op = getEmptyOperation(UPLOAD_DEPLOYMENT_STREAM, ROOT_ADDRESS);
         op.get(INPUT_STREAM_INDEX).set(0);
-        OperationBuilder builder = new OperationBuilder(op);
+        OperationBuilder builder = new OperationBuilder(op, true);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
         byte[] hash = executeOnMaster(builder.build()).asBytes();
@@ -394,7 +394,7 @@ public class DeploymentManagementTestCase {
         ModelNode content = new ModelNode();
         content.get(INPUT_STREAM_INDEX).set(0);
         ModelNode op = createDeploymentReplaceOperation(content, MAIN_SERVER_GROUP_ADDRESS, OTHER_SERVER_GROUP_ADDRESS);
-        OperationBuilder builder = new OperationBuilder(op);
+        OperationBuilder builder = new OperationBuilder(op, true);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
         executeOnMaster(builder.build());
@@ -485,7 +485,7 @@ public class DeploymentManagementTestCase {
         ModelNode content = new ModelNode();
         content.get(INPUT_STREAM_INDEX).set(0);
         ModelNode op = createDeploymentReplaceOperation(content, MAIN_SERVER_GROUP_ADDRESS, OTHER_SERVER_GROUP_ADDRESS);
-        OperationBuilder builder = new OperationBuilder(op);
+        OperationBuilder builder = new OperationBuilder(op, true);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
         executeOnMaster(builder.build());
@@ -503,7 +503,7 @@ public class DeploymentManagementTestCase {
         ModelNode content = new ModelNode();
         content.get(INPUT_STREAM_INDEX).set(0);
         ModelNode op = createDeploymentFullReplaceOperation(content);
-        OperationBuilder builder = new OperationBuilder(op);
+        OperationBuilder builder = new OperationBuilder(op, true);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
         executeOnMaster(builder.build());
@@ -637,7 +637,7 @@ public class DeploymentManagementTestCase {
         ModelNode content = new ModelNode();
         content.get(INPUT_STREAM_INDEX).set(0);
         ModelNode op = createDeploymentFullReplaceOperation(content);
-        OperationBuilder builder = new OperationBuilder(op);
+        OperationBuilder builder = new OperationBuilder(op, true);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
         executeOnMaster(builder.build());
@@ -658,7 +658,7 @@ public class DeploymentManagementTestCase {
 
         System.out.println(composite);
 
-        OperationBuilder builder = new OperationBuilder(composite);
+        OperationBuilder builder = new OperationBuilder(composite, true);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
         executeOnMaster(builder.build());
@@ -670,7 +670,7 @@ public class DeploymentManagementTestCase {
         ModelNode content = new ModelNode();
         content.get(INPUT_STREAM_INDEX).set(0);
         ModelNode composite = createDeploymentOperation(content, OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
-        OperationBuilder builder = new OperationBuilder(composite);
+        OperationBuilder builder = new OperationBuilder(composite, true);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
         executeOnMaster(builder.build());
