@@ -95,7 +95,7 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
                         else if(webMetaData.is24())
                             validator.validate("http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd", xmlInput);
                         else if (webMetaData.is25())
-                            validator.validate("http://java.sun.com/xml/ns/j2ee/web-app_2_5.xsd", xmlInput);
+                            validator.validate("http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd", xmlInput);
                         else if (webMetaData.is30())
                             validator.validate("http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd", xmlInput);
                         else
