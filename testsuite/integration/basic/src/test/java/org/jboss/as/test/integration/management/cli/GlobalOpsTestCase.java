@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.management.cli;
 
+import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import static org.junit.Assert.assertTrue;
 
 import java.net.URL;
