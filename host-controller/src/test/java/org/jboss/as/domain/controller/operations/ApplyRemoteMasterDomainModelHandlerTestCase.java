@@ -853,7 +853,7 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase {
             return null;
         }
 
-        public void registerSubModel(PathElement address, ManagementResourceRegistration subModel) {
+        public void unregisterSubModel(PathElement address) {
         }
 
         public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider) {

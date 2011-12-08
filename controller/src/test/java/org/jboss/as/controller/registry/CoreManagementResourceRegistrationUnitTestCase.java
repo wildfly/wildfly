@@ -141,7 +141,7 @@ public class CoreManagementResourceRegistrationUnitTestCase {
         twoHandler = rootRegistration.getOperationHandler(childAddress, "two");
         assertSame(TestHandler.CHILD, twoHandler);
 
-        threeHandler = child.getOperationHandler(childAddress, "three");
+        threeHandler = child.getOperationHandler(PathAddress.EMPTY_ADDRESS, "three");
         assertSame(TestHandler.PARENT, threeHandler);
 
         OperationStepHandler fourHandler = child.getOperationHandler(PathAddress.EMPTY_ADDRESS, "four");
@@ -273,7 +273,7 @@ public class CoreManagementResourceRegistrationUnitTestCase {
         assertEquals(1, twoFlags.size());
         assertTrue(twoFlags.contains(OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY));
 
-        threeFlags = child.getOperationFlags(childAddress, "three");
+        threeFlags = child.getOperationFlags(PathAddress.EMPTY_ADDRESS, "three");
         assertNotNull(threeFlags);
         assertEquals(1, threeFlags.size());
         assertTrue(threeFlags.contains(OperationEntry.Flag.READ_ONLY));

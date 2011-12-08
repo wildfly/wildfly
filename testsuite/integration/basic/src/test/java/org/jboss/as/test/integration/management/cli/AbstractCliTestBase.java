@@ -50,7 +50,7 @@ public class AbstractCliTestBase {
     @AfterClass
     public static void after() throws Exception {
         try {
-            cli.quit();
+            if (cli != null) cli.quit();
         } finally {
             cli = null;
         }

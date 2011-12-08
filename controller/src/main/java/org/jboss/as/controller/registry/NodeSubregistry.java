@@ -22,25 +22,26 @@
 
 package org.jboss.as.controller.registry;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
-import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * A registry of values within a specific key type.
  */
 final class NodeSubregistry {
+
+    private static final String WILDCARD_VALUE = PathElement.WILDCARD_VALUE;
 
     private final String keyName;
     private final ConcreteResourceRegistration parent;
@@ -69,22 +70,11 @@ final class NodeSubregistry {
 
     ManagementResourceRegistration register(final String elementValue, final ResourceDefinition provider, boolean runtimeOnly) {
         final AbstractResourceRegistration newRegistry = new ConcreteResourceRegistration(elementValue, this, provider, runtimeOnly);
-        register(elementValue, newRegistry);
-        return newRegistry;
-    }
-
-    void register(final String elementValue, final ManagementResourceRegistration subModel) {
-        AbstractResourceRegistration newRegistry = null;
-        if (subModel instanceof AbstractResourceRegistration) {
-            newRegistry = (AbstractResourceRegistration) subModel;
-        }
-        else {
-
-        }
-        final AbstractResourceRegistration appearingRegistry = childRegistriesUpdater.putIfAbsent(this, elementValue, newRegistry);
-        if (appearingRegistry != null) {
+        final AbstractResourceRegistration existingRegistry = childRegistriesUpdater.putIfAbsent(this, elementValue, newRegistry);
+        if (existingRegistry != null) {
             throw MESSAGES.nodeAlreadyRegistered(getLocationString(), elementValue);
         }
+        return newRegistry;
     }
 
     ProxyControllerRegistration registerProxyController(final String elementValue, final ProxyController proxyController) {
@@ -101,36 +91,41 @@ final class NodeSubregistry {
         childRegistriesUpdater.remove(this, elementValue);
     }
 
+    void unregisterSubModel(final String elementValue) {
+        childRegistriesUpdater.remove(this, elementValue);
+    }
+
     OperationEntry getOperationEntry(final ListIterator<PathElement> iterator, final String child, final String operationName, OperationEntry inherited) {
-        final Map<String, AbstractResourceRegistration> snapshot = childRegistriesUpdater.get(this);
-        final AbstractResourceRegistration childRegistry = snapshot.get(child);
-        if (childRegistry != null) {
-            return childRegistry.getOperationEntry(iterator, operationName, inherited);
-        } else {
-            final AbstractResourceRegistration wildcardRegistry = snapshot.get("*");
-            if (wildcardRegistry != null) {
-                return wildcardRegistry.getOperationEntry(iterator, operationName, inherited);
-            } else {
-                return null;
-            }
+
+        final RegistrySearchControl searchControl = new RegistrySearchControl(iterator, child);
+
+        // First search the non-wildcard child; if not found, search the wildcard child
+        OperationEntry result = null;
+
+        if (searchControl.getSpecifiedRegistry() != null) {
+            result = searchControl.getSpecifiedRegistry().getOperationEntry(searchControl.getIterator(), operationName, inherited);
         }
+
+        if (result == null && searchControl.getWildCardRegistry() != null) {
+            result = searchControl.getWildCardRegistry().getOperationEntry(searchControl.getIterator(), operationName, inherited);
+        }
+
+        return result;
     }
 
     void getHandlers(final ListIterator<PathElement> iterator, final String child, final Map<String, OperationEntry> providers, final boolean inherited) {
-        final Map<String, AbstractResourceRegistration> snapshot = childRegistriesUpdater.get(this);
-        final AbstractResourceRegistration childRegistry = snapshot.get(child);
-        final AbstractResourceRegistration wildcardRegistry = snapshot.get("*");
-        if (wildcardRegistry == null) {
-            if (childRegistry != null) {
-                childRegistry.getOperationDescriptions(iterator, providers, inherited);
-            }
-        } else {
-            if (childRegistry == null) {
-                wildcardRegistry.getOperationDescriptions(iterator, providers, inherited);
-            } else {
-                wildcardRegistry.getOperationDescriptions(iterator, providers, inherited);
-                childRegistry.getOperationDescriptions(iterator, providers, inherited);
-            }
+
+        final RegistrySearchControl searchControl = new RegistrySearchControl(iterator, child);
+
+        // First search the wildcard child, then if there is a non-wildcard child search it
+        // Non-wildcard goes second so its description overwrites in case of duplicates
+
+        if (searchControl.getWildCardRegistry() != null) {
+            searchControl.getWildCardRegistry().getOperationDescriptions(searchControl.getIterator(), providers, inherited);
+        }
+
+        if (searchControl.getSpecifiedRegistry() != null) {
+            searchControl.getSpecifiedRegistry().getOperationDescriptions(searchControl.getIterator(), providers, inherited);
         }
     }
 
@@ -138,110 +133,211 @@ final class NodeSubregistry {
         return parent.getLocationString() + "(" + keyName + " => ";
     }
 
-    DescriptionProvider getModelDescription(final Iterator<PathElement> iterator, final String child) {
-        final Map<String, AbstractResourceRegistration> snapshot = childRegistries;
-        AbstractResourceRegistration childRegistry = snapshot.get(child);
-        if (childRegistry == null) {
-            childRegistry = snapshot.get("*");
-            if (childRegistry == null) {
-                return null;
-            }
+    DescriptionProvider getModelDescription(final ListIterator<PathElement> iterator, final String child) {
+
+        final RegistrySearchControl searchControl = new RegistrySearchControl(iterator, child);
+
+        // First search the non-wildcard child; if not found, search the wildcard child
+        DescriptionProvider result = null;
+
+        if (searchControl.getSpecifiedRegistry() != null) {
+            result = searchControl.getSpecifiedRegistry().getModelDescription(searchControl.getIterator());
         }
-        return childRegistry.getModelDescription(iterator);
+
+        if (result == null && searchControl.getWildCardRegistry() != null) {
+            result = searchControl.getWildCardRegistry().getModelDescription(searchControl.getIterator());
+        }
+
+        return result;
     }
 
-    Set<String> getChildNames(final Iterator<PathElement> iterator, final String child){
-        final Map<String, AbstractResourceRegistration> snapshot = childRegistries;
-        AbstractResourceRegistration childRegistry = snapshot.get(child);
-        if (childRegistry == null) {
-            childRegistry = snapshot.get("*");
-            if (childRegistry == null) {
-                return null;
+    Set<String> getChildNames(final ListIterator<PathElement> iterator, final String child){
+
+        final RegistrySearchControl searchControl = new RegistrySearchControl(iterator, child);
+
+        Set<String> result = null;
+        if (searchControl.getSpecifiedRegistry() != null) {
+            result = searchControl.getSpecifiedRegistry().getChildNames(searchControl.getIterator());
+        }
+
+        if (searchControl.getWildCardRegistry() != null) {
+            final Set<String> wildCardChildren = searchControl.getWildCardRegistry().getChildNames(searchControl.getIterator());
+            if (result == null) {
+                result = wildCardChildren;
+            } else if (wildCardChildren != null) {
+                // Merge
+                result = new HashSet<String>(result);
+                result.addAll(wildCardChildren);
             }
         }
-        return childRegistry.getChildNames(iterator);
+        return result;
     }
 
-    Set<String> getAttributeNames(final Iterator<PathElement> iterator, final String child){
-        final Map<String, AbstractResourceRegistration> snapshot = childRegistries;
-        AbstractResourceRegistration childRegistry = snapshot.get(child);
-        if (childRegistry == null) {
-            childRegistry = snapshot.get("*");
-            if (childRegistry == null) {
-                return null;
+    Set<String> getAttributeNames(final ListIterator<PathElement> iterator, final String child){
+
+        final RegistrySearchControl searchControl = new RegistrySearchControl(iterator, child);
+
+        Set<String> result = null;
+        if (searchControl.getSpecifiedRegistry() != null) {
+            result = searchControl.getSpecifiedRegistry().getAttributeNames(searchControl.getIterator());
+        }
+
+        if (searchControl.getWildCardRegistry() != null) {
+            final Set<String> wildCardChildren = searchControl.getWildCardRegistry().getAttributeNames(searchControl.getIterator());
+            if (result == null) {
+                result = wildCardChildren;
+            } else if (wildCardChildren != null) {
+                // Merge
+                result = new HashSet<String>(result);
+                result.addAll(wildCardChildren);
             }
         }
-        return childRegistry.getAttributeNames(iterator);
+        return result;
     }
 
     AttributeAccess getAttributeAccess(final ListIterator<PathElement> iterator, final String child, final String attributeName) {
-        final Map<String, AbstractResourceRegistration> snapshot = childRegistriesUpdater.get(this);
-        final AbstractResourceRegistration childRegistry = snapshot.get(child);
-        if (childRegistry != null) {
-            return childRegistry.getAttributeAccess(iterator, attributeName);
-        } else {
-            final AbstractResourceRegistration wildcardRegistry = snapshot.get("*");
-            if (wildcardRegistry != null) {
-                return wildcardRegistry.getAttributeAccess(iterator, attributeName);
-            } else {
-                return null;
-            }
+
+        final RegistrySearchControl searchControl = new RegistrySearchControl(iterator, child);
+
+        // First search the non-wildcard child; if not found, search the wildcard child
+        AttributeAccess result = null;
+
+        if (searchControl.getSpecifiedRegistry() != null) {
+            result = searchControl.getSpecifiedRegistry().getAttributeAccess(searchControl.getIterator(), attributeName);
         }
+
+        if (result == null && searchControl.getWildCardRegistry() != null) {
+            result = searchControl.getWildCardRegistry().getAttributeAccess(searchControl.getIterator(), attributeName);
+        }
+
+        return result;
     }
 
 
-    Set<PathElement> getChildAddresses(final Iterator<PathElement> iterator, final String child){
-        final Map<String, AbstractResourceRegistration> snapshot = childRegistries;
-        AbstractResourceRegistration childRegistry = snapshot.get(child);
-        if (childRegistry == null) {
-            childRegistry = snapshot.get("*");
-            if (childRegistry == null) {
-                return null;
+    Set<PathElement> getChildAddresses(final ListIterator<PathElement> iterator, final String child){
+
+        final RegistrySearchControl searchControl = new RegistrySearchControl(iterator, child);
+
+        Set<PathElement> result = null;
+        if (searchControl.getSpecifiedRegistry() != null) {
+            result = searchControl.getSpecifiedRegistry().getChildAddresses(searchControl.getIterator());
+        }
+
+        if (searchControl.getWildCardRegistry() != null) {
+            final Set<PathElement> wildCardChildren = searchControl.getWildCardRegistry().getChildAddresses(searchControl.getIterator());
+            if (result == null) {
+                result = wildCardChildren;
+            } else if (wildCardChildren != null) {
+                // Merge
+                result = new HashSet<PathElement>(result);
+                result.addAll(wildCardChildren);
             }
         }
-        return childRegistry.getChildAddresses(iterator);
+        return result;
     }
 
-    ProxyController getProxyController(final Iterator<PathElement> iterator, final String child) {
-        final Map<String, AbstractResourceRegistration> snapshot = childRegistries;
-        AbstractResourceRegistration childRegistry = snapshot.get(child);
-        if (childRegistry == null) {
-            childRegistry = snapshot.get("*");
-            if (childRegistry == null) {
-                return null;
-            }
+    ProxyController getProxyController(final ListIterator<PathElement> iterator, final String child) {
+
+        final RegistrySearchControl searchControl = new RegistrySearchControl(iterator, child);
+
+        // First search the non-wildcard child; if not found, search the wildcard child
+        ProxyController result = null;
+
+        if (searchControl.getSpecifiedRegistry() != null) {
+            result = searchControl.getSpecifiedRegistry().getProxyController(searchControl.getIterator());
         }
-        return childRegistry.getProxyController(iterator);
-    }
 
-    ManagementResourceRegistration getResourceRegistration(final Iterator<PathElement> iterator, final String child) {
-        final Map<String, AbstractResourceRegistration> snapshot = childRegistries;
-        AbstractResourceRegistration childRegistry = snapshot.get(child);
-        if (childRegistry == null) {
-            childRegistry = snapshot.get("*");
-            if (childRegistry == null) {
-                return null;
-            }
+        if (result == null && searchControl.getWildCardRegistry() != null) {
+            result = searchControl.getWildCardRegistry().getProxyController(searchControl.getIterator());
         }
-        return childRegistry.getResourceRegistration(iterator);
+
+        return result;
     }
 
-    void getProxyControllers(final Iterator<PathElement> iterator, final String child, Set<ProxyController> controllers) {
-        final Map<String, AbstractResourceRegistration> snapshot = childRegistries;
+    AbstractResourceRegistration getResourceRegistration(final ListIterator<PathElement> iterator, final String child) {
+
+        final RegistrySearchControl searchControl = new RegistrySearchControl(iterator, child);
+
+        // First search the non-wildcard child; if not found, search the wildcard child
+        AbstractResourceRegistration result = null;
+
+        if (searchControl.getSpecifiedRegistry() != null) {
+            result = searchControl.getSpecifiedRegistry().getResourceRegistration(searchControl.getIterator());
+        }
+
+        if (result == null && searchControl.getWildCardRegistry() != null) {
+            result = searchControl.getWildCardRegistry().getResourceRegistration(searchControl.getIterator());
+        }
+
+        return result;
+    }
+
+    void getProxyControllers(final ListIterator<PathElement> iterator, final String child, Set<ProxyController> controllers) {
         if (child != null) {
-            AbstractResourceRegistration childRegistry = snapshot.get(child);
-            if (childRegistry == null) {
-                childRegistry = snapshot.get("*");
-                if (childRegistry == null) {
-                    return;
-                }
+            final RegistrySearchControl searchControl = new RegistrySearchControl(iterator, child);
+
+            // First search the wildcard child, then if there is a non-wildcard child search it
+
+            if (searchControl.getWildCardRegistry() != null) {
+                searchControl.getWildCardRegistry().getProxyControllers(searchControl.getIterator(), controllers);
             }
-            childRegistry.getProxyControllers(iterator, controllers);
+
+            if (searchControl.getSpecifiedRegistry() != null) {
+                searchControl.getSpecifiedRegistry().getProxyControllers(searchControl.getIterator(), controllers);
+            }
         } else {
+            final Map<String, AbstractResourceRegistration> snapshot = childRegistriesUpdater.get(NodeSubregistry.this);
             for (AbstractResourceRegistration childRegistry : snapshot.values()) {
                 childRegistry.getProxyControllers(iterator, controllers);
             }
         }
     }
 
+    /**
+     * Encapsulates data and behavior to help with searches in both a specified child and in the wildcard child if
+     * it exists and is different from the specified child
+     */
+    private class RegistrySearchControl {
+        private final AbstractResourceRegistration specifiedRegistry;
+        private final AbstractResourceRegistration wildCardRegistry;
+        private final ListIterator<PathElement> iterator;
+        private final int restoreIndex;
+        private boolean backupRequired;
+
+        private RegistrySearchControl(final ListIterator<PathElement> iterator, final String childName) {
+            final Map<String, AbstractResourceRegistration> snapshot = childRegistriesUpdater.get(NodeSubregistry.this);
+            this.specifiedRegistry = snapshot.get(childName);
+            this.wildCardRegistry = WILDCARD_VALUE.equals(childName) ? null : snapshot.get(WILDCARD_VALUE);
+            this.iterator = iterator;
+            this.restoreIndex = (specifiedRegistry != null && wildCardRegistry != null) ? iterator.nextIndex() : -1;
+        }
+
+        private AbstractResourceRegistration getSpecifiedRegistry() {
+            return specifiedRegistry;
+        }
+
+        private AbstractResourceRegistration getWildCardRegistry() {
+            return wildCardRegistry;
+        }
+
+        private ListIterator<PathElement> getIterator() {
+            if (backupRequired) {
+                if (restoreIndex == -1) {
+                    // Coding mistake; someone wants to search twice for no reason, since we only have a single registration
+                    throw new IllegalStateException("Multiple iterator requests are not supported since both " +
+                            "named and wildcard entries were not present");
+                }
+                // Back the iterator to the restore index
+                while (iterator.nextIndex() > restoreIndex) {
+                    iterator.previous();
+                }
+            }
+            backupRequired = true;
+            return iterator;
+        }
+    }
+
+    String getKeyName() {
+        return keyName;
+    }
 }

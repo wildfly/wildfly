@@ -220,7 +220,7 @@ public class GlobalOperationHandlers {
                                 ModelNode rrRsp = new ModelNode();
                                 childResources.put(childPE, rrRsp);
 
-                                OperationStepHandler rrHandler = childReg.getOperationHandler(relativeAddr, opName);
+                                OperationStepHandler rrHandler = childReg.getOperationHandler(PathAddress.EMPTY_ADDRESS, opName);
                                 context.addStep(rrRsp, rrOp, rrHandler, OperationContext.Stage.IMMEDIATE);
                             }
                         }
@@ -859,7 +859,7 @@ public class GlobalOperationHandlers {
                         ModelNode rrRsp = new ModelNode();
                         childResources.put(element, rrRsp);
 
-                        final OperationStepHandler handler = childReg.isRemote() ? childReg.getOperationHandler(relativeAddr, opName) :
+                        final OperationStepHandler handler = childReg.isRemote() ? childReg.getOperationHandler(PathAddress.EMPTY_ADDRESS, opName) :
                                 new OperationStepHandler() {
                                     @Override
                                     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
