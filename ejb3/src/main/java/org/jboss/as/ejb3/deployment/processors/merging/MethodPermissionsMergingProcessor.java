@@ -154,14 +154,16 @@ public class MethodPermissionsMergingProcessor extends AbstractMergingProcessor<
                 final MethodPermissionsMetaData methodPermissions = assemblyDescriptor.getMethodPermissionsByEjbName(componentConfiguration.getEJBName());
                 if (methodPermissions != null) {
                     for (final MethodPermissionMetaData methodPermissionMetaData : methodPermissions) {
-                        EJBMethodSecurityAttribute ejbMethodSecurityMetaData;
-                        // EJB 3.1 FR 17.3.2.2 The unchecked element is used instead of a role name in the method-permission element to indicate that all roles are permitted.
-                        if (methodPermissionMetaData.isNotChecked())
-                            ejbMethodSecurityMetaData = EJBMethodSecurityAttribute.permitAll();
-                        else
-                            ejbMethodSecurityMetaData = EJBMethodSecurityAttribute.rolesAllowed(methodPermissionMetaData.getRoles());
+
                         final MethodsMetaData methods = methodPermissionMetaData.getMethods();
                         for (final MethodMetaData method : methods) {
+                            EJBMethodSecurityAttribute ejbMethodSecurityMetaData;
+                            // EJB 3.1 FR 17.3.2.2 The unchecked element is used instead of a role name in the method-permission element to indicate that all roles are permitted.
+                            if (methodPermissionMetaData.isNotChecked()) {
+                                ejbMethodSecurityMetaData = EJBMethodSecurityAttribute.permitAll();
+                            } else {
+                                ejbMethodSecurityMetaData = EJBMethodSecurityAttribute.rolesAllowed(methodPermissionMetaData.getRoles());
+                            }
                             final String methodName = method.getMethodName();
                             final MethodIntf methodIntf = this.getMethodIntf(method.getMethodIntf());
                             if (methodName.equals("*")) {
