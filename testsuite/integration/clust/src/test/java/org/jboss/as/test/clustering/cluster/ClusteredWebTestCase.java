@@ -44,7 +44,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -115,7 +114,6 @@ public class ClusteredWebTestCase {
     }
 
     @Test
-    @Ignore("AS7-2704 StackOverflowError on creating a web session in cluster")
     @OperateOnDeployment("deployment-1") // For change, operate on the 2nd deployment first
     public void testSessionReplication(@ArquillianResource(SimpleServlet.class) URL baseURL) throws IllegalStateException, IOException, InterruptedException {
         DefaultHttpClient client = new DefaultHttpClient();
