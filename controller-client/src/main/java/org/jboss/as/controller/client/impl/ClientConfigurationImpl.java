@@ -85,6 +85,11 @@ public class ClientConfigurationImpl implements ModelControllerClientConfigurati
     }
 
     @Override
+    public int getConnectionTimeout() {
+        return 5000;
+    }
+
+    @Override
     public ExecutorService getExecutor() {
         return executorService;
     }

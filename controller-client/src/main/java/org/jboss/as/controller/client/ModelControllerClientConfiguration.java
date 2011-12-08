@@ -48,6 +48,13 @@ public interface ModelControllerClientConfiguration {
     int getPort();
 
     /**
+     * Get the connection timeout when trying to connect to the server.
+     *
+     * @return the connection timeout
+     */
+    int getConnectionTimeout();
+
+    /**
      * Get the security callback handler.
      *
      * @return the callback handler

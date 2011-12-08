@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.security.auth.callback.Callback;
@@ -67,18 +68,20 @@ import org.xnio.OptionMap.Builder;
 public class ProtocolChannelClient implements Closeable {
 
     private static final String JBOSS_LOCAL_USER = "JBOSS-LOCAL-USER";
+    private final Configuration configuration;
     private final boolean startedEndpoint;
     private final Endpoint endpoint;
     private final Registration providerRegistration;
     private final URI uri;
 
     private ProtocolChannelClient(final boolean startedEndpoint, final Endpoint endpoint,
-                                 final Registration providerRegistration, final URI uri) {
+                                 final Registration providerRegistration, final Configuration configuration) {
 
         this.startedEndpoint = startedEndpoint;
         this.endpoint = endpoint;
         this.providerRegistration = providerRegistration;
-        this.uri = uri;
+        this.configuration = configuration;
+        this.uri = configuration.getUri();
     }
 
     public static ProtocolChannelClient create(final Configuration configuration) throws IOException {
@@ -90,11 +93,11 @@ public class ProtocolChannelClient implements Closeable {
         final Endpoint endpoint;
         if (configuration.getEndpoint() != null) {
             endpoint = configuration.getEndpoint();
-            return new ProtocolChannelClient(false, endpoint, null, configuration.getUri());
+            return new ProtocolChannelClient(false, endpoint, null, configuration);
         } else {
             endpoint = Remoting.createEndpoint(configuration.getEndpointName(), configuration.getOptionMap());
             Registration providerRegistration = endpoint.addConnectionProvider(configuration.getUri().getScheme(), new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
-            return new ProtocolChannelClient(true, endpoint, providerRegistration, configuration.getUri());
+            return new ProtocolChannelClient(true, endpoint, providerRegistration, configuration);
         }
     }
 
@@ -122,6 +125,19 @@ public class ProtocolChannelClient implements Closeable {
         CallbackHandler actualHandler = handler != null ? handler : new AnonymousCallbackHandler();
         WrapperCallbackHandler wrapperHandler = new WrapperCallbackHandler(actualHandler);
         return endpoint.connect(uri, builder.getMap(), wrapperHandler);
+    }
+
+    public Connection connectSync(CallbackHandler handler) throws IOException {
+        return connectSync(handler, null);
+    }
+
+    public Connection connectSync(CallbackHandler handler, Map<String, String> saslOptions) throws IOException {
+        final IoFuture<Connection> future = connect(handler, saslOptions);
+        final IoFuture.Status status = future.await(configuration.getConnectionTimeout(), TimeUnit.MILLISECONDS);
+        if(status == IoFuture.Status.DONE) {
+            return future.get();
+        }
+        throw ProtocolMessages.MESSAGES.couldNotConnect(uri);
     }
 
     private boolean isLocal() {
@@ -153,6 +169,7 @@ public class ProtocolChannelClient implements Closeable {
         private OptionMap optionMap = OptionMap.EMPTY;
         private ThreadGroup group;
         private String uriScheme;
+        private long connectionTimeout = DEFAULT_CONNECT_TIMEOUT;
         private URI uri;
 
         //Flags to avoid spamming logs with warnings every time someone tries to set these
@@ -236,6 +253,14 @@ public class ProtocolChannelClient implements Closeable {
 
         public void setUri(final URI uri) {
             this.uri = uri;
+        }
+
+        public long getConnectionTimeout() {
+            return connectionTimeout;
+        }
+
+        public void setConnectionTimeout(long connectionTimeout) {
+            this.connectionTimeout = connectionTimeout;
         }
 
         /**

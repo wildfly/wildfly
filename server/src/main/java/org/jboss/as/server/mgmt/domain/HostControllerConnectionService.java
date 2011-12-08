@@ -94,7 +94,7 @@ public class HostControllerConnectionService implements Service<Channel> {
         }
 
         try {
-            connection = client.connect(new ClientCallbackHandler()).get();
+            connection = client.connectSync(new ClientCallbackHandler());
             channel = connection.openChannel(ManagementRemotingServices.SERVER_CHANNEL, OptionMap.EMPTY).get();
             // channel.startReceiving();
         } catch (IOException e) {

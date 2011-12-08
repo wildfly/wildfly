@@ -147,7 +147,8 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
             try {
                 synchronized (this) {
                     if (connection == null) {
-                        this.connection = setup.connect(callbackHandler, saslOptions).get();
+                        // Connect with the configured timeout
+                        this.connection = setup.connectSync(callbackHandler, saslOptions);
                         this.connection.addCloseHandler(new CloseHandler<Connection>() {
                             @Override
                             public void handleClose(Connection closed, IOException exception) {

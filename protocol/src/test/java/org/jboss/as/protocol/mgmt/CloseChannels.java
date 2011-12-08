@@ -115,7 +115,7 @@ public class CloseChannels {
                 clientConfig.setUriScheme("testing");
                 ProtocolChannelClient protocolClient = ProtocolChannelClient.create(clientConfig);
                 final int val = i;
-                final Connection connection = protocolClient.connect(null).get(); // TODO
+                final Connection connection = protocolClient.connectSync(null); // TODO
                 System.out.println("Opening channel");
                 final Channel clientChannel = connection.openChannel("channel", OptionMap.EMPTY).get();
                 clientChannel.addCloseHandler(new CloseHandler<Channel>() {

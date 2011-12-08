@@ -114,7 +114,7 @@ public class RemoteChannelPairSetup {
         configuration.setUri(new URI("" + URI_SCHEME + "://127.0.0.1:" + PORT + ""));
 
         ProtocolChannelClient client = ProtocolChannelClient.create(configuration);
-        connection = client.connect(new PasswordClientCallbackHandler("bob",configuration.getEndpointName(),"pass".toCharArray())).get();
+        connection = client.connectSync(new PasswordClientCallbackHandler("bob",configuration.getEndpointName(),"pass".toCharArray()));
 
         clientChannel = connection.openChannel(TEST_CHANNEL, OptionMap.EMPTY).get();
         try {

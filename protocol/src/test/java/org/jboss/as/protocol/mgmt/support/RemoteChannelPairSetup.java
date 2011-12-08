@@ -116,7 +116,7 @@ public class RemoteChannelPairSetup implements RemotingChannelPairSetup {
         configuration.setOptionMap(OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE));
 
         ProtocolChannelClient client = ProtocolChannelClient.create(configuration);
-        connection = client.connect(new PasswordClientCallbackHandler("TestUser", "localhost.localdomain", "TestUserPassword".toCharArray())).get();
+        connection = client.connectSync(new PasswordClientCallbackHandler("TestUser", "localhost.localdomain", "TestUserPassword".toCharArray()));
         clientChannel = connection.openChannel(TEST_CHANNEL, OptionMap.EMPTY).get();
         try {
             clientConnectedLatch.await();

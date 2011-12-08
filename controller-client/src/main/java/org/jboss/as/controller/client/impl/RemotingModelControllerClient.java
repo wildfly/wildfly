@@ -25,7 +25,6 @@ package org.jboss.as.controller.client.impl;
 import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
 
 import java.io.IOException;
-import java.net.URI;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.ModelControllerClientConfiguration;
@@ -78,13 +77,13 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
             throw MESSAGES.objectIsClosed( ModelControllerClient.class.getSimpleName());
         }
         if (strategy == null) {
-            // TODO move the endpoint creation somewhere else?
-            endpoint = Remoting.createEndpoint("management-client", OptionMap.EMPTY);
-            endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
-
-            final ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
             try {
-                configuration.setUri(new URI("remote://" + clientConfiguration.getHost() +  ":" + clientConfiguration.getPort()));
+                final ProtocolChannelClient.Configuration configuration = ProtocolConfigurationFactory.create(clientConfiguration);
+
+                // TODO move the endpoint creation somewhere else?
+                endpoint = Remoting.createEndpoint("management-client", OptionMap.EMPTY);
+                endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
+
                 configuration.setEndpoint(endpoint);
                 configuration.setEndpointName("management-client");
 

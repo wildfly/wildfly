@@ -209,7 +209,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         configuration.setUriScheme("remote");
 
         this.handler = new TransactionalModelControllerOperationHandler(controller, executor);
-        final IoFuture<Connection> connection;
+        final Connection connection;
         try {
             configuration.setUri(new URI("remote://" + host.getHostAddress() + ":" + port));
             client = ProtocolChannelClient.create(configuration);
@@ -223,10 +223,10 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             if (handlerFactory != null) {
                 handler = handlerFactory.getCallbackHandler(name);
             }
-            connection = client.connect(handler);
+            connection = client.connectSync(handler);
             this.channelClient = client;
 
-            channel = connection.get().openChannel(ManagementRemotingServices.DOMAIN_CHANNEL, OptionMap.EMPTY).get();
+            channel = connection.openChannel(ManagementRemotingServices.DOMAIN_CHANNEL, OptionMap.EMPTY).get();
             channel.addCloseHandler(new CloseHandler<Channel>() {
                 public void handleClose(final Channel closed, final IOException exception) {
                     connectionClosed();
