@@ -4,12 +4,17 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.capedwarf.appidentity.GAEFilter;
 import org.jboss.capedwarf.users.AuthServlet;
 import org.jboss.logging.Logger;
-import org.jboss.metadata.web.spec.*;
+import org.jboss.metadata.web.spec.FilterMappingMetaData;
+import org.jboss.metadata.web.spec.FilterMetaData;
+import org.jboss.metadata.web.spec.FiltersMetaData;
+import org.jboss.metadata.web.spec.ServletMappingMetaData;
+import org.jboss.metadata.web.spec.ServletMetaData;
+import org.jboss.metadata.web.spec.ServletsMetaData;
+import org.jboss.metadata.web.spec.WebMetaData;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,6 +41,9 @@ public class CapedwarfFiltersDeploymentProcessor implements DeploymentUnitProces
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         WebMetaData webMetaData = getWebMetaData(phaseContext);
+        if (webMetaData == null) {
+            return;
+        }
 
         addFilterTo(webMetaData);
         addFilterMappingTo(webMetaData);
@@ -47,7 +55,7 @@ public class CapedwarfFiltersDeploymentProcessor implements DeploymentUnitProces
     private WebMetaData getWebMetaData(DeploymentPhaseContext phaseContext) {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
-        return warMetaData.getSharedWebMetaData();
+        return warMetaData == null ? null : warMetaData.getSharedWebMetaData();
     }
 
     private void addFilterTo(WebMetaData webMetaData) {
