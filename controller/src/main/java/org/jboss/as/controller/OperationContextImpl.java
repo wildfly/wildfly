@@ -76,7 +76,6 @@ final class OperationContextImpl extends AbstractOperationContext {
     private final Map<ServiceName, ServiceController<?>> realRemovingControllers = new HashMap<ServiceName, ServiceController<?>>();
     // protected by "realRemovingControllers"
     private final Map<ServiceName, Step> removalSteps = new HashMap<ServiceName, Step>();
-    private final boolean booting;
     private final OperationAttachments attachments;
     /** Tracks whether any steps have gotten write access to the model */
     private final Map<PathAddress, Object> affectsModel;
@@ -102,8 +101,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                             final OperationMessageHandler messageHandler, final OperationAttachments attachments,
                             final Resource model, final ModelController.OperationTransactionControl transactionControl,
                             final ControlledProcessState processState, final boolean booting) {
-        super(contextType, transactionControl, processState);
-        this.booting = booting;
+        super(contextType, transactionControl, processState, booting);
         this.model = model;
         this.originalModel = model;
         this.modelController = modelController;
@@ -149,10 +147,6 @@ final class OperationContextImpl extends AbstractOperationContext {
     @Override
     ConfigurationPersister.PersistenceResource createPersistenceResource() throws ConfigurationPersistenceException {
         return modelController.writeModel(model, affectsModel.keySet());
-    }
-
-    public boolean isBooting() {
-        return booting;
     }
 
     @Override

@@ -110,7 +110,8 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
             transactionControls.put(entry.getKey(), txControl);
 
             // Execute the subsystem's ops in another thread
-            ParallelBootTask subsystemTask = new ParallelBootTask(subsystemName, entry.getValue(), context, txControl, subsystemRuntimeOps, controllingThread);
+            ParallelBootTask subsystemTask = new ParallelBootTask(subsystemName, entry.getValue(), context, txControl,
+                    subsystemRuntimeOps, controllingThread);
             executor.execute(subsystemTask);
         }
 
@@ -255,6 +256,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                     long elapsed = System.currentTimeMillis() - start;
                     MGMT_OP_LOGGER.debugf("Ran subsystem runtime operations in [%d] ms", elapsed);
                 }
+
 
                 // Continue boot
                 OperationContext.ResultAction resultAction = context.completeStep();

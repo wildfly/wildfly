@@ -41,6 +41,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.EnumMap;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.client.MessageSeverity;
@@ -62,6 +63,7 @@ abstract class AbstractOperationContext implements OperationContext {
     private final EnumMap<Stage, Deque<Step>> steps;
     private final ModelController.OperationTransactionControl transactionControl;
     private final ControlledProcessState processState;
+    private final boolean booting;
 
     boolean respectInterruption = true;
 
@@ -80,15 +82,26 @@ abstract class AbstractOperationContext implements OperationContext {
 
     AbstractOperationContext(final Type contextType,
                              final ModelController.OperationTransactionControl transactionControl,
-                             final ControlledProcessState processState) {
+                             final ControlledProcessState processState, boolean booting) {
         this.contextType = contextType;
         this.transactionControl = transactionControl;
         this.processState = processState;
+        this.booting = booting;
         steps = new EnumMap<Stage, Deque<Step>>(Stage.class);
         for (Stage stage : Stage.values()) {
-            steps.put(stage, new ArrayDeque<Step>());
+            if (booting && stage == Stage.VERIFY) {
+                // Use a concurrent structure as the parallel boot threads will concurrently add steps
+                steps.put(stage, new LinkedBlockingDeque<Step>());
+            } else {
+                steps.put(stage, new ArrayDeque<Step>());
+            }
         }
         initiatingThread = Thread.currentThread();
+    }
+
+    @Override
+    public boolean isBooting() {
+        return booting;
     }
 
     public void addStep(final OperationStepHandler step, final Stage stage) throws IllegalArgumentException {

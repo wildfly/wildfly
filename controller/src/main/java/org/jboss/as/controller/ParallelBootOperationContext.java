@@ -51,8 +51,9 @@ class ParallelBootOperationContext extends AbstractOperationContext {
 
     ParallelBootOperationContext(final ModelController.OperationTransactionControl transactionControl,
                                  final ControlledProcessState processState, final OperationContext primaryContext,
-                                 final List<ParsedBootOp> runtimeOps, final Thread controllingThread) {
-        super(Type.SERVER, transactionControl, processState);
+                                 final List<ParsedBootOp> runtimeOps,
+                                 final Thread controllingThread) {
+        super(Type.SERVER, transactionControl, processState, true);
         this.primaryContext = primaryContext;
         this.runtimeOps = runtimeOps;
         AbstractOperationContext.controllingThread.set(controllingThread);
@@ -106,12 +107,6 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     @Override
     public int getAttachmentStreamCount() {
         return primaryContext.getAttachmentStreamCount();
-    }
-
-    @Override
-    public boolean isBooting() {
-        // We are only used during boot
-        return true;
     }
 
     @Override
