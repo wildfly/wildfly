@@ -193,11 +193,11 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
             beanMethodMap.put(op.getIDLName(), new SkeletonStrategy(method));
             final OperationAnalysis setop = remoteAttrs[i].getMutatorAnalysis();
             if (setop != null) {
-                logger.debug("    " + op.getJavaName() + "\n                " + op.getIDLName());
+                logger.debug("    " + setop.getJavaName() + "\n                " + setop.getIDLName());
                 //translate to the deployment reflection index method
                 //TODO: this needs to be fixed so it just returns the correct method
                 final Method realSetmethod = translateMethod(deploymentReflectionIndex, setop);
-                beanMethodMap.put(op.getIDLName(), new SkeletonStrategy(realSetmethod));
+                beanMethodMap.put(setop.getIDLName(), new SkeletonStrategy(realSetmethod));
             }
         }
 
