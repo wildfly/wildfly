@@ -281,7 +281,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
             ManagementRemotingServices.installRemotingEndpoint(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
                     hostControllerInfo.getLocalHostName(), EndpointService.EndpointType.MANAGEMENT, null, null);
 
-            if (!hostControllerInfo.isMasterDomainController()) {
+            if (!hostControllerInfo.isMasterDomainController() && !environment.isUseCachedDc()) {
                 serverInventory = getFuture(inventoryFuture);
 
                 Future<MasterDomainControllerClient> clientFuture = RemoteDomainConnectionService.install(serviceTarget,
