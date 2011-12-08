@@ -22,22 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -96,15 +81,16 @@ public class InfinispanDescriptions {
         ModelNode description = createDescription(resources, "infinispan.container");
 
         // information about its child "singleton=transport"
-//        description.get(CHILDREN, ModelKeys.SINGLETON, DESCRIPTION).set("The container transport configuration");
-//        description.get(CHILDREN, ModelKeys.SINGLETON, MIN_OCCURS).set(0);
-//        description.get(CHILDREN, ModelKeys.SINGLETON, MAX_OCCURS).set(1);
-//        description.get(CHILDREN, ModelKeys.SINGLETON, MODEL_DESCRIPTION);
+        description.get(CHILDREN, ModelKeys.SINGLETON, DESCRIPTION).set("The container transport configuration");
+        description.get(CHILDREN, ModelKeys.SINGLETON, MIN_OCCURS).set(0);
+        description.get(CHILDREN, ModelKeys.SINGLETON, MAX_OCCURS).set(1);
+        description.get(CHILDREN, ModelKeys.SINGLETON, ALLOWED).setEmptyList().add("transport");
+        description.get(CHILDREN, ModelKeys.SINGLETON, MODEL_DESCRIPTION);
 
-        description.get(CHILDREN, ModelKeys.TRANSPORT, DESCRIPTION).set("The container transport configuration");
-        description.get(CHILDREN, ModelKeys.TRANSPORT, MIN_OCCURS).set(0);
-        description.get(CHILDREN, ModelKeys.TRANSPORT, MAX_OCCURS).set(1);
-        description.get(CHILDREN, ModelKeys.TRANSPORT, MODEL_DESCRIPTION);
+//        description.get(CHILDREN, ModelKeys.TRANSPORT, DESCRIPTION).set("The container transport configuration");
+//        description.get(CHILDREN, ModelKeys.TRANSPORT, MIN_OCCURS).set(0);
+//        description.get(CHILDREN, ModelKeys.TRANSPORT, MAX_OCCURS).set(1);
+//        description.get(CHILDREN, ModelKeys.TRANSPORT, MODEL_DESCRIPTION);
 
         // information about its child "local-cache"
         description.get(CHILDREN, ModelKeys.LOCAL_CACHE, DESCRIPTION).set("A local cache resource");
