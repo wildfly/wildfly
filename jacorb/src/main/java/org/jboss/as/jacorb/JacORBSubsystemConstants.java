@@ -81,6 +81,7 @@ public final class JacORBSubsystemConstants {
     public static final String INTEROP_STRICT_CHECK_ON_TC_CREATION = "strict-check-on-tc-creation";
     public static final String SECURITY = "security";
     public static final String SECURITY_SUPPORT_SSL = "support-ssl";
+    public static final String SECURITY_SECURITY_DOMAIN = "security-domain";
     public static final String SECURITY_ADD_COMP_VIA_INTERCEPTOR = "add-component-via-interceptor";
     public static final String SECURITY_CLIENT_SUPPORTS = "client-supports";
     public static final String SECURITY_CLIENT_REQUIRES = "client-requires";
@@ -106,6 +107,8 @@ public final class JacORBSubsystemConstants {
     public static final String JacORB_ORB_SINGLETON_CLASS = "org.jacorb.orb.ORBSingleton";
     public static final String JACORB_STD_INITIALIZER_KEY = ORB_INITIALIZER_PREFIX + "standard_init";
     public static final String JACORB_STD_INITIALIZER_VALUE = "org.jacorb.orb.standardInterceptors.IORInterceptorInitializer";
+    public static final String JACORB_SSL_SOCKET_FACTORY = "jacorb.ssl.socket_factory";
+    public static final String JACORB_SSL_SERVER_SOCKET_FACTORY = "jacorb.ssl.server_socket_factory";
 
     // JacORB configuration properties that are built and set by the ORB service.
     public static final String JACORB_NAME_SERVICE_INIT_REF = "ORBInitRef.NameService";

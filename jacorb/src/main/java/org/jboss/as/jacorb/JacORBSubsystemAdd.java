@@ -35,6 +35,8 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.jacorb.deployment.JacORBDependencyProcessor;
 import org.jboss.as.jacorb.deployment.JacORBMarkerProcessor;
 import org.jboss.as.jacorb.naming.jndi.JBossCNCtxFactory;
+import org.jboss.as.jacorb.security.DomainServerSocketFactory;
+import org.jboss.as.jacorb.security.DomainSocketFactory;
 import org.jboss.as.jacorb.service.CorbaNamingService;
 import org.jboss.as.jacorb.service.CorbaORBService;
 import org.jboss.as.jacorb.service.CorbaPOAService;
@@ -130,6 +132,9 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
         // setup the ORB initializers using the configured properties.
         this.setupInitializers(props);
 
+        // setup the SSL socket factories, if necessary.
+        this.setupSSLFactories(props);
+
         // create the service that initializes and starts the CORBA ORB.
         CorbaORBService orbService = new CorbaORBService(props);
         final ServiceBuilder<ORB> builder = context.getServiceTarget().addService(
@@ -196,14 +201,17 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
 
         // get the configuration properties from the attribute definitions.
         for (SimpleAttributeDefinition attrDefinition : JacORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES) {
-            String name = attrDefinition.getName();
-            String value = attrDefinition.validateResolvedOperation(node).asString();
+            ModelNode resolvedModelAttribute = attrDefinition.validateResolvedOperation(node);
+            if (resolvedModelAttribute.isDefined()) {
+                String name = attrDefinition.getName();
+                String value = resolvedModelAttribute.asString();
 
-            // check if the property can be mapped to a jacorb property.
-            String jacorbProperty = PropertiesMap.JACORB_PROPS_MAP.get(name);
-            if (jacorbProperty != null)
-                name = jacorbProperty;
-            props.setProperty(name, value);
+                // check if the property can be mapped to a jacorb property.
+                String jacorbProperty = PropertiesMap.JACORB_PROPS_MAP.get(name);
+                if (jacorbProperty != null)
+                    name = jacorbProperty;
+                props.setProperty(name, value);
+            }
         }
 
         // check if the node contains a list of generic properties.
@@ -243,5 +251,30 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
                 JacORBSubsystemConstants.JACORB_STD_INITIALIZER_VALUE);
         for (String initializerClass : orbInitializers)
             props.setProperty(JacORBSubsystemConstants.ORB_INITIALIZER_PREFIX + initializerClass, "");
+    }
+
+    /**
+     * <p>
+     * Sets up the SSL domain socket factories if SSL support has been enabled.
+     * </p>
+     *
+     * @param props the subsystem configuration properties.
+     * @throws OperationFailedException if the SSL setup has not been done correctly (SSL support has been turned on
+     * but no security domain has been specified).
+     */
+    private void setupSSLFactories(Properties props) throws OperationFailedException {
+        String supportSSLKey = PropertiesMap.JACORB_PROPS_MAP.get(JacORBSubsystemConstants.SECURITY_SUPPORT_SSL);
+        boolean supportSSL = "on".equals(props.getProperty(supportSSLKey));
+
+        if (supportSSL) {
+            // if SSL is to be used, check if a security domain has been specified.
+            String securityDomain = props.getProperty(JacORBSubsystemConstants.SECURITY_SECURITY_DOMAIN);
+            if (securityDomain == null || securityDomain.isEmpty())
+                throw new OperationFailedException("SSL support has been enabled but no security domain has been specified.");
+
+            // add the domain socket factories.
+            props.setProperty(JacORBSubsystemConstants.JACORB_SSL_SOCKET_FACTORY, DomainSocketFactory.class.getName());
+            props.setProperty(JacORBSubsystemConstants.JACORB_SSL_SERVER_SOCKET_FACTORY, DomainServerSocketFactory.class.getName());
+        }
     }
 }

@@ -267,6 +267,11 @@ class JacORBSubsystemDefinitions {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
+    public static final SimpleAttributeDefinition SECURITY_SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(
+            JacORBSubsystemConstants.SECURITY_SECURITY_DOMAIN, ModelType.STRING, true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build();
+
     public static final SimpleAttributeDefinition SECURITY_ADD_COMPONENT_INTERCEPTOR = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.SECURITY_ADD_COMP_VIA_INTERCEPTOR, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_ENABLED_PROPERTY)
@@ -344,8 +349,9 @@ class JacORBSubsystemDefinitions {
 
     // list that contains the security attribute definitions.
     static final List<SimpleAttributeDefinition> SECURITY_ATTRIBUTES = Arrays.asList(SECURITY_SUPPORT_SSL,
-            SECURITY_ADD_COMPONENT_INTERCEPTOR, SECURITY_CLIENT_SUPPORTS, SECURITY_CLIENT_REQUIRES,
-            SECURITY_SERVER_SUPPORTS, SECURITY_SERVER_REQUIRES, SECURITY_USE_DOMAIN_SF, SECURITY_USE_DOMAIN_SSF);
+            SECURITY_SECURITY_DOMAIN, SECURITY_ADD_COMPONENT_INTERCEPTOR, SECURITY_CLIENT_SUPPORTS,
+            SECURITY_CLIENT_REQUIRES, SECURITY_SERVER_SUPPORTS, SECURITY_SERVER_REQUIRES, SECURITY_USE_DOMAIN_SF,
+            SECURITY_USE_DOMAIN_SSF);
 
     // list that contains all attribute definitions.
     static final List<SimpleAttributeDefinition> SUBSYSTEM_ATTRIBUTES;

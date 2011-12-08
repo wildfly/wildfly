@@ -231,6 +231,8 @@
                 The securityConfigType specifies the attributes used to configure the ORB security features.
 
                 * support-ssl: indicates whether SSL is to be supported (on) or not (off).
+                * security-domain: the name of the security domain that holds the key and trust stores that will be used
+                                   to establish SSL connections.
                 * add-component-via-interceptor: indicates whether SSL components should be added by an IOR interceptor
                                                  (on) or not (off).
                 * client-supports: value that indicates the client SSL supported parameters (EstablishTrustInTarget=20,
@@ -249,6 +251,7 @@
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="support-ssl" type="xs:string" use="optional" default="off"/>
+        <xs:attribute name="security-domain" type="xs:string" use="optional"/>
         <xs:attribute name="add-component-via-interceptor" type="xs:string" use="optional" default="on"/>
         <xs:attribute name="client-supports" type="xs:integer" use="optional" default="60"/>
         <xs:attribute name="client-requires" type="xs:integer" use="optional" default="0"/>

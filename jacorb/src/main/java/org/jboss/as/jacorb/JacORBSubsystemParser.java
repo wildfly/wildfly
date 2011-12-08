@@ -459,9 +459,10 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
      */
     private void parseSecurityConfig(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
         // parse all security attributes.
-        EnumSet<Attribute> expectedAttributes = EnumSet.of(Attribute.SECURITY_SUPPORT_SSL, Attribute.SECURITY_ADD_COMPONENT_INTERCEPTOR,
-                Attribute.SECURITY_CLIENT_SUPPORTS, Attribute.SECURITY_CLIENT_REQUIRES, Attribute.SECURITY_SERVER_SUPPORTS,
-                Attribute.SECURITY_SERVER_REQUIRES, Attribute.SECURITY_USE_DOMAIN_SF, Attribute.SECURITY_USE_DOMAIN_SSF);
+        EnumSet<Attribute> expectedAttributes = EnumSet.of(Attribute.SECURITY_SUPPORT_SSL, Attribute.SECURITY_SECURITY_DOMAIN,
+                Attribute.SECURITY_ADD_COMPONENT_INTERCEPTOR, Attribute.SECURITY_CLIENT_SUPPORTS, Attribute.SECURITY_CLIENT_REQUIRES,
+                Attribute.SECURITY_SERVER_SUPPORTS, Attribute.SECURITY_SERVER_REQUIRES, Attribute.SECURITY_USE_DOMAIN_SF,
+                Attribute.SECURITY_USE_DOMAIN_SSF);
         this.parseAttributes(reader, node, expectedAttributes, null);
         // the security element doesn't have child elements.
         requireNoContent(reader);
@@ -1054,6 +1055,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
 
         // attributes of the security element.
         SECURITY_SUPPORT_SSL(JacORBSubsystemConstants.SECURITY_SUPPORT_SSL),
+        SECURITY_SECURITY_DOMAIN(JacORBSubsystemConstants.SECURITY_SECURITY_DOMAIN),
         SECURITY_ADD_COMPONENT_INTERCEPTOR(JacORBSubsystemConstants.SECURITY_ADD_COMP_VIA_INTERCEPTOR),
         SECURITY_CLIENT_SUPPORTS(JacORBSubsystemConstants.SECURITY_CLIENT_SUPPORTS),
         SECURITY_CLIENT_REQUIRES(JacORBSubsystemConstants.SECURITY_CLIENT_REQUIRES),
