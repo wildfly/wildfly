@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.jboss.as</groupId>
+        <artifactId>jboss-as-parent</artifactId>
+        <version>7.1.0.CR1-SNAPSHOT</version>
+    </parent>
+
+    <groupId>org.jboss.as</groupId>
+    <artifactId>jboss-as-testsuite-shared</artifactId>
+    <packaging>jar</packaging>
+    <version>7.1.0.CR1-SNAPSHOT</version>
+
+    <name>JBoss Application Server Test Suite: Shared</name>
+    
+    
+    <properties>
+        <!-- Arquillian dependency versions -->
+        <version.arquillian_core>${version.org.jboss.arquillian.core}</version.arquillian_core>
+        <version.arquillian_as7>${project.parent.version}</version.arquillian_as7>
+        <version.xml.maven.plugin>1.0</version.xml.maven.plugin>
+        <version.saxon>8.7</version.saxon>
+    </properties>
+    
+    <build>
+        <plugins>
+            <!-- TODO: Don't fail on checkstyle until AS7-2954 is fixed.  -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <configuration>
+                    <failsOnError>false</failsOnError>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-build</artifactId>
+            <type>pom</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>org.osgi.foundation</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!--
+        <dependency>
+            <groupId>org.jboss.arquillian.junit</groupId>
+            <artifactId>arquillian-junit-container</artifactId>
+            <scope>test</scope>
+        </dependency>
+        -->
+        <!-- org.jboss.as.arquillian.container.* -->
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-arquillian-container-managed</artifactId>
+            <version>${version.arquillian_as7}</version>
+        </dependency>
+
+        <!-- TODO: FIX AS7-2954 and remove. --> 
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+    </dependencies>
+    
+</project>
