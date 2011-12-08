@@ -22,13 +22,16 @@
 package org.jboss.as.controller.remote;
 
 
+import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
+import org.jboss.msc.service.StopContext;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.HandleableCloseable;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Service used to create a new client protocol operation handler per channel
@@ -37,8 +40,10 @@ import java.io.IOException;
  */
 public class ModelControllerClientOperationHandlerFactoryService extends AbstractModelControllerOperationHandlerFactoryService {
 
+    private volatile ManagementMessageHandler handler;
+
     @Override
-    public HandleableCloseable.Key startReceiving(Channel channel) {
+    public synchronized HandleableCloseable.Key startReceiving(Channel channel) {
         final ManagementMessageHandler handler = new ModelControllerClientOperationHandler(getController(), getExecutor());
         final Channel.Receiver receiver = ManagementChannelReceiver.createDelegating(handler);
         Channel.Key key = channel.addCloseHandler(new CloseHandler<Channel>() {
@@ -51,4 +56,19 @@ public class ModelControllerClientOperationHandlerFactoryService extends Abstrac
         return key;
     }
 
+    @Override
+    public synchronized void stop(StopContext context) {
+        super.stop(context);
+        final ManagementMessageHandler handler = this.handler;
+        if(handler != null) {
+            handler.shutdown();
+            try {
+                handler.awaitCompletion(100, TimeUnit.MILLISECONDS);
+            } catch (Exception e) {
+                ControllerLogger.ROOT_LOGGER.warnf(e , "service shutdown did not complete");
+            } finally {
+                handler.shutdownNow();
+            }
+        }
+    }
 }
