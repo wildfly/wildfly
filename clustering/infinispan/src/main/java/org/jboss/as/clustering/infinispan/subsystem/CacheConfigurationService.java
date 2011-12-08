@@ -55,7 +55,7 @@ public class CacheConfigurationService implements Service<Configuration> {
     private final String template;
     private final Configuration overrides ;
     private final CacheConfigurationHelper configurationHelper;
-    private volatile Configuration configuration ;
+    private Configuration configuration ;
 
     public static ServiceName getServiceName(String container, String cache) {
         return EmbeddedCacheManagerService.getServiceName(container)
@@ -95,7 +95,8 @@ public class CacheConfigurationService implements Service<Configuration> {
 
         // set up the cache configuration
         Configuration.CacheMode mode = this.overrides.getCacheMode() ;
-        configuration = defaults.getDefaultConfiguration(mode);
+        Configuration configurationDefaults = defaults.getDefaultConfiguration(mode);
+        configuration = configurationDefaults.clone() ;
         configuration.applyOverrides(overrides);
 
         // check for missing dependencies
@@ -132,7 +133,10 @@ public class CacheConfigurationService implements Service<Configuration> {
         }
 
         // advertise
-        log.debugf("Cache configuration defined for cache %s", this.name);
+        if (log.isDebugEnabled()) {
+            Configuration config = ((EmbeddedCacheManager) container).defineConfiguration(this.name, new Configuration());
+            log.debugf("Cache configuration defined for cache %s with contents: %s", this.name, dumpCacheConfiguration(this.name, config));
+        }
     }
 
     /**
@@ -142,6 +146,20 @@ public class CacheConfigurationService implements Service<Configuration> {
     @Override
     public void stop(StopContext context) {
         // TODO should we try to nullify the configuration in the cache manager?
+    }
+
+    private String dumpCacheConfiguration(String name, Configuration c) {
+        StringBuffer sb = new StringBuffer() ;
+        if (name != null && c != null) {
+            sb.append("cache name: " + name) ;
+            sb.append(", eviction strategy: " + c.getEvictionStrategy()) ;
+            sb.append(", eviction max entries: " + c.getEvictionMaxEntries()) ;
+            sb.append(", expiration max idle: " + c.getExpirationMaxIdle());
+            sb.append(", expiration lifespan: " + c.getExpirationLifespan());
+            sb.append(", expiration interval: " + c.getExpirationWakeUpInterval());
+            return sb.toString() ;
+        }
+        return null ;
     }
 
     static class CacheConfigurationHelperImpl implements CacheConfigurationHelper {
