@@ -107,7 +107,7 @@ public class ReadAttributeHandler extends BaseOperationCommand {
                     return Collections.emptyList();
                 }
                 return Collections.emptyList();
-            }}), "--name");
+            }}), 0, "--name");
 
         includeDefaults = new ArgumentWithValue(this, SimpleTabCompleter.BOOLEAN, "--include-defaults");
 
