@@ -254,7 +254,8 @@ public final class Main {
             }
         }
 
-        return new ServerEnvironment(systemProperties, systemEnvironment, serverConfig, launchType, runningMode);
+        String hostControllerName = null; // No host controller unless in domain mode.
+        return new ServerEnvironment(hostControllerName, systemProperties, systemEnvironment, serverConfig, launchType, runningMode);
     }
 
     private static String parseValue(final String arg, final String key) {

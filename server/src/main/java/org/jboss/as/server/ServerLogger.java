@@ -34,9 +34,13 @@ import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 /**
- * Date: 05.11.2011
+ * This module is using message IDs in the range 15700-15999.
+ * This file is using the subset 15850-15875 for server logger messages.
+ * See http://community.jboss.org/docs/DOC-16810 for the full list of
+ * currently reserved JBAS message id blocks.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author Mike M. Clark
  */
 @MessageLogger(projectCode = "JBAS")
 public interface ServerLogger extends BasicLogger {

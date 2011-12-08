@@ -241,7 +241,9 @@ public class ServerControllerUnitTestCase {
             this.rootRegistration = rootRegistration;
             Properties properties = new Properties();
             properties.put("jboss.home.dir", ".");
-            final ServerEnvironment environment = new ServerEnvironment(properties, new HashMap<String, String>(), null, ServerEnvironment.LaunchType.DOMAIN, null);
+
+            final String hostControllerName = "hostControllerName"; // Host Controller name may not be null when in a managed domain
+            final ServerEnvironment environment = new ServerEnvironment(hostControllerName, properties, new HashMap<String, String>(), null, ServerEnvironment.LaunchType.DOMAIN, null);
             ServerControllerModelUtil.initOperations(rootRegistration, null, persister, environment, processState, null, null, false);
         }
 

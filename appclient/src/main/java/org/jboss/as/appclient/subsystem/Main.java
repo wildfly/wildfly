@@ -228,7 +228,8 @@ public final class Main {
             }
         }
 
-        ret.environment = new ServerEnvironment(systemProperties, systemEnvironment, appClientConfig, launchType, null);
+        String hostControllerName = null; // No host controller unless in domain mode.
+        ret.environment = new ServerEnvironment(hostControllerName, systemProperties, systemEnvironment, appClientConfig, launchType, null);
         return ret;
     }
 

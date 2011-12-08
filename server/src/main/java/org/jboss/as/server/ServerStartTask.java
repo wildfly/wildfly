@@ -49,6 +49,7 @@ import org.jboss.threads.AsyncFuture;
  * in order to bootstrap it from a remote source process.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Mike M. Clark
  */
 public final class ServerStartTask implements ServerTask, Serializable, ObjectInputValidation {
 
@@ -60,9 +61,12 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
     private final List<ModelNode> updates;
     private final ServerEnvironment providedEnvironment;
 
-    public ServerStartTask(final String serverName, final int portOffset, final List<ServiceActivator> startServices, final List<ModelNode> updates) {
+    public ServerStartTask(final String hostControllerName, final String serverName, final int portOffset, final List<ServiceActivator> startServices, final List<ModelNode> updates) {
         if (serverName == null || serverName.length() == 0) {
-            throw new IllegalArgumentException("Server name " + serverName + " is invalid; cannot be null or blank");
+            throw new IllegalArgumentException("Server name \"" + serverName + "\" is invalid; cannot be null or blank");
+        }
+        if (hostControllerName == null || hostControllerName.length() == 0) {
+            throw new IllegalArgumentException("Host Controller name \"" + hostControllerName + "\" is invalid; cannot be null or blank");
         }
         this.serverName = serverName;
         this.portOffset = portOffset;
@@ -73,7 +77,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         properties.setProperty(ServerEnvironment.SERVER_DEPLOY_DIR, properties.getProperty("jboss.domain.deployment.dir"));
         properties.setProperty(ServerEnvironment.SERVER_BASE_DIR, properties.getProperty("jboss.domain.servers.dir") + File.separatorChar + serverName);
         properties.setProperty(ServerEnvironment.CONTROLLER_TEMP_DIR, properties.getProperty("jboss.domain.temp.dir"));
-        providedEnvironment = new ServerEnvironment(properties, System.getenv(), null, ServerEnvironment.LaunchType.DOMAIN, RunningMode.NORMAL);
+        providedEnvironment = new ServerEnvironment(hostControllerName, properties, System.getenv(), null, ServerEnvironment.LaunchType.DOMAIN, RunningMode.NORMAL);
     }
 
     @Override
