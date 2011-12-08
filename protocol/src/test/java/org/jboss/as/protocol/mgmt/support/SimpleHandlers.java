@@ -26,12 +26,11 @@ import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
-import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
 import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementProtocolHeader;
@@ -204,21 +203,28 @@ public class SimpleHandlers {
             return super.executeRequest(request, channel, support);
         }
 
-        public static SimpleClient create(final ManagementChannel channel, final ExecutorService executorService) {
+        public static SimpleClient create(final Channel channel, final ExecutorService executorService) {
             final SimpleClient client = new SimpleClient(channel, executorService);
-            channel.setReceiver(ManagementChannelReceiver.createDelegating(client));
             channel.addCloseHandler(new CloseHandler<Channel>() {
                 @Override
                 public void handleClose(Channel closed, IOException exception) {
-                    client.shutdown();
+                    client.shutdownNow();
                 }
             });
-            channel.startReceiving();
+            channel.receiveMessage(ManagementChannelReceiver.createDelegating(client));
             return client;
         }
 
+        public void shutdown() {
+            super.shutdown();
+        }
+
+        public boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException {
+            return super.awaitCompletion(timeout, unit);
+        }
+
         public static SimpleClient create(final RemotingChannelPairSetup setup) {
-            final ManagementChannel channel = setup.getClientChannel();
+            final Channel channel = setup.getClientChannel();
             return create(channel, setup.getExecutorService());
         }
 

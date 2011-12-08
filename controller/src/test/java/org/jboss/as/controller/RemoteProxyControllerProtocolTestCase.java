@@ -39,6 +39,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -54,7 +55,7 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
 import org.jboss.as.controller.support.RemoteChannelPairSetup;
-import org.jboss.as.protocol.mgmt.ManagementChannel;
+import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
 import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementProtocolHeader;
 import org.jboss.dmr.ModelNode;
@@ -78,7 +79,7 @@ public class RemoteProxyControllerProtocolTestCase {
     public void start() throws Exception {
         channels = new RemoteChannelPairSetup();
         channels.setupRemoting(handler);
-        channels.startChannels();
+        channels.startClientConnetion();
     }
 
     @After
@@ -525,17 +526,15 @@ public class RemoteProxyControllerProtocolTestCase {
 
         handler.setDelegate(new TransactionalModelControllerOperationHandler(controller, channels.getExecutorService()));
 
-        final ManagementChannel clientChannel = channels.getClientChannel();
+        final Channel clientChannel = channels.getClientChannel();
         final RemoteProxyController proxyController = RemoteProxyController.create(channels.getExecutorService(), PathAddress.pathAddress(), ProxyOperationAddressTranslator.HOST, channels.getClientChannel());
-        clientChannel.setReceiver(proxyController);
         clientChannel.addCloseHandler(new CloseHandler<Channel>() {
             @Override
             public void handleClose(Channel closed, IOException exception) {
-                proxyController.shutdown();
+                proxyController.shutdownNow();
             }
         });
-        clientChannel.startReceiving();
-
+        clientChannel.receiveMessage(ManagementChannelReceiver.createDelegating(proxyController));
         return proxyController;
     }
 
@@ -608,6 +607,21 @@ public class RemoteProxyControllerProtocolTestCase {
         public void shutdown() {
             if(delegate != null) {
                 delegate.shutdown();
+            }
+        }
+
+        @Override
+        public boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException {
+            if(delegate != null) {
+                return delegate.awaitCompletion(timeout, unit);
+            }
+            return true;
+        }
+
+        @Override
+        public void shutdownNow() {
+            if(delegate != null) {
+                delegate.shutdownNow();
             }
         }
     }

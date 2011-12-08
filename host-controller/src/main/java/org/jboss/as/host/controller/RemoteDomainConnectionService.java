@@ -61,8 +61,6 @@ import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
 import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
-import org.jboss.as.protocol.mgmt.ManagementChannel;
-import org.jboss.as.protocol.mgmt.ManagementChannelFactory;
 import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
@@ -79,9 +77,12 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
+import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
+import org.xnio.IoFuture;
+import org.xnio.OptionMap;
 
 
 /**
@@ -99,11 +100,11 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     private final String name;
     private final RemoteFileRepository remoteFileRepository;
 
-    private volatile ProtocolChannelClient<ManagementChannel> channelClient;
+    private volatile ProtocolChannelClient channelClient;
     /** Used to invoke ModelController ops on the master */
     private volatile ModelControllerClient masterProxy;
     private final AtomicBoolean shutdown = new AtomicBoolean();
-    private volatile ManagementChannel channel;
+    private volatile Channel channel;
     private volatile AbstractMessageHandler handler;
     private final ExecutorService executor = Executors.newCachedThreadPool();
     private final AtomicBoolean connected = new AtomicBoolean(false);
@@ -200,18 +201,17 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 //        }
 
         // txOperationHandler = new TransactionalModelControllerOperationHandler(executor, controller);
-        ProtocolChannelClient<ManagementChannel> client;
-        ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
+        ProtocolChannelClient client;
+        ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
         //Reusing the endpoint here after a disconnect does not seem to work once something has gone down, so try our own
         //configuration.setEndpoint(endpointInjector.getValue());
         configuration.setEndpointName("endpoint");
         configuration.setUriScheme("remote");
 
         this.handler = new TransactionalModelControllerOperationHandler(controller, executor);
-
+        final Connection connection;
         try {
             configuration.setUri(new URI("remote://" + host.getHostAddress() + ":" + port));
-            configuration.setChannelFactory(new ManagementChannelFactory(ManagementChannelReceiver.createDelegating(this.handler)));
             client = ProtocolChannelClient.create(configuration);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -223,20 +223,16 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             if (handlerFactory != null) {
                 handler = handlerFactory.getCallbackHandler(name);
             }
-
-            client.connect(handler);
+            connection = client.connectSync(handler);
             this.channelClient = client;
 
-            ManagementChannel channel = client.openChannel(ManagementRemotingServices.DOMAIN_CHANNEL);
-            this.channel = channel;
-
+            channel = connection.openChannel(ManagementRemotingServices.DOMAIN_CHANNEL, OptionMap.EMPTY).get();
             channel.addCloseHandler(new CloseHandler<Channel>() {
                 public void handleClose(final Channel closed, final IOException exception) {
                     connectionClosed();
                 }
             });
-
-            channel.startReceiving();
+            channel.receiveMessage(ManagementChannelReceiver.createDelegating(this.handler));
 
             masterProxy = new ExistingChannelModelControllerClient(channel);
         } catch (IOException e) {
@@ -344,7 +340,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         final AbstractMessageHandler handler = this.handler;
         if(handler != null) {
             // discard all active operations
-            handler.shutdown();
+            handler.shutdownNow();
         }
 
         if (!shutdown.get()) {

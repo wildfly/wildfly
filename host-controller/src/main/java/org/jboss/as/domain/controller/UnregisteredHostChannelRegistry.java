@@ -19,8 +19,8 @@
 package org.jboss.as.domain.controller;
 
 import org.jboss.as.controller.ProxyController;
-import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
+import org.jboss.remoting3.Channel;
 
 /**
  *
@@ -38,7 +38,7 @@ public interface UnregisteredHostChannelRegistry {
      * is called and creates a proxy
      * @throws IllegalArgumentException if there is already a channel for the hostName
      */
-    void registerChannel(String hostName, ManagementChannel channel, ProxyCreatedCallback callback);
+    void registerChannel(String hostName, Channel channel, ProxyCreatedCallback callback);
 
     /**
      * Get and remove a host channel to be registered in the DomainController

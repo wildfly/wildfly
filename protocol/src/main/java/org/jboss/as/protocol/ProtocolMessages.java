@@ -87,12 +87,11 @@ public interface ProtocolMessages {
      * Creates an exception indicating a connection could not be made.
      *
      * @param uri             the URI attempted to connect.
-     * @param e               the exception during the connect
      *
      * @return a {@link ConnectException} for the error.
      */
     @Message(id = 12144, value = "Could not connect to %s. Make sure the server is running.")
-    ConnectException couldNotConnect(URI uri, @Cause Exception e);
+    ConnectException couldNotConnect(URI uri);
 
     @Message(id = 12145, value = "Connection was cancelled")
     ConnectException connectWasCancelled();
@@ -355,14 +354,13 @@ public interface ProtocolMessages {
     IOException writesAlreadyShutdown();
 
     /**
-     * Creates an exception indicating that no active operation with the given
-     * id is registered.
+     * Creates an exception indicating that the operation id is already taken.
      *
      * @param operationId the operation id
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 12172, value = "No active operation with id %d registered")
-    IllegalStateException noActiveOperation(int operationId);
+    @Message(id = 12172, value = "Operation with id %d already registered")
+    IllegalStateException operationIdAlreadyExists(int operationId);
 
     @Message(id = 12173, value = "Null executor")
     IllegalArgumentException nullExecutor();

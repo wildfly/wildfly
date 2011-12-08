@@ -22,29 +22,29 @@
 package org.jboss.as.protocol.mgmt;
 
 import java.io.Closeable;
+import java.io.DataInput;
 import java.io.IOException;
-import java.net.ConnectException;
-import java.net.URI;
 import java.util.Map;
 
 import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.protocol.ProtocolChannelClient;
-import org.jboss.as.protocol.ProtocolChannelSetup;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.Connection;
-import org.jboss.remoting3.Endpoint;
-import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 
 /**
  * Strategy management clients can use for controlling the lifecycle of the channel.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author Emanuel Muckenhuber
  */
 public abstract class ManagementClientChannelStrategy implements Closeable {
+
+    /** The remoting channel service type. */
+    private static final String DEFAULT_CHANNEL_SERVICE_TYPE = "management";
 
     /**
      * Get the channel.
@@ -68,17 +68,17 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
      * Create a new establishing management client channel-strategy
      *
      * @param setup the remoting setup
-     * @param receiver the channel receiver
+     * @param handler the {@code ManagementMessageHandler}
      * @param cbHandler a callback handler
      * @param saslOptions the sasl options
      * @return the management client channel strategy
      * @throws IOException
      */
-    public static ManagementClientChannelStrategy create(final ProtocolChannelSetup setup,
-                                                   final Channel.Receiver receiver,
+    public static ManagementClientChannelStrategy create(final ProtocolChannelClient setup,
+                                                   final ManagementMessageHandler handler,
                                                    final CallbackHandler cbHandler,
                                                    final Map<String, String> saslOptions) throws IOException {
-        return new Establishing("management", setup, saslOptions, cbHandler, receiver);
+        return new Establishing(DEFAULT_CHANNEL_SERVICE_TYPE, setup, saslOptions, cbHandler, handler);
     }
 
     /**
@@ -113,17 +113,32 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
         private final Map<String,String> saslOptions;
         private final CallbackHandler callbackHandler;
         private final Channel.Receiver receiver;
-        private final ProtocolChannelSetup setup;
+        private final ProtocolChannelClient setup;
 
         volatile Connection connection;
         volatile Channel channel;
 
-        public Establishing(String channelName, final ProtocolChannelSetup setup, Map<String, String> saslOptions, CallbackHandler callbackHandler, final Channel.Receiver receiver) {
+        public Establishing(final String channelName, final ProtocolChannelClient setup, final Map<String, String> saslOptions,
+                            final CallbackHandler callbackHandler, final ManagementMessageHandler handler) {
             this.channelName = channelName;
-            this.receiver = receiver;
             this.saslOptions = saslOptions;
             this.setup = setup;
             this.callbackHandler = callbackHandler;
+            // Basic management channel receiver, which delegates messages to a {@code ManagementMessageHandler}
+            // Additionally legacy bye-bye messages result in resetting the current channel
+            this.receiver = new ManagementChannelReceiver() {
+
+                @Override
+                public void handleMessage(final Channel channel, final DataInput input, final ManagementProtocolHeader header) throws IOException {
+                    handler.handleMessage(channel, input, header);
+                }
+
+                @Override
+                protected void handleChannelReset(Channel channel) {
+                    resetChannel(channel);
+                }
+
+            };
         }
 
         @Override
@@ -132,7 +147,8 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
             try {
                 synchronized (this) {
                     if (connection == null) {
-                        this.connection = setup.connect(callbackHandler, saslOptions).get();
+                        // Connect with the configured timeout
+                        this.connection = setup.connectSync(callbackHandler, saslOptions);
                         this.connection.addCloseHandler(new CloseHandler<Connection>() {
                             @Override
                             public void handleClose(Connection closed, IOException exception) {
@@ -167,6 +183,14 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
                 }
             }
             return channel;
+        }
+
+        private void resetChannel(Channel old) {
+            synchronized (this) {
+                if(channel == old) {
+                    channel = null;
+                }
+            }
         }
 
         @Override

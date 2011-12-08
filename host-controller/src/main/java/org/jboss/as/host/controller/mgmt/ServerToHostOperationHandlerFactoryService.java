@@ -27,13 +27,11 @@ import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
 import java.io.DataInput;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.host.controller.ManagedServerLifecycleCallback;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
-import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
@@ -103,19 +101,17 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
     }
 
     @Override
-    public HandleableCloseable.Key initialize(final ManagementChannel channel) {
-        final Channel.Receiver receiver = new InitialMessageHandler(channel, executorService);
-        channel.setReceiver(receiver);
+    public HandleableCloseable.Key startReceiving(final Channel channel) {
+        final Channel.Receiver receiver = new InitialMessageHandler(executorService);
+        channel.receiveMessage(receiver);
         return null;
     }
 
     private class InitialMessageHandler extends ManagementChannelReceiver {
 
         private final ExecutorService executorService;
-        private final ManagementChannel mgmtChannel;
 
-        private InitialMessageHandler(final ManagementChannel channel, ExecutorService executorService) {
-            this.mgmtChannel = channel;
+        private InitialMessageHandler(ExecutorService executorService) {
             this.executorService = executorService;
         }
 
@@ -141,14 +137,14 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
                 executorService.execute(new Runnable() {
                     @Override
                     public void run() {
-                        final ManagementChannel mgmtChannel = new ManagementChannel(serverName, channel);
+                        final Channel mgmtChannel = channel;
                         ServerToHostOperationHandlerFactoryService.this.callback.getValue().serverRegistered(serverName, mgmtChannel, new ManagedServerLifecycleCallback.ProxyCreatedCallback() {
                             @Override
                             public void proxyOperationHandlerCreated(final ManagementMessageHandler handler) {
                                 channel.addCloseHandler(new CloseHandler<Channel>() {
                                     @Override
                                     public void handleClose(Channel closed, IOException exception) {
-                                        handler.shutdown();
+                                        handler.shutdownNow();
                                     }
                                 });
                                 final Channel.Receiver receiver = ManagementChannelReceiver.createDelegating(handler);

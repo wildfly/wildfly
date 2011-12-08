@@ -20,20 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.protocol.mgmt.support;
+package org.jboss.as.controller.client.impl;
 
-import org.jboss.remoting3.Channel;
+import org.jboss.as.controller.client.ModelControllerClientConfiguration;
+import org.jboss.as.protocol.ProtocolChannelClient;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
+ * Transformation class of the model controller client configuration to the
+ * underlying protocol configs.
+ *
  * @author Emanuel Muckenhuber
  */
-public interface ManagementChannelInitialization {
+class ProtocolConfigurationFactory {
 
-    /**
-     * Initialize the management channel and start receiving request.
-     *
-     * @param channel
-     */
-    Channel.Key startReceiving(Channel channel);
+    static ProtocolChannelClient.Configuration create(final ModelControllerClientConfiguration client) throws URISyntaxException {
+        final ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
+
+        configuration.setUri(new URI("remote://" + client.getHost() +  ":" + client.getPort()));
+        final long timeout = client.getConnectionTimeout();
+        if(timeout > 0) {
+            configuration.setConnectionTimeout(timeout);
+        }
+        return configuration;
+    }
 
 }

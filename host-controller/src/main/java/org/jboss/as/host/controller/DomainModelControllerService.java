@@ -80,7 +80,6 @@ import org.jboss.as.host.controller.operations.StartServersHandler;
 import org.jboss.as.process.ExitCodes;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
-import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.remoting.EndpointService;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.RuntimeExpressionResolver;
@@ -119,7 +118,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final PrepareStepHandler prepareStepHandler;
     private ManagementResourceRegistration modelNodeRegistration;
 
-    private final Map<String, ManagementChannel> unregisteredHostChannels = new HashMap<String, ManagementChannel>();
+    private final Map<String, Channel> unregisteredHostChannels = new HashMap<String, Channel>();
     private final Map<String, ProxyCreatedCallback> proxyCreatedCallbacks = new HashMap<String, ProxyCreatedCallback>();
     private final ExecutorService proxyExecutor = Executors.newCachedThreadPool();
     private final AbstractVaultReader vaultReader;
@@ -370,7 +369,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     @Override
-    public synchronized void registerChannel(final String hostName, final ManagementChannel channel, final ProxyCreatedCallback callback) {
+    public synchronized void registerChannel(final String hostName, final Channel channel, final ProxyCreatedCallback callback) {
 
         /* Disable this as part of the REM3-121 workarounds
         PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(HOST, hostName));
@@ -393,7 +392,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
     @Override
     public synchronized ProxyController popChannelAndCreateProxy(final String hostName) {
-        ManagementChannel channel = unregisteredHostChannels.remove(hostName);
+        final Channel channel = unregisteredHostChannels.remove(hostName);
         if (channel == null) {
             throw new IllegalArgumentException("No channel for host " + hostName);
         }
@@ -412,7 +411,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     private class DelegatingServerInventory implements ServerInventory {
-        public void serverRegistered(String serverProcessName, ManagementChannel channel, ProxyCreatedCallback callback) {
+        public void serverRegistered(String serverProcessName, Channel channel, ProxyCreatedCallback callback) {
             serverInventory.serverRegistered(serverProcessName, channel, callback);
         }
 

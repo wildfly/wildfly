@@ -47,7 +47,6 @@ import org.jboss.as.domain.controller.operations.SlaveRegistrationError;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
-import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
@@ -56,12 +55,10 @@ import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
-import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.as.protocol.mgmt.RequestProcessingException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
-import org.jboss.remoting3.MessageOutputStream;
 
 /**
  * Handles for requests from slave DC to master DC on the 'domain' channel.
@@ -78,16 +75,12 @@ public class MasterDomainControllerOperationHandlerImpl extends ManagementChanne
 
     private volatile ManagementMessageHandler proxyHandler;
 
-    private final ManagementChannel mgmtChannel;
-
     public MasterDomainControllerOperationHandlerImpl(final ExecutorService executorService, final ModelController controller,
-                                                      final UnregisteredHostChannelRegistry registry, final DomainController domainController,
-                                                      final ManagementChannel channel) {
+                                                      final UnregisteredHostChannelRegistry registry, final DomainController domainController) {
         this.domainController = domainController;
         this.controller = controller;
         this.registry = registry;
         this.clientHandler = new LocalOperationHandler(controller, executorService);
-        this.mgmtChannel = channel;
     }
 
     @Override
@@ -125,14 +118,13 @@ public class MasterDomainControllerOperationHandlerImpl extends ManagementChanne
     private class RegisterOperation extends AbstractHostRequestHandler {
         String error;
 
-
         @Override
         void handleRequest(final String hostId, final DataInput input, final ManagementRequestContext<Void> context) throws IOException {
             context.executeAsync(new ManagementRequestContext.AsyncTask<Void>() {
                 @Override
                 public void execute(final ManagementRequestContext<Void> context) throws Exception {
                     try {
-                        final ManagementChannel mgmtChannel = new ManagementChannel(hostId, context.getChannel());
+                        final Channel mgmtChannel = context.getChannel();
                         registry.registerChannel(hostId, mgmtChannel, new ProxyCreatedCallback() {
                             @Override
                             public void proxyCreated(final ManagementMessageHandler handler) {
@@ -140,7 +132,7 @@ public class MasterDomainControllerOperationHandlerImpl extends ManagementChanne
                                 mgmtChannel.addCloseHandler(new CloseHandler<Channel>() {
                                     @Override
                                     public void handleClose(Channel closed, IOException exception) {
-                                        handler.shutdown();
+                                        handler.shutdownNow();
                                     }
                                 });
                             }

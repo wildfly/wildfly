@@ -28,12 +28,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
 import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
-import org.jboss.as.protocol.mgmt.ManagementChannel;
+import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
+import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.server.ServerMessages;
@@ -60,12 +62,14 @@ public class HostControllerServerClient implements Service<HostControllerServerC
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "client");
 
-    private final InjectedValue<ManagementChannel> hcChannel = new InjectedValue<ManagementChannel>();
+    private final InjectedValue<Channel> hcChannel = new InjectedValue<Channel>();
     private final InjectedValue<ModelController> controller = new InjectedValue<ModelController>();
 
     private final String serverName;
     private final String serverProcessName;
     private final ExecutorService executor = Executors.newCachedThreadPool();
+
+    private volatile ManagementMessageHandler handler;
 
     public HostControllerServerClient(final String serverName, final String serverProcessName) {
         this.serverName = serverName;
@@ -73,14 +77,13 @@ public class HostControllerServerClient implements Service<HostControllerServerC
     }
 
     /** {@inheritDoc} */
-    public void start(final StartContext context) throws StartException {
-        final ManagementChannel channel = hcChannel.getValue();
+    public synchronized void start(final StartContext context) throws StartException {
+        final Channel channel = hcChannel.getValue();
         final HostControllerServerHandler handler = new HostControllerServerHandler(controller.getValue(), executor);
-        channel.setReceiver(handler);
         channel.addCloseHandler(new CloseHandler<Channel>() {
             @Override
             public void handleClose(final Channel closed, final IOException exception) {
-                handler.shutdown();
+                handler.shutdownNow();
             }
         });
         // Notify MSC asynchronously when the server gets registered
@@ -90,11 +93,23 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         } catch (Exception e) {
             throw new StartException("Failed to send registration message to host controller", e);
         }
-        channel.startReceiving();
+        this.handler = handler;
+        channel.receiveMessage(ManagementChannelReceiver.createDelegating(handler));
     }
 
     /** {@inheritDoc} */
-    public void stop(StopContext context) {
+    public synchronized void stop(StopContext context) {
+        final ManagementMessageHandler handler = this.handler;
+        if(handler != null) {
+            handler.shutdown();
+            try {
+                handler.awaitCompletion(100, TimeUnit.MILLISECONDS);
+            } catch (Exception e) {
+                ControllerLogger.ROOT_LOGGER.warnf(e , "service shutdown did not complete");
+            } finally {
+                handler.shutdownNow();
+            }
+        }
     }
 
     public String getServerName(){
@@ -110,7 +125,7 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         return this;
     }
 
-    public Injector<ManagementChannel> getHcChannelInjector() {
+    public Injector<Channel> getHcChannelInjector() {
         return hcChannel;
     }
 

@@ -28,7 +28,7 @@ import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
 import org.jboss.as.controller.support.RemoteChannelPairSetup;
-import org.jboss.as.protocol.mgmt.ManagementChannel;
+import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.junit.After;
@@ -57,23 +57,20 @@ public class RemoteChannelProxyControllerTestCase extends AbstractProxyControlle
         try {
             channels = new RemoteChannelPairSetup();
             channels.setupRemoting(operationHandler);
-            channels.startChannels();
+            channels.startClientConnetion();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        final ManagementChannel clientChannel = channels.getClientChannel();
-
+        final Channel clientChannel = channels.getClientChannel();
         final RemoteProxyController proxyController = RemoteProxyController.create(channels.getExecutorService(), proxyNodeAddress, ProxyOperationAddressTranslator.SERVER, channels.getClientChannel());
-        clientChannel.setReceiver(proxyController);
         clientChannel.addCloseHandler(new CloseHandler<Channel>() {
             @Override
             public void handleClose(Channel closed, IOException exception) {
-                proxyController.shutdown();
+                proxyController.shutdownNow();
             }
         });
-        clientChannel.startReceiving();
-
+        clientChannel.receiveMessage(ManagementChannelReceiver.createDelegating(proxyController));
         return proxyController;
     }
 }

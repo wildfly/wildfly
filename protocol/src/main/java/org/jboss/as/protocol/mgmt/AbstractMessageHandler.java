@@ -29,6 +29,7 @@ import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.MessageOutputStream;
 import org.jboss.threads.AsyncFuture;
+import org.xnio.Cancellable;
 
 import java.io.DataInput;
 import java.io.IOException;
@@ -37,6 +38,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -105,25 +108,29 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
             if(request == null) {
                 ProtocolLogger.CONNECTION_LOGGER.noSuchRequest(response.getResponseId(), channel);
             } else if(response.getError() != null) {
+                // Actually we could move this in the response handler
                 request.context.getResultHandler().failed(new IOException(response.getError()));
             } else {
                 handleMessage(channel, input, header, request.context, request.handler);
             }
         } else {
             // Handle requests (or other messages)
-            final ManagementRequestHeader requestHeader = validateRequest(header);
-            final ActiveOperation<T, A> support = getActiveOperation(requestHeader);
-            if(support == null) {
-                safeWriteErrorResponse(channel, header, ProtocolMessages.MESSAGES.responseHandlerNotFound(requestHeader.getBatchId()));
-                return; // TODO we might want to close the channel?
-            }
-            final ManagementRequestHandler<T, A> handler = getRequestHandler(requestHeader.getOperationId());
-            if(handler == null) {
-                safeWriteErrorResponse(channel, header, ProtocolMessages.MESSAGES.responseHandlerNotFound(requestHeader.getBatchId()));
-                // TODO This might also be a failure for the current active operation?
-                return; // TODO we might want to close the channel?
-            } else {
-                handleMessage(channel, input, requestHeader, support, handler);
+            try {
+                final ManagementRequestHeader requestHeader = validateRequest(header);
+                final ActiveOperation<T, A> support = getActiveOperation(requestHeader);
+                if(support == null) {
+                    safeWriteErrorResponse(channel, header, ProtocolMessages.MESSAGES.responseHandlerNotFound(requestHeader.getBatchId()));
+                    return;
+                }
+                final ManagementRequestHandler<T, A> handler = getRequestHandler(requestHeader.getOperationId());
+                if(handler == null) {
+                    // TODO This might also be a failure for the current active operation?
+                    safeWriteErrorResponse(channel, header, ProtocolMessages.MESSAGES.responseHandlerNotFound(requestHeader.getBatchId()));
+                } else {
+                    handleMessage(channel, input, requestHeader, support, handler);
+                }
+            } catch (Exception e) {
+                safeWriteErrorResponse(channel, header, e);
             }
         }
     }
@@ -173,10 +180,9 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
                 @Override
                 public void executeAsync(final AsyncTask<A> task) {
                     final ManagementRequestContext<A> context = this;
-                    // TODO register cancellable tasks as part of the ActiveOperation
-                    getExecutor().execute(new Runnable() {
+                    final AsyncTaskRunner runner = new AsyncTaskRunner() {
                         @Override
-                        public void run() {
+                        protected void doExecute() {
                             try {
                                 task.execute(context);
                             } catch (Exception e) {
@@ -184,7 +190,9 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
                                 requests.remove(requestId);
                             }
                         }
-                    });
+                    };
+                    support.addCancellable(runner);
+                    getExecutor().execute(runner);
                 }
 
                 @Override
@@ -206,8 +214,6 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
 
         } catch (Exception e) {
             resultHandler.failed(e);
-        } finally {
-            // none
         }
         return support.getResult();
     }
@@ -255,10 +261,9 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
                 @Override
                 public void executeAsync(final AsyncTask<A> task) {
                     final ManagementRequestContext<A> context = this;
-                    // TODO register cancellable tasks as part of the ActiveOperation
-                    getExecutor().execute(new Runnable() {
+                    final AsyncTaskRunner runner = new AsyncTaskRunner() {
                         @Override
-                        public void run() {
+                        protected void doExecute() {
                             try {
                                 task.execute(context);
                             } catch (Exception e) {
@@ -268,7 +273,9 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
                                 }
                             }
                         }
-                    });
+                    };
+                    support.addCancellable(runner);
+                    getExecutor().execute(runner);
                 }
 
                 @Override
@@ -281,17 +288,32 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
         } catch (Exception e) {
             resultHandler.failed(e);
             safeWriteErrorResponse(channel, header, e);
-        } finally {
-            // none
         }
     }
 
     /**
-     * Shutdown active operation.
+     * {@inheritDoc}
      */
     @Override
     public void shutdown() {
+        super.shutdown();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void shutdownNow() {
+        shutdown();
         cancelAllActiveOperations();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException {
+        return super.awaitCompletion(timeout, unit);
     }
 
     /**
@@ -306,7 +328,7 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
             try {
                 writeErrorResponse(channel, (ManagementRequestHeader) header, error);
             } catch(IOException ioe) {
-                //
+                ProtocolLogger.ROOT_LOGGER.tracef(ioe, "failed to write error response for %s on channel: %s", header, channel);
             }
         }
     }
@@ -368,6 +390,41 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
         ActiveRequest(ActiveOperation<T, A> context, ManagementRequestHandler<T, A> handler) {
             this.context = context;
             this.handler = handler;
+        }
+    }
+
+    private abstract static class AsyncTaskRunner implements Runnable, Cancellable {
+
+        private final AtomicBoolean cancelled = new AtomicBoolean(false);
+        private volatile Thread thread;
+
+        @Override
+        public Cancellable cancel() {
+            if(cancelled.compareAndSet(false, true)) {
+                final Thread thread = this.thread;
+                if(thread != null) {
+                    thread.interrupt();
+                }
+            }
+            return this;
+        }
+
+        /**
+         * Execute...
+         */
+        protected abstract void doExecute();
+
+        @Override
+        public void run() {
+            if(cancelled.get()) {
+                return;
+            }
+            this.thread = Thread.currentThread();
+            try {
+                doExecute();
+            } finally {
+                this.thread = null;
+            }
         }
     }
 

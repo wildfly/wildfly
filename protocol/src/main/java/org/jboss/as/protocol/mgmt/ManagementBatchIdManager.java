@@ -54,17 +54,17 @@ public interface ManagementBatchIdManager {
      */
     void freeBatchId(int id);
 
-    /**
-     * Default implementation of ManagementBatchIdManager that generates unique
-     * random batch ids.
-     */
-    ManagementBatchIdManager DEFAULT = new ManagementBatchIdManager() {
+    class DefaultManagementBatchIdManager implements ManagementBatchIdManager {
 
-        Set<Integer> ids = new HashSet<Integer>();
+        private final Set<Integer> ids = new HashSet<Integer>();
 
         @Override
         public synchronized boolean lockBatchId(int id) {
-            return ids.add(id);
+            if(ids.contains(id)) {
+                return false;
+            }
+            ids.add(id);
+            return true;
         }
 
         @Override

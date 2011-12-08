@@ -32,16 +32,16 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.protocol.ProtocolChannelClient;
-import org.jboss.as.protocol.mgmt.ManagementChannel;
-import org.jboss.as.protocol.mgmt.ManagementChannelFactory;
 import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
 import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
 import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.OpenListener;
 import org.jboss.remoting3.security.PasswordClientCallbackHandler;
 import org.jboss.threads.JBossThreadFactory;
 import org.jboss.threads.QueueExecutor;
 import org.xnio.IoUtils;
+import org.xnio.OptionMap;
 
 /**
  *
@@ -60,16 +60,17 @@ public class RemoteChannelPairSetup {
     ChannelServer channelServer;
 
     protected ExecutorService executorService;
-    protected ManagementChannel serverChannel;
-    protected ManagementChannel clientChannel;
+    protected Channel serverChannel;
+    protected Channel clientChannel;
+    private Connection connection;
 
     final CountDownLatch clientConnectedLatch = new CountDownLatch(1);
 
-    public ManagementChannel getServerChannel() {
+    public Channel getServerChannel() {
         return serverChannel;
     }
 
-    public ManagementChannel getClientChannel() {
+    public Channel getClientChannel() {
         return clientChannel;
     }
 
@@ -79,11 +80,12 @@ public class RemoteChannelPairSetup {
 
     public void setupRemoting(final ManagementMessageHandler handler) throws IOException {
         //executorService = Executors.newCachedThreadPool();
-        ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("Remoting"), Boolean.FALSE, null, "Remoting %f thread %t", null, null, AccessController.getContext());
-        QueueExecutor executor = new QueueExecutor(EXECUTOR_MAX_THREADS / 4 + 1, EXECUTOR_MAX_THREADS, EXECUTOR_KEEP_ALIVE_TIME, TimeUnit.MILLISECONDS, 500, threadFactory, true, null);
-        executorService = executor;
+        final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("Remoting"), Boolean.FALSE, null, "Remoting %f thread %t", null, null, AccessController.getContext());
+        executorService = new QueueExecutor(EXECUTOR_MAX_THREADS / 4 + 1, EXECUTOR_MAX_THREADS, EXECUTOR_KEEP_ALIVE_TIME, TimeUnit.MILLISECONDS, 500, threadFactory, true, null);
 
-        ChannelServer.Configuration configuration = new ChannelServer.Configuration();
+        final Channel.Receiver receiver = ManagementChannelReceiver.createDelegating(handler);
+
+        final ChannelServer.Configuration configuration = new ChannelServer.Configuration();
         configuration.setEndpointName(ENDPOINT_NAME);
         configuration.setUriScheme(URI_SCHEME);
         configuration.setBindAddress(new InetSocketAddress("127.0.0.1", PORT));
@@ -98,23 +100,23 @@ public class RemoteChannelPairSetup {
 
             @Override
             public void channelOpened(Channel channel) {
-                serverChannel = new ManagementChannelFactory(ManagementChannelReceiver.createDelegating(handler)).create(TEST_CHANNEL, channel);
-                serverChannel.startReceiving();
+                serverChannel = channel;
+                serverChannel.receiveMessage(receiver);
                 clientConnectedLatch.countDown();
             }
         });
     }
 
-    public void startChannels() throws IOException, URISyntaxException {
-        ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
+    public void startClientConnetion() throws IOException, URISyntaxException {
+        ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
         configuration.setEndpointName(ENDPOINT_NAME);
         configuration.setUriScheme(URI_SCHEME);
         configuration.setUri(new URI("" + URI_SCHEME + "://127.0.0.1:" + PORT + ""));
-        configuration.setChannelFactory(new ManagementChannelFactory(null));
 
-        ProtocolChannelClient <ManagementChannel>client = ProtocolChannelClient.create(configuration);
-        client.connect(new PasswordClientCallbackHandler("bob",configuration.getEndpointName(),"pass".toCharArray()));
-        clientChannel = client.openChannel(TEST_CHANNEL);
+        ProtocolChannelClient client = ProtocolChannelClient.create(configuration);
+        connection = client.connectSync(new PasswordClientCallbackHandler("bob",configuration.getEndpointName(),"pass".toCharArray()));
+
+        clientChannel = connection.openChannel(TEST_CHANNEL, OptionMap.EMPTY).get();
         try {
             clientConnectedLatch.await();
         } catch (InterruptedException e) {
@@ -125,6 +127,7 @@ public class RemoteChannelPairSetup {
     public void stopChannels() throws InterruptedException {
         IoUtils.safeClose(clientChannel);
         IoUtils.safeClose(serverChannel);
+        IoUtils.safeClose(connection);
     }
 
     public void shutdownRemoting() throws IOException, InterruptedException {

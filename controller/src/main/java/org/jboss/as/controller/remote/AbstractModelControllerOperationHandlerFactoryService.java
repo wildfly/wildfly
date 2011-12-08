@@ -59,18 +59,19 @@ public abstract class AbstractModelControllerOperationHandlerFactoryService impl
 
     /** {@inheritDoc} */
     @Override
-    public void start(StartContext context) throws StartException {
+    public synchronized void start(StartContext context) throws StartException {
         SERVER_MANAGEMENT_LOGGER.debugf("Starting operation handler service %s", context.getController().getName());
     }
 
     /** {@inheritDoc} */
     @Override
-    public void stop(StopContext context) {
+    public synchronized void stop(StopContext context) {
+        //
     }
 
     /** {@inheritDoc} */
     @Override
-    public AbstractModelControllerOperationHandlerFactoryService getValue() throws IllegalStateException {
+    public synchronized AbstractModelControllerOperationHandlerFactoryService getValue() throws IllegalStateException {
         return this;
     }
 

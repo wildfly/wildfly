@@ -20,20 +20,59 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.protocol.mgmt.support;
+package org.jboss.as.controller.client;
 
-import org.jboss.remoting3.Channel;
+import javax.security.auth.callback.CallbackHandler;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 /**
+ * The configuration used to create the {@code ModelControllerClient}.
+ *
  * @author Emanuel Muckenhuber
  */
-public interface ManagementChannelInitialization {
+public interface ModelControllerClientConfiguration {
 
     /**
-     * Initialize the management channel and start receiving request.
+     * Get the address of the remote host.
      *
-     * @param channel
+     * @return the host name
      */
-    Channel.Key startReceiving(Channel channel);
+    String getHost();
+
+    /**
+     * Get the port of the remote host.
+     *
+     * @return the port number
+     */
+    int getPort();
+
+    /**
+     * Get the connection timeout when trying to connect to the server.
+     *
+     * @return the connection timeout
+     */
+    int getConnectionTimeout();
+
+    /**
+     * Get the security callback handler.
+     *
+     * @return the callback handler
+     */
+    CallbackHandler getCallbackHandler();
+
+    /**
+     * Get the sasl options.
+     *
+     * @return the sasl options
+     */
+    Map<String, String> getSaslOptions();
+
+    /**
+     * Get the executor service used for the controller client.
+     *
+     * @return the executor service
+     */
+    ExecutorService getExecutor();
 
 }

@@ -37,10 +37,12 @@ import org.jboss.as.protocol.mgmt.support.ChannelServer;
 import org.jboss.as.protocol.mgmt.support.SimpleHandlers;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
+import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.OpenListener;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.xnio.IoUtils;
+import org.xnio.OptionMap;
 
 /**
  * Not really a test, more a util to play with how to shut down tests
@@ -97,8 +99,6 @@ public class CloseChannels {
                     }
                 };
 
-                final ManagementChannel protocolChannel = new ManagementChannelFactory(ManagementChannelReceiver.createDelegating(handler)).create("channel", channel);
-                protocolChannel.startReceiving();
                 channel.addCloseHandler(new CloseHandler<Channel>() {
                     public void handleClose(final Channel closed, final IOException exception) {
                         System.out.println("server close handler!!!");
@@ -109,16 +109,15 @@ public class CloseChannels {
         try {
 
             for (int i = 0 ; i < 1000 ; i++) {
-                ProtocolChannelClient.Configuration<ManagementChannel> clientConfig = new ProtocolChannelClient.Configuration<ManagementChannel>();
+                ProtocolChannelClient.Configuration clientConfig = new ProtocolChannelClient.Configuration();
                 clientConfig.setEndpointName("Test");
                 clientConfig.setUri(new URI("testing://127.0.0.1:6999"));
                 clientConfig.setUriScheme("testing");
-                clientConfig.setChannelFactory(new ManagementChannelFactory(null));
-                ProtocolChannelClient<ManagementChannel> protocolClient = ProtocolChannelClient.create(clientConfig);
+                ProtocolChannelClient protocolClient = ProtocolChannelClient.create(clientConfig);
                 final int val = i;
-                protocolClient.connect(null); // TODO - FIXME
+                final Connection connection = protocolClient.connectSync(null); // TODO
                 System.out.println("Opening channel");
-                final ManagementChannel clientChannel = protocolClient.openChannel("channel");
+                final Channel clientChannel = connection.openChannel("channel", OptionMap.EMPTY).get();
                 clientChannel.addCloseHandler(new CloseHandler<Channel>() {
                     public void handleClose(final Channel closed, final IOException exception) {
                         System.out.println("client close handler");

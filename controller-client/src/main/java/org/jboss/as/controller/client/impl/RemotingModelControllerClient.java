@@ -25,24 +25,15 @@ package org.jboss.as.controller.client.impl;
 import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
 
 import java.io.IOException;
-import java.net.URI;
-import java.security.AccessController;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-
-import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.protocol.ProtocolChannelSetup;
-import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
+import org.jboss.as.controller.client.ModelControllerClientConfiguration;
+import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.Remoting;
 import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
-import org.jboss.threads.JBossThreadFactory;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 
@@ -54,25 +45,15 @@ import org.xnio.Options;
  */
 public class RemotingModelControllerClient extends AbstractModelControllerClient {
 
-    private final String hostName;
-    private final int port;
-    private final CallbackHandler callbackHandler;
-    private final Map<String, String> saslOptions;
     private Endpoint endpoint;
     private ManagementClientChannelStrategy strategy;
     private boolean closed;
 
-    static ExecutorService createExecutor() {
-        final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("management-client-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
-        return Executors.newCachedThreadPool(threadFactory);
-    }
+    private final ModelControllerClientConfiguration clientConfiguration;
 
-    public RemotingModelControllerClient(String hostName, int port, final CallbackHandler callbackHandler, final Map<String, String> saslOptions) {
-        super(createExecutor()); // TODO
-        this.hostName = hostName;
-        this.port = port;
-        this.callbackHandler = callbackHandler;
-        this.saslOptions = saslOptions;
+    public RemotingModelControllerClient(final ModelControllerClientConfiguration configuration) {
+        super(configuration.getExecutor());
+        this.clientConfiguration = configuration;
     }
 
     @Override
@@ -87,7 +68,7 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
                 strategy.close();
                 strategy = null;
             }
-            super.shutdown();
+            super.shutdownNow();
         }
     }
 
@@ -96,19 +77,18 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
             throw MESSAGES.objectIsClosed( ModelControllerClient.class.getSimpleName());
         }
         if (strategy == null) {
-            // TODO move the endpoint creation somewhere else?
-            endpoint = Remoting.createEndpoint("management-client", OptionMap.EMPTY);
-            endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
-
-            final ProtocolChannelSetup.Configuration configuration = new ProtocolChannelSetup.Configuration();
             try {
-                configuration.setUri(new URI("remote://" + hostName +  ":" + port));
+                final ProtocolChannelClient.Configuration configuration = ProtocolConfigurationFactory.create(clientConfiguration);
+
+                // TODO move the endpoint creation somewhere else?
+                endpoint = Remoting.createEndpoint("management-client", OptionMap.EMPTY);
+                endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
+
                 configuration.setEndpoint(endpoint);
                 configuration.setEndpointName("management-client");
 
-                final ProtocolChannelSetup setup = ProtocolChannelSetup.create(configuration);
-                final Channel.Receiver receiver = ManagementChannelReceiver.createDelegating(this);
-                strategy = ManagementClientChannelStrategy.create(setup, receiver, callbackHandler, saslOptions);
+                final ProtocolChannelClient setup = ProtocolChannelClient.create(configuration);
+                strategy = ManagementClientChannelStrategy.create(setup, this, clientConfiguration.getCallbackHandler(), clientConfiguration.getSaslOptions());
             } catch (IOException e) {
                 throw e;
             } catch (RuntimeException e) {

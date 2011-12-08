@@ -36,7 +36,9 @@ import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
  * @author Kabir Khan
  */
 public class ManagementResponseHeader extends ManagementProtocolHeader {
+
     private int responseId;
+    private boolean failed = false;
     private String error;
 
     /**
@@ -49,6 +51,7 @@ public class ManagementResponseHeader extends ManagementProtocolHeader {
         super(version);
         this.responseId = responseId;
         this.error = error;
+        this.failed = error != null;
     }
 
     ManagementResponseHeader(final int version, final DataInput input) throws IOException {
@@ -62,6 +65,7 @@ public class ManagementResponseHeader extends ManagementProtocolHeader {
         ProtocolUtils.expectHeader(input, ManagementProtocol.RESPONSE_TYPE);
         byte type = input.readByte();
         if (type == ManagementProtocol.RESPONSE_ERROR) {
+            this.failed = true;
             error = input.readUTF();
         } else if (type != ManagementProtocol.RESPONSE_BODY) {
             throw MESSAGES.invalidType("RESPONSE_ERROR", "RESPONSE_BODY", type);
@@ -79,6 +83,15 @@ public class ManagementResponseHeader extends ManagementProtocolHeader {
         } else {
             output.write(ManagementProtocol.RESPONSE_BODY);
         }
+    }
+
+    /**
+     * Whether this is an error response.
+     *
+     * @return {@code true} if the request failed, {@code false} otherwise
+     */
+    public boolean isFailed() {
+        return failed;
     }
 
     /**

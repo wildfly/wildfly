@@ -26,6 +26,7 @@ import org.jboss.as.protocol.StreamUtils;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageOutputStream;
 
+import java.io.DataInput;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
