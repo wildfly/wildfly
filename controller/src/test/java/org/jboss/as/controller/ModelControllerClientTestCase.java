@@ -67,13 +67,13 @@ public class ModelControllerClientTestCase {
 
     Logger log = Logger.getLogger(ModelControllerClientTestCase.class);
 
-    final DelegatingChannelHandler handler = new DelegatingChannelHandler();
-    RemoteChannelPairSetup channels;
+    private final DelegatingChannelHandler handler = new DelegatingChannelHandler();
+    private RemoteChannelPairSetup channels;
     @Before
     public void start() throws Exception {
         channels = new RemoteChannelPairSetup();
         channels.setupRemoting(handler);
-        channels.startChannels();
+        channels.startClientConnetion();
     }
 
     @After

@@ -62,31 +62,26 @@ import org.xnio.OptionMap.Builder;
  * This class is not thread safe and should only be used by one thread
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
+ * @author Emanuel Muckenhuber
  */
-public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeable {
+public class ProtocolChannelClient implements Closeable {
+
     private static final String JBOSS_LOCAL_USER = "JBOSS-LOCAL-USER";
     private final boolean startedEndpoint;
     private final Endpoint endpoint;
     private final Registration providerRegistration;
     private final URI uri;
-    private final ProtocolChannelFactory<T> channelFactory;
-    private volatile Connection connection;
-    private final Set<T> channels = new HashSet<T>();
 
-    private ProtocolChannelClient(final boolean startedEndpoint,
-            final Endpoint endpoint,
-            final Registration providerRegistration,
-            final URI uri,
-            final ProtocolChannelFactory<T> channelFactory) {
+    private ProtocolChannelClient(final boolean startedEndpoint, final Endpoint endpoint,
+                                 final Registration providerRegistration, final URI uri) {
+
         this.startedEndpoint = startedEndpoint;
         this.endpoint = endpoint;
         this.providerRegistration = providerRegistration;
         this.uri = uri;
-        this.channelFactory = channelFactory;
     }
 
-    public static <T extends ProtocolChannel> ProtocolChannelClient<T> create(final Configuration<T> configuration) throws IOException, URISyntaxException {
+    public static ProtocolChannelClient create(final Configuration configuration) throws IOException {
         if (configuration == null) {
             throw MESSAGES.nullVar("configuration");
         }
@@ -95,25 +90,21 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
         final Endpoint endpoint;
         if (configuration.getEndpoint() != null) {
             endpoint = configuration.getEndpoint();
-            return new ProtocolChannelClient<T>(false, endpoint, null, configuration.getUri(), configuration.getChannelFactory());
+            return new ProtocolChannelClient(false, endpoint, null, configuration.getUri());
         } else {
             endpoint = Remoting.createEndpoint(configuration.getEndpointName(), configuration.getOptionMap());
             Registration providerRegistration = endpoint.addConnectionProvider(configuration.getUri().getScheme(), new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
-            return new ProtocolChannelClient<T>(true, endpoint, providerRegistration, configuration.getUri(), configuration.getChannelFactory());
+            return new ProtocolChannelClient(true, endpoint, providerRegistration, configuration.getUri());
         }
     }
 
-
-    public Connection connect(CallbackHandler handler) throws IOException {
+    public IoFuture<Connection> connect(CallbackHandler handler) throws IOException {
         return connect(handler, null);
     }
 
-    public Connection connect(CallbackHandler handler, Map<String, String> saslOptions) throws IOException {
-        if (connection != null) {
-            throw MESSAGES.alreadyConnected();
-        }
+    public IoFuture<Connection> connect(CallbackHandler handler, Map<String, String> saslOptions) throws IOException {
 
-        Builder builder = OptionMap.builder();
+        OptionMap.Builder builder = OptionMap.builder();
         builder.set(SASL_POLICY_NOANONYMOUS, Boolean.FALSE);
         builder.set(SASL_POLICY_NOPLAINTEXT, Boolean.FALSE);
         if (isLocal() == false) {
@@ -130,16 +121,7 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
 
         CallbackHandler actualHandler = handler != null ? handler : new AnonymousCallbackHandler();
         WrapperCallbackHandler wrapperHandler = new WrapperCallbackHandler(actualHandler);
-        IoFuture<Connection> future = endpoint.connect(uri, builder.getMap(), wrapperHandler);
-        try {
-            this.connection = future.get();
-        } catch (CancellationException e) {
-            throw MESSAGES.connectWasCancelled();
-        } catch (IOException e) {
-            throw MESSAGES.couldNotConnect(uri, e);
-        }
-
-        return connection;
+        return endpoint.connect(uri, builder.getMap(), wrapperHandler);
     }
 
     private boolean isLocal() {
@@ -154,38 +136,14 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
         }
     }
 
-    public T openChannel(String channelName) throws IOException {
-        if (connection == null) {
-            throw MESSAGES.notConnected();
-        }
-        Channel channel = connection.openChannel(channelName, OptionMap.EMPTY).get();
-        T wrapped = channelFactory.create(channelName, channel);
-        channels.add(wrapped);
-        return wrapped;
-    }
-
     public void close() {
-        for (T channel : channels) {
-            try {
-                channel.writeShutdown();
-            } catch (IOException ignore) {
-            }
-//            try {
-//                channel.awaitClosed();
-//            } catch (InterruptedException e) {
-//                Thread.currentThread().interrupt();
-//            }
-        }
-        channels.clear();
-
-        IoUtils.safeClose(connection);
         if (startedEndpoint) {
             IoUtils.safeClose(providerRegistration);
             IoUtils.safeClose(endpoint);
         }
     }
 
-    public static final class Configuration<T extends ProtocolChannel> {
+    public static final class Configuration {
         private static final long DEFAULT_CONNECT_TIMEOUT = 5000;
 
         private static final AtomicInteger COUNTER = new AtomicInteger();
@@ -196,7 +154,6 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
         private ThreadGroup group;
         private String uriScheme;
         private URI uri;
-        private ProtocolChannelFactory<T> channelFactory;
 
         //Flags to avoid spamming logs with warnings every time someone tries to set these
         private static volatile boolean warnedExecutor;
@@ -227,18 +184,10 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
                 if (!uri.getScheme().equals("remote")) {
                     throw MESSAGES.invalidUrl("remote");
                 }
-                /*try {
-                    endpoint.getConnectionProviderInterface(uri.getScheme(), ConnectionProviderFactory.class);
-                } catch (UnknownURISchemeException e) {
-                    throw new IllegalArgumentException("No " + uri.getScheme() + " registered in endpoint");
-                }*/
             } else {
                 if (!uriScheme.equals(uri.getScheme())) {
                     throw MESSAGES.unmatchedScheme(uriScheme, uri);
                 }
-            }
-            if (channelFactory == null) {
-                throw MESSAGES.nullVar("channelFactory");
             }
         }
 
@@ -252,26 +201,6 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
 
         public void setEndpointName(String endpointName) {
             this.endpointName = endpointName;
-        }
-
-        public void setGroup(ThreadGroup group) {
-            this.group = group;
-        }
-
-        public void setConnectTimeoutProperty(String connectTimeoutProperty) {
-            boolean warned = warnedConnectTimeoutProperty;
-            if (!warned) {
-                warnedConnectTimeoutProperty = true;
-                ProtocolLogger.CLIENT_LOGGER.connectTimeoutPropertyNotNeeded();
-            }
-        }
-
-        public void setConnectTimeout(long connectTimeout) {
-            boolean warned = warnedConnectTimeout;
-            if (!warned) {
-                warnedConnectTimeout = true;
-                ProtocolLogger.CLIENT_LOGGER.connectTimeoutNotNeeded();
-            }
         }
 
         public String getEndpointName() {
@@ -321,13 +250,6 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
            }
         }
 
-        public ProtocolChannelFactory<T> getChannelFactory() {
-            return channelFactory;
-        }
-
-        public void setChannelFactory(ProtocolChannelFactory<T> channelFactory) {
-            this.channelFactory = channelFactory;
-        }
     }
 
     private static final class WrapperCallbackHandler implements CallbackHandler {

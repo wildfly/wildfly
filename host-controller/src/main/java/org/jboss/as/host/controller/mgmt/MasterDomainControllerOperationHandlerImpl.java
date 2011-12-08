@@ -125,7 +125,7 @@ public class MasterDomainControllerOperationHandlerImpl extends ManagementChanne
                 @Override
                 public void execute(final ManagementRequestContext<Void> context) throws Exception {
                     try {
-                        final ManagementChannel mgmtChannel = new ManagementChannel(hostId, context.getChannel());
+                        final Channel mgmtChannel = context.getChannel();
                         registry.registerChannel(hostId, mgmtChannel, new ProxyCreatedCallback() {
                             @Override
                             public void proxyCreated(final ManagementMessageHandler handler) {

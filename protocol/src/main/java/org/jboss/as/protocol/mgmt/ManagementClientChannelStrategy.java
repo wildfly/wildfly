@@ -28,7 +28,7 @@ import java.util.Map;
 
 import javax.security.auth.callback.CallbackHandler;
 
-import org.jboss.as.protocol.ProtocolChannelSetup;
+import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
@@ -74,7 +74,7 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
      * @return the management client channel strategy
      * @throws IOException
      */
-    public static ManagementClientChannelStrategy create(final ProtocolChannelSetup setup,
+    public static ManagementClientChannelStrategy create(final ProtocolChannelClient setup,
                                                    final ManagementMessageHandler handler,
                                                    final CallbackHandler cbHandler,
                                                    final Map<String, String> saslOptions) throws IOException {
@@ -113,12 +113,12 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
         private final Map<String,String> saslOptions;
         private final CallbackHandler callbackHandler;
         private final Channel.Receiver receiver;
-        private final ProtocolChannelSetup setup;
+        private final ProtocolChannelClient setup;
 
         volatile Connection connection;
         volatile Channel channel;
 
-        public Establishing(final String channelName, final ProtocolChannelSetup setup, final Map<String, String> saslOptions,
+        public Establishing(final String channelName, final ProtocolChannelClient setup, final Map<String, String> saslOptions,
                             final CallbackHandler callbackHandler, final ManagementMessageHandler handler) {
             this.channelName = channelName;
             this.saslOptions = saslOptions;

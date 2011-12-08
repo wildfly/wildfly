@@ -55,7 +55,6 @@ import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
-import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
 import org.jboss.as.server.ServerState;
 import org.jboss.dmr.ModelNode;
@@ -267,7 +266,7 @@ public class ServerInventoryImpl implements ServerInventory {
 
     /** {@inheritDoc} */
     @Override
-    public void serverRegistered(final String serverProcessName, final ManagementChannel channel, ProxyCreatedCallback callback) {
+    public void serverRegistered(final String serverProcessName, final Channel channel, ProxyCreatedCallback callback) {
         try {
             final ManagedServer server = servers.get(serverProcessName);
             if (server == null) {

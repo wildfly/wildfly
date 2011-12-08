@@ -59,6 +59,7 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.remoting3.Channel;
 import org.jboss.stdio.LoggingOutputStream;
 import org.jboss.stdio.NullInputStream;
 import org.jboss.stdio.SimpleStdioContextSelector;
@@ -204,7 +205,7 @@ public final class DomainServerMain {
 
         final HostControllerServerClient client = new HostControllerServerClient(serverName, serverProcessName);
         serviceTarget.addService(HostControllerServerClient.SERVICE_NAME, client)
-            .addDependency(HostControllerConnectionService.SERVICE_NAME, ManagementChannel.class, client.getHcChannelInjector())
+            .addDependency(HostControllerConnectionService.SERVICE_NAME, Channel.class, client.getHcChannelInjector())
             .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, client.getServerControllerInjector())
             .setInitialMode(ServiceController.Mode.ACTIVE)
             .install();

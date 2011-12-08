@@ -47,20 +47,24 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.Endpoint;
+import org.xnio.OptionMap;
 
 /**
  * Service used to connect to the host controller.  Will maintain the connection for the length of the service life.
  *
  * @author John Bailey
  */
-public class HostControllerConnectionService implements Service<ManagementChannel> {
+public class HostControllerConnectionService implements Service<Channel> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "channel");
     private final InjectedValue<InetSocketAddress> hcAddressInjector = new InjectedValue<InetSocketAddress>();
     private final InjectedValue<Endpoint> endpointInjector = new InjectedValue<Endpoint>();
 
-    private volatile ManagementChannel channel;
-    private volatile ProtocolChannelClient<ManagementChannel> client;
+    private volatile Channel channel;
+    private volatile ProtocolChannelClient client;
+    private volatile Connection connection;
 
     private final String serverName;
     private final byte[] authKey;
@@ -81,20 +85,19 @@ public class HostControllerConnectionService implements Service<ManagementChanne
 
     /** {@inheritDoc} */
     public synchronized void start(StartContext context) throws StartException {
-        ProtocolChannelClient<ManagementChannel> client;
+        ProtocolChannelClient client;
         try {
-            ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
+            ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
             configuration.setEndpoint(endpointInjector.getValue());
             configuration.setUri(new URI("remote://" + hcAddressInjector.getValue().getHostName() + ":" + hcAddressInjector.getValue().getPort()));
-            configuration.setChannelFactory(new ManagementChannelFactory(null));
             client = ProtocolChannelClient.create(configuration);
         } catch (Exception e) {
             throw new StartException(e);
         }
 
         try {
-            client.connect(new ClientCallbackHandler());
-            channel = client.openChannel(ManagementRemotingServices.SERVER_CHANNEL);
+            connection = client.connect(new ClientCallbackHandler()).get();
+            channel = connection.openChannel(ManagementRemotingServices.SERVER_CHANNEL, OptionMap.EMPTY).get();
             // channel.startReceiving();
         } catch (IOException e) {
             throw new StartException("Failed to start remote Host Controller connection", e);
@@ -109,7 +112,7 @@ public class HostControllerConnectionService implements Service<ManagementChanne
     }
 
     /** {@inheritDoc} */
-    public synchronized ManagementChannel getValue() throws IllegalStateException {
+    public synchronized Channel getValue() throws IllegalStateException {
         return channel;
     }
 

@@ -187,7 +187,9 @@ public class RemoteChannelManagementTestCase {
         } catch(Exception expected) {
             //
         }
-        channels.getClientChannel().close();
+        client.shutdownNow();
+        // channel close() would make it fail
+        // channels.getClientChannel().close();
         try {
             future.get();
             Assert.fail();

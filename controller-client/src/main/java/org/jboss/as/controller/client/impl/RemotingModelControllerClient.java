@@ -24,16 +24,13 @@ package org.jboss.as.controller.client.impl;
 
 import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
 
-import java.io.DataInput;
 import java.io.IOException;
 import java.net.URI;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.ModelControllerClientConfiguration;
-import org.jboss.as.protocol.ProtocolChannelSetup;
-import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
+import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
-import org.jboss.as.protocol.mgmt.ManagementProtocolHeader;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.Remoting;
@@ -85,13 +82,13 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
             endpoint = Remoting.createEndpoint("management-client", OptionMap.EMPTY);
             endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
 
-            final ProtocolChannelSetup.Configuration configuration = new ProtocolChannelSetup.Configuration();
+            final ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
             try {
                 configuration.setUri(new URI("remote://" + clientConfiguration.getHost() +  ":" + clientConfiguration.getPort()));
                 configuration.setEndpoint(endpoint);
                 configuration.setEndpointName("management-client");
 
-                final ProtocolChannelSetup setup = ProtocolChannelSetup.create(configuration);
+                final ProtocolChannelClient setup = ProtocolChannelClient.create(configuration);
                 strategy = ManagementClientChannelStrategy.create(setup, this, clientConfiguration.getCallbackHandler(), clientConfiguration.getSaslOptions());
             } catch (IOException e) {
                 throw e;

@@ -32,7 +32,6 @@ import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandl
 import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
-import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
@@ -60,7 +59,7 @@ public class HostControllerServerClient implements Service<HostControllerServerC
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "client");
 
-    private final InjectedValue<ManagementChannel> hcChannel = new InjectedValue<ManagementChannel>();
+    private final InjectedValue<Channel> hcChannel = new InjectedValue<Channel>();
     private final InjectedValue<ModelController> controller = new InjectedValue<ModelController>();
 
     private final String serverName;
@@ -109,7 +108,7 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         return this;
     }
 
-    public Injector<ManagementChannel> getHcChannelInjector() {
+    public Injector<Channel> getHcChannelInjector() {
         return hcChannel;
     }
 

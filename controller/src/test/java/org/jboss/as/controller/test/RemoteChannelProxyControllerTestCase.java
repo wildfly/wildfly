@@ -57,7 +57,7 @@ public class RemoteChannelProxyControllerTestCase extends AbstractProxyControlle
         try {
             channels = new RemoteChannelPairSetup();
             channels.setupRemoting(operationHandler);
-            channels.startChannels();
+            channels.startClientConnetion();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

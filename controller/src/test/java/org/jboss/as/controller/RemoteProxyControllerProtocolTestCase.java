@@ -79,7 +79,7 @@ public class RemoteProxyControllerProtocolTestCase {
     public void start() throws Exception {
         channels = new RemoteChannelPairSetup();
         channels.setupRemoting(handler);
-        channels.startChannels();
+        channels.startClientConnetion();
     }
 
     @After
