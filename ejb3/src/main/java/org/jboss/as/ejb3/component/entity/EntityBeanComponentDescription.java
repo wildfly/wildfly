@@ -28,6 +28,8 @@ import javax.ejb.TransactionManagementType;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.EEModuleClassDescription;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
@@ -153,7 +155,9 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
             view.getConfigurators().add(new ViewConfigurator() {
                 @Override
                 public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                    configuration.setViewInstanceFactory(getRemoteViewInstanceFactory(componentConfiguration.getApplicationName(), componentConfiguration.getModuleName(), componentConfiguration.getComponentDescription().getModuleDescription().getDistinctName(), componentConfiguration.getComponentName()));
+                    final EEModuleDescription moduleDescription = componentConfiguration.getComponentDescription().getModuleDescription();
+                    final String appName = moduleDescription.getEarApplicationName() == null ? "" : moduleDescription.getEarApplicationName();
+                    configuration.setViewInstanceFactory(getRemoteViewInstanceFactory(appName, componentConfiguration.getModuleName(), moduleDescription.getDistinctName(), componentConfiguration.getComponentName()));
                 }
             });
         }
