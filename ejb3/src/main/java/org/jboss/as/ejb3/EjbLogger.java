@@ -346,4 +346,12 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 14136, value = "EJB %s is not being replaced with a Stub as it is not exposed over IIOP")
     void ejbNotExposedOverIIOP(EJBLocator locator);
+
+
+    /**
+     * Logs an error message indicating that dynamic stub creation failed
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 14137, value = "Dynamic stub creation failed for class %s")
+    void dynamicStubCreationFailed(String clazz, @Cause Throwable t);
 }
