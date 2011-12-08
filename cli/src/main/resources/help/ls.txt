@@ -1,6 +1,6 @@
 SYNOPSIS
 
-    ls [node_path] [-l]
+    ls [node_path] [-l (--attribute-description-property)*]
 
 DESCRIPTION
 
@@ -26,7 +26,16 @@ ARGUMENTS
                   of instances of those types in the domain configuration.
                 If the node path ends on a node type, the -l switch will print all the available
                 child names one per line, i.e. in a column.  
-				
+
+ --attribute-description-property  - (optional) by default, -l will display attribute name, value and type.
+                                     Full attribute description (which you can see by executing
+                                     'read-attribute <attribute-name> --verbose') includes more
+                                     properties. To include those into the 'ls -l' results,
+                                     just list those properties as arguments to the ls command
+                                     prefixing their names with '--'. E.g.
+                                     'ls -l --nillable --storage'.
+                                      
+ 
 The following navigation signs are supported in the node-path:
  /      - the root node (e.g. 'cd /' or 'cd /some=thing');
  ..     - parent node (e.g. 'cd ..');
