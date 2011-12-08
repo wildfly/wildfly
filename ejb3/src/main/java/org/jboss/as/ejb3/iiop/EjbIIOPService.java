@@ -215,11 +215,6 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
      */
     private String name = null;
 
-    /**
-     * The name of the bean in the COSNaming service.
-     */
-    private String bindingName = null;
-
     public EjbIIOPService(final Map<String, SkeletonStrategy> beanMethodMap, final String[] beanRepositoryIds,
                           final Map<String, SkeletonStrategy> homeMethodMap, final String[] homeRepositoryIds,
                           final boolean useQualifiedName, final IIOPMetaData iiopMetaData, final Module module) {
@@ -249,7 +244,9 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
             // Build binding name of the bean.
             final EJBComponent component = ejbComponentInjectedValue.getValue();
             final String earApplicationName = component.getEarApplicationName();
-            if (useQualifiedName) {
+            if(iiopMetaData != null && iiopMetaData.getBindingName() != null) {
+                name = iiopMetaData.getBindingName();
+            } else if (useQualifiedName) {
                 if (component.getDistinctName() == null || component.getDistinctName().isEmpty()) {
                     name = earApplicationName == null || earApplicationName.isEmpty() ? "" : earApplicationName + "/";
                     name = name + component.getModuleName() + "/" + component.getComponentName();
@@ -367,11 +364,8 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
             beanReferenceFactory = beanServantRegistry.bind(beanServantName(name), beanServant, policies);
 
             // Register bean home in local CORBA naming context
-            this.bindingName = this.iiopMetaData != null ? this.iiopMetaData.getBindingName() : null;
-            if (this.bindingName == null || this.bindingName.isEmpty())
-                this.bindingName = this.name;
-            rebind(corbaNamingContext.getValue(), bindingName, corbaRef);
-            logger.debug("Home IOR for " + component.getComponentName() + " bound to " + this.bindingName + " in CORBA naming service");
+            rebind(corbaNamingContext.getValue(), name, corbaRef);
+            logger.debug("Home IOR for " + component.getComponentName() + " bound to " + this.name + " in CORBA naming service");
         } catch (Exception e) {
             throw new StartException(e);
         }
@@ -384,7 +378,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
 
         // Unregister bean home from local CORBA naming context
         try {
-            NameComponent[] name = corbaContext.to_name(this.bindingName);
+            NameComponent[] name = corbaContext.to_name(this.name);
             corbaContext.unbind(name);
         } catch (InvalidName invalidName) {
             logger.error("Cannot unregister EJBHome from CORBA naming service", invalidName);
