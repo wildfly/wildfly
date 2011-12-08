@@ -104,11 +104,12 @@
         <timeout.ratio.netio>100</timeout.ratio.netio>
         <timeout.ratio.memio>100</timeout.ratio.memio>
         <timeout.ratio.proc>100</timeout.ratio.proc>
+        <timeout.ratio.db>100</timeout.ratio.db>
         <jvm.args.timeouts>
             -Dts.tr.fsio=${timeout.ratio.fsio}
             -Dts.tr.netio=${timeout.ratio.netio}
             -Dts.tr.memio=${timeout.ratio.memio}
-            -Dts.tr.proc=${timeout.ratio.proc}
+            -Dts.tr.db=${timeout.ratio.db}
         </jvm.args.timeouts>
 
         <!-- Database properties. -->
