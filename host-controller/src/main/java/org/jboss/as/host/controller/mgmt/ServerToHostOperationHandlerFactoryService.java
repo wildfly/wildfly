@@ -32,7 +32,6 @@ import java.util.concurrent.ExecutorService;
 import org.jboss.as.host.controller.ManagedServerLifecycleCallback;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
-import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
@@ -102,9 +101,9 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
     }
 
     @Override
-    public HandleableCloseable.Key initialize(final ManagementChannel channel) {
-        final Channel.Receiver receiver = new InitialMessageHandler( executorService);
-        channel.setReceiver(receiver);
+    public HandleableCloseable.Key startReceiving(final Channel channel) {
+        final Channel.Receiver receiver = new InitialMessageHandler(executorService);
+        channel.receiveMessage(receiver);
         return null;
     }
 

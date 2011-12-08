@@ -22,7 +22,6 @@
 package org.jboss.as.controller.remote;
 
 
-import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
 import org.jboss.remoting3.Channel;
@@ -39,16 +38,17 @@ import java.io.IOException;
 public class ModelControllerClientOperationHandlerFactoryService extends AbstractModelControllerOperationHandlerFactoryService {
 
     @Override
-    public HandleableCloseable.Key initialize(ManagementChannel channel) {
+    public HandleableCloseable.Key startReceiving(Channel channel) {
         final ManagementMessageHandler handler = new ModelControllerClientOperationHandler(getController(), getExecutor());
         final Channel.Receiver receiver = ManagementChannelReceiver.createDelegating(handler);
-        channel.setReceiver(receiver);
-        return channel.addCloseHandler(new CloseHandler<Channel>() {
+        Channel.Key key = channel.addCloseHandler(new CloseHandler<Channel>() {
             @Override
             public void handleClose(Channel closed, IOException exception) {
                 handler.shutdownNow();
             }
         });
+        channel.receiveMessage(receiver);
+        return key;
     }
 
 }

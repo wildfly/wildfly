@@ -25,7 +25,6 @@ package org.jboss.as.host.controller;
 import java.util.Map;
 
 import org.jboss.as.process.ProcessInfo;
-import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
 import org.jboss.remoting3.Channel;
 

@@ -22,10 +22,7 @@
 
 package org.jboss.as.protocol.mgmt.support;
 
-import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.CloseHandler;
-import org.jboss.remoting3.HandleableCloseable;
 
 /**
  * @author Emanuel Muckenhuber
@@ -33,10 +30,10 @@ import org.jboss.remoting3.HandleableCloseable;
 public interface ManagementChannelInitialization {
 
     /**
-     * Initialize the management channel, before receiving request.
+     * Initialize the management channel and start receiving request.
      *
      * @param channel
      */
-    Channel.Key initialize(ManagementChannel channel);
+    Channel.Key startReceiving(Channel channel);
 
 }

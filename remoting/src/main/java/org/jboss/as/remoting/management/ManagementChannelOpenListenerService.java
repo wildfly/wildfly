@@ -23,7 +23,6 @@ package org.jboss.as.remoting.management;
 
 import java.io.IOException;
 
-import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
 import org.jboss.as.remoting.AbstractChannelOpenListenerService;
 import org.jboss.msc.value.InjectedValue;
@@ -35,7 +34,7 @@ import org.xnio.OptionMap;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-class ManagementChannelOpenListenerService extends AbstractChannelOpenListenerService<ManagementChannel> {
+class ManagementChannelOpenListenerService extends AbstractChannelOpenListenerService<Channel> {
 
     private final InjectedValue<ManagementChannelInitialization> operationHandlerFactoryValue = new InjectedValue<ManagementChannelInitialization>();
 
@@ -49,18 +48,15 @@ class ManagementChannelOpenListenerService extends AbstractChannelOpenListenerSe
     }
 
     @Override
-    protected ManagementChannel createChannel(Channel channel) {
-
-        final ManagementChannel managementChannel = new ManagementChannel(channelName, channel);
+    protected Channel createChannel(final Channel channel) {
         final ManagementChannelInitialization initialization = operationHandlerFactoryValue.getValue();
-        initialization.initialize(managementChannel);
-        log.tracef("Opened %s: %s with handler %s", channelName, managementChannel, initialization);
-        managementChannel.startReceiving();
-        return managementChannel;
+        initialization.startReceiving(channel);
+        log.tracef("Opened %s: %s with handler %s", channelName, channel, initialization);
+        return channel;
     }
 
     @Override
-    protected void closeChannelOnShutdown(ManagementChannel channel) {
+    protected void closeChannelOnShutdown(final Channel channel) {
         try {
             channel.close();
         } catch (IOException e) {

@@ -36,8 +36,6 @@ import javax.security.sasl.RealmCallback;
 import javax.security.sasl.RealmChoiceCallback;
 
 import org.jboss.as.protocol.ProtocolChannelClient;
-import org.jboss.as.protocol.mgmt.ManagementChannel;
-import org.jboss.as.protocol.mgmt.ManagementChannelFactory;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;

@@ -35,7 +35,6 @@ import java.util.concurrent.CountDownLatch;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.process.protocol.StreamUtils;
-import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.remoting.EndpointService;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.remoting.management.ManagementRemotingServices;

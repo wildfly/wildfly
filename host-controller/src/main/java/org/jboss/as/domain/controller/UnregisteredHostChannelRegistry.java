@@ -19,7 +19,6 @@
 package org.jboss.as.domain.controller;
 
 import org.jboss.as.controller.ProxyController;
-import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
 import org.jboss.remoting3.Channel;
 

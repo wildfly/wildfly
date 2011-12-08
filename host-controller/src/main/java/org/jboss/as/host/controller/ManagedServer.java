@@ -32,7 +32,6 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.process.ProcessControllerClient;
-import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.server.ServerStartTask;
 import org.jboss.as.server.ServerState;
 import org.jboss.dmr.ModelNode;

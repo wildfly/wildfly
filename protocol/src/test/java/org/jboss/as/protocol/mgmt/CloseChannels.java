@@ -99,8 +99,6 @@ public class CloseChannels {
                     }
                 };
 
-                final ManagementChannel protocolChannel = new ManagementChannelFactory(ManagementChannelReceiver.createDelegating(handler)).create("channel", channel);
-                protocolChannel.startReceiving();
                 channel.addCloseHandler(new CloseHandler<Channel>() {
                     public void handleClose(final Channel closed, final IOException exception) {
                         System.out.println("server close handler!!!");
