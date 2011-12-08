@@ -83,6 +83,10 @@ public class ServiceBasedNamingStore implements NamingStore {
 
             final ServiceName ceiling = boundServices.ceiling(lookupName);
             if (ceiling != null && lookupName.isParentOf(ceiling)) {
+                if(lookupName.equals(ceiling)) {
+                    //the binder service returned null
+                    return null;
+                }
                 return new NamingContext((Name) name.clone(), this, null);
             }
             throw new NameNotFoundException(name.toString() + " -- " + lookupName);
