@@ -22,9 +22,6 @@
 
 package org.jboss.as.server;
 
-import java.io.InputStream;
-import java.net.URL;
-
 import org.jboss.as.server.services.security.VaultReaderException;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
@@ -32,10 +29,17 @@ import org.jboss.logging.Messages;
 import org.jboss.logging.Param;
 import org.jboss.msc.service.StartException;
 
+import java.io.InputStream;
+import java.net.URL;
+
 /**
- * Date: 05.11.2011
+ * This module is using message IDs in the range 15700-15999.
+ * This file is using the subset 15800-10949 for server logger messages.
+ * See http://community.jboss.org/docs/DOC-16810 for the full list of
+ * currently reserved JBAS message id blocks.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author Mike M. Clark
  */
 @MessageBundle(projectCode = "JBAS")
 public interface ServerMessages {
@@ -115,4 +119,10 @@ public interface ServerMessages {
      */
     @Message(id = 15806, value = "Connection request to the host-controller was cancelled")
     StartException cancelledHCConnect();
+
+    @Message(id = 15807, value = "hostControllerName must be null if the server is not in a managed domain")
+    IllegalArgumentException hostControllerNameNonNullInStandalone();
+
+    @Message(id = 15808, value = "hostControllerName may not be null if the server is in a managed domain")
+    IllegalArgumentException hostControllerNameNullInDomain();
 }

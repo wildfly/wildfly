@@ -41,6 +41,7 @@ import java.util.regex.Pattern;
  * Encapsulates the runtime environment for a server.
  *
  * @author Brian Stansberry
+ * @author Mike M. Clark
  */
 public class ServerEnvironment implements Serializable {
 
@@ -194,6 +195,7 @@ public class ServerEnvironment implements Serializable {
     private final LaunchType launchType;
     private final String qualifiedHostName;
     private final String hostName;
+    private final String hostControllerName;
     private final String serverName;
     private final String nodeName;
 
@@ -214,7 +216,7 @@ public class ServerEnvironment implements Serializable {
     private final boolean allowModelControllerExecutor;
     private final RunningMode initialRunningMode;
 
-    public ServerEnvironment(final Properties props, final Map<String, String> env, final String serverConfig,
+    public ServerEnvironment(final String hostControllerName, final Properties props, final Map<String, String> env, final String serverConfig,
                              final LaunchType launchType, final RunningMode initialRunningMode) {
         if (props == null) {
             throw ControllerMessages.MESSAGES.nullVar("props");
@@ -223,6 +225,14 @@ public class ServerEnvironment implements Serializable {
         this.standalone = launchType != LaunchType.DOMAIN;
 
         this.initialRunningMode = initialRunningMode == null ? RunningMode.NORMAL : initialRunningMode;
+
+        this.hostControllerName = hostControllerName;
+        if (standalone && hostControllerName != null) {
+            throw ServerMessages.MESSAGES.hostControllerNameNonNullInStandalone();
+        }
+        if (!standalone && hostControllerName == null) {
+            throw ServerMessages.MESSAGES.hostControllerNameNullInDomain();
+        }
 
         // Calculate host and default server name
         String hostName = props.getProperty(HOST_NAME);
@@ -372,6 +382,17 @@ public class ServerEnvironment implements Serializable {
         } catch (Exception ex) {
             log.errorf(ex, "Cannot add module '%s' as URLStreamHandlerFactory provider", VFS_MODULE_IDENTIFIER);
         }
+    }
+
+    /**
+     * Get the name of this server's host controller. For domain-mode servers, this is the name given in the domain configuration. For
+     * standalone servers, which do not utilize a host controller, the value should be <code>null</code>.
+     *
+     * @return server's host controller name if the instance is running in domain mode, or <code>null</code> if running in standalone
+     *         mode
+     */
+    public String getHostControllerName() {
+        return hostControllerName;
     }
 
     /**

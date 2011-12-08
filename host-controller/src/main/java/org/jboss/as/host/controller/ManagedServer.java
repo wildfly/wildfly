@@ -58,6 +58,7 @@ class ManagedServer {
 
     private static final MarshallerFactory MARSHALLER_FACTORY;
     private static final MarshallingConfiguration CONFIG;
+
     static {
         try {
             MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river", Module.getModuleFromCallerModuleLoader(ModuleIdentifier.fromString("org.jboss.marshalling.river")).getClassLoader());
@@ -88,6 +89,7 @@ class ManagedServer {
         return serverProcessName.substring(SERVER_PROCESS_NAME_PREFIX.length());
     }
 
+    private final String hostControllerName;
     private final String serverName;
     private final String serverProcessName;
     private final Object lock = new Object();
@@ -99,12 +101,14 @@ class ManagedServer {
     private volatile ServerState state;
     private volatile Channel serverManagementChannel;
 
-    public ManagedServer(final String serverName, final ProcessControllerClient processControllerClient,
+    public ManagedServer(final String hostControllerName, final String serverName, final ProcessControllerClient processControllerClient,
             final InetSocketAddress managementSocket, final ManagedServerBootConfiguration bootConfiguration) {
+        assert hostControllerName  != null : "hostControllerName is null";
         assert serverName  != null : "serverName is null";
         assert processControllerClient != null : "processControllerSlave is null";
         assert managementSocket != null : "managementSocket is null";
 
+        this.hostControllerName = hostControllerName;
         this.serverName = serverName;
         this.serverProcessName = getServerProcessName(serverName);
         this.processControllerClient = processControllerClient;
@@ -174,7 +178,7 @@ class ManagedServer {
 
             processControllerClient.startProcess(serverProcessName);
             ServiceActivator hostControllerCommActivator = HostCommunicationServices.createServerCommuncationActivator(managementSocket, serverName, serverProcessName, authKey, bootConfiguration.isManagementSubsystemEndpoint());
-            ServerStartTask startTask = new ServerStartTask(serverName, 0, Collections.<ServiceActivator>singletonList(hostControllerCommActivator), bootUpdates);
+            ServerStartTask startTask = new ServerStartTask(hostControllerName, serverName, 0, Collections.<ServiceActivator>singletonList(hostControllerCommActivator), bootUpdates);
             final Marshaller marshaller = MARSHALLER_FACTORY.createMarshaller(CONFIG);
             final OutputStream os = processControllerClient.sendStdin(serverProcessName);
             marshaller.start(Marshalling.createByteOutput(os));

@@ -70,7 +70,7 @@ import org.jboss.sasl.util.UsernamePasswordHashUtil;
  *
  * @author Emanuel Muckenhuber
  * @author Kabir Khan
-   */
+ */
 public class ServerInventoryImpl implements ServerInventory {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
@@ -407,9 +407,10 @@ public class ServerInventoryImpl implements ServerInventory {
     }
 
     private ManagedServer createManagedServer(final String serverName, final ModelNode domainModel) {
-        final ModelNode hostModel = domainModel.require(HOST).require(domainController.getLocalHostInfo().getLocalHostName());
+        final String hostControllerName = domainController.getLocalHostInfo().getLocalHostName();
+        final ModelNode hostModel = domainModel.require(HOST).require(hostControllerName);
         final ModelCombiner combiner = new ModelCombiner(serverName, domainModel, hostModel, domainController, environment);
-        return new ManagedServer(serverName, processControllerClient, managementAddress, combiner);
+        return new ManagedServer(hostControllerName, serverName, processControllerClient, managementAddress, combiner);
     }
 
     public CallbackHandler getServerCallbackHandler() {
