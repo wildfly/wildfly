@@ -235,9 +235,9 @@ public final class ExtensionContextImpl implements ExtensionContext {
         }
 
         @Override
-        public void registerSubModel(PathElement address, ManagementResourceRegistration subModel) {
-            deployments.registerSubModel(address, subModel);
-            subdeployments.registerSubModel(address, subModel);
+        public void unregisterSubModel(PathElement address) {
+            deployments.unregisterSubModel(address);
+            subdeployments.unregisterSubModel(address);
         }
 
         @Override

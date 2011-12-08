@@ -82,18 +82,11 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
     ManagementResourceRegistration registerSubModel(ResourceDefinition resourceDefinition);
 
     /**
-     * Register the existence of an addressable sub-node of this model node.
+     * Unregister the existence of an addressable sub-resource of this resource.
      *
-     * @param address the address of the submodel (may include a wildcard)
-     * @param subModel registry for the submodel. Must have been created by the same {@link Factory} that
-     *                 created this ManagementResourceRegistration
-     *
-     * @throws IllegalArgumentException if a submodel is already registered at {@code address} or if
-     *              {@code subModel} was created by a different {@link Factory} than the creator of
-     *              this object
+     * @param address the child of this registry that should no longer be available
      */
-    @Deprecated
-    void registerSubModel(PathElement address, ManagementResourceRegistration subModel);
+    void unregisterSubModel(PathElement address);
 
     /**
      * Register an operation handler for this resource.

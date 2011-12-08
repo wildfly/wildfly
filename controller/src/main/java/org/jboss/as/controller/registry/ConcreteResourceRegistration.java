@@ -28,7 +28,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATT
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
@@ -36,6 +35,7 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceDefinition;
@@ -97,6 +97,10 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
         if (runtimeOnly) {
             throw MESSAGES.cannotRegisterSubmodel();
         }
+        final AbstractResourceRegistration existing = getSubRegistration(PathAddress.pathAddress(address));
+        if (existing != null && existing.getValueString().equals(address.getValue())) {
+            throw MESSAGES.nodeAlreadyRegistered(existing.getLocationString());
+        }
         final String key = address.getKey();
         final NodeSubregistry child = getOrCreateSubregistry(key);
         final ManagementResourceRegistration resourceRegistration = child.register(address.getValue(), resourceDefinition, false);
@@ -106,16 +110,12 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     @Override
-    public void registerSubModel(final PathElement address, final ManagementResourceRegistration subModel) {
-        if (address == null) {
-            throw MESSAGES.nullVar("address");
+    public void unregisterSubModel(final PathElement address) throws IllegalArgumentException {
+        final Map<String, NodeSubregistry> snapshot = childrenUpdater.get(this);
+        final NodeSubregistry subregistry = snapshot.get(address.getKey());
+        if (subregistry != null) {
+            subregistry.unregisterSubModel(address.getValue());
         }
-        if (subModel == null) {
-            throw MESSAGES.nullVar("subModel");
-        }
-        final String key = address.getKey();
-        final NodeSubregistry child = getOrCreateSubregistry(key);
-        child.register(address.getValue(), subModel);
     }
 
     @Override
@@ -269,6 +269,10 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
 
     @Override
     public void registerProxyController(final PathElement address, final ProxyController controller) throws IllegalArgumentException {
+        final AbstractResourceRegistration existing = getSubRegistration(PathAddress.pathAddress(address));
+        if (existing != null && existing.getValueString().equals(address.getValue())) {
+            throw MESSAGES.nodeAlreadyRegistered(existing.getLocationString());
+        }
         getOrCreateSubregistry(address.getKey()).registerProxyController(address.getValue(), controller);
     }
 
@@ -302,7 +306,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     @Override
-    DescriptionProvider getModelDescription(final Iterator<PathElement> iterator) {
+    DescriptionProvider getModelDescription(final ListIterator<PathElement> iterator) {
         if (iterator.hasNext()) {
             final PathElement next = iterator.next();
             final NodeSubregistry subregistry = children.get(next.getKey());
@@ -316,7 +320,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     @Override
-    Set<String> getAttributeNames(final Iterator<PathElement> iterator) {
+    Set<String> getAttributeNames(final ListIterator<PathElement> iterator) {
         if (iterator.hasNext()) {
             final PathElement next = iterator.next();
             final NodeSubregistry subregistry = children.get(next.getKey());
@@ -360,7 +364,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     @Override
-    Set<String> getChildNames(final Iterator<PathElement> iterator) {
+    Set<String> getChildNames(final ListIterator<PathElement> iterator) {
         if (iterator.hasNext()) {
             final PathElement next = iterator.next();
             final NodeSubregistry subregistry = children.get(next.getKey());
@@ -378,7 +382,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     @Override
-    Set<PathElement> getChildAddresses(final Iterator<PathElement> iterator) {
+    Set<PathElement> getChildAddresses(final ListIterator<PathElement> iterator) {
         if (iterator.hasNext()) {
             final PathElement next = iterator.next();
             final NodeSubregistry subregistry = children.get(next.getKey());
@@ -402,7 +406,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     @Override
-    ProxyController getProxyController(Iterator<PathElement> iterator) {
+    ProxyController getProxyController(ListIterator<PathElement> iterator) {
         if (iterator.hasNext()) {
             final PathElement next = iterator.next();
             final NodeSubregistry subregistry = children.get(next.getKey());
@@ -416,16 +420,16 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     @Override
-    void getProxyControllers(Iterator<PathElement> iterator, Set<ProxyController> controllers) {
+    void getProxyControllers(ListIterator<PathElement> iterator, Set<ProxyController> controllers) {
         if (iterator.hasNext()) {
             final PathElement next = iterator.next();
             final NodeSubregistry subregistry = children.get(next.getKey());
             if (subregistry == null) {
                 return;
             }
-            if(next.isWildcard()) {
+            if (next.isWildcard()) {
                 subregistry.getProxyControllers(iterator, null, controllers);
-            } else if(next.isMultiTarget()) {
+            } else if (next.isMultiTarget()) {
                 for(final String value : next.getSegments()) {
                     subregistry.getProxyControllers(iterator, value, controllers);
                 }
@@ -440,8 +444,9 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
         }
     }
 
-    ManagementResourceRegistration getResourceRegistration(Iterator<PathElement> iterator) {
-        if(! iterator.hasNext()) {
+    @Override
+    AbstractResourceRegistration getResourceRegistration(ListIterator<PathElement> iterator) {
+        if (! iterator.hasNext()) {
             return this;
         } else {
             final PathElement address = iterator.next();

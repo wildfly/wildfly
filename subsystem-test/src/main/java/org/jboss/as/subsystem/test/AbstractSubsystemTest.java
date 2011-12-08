@@ -768,7 +768,7 @@ public abstract class AbstractSubsystemTest {
         }
 
         @Override
-        public void registerSubModel(PathElement address, ManagementResourceRegistration subModel) {
+        public void unregisterSubModel(PathElement address) {
         }
 
         @Override

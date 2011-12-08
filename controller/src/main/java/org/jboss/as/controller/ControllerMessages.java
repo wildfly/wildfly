@@ -2059,4 +2059,14 @@ public interface ControllerMessages {
      */
     @Message(id = 14808, value = "Child resource '%s' not found")
     String childResourceNotFound(PathElement childAddress);
+
+    /**
+     * Creates an exception indicating a node is already registered at the location.
+     *
+     * @param location the location of the existing node.
+     *
+     * @return an {@link IllegalArgumentException} for the error.
+     */
+    @Message(id = 14809, value = "A node is already registered at '%s'")
+    IllegalArgumentException nodeAlreadyRegistered(String location);
 }

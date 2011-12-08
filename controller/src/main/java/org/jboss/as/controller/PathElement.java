@@ -36,7 +36,7 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
  */
 public class PathElement {
 
-    private static final String WILDCARD_VALUE = "*";
+    public static final String WILDCARD_VALUE = "*";
 
     private final String key;
     private final String value;
