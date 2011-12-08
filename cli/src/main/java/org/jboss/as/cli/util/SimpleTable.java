@@ -59,6 +59,10 @@ public class SimpleTable {
         columnLengths = new int[columnsTotal];
     }
 
+    public int columnsTotal() {
+        return columnLengths.length;
+    }
+
     public void addLine(String[] line) {
         if(line == null) {
            throw new IllegalArgumentException("The line can't be null.");
