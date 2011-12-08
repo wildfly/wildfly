@@ -2,7 +2,6 @@
 <arquillian xmlns="http://www.jboss.org/arquillian-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.jboss.org/arquillian-1.0 http://jboss.org/schema/arquillian/arquillian-1.0.xsd">
 
-    <!-- For testing AS7-2837. -->
     <engine>
         <property name="deploymentExportPath">target/</property>
     </engine>
