@@ -22,10 +22,13 @@
 
 package org.jboss.as.controller.registry;
 
+import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.OperationClientException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.dmr.ModelNode;
 
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 /**
@@ -80,6 +83,8 @@ public interface Resource extends Cloneable {
      * @param element the path element
      * @return the resource
      * @throws java.util.NoSuchElementException if the child does not exist
+     *
+     * @see NoSuchResourceException
      */
     Resource requireChild(PathElement element);
 
@@ -96,6 +101,9 @@ public interface Resource extends Cloneable {
      *
      * @param address the address
      * @return the resource
+     * @throws java.util.NoSuchElementException if any resource in the path does not exist
+     *
+     * @see NoSuchResourceException
      */
     Resource navigate(PathAddress address);
 
@@ -245,12 +253,15 @@ public interface Resource extends Cloneable {
         }
 
         /**
-         * Navigate.
+         * Navigate from a parent {@code resource} to the descendant resource at the given relative {@code addresss}.
+         * <p>
+         * {@link Resource#navigate(PathAddress)} implementations can use this as a standard implementation.
+         * </p>
          *
-         * @param resource the resource
-         * @param address the address
-         * @return the resource
-         * @throws java.util.NoSuchElementException
+         * @param resource the resource the resource. Cannot be {@code null}
+         * @param address the address the address relative to {@code resource}'s address. Cannot be {@code null}
+         * @return the resource the descendant resource. Will not be {@code null}
+         * @throws java.util.NoSuchElementException if there is no descendant resource at {@code address}
          */
         public static Resource navigate(final Resource resource, final PathAddress address) {
             Resource r = resource;
@@ -260,6 +271,23 @@ public interface Resource extends Cloneable {
             return r;
         }
 
+    }
+
+    /**
+     * A {@link NoSuchElementException} variant that can be thrown by {@link Resource#requireChild(PathElement)} and
+     * {@link Resource#navigate(PathAddress)} implementations to indicate a client error when invoking a
+     * management operation.
+     */
+    public static class NoSuchResourceException extends NoSuchElementException implements OperationClientException {
+
+        public NoSuchResourceException(PathElement childPath) {
+            super(ControllerMessages.MESSAGES.childResourceNotFound(childPath));
+        }
+
+        @Override
+        public ModelNode getFailureDescription() {
+            return new ModelNode(getLocalizedMessage());
+        }
     }
 
 }

@@ -25,16 +25,21 @@ import org.jboss.as.controller.remote.AbstractModelControllerOperationHandlerFac
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFactoryService;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.CloseHandler;
+import org.jboss.remoting3.HandleableCloseable;
+
+import java.io.IOException;
 
 /**
  * Installs {@link MasterDomainControllerOperationHandlerImpl} which handles requests from slave DC to master DC.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
-public class MasterDomainControllerOperationHandlerService extends AbstractModelControllerOperationHandlerFactoryService<MasterDomainControllerOperationHandlerImpl> {
+public class MasterDomainControllerOperationHandlerService extends AbstractModelControllerOperationHandlerFactoryService {
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
 
     public static final ServiceName SERVICE_NAME = DomainController.SERVICE_NAME.append(ModelControllerClientOperationHandlerFactoryService.OPERATION_HANDLER_NAME_SUFFIX);
@@ -48,8 +53,15 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
     }
 
     @Override
-    public MasterDomainControllerOperationHandlerImpl createOperationHandler() {
-        return new MasterDomainControllerOperationHandlerImpl(getExecutor(), getController(), registry, domainController);
+    public Channel.Key initialize(final ManagementChannel channel) {
+        final MasterDomainControllerOperationHandlerImpl handler = new MasterDomainControllerOperationHandlerImpl(getExecutor(), getController(), registry, domainController, channel);
+        final Channel.Receiver receiver = handler;
+        channel.setReceiver(receiver);
+        return channel.addCloseHandler(new CloseHandler<Channel>() {
+            @Override
+            public void handleClose(Channel closed, IOException exception) {
+                handler.shutdown();
+            }
+        });
     }
-
 }

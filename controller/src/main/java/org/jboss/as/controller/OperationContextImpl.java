@@ -22,7 +22,7 @@
 
 package org.jboss.as.controller;
 
-import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 import java.io.InputStream;
@@ -128,7 +128,7 @@ final class OperationContextImpl extends AbstractOperationContext {
     @Override
     void awaitModelControllerContainerMonitor() throws InterruptedException {
         if (affectsRuntime) {
-            ROOT_LOGGER.debugf("Entered VERIFY stage; waiting for service container to settle");
+            MGMT_OP_LOGGER.debugf("Entered VERIFY stage; waiting for service container to settle");
             // First wait until any removals we've initiated have begun processing, otherwise
             // the ContainerStateMonitor may not have gotten the notification causing it to untick
             final Map<ServiceName, ServiceController<?>> map = realRemovingControllers;
@@ -370,7 +370,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         }
         Resource model = this.model;
         for (final PathElement element : address) {
-            model = model.requireChild(element);
+            model = requireChild(model, element, address);
         }
         // recursively read the model
         return Resource.Tools.readModel(model);
@@ -410,10 +410,10 @@ final class OperationContextImpl extends AbstractOperationContext {
                     model.registerChild(element, newModel);
                     model = newModel;
                 } else {
-                    model = model.requireChild(element);
+                    model = requireChild(model, element, address);
                 }
             } else {
-                model = model.requireChild(element);
+                model = requireChild(model, element, address);
             }
         }
         if(model == null) {
@@ -431,7 +431,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         }
         Resource model = this.model;
         for (final PathElement element : address) {
-            model = model.requireChild(element);
+            model = requireChild(model, element, address);
         }
         return model.clone();
     }
@@ -456,7 +456,7 @@ final class OperationContextImpl extends AbstractOperationContext {
             if (element.isMultiTarget()) {
                 throw MESSAGES.cannotWriteTo("*");
             }
-            resource = resource.requireChild(element);
+            resource = requireChild(resource, element, address);
         }
         return resource;
     }
@@ -551,7 +551,7 @@ final class OperationContextImpl extends AbstractOperationContext {
             if (! i.hasNext()) {
                 model = model.removeChild(element);
             } else {
-                model = model.requireChild(element);
+                model = requireChild(model, element, address);
             }
         }
         return model;
@@ -603,6 +603,21 @@ final class OperationContextImpl extends AbstractOperationContext {
             awaitContainerMonitor();
             modelController.releaseContainerMonitor();
             containerMonitorStep = null;
+        }
+    }
+
+    private static Resource requireChild(final Resource resource, final PathElement childPath, final PathAddress fullAddress) {
+        if (resource.hasChild(childPath)) {
+            return resource.requireChild(childPath);
+        } else {
+            PathAddress missing = PathAddress.EMPTY_ADDRESS;
+            for (PathElement search : fullAddress) {
+                missing = missing.append(search);
+                if (search.equals(childPath)) {
+                    break;
+                }
+            }
+            throw ControllerMessages.MESSAGES.managementResourceNotFound(missing);
         }
     }
 

@@ -28,11 +28,37 @@ import java.util.List;
  */
 public interface TimerPersistence {
 
+    /**
+     * Called when a timer is being persisted
+     * @param timerEntity
+     */
     void persistTimer(TimerEntity timerEntity);
 
+    /**
+     * Signals that a timer is being undeployed, and all cached data relating to this object should
+     * be dropped to prevent a class loader leak
+     * @param timedObjectId
+     */
+    void timerUndeployed(String timedObjectId);
+
+    /**
+     * Load a timer from persistent storage
+     * @param id
+     * @param timedObjectId
+     * @return
+     */
     TimerEntity loadTimer(String id, String timedObjectId);
 
+    /**
+     * Delete a timer from persistent storage
+     * @param timerEntity
+     */
     void removeTimer(TimerEntity timerEntity);
 
+    /**
+     * Load all active timers for the given object
+     * @param timedObjectId
+     * @return
+     */
     List<TimerEntity> loadActiveTimers(String timedObjectId);
 }

@@ -38,7 +38,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ParsedBootOp;
 import org.jboss.dmr.ModelNode;
 
-import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
@@ -101,9 +101,9 @@ public class ParallelExtensionAddHandler implements OperationStepHandler {
                     }
                 }
 
-                if (ROOT_LOGGER.isDebugEnabled()) {
+                if (MGMT_OP_LOGGER.isDebugEnabled()) {
                     long elapsed = System.currentTimeMillis() - start;
-                    ROOT_LOGGER.debugf("Initialized extensions in [%d] ms", elapsed);
+                    MGMT_OP_LOGGER.debugf("Initialized extensions in [%d] ms", elapsed);
                 }
 
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);

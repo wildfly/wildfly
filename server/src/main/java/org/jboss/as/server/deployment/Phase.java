@@ -198,18 +198,16 @@ public enum Phase {
     public static final int STRUCTURE_SAR_SUB_DEPLOY_CHECK              = 0x0D00;
     public static final int STRUCTURE_ADDITIONAL_MANIFEST               = 0x0E00;
     public static final int STRUCTURE_SUB_DEPLOYMENT                    = 0x0F00;
+    public static final int STRUCTURE_JBOSS_DEPLOYMENT_STRUCTURE_DESCRIPTOR = 0x0F50;
+    public static final int STRUCTURE_CLASS_PATH                        = 0x0FA0;
     public static final int STRUCTURE_MODULE_IDENTIFIERS                = 0x1000;
     public static final int STRUCTURE_EE_MODULE_INIT                    = 0x1100;
 
     // PARSE
     public static final int PARSE_EE_MODULE_NAME                        = 0x0100;
     public static final int PARSE_EAR_SUBDEPLOYMENTS_ISOLATION_DEFAULT  = 0x0200;
-    public static final int PARSE_STRUCTURE_DESCRIPTOR                  = 0x0201;
     public static final int PARSE_DEPENDENCIES_MANIFEST                 = 0x0300;
     public static final int PARSE_COMPOSITE_ANNOTATION_INDEX            = 0x0301;
-    public static final int PARSE_EAR_LIB_CLASS_PATH                    = 0x0400;
-    public static final int PARSE_ADDITIONAL_MODULES                    = 0x0500;
-    public static final int PARSE_CLASS_PATH                            = 0x0600;
     public static final int PARSE_EXTENSION_LIST                        = 0x0700;
     public static final int PARSE_EXTENSION_NAME                        = 0x0800;
     public static final int PARSE_OSGI_BUNDLE_INFO                      = 0x0900;

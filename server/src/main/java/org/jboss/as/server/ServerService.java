@@ -59,7 +59,6 @@ import org.jboss.as.server.deployment.SubDeploymentProcessor;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndexProcessor;
 import org.jboss.as.server.deployment.integration.Seam2Processor;
-import org.jboss.as.server.deployment.module.AdditionalModuleProcessor;
 import org.jboss.as.server.deployment.module.ClassFileTransformerProcessor;
 import org.jboss.as.server.deployment.module.DeploymentRootExplodedMountProcessor;
 import org.jboss.as.server.deployment.module.DeploymentRootMountProcessor;
@@ -86,7 +85,7 @@ import org.jboss.as.server.deployment.service.ServiceActivatorProcessor;
 import org.jboss.as.server.moduleservice.ExtensionIndexService;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
-import org.jboss.as.server.services.security.RuntimeVaultReader;
+import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -115,7 +114,7 @@ public final class ServerService extends AbstractControllerService {
     private final ControlledProcessState processState;
     private volatile ExecutorService queuelessExecutor;
     private volatile ExtensibleConfigurationPersister extensibleConfigurationPersister;
-    private final RuntimeVaultReader vaultReader;
+    private final AbstractVaultReader vaultReader;
 
     /**
      * Construct a new instance.
@@ -124,7 +123,7 @@ public final class ServerService extends AbstractControllerService {
      * @param prepareStep the prepare step to use
      */
     ServerService(final Bootstrap.Configuration configuration, final ControlledProcessState processState,
-                  final OperationStepHandler prepareStep, final BootstrapListener bootstrapListener, RuntimeVaultReader vaultReader) {
+                  final OperationStepHandler prepareStep, final BootstrapListener bootstrapListener, AbstractVaultReader vaultReader) {
         super(OperationContext.Type.SERVER, processState, ServerDescriptionProviders.ROOT_PROVIDER, prepareStep, new RuntimeExpressionResolver(vaultReader));
         this.configuration = configuration;
         this.bootstrapListener = bootstrapListener;
@@ -139,7 +138,7 @@ public final class ServerService extends AbstractControllerService {
      * @param configuration the bootstrap configuration
      */
     public static void addService(final ServiceTarget serviceTarget, final Bootstrap.Configuration configuration,
-                                  final ControlledProcessState processState, final BootstrapListener bootstrapListener, final RuntimeVaultReader vaultReader) {
+                                  final ControlledProcessState processState, final BootstrapListener bootstrapListener, final AbstractVaultReader vaultReader) {
         ServerService service = new ServerService(configuration, processState, null, bootstrapListener, vaultReader);
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(Services.JBOSS_SERVER_CONTROLLER, service);
         serviceBuilder.addDependency(ServerDeploymentRepository.SERVICE_NAME,ServerDeploymentRepository.class, service.injectedDeploymentRepository);
@@ -206,11 +205,10 @@ public final class ServerService extends AbstractControllerService {
         DeployerChainAddHandler.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_SUB_DEPLOYMENT, new SubDeploymentProcessor());
         DeployerChainAddHandler.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_MODULE_IDENTIFIERS, new ModuleIdentifierProcessor());
         DeployerChainAddHandler.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_ANNOTATION_INDEX, new AnnotationIndexProcessor());
-        DeployerChainAddHandler.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_STRUCTURE_DESCRIPTOR, new DeploymentStructureDescriptorParser());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_JBOSS_DEPLOYMENT_STRUCTURE_DESCRIPTOR, new DeploymentStructureDescriptorParser());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_CLASS_PATH, new ManifestClassPathProcessor());
         DeployerChainAddHandler.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DEPENDENCIES_MANIFEST, new ManifestDependencyProcessor());
         DeployerChainAddHandler.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_COMPOSITE_ANNOTATION_INDEX, new CompositeIndexProcessor());
-        DeployerChainAddHandler.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_ADDITIONAL_MODULES, new AdditionalModuleProcessor());
-        DeployerChainAddHandler.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_CLASS_PATH, new ManifestClassPathProcessor());
         DeployerChainAddHandler.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EXTENSION_LIST, new ManifestExtensionListProcessor());
         DeployerChainAddHandler.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EXTENSION_NAME, new ManifestExtensionNameProcessor());
         DeployerChainAddHandler.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_SERVICE_LOADER_DEPLOYMENT, new ServiceLoaderProcessor());

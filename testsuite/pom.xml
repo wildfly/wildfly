@@ -90,12 +90,26 @@
         <udpGroup>230.0.0.4</udpGroup>
 
         <!-- IP stack configs. -->
-        <ip.client.stack>-Djava.net.preferIPv4Stack=true</ip.client.stack>
-        <ip.server.stack>-Djava.net.preferIPv4Stack=true</ip.server.stack>
-
-        <!-- Security properties. -->
-        <security.manager>-Djava.security.manager</security.manager>
-        <security.policy></security.policy>
+        <jvm.args.ip>-Djava.net.preferIPv4Stack=true -Djava.net.preferIPv6Addresses=false</jvm.args.ip>
+        <jvm.args.ip.server>${jvm.args.ip}</jvm.args.ip.server>
+        <jvm.args.ip.client>${jvm.args.ip}</jvm.args.ip.client>
+        
+        <!-- Security. -->
+        <jvm.args.securityManager></jvm.args.securityManager>
+        <jvm.args.securityPolicy></jvm.args.securityPolicy>
+        <jvm.args.security>${jvm.args.securityManager} ${jvm.args.securityPolicy}</jvm.args.security>
+        
+        <!-- Timeout ratios. 100 will leave the timeout as it was coded. -->
+        <timeout.ratio.fsio>100</timeout.ratio.fsio>
+        <timeout.ratio.netio>100</timeout.ratio.netio>
+        <timeout.ratio.memio>100</timeout.ratio.memio>
+        <timeout.ratio.proc>100</timeout.ratio.proc>
+        <jvm.args.timeouts>
+            -Dts.tr.fsio=${timeout.ratio.fsio}
+            -Dts.tr.netio=${timeout.ratio.netio}
+            -Dts.tr.memio=${timeout.ratio.memio}
+            -Dts.tr.proc=${timeout.ratio.proc}
+        </jvm.args.timeouts>
 
         <!-- Database properties. -->
         <ds.db></ds.db>
@@ -455,6 +469,8 @@
             <modules><module>stress</module></modules>
         </profile>
 
+
+
         <!--
           Debugging profiles
         -->
@@ -469,6 +485,38 @@
                 <surefire.jpda.args>-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y</surefire.jpda.args>
             </properties>
         </profile>
+
+
+        <!-- IPv6. -->
+        <profile>
+            <id>ts.ipv6</id>
+            <activation><property><name>ipv6</name></property></activation>
+            <properties>
+                <jvm.args.ip>-Djava.net.preferIPv4Stack=false -Djava.net.preferIPv6Addresses=true</jvm.args.ip>
+            </properties>
+        </profile>
+
+
+        <!-- Security policy. -->
+        <profile>
+            <id>ts.security.policy</id>
+            <activation><property><name>security.policy</name></property></activation>
+            <properties>
+                <jvm.args.securityManager>-Djava.security.manager</jvm.args.securityManager>
+                <jvm.args.securityPolicy>-Djava.security.policy=${security.policy}</jvm.args.securityPolicy>
+            </properties>
+        </profile>
+
+        <!-- Security manager. -->
+        <profile>
+            <id>ts.security.manager</id>
+            <activation><property><name>security.manager</name></property></activation>
+            <properties>
+                <jvm.args.securityManager>-Djava.security.manager</jvm.args.securityManager>
+            </properties>
+        </profile>
+
+
 
         <!--
           Database profiles

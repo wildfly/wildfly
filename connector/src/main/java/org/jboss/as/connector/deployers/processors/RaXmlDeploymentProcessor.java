@@ -83,7 +83,6 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         ResourceAdapters raxmls = null;
-        // getResourceAdaptersAttachment(deploymentUnit);
         final ServiceController<?> raService = phaseContext.getServiceRegistry().getService(
                 ConnectorServices.RESOURCEADAPTERS_SERVICE);
         if (raService != null)
@@ -101,13 +100,20 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
             final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
             for (org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter raxml : raxmls.getResourceAdapters()) {
-                if (deploymentUnit.getName().equals(raxml.getArchive())) {
+                String deploymentUnitPrefix = "";
 
+                if (deploymentUnit.getParent() != null) {
+                    deploymentUnitPrefix = deploymentUnit.getParent().getName() + "#";
+                }
+
+                String deploymentUnitName = deploymentUnitPrefix + deploymentUnit.getName();
+
+                if (deploymentUnitName.equals(raxml.getArchive())) {
                     final String deployment;
-                    if (deploymentUnit.getName().lastIndexOf('.') == -1) {
-                        deployment = deploymentUnit.getName();
+                    if (deploymentUnitName.lastIndexOf('.') == -1) {
+                        deployment = deploymentUnitName;
                     } else {
-                        deployment = deploymentUnit.getName().substring(0, deploymentUnit.getName().lastIndexOf('.'));
+                        deployment = deploymentUnitName.substring(0, deploymentUnitName.lastIndexOf('.'));
                     }
 
                     // Create the service

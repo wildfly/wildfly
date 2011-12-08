@@ -66,7 +66,7 @@ public class StatefulRemoveInterceptor implements Interceptor {
                 //this means it is an EJB 2.x view
                 //which is not allowed to remove while enrolled in a TX
                 final StatefulTransactionMarker marker = context.getPrivateData(StatefulTransactionMarker.class);
-                if(!marker.isFirstInvocation()) {
+                if(marker != null && !marker.isFirstInvocation()) {
                     throw EjbMessages.MESSAGES.cannotRemoveWhileParticipatingInTransaction();
                 }
             }

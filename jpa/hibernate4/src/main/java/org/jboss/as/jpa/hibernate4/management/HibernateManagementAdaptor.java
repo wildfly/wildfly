@@ -48,6 +48,9 @@ import org.jboss.dmr.ModelNode;
  */
 public class HibernateManagementAdaptor implements ManagementAdaptor {
 
+    // shared instance for all Hibernate 4 JPA deployments
+    private static final HibernateManagementAdaptor INSTANCE = new HibernateManagementAdaptor();
+
     private static final String PROVIDER_LABEL = "hibernate-persistence-unit";
     public static final String OPERATION_CLEAR = "clear";
     public static final String OPERATION_EVICTALL = "evict-all";
@@ -87,6 +90,14 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
     public static final String OPERATION_OPTIMISTIC_FAILURE_COUNT = "optimistic-failure-count";
 
     private PersistenceUnitServiceRegistry persistenceUnitRegistry;
+
+    /**
+     * The management statistics are shared across all Hibernate 4 JPA deployments
+     * @return shared instance for all Hibernate 4 JPA deployments
+     */
+    public static HibernateManagementAdaptor getInstance() {
+        return INSTANCE;
+    }
 
     @Override
     public void register(final ManagementResourceRegistration jpaSubsystemDeployments, PersistenceUnitServiceRegistry persistenceUnitRegistry) {

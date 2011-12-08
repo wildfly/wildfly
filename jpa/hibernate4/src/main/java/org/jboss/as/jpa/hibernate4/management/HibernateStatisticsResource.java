@@ -29,7 +29,6 @@ import static org.jboss.as.jpa.hibernate4.management.HibernateDescriptionConstan
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.hibernate.stat.Statistics;
@@ -106,22 +105,22 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
             if (hasCacheRegion(element)) {
                 return PlaceholderResource.INSTANCE;
             }
-            throw new NoSuchElementException(element.toString());
+            throw new NoSuchResourceException(element);
         } else if (ENTITY.equals(element.getKey())) {
             if (hasEntity(element)) {
                 return PlaceholderResource.INSTANCE;
             }
-            throw new NoSuchElementException(element.toString());
+            throw new NoSuchResourceException(element);
         } else if (COLLECTION.equals(element.getKey())) {
             if (hasCollection(element)) {
                 return PlaceholderResource.INSTANCE;
             }
-            throw new NoSuchElementException(element.toString());
+            throw new NoSuchResourceException(element);
         } else if (QUERYCACHE.equals(element.getKey())) {
             if (hasQuery(element)) {
                 return PlaceholderResource.INSTANCE;
             }
-            throw new NoSuchElementException(element.toString());
+            throw new NoSuchResourceException(element);
         } else {
             return super.requireChild(element);
         }
@@ -146,22 +145,22 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
     public Resource navigate(PathAddress address) {
         if (address.size() > 0 && ENTITYCACHE.equals(address.getElement(0).getKey())) {
             if (address.size() > 1) {
-                throw new NoSuchElementException(address.subAddress(1).toString());
+                throw new NoSuchResourceException(address.getElement(1));
             }
             return PlaceholderResource.INSTANCE;
         } else if (address.size() > 0 && ENTITY.equals(address.getElement(0).getKey())) {
             if (address.size() > 1) {
-                throw new NoSuchElementException(address.subAddress(1).toString());
+                throw new NoSuchResourceException(address.getElement(1));
             }
             return PlaceholderResource.INSTANCE;
         } else if (address.size() > 0 && COLLECTION.equals(address.getElement(0).getKey())) {
             if (address.size() > 1) {
-                throw new NoSuchElementException(address.subAddress(1).toString());
+                throw new NoSuchResourceException(address.getElement(1));
             }
             return PlaceholderResource.INSTANCE;
         } else if (address.size() > 0 && QUERYCACHE.equals(address.getElement(0).getKey())) {
             if (address.size() > 1) {
-                throw new NoSuchElementException(address.subAddress(1).toString());
+                throw new NoSuchResourceException(address.getElement(1));
             }
             return PlaceholderResource.INSTANCE;
         } else {

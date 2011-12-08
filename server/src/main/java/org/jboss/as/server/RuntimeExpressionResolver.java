@@ -22,7 +22,7 @@
 package org.jboss.as.server;
 
 import org.jboss.as.controller.ExpressionResolverImpl;
-import org.jboss.as.server.services.security.RuntimeVaultReader;
+import org.jboss.as.controller.VaultReader;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -30,9 +30,9 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class RuntimeExpressionResolver extends ExpressionResolverImpl {
-    private final RuntimeVaultReader vaultReader;
+    private final VaultReader vaultReader;
 
-    public RuntimeExpressionResolver(RuntimeVaultReader vaultReader) {
+    public RuntimeExpressionResolver(VaultReader vaultReader) {
         this.vaultReader = vaultReader;
     }
 
@@ -41,7 +41,7 @@ public class RuntimeExpressionResolver extends ExpressionResolverImpl {
         String expression = node.asString();
         if (expression.length() > 3) {
             expression = expression.substring(2, expression.length() -2);
-            if ( vaultReader.isVaultFormat(expression)) {
+            if (vaultReader != null && vaultReader.isVaultFormat(expression)) {
                 node.set(vaultReader.retrieveFromVault(expression));
             }
         }

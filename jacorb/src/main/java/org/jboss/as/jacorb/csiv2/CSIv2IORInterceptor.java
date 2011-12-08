@@ -23,9 +23,9 @@
 package org.jboss.as.jacorb.csiv2;
 
 import org.jboss.as.jacorb.JacORBSubsystemConstants;
-import org.jboss.as.jacorb.metadata.IORSecurityConfigMetadata;
 import org.jboss.as.jacorb.service.CorbaORBService;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.LocalObject;
@@ -82,7 +82,7 @@ public class CSIv2IORInterceptor extends LocalObject implements IORInterceptor {
             SSLHelper.insert(any, ssl);
             byte[] componentData = codec.encode_value(any);
             defaultSSLComponent = new TaggedComponent(TAG_SSL_SEC_TRANS.value, componentData);
-            defaultCSIComponent = CSIv2Util.createSecurityTaggedComponent(new IORSecurityConfigMetadata(), codec,
+            defaultCSIComponent = CSIv2Util.createSecurityTaggedComponent(new IORSecurityConfigMetaData(), codec,
                     sslPort, orb);
         } catch (InvalidTypeForEncoding e) {
             log.warn("Caught unexcepted exception while encoding SSL component", e);

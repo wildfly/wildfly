@@ -46,6 +46,7 @@
         <module name="org.apache.commons.lang" />
         <module name="org.apache.neethi" />
         <module name="org.apache.velocity" />
+        <module name="org.apache.xml-resolver" />
         <module name="org.apache.ws.xmlschema" />
         <module name="org.apache.ws.security" />
         <module name="org.apache.santuario.xmlsec" />

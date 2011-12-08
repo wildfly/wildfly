@@ -21,6 +21,7 @@
  */
 package org.jboss.as.cli.operation.impl;
 
+import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.operation.OperationRequestHeader;
 import org.jboss.dmr.ModelNode;
@@ -61,7 +62,7 @@ public class SimpleOperationRequestHeader implements OperationRequestHeader {
      * @see org.jboss.as.cli.operation.OperationRequestHeader#toModelNode()
      */
     @Override
-    public void addTo(ModelNode headers) throws CommandFormatException {
+    public void addTo(CommandContext ctx, ModelNode headers) throws CommandFormatException {
         if(name == null) {
             throw new CommandFormatException("Header name is null.");
         }

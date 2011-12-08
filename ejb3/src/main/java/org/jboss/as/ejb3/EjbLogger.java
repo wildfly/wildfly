@@ -34,6 +34,7 @@ import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
 import org.jboss.as.ejb3.timerservice.CalendarTimer;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
 import org.jboss.as.ejb3.timerservice.spi.MultiTimeoutMethodTimedObjectInvoker;
+import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
@@ -330,4 +331,19 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 14134, value = "EJB Invocation failed on component %s for method %s")
     void invocationFailed(String component, Method method, @Cause Throwable t);
+
+    /**
+     * Logs an error message indicating that an ejb client proxy could not be swapped out in a RMI invocation
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 14135, value = "Could not find EJB for locator %s, EJB client proxy will not be replaced")
+    void couldNotFindEjbForLocatorIIOP(EJBLocator locator);
+
+
+    /**
+     * Logs an error message indicating that an ejb client proxy could not be swapped out in a RMI invocation
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 14136, value = "EJB %s is not being replaced with a Stub as it is not exposed over IIOP")
+    void ejbNotExposedOverIIOP(EJBLocator locator);
 }

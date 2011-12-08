@@ -58,7 +58,6 @@ public final class JacORBSubsystemConstants {
     public static final String ORB_CONN_OUTBUF_SIZE = "outbuf-size";
     public static final String ORB_CONN_OUTBUF_CACHE_TIMEOUT = "outbuf-cache-timeout";
     public static final String ORB_INIT = "initializers";
-    public static final String ORB_INIT_CODEBASE = "codebase";
     public static final String ORB_INIT_SECURITY = "security";
     public static final String ORB_INIT_TRANSACTIONS = "transactions";
     public static final String POA = "poa";

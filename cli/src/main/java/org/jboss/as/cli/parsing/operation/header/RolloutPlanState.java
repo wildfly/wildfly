@@ -39,20 +39,37 @@ public class RolloutPlanState extends DefaultParsingState {
     public static final String ID = "ROLLOUT_PLAN_HEADER";
 
     RolloutPlanState() {
-        this(new PropertyListState(' ', ' ', ';', '}'));
+        this(ServerGroupListState.INSTANCE, new PropertyListState(' ', ' ', ';', '}'));
     }
 
-    RolloutPlanState(PropertyListState props) {
+    RolloutPlanState(final ServerGroupListState sgList, final PropertyListState props) {
         super(ID);
         this.setIgnoreWhitespaces(true);
-        setEnterHandler(new EnterStateCharacterHandler(props));
+        //setEnterHandler(new EnterStateCharacterHandler(sgList));
+        setEnterHandler(new CharacterHandler(){
+            @Override
+            public void handle(ParsingContext ctx) throws CommandFormatException {
+                final String input = ctx.getInput();
+                if(input.startsWith("id", ctx.getLocation()) &&
+                        input.length() > ctx.getLocation() + 3 &&
+                        (input.charAt(ctx.getLocation() + 2) == '=' || Character.isWhitespace(input.charAt(ctx.getLocation() + 2)))) {
+                    ctx.enterState(props);
+                } else {
+                    ctx.enterState(sgList);
+                }
+            }});
+        setDefaultHandler(new EnterStateCharacterHandler(props));
         setReturnHandler(new CharacterHandler(){
             @Override
             public void handle(ParsingContext ctx) throws CommandFormatException {
                 if(ctx.isEndOfContent()) {
                     return;
                 }
-                ctx.leaveState();
+                final char ch = ctx.getCharacter();
+                if(ch == '}' || ch == ';') {
+                    ctx.leaveState();
+                }
+                //ctx.leaveState();
             }});
     }
 }

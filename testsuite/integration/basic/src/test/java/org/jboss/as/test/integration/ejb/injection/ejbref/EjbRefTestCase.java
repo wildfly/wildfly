@@ -72,4 +72,18 @@ public class EjbRefTestCase {
         Assert.assertEquals("hello", remote.hello());
 
     }
+    
+    @Test
+    public void testInjection() throws Exception
+    {
+       CtxInjectionTester session = (CtxInjectionTester) iniCtx.lookup("java:module/CtxInjectionTesterBean");
+       try
+       {
+          session.checkInjection();
+       }
+       catch(CtxInjectionTester.FailedException e)
+       {
+          Assert.fail("SessionContext not injected");
+       }
+    }
 }

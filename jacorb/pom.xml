@@ -107,6 +107,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-ejb</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.spec.javax.transaction</groupId>
             <artifactId>jboss-transaction-api_1.1_spec</artifactId>
         </dependency>

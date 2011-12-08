@@ -27,7 +27,8 @@ import org.jboss.jandex.AnnotationInstance;
 
 /**
  * Processes the {@link org.jboss.ejb3.annotation.RunAsPrincipal} annotation on a session bean
- * @author Anil Saldhana
+ *
+ * @author Guillaume Grossetie
  */
 public class RunAsPrincipalAnnotationInformationFactory extends ClassAnnotationInformationFactory<RunAsPrincipal, String> {
 

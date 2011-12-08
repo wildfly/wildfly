@@ -22,29 +22,16 @@
 
 package org.jboss.as.server.deployment.annotation;
 
-import org.jboss.as.server.deployment.Attachments;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.server.moduleservice.ModuleIndexBuilder;
-import org.jboss.jandex.Index;
-import org.jboss.jandex.IndexReader;
-import org.jboss.jandex.Indexer;
 import org.jboss.logging.Logger;
-import org.jboss.vfs.VFSUtils;
-import org.jboss.vfs.VirtualFile;
-import org.jboss.vfs.VirtualFileFilter;
-import org.jboss.vfs.VisitorAttributes;
-import org.jboss.vfs.util.SuffixMatchFilter;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Deployment unit processor responsible for creating and attaching an annotation index for a resource root
@@ -66,71 +53,9 @@ public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final List<ResourceRoot> allResourceRoots = new ArrayList<ResourceRoot>();
-        final List<ResourceRoot> resourceRoots = phaseContext.getDeploymentUnit().getAttachment(Attachments.RESOURCE_ROOTS);
-        if (resourceRoots != null) {
-            allResourceRoots.addAll(resourceRoots);
-        }
-        allResourceRoots.add(phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT));
-        for (ResourceRoot resourceRoot : allResourceRoots) {
-            if (resourceRoot.getAttachment(Attachments.ANNOTATION_INDEX) != null) {
-                continue;
-            }
-
-            VirtualFile indexFile = resourceRoot.getRoot().getChild(ModuleIndexBuilder.INDEX_LOCATION);
-            if (indexFile.exists()) {
-                try {
-                    IndexReader reader = new IndexReader(indexFile.openStream());
-                    resourceRoot.putAttachment(Attachments.ANNOTATION_INDEX, reader.read());
-                    logger.tracef("Found and read index at: %s", indexFile);
-                    continue;
-                } catch (Exception e) {
-                    logger.debugf("Could not read provided index: %s", indexFile, e);
-                }
-            }
-
-            // if this flag is present and set to false then do not index the resource
-            Boolean shouldIndexResource = resourceRoot.getAttachment(Attachments.INDEX_RESOURCE_ROOT);
-            if (shouldIndexResource != null && !shouldIndexResource) {
-                continue;
-            }
-
-            final List<String> indexIgnorePathList = resourceRoot.getAttachment(Attachments.INDEX_IGNORE_PATHS);
-            final Set<String> indexIgnorePaths;
-            if (indexIgnorePathList != null && !indexIgnorePathList.isEmpty()) {
-                indexIgnorePaths = new HashSet<String>(indexIgnorePathList);
-            } else {
-                indexIgnorePaths = null;
-            }
-
-            final VirtualFile virtualFile = resourceRoot.getRoot();
-            final Indexer indexer = new Indexer();
-            try {
-                final VisitorAttributes visitorAttributes = new VisitorAttributes();
-                visitorAttributes.setLeavesOnly(true);
-                visitorAttributes.setRecurseFilter(new VirtualFileFilter() {
-                    public boolean accepts(VirtualFile file) {
-                        return indexIgnorePaths == null || !indexIgnorePaths.contains(file.getPathNameRelativeTo(virtualFile));
-                    }
-                });
-
-                final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class", visitorAttributes));
-                for (VirtualFile classFile : classChildren) {
-                    InputStream inputStream = null;
-                    try {
-                        inputStream = classFile.openStream();
-                        indexer.index(inputStream);
-                    } catch (Exception e) {
-                        logger.warn("Could not index class " + classFile.getPathNameRelativeTo(virtualFile) + " in archive '" + virtualFile + "'", e);
-                    } finally {
-                        VFSUtils.safeClose(inputStream);
-                    }
-                }
-                final Index index = indexer.complete();
-                resourceRoot.putAttachment(Attachments.ANNOTATION_INDEX, index);
-                logger.tracef("Generated index for archive %s", virtualFile);
-            } catch (Throwable t) {
-                throw new DeploymentUnitProcessingException("Failed to index deployment root for annotations", t);
-            }
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        for (ResourceRoot resourceRoot : DeploymentUtils.allResourceRoots(deploymentUnit)) {
+            ResourceRootIndexer.indexResourceRoot(resourceRoot);
         }
     }
 

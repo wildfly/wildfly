@@ -22,7 +22,7 @@
 
 package org.jboss.as.jacorb.csiv2;
 
-import org.jboss.as.jacorb.metadata.IORSecurityConfigMetadata;
+import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.LocalObject;
 import org.omg.CORBA.Policy;
@@ -60,7 +60,7 @@ class CSIv2PolicyFactory extends LocalObject implements PolicyFactory {
         }
 
         // stored as java.io.Serializable - is this a hack?
-        IORSecurityConfigMetadata metadata = (IORSecurityConfigMetadata) value.extract_Value();
+        IORSecurityConfigMetaData metadata = (IORSecurityConfigMetaData) value.extract_Value();
         return new CSIv2Policy(metadata, codec);
     }
 }

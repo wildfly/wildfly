@@ -21,15 +21,15 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.serialization;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 /**
  * Tests that an @Timout method is called when a timer is created programatically.
@@ -51,7 +51,6 @@ public class TimerServiceSerializationSecondTestCase {
     public void testTimerServiceRestoredWithCorrectInfo() throws NamingException {
         InitialContext ctx = new InitialContext();
         TimerServiceSerializationBean bean = (TimerServiceSerializationBean) ctx.lookup("java:module/" + TimerServiceSerializationBean.class.getSimpleName());
-        bean.createTimer();
         InfoA info = TimerServiceSerializationBean.awaitTimerCall();
         Assert.assertNotNull(info);
         Assert.assertNotNull(info.infoB);

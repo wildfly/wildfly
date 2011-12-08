@@ -16,6 +16,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -28,6 +29,7 @@ import static org.junit.matchers.JUnitMatchers.containsString;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("AS7-2923")
 public class IIOPNamingTestCase {
 
 
@@ -36,6 +38,13 @@ public class IIOPNamingTestCase {
         System.setProperty("com.sun.CORBA.ORBUseDynamicStub", "true");
         return ShrinkWrap.create(JavaArchive.class, "test.jar")
                 .addPackage(IIOPNamingTestCase.class.getPackage());
+    }
+
+    @Deployment(name="test2")
+    public static Archive<?> descriptorOverrideDeploy() {
+        return ShrinkWrap.create(JavaArchive.class, "test2.jar")
+                .addClasses(IIOPNamingHome.class, IIOPRemote.class, IIOPNamingBean.class)
+                .addAsManifestResource("ejb/iiop/jboss-ejb3.xml", "jboss-ejb3.xml");
     }
 
     private static String property(final String name) {
@@ -108,7 +117,7 @@ public class IIOPNamingTestCase {
         }
     }
 
-    @Test
+    @Test 
     public void testIIOPNamingIIOPInvocation() throws NamingException, RemoteException {
         final Properties prope = new Properties();
         prope.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.cosnaming.CNCtxFactory");
@@ -120,7 +129,7 @@ public class IIOPNamingTestCase {
         Assert.assertEquals("hello", result.hello());
     }
 
-    @Test
+    @Test 
     public void testStatefulIIOPNamingIIOPInvocation() throws NamingException, RemoteException, RemoveException {
         final Properties prope = new Properties();
         prope.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.cosnaming.CNCtxFactory");
@@ -137,5 +146,73 @@ public class IIOPNamingTestCase {
             Assert.fail("Expected NoSuchObjectException");
         } catch (NoSuchObjectException expected) {
         }
+    }
+
+    /**
+     * <p>
+     * Tests the corbaloc lookup of a bean that used the jboss-ejb3.xml deployment descriptor to override the COSNaming
+     * binding. So, insteand of looking for the standard test2/IIOPNamingBean context we will look for the configured
+     * bean/custom/name/IIOPNamingBean context.
+     * </p>
+     *
+     * @throws NamingException if an error occurs while looking up the bean.
+     * @throws RemoteException if an error occurs while invoking the remote bean.
+     */
+    @Test
+    public void testCorbalocInvocationWithDDOverride() throws NamingException, RemoteException {
+        final Properties prope = new Properties();
+        prope.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.cosnaming.CNCtxFactory");
+        prope.put(Context.PROVIDER_URL, "corbaloc::localhost:3528/JBoss/Naming/root");
+        final InitialContext context = new InitialContext(prope);
+        final Object iiopObj = context.lookup("bean/custom/name/IIOPNamingBean");
+        final IIOPNamingHome object = (IIOPNamingHome) PortableRemoteObject.narrow(iiopObj, IIOPNamingHome.class);
+        final IIOPRemote result = object.create();
+        Assert.assertEquals("hello", result.hello());
+    }
+
+    /**
+     * <p>
+     * Tests the corbaname lookup of a bean that used the jboss-ejb3.xml deployment descriptor to override the COSNaming
+     * binding. So, insteand of looking for the standard test2/IIOPNamingBean context we will look for the configured
+     * bean/custom/name/IIOPNamingBean context.
+     * </p>
+     *
+     * @throws NamingException if an error occurs while looking up the bean.
+     * @throws RemoteException if an error occurs while invoking the remote bean.
+     */
+    @Test
+    public void testCorbanameInvocationWithDDOverride() throws NamingException, RemoteException {
+        // AS7-2593: test hangs on OpenJDK
+        assumeThat(property("java.runtime.name"), not(containsString("OpenJDK")));
+        final Properties prope = new Properties();
+        prope.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.cosnaming.CNCtxFactory");
+        prope.put(Context.PROVIDER_URL, "corbaloc::localhost:3528");
+        final InitialContext context = new InitialContext(prope);
+        final Object iiopObj = context.lookup("corbaname:iiop:localhost:3528#bean/custom/name/IIOPNamingBean");
+        final IIOPNamingHome object = (IIOPNamingHome) PortableRemoteObject.narrow(iiopObj, IIOPNamingHome.class);
+        final IIOPRemote result = object.create();
+        Assert.assertEquals("hello", result.hello());
+    }
+
+    /**
+     * <p>
+     * Tests the iiop lookup of a bean that used the jboss-ejb3.xml deployment descriptor to override the COSNaming
+     * binding. So, insteand of looking for the standard test2/IIOPNamingBean context we will look for the configured
+     * bean/custom/name/IIOPNamingBean context.
+     * </p>
+     *
+     * @throws NamingException if an error occurs while looking up the bean.
+     * @throws RemoteException if an error occurs while invoking the remote bean.
+     */
+    @Test
+    public void testIIOPInvocationWithDDOverride() throws NamingException, RemoteException {
+        final Properties prope = new Properties();
+        prope.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.cosnaming.CNCtxFactory");
+        prope.put(Context.PROVIDER_URL, "iiop://localhost:3528");
+        final InitialContext context = new InitialContext(prope);
+        final Object iiopObj = context.lookup("bean/custom/name/IIOPNamingBean");
+        final IIOPNamingHome object = (IIOPNamingHome) PortableRemoteObject.narrow(iiopObj, IIOPNamingHome.class);
+        final IIOPRemote result = object.create();
+        Assert.assertEquals("hello", result.hello());
     }
 }

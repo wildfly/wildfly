@@ -23,9 +23,9 @@
 package org.jboss.as.jacorb.csiv2;
 
 import org.jboss.as.jacorb.JacORBSubsystemConstants;
-import org.jboss.as.jacorb.metadata.IORSecurityConfigMetadata;
 import org.jboss.as.jacorb.service.CorbaORBService;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
 import org.omg.CORBA.LocalObject;
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.Policy;
@@ -71,7 +71,7 @@ public class CSIv2Policy extends LocalObject implements Policy {
      * @param metadata an object containing all the CSIv2 security info.
      * @param codec    the {@code Codec} used to encode the metadata when creating the tagged components.
      */
-    public CSIv2Policy(IORSecurityConfigMetadata metadata, Codec codec) {
+    public CSIv2Policy(IORSecurityConfigMetaData metadata, Codec codec) {
         if (log.isDebugEnabled()) {
             log.debug(metadata);
         }

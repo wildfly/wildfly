@@ -26,11 +26,13 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.Assert;
 
 @RunWith(Arquillian.class)
 public class EarClassPathTransitiveClosureTestCase {
@@ -53,8 +55,12 @@ public class EarClassPathTransitiveClosureTestCase {
         ear.addAsModule(earLib);
 
         earLib = ShrinkWrap.create(JavaArchive.class, "cp2.jar");
+        earLib.addAsManifestResource(new ByteArrayAsset("Class-Path: a/b/c\n".getBytes()), "MANIFEST.MF");
         earLib.addClass(TestBB.class);
         ear.addAsModule(earLib);
+
+        ear.add(new StringAsset("Hello World"), "a/b/c", "testfile.file");
+
         return ear;
     }
 
@@ -66,6 +72,14 @@ public class EarClassPathTransitiveClosureTestCase {
     @Test
     public void testClassPathEntryAccessible() throws ClassNotFoundException {
         loadClass("org.jboss.as.test.integration.deployment.classloading.ear.TestBB");
+    }
+
+    /**
+     * AS7-2539
+     */
+    @Test
+    public void testArbitraryDirectoryAccessible() throws ClassNotFoundException {
+        Assert.assertNotNull("getResource returned null URL for testfile.file", getClass().getClassLoader().getResource("testfile.file"));
     }
 
     private static Class<?> loadClass(String name) throws ClassNotFoundException {

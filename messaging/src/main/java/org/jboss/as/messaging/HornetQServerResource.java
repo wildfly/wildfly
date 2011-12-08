@@ -24,7 +24,6 @@ package org.jboss.as.messaging;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 import static org.jboss.as.messaging.CommonAttributes.CORE_ADDRESS;
@@ -38,7 +37,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.remoting3.Remoting;
 
 /**
  * Resource representing a HornetQ server.
@@ -107,7 +105,7 @@ public class HornetQServerResource implements Resource {
             if (hasAddressControl(element)) {
                 return CoreAddressResource.INSTANCE;
             }
-            throw new NoSuchElementException(element.toString());
+            throw new NoSuchResourceException(element);
         } else {
             return delegate.requireChild(element);
         }
@@ -126,7 +124,7 @@ public class HornetQServerResource implements Resource {
     public Resource navigate(PathAddress address) {
         if (address.size() > 0 && CORE_ADDRESS.equals(address.getElement(0).getKey())) {
             if (address.size() > 1) {
-                throw new NoSuchElementException(address.subAddress(1).toString());
+                throw new NoSuchResourceException(address.getElement(1));
             }
             return CoreAddressResource.INSTANCE;
         } else {

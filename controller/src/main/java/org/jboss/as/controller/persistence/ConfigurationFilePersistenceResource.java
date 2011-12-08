@@ -24,7 +24,7 @@ package org.jboss.as.controller.persistence;
 
 import org.jboss.dmr.ModelNode;
 
-import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 
 /**
  * {@link ConfigurationPersister.PersistenceResource} that persists to a configuration file upon commit, also
@@ -49,7 +49,7 @@ public class ConfigurationFilePersistenceResource extends FilePersistenceResourc
             super.commit();
             configurationFile.fileWritten();
         } catch (ConfigurationPersistenceException e) {
-           ROOT_LOGGER.errorf(e, e.toString());
+           MGMT_OP_LOGGER.errorf(e, e.toString());
         }
     }
 }

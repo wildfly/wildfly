@@ -25,7 +25,6 @@ package org.jboss.as.messaging;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.Collections;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.jboss.as.controller.PathAddress;
@@ -72,7 +71,7 @@ public class CoreAddressResource implements Resource {
 
     @Override
     public Resource requireChild(PathElement element) {
-        throw new NoSuchElementException();
+        throw new NoSuchResourceException(element);
     }
 
     @Override
@@ -82,7 +81,7 @@ public class CoreAddressResource implements Resource {
 
     @Override
     public Resource navigate(PathAddress address) {
-        throw new NoSuchElementException();
+        return Resource.Tools.navigate(this, address);
     }
 
     @Override

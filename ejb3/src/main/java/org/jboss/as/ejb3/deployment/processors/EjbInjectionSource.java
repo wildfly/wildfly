@@ -132,8 +132,8 @@ public class EjbInjectionSource extends InjectionSource {
         if (!(o instanceof EjbInjectionSource))
             return false;
         if(error != null) {
-            //we can't do a real equals comparison in this case, so throw the original error
-            throw new RuntimeException(error);
+            //we can't do a real equals comparison in this case, so just return false
+            return false;
         }
         if(resolvedViewName == null) {
             throw new RuntimeException("Error equals() cannot be called before resolve()");

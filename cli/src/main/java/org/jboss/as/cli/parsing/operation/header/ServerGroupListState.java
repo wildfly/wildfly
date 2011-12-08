@@ -45,7 +45,8 @@ public class ServerGroupListState extends DefaultParsingState {
     ServerGroupListState(ServerGroupState sg, ServerGroupSeparatorState gs, ConcurrentSignState cs) {
         super(ID);
         this.setIgnoreWhitespaces(true);
-        setDefaultHandler(new EnterStateCharacterHandler(sg));
+        //setDefaultHandler(new EnterStateCharacterHandler(sg));
+        setEnterHandler(new EnterStateCharacterHandler(sg));
         putHandler('^', new EnterStateCharacterHandler(cs));
         putHandler(',', new EnterStateCharacterHandler(gs));
         putHandler('}', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);

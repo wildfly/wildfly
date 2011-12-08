@@ -120,6 +120,7 @@
         <version.org.apache.ws.xmlschema>2.0</version.org.apache.ws.xmlschema>
         <version.org.apache.xalan>2.7.1.jbossorg-1</version.org.apache.xalan>
         <version.org.apache.xerces>2.9.1-jbossas-1</version.org.apache.xerces>
+        <version.org.apache.xml-resolver>1.2</version.org.apache.xml-resolver>
         <version.org.codehaus.jackson>1.6.3</version.org.codehaus.jackson>
         <version.org.codehaus.woodstox.stax2-api>3.1.1</version.org.codehaus.woodstox.stax2-api>
         <version.org.codehaus.woodstox.woodstox-core-asl>4.1.1</version.org.codehaus.woodstox.woodstox-core-asl>
@@ -134,6 +135,7 @@
         <version.org.jboss.arquillian.core>1.0.0.CR6</version.org.jboss.arquillian.core>
         <version.org.jboss.arquillian.osgi>1.0.0.CR4</version.org.jboss.arquillian.osgi>
         <version.org.jboss.classfilewriter>1.0.0.Final</version.org.jboss.classfilewriter>
+        <version.org.jboss.common-core>2.2.17.GA</version.org.jboss.common-core>
         <version.org.jboss.com.sun.httpserver>1.0.0.Beta3</version.org.jboss.com.sun.httpserver>
         <version.org.jboss.ejb-client>1.0.0.Beta7</version.org.jboss.ejb-client>
         <version.org.jboss.ejb3.ext-api>2.0.0-beta-1</version.org.jboss.ejb3.ext-api>
@@ -142,7 +144,6 @@
         <version.org.jboss.invocation>1.1.1.Final</version.org.jboss.invocation>
         <version.org.jboss.ironjacamar>1.0.5.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jandex>1.0.3.Final</version.org.jboss.jandex>
-        <version.org.jboss.jboss-common-core>2.2.17.GA</version.org.jboss.jboss-common-core>
         <version.org.jboss.jboss-dmr>1.1.1.Final</version.org.jboss.jboss-dmr>
         <version.org.jboss.jboss-transaction-spi>7.0.0.CR1</version.org.jboss.jboss-transaction-spi>
         <version.org.jboss.jbossts.jbossjts>4.15.3.Final</version.org.jboss.jbossts.jbossjts>
@@ -151,13 +152,13 @@
         <version.org.jboss.jboss-vfs>3.1.0.CR1</version.org.jboss.jboss-vfs>
         <version.org.jboss.jsfunit.jsfunit>2.0.0.Beta1</version.org.jboss.jsfunit.jsfunit>
         <version.org.jboss.logging.jboss-logging>3.1.0.CR2</version.org.jboss.logging.jboss-logging>
-        <version.org.jboss.logging.jboss-logging-tools>1.0.0.CR4</version.org.jboss.logging.jboss-logging-tools>
+        <version.org.jboss.logging.jboss-logging-tools>1.0.0.CR5</version.org.jboss.logging.jboss-logging-tools>
         <version.org.jboss.logmanager.jboss-logmanager>1.2.0.GA</version.org.jboss.logmanager.jboss-logmanager>
         <version.org.jboss.logmanager.jboss-logmanager-log4j>1.0.0.GA</version.org.jboss.logmanager.jboss-logmanager-log4j>
         <version.org.jboss.management.console>1.0.0.Beta25</version.org.jboss.management.console>
         <version.org.jboss.marshalling.jboss-marshalling>1.3.4.GA</version.org.jboss.marshalling.jboss-marshalling>
         <version.org.jboss.marshalling.jboss-marshalling-river>1.3.4.GA</version.org.jboss.marshalling.jboss-marshalling-river>
-        <version.org.jboss.metadata>7.0.0.Beta25</version.org.jboss.metadata>
+        <version.org.jboss.metadata>7.0.0.Beta29</version.org.jboss.metadata>
         <version.org.jboss.mod_cluster>1.1.3.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.modules.jboss-modules>1.1.0.CR4</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.msc.jboss-msc>1.0.1.GA</version.org.jboss.msc.jboss-msc>
@@ -175,7 +176,7 @@
         <version.org.jboss.osgi.webconsole>1.0.6</version.org.jboss.osgi.webconsole>
         <version.org.jboss.osgi.xerces>2.9.1.SP7</version.org.jboss.osgi.xerces>
         <version.org.jboss.remoting3.jboss-remoting>3.2.0.CR6</version.org.jboss.remoting3.jboss-remoting>
-        <version.org.jboss.resteasy.resteasy-jaxrs>2.2.3.GA</version.org.jboss.resteasy.resteasy-jaxrs>
+        <version.org.jboss.resteasy.resteasy-jaxrs>2.3.0.GA</version.org.jboss.resteasy.resteasy-jaxrs>
         <version.org.jboss.sasl>1.0.0.Beta9</version.org.jboss.sasl>
         <version.org.jboss.seam.int>6.0.0.GA</version.org.jboss.seam.int>
         <version.org.jboss.security.jboss-negotiation>2.2.0.Beta3</version.org.jboss.security.jboss-negotiation>
@@ -192,7 +193,7 @@
         <version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>1.0.0.Final</version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>
         <version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>1.0.0.Final</version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>
         <version.org.jboss.spec.javax.resource.jboss-connector-api_1.6_spec>1.0.0.Final</version.org.jboss.spec.javax.resource.jboss-connector-api_1.6_spec>
-        <version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>1.0.1.Final</version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>
+        <version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>1.0.2.Final</version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>
         <version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.0_spec>1.0.0.Final</version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.0_spec>
         <version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.4_spec>1.0.1.Final</version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.4_spec>
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>1.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>
@@ -216,7 +217,7 @@
         <version.org.jboss.ws.common>2.0.0.CR1</version.org.jboss.ws.common>
         <version.org.jboss.ws.common.tools>1.0.0.CR1</version.org.jboss.ws.common.tools>
         <version.org.jboss.ws.jbossws-cxf>4.0.0.CR1</version.org.jboss.ws.jbossws-cxf>
-        <version.org.jboss.ws.jbossws-native>4.0.0.CR1</version.org.jboss.ws.jbossws-native>
+        <version.org.jboss.ws.jbossws-native>4.0.0.CR2</version.org.jboss.ws.jbossws-native>
         <version.org.jboss.ws.spi>2.0.0.CR1</version.org.jboss.ws.spi>
         <version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>1.0.0.GA</version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>
         <version.org.jboss.xb>2.0.3.GA</version.org.jboss.xb>
@@ -257,61 +258,22 @@
     </properties>
 
     <modules>
-        <module>api</module>
-        <module>appclient</module>
         <module>build</module>
         <module>build-config</module>
-        <module>arquillian</module>
-        <module>cli</module>
-        <module>clustering</module>
-        <module>cmp</module>
-        <module>connector</module>
         <module>controller</module>
         <module>controller-client</module>
-        <module>demos</module>
         <module>deployment-repository</module>
-        <module>deployment-scanner</module>
-        <module>dist</module>
         <module>domain-http</module>
         <module>domain-management</module>
-        <module>ee</module>
-        <module>ee-deployment</module>
-        <module>ejb3</module>
         <module>embedded</module>
-        <module>host-controller</module>
-        <module>jacorb</module>
-        <module>jaxrs</module>
-        <module>jdr</module>
-        <module>jmx</module>
-        <module>jpa</module>
-        <module>jsr77</module>
-        <module>logging</module>
-        <module>mail</module>
-        <module>messaging</module>
-        <module>modcluster</module>
-        <module>naming</module>
         <module>network</module>
-        <module>osgi</module>
-        <module>pojo</module>
         <module>platform-mbean</module>
         <module>process-controller</module>
         <module>protocol</module>
         <module>remoting</module>
-        <module>remoting-test</module>
-        <module>sar</module>
-        <module>security</module>
         <module>server</module>
-        <module>spec-api</module>
-        <module>subsystem-test</module>
         <module>threads</module>
-        <module>transactions</module>
-        <module>web</module>
-        <module>webservices</module>
-        <module>weld</module>
-        <module>xts</module>
-        <module>testsuite</module>
-
-  </modules>
+    </modules>
 
     <build>
         <plugins>
@@ -482,7 +444,6 @@
                                             <exclude>trove:trove</exclude>
                                             <exclude>woodstox:wstx-lgpl</exclude>
                                             <exclude>xml-apis:xml-apis</exclude>
-                                            <exclude>xml-resolver:xml-resolver</exclude>
                                         </excludes>
                                     </bannedDependencies>
                                 </rules>
@@ -3214,7 +3175,7 @@
             <dependency>
                 <groupId>org.jboss</groupId>
                 <artifactId>jboss-common-core</artifactId>
-                <version>${version.org.jboss.jboss-common-core}</version>
+                <version>${version.org.jboss.common-core}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.logging</groupId>
@@ -5800,6 +5761,12 @@
             </dependency>
 
             <dependency>
+                <groupId>xml-resolver</groupId>
+                <artifactId>xml-resolver</artifactId>
+                <version>${version.org.apache.xml-resolver}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>xerces</groupId>
                 <artifactId>xercesImpl</artifactId>
                 <version>${version.org.apache.xerces}</version>
@@ -5872,6 +5839,55 @@
             <properties>
                 <surefire.jpda.args>-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y</surefire.jpda.args>
             </properties>
+        </profile>
+
+        <profile>
+            <id>normal</id>
+            <activation>
+                <property><name>!minimalistic</name></property>
+            </activation>
+            <modules>
+                <module>api</module>
+                <module>appclient</module>
+                <module>build</module>
+                <module>build-config</module>
+                <module>arquillian</module>
+                <module>cli</module>
+                <module>clustering</module>
+                <module>cmp</module>
+                <module>connector</module>
+                <module>demos</module>
+                <module>deployment-scanner</module>
+                <module>dist</module>
+                <module>ee</module>
+                <module>ee-deployment</module>
+                <module>ejb3</module>
+                <module>host-controller</module>
+                <module>jacorb</module>
+                <module>jaxrs</module>
+                <module>jdr</module>
+                <module>jmx</module>
+                <module>jpa</module>
+                <module>jsr77</module>
+                <module>logging</module>
+                <module>mail</module>
+                <module>messaging</module>
+                <module>modcluster</module>
+                <module>naming</module>
+                <module>osgi</module>
+                <module>pojo</module>
+                <module>remoting-test</module>
+                <module>sar</module>
+                <module>security</module>
+                <module>spec-api</module>
+                <module>subsystem-test</module>
+                <module>transactions</module>
+                <module>web</module>
+                <module>webservices</module>
+                <module>weld</module>
+                <module>xts</module>
+                <module>testsuite</module>
+            </modules>
         </profile>
     </profiles>
 </project>

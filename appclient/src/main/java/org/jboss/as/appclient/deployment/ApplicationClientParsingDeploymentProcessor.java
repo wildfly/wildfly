@@ -29,6 +29,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
@@ -43,7 +44,7 @@ import org.jboss.metadata.appclient.parser.jboss.JBossClientMetaDataParser;
 import org.jboss.metadata.appclient.parser.spec.ApplicationClientMetaDataParser;
 import org.jboss.metadata.appclient.spec.AppClientEnvironmentRefsGroupMetaData;
 import org.jboss.metadata.appclient.spec.ApplicationClientMetaData;
-import org.jboss.metadata.parser.util.NoopXmlResolver;
+import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.vfs.VirtualFile;
 
 import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
@@ -80,6 +81,14 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
         deploymentUnit.putAttachment(AppClientAttachments.APPLICATION_CLIENT_META_DATA, merged);
         final DeploymentDescriptorEnvironment environment = new DeploymentDescriptorEnvironment("java:module/env/", merged.getEnvironmentRefsGroupMetaData());
         deploymentUnit.putAttachment(org.jboss.as.ee.component.Attachments.MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT, environment);
+
+
+        //override module name if applicable
+        if(merged.getModuleName() != null && !merged.getModuleName().isEmpty()) {
+            final EEModuleDescription description = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+            description.setModuleName(merged.getModuleName());
+        }
+
     }
 
     @Override
@@ -151,7 +160,7 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
 
     private XMLStreamReader getXMLStreamReader(InputStream is) throws XMLStreamException {
         final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-        inputFactory.setXMLResolver(NoopXmlResolver.create());
+        inputFactory.setXMLResolver(NoopXMLResolver.create());
         XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
         return xmlReader;
     }

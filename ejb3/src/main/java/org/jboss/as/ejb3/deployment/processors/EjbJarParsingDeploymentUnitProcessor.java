@@ -49,6 +49,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.ejb.parser.jboss.ejb3.IIOPMetaDataParser;
 import org.jboss.metadata.ejb.parser.jboss.ejb3.JBossEjb3MetaDataParser;
 import org.jboss.metadata.ejb.parser.spec.AbstractMetaDataParser;
 import org.jboss.metadata.ejb.parser.spec.EjbJarMetaDataParser;
@@ -265,6 +266,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
             parsers.put("urn:security", new EJBBoundSecurityMetaDataParser());
             parsers.put("urn:security-role", new SecurityRoleMetaDataParser());
             parsers.put("urn:resource-adapter-binding", new EJBBoundResourceAdapterBindingMetaDataParser());
+            parsers.put("urn:iiop", new IIOPMetaDataParser());
             final JBossEjb3MetaDataParser parser = new JBossEjb3MetaDataParser(parsers);
             final EjbJarMetaData ejbJarMetaData = parser.parse(reader, dtdInfo);
             return ejbJarMetaData;

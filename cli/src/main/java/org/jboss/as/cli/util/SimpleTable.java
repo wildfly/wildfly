@@ -23,6 +23,8 @@ package org.jboss.as.cli.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Formatter;
 import java.util.List;
 
@@ -52,11 +54,16 @@ public class SimpleTable {
         }
     }
 
+    public SimpleTable(int columnsTotal) {
+        this.header = null;
+        columnLengths = new int[columnsTotal];
+    }
+
     public void addLine(String[] line) {
         if(line == null) {
            throw new IllegalArgumentException("The line can't be null.");
         }
-        if(line.length != header.length) {
+        if(line.length != columnLengths.length) {
             throw new IllegalArgumentException("Line length " + line.length + " doesn't match headers' length " + header.length);
         }
 
@@ -83,6 +90,10 @@ public class SimpleTable {
     }
 
     public String toString() {
+        return toString(false);
+    }
+
+    public String toString(boolean order) {
         StringBuilder buf = new StringBuilder();
         Formatter formatter = new Formatter(buf);
         final StringBuilder formatBuf = new StringBuilder();
@@ -90,10 +101,26 @@ public class SimpleTable {
             formatBuf.append("%-").append(length).append('s');
         }
         final String format = formatBuf.toString();
-        formatter.format(format, header);
-        for(Object[] line : lines) {
+        if(header != null) {
+            formatter.format(format, header);
             buf.append('\n');
-            formatter.format(format, line);
+        }
+
+        if(order) {
+            Collections.sort(lines, new Comparator<String[]>(){
+                @Override
+                public int compare(String[] o1, String[] o2) {
+                    return o1[0].compareTo(o2[0]);
+                }});
+        }
+
+        int i = 0;
+        if(i < lines.size()) {
+            formatter.format(format, (Object[])lines.get(i));
+        }
+        while(++i < lines.size()) {
+            buf.append('\n');
+            formatter.format(format, (Object[])lines.get(i));
         }
         return buf.toString();
     }

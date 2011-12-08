@@ -43,14 +43,14 @@ public class RootLoggerRemove extends AbstractRemoveStepHandler {
     public static final String OPERATION_NAME = "remove-root-logger";
 
     @Override
-    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) {
-        context.removeService(LogServices.ROOT_LOGGER);
-    }
-
-    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         context.removeService(LogServices.ROOT_LOGGER);
         final ModelNode rootLogger = operation.get(ROOT_LOGGER);
         LoggerUnassignHandler.removeHandlers(HANDLERS, rootLogger, context, ROOT_LOGGER_NAME);
+    }
+
+    @Override
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        RootLoggerAdd.INSTANCE.performRuntime(context, operation, model, null, null);
     }
 }

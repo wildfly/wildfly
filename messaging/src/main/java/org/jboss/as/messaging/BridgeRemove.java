@@ -51,7 +51,7 @@ public class BridgeRemove extends AbstractRemoveStepHandler implements Descripti
     }
 
     @Override
-    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
         final String name = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
         final ServiceRegistry registry = context.getServiceRegistry(true);

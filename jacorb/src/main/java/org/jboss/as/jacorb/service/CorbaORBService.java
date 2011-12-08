@@ -26,7 +26,6 @@ import java.net.InetSocketAddress;
 import java.util.Properties;
 
 import org.jboss.as.jacorb.JacORBSubsystemConstants;
-import org.jboss.as.jacorb.naming.JBossInitialContextFactory;
 import org.jboss.as.jacorb.naming.jndi.CorbaUtils;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.CurrentServiceContainer;
@@ -128,9 +127,6 @@ public class CorbaORBService implements Service<ORB> {
             // start the ORB in a separate thread.
             Thread orbThread = SecurityActions.createThread(new ORBRunner(this.orb), "ORB Run Thread");
             orbThread.start();
-
-            // set the JBossInitialContextFactory ORB.
-            JBossInitialContextFactory.setORB(this.orb);
 
             // bind the ORB to JNDI under java:/jboss/ORB.
             ServiceTarget target = context.getChildTarget();

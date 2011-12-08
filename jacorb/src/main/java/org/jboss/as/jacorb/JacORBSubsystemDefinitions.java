@@ -150,12 +150,6 @@ class JacORBSubsystemDefinitions {
             .build();
 
     // initializers attribute definitions.
-    public static final SimpleAttributeDefinition ORB_INIT_CODEBASE = new SimpleAttributeDefinitionBuilder(
-            JacORBSubsystemConstants.ORB_INIT_CODEBASE, ModelType.STRING, true)
-            .setDefaultValue(DEFAULT_ENABLED_PROPERTY)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
-
     public static final SimpleAttributeDefinition ORB_INIT_SECURITY = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.ORB_INIT_SECURITY, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
@@ -329,8 +323,7 @@ class JacORBSubsystemDefinitions {
             ORB_CONN_MAX_MANAGED_BUF_SIZE, ORB_CONN_OUTBUF_SIZE, ORB_CONN_OUTBUF_CACHE_TIMEOUT);
 
     // list that contains the orb initializer attribute definitions.
-    static final List<SimpleAttributeDefinition> ORB_INIT_ATTRIBUTES = Arrays.asList(ORB_INIT_CODEBASE,
-            ORB_INIT_SECURITY, ORB_INIT_TX);
+    static final List<SimpleAttributeDefinition> ORB_INIT_ATTRIBUTES = Arrays.asList(ORB_INIT_SECURITY, ORB_INIT_TX);
 
     // list that contains the poa attribute definitions.
     static final List<SimpleAttributeDefinition> POA_ATTRIBUTES = Arrays.asList(POA_MONITORING, POA_QUEUE_WAIT,

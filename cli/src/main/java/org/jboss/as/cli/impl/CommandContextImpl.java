@@ -41,8 +41,10 @@ import javax.security.sasl.RealmCallback;
 import javax.security.sasl.RealmChoiceCallback;
 import javax.security.sasl.SaslException;
 
+import org.jboss.as.cli.CliConfig;
 import org.jboss.as.cli.CliEvent;
 import org.jboss.as.cli.CliEventListener;
+import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.CommandCompleter;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
@@ -69,6 +71,7 @@ import org.jboss.as.cli.handlers.OperationRequestHandler;
 import org.jboss.as.cli.handlers.PrefixHandler;
 import org.jboss.as.cli.handlers.PrintWorkingNodeHandler;
 import org.jboss.as.cli.handlers.QuitHandler;
+import org.jboss.as.cli.handlers.ReadAttributeHandler;
 import org.jboss.as.cli.handlers.UndeployHandler;
 import org.jboss.as.cli.handlers.VersionHandler;
 import org.jboss.as.cli.handlers.batch.BatchClearHandler;
@@ -123,6 +126,9 @@ class CommandContextImpl implements CommandContext {
                 || line.startsWith("..") || line.startsWith(".type");
     }
 
+    /** the cli configuration */
+    private final CliConfig config;
+
     private final CommandRegistry cmdRegistry = new CommandRegistry();
 
     private jline.ConsoleReader console;
@@ -174,20 +180,23 @@ class CommandContextImpl implements CommandContext {
 
     /**
      * Non-interactive mode
+     * @throws CliInitializationException
      */
-    CommandContextImpl() {
+    CommandContextImpl() throws CliInitializationException {
         this.console = null;
         this.history = null;
         this.operationCandidatesProvider = null;
         this.cmdCompleter = null;
         operationHandler = new OperationRequestHandler();
         initCommands();
+        config = CliConfigImpl.parse(this, new File(SecurityActions.getSystemProperty("user.home"), "jboss-cli.xml"));
     }
 
     /**
      * Non-interactive mode
      */
-    CommandContextImpl(String defaultControllerHost, int defaultControllerPort, String username, char[] password) {
+    CommandContextImpl(String defaultControllerHost, int defaultControllerPort, String username, char[] password)
+        throws CliInitializationException {
         this.console = null;
         this.history = null;
         this.operationCandidatesProvider = null;
@@ -203,17 +212,19 @@ class CommandContextImpl implements CommandContext {
             this.defaultControllerPort = defaultControllerPort;
         }
         initCommands();
+        config = CliConfigImpl.parse(this, new File(SecurityActions.getSystemProperty("user.home"), "jboss-cli.xml"));
     }
 
     /**
      * Interactive mode
      */
     CommandContextImpl(jline.ConsoleReader console, String defaultControllerHost, int defaultControllerPort,
-            String username, char[] password) {
+            String username, char[] password) throws CliInitializationException {
         this.console = console;
 
         console.setUseHistory(true);
         String userHome = SecurityActions.getSystemProperty("user.home");
+        config = CliConfigImpl.parse(this, new File(userHome, "jboss-cli.xml"));
         File historyFile = new File(userHome, ".jboss-cli-history");
         try {
             console.getHistory().setHistoryFile(historyFile);
@@ -268,6 +279,8 @@ class CommandContextImpl implements CommandContext {
 
         cmdRegistry.registerHandler(new CommandCommandHandler(cmdRegistry), "command");
 
+        cmdRegistry.registerHandler(new ReadAttributeHandler(this), "read-attribute");
+
         // data-source
         cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=datasources/data-source", "jndi-name"), "data-source");
         cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=datasources/xa-data-source", "jndi-name"), "xa-data-source");
@@ -312,7 +325,7 @@ class CommandContextImpl implements CommandContext {
             ModelNode request;
             try {
                 resetArgs(line);
-                request = parsedCmd.toOperationRequest();
+                request = parsedCmd.toOperationRequest(this);
             } catch (CommandFormatException e) {
                 printLine(e.getLocalizedMessage());
                 return;
@@ -720,7 +733,7 @@ class CommandContextImpl implements CommandContext {
 
         if (isOperation(line)) {
             try {
-                ModelNode request = this.parsedCmd.toOperationRequest();
+                ModelNode request = this.parsedCmd.toOperationRequest(this);
                 StringBuilder op = new StringBuilder();
                 op.append(prefixFormatter.format(parsedCmd.getAddress()));
                 op.append(line.substring(line.indexOf(':')));
@@ -768,6 +781,11 @@ class CommandContextImpl implements CommandContext {
             throw new IllegalArgumentException("Listener is null.");
         }
         listeners.add(listener);
+    }
+
+    @Override
+    public CliConfig getConfig() {
+        return config;
     }
 
     protected void setOutputTarget(String filePath) {

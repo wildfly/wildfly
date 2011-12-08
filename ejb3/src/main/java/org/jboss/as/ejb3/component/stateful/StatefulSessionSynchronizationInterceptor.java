@@ -133,9 +133,9 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
                             }
                             // invoke the afterBegin callback on the SFSB
                             instance.afterBegin();
+                            synchronizationRegistered = true;
+                            context.putPrivateData(StatefulTransactionMarker.class, StatefulTransactionMarker.of(true));
                         }
-                        synchronizationRegistered = true;
-                        context.putPrivateData(StatefulTransactionMarker.class, StatefulTransactionMarker.of(true));
                     } else {
                         context.putPrivateData(StatefulTransactionMarker.class, StatefulTransactionMarker.of(false));
                     }

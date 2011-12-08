@@ -58,6 +58,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 
@@ -140,7 +141,7 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         final Lock lock = getLock(timerEntity.getTimedObjectId());
         try {
             final int status = transactionManager.getValue().getStatus();
-            if(status == Status.STATUS_MARKED_ROLLBACK || status == Status.STATUS_ROLLEDBACK ||
+            if (status == Status.STATUS_MARKED_ROLLBACK || status == Status.STATUS_ROLLEDBACK ||
                     status == Status.STATUS_ROLLING_BACK) {
                 //no need to persist anyway
                 return;
@@ -164,9 +165,23 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         }
     }
 
+    @Override
+    public void timerUndeployed(final String timedObjectId) {
+        final Lock lock = getLock(timedObjectId);
+        try {
+            lock.lock();
+            locks.remove(timedObjectId);
+            timers.remove(timedObjectId);
+            directories.remove(timedObjectId);
+        } finally {
+            lock.unlock();
+        }
+
+    }
+
     private boolean isBeforeCompletion() {
         final CurrentSynchronizationCallback.CallbackType type = CurrentSynchronizationCallback.get();
-        if(type != null) {
+        if (type != null) {
             return type == CurrentSynchronizationCallback.CallbackType.BEFORE_COMPLETION;
         }
         return false;
@@ -276,7 +291,7 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
 
             }
         } catch (Exception e) {
-            ROOT_LOGGER.failToRestoreTimersForObjectId(timedObjectId,e);
+            ROOT_LOGGER.failToRestoreTimersForObjectId(timedObjectId, e);
         }
         return timers;
     }

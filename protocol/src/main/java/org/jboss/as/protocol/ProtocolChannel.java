@@ -43,7 +43,7 @@ import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public abstract class ProtocolChannel implements Channel, Channel.Receiver {
+public abstract class ProtocolChannel implements Channel {
 
     private final String name;
     private final Channel channel;
@@ -52,12 +52,16 @@ public abstract class ProtocolChannel implements Channel, Channel.Receiver {
     protected ProtocolChannel(String name, Channel channel) {
         this.name = name;
         this.channel = channel;
-        channel.addCloseHandler(new CloseHandler<Channel>() {
-            public void handleClose(final Channel closed, final IOException exception) {
-                //stopReceiving.set(true);
-            }
-        });
     }
+
+    /**
+     * TODO The ProtocolChannel most likely should not be needed
+     * or at least not have to do anything with the remoting Channel
+     * rather just the setup part
+     *
+     * @return
+     */
+    protected abstract Channel.Receiver getReceiver();
 
     public synchronized void startReceiving() {
         if (!start) {
@@ -66,7 +70,7 @@ public abstract class ProtocolChannel implements Channel, Channel.Receiver {
             throw MESSAGES.alreadyStarted();
         }
 
-        channel.receiveMessage(this);
+        channel.receiveMessage(getReceiver());
     }
 
     public String getName() {
@@ -135,44 +139,9 @@ public abstract class ProtocolChannel implements Channel, Channel.Receiver {
     }
 
     @Override
-    public void handleError(Channel channel, IOException error) {
-        ROOT_LOGGER.tracef(error, "Handling error, closing channel %s", this);
-        if (channel != this.channel) {
-            ROOT_LOGGER.receivedWrongChannel();
-        }
-        ended(channel);
-    }
-
-    @Override
-    public void handleEnd(Channel channel) {
-        ROOT_LOGGER.tracef("Handling end, closing channel %s", this);
-        if (channel != this.channel) {
-            ROOT_LOGGER.receivedWrongChannel();
-        }
-        ended(channel);
-    }
-
-    @Override
-    public void handleMessage(final Channel channel, final MessageInputStream message) {
-        channel.receiveMessage(this);
-        try {
-            doHandle(message);
-        } finally {
-        }
-    }
-
-    @Override
     public Connection getConnection() {
         return channel.getConnection();
     }
 
-    protected abstract void doHandle(final MessageInputStream message);
 
-    private void ended(Channel channel) {
-        try {
-            close();
-        } catch (IOException e) {
-            ROOT_LOGGER.errorClosingChannel(e.getMessage());
-        }
-    }
 }

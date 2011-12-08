@@ -130,6 +130,15 @@ public final class Attachments {
      * Module identifiers for Class-Path information
      */
     public static final AttachmentKey<AttachmentList<ModuleIdentifier>> CLASS_PATH_ENTRIES = AttachmentKey.createList(ModuleIdentifier.class);
+
+    /**
+     * Resource roots for additional modules referenced via Class-Path.
+     *
+     * These are attached to the resource root that actually defined the class path entry, and are used to transitively resolve
+     * the annotation index for class path items.
+     */
+    public static final AttachmentKey<AttachmentList<ResourceRoot>> CLASS_PATH_RESOURCE_ROOTS = AttachmentKey.createList(ResourceRoot.class);
+
     /**
      * The list of extensions given in the manifest and structure configurations.
      */
@@ -171,14 +180,6 @@ public final class Attachments {
      * A list of paths within a root to ignore when indexing.
      */
     public static final AttachmentKey<AttachmentList<String>> INDEX_IGNORE_PATHS = AttachmentKey.createList(String.class);
-
-    /**
-     * Flag to determine whether to process the child annotation indexes as part of the parent deployment.
-     * Ex.  An EAR deployment should not processes nested JAR index when checking for deployable annotations.
-     * It should rely on the child actually being deployed.  WARs and RARs on the other hand should process all the
-     * children as though the are all one index.
-     */
-    public static final AttachmentKey<Boolean> PROCESS_CHILD_ANNOTATION_INDEX = AttachmentKey.create(Boolean.class);
 
     /**
      * Sub deployment services

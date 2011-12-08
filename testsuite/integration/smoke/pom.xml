@@ -87,30 +87,21 @@
                         </executions>
                     </plugin>
 
-
+                    <!-- Surefire. -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions combine.children="append">
 
                             <!-- Disable default-test execution. -->
-                            <execution>
-                                <id>default-test</id>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
+                            <execution><id>default-test</id><goals><goal>test</goal></goals><phase>none</phase></execution>
 
-                            <!-- Smoke tests. -->
+                            <!-- Smoke tests - FULL. -->
                             <execution>
                                 <id>smoke-full.surefire</id>
                                 <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
+                                <goals><goal>test</goal></goals>
                                 <configuration>
-                                    <!-- Tests to execute. -->
                                     <includes>
                                         <include>org/jboss/as/test/smoke/embedded/demos/client/jms/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/smoke/embedded/demos/client/messaging/**/*TestCase.java</include>
@@ -126,14 +117,12 @@
                                 </configuration>
                             </execution>
 
+                            <!-- Smoke tests - WEB. -->
                             <execution>
                                 <id>smoke-web.surefire</id>
                                 <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
+                                <goals><goal>test</goal></goals>
                                 <configuration>
-                                    <!-- Tests to execute. -->
                                     <excludes>
                                         <exclude>org/jboss/as/test/smoke/embedded/demos/client/jms/**/*</exclude>
                                         <exclude>org/jboss/as/test/smoke/embedded/demos/client/messaging/**/*</exclude>
@@ -153,6 +142,67 @@
 
                     </plugin>
 
+                </plugins>
+            </build>
+        </profile>
+        
+        
+        <!-- With -DnoWebProfile, the all tests will run with standalone-full.xml. -->
+        <!-- This changes the FULL exec so that it includes all tests. -->
+        <profile>
+            <id>webProfileExclusion.profile</id>
+            <activation><property><name>noWebProfile</name></property></activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <!-- Disable execution with WEB config. -->
+                            <execution>
+                                <id>smoke-web.surefire</id>
+                                <phase>none</phase>
+                                <goals><goal>test</goal></goals>
+                            </execution>
+                            <!-- Run the ALL tests with FULL config. -->
+                            <execution>
+                                <id>smoke-full.surefire</id>
+                                <phase>test</phase>
+                                <goals><goal>test</goal></goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
+                                    </systemPropertyVariables>
+                                    <includes>
+                                        <include>**/*TestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        
+        
+
+        <!-- When -Dtest=... is set, only the default surefire execution with standalone-full.xml will run. -->
+        <profile>
+            <id>onlyOneSurefireExecution.smoke.profile</id>
+            <activation><property><name>test</name></property></activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <execution><id>smoke-full.surefire</id><phase>test</phase></execution>
+                            <execution><id>smoke-web.surefire</id><phase>none</phase></execution>
+                        </executions>
+                    </plugin>
                 </plugins>
             </build>
         </profile>

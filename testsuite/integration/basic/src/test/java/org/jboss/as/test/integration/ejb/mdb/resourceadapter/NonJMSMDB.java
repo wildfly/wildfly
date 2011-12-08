@@ -32,7 +32,7 @@ import org.jboss.ejb3.annotation.ResourceAdapter;
  */
 @MessageDriven(messageListenerInterface = SimpleMessageListener.class, activationConfig = {
         @ActivationConfigProperty(propertyName = "someProp", propertyValue = "hello world")})
-@ResourceAdapter(value = "rar-within-a-ear.rar")
+@ResourceAdapter(value = "ear-containing-rar.ear#rar-within-a-ear.rar")
 public class NonJMSMDB implements SimpleMessageListener {
     
     @Override

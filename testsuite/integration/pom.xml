@@ -40,6 +40,8 @@
         
         <!-- Used to provide an absolute location for the XSLT scripts. -->
         <xslt.scripts.dir>${jbossas.ts.integ.dir}/src/test/xslt</xslt.scripts.dir>
+        
+        <ts.skipTests>${skipTests}</ts.skipTests>
     </properties>
 
     <profiles>
@@ -191,7 +193,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <skipTests>false</skipTests>
+                    <skipTests>${ts.skipTests}</skipTests>
                     <!-- Prevent test and server output appearing in console. -->
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <enableAssertions>true</enableAssertions>
@@ -201,7 +203,7 @@
                     <!-- Forked process timeout -->
                     <forkedProcessTimeoutInSeconds>${surefire.forked.process.timeout}</forkedProcessTimeoutInSeconds>
                     <!-- System properties to forked surefire JVM which runs clients. -->
-                    <argLine>${ip.client.stack}</argLine>
+                    <argLine>${jvm.args.ip.client} ${jvm.args.timeouts}</argLine>
 
                     <!-- System properties passed to test cases -->
                     <systemPropertyVariables combine.children="append">
@@ -219,7 +221,7 @@
                             Used in arquillian.xml - arguments for all JBoss AS instances.
                             System properties are duplicated here until ARQ-647 is implemented.
                         -->
-                        <server.jvm.args>${surefire.system.args} ${ip.server.stack} -Dnode0=${node0} -Dnode1=${node1} -DudpGroup=${udpGroup} ${jvm.args.dirs}</server.jvm.args>
+                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.security} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -DudpGroup=${udpGroup} ${jvm.args.dirs}</server.jvm.args>
                     </systemPropertyVariables>
                     
                 </configuration>

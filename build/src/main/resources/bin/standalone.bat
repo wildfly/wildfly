@@ -96,6 +96,7 @@ echo.
     -mp "%MODULEPATH%" ^
     -logmodule "org.jboss.logmanager" ^
     -jaxpmodule "javax.xml.jaxp-provider" ^
+    -mbeanserverbuildermodule "org.jboss.as.jmx" ^
      org.jboss.as.standalone ^
     -Djboss.home.dir="%JBOSS_HOME%" ^
      %*

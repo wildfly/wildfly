@@ -58,7 +58,6 @@ import org.jboss.as.ee.structure.ComponentAggregationProcessor;
 import org.jboss.as.ee.structure.EJBClientDescriptorParsingProcessor;
 import org.jboss.as.ee.structure.EarDependencyProcessor;
 import org.jboss.as.ee.structure.EarInitializationProcessor;
-import org.jboss.as.ee.structure.EarLibManifestClassPathProcessor;
 import org.jboss.as.ee.structure.EarMetaDataParsingProcessor;
 import org.jboss.as.ee.structure.EarStructureProcessor;
 import org.jboss.as.ee.structure.EjbJarDeploymentProcessor;
@@ -132,7 +131,6 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MANAGED_BEAN_ANNOTATION, new ManagedBeanAnnotationProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EE_MODULE_NAME, new EEModuleNameProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EE_ANNOTATIONS, new EEAnnotationProcessor());
-                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EAR_LIB_CLASS_PATH, new EarLibManifestClassPathProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_LIEFCYCLE_ANNOTATION, new LifecycleAnnotationParsingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_AROUNDINVOKE_ANNOTATION, new AroundInvokeAnnotationParsingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EAR_SUBDEPLOYMENTS_ISOLATION_DEFAULT, isolationProcessor);

@@ -25,6 +25,7 @@ package org.jboss.as.controller;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 
@@ -1276,7 +1277,7 @@ public interface ControllerMessages {
      * @return a {@link RequestProcessingException} for the error.
      */
     @Message(id = 14736, value = "No active tx found for id %d")
-    RequestProcessingException noActiveTransaction(int id);
+    RuntimeException noActiveTransaction(int id);
 
     /**
      * A message indicating there is no child registry for the child, represented by the {@code childType} and
@@ -2028,4 +2029,34 @@ public interface ControllerMessages {
      */
     @Message(id = 14803, value = "Duplicate resource %s")
     OperationFailedRuntimeException duplicateResourceAddress(PathAddress address);
+
+    /**
+     * Creates an exception indicating a resource cannot be removed due to the existence of child resources.
+     *
+     * @param children the address elements for the children.
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 14804, value = "Cannot remove resource before removing child resources %s")
+    OperationFailedException cannotRemoveResourceWithChildren(List<PathElement> children);
+
+    /**
+     * Creates an exception indicating a resource cannot be found.
+     *
+     * @param pathAddress the address for the resource.
+     *
+     * @return an {@link OperationFailedRuntimeException} for the error.
+     */
+    @Message(id = 14807, value = "Management resource '%s' not found")
+    OperationFailedRuntimeException managementResourceNotFound(PathAddress pathAddress);
+
+    /**
+     * Creates an exception message indicating a child resource cannot be found.
+     *
+     * @param childAddress the address element for the child.
+     *
+     * @return an message for the error.
+     */
+    @Message(id = 14808, value = "Child resource '%s' not found")
+    String childResourceNotFound(PathElement childAddress);
 }

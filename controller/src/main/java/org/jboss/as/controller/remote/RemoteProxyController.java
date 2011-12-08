@@ -22,19 +22,14 @@
 package org.jboss.as.controller.remote;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -47,51 +42,39 @@ import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
+import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
-import org.jboss.as.protocol.mgmt.ManagementBatchIdManager;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
-import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
-import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
-import org.jboss.as.protocol.mgmt.ManagementRequest;
+import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
+import org.jboss.as.protocol.mgmt.ManagementProtocol;
+import org.jboss.as.protocol.mgmt.ManagementProtocolHeader;
+import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
-import org.jboss.as.protocol.mgmt.ManagementResponseHandler;
+import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
+import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
-import org.jboss.as.protocol.mgmt.RequestProcessingException;
+import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
 import org.jboss.dmr.ModelNode;
-import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.CloseHandler;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
-public class RemoteProxyController implements ProxyController, ManagementOperationHandler {
+public class RemoteProxyController extends AbstractMessageHandler<Void, RemoteProxyController.ExecuteRequestContext> implements ProxyController {
 
-    private final AtomicBoolean closed = new AtomicBoolean();
     private final PathAddress pathAddress;
     private final ManagementChannel channel;
-    private final ExecutorService executorService;
-    private final Map<Integer, ExecuteRequestContext> activeRequests = Collections.synchronizedMap(new HashMap<Integer, ExecuteRequestContext>());
     private final ProxyOperationAddressTranslator addressTranslator;
 
-    private RemoteProxyController(final ExecutorService executorService, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator, final ManagementChannel channel) {
+    private RemoteProxyController(final ExecutorService executorService, final PathAddress pathAddress,
+                                  final ProxyOperationAddressTranslator addressTranslator, final ManagementChannel channel) {
+        super(executorService);
         this.pathAddress = pathAddress;
         this.channel = channel;
-        this.executorService = executorService;
         this.addressTranslator = addressTranslator;
-
-        channel.addCloseHandler(new CloseHandler<Channel>() {
-            public void handleClose(final Channel closed, final IOException exception) {
-                RemoteProxyController.this.closed.set(true);
-                synchronized (activeRequests) {
-                    for (ExecuteRequestContext context : activeRequests.values()) {
-                        context.setError(MESSAGES.channelClosed());
-                    }
-                    activeRequests.clear();
-                }
-            }
-        });
     }
 
     /**
@@ -113,84 +96,53 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
         return pathAddress;
     }
 
-    /** {@inheritDoc} */
     @Override
-    public ManagementRequestHandler getRequestHandler(final byte id) {
-        if (id == ModelControllerProtocol.HANDLE_REPORT_REQUEST) {
-            return new HandleReportRequestHandler();
-        } else if (id == ModelControllerProtocol.OPERATION_FAILED_REQUEST) {
-            return new OperationFailedRequestHandler();
-        } else if (id == ModelControllerProtocol.OPERATION_COMPLETED_REQUEST) {
-            return new OperationCompletedRequestHandler();
-        } else if (id == ModelControllerProtocol.OPERATION_PREPARED_REQUEST) {
-            return new OperationPreparedRequestHandler();
-        } else if (id == ModelControllerProtocol.GET_INPUTSTREAM_REQUEST) {
-            return new ReadAttachmentInputStreamRequestHandler();
-        }
-        return null;
+    protected ManagementRequestHeader validateRequest(ManagementProtocolHeader header) throws IOException {
+        ManagementRequestHeader request = super.validateRequest(header);
+        return request;
     }
 
+    @Override
+    protected ManagementRequestHandler<Void, ExecuteRequestContext> getRequestHandler(byte operationType) {
+        if (operationType == ModelControllerProtocol.HANDLE_REPORT_REQUEST) {
+            return new HandleReportRequestHandler();
+        } else if (operationType == ModelControllerProtocol.OPERATION_FAILED_REQUEST) {
+            return new OperationFailedRequestHandler();
+        } else if (operationType == ModelControllerProtocol.OPERATION_COMPLETED_REQUEST) {
+            return new OperationCompletedRequestHandler();
+        } else if (operationType == ModelControllerProtocol.OPERATION_PREPARED_REQUEST) {
+            return new OperationPreparedRequestHandler();
+        } else if (operationType == ModelControllerProtocol.GET_INPUTSTREAM_REQUEST) {
+            return new ReadAttachmentInputStreamRequestHandler();
+        }
+        return super.getRequestHandler(operationType);
+    }
+
+
     /** {@inheritDoc} */
     @Override
-    public void execute(final ModelNode operation, final OperationMessageHandler handler, final ProxyOperationControl control, final OperationAttachments attachments) {
-        final int batchId = ManagementBatchIdManager.DEFAULT.createBatchId();
-        final CountDownLatch prepareOrFailedLatch = new CountDownLatch(1);
-        final AtomicBoolean failed = new AtomicBoolean(false);
-        //As per the interface javadoc this method should block until either the operationFailed() or the operationPrepared() methods of the ProxyOperationControl have been called
-        ExecuteRequest request = new ExecuteRequest(
-            batchId,
-            getOperationForProxy(operation),
-            handler,
-            new ProxyOperationControl() {
-                @Override
-                public void operationPrepared(OperationTransaction transaction, ModelNode result) {
-                    control.operationPrepared(transaction, result);
-                    prepareOrFailedLatch.countDown();
-                }
-
-                @Override
-                public void operationFailed(ModelNode response) {
-                    control.operationFailed(response);
-                    failed.set(true);
-                    prepareOrFailedLatch.countDown();
-                }
-
-                @Override
-                public void operationCompleted(ModelNode response) {
-                    control.operationCompleted(response);
-                }
-            },
-            attachments) {
-
-            @Override
-            protected void setError(Exception e) {
-                super.setError(e);
-                if(failed.compareAndSet(false, true)) {
-                    control.operationFailed(new ModelNode().get(OUTCOME).set(FAILED));
-                }
-                prepareOrFailedLatch.countDown();
-            }
-        };
+    public void execute(final ModelNode original, final OperationMessageHandler handler, final ProxyOperationControl control, final OperationAttachments attachments) {
+        // Translate the operation address first
+        final ModelNode operation = getOperationForProxy(original);
+        final ExecuteRequestContext context = new ExecuteRequestContext(operation, attachments, handler, control);
         try {
-            request.executeForResult(executorService, getChannelStrategy());
+            final ActiveOperation<Void, RemoteProxyController.ExecuteRequestContext> support = super.registerActiveOperation(context, context);
+            super.executeRequest(new ExecuteRequest(), channel, support);
             // Wait until the remote side completed all steps and sends the prepared
             // result, or there is a failure
-            prepareOrFailedLatch.await();
+            context.awaitPreparedOrFailed();
+
         } catch (Exception e) {
-            e.printStackTrace();
-            try {
-                ManagementBatchIdManager.DEFAULT.freeBatchId(batchId);
-            } catch (Exception ignore) {
-            }
-            activeRequests.remove(batchId);
             throw new RuntimeException(e);
         }
     }
 
-    private ManagementClientChannelStrategy getChannelStrategy() {
-        return ManagementClientChannelStrategy.create(channel);
-    }
-
+    /**
+     * Translate the operation address.
+     *
+     * @param op the operation
+     * @return the new operation
+     */
     private ModelNode getOperationForProxy(final ModelNode op) {
         final PathAddress addr = PathAddress.pathAddress(op.get(OP_ADDR));
         final PathAddress translated = addressTranslator.translateAddress(addr);
@@ -202,62 +154,34 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
         return proxyOp;
     }
 
-    /**
-     * Propagates an execute() call from this proxy controller to the remote target controller
-     */
-    private class ExecuteRequest extends ManagementRequest<Void> {
-
-        private final ExecuteRequestContext executeRequestContext;
-        private final ModelNode operation;
-
-        ExecuteRequest(final int batchId, final ModelNode operation, final OperationMessageHandler messageHandler, final ProxyOperationControl control, final OperationAttachments attachments) {
-            super(batchId);
-            this.operation = operation;
-            executeRequestContext = new ExecuteRequestContext(this, messageHandler, control, attachments);
-        }
+    private class ExecuteRequest extends AbstractManagementRequest<Void, ExecuteRequestContext> {
 
         @Override
-        protected byte getRequestCode() {
+        public byte getOperationType() {
             return ModelControllerProtocol.EXECUTE_TX_REQUEST;
         }
 
         @Override
-        protected void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
-            boolean success = false;
-            activeRequests.put(getBatchId(), executeRequestContext);
-
-            try {
-                output.write(ModelControllerProtocol.PARAM_OPERATION);
-                operation.writeExternal(output);
-                output.write(ModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
-                int inputStreamLength = 0;
-                if (executeRequestContext.getAttachments() != null) {
-                    List<InputStream> streams = executeRequestContext.getAttachments().getInputStreams();
-                    if (streams != null) {
-                        inputStreamLength = streams.size();
-                    }
-                }
-                output.writeInt(inputStreamLength);
-                success = true;
-            } finally {
-                if (!success) {
-                    ManagementBatchIdManager.DEFAULT.freeBatchId(getBatchId());
-                }
+        protected void sendRequest(final ActiveOperation.ResultHandler<Void> resultHandler,
+                                   final ManagementRequestContext<ExecuteRequestContext> context,
+                                   final FlushableDataOutput output) throws IOException {
+            // Write the operation
+            final ExecuteRequestContext executionContext = context.getAttachment();
+            final List<InputStream> streams = executionContext.getInputStreams();
+            final ModelNode operation = executionContext.getOperation();
+            int inputStreamLength = 0;
+            if (streams != null) {
+                inputStreamLength = streams.size();
             }
+            output.write(ModelControllerProtocol.PARAM_OPERATION);
+            operation.writeExternal(output);
+            output.write(ModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
+            output.writeInt(inputStreamLength);
         }
 
         @Override
-        protected ManagementResponseHandler<Void> getResponseHandler() {
-            return ManagementResponseHandler.EMPTY_RESPONSE;
-        }
-
-        protected void setError(Exception e) {
-            super.setError(e);
-        }
-
-        @Override
-        protected CloseHandler<Channel> getRequestCloseHandler(){
-            return executeRequestContext.getRequestCloseHandler();
+        public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<Void> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
+            //
         }
     }
 
@@ -265,105 +189,94 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
      * Handles {@link OperationMessageHandler#handleReport(org.jboss.as.controller.client.MessageSeverity, String)} calls
      * done in the remote target controller
      */
-    private class HandleReportRequestHandler extends ManagementRequestHandler {
-        int batchId;
-        MessageSeverity severity;
-        String message;
+    private class HandleReportRequestHandler implements ManagementRequestHandler<Void, ExecuteRequestContext> {
 
         @Override
-        protected void readRequest(final DataInput input) throws IOException {
-            batchId = getHeader().getBatchId();
-            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_MESSAGE_SEVERITY);
-            severity = Enum.valueOf(MessageSeverity.class, input.readUTF());
-            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_MESSAGE);
-            message = input.readUTF();
+        public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<Void> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
+            expectHeader(input, ModelControllerProtocol.PARAM_MESSAGE_SEVERITY);
+            final MessageSeverity severity = Enum.valueOf(MessageSeverity.class, input.readUTF());
+            expectHeader(input, ModelControllerProtocol.PARAM_MESSAGE);
+            final String message = input.readUTF();
+            expectHeader(input, ManagementProtocol.REQUEST_END);
 
+            final ExecuteRequestContext requestContext = context.getAttachment();
+            // perhaps execute async
+            final OperationMessageHandler handler = requestContext.getMessageHandler();
+            handler.handleReport(severity, message);
         }
 
-        protected void processRequest() throws RequestProcessingException {
-            ExecuteRequestContext requestContext = activeRequests.get(batchId);
-            if (requestContext == null) {
-                throw MESSAGES.noActiveRequestForHandlingReport(batchId);
-            }
-            requestContext.getMessageHandler().handleReport(severity, message);
-        }
     }
 
     /**
      * Handles reads on the inputstreams returned by {@link OperationAttachments#getInputStreams()}
      * done in the remote target controller
      */
-    private class ReadAttachmentInputStreamRequestHandler extends ManagementRequestHandler {
-        InputStream attachmentInput;
-        byte[] bytes;
+    private class ReadAttachmentInputStreamRequestHandler implements ManagementRequestHandler<Void, ExecuteRequestContext> {
 
         @Override
-        protected void readRequest(final DataInput input) throws IOException {
-            int batchId = getHeader().getBatchId();
-            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAM_INDEX);
-            int index = input.readInt();
+        public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<Void> resultHandler,
+                              final ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
+            // Read the inputStream index
+            expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAM_INDEX);
+            final int index = input.readInt();
 
-            ExecuteRequestContext requestContext = activeRequests.get(batchId);
-            if (requestContext == null) {
-                throw MESSAGES.noActiveRequestForReadingInputStreamReport(batchId);
-            }
-            InputStream in = requestContext.getAttachments().getInputStreams().get(index);
-            attachmentInput = in != null ? new BufferedInputStream(in) : null;
-        }
-
-        protected void processRequest() throws RequestProcessingException {
-            ByteArrayOutputStream bout = new ByteArrayOutputStream();
-            try {
-                if (attachmentInput != null) {
-                    int i = attachmentInput.read();
-                    while (i != -1) {
-                        bout.write(i);
-                        i = attachmentInput.read();
+            context.executeAsync(new ManagementRequestContext.AsyncTask<ExecuteRequestContext>() {
+                @Override
+                public void execute(final ManagementRequestContext<ExecuteRequestContext> context) throws Exception {
+                    final ExecuteRequestContext exec = context.getAttachment();
+                    final ManagementRequestHeader header = ManagementRequestHeader.class.cast(context.getRequestHeader());
+                    final ManagementResponseHeader response = new ManagementResponseHeader(header.getVersion(), header.getRequestId(), null);
+                    final InputStream is = exec.getAttachments().getInputStreams().get(index);
+                    try {
+                        final ByteArrayOutputStream bout = copyStream(is);
+                        final FlushableDataOutput output = context.writeMessage(response);
+                        try {
+                            output.writeByte(ModelControllerProtocol.PARAM_INPUTSTREAM_LENGTH);
+                            output.writeInt(bout.size());
+                            output.writeByte(ModelControllerProtocol.PARAM_INPUTSTREAM_CONTENTS);
+                            output.write(bout.toByteArray());
+                            output.writeByte(ManagementProtocol.RESPONSE_END);
+                            output.close();
+                        } finally {
+                            StreamUtils.safeClose(output);
+                        }
+                    } finally {
+                        // the caller is responsible for closing the input streams
+                        // StreamUtils.safeClose(is);
                     }
                 }
-            } catch (IOException e) {
-                throw new RequestProcessingException(e);
-            } finally {
-                //Think the caller is responsible for closing these
-                //IoUtils.safeClose(attachmentInput);
-            }
-            bytes = bout.toByteArray();
+            });
         }
 
-        @Override
-        protected void writeResponse(final FlushableDataOutput output) throws IOException {
-            output.write(ModelControllerProtocol.PARAM_INPUTSTREAM_LENGTH);
-            output.writeInt(bytes.length);
-            output.write(ModelControllerProtocol.PARAM_INPUTSTREAM_CONTENTS);
-            output.write(bytes);
+        protected ByteArrayOutputStream copyStream(final InputStream is) throws IOException {
+            final ByteArrayOutputStream bout = new ByteArrayOutputStream();
+            if(is != null) {
+                StreamUtils.copyStream(is, bout);
+            }
+            return bout;
         }
+
     }
 
     /**
      * Base class for handling {@link ProxyOperationControl} method calls done in the remote target controller
      */
-    private abstract class ProxyOperationControlRequestHandler extends ManagementRequestHandler {
-        volatile ExecuteRequestContext requestContext;
-        int batchId;
-        ModelNode response;
+    abstract class ProxyOperationControlRequestHandler implements ManagementRequestHandler<Void, ExecuteRequestContext> {
 
         @Override
-        protected void readRequest(final DataInput input) throws IOException {
-            batchId = getHeader().getBatchId();
-            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_RESPONSE);
-            response = new ModelNode();
+        public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<Void> resultHandler,
+                                  final ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
+            expectHeader(input, ModelControllerProtocol.PARAM_RESPONSE);
+            final ModelNode response = new ModelNode();
             response.readExternal(input);
+            // handle
+            handle(response, resultHandler, context);
+            // TODO we actually don't need all this empty messages
+            context.executeAsync(ProtocolUtils.<ExecuteRequestContext>emptyResponseTask());
         }
 
-        protected void processRequest() throws RequestProcessingException {
-            requestContext = activeRequests.get(batchId);
-            if (requestContext == null) {
-                throw MESSAGES.noActiveRequestForProxyOperation(batchId);
-            }
-            handle(batchId, requestContext.getControl(), response);
-        }
+        abstract void handle(ModelNode response, ActiveOperation.ResultHandler<Void> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context);
 
-        abstract void handle(final int batchId, final ProxyOperationControl control, final ModelNode response);
     }
 
     /**
@@ -372,11 +285,12 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
     private class OperationFailedRequestHandler extends ProxyOperationControlRequestHandler {
 
         @Override
-        void handle(final int batchId, final ProxyOperationControl control, final ModelNode response) {
-            activeRequests.remove(batchId);
-            ManagementBatchIdManager.DEFAULT.freeBatchId(batchId);
-            control.operationFailed(response);
+        void handle(final ModelNode response, final ActiveOperation.ResultHandler<Void> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context) {
+            final ExecuteRequestContext executeRequestContext = context.getAttachment();
+            executeRequestContext.getControl().operationFailed(response);
+            // complete ?
         }
+
     }
 
     /**
@@ -384,13 +298,12 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
      */
     private class OperationCompletedRequestHandler extends ProxyOperationControlRequestHandler {
 
-        @Override
-        void handle(final int batchId, final ProxyOperationControl control, final ModelNode response) {
-            ExecuteRequestContext context = activeRequests.remove(batchId);
-            ManagementBatchIdManager.DEFAULT.freeBatchId(batchId);
-            control.operationCompleted(response);
-            context.setControlCompleted();
+        void handle(final ModelNode response, final ActiveOperation.ResultHandler<Void> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context) {
+            final ExecuteRequestContext executeRequestContext = context.getAttachment();
+            executeRequestContext.getControl().operationCompleted(response);
+            resultHandler.done(null);
         }
+
     }
 
     /**
@@ -400,8 +313,9 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
     private class OperationPreparedRequestHandler extends ProxyOperationControlRequestHandler {
 
         @Override
-        void handle(final int batchId, final ProxyOperationControl control, final ModelNode response){
-            control.operationPrepared(new OperationTransaction() {
+        void handle(final ModelNode response, final ActiveOperation.ResultHandler<Void> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context) {
+            final ExecuteRequestContext executeRequestContext = context.getAttachment();
+            executeRequestContext.getControl().operationPrepared(new OperationTransaction() {
 
                 @Override
                 public void rollback() {
@@ -415,30 +329,31 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
 
                 private void done(boolean commit){
                     final byte status = commit ? ModelControllerProtocol.PARAM_COMMIT : ModelControllerProtocol.PARAM_ROLLBACK;
+                    final ActiveOperation<Void, ExecuteRequestContext> activeOperation = RemoteProxyController.this.getActiveOperation(context.getOperationId());
                     try {
-                        new ManagementRequest<Void>(batchId) {
+                        RemoteProxyController.this.executeRequest(new AbstractManagementRequest<Void, ExecuteRequestContext>() {
 
                             @Override
-                            protected byte getRequestCode() {
-                                return ModelControllerProtocol.COMPLETE_TX_REQUEST;
+                            public byte getOperationType() {
+                                return ModelControllerProtocol. COMPLETE_TX_REQUEST;
                             }
 
                             @Override
-                            protected void writeRequest(int protocolVersion, FlushableDataOutput output) throws IOException {
+                            protected void sendRequest(ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<ExecuteRequestContext> executeRequestContextManagementRequestContext, FlushableDataOutput output) throws IOException {
                                 output.write(status);
                             }
 
                             @Override
-                            protected ManagementResponseHandler<Void> getResponseHandler() {
-                                return ManagementResponseHandler.EMPTY_RESPONSE;
+                            public void handleRequest(DataInput input, ActiveOperation.ResultHandler<Void> resultHandler, ManagementRequestContext<ExecuteRequestContext> executeRequestContextManagementRequestContext) throws IOException {
+                                //
                             }
-
-                        }.executeForResult(executorService, getChannelStrategy());
+                        }, channel, activeOperation);
                     } catch (Exception e) {
-                        requestContext.setError(e.getMessage());
+                        resultHandler.failed(e);
                     }
                     try {
-                        requestContext.awaitControlCompleted();
+                        /// Await the operation completed notification
+                        activeOperation.getResult().await();
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                         throw MESSAGES.transactionTimeout(commit ? "commit" : "rollback");
@@ -448,52 +363,94 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
         }
     }
 
-    private static class ExecuteRequestContext {
-        final ExecuteRequest request;
+    static class ExecuteRequestContext implements ActiveOperation.CompletedCallback<Void> {
+
+        final ModelNode operation;
+        final OperationAttachments attachments;
         final OperationMessageHandler messageHandler;
         final ProxyOperationControl control;
-        final OperationAttachments attachments;
-        final CountDownLatch controlCompletedLatch = new CountDownLatch(1);
+        final AtomicBoolean completed = new AtomicBoolean(false);
+        final CountDownLatch prepareOrFailedLatch = new CountDownLatch(1);
 
-        public ExecuteRequestContext(final ExecuteRequest request, final OperationMessageHandler messageHandler, final ProxyOperationControl control, final OperationAttachments attachments) {
-            this.request = request;
-            this.messageHandler = messageHandler;
-            this.control = control;
+        public ExecuteRequestContext(final ModelNode operation, final OperationAttachments attachments, final OperationMessageHandler messageHandler, final ProxyOperationControl delegate) {
+            this.control = new ProxyOperationControl() {
+                @Override
+                public void operationFailed(ModelNode response) {
+                    if(completed.compareAndSet(false, true)) {
+                        delegate.operationFailed(response);
+                    }
+                    prepareOrFailedLatch.countDown();
+                }
+
+                @Override
+                public void operationCompleted(ModelNode response) {
+                    if(completed.compareAndSet(false, true)) {
+                        delegate.operationCompleted(response);
+                    }
+                }
+
+                @Override
+                public void operationPrepared(OperationTransaction transaction, ModelNode result) {
+                    delegate.operationPrepared(transaction, result);
+                    prepareOrFailedLatch.countDown();
+                }
+            };
+            this.operation = operation;
             this.attachments = attachments;
+            this.messageHandler = messageHandler;
         }
 
         public OperationMessageHandler getMessageHandler() {
             return messageHandler;
         }
 
-        public ProxyOperationControl getControl() {
-            return control;
+        public ModelNode getOperation() {
+            return operation;
         }
 
         public OperationAttachments getAttachments() {
             return attachments;
         }
 
-        void awaitControlCompleted() throws InterruptedException {
-            controlCompletedLatch.await();
+        public List<InputStream> getInputStreams() {
+            final OperationAttachments attachments = getAttachments();
+            if(attachments == null) {
+                return Collections.emptyList();
+            }
+            return attachments.getInputStreams();
         }
 
-        void setControlCompleted() {
-            controlCompletedLatch.countDown();
+        public ProxyOperationControl getControl() {
+            return control;
         }
 
-        synchronized void setError(String error) {
-            controlCompletedLatch.countDown();
-            request.setError(new Exception(error));
+        public void awaitPreparedOrFailed() throws InterruptedException {
+            prepareOrFailedLatch.await();
         }
 
-        CloseHandler<Channel> getRequestCloseHandler(){
-            return new CloseHandler<Channel>() {
-                public void handleClose(final Channel closed, final IOException exception) {
-                    setError(MESSAGES.channelClosed());
-                }
-            };
+        @Override
+        public void completed(Void result) {
+            //
         }
+
+        @Override
+        public void failed(final Exception e) {
+            control.operationFailed(getResponse("failed"));
+            prepareOrFailedLatch.countDown();
+        }
+
+        @Override
+        public void cancelled() {
+            control.operationFailed(getResponse("cancelled"));
+            prepareOrFailedLatch.countDown();
+        }
+
+    }
+
+    static ModelNode getResponse(final String outcome) {
+        final ModelNode response = new ModelNode();
+        response.get(OUTCOME).set(outcome);
+        return response;
     }
 
 }

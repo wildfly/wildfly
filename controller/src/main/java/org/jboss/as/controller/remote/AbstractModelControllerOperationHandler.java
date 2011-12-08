@@ -30,98 +30,84 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
+import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
+import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
-import org.jboss.as.protocol.mgmt.ManagementChannel;
-import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
-import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
+import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
+import org.jboss.as.protocol.mgmt.ManagementProtocol;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
-import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
-import org.jboss.as.protocol.mgmt.ManagementResponseHandler;
+import org.jboss.as.protocol.mgmt.ManagementRequestContext;
+import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.MessageOutputStream;
+import org.jboss.threads.AsyncFuture;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
-public abstract class AbstractModelControllerOperationHandler implements ManagementOperationHandler {
+public abstract class AbstractModelControllerOperationHandler<T, A> extends AbstractMessageHandler<T, A> {
 
-    protected final ExecutorService executorService;
-    protected final ModelController controller;
-
-    public AbstractModelControllerOperationHandler(final ExecutorService executorService, final ModelController controller) {
-        this.executorService = executorService;
-        this.controller = controller;
+    public AbstractModelControllerOperationHandler(ExecutorService executorService) {
+        super(executorService);
     }
 
-    @Override
-    public abstract ManagementRequestHandler getRequestHandler(final byte id);
-
-    protected ManagementClientChannelStrategy getChannelStrategy(ManagementChannel channel) {
-        return ManagementClientChannelStrategy.create(channel);
-    }
 
     /**
      * A proxy to the operation message handler on the remote caller
      */
     class OperationMessageHandlerProxy implements OperationMessageHandler {
-        final ManagementChannel channel;
+        final Channel channel;
         final int batchId;
 
-        public OperationMessageHandlerProxy(final ManagementChannel channel, final int batchId) {
+        public OperationMessageHandlerProxy(final Channel channel, final int batchId) {
             this.channel = channel;
             this.batchId = batchId;
         }
 
         @Override
         public void handleReport(final MessageSeverity severity, final String message) {
-
-            //TEMPORARILY DISABLE THE OPERATION MESSAGE HANDLER STUFF
-            // Once reenabbled un-@Ignore tests in ModelControllerClientTestCase and RemoteProxyControllerProtocolTestCase
-            if (true) {
+            if(true) {
                 return;
             }
-
-            try {
-                //Invoke this synchronously so that the messages appear in the right order on the
-                //remote caller
-                new ManagementRequest<Void>(batchId) {
-
-                    @Override
-                    protected byte getRequestCode() {
-                        return ModelControllerProtocol.HANDLE_REPORT_REQUEST;
+            getExecutor().execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        // We don't expect any response, so just write the message
+                        final MessageOutputStream os = channel.writeMessage();
+                        try {
+                            final FlushableDataOutput output = ProtocolUtils.wrapAsDataOutput(os);
+                            final ManagementRequestHeader header = new ManagementRequestHeader(ManagementProtocol.VERSION, -1, batchId, ModelControllerProtocol.HANDLE_REPORT_REQUEST);
+                            header.write(output);
+                            output.write(ModelControllerProtocol.PARAM_MESSAGE_SEVERITY);
+                            output.writeUTF(severity.toString());
+                            output.write(ModelControllerProtocol.PARAM_MESSAGE);
+                            output.writeUTF(message);
+                            output.writeByte(ManagementProtocol.REQUEST_END);
+                            output.close();
+                        } finally {
+                            StreamUtils.safeClose(os);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-
-                    @Override
-                    protected void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
-                        output.write(ModelControllerProtocol.PARAM_MESSAGE_SEVERITY);
-                        output.writeUTF(severity.toString());
-                        output.write(ModelControllerProtocol.PARAM_MESSAGE);
-                        output.writeUTF(message);
-                    }
-
-                    @Override
-                    protected ManagementResponseHandler<Void> getResponseHandler() {
-                        return ManagementResponseHandler.EMPTY_RESPONSE;
-                    }
-                }.executeForResult(executorService, getChannelStrategy(channel));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+                }
+            });
         }
     }
 
     class OperationAttachmentsProxy implements OperationAttachments {
         final List<ProxiedInputStream> proxiedStreams;
 
-        OperationAttachmentsProxy(final ManagementChannel channel, final int batchId, final int size){
+        OperationAttachmentsProxy(final Channel channel, final int batchId, final int size){
             proxiedStreams = new ArrayList<ProxiedInputStream>(size);
             for (int i = 0 ; i < size ; i++) {
                 proxiedStreams.add(new ProxiedInputStream(channel, batchId, i));
@@ -143,14 +129,14 @@ public abstract class AbstractModelControllerOperationHandler implements Managem
     }
 
     private class ProxiedInputStream extends InputStream {
-        final ManagementChannel channel;
+        final Channel channel;
         final int batchId;
         final int index;
         volatile byte[] bytes;
         volatile ByteArrayInputStream delegate;
         volatile Exception error;
 
-        ProxiedInputStream(final ManagementChannel channel, final int batchId, final int index) {
+        ProxiedInputStream(final Channel channel, final int batchId, final int index) {
             this.channel = channel;
             this.batchId = batchId;
             this.index = index;
@@ -185,39 +171,37 @@ public abstract class AbstractModelControllerOperationHandler implements Managem
 
         void initializeBytes() {
             if (bytes == null) {
-                new ManagementRequest<Void>(batchId) {
+                final ActiveOperation<T, A> support = AbstractModelControllerOperationHandler.this.getActiveOperation(batchId);
+                AbstractModelControllerOperationHandler.this.executeRequest(new AbstractManagementRequest<T, A>() {
+
                     @Override
-                    protected byte getRequestCode() {
+                    public byte getOperationType() {
                         return ModelControllerProtocol.GET_INPUTSTREAM_REQUEST;
                     }
 
                     @Override
-                    protected void writeRequest(int protocolVersion, FlushableDataOutput output) throws IOException {
+                    protected void sendRequest(ActiveOperation.ResultHandler<T> resultHandler, ManagementRequestContext<A> context, FlushableDataOutput output) throws IOException {
                         output.write(ModelControllerProtocol.PARAM_INPUTSTREAM_INDEX);
                         output.writeInt(index);
                     }
 
                     @Override
-                    protected ManagementResponseHandler<Void> getResponseHandler() {
-                        return new ManagementResponseHandler<Void>() {
-                            protected Void readResponse(DataInput input) throws IOException {
-                                synchronized (ProxiedInputStream.this) {
-                                    ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAM_LENGTH);
-                                    final int size = input.readInt();
-                                    ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAM_CONTENTS);
+                    public void handleRequest(DataInput input, ActiveOperation.ResultHandler<T> resultHandler, ManagementRequestContext<A> context) throws IOException {
+                        // TODO execute async
+                        synchronized (ProxiedInputStream.this) {
+                            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAM_LENGTH);
+                            final int size = input.readInt();
+                            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAM_CONTENTS);
 
-                                    final byte[] buf = new byte[size];
-                                    for (int i = 0 ; i < size ; i++) {
-                                        buf[i] = input.readByte();
-                                    }
-                                    bytes = buf;
-                                    ProxiedInputStream.this.notifyAll();
-                                }
-                                return null;
+                            final byte[] buf = new byte[size];
+                            for (int i = 0 ; i < size ; i++) {
+                                buf[i] = input.readByte();
                             }
-                        };
+                            bytes = buf;
+                            ProxiedInputStream.this.notifyAll();
+                        }
                     }
-                }.execute(executorService, getChannelStrategy(channel));
+                }, channel, support);
             }
         }
 
@@ -228,6 +212,5 @@ public abstract class AbstractModelControllerOperationHandler implements Managem
             }
         }
     }
-
 
 }

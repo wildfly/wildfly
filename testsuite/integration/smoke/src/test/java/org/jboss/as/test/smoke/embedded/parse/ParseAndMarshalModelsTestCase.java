@@ -62,6 +62,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.ObjectName;
 import javax.xml.namespace.QName;
@@ -75,8 +76,6 @@ import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.BootContext;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExpressionResolver;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ExtensionContextImpl;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -87,7 +86,6 @@ import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
-import org.jboss.as.controller.operations.common.ExtensionAddHandler;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
 import org.jboss.as.controller.operations.common.InterfaceCriteriaWriteHandler;
 import org.jboss.as.controller.operations.common.JVMHandlers;
@@ -111,11 +109,8 @@ import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
-import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.as.domain.management.operations.ConnectionAddHandler;
 import org.jboss.as.domain.management.operations.SecurityRealmAddHandler;
-import org.jboss.as.host.controller.HostControllerConfigurationPersister;
-import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.descriptions.HostDescriptionProviders;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceAddHandler;
 import org.jboss.as.host.controller.operations.IsMasterHandler;
@@ -127,23 +122,18 @@ import org.jboss.as.host.controller.parsing.DomainXml;
 import org.jboss.as.host.controller.parsing.HostXml;
 import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
 import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
+import org.jboss.as.security.vault.RuntimeVaultReader;
 import org.jboss.as.server.ServerControllerModelUtil;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.as.server.parsing.StandaloneXml;
 import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
-import org.jboss.as.server.services.security.RuntimeVaultReader;
 import org.jboss.as.server.services.security.VaultAddHandler;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
-import org.jboss.msc.service.AbstractServiceListener;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.*;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.vfs.VirtualFile;
@@ -155,6 +145,8 @@ import org.junit.runner.RunWith;
 /**
  * Tests the ability to parse the config files we ship or have shipped in the past, as well as the ability
  * to marshal them back to xml in a manner such that reparsing them produces a consistent in-memory configuration model.
+ * <p>
+ * <b>Note:</b>Non-standard and example configs now go in the basic integration module ParseAndMarshalModelsTestCase.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
@@ -163,14 +155,12 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class ParseAndMarshalModelsTestCase {
 
-    private static final String JBOSSAS_PROJECT_DIR = System.getProperty("jbossas.project.dir"); // TODO: Remove default when props start working!
-
     @Deployment
     public static Archive<?> getDeployment() {
         return ShrinkWrapUtils.createJavaArchive("bogus.jar", ParseAndMarshalModelsTestCase.class.getPackage())
                 .add(new Asset() {
                     public InputStream openStream() {
-                        return new ByteArrayInputStream("Dependencies: org.jboss.staxmapper,org.jboss.as.controller,org.jboss.as.deployment-repository,org.jboss.as.server,org.jboss.as.host-controller,org.jboss.as.domain-management\n\n".getBytes());
+                        return new ByteArrayInputStream("Dependencies: org.jboss.staxmapper,org.jboss.as.controller,org.jboss.as.deployment-repository,org.jboss.as.server,org.jboss.as.host-controller,org.jboss.as.domain-management,org.jboss.as.security\n\n".getBytes());
                     }
                  }, "META-INF/MANIFEST.MF");
     }
@@ -185,6 +175,17 @@ public class ParseAndMarshalModelsTestCase {
     @After
     public void cleanup() throws Exception {
         ManagementFactory.getPlatformMBeanServer().unregisterMBean(new ObjectName("jboss.msc:type=container,name=test"));
+        if (serviceContainer != null) {
+            serviceContainer.shutdown();
+            try {
+                serviceContainer.awaitTermination(5, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            finally {
+                serviceContainer = null;
+            }
+        }
     }
 
     @Test
@@ -197,85 +198,6 @@ public class ParseAndMarshalModelsTestCase {
         standaloneXmlTest(getOriginalStandaloneXml("standalone-ha.xml"));
     }
 
-    @Test
-    public void testStandaloneOSGiOnlyXml() throws Exception {
-        standaloneXmlTest(getOriginalStandaloneXml("standalone-osgi-only.xml"));
-    }
-
-    @Test
-    public void testStandaloneXtsXml() throws Exception {
-        standaloneXmlTest(getOriginalStandaloneXml("standalone-xts.xml"));
-    }
-
-    @Test
-    public void test700StandaloneXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-0.xml"));
-    }
-
-    @Test
-    public void test701StandaloneXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-1.xml"));
-    }
-
-    @Test
-    public void test702StandaloneXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-2.xml"));
-    }
-
-    @Test
-    public void test700StandaloneHAXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-0-ha.xml"));
-    }
-
-    @Test
-    public void test701StandaloneHAXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-1-ha.xml"));
-    }
-
-    @Test
-    public void test702StandaloneHAXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-2-ha.xml"));
-    }
-
-    @Test
-    public void test700StandalonePreviewXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-0-preview.xml"));
-    }
-
-    @Test
-    public void test701StandalonePreviewXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-1-preview.xml"));
-    }
-
-    @Test
-    public void test702StandalonePreviewXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-2-preview.xml"));
-    }
-
-    @Test
-    public void test700StandalonePreviewHAXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-0-preview.xml"));
-    }
-
-    @Test
-    public void test701StandalonePreviewHAXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-1-preview-ha.xml"));
-    }
-
-    @Test
-    public void test702StandalonePreviewHAXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-2-preview-ha.xml"));
-    }
-
-    @Test
-    public void test701StandaloneXtsXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-1-xts.xml"));
-    }
-
-    @Test
-    public void test702StandaloneXtsXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-2-xts.xml"));
-    }
 
     private void standaloneXmlTest(File original) throws Exception {
 
@@ -297,21 +219,6 @@ public class ParseAndMarshalModelsTestCase {
         hostXmlTest(getOriginalHostXml("host.xml"));
     }
 
-    @Test
-    public void test700HostXml() throws Exception {
-        hostXmlTest(getLegacyConfigFile("host", "7-0-0.xml"));
-    }
-
-    @Test
-    public void test701HostXml() throws Exception {
-        hostXmlTest(getLegacyConfigFile("host", "7-0-1.xml"));
-    }
-
-    @Test
-    public void test702HostXml() throws Exception {
-        hostXmlTest(getLegacyConfigFile("host", "7-0-2.xml"));
-    }
-
     private void hostXmlTest(final File original) throws Exception {
         File file = new File("target/host-copy.xml");
         if (file.exists()) {
@@ -328,42 +235,6 @@ public class ParseAndMarshalModelsTestCase {
     public void testDomainXml() throws Exception {
         domainXmlTest(getOriginalDomainXml("domain.xml"));
     }
-
-    @Test
-    public void testDomainOSGiOnlyXml() throws Exception {
-        domainXmlTest(getOriginalDomainXml("domain-osgi-only.xml"));
-    }
-
-    @Test
-    public void test700DomainXml() throws Exception {
-        domainXmlTest(getLegacyConfigFile("domain", "7-0-0.xml"));
-    }
-
-    @Test
-    public void test701DomainXml() throws Exception {
-        domainXmlTest(getLegacyConfigFile("domain", "7-0-1.xml"));
-    }
-
-    @Test
-    public void test702DomainXml() throws Exception {
-        domainXmlTest(getLegacyConfigFile("domain", "7-0-2.xml"));
-    }
-
-    @Test
-    public void test700DomainPreviewXml() throws Exception {
-        domainXmlTest(getLegacyConfigFile("domain", "7-0-0-preview.xml"));
-    }
-
-    @Test
-    public void test701DomainPreviewXml() throws Exception {
-        domainXmlTest(getLegacyConfigFile("domain", "7-0-1-preview.xml"));
-    }
-
-    @Test
-    public void test702DomainPreviewXml() throws Exception {
-        domainXmlTest(getLegacyConfigFile("domain", "7-0-2-preview.xml"));
-    }
-
 
     private void domainXmlTest(File original) throws Exception {
         File file = new File("target/domain-copy.xml");
@@ -685,7 +556,7 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     private File getOriginalStandaloneXml(String profile) {
-				File f = new File( System.getProperty("jbossas.project.dir", "../../..") );
+        File f = new File( System.getProperty("jbossas.project.dir", "../../..") );
         f = f.getAbsoluteFile();
         Assert.assertTrue(f.exists());
         f = new File(f, "build");
@@ -708,7 +579,7 @@ public class ParseAndMarshalModelsTestCase {
     private File getDomainConfigDir() {
         //Get the standalone.xml from the build/src directory, since the one in the
         //built server could have changed during running of tests
-				File f = new File( System.getProperty("jbossas.project.dir", "../../..") );
+	File f = new File( System.getProperty("jbossas.project.dir", "../../..") );
         f = f.getAbsoluteFile();
         Assert.assertTrue(f.exists());
         f = new File(f, "build");
@@ -742,25 +613,6 @@ public class ParseAndMarshalModelsTestCase {
         f = new File(f, profile);
         Assert.assertTrue("Not found: " + f.getPath(), f.exists());
         return f;
-    }
-
-    private File getLegacyConfigFile(String type, final String profile) {
-				File f = new File( System.getProperty("jbossas.ts.submodule.dir") );
-        Assert.assertTrue(f.exists());
-        f = new File(f, "src");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "test");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "resources");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, "legacy-configs");
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, type);
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        f = new File(f, profile);
-        Assert.assertTrue("Not found: " + f.getPath(), f.exists());
-        return f;
-
     }
 
     private void copyFile(final File src, final File dest) throws Exception {
@@ -811,6 +663,19 @@ public class ParseAndMarshalModelsTestCase {
             super(OperationContext.Type.MANAGEMENT, new NullConfigurationPersister(), processState, getRootDescriptionProvider(), null, ExpressionResolver.DEFAULT);
             this.model = model;
             this.registration = registration;
+        }
+
+        @Override
+        public void start(StartContext context) throws StartException {
+            try {
+                super.start(context);
+            } catch (RuntimeException e) {
+                latch.countDown();
+                throw e;
+            } catch (StartException e) {
+                latch.countDown();
+                throw e;
+            }
         }
 
         @Override

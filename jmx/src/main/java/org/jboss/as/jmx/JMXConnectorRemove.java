@@ -41,8 +41,9 @@ class JMXConnectorRemove extends AbstractRemoveStepHandler {
     }
 
     protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) {
-        context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(CommonAttributes.SERVER_BINDING).clear();
-        context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(CommonAttributes.REGISTRY_BINDING).clear();
+        final ModelNode toUpdate = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
+        toUpdate.get(CommonAttributes.SERVER_BINDING).clear();
+        toUpdate.get(CommonAttributes.REGISTRY_BINDING).clear();
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
@@ -50,6 +51,6 @@ class JMXConnectorRemove extends AbstractRemoveStepHandler {
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
-        //TODO: RE-ADD Services
+        JMXConnectorAdd.INSTANCE.launchServices(context, model, null, null);
     }
 }

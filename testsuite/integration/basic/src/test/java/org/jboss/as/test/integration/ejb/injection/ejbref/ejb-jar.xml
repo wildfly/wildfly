@@ -1,33 +1,49 @@
-<ejb-jar xmlns="http://java.sun.com/xml/ns/javaee"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"
-         version="3.1">
-    <enterprise-beans>
-        <session>
-            <ejb-name>SimpleBean</ejb-name>
-            <home>org.jboss.as.test.integration.ejb.injection.ejbref.HomeInterface</home>
-            <remote>org.jboss.as.test.integration.ejb.injection.ejbref.RemoteInterface</remote>
-            <local-home>org.jboss.as.test.integration.ejb.injection.ejbref.LocalHomeInterface</local-home>
-            <local>org.jboss.as.test.integration.ejb.injection.ejbref.LocalInterface</local>
-            <ejb-class>org.jboss.as.test.integration.ejb.injection.ejbref.SimpleBean</ejb-class>
-            <session-type>Stateless</session-type>
-        </session>
+<ejb-jar xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"
+	version="3.1">
+	<enterprise-beans>
+		<session>
+			<ejb-name>SimpleBean</ejb-name>
+			<home>org.jboss.as.test.integration.ejb.injection.ejbref.HomeInterface</home>
+			<remote>org.jboss.as.test.integration.ejb.injection.ejbref.RemoteInterface</remote>
+			<local-home>org.jboss.as.test.integration.ejb.injection.ejbref.LocalHomeInterface</local-home>
+			<local>org.jboss.as.test.integration.ejb.injection.ejbref.LocalInterface</local>
+			<ejb-class>org.jboss.as.test.integration.ejb.injection.ejbref.SimpleBean</ejb-class>
+			<session-type>Stateless</session-type>
+		</session>
 
-        <session>
-            <ejb-name>LookupBean</ejb-name>
-            <ejb-ref>
-                <ejb-ref-name>ejb/remote</ejb-ref-name>
-                <ejb-ref-type>Session</ejb-ref-type>
-                <home>org.jboss.as.test.integration.ejb.injection.ejbref.HomeInterface</home>
-                <remote>org.jboss.as.test.integration.ejb.injection.ejbref.RemoteInterface</remote>
-            </ejb-ref>
-            <ejb-local-ref>
-                <ejb-ref-name>ejb/local</ejb-ref-name>
-                <ejb-ref-type>Session</ejb-ref-type>
-                <local-home>org.jboss.as.test.integration.ejb.injection.ejbref.LocalHomeInterface</local-home>
-                <local>org.jboss.as.test.integration.ejb.injection.ejbref.LocalInterface</local>
-            </ejb-local-ref>
-        </session>
-    </enterprise-beans>
+		<session>
+			<ejb-name>LookupBean</ejb-name>
+			<ejb-ref>
+				<ejb-ref-name>ejb/remote</ejb-ref-name>
+				<ejb-ref-type>Session</ejb-ref-type>
+				<home>org.jboss.as.test.integration.ejb.injection.ejbref.HomeInterface</home>
+				<remote>org.jboss.as.test.integration.ejb.injection.ejbref.RemoteInterface</remote>
+			</ejb-ref>
+			<ejb-local-ref>
+				<ejb-ref-name>ejb/local</ejb-ref-name>
+				<ejb-ref-type>Session</ejb-ref-type>
+				<local-home>org.jboss.as.test.integration.ejb.injection.ejbref.LocalHomeInterface</local-home>
+				<local>org.jboss.as.test.integration.ejb.injection.ejbref.LocalInterface</local>
+			</ejb-local-ref>
+		</session>
+
+		<session>
+			<ejb-name>CtxInjectionTesterBean</ejb-name>
+			<business-remote>org.jboss.as.test.integration.ejb.injection.ejbref.CtxInjectionTester</business-remote>
+			<ejb-class>org.jboss.as.test.integration.ejb.injection.ejbref.CtxInjectionTesterBean</ejb-class>
+			<session-type>Stateless</session-type>
+			<transaction-type>Container</transaction-type>
+			<resource-env-ref>
+				<resource-env-ref-name>ctx</resource-env-ref-name>
+				<resource-env-ref-type>javax.ejb.SessionContext</resource-env-ref-type>
+				<!--mapped-name>java:comp/EJBContext</mapped-name -->
+				<injection-target>
+					<injection-target-class>org.jboss.as.test.integration.ejb.injection.ejbref.CtxInjectionTesterBean</injection-target-class>
+					<injection-target-name>ctx</injection-target-name>
+				</injection-target>
+			</resource-env-ref>
+		</session>
+	</enterprise-beans>
 
 </ejb-jar>

@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
@@ -332,6 +333,12 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
         if(mergedMetaData.getJndiEnvironmentRefsGroup() != null) {
             final DeploymentDescriptorEnvironment bindings = new DeploymentDescriptorEnvironment("java:module/env/", mergedMetaData.getJndiEnvironmentRefsGroup());
             deploymentUnit.putAttachment(org.jboss.as.ee.component.Attachments.MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT, bindings);
+        }
+
+        //override module name if applicable
+        if(mergedMetaData.getModuleName() != null && !mergedMetaData.getModuleName().isEmpty()) {
+            final EEModuleDescription description = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+            description.setModuleName(mergedMetaData.getModuleName());
         }
     }
 

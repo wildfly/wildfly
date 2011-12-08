@@ -22,7 +22,7 @@
 package org.jboss.as.jsr77.subsystem;
 
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.jmx.PluggableMBeanServer;
+import org.jboss.as.server.jmx.PluggableMBeanServer;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -51,12 +51,12 @@ class RegisterMBeanServerDelegateService implements Service<Void>{
     @Override
     public void start(StartContext context) throws StartException {
         server = new JSR77ManagementMBeanServer(injectedController.getValue());
-        injectedMbeanServer.getValue().addDelegate(server);
+        injectedMbeanServer.getValue().addPlugin(server);
     }
 
     @Override
     public void stop(StopContext context) {
-        injectedMbeanServer.getValue().removeDelegate(server);
+        injectedMbeanServer.getValue().removePlugin(server);
         server = null;
     }
 

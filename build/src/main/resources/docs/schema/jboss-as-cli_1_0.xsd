@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2011, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns="urn:jboss:cli:1.0"
+           targetNamespace="urn:jboss:cli:1.0"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified"
+        >
+
+
+    <xs:element name="jboss-cli">
+        <xs:annotation>
+            <xs:documentation>
+                Root element for the JBoss Command Line Interface configuration.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="rollout" maxOccurs="1"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="rollout">
+        <xs:annotation>
+            <xs:documentation>
+                The element contains named rollout plans that can be
+                referenced from operation requests on the command line.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="plan" type="planType" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="planType">
+        <xs:annotation>
+            <xs:documentation>
+                Rollout plan configuration.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="server-group" type="server-groupType"/>
+            <xs:element name="concurrent" type="concurrentType"/>
+        </xs:choice>
+        <xs:attribute name="id" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Unique name (within the list of the plans) of the rollout plan.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="rollback-across-groups" type="xs:boolean" use="optional" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    Indicates whether the need to rollback the operation on all the servers
+                    in one server group should trigger a rollback across all the server groups.
+                    This is an optional setting, and defaults to false.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="server-groupType">
+        <xs:annotation>
+            <xs:documentation>
+                Describes how the rollout plan should be applied to a specific server group.
+
+                NOTE: if both max-failed-servers and max-failure-percentage are set to non-zero values, max-failure-percentage takes precedence.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of the server group from the domain.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="rolling-to-servers" type="xs:boolean" use="optional" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    If true, the operation will be applied to each server in the group in series.
+                    If false or not specified, the operation will be applied to the servers in the group concurrently.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="max-failure-percentage" type="max-failure-percentageType" use="optional" default="0">
+            <xs:annotation>
+                <xs:documentation>
+                    Between 0 and 100. Maximum percentage of the total number of servers in the group
+                    that can fail to apply the operation before it should be reverted on all servers in the group.
+                    The default value if not specified is zero; i.e. failure on any server triggers rollback across the group.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="max-failed-servers" type="xs:int" use="optional" default="0">
+            <xs:annotation>
+                <xs:documentation>
+                    Maximum number of servers in the group that can fail to apply the operation
+                    before it should be reverted on all servers in the group.
+                     The default value if not specified is zero; i.e. failure on any server triggers rollback across the group.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:simpleType name="max-failure-percentageType">
+        <xs:annotation>
+            <xs:documentation>
+                Type for max-failure-percentage attribute of the server-group element from the rollout plan.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:integer">
+            <xs:minInclusive value="0"/>
+            <xs:maxInclusive value="100"/>
+        </xs:restriction>
+    </xs:simpleType>
+                      
+    <xs:complexType name="concurrentType">
+        <xs:annotation>
+            <xs:documentation>
+                Lists server groups for which operations will be applied concurrently.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="server-group" type="server-groupType" minOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>

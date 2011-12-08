@@ -24,10 +24,13 @@ package org.jboss.as.jmx;
 
 import java.lang.management.ManagementFactory;
 
+import javax.management.MBeanServer;
+
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.jmx.model.ModelControllerMBeanServerPlugin;
-import org.jboss.as.jmx.tcl.TcclMBeanServer;
 import org.jboss.as.server.Services;
+import org.jboss.as.server.jmx.MBeanServerPlugin;
+import org.jboss.as.server.jmx.PluggableMBeanServer;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
@@ -52,6 +55,7 @@ public class MBeanServerService implements Service<PluggableMBeanServer> {
     private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
 
     private PluggableMBeanServer mBeanServer;
+    private MBeanServerPlugin showModelPlugin;
 
     private MBeanServerService(final boolean showModel) {
         this.showModel = showModel;
@@ -68,14 +72,19 @@ public class MBeanServerService implements Service<PluggableMBeanServer> {
 
     /** {@inheritDoc} */
     public synchronized void start(final StartContext context) throws StartException {
-        mBeanServer = new PluggableMBeanServer(new TcclMBeanServer(ManagementFactory.getPlatformMBeanServer()));
+        //If the platform MBeanServer was set up to be the PluggableMBeanServer, use that otherwise create a new one and delegate
+        MBeanServer platform = ManagementFactory.getPlatformMBeanServer();
+        PluggableMBeanServerImpl pluggable = platform instanceof PluggableMBeanServerImpl ? (PluggableMBeanServerImpl)platform : new PluggableMBeanServerImpl(platform);
         if (showModel) {
-            mBeanServer.addDelegate(new ModelControllerMBeanServerPlugin(modelControllerValue.getValue()));
+            showModelPlugin = new ModelControllerMBeanServerPlugin(modelControllerValue.getValue());
+            pluggable.addPlugin(showModelPlugin);
         }
+        mBeanServer = pluggable;
     }
 
     /** {@inheritDoc} */
     public synchronized void stop(final StopContext context) {
+        mBeanServer.removePlugin(showModelPlugin);
         mBeanServer = null;
     }
 

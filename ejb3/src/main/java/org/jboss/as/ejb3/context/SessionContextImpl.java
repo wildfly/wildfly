@@ -23,8 +23,6 @@ package org.jboss.as.ejb3.context;
 
 import java.security.Principal;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.ejb.SessionContext;
@@ -37,8 +35,11 @@ import org.jboss.as.ee.component.interceptors.DependencyInjectionCompleteMarker;
 import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
+import org.jboss.as.ejb3.component.stateful.CurrentSynchronizationCallback;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.invocation.InterceptorContext;
+
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Implementation of the SessionContext interface.
@@ -144,5 +145,23 @@ public class SessionContextImpl extends EJBContextImpl implements SessionContext
             throw MESSAGES.lifecycleMethodNotAllowedFromStatelessSessionBean("getCallerPrincipal");
         }
         return super.getCallerPrincipal();
+    }
+
+    @Override
+    public void setRollbackOnly() throws IllegalStateException {
+        final CurrentSynchronizationCallback.CallbackType type = CurrentSynchronizationCallback.get();
+        if(type == CurrentSynchronizationCallback.CallbackType.AFTER_COMPLETION) {
+            throw MESSAGES.cannotCallMethodInAfterCompletion("setRollbackOnly");
+        }
+        super.setRollbackOnly();
+    }
+
+    @Override
+    public boolean getRollbackOnly() throws IllegalStateException {
+        final CurrentSynchronizationCallback.CallbackType type = CurrentSynchronizationCallback.get();
+        if(type == CurrentSynchronizationCallback.CallbackType.AFTER_COMPLETION) {
+            throw MESSAGES.cannotCallMethodInAfterCompletion("getRollbackOnly");
+        }
+        return super.getRollbackOnly();
     }
 }

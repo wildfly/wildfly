@@ -30,7 +30,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
-import org.jboss.metadata.parser.util.NoopXmlResolver;
+import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.modules.Module;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
@@ -57,7 +57,7 @@ public class CmpParsingProcessor implements DeploymentUnitProcessor {
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
 
         final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-        inputFactory.setXMLResolver(NoopXmlResolver.create());
+        inputFactory.setXMLResolver(NoopXMLResolver.create());
         XMLStreamReader xmlReader = null;
 
 

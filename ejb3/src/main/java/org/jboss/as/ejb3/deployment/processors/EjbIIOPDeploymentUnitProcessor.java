@@ -24,18 +24,27 @@ package org.jboss.as.ejb3.deployment.processors;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import javax.ejb.TransactionManagementType;
+
 import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.component.ViewConfiguration;
+import org.jboss.as.ee.component.ViewConfigurator;
+import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
-import org.jboss.as.ejb3.deployment.DeploymentRepository;
+import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.ejb3.iiop.EjbIIOPService;
+import org.jboss.as.ejb3.iiop.EjbIIOPTransactionInterceptor;
 import org.jboss.as.ejb3.iiop.POARegistry;
 import org.jboss.as.ejb3.subsystem.IIOPSettingsService;
 import org.jboss.as.jacorb.deployment.JacORBDeploymentMarker;
@@ -58,6 +67,8 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.ejb.jboss.IIOPMetaData;
+import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
@@ -67,7 +78,6 @@ import org.omg.PortableServer.POA;
 
 /**
  * This is the DUP that sets up IIOP for EJB's
- *
  */
 public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
 
@@ -83,11 +93,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if(!JacORBDeploymentMarker.isJacORBDeployment(deploymentUnit)) {
-            return;
-        }
-        //TODO: we need some way to enable this by deployment descriptor
-        if(!settingsService.isEnabledByDefault()) {
+        if (!JacORBDeploymentMarker.isJacORBDeployment(deploymentUnit)) {
             return;
         }
 
@@ -95,6 +101,19 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         if (!EjbDeploymentMarker.isEjbDeployment(deploymentUnit)) {
             return;
         }
+
+        // a bean-name -> IIOPMetaData map, reflecting the assembly descriptor IIOP configuration.
+        Map<String, IIOPMetaData> iiopMetaDataMap = new HashMap<String, IIOPMetaData>();
+        final EjbJarMetaData ejbMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
+        if (ejbMetaData != null && ejbMetaData.getAssemblyDescriptor() != null) {
+            List<IIOPMetaData> iiopMetaDatas = ejbMetaData.getAssemblyDescriptor().getAny(IIOPMetaData.class);
+            if (iiopMetaDatas != null && iiopMetaDatas.size() > 0) {
+                for (IIOPMetaData metaData : iiopMetaDatas) {
+                    iiopMetaDataMap.put(metaData.getEjbName(), metaData);
+                }
+            }
+        }
+
         final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
         final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
@@ -103,7 +122,17 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
                 if (componentDescription instanceof EJBComponentDescription) {
                     final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentDescription;
                     if (ejbComponentDescription.getEjbRemoteView() != null && ejbComponentDescription.getEjbHomeView() != null) {
-                        processEjb(ejbComponentDescription, classIndex, deploymentReflectionIndex, module, phaseContext.getServiceTarget());
+                        // check if there is IIOP metadata for the bean - first using the bean name, then the wildcard "*" if needed.
+                        IIOPMetaData iiopMetaData = iiopMetaDataMap.get(ejbComponentDescription.getEJBName());
+                        if (iiopMetaData == null) {
+                            iiopMetaData = iiopMetaDataMap.get(IIOPMetaData.WILDCARD_BEAN_NAME);
+                        }
+                        // the bean will be exposed via IIOP if it has IIOP metadata that applies to it or if IIOP access
+                        // has been enabled by default in the EJB3 subsystem.
+                        if (iiopMetaData != null || settingsService.isEnabledByDefault()) {
+                            processEjb(ejbComponentDescription, classIndex, deploymentReflectionIndex, module,
+                                phaseContext.getServiceTarget(), iiopMetaData);
+                        }
                     }
                 }
             }
@@ -115,8 +144,11 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
 
     }
 
-    private void processEjb(final EJBComponentDescription componentDescription, final DeploymentClassIndex classIndex, final DeploymentReflectionIndex deploymentReflectionIndex, final Module module, final ServiceTarget serviceTarget) {
+    private void processEjb(final EJBComponentDescription componentDescription, final DeploymentClassIndex classIndex,
+                            final DeploymentReflectionIndex deploymentReflectionIndex, final Module module,
+                            final ServiceTarget serviceTarget, final IIOPMetaData iiopMetaData) {
         componentDescription.setExposedViaIiop(true);
+
 
         // Create bean method mappings for container invoker
 
@@ -134,6 +166,9 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("Could not load home interface for " + componentDescription.getEJBClassName(), e);
         }
+
+        componentDescription.getEjbHomeView().getConfigurators().add(new IIOPInterceptorViewConfigurator());
+        componentDescription.getEjbRemoteView().getConfigurators().add(new IIOPInterceptorViewConfigurator());
 
 
         final InterfaceAnalysis remoteInterfaceAnalysis;
@@ -207,7 +242,8 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         // Initialize repository ids of home interface
         final String[] homeRepositoryIds = homeInterfaceAnalysis.getAllTypeIds();
 
-        final EjbIIOPService service = new EjbIIOPService(beanMethodMap, beanRepositoryIds, homeMethodMap, homeRepositoryIds, settingsService.isUseQualifiedName(), module);
+        final EjbIIOPService service = new EjbIIOPService(beanMethodMap, beanRepositoryIds, homeMethodMap, homeRepositoryIds,
+                settingsService.isUseQualifiedName(), iiopMetaData, module);
         final ServiceBuilder<EjbIIOPService> builder = serviceTarget.addService(componentDescription.getServiceName().append(EjbIIOPService.SERVICE_NAME), service);
         builder.addDependency(componentDescription.getCreateServiceName(), EJBComponent.class, service.getEjbComponentInjectedValue());
         builder.addDependency(homeView.getServiceName(), ComponentView.class, service.getHomeView());
@@ -216,7 +252,6 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         builder.addDependency(POARegistry.SERVICE_NAME, POARegistry.class, service.getPoaRegistry());
         builder.addDependency(CorbaPOAService.INTERFACE_REPOSITORY_SERVICE_NAME, POA.class, service.getIrPoa());
         builder.addDependency(CorbaNamingService.SERVICE_NAME, NamingContextExt.class, service.getCorbaNamingContext());
-        builder.addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, service.getDeploymentRepository());
         builder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, service.getServiceModuleLoaderInjectedValue());
 
         //we need the arjunta transaction manager to be up, as it performs some initialization that is required by the orb interceptors
@@ -230,4 +265,13 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         return deploymentReflectionIndex.getClassIndex(nonMethod.getDeclaringClass()).getMethod(nonMethod);
     }
 
+    private static class IIOPInterceptorViewConfigurator implements ViewConfigurator {
+        @Override
+        public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+            final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
+            if (ejbComponentDescription.getTransactionManagementType() == TransactionManagementType.CONTAINER) {
+                configuration.addViewInterceptor(EjbIIOPTransactionInterceptor.FACTORY, InterceptorOrder.View.EJB_IIOP_TRANSACTION);
+            }
+        }
+    }
 }

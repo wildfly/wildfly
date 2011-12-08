@@ -47,13 +47,12 @@ public class DeploymentScannerSubsystemRemove extends AbstractRemoveStepHandler 
         //
     }
 
-    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        if (model.hasDefined(CommonAttributes.SCANNER) && model.get(CommonAttributes.SCANNER).asInt() > 0) {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.cannotRemoveSubsystem()));
-        }
-        super.performRemove(context, operation, model);
+    @Override
+    protected boolean requireNoChildResources() {
+        return true;
     }
 
+    @Override
     protected boolean requiresRuntime(OperationContext context) {
         return false;
     }

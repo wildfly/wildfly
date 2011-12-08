@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
@@ -412,8 +413,8 @@ class ModelControllerImpl implements ModelController {
 
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            if (ROOT_LOGGER.isTraceEnabled()) {
-                ROOT_LOGGER.trace("Executing " + operation.get(OP) + " " + operation.get(OP_ADDR));
+            if (MGMT_OP_LOGGER.isTraceEnabled()) {
+                MGMT_OP_LOGGER.trace("Executing " + operation.get(OP) + " " + operation.get(OP_ADDR));
             }
             final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
             final String operationName =  operation.require(OP).asString();

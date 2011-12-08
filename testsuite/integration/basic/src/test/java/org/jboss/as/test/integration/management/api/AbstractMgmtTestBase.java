@@ -166,6 +166,7 @@ public class AbstractMgmtTestBase {
         war.addClass(SimpleServlet.class);
         war.addAsWebInfResource(new StringAsset("Malformed"), "web.xml");
         brokenWar = new File(System.getProperty("java.io.tmpdir") + File.separator + "malformedDeployment.war");
+        brokenWar.deleteOnExit();
         new ZipExporterImpl(war).exportTo(brokenWar, true);
         return brokenWar;
     }

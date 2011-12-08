@@ -21,6 +21,7 @@
  */
 package org.jboss.as.cli.operation;
 
+import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.dmr.ModelNode;
 
@@ -33,5 +34,5 @@ public interface OperationRequestHeader {
 
     String getName();
 
-    void addTo(ModelNode headers) throws CommandFormatException;
+    void addTo(CommandContext ctx, ModelNode headers) throws CommandFormatException;
 }

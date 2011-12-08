@@ -24,11 +24,7 @@ package org.jboss.as.protocol.mgmt;
 
 import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
 import org.jboss.as.protocol.StreamUtils;
-import org.jboss.marshalling.Marshaller;
-import org.jboss.marshalling.MarshallerFactory;
-import org.jboss.marshalling.Marshalling;
-import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.Unmarshaller;
+import org.jboss.remoting3.MessageOutputStream;
 
 import java.io.DataInput;
 import java.io.EOFException;
@@ -42,6 +38,43 @@ import java.io.OutputStream;
  * @author John Bailey
  */
 public final class ProtocolUtils {
+
+    public static FlushableDataOutput wrapAsDataOutput(final OutputStream os) {
+        return FlushableDataOutputImpl.create(os);
+    }
+
+    public static <A> ManagementRequestContext.AsyncTask<A> emptyResponseTask() {
+        return new ManagementRequestContext.AsyncTask<A>() {
+            @Override
+            public void execute(final ManagementRequestContext<A> context) throws Exception {
+                final ManagementResponseHeader header = ManagementResponseHeader.create(context.getRequestHeader());
+                final FlushableDataOutput output = context.writeMessage(header);
+                try {
+                    output.writeByte(ManagementProtocol.RESPONSE_END);
+                    output.close();
+                } finally {
+                    StreamUtils.safeClose(output);
+                }
+            }
+        };
+    }
+
+    public static <A> void writeResponse(final ResponseWriter writer, final ManagementRequestContext<A> context) throws IOException {
+        final ManagementResponseHeader header = ManagementResponseHeader.create(context.getRequestHeader());
+        writeResponse(writer, context, header);
+    }
+
+    public static <A> void writeResponse(final ResponseWriter writer, final ManagementRequestContext<A> context, final ManagementResponseHeader header) throws IOException {
+        final FlushableDataOutput output = context.writeMessage(header);
+        try {
+            writer.write(output);
+            output.writeByte(ManagementProtocol.RESPONSE_END);
+            output.close();
+        } finally {
+            StreamUtils.safeClose(output);
+        }
+
+    }
 
     public static void expectHeader(final InputStream input, int expected) throws IOException {
         expectHeader(readByte(input), expected);
@@ -80,6 +113,19 @@ public final class ProtocolUtils {
             throw new EOFException();
         }
         return (byte) b;
+    }
+
+    public static interface ResponseWriter {
+
+        ResponseWriter EMPTY = new ResponseWriter() {
+            @Override
+            public void write(FlushableDataOutput output) throws IOException {
+                // nothing
+            }
+        };
+
+        void write(FlushableDataOutput output) throws IOException;
+
     }
 
 }

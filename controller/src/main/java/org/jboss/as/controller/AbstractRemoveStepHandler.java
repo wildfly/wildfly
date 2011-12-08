@@ -22,10 +22,18 @@
 
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
+ * Base class for handlers that remove resources.
+ *
  * @author John Bailey
  */
 public abstract class AbstractRemoveStepHandler implements OperationStepHandler {
@@ -41,17 +49,36 @@ public abstract class AbstractRemoveStepHandler implements OperationStepHandler 
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     performRuntime(context, operation, model);
 
-                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                        recoverServices(context, operation, model);
-                    }
+                    context.completeStep(new OperationContext.RollbackHandler() {
+                        @Override
+                        public void handleRollback(OperationContext context, ModelNode operation) {
+                            try {
+                                recoverServices(context, operation, model);
+                            } catch (Exception e) {
+                                MGMT_OP_LOGGER.errorRevertingOperation(e, getClass().getSimpleName(),
+                                    operation.require(ModelDescriptionConstants.OP).asString(),
+                                    PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+                            }
+                        }
+                    });
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
     protected void performRemove(OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        context.removeResource(PathAddress.EMPTY_ADDRESS);
+        final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+        if (!requireNoChildResources() || resource.getChildTypes().isEmpty()) {
+            context.removeResource(PathAddress.EMPTY_ADDRESS);
+        } else {
+            List<PathElement> children = getChildren(resource);
+            throw ControllerMessages.MESSAGES.cannotRemoveResourceWithChildren(children);
+        }
+    }
+
+    protected boolean requireNoChildResources() {
+        return false;
     }
 
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
@@ -62,6 +89,16 @@ public abstract class AbstractRemoveStepHandler implements OperationStepHandler 
 
     protected boolean requiresRuntime(OperationContext context) {
         return context.getType() == OperationContext.Type.SERVER;
+    }
+
+    private List<PathElement> getChildren(Resource resource) {
+        final List<PathElement> pes = new ArrayList<PathElement>();
+        for (String childType : resource.getChildTypes()) {
+            for (Resource.ResourceEntry entry : resource.getChildren(childType)) {
+                pes.add(entry.getPathElement());
+            }
+        }
+        return pes;
     }
 
 

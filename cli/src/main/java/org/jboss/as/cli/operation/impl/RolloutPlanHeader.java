@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.operation.OperationRequestHeader;
@@ -39,8 +40,18 @@ public class RolloutPlanHeader implements OperationRequestHeader {
 
     private static final String HEADER_NAME = "rollout-plan";
 
-    private final List<RolloutPlanGroup> groups = new ArrayList<RolloutPlanGroup>();
+    private final String planId;
+    private String planRef;
+    private List<RolloutPlanGroup> groups;
     private Map<String,String> props;
+
+    public RolloutPlanHeader() {
+        this(null);
+    }
+
+    public RolloutPlanHeader(String planId) {
+        this.planId = planId;
+    }
 
     /* (non-Javadoc)
      * @see org.jboss.as.cli.operation.OperationRequestHeader#getName()
@@ -50,9 +61,33 @@ public class RolloutPlanHeader implements OperationRequestHeader {
         return HEADER_NAME;
     }
 
+    public String getPlanId() {
+        return planId;
+    }
+
+    public String getPlanRef() {
+        return planRef;
+    }
+
+    public void setPlanRef(String planRef) {
+        if(planRef == null || planRef.isEmpty()) {
+            throw new IllegalArgumentException("Plan ref is null or empty.");
+        }
+        if(groups != null) {
+            throw new IllegalStateException("Plan ref can't be specified when groups are specified.");
+        }
+        this.planRef = planRef;
+    }
+
     public void addGroup(RolloutPlanGroup group) {
         if(group == null) {
             throw new IllegalArgumentException("group is null");
+        }
+        if(planRef != null) {
+            throw new IllegalStateException("Groups can't be added if the plan ref is specified.");
+        }
+        if(groups == null) {
+            groups = new ArrayList<RolloutPlanGroup>();
         }
         groups.add(group);
     }
@@ -61,7 +96,10 @@ public class RolloutPlanHeader implements OperationRequestHeader {
         if(group == null) {
             throw new IllegalArgumentException("group is null");
         }
-        int lastIndex = groups.size() - 1;
+        if(planRef != null) {
+            throw new IllegalStateException("Groups can't be added if the plan ref is specified.");
+        }
+        int lastIndex = groups == null ? -1 : groups.size() - 1;
         if(lastIndex < 0) {
             throw new IllegalStateException("There must be a group before a concurrent group can be added.");
         }
@@ -98,8 +136,16 @@ public class RolloutPlanHeader implements OperationRequestHeader {
      * @see org.jboss.as.cli.operation.OperationRequestHeader#toModelNode()
      */
     @Override
-    public void addTo(ModelNode headers) throws CommandFormatException {
+    public void addTo(CommandContext ctx, ModelNode headers) throws CommandFormatException {
 
+        if(planRef != null) {
+            final OperationRequestHeader rolloutPlan = ctx.getConfig().getRolloutPlan(planRef);
+            if(rolloutPlan == null) {
+                throw new CommandFormatException("Rollout plan with id '" + planRef + "' could not be found.");
+            }
+            rolloutPlan.addTo(ctx, headers);
+            return;
+        }
         ModelNode header = headers.get(HEADER_NAME);
         final ModelNode series = header.get(Util.IN_SERIES);
         for(RolloutPlanGroup group : groups) {

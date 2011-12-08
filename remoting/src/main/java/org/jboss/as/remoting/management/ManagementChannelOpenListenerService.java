@@ -23,56 +23,46 @@ package org.jboss.as.remoting.management;
 
 import java.io.IOException;
 
-import org.jboss.as.controller.remote.ManagementOperationHandlerFactory;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
-import org.jboss.as.protocol.mgmt.ManagementChannelFactory;
-import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
+import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
 import org.jboss.as.remoting.AbstractChannelOpenListenerService;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.CloseHandler;
 import org.xnio.OptionMap;
 
 /**
- * Service responsible for listening for channel open requests and associating the channel with a {@link ManagementOperationHandler}
+ * Service responsible for listening for channel open requests and associating the channel with a channel receiver
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 class ManagementChannelOpenListenerService extends AbstractChannelOpenListenerService<ManagementChannel> {
 
-    private final InjectedValue<ManagementOperationHandlerFactory> operationHandlerFactoryValue = new InjectedValue<ManagementOperationHandlerFactory>();
+    private final InjectedValue<ManagementChannelInitialization> operationHandlerFactoryValue = new InjectedValue<ManagementChannelInitialization>();
 
 
     ManagementChannelOpenListenerService(String channelName, OptionMap optionMap) {
         super(channelName, optionMap);
     }
 
-    public InjectedValue<ManagementOperationHandlerFactory> getOperationHandlerInjector(){
+    public InjectedValue<ManagementChannelInitialization> getOperationHandlerInjector(){
         return operationHandlerFactoryValue;
     }
 
     @Override
     protected ManagementChannel createChannel(Channel channel) {
-        final ManagementOperationHandler handler = operationHandlerFactoryValue.getValue().createOperationHandler();
-        final ManagementChannel managementChannel = new ManagementChannelFactory(handler).create(channelName, channel);
-        log.tracef("Opened %s: %s with handler %s", channelName, managementChannel, handler);
+
+        final ManagementChannel managementChannel = new ManagementChannel(channelName, channel);
+        final ManagementChannelInitialization initialization = operationHandlerFactoryValue.getValue();
+        initialization.initialize(managementChannel);
+        log.tracef("Opened %s: %s with handler %s", channelName, managementChannel, initialization);
         managementChannel.startReceiving();
-        channel.addCloseHandler(new CloseHandler<Channel>() {
-            public void handleClose(final Channel closed, final IOException exception) {
-                try {
-                    managementChannel.sendByeBye();
-                } catch (IOException ignore) {
-                }
-                log.tracef("Handling close for %s", managementChannel);
-            }
-        });
         return managementChannel;
     }
 
     @Override
     protected void closeChannelOnShutdown(ManagementChannel channel) {
         try {
-            channel.sendByeBye();
+            channel.close();
         } catch (IOException e) {
         }
     }
