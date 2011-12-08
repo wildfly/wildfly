@@ -47,6 +47,8 @@ public class InfinispanSubsystemAdd extends AbstractAddStepHandler implements De
 
     private static final Logger log = Logger.getLogger(InfinispanSubsystemAdd.class.getPackage().getName());
 
+    public static final InfinispanSubsystemAdd INSTANCE = new InfinispanSubsystemAdd();
+
     static ModelNode createOperation(ModelNode address, ModelNode existing) {
         ModelNode operation = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
         populate(existing, operation);
