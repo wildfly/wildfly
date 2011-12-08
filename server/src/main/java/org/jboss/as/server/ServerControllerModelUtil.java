@@ -163,11 +163,13 @@ public class ServerControllerModelUtil {
         root.get(DEPLOYMENT);
     }
 
-    public static void initOperations(final ManagementResourceRegistration root, final ContentRepository contentRepository,
+    public static void initOperations(final ManagementResourceRegistration root,
+                                      final ContentRepository contentRepository,
                                       final ExtensibleConfigurationPersister extensibleConfigurationPersister,
                                       final ServerEnvironment serverEnvironment,
                                       final ControlledProcessState processState,
-                                      final RunningModeControl runningModeControl, final AbstractVaultReader vaultReader,
+                                      final RunningModeControl runningModeControl,
+                                      final AbstractVaultReader vaultReader,
                                       final boolean parallelBoot) {
         // Build up the core model registry
         root.registerReadWriteAttribute(NAME, null, new StringLengthValidatingHandler(1), AttributeAccess.Storage.CONFIGURATION);
