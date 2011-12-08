@@ -5966,6 +5966,7 @@
                 <module>webservices</module>
                 <module>weld</module>
                 <module>xts</module>
+                <module>testsuite/shared</module>
                 <module>testsuite</module>
             </modules>
         </profile>
