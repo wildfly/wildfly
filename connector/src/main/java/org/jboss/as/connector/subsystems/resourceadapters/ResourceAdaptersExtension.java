@@ -193,11 +193,6 @@ public class ResourceAdaptersExtension implements Extension {
         resourceadapter.registerOperationHandler("test-connection-in-pool", PoolOperations.TestConnectionInPool.RA_INSTANCE,
                 TEST_CONNECTION_DESC, false);
 
-        for (final String attributeName : PoolMetrics.ATTRIBUTES) {
-            resourceadapter.registerMetric(attributeName, PoolMetrics.RaPoolMetricsHandler.INSTANCE);
-
-        }
-
     }
 
     @Override

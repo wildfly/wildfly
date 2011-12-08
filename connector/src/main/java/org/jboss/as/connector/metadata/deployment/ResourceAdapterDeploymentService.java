@@ -69,6 +69,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
     private final ConnectorXmlDescriptor connectorXmlDescriptor;
     private final Connector cmd;
     private final IronJacamar ijmd;
+    private CommonDeployment raDeployment = null;
 
     private String raName;
     private ServiceName deploymentServiceName;
@@ -89,7 +90,6 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         final URL url = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getUrl();
         final String deploymentName = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getDeploymentName();
         final File root = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getRoot();
-        CommonDeployment raDeployment = null;
         DEPLOYMENT_CONNECTOR_LOGGER.debugf("DEPLOYMENT name = %s",deploymentName);
         final AS7RaDeployer raDeployer =
             new AS7RaDeployer(context.getChildTarget(), url, deploymentName, root, module.getClassLoader(), cmd, ijmd);
@@ -135,6 +135,10 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
 
         managementRepository.getValue().getConnectors().remove(value.getDeployment().getConnector());
         super.stop(context);
+    }
+
+    public CommonDeployment getRaDeployment() {
+        return raDeployment;
     }
 
     private class AS7RaDeployer extends AbstractAS7RaDeployer {

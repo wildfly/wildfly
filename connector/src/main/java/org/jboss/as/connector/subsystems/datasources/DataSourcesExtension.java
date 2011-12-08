@@ -92,7 +92,6 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDCONNE
 import static org.jboss.as.connector.subsystems.datasources.Constants.WRAP_XA_RESOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCECLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTIES;
-import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTY_VALUE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_RESOURCE_TIMEOUT;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_CONNECTION_PROPERTIES_DESC;
@@ -134,7 +133,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
@@ -153,8 +151,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -235,16 +231,6 @@ public class DataSourcesExtension implements Extension {
         configAdapter.registerOperationHandler(ADD, ConnectionPropertyAdd.INSTANCE, ADD_CONNECTION_PROPERTIES_DESC, false);
         configAdapter.registerOperationHandler(REMOVE, ConnectionPropertyRemove.INSTANCE, REMOVE_CONNECTION_PROPERTIES_DESC, false);
 
-        for (final String attributeName : PoolMetrics.ATTRIBUTES) {
-            dataSources.registerMetric(attributeName, PoolMetrics.LocalAndXaDataSourcePoolMetricsHandler.INSTANCE);
-
-        }
-
-        for (final String attributeName : LocalAndXaDataSourcesJdbcMetrics.ATTRIBUTES) {
-            dataSources.registerMetric(attributeName, LocalAndXaDataSourcesJdbcMetrics.INSTANCE);
-
-        }
-
         for (final SimpleAttributeDefinition attribute : DataSourcesSubsystemProviders.DATASOURCE_ATTRIBUTE) {
             if (PoolConfigurationRWHandler.ATTRIBUTES.contains(attribute.getName())) {
                dataSources.registerReadWriteAttribute(attribute.getName(), PoolConfigurationReadHandler.INSTANCE,
@@ -270,16 +256,6 @@ public class DataSourcesExtension implements Extension {
         final ManagementResourceRegistration xadatasourcePropertyAdapter = xaDataSources.registerSubModel(PathElement.pathElement(XADATASOURCE_PROPERTIES.getName()), XADATASOURCE_PROPERTIES_DESC);
         xadatasourcePropertyAdapter.registerOperationHandler(ADD, XaDataSourcePropertyAdd.INSTANCE, ADD_XADATASOURCE_PROPERTIES_DESC, false);
         xadatasourcePropertyAdapter.registerOperationHandler(REMOVE, XaDataSourcePropertyRemove.INSTANCE, REMOVE_XADATASOURCE_PROPERTIES_DESC, false);
-
-
-        for (final String attributeName : PoolMetrics.ATTRIBUTES) {
-            xaDataSources.registerMetric(attributeName, PoolMetrics.LocalAndXaDataSourcePoolMetricsHandler.INSTANCE);
-        }
-
-        for (final String attributeName : LocalAndXaDataSourcesJdbcMetrics.ATTRIBUTES) {
-            xaDataSources.registerMetric(attributeName, LocalAndXaDataSourcesJdbcMetrics.INSTANCE);
-
-        }
 
         for (final SimpleAttributeDefinition attribute : DataSourcesSubsystemProviders.XA_DATASOURCE_ATTRIBUTE) {
             if (PoolConfigurationRWHandler.ATTRIBUTES.contains(attribute.getName())) {

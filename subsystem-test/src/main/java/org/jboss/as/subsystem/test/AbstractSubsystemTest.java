@@ -768,6 +768,11 @@ public abstract class AbstractSubsystemTest {
         }
 
         @Override
+        public ManagementResourceRegistration clone() {
+            return this;
+        }
+
+        @Override
         public void registerSubModel(PathElement address, ManagementResourceRegistration subModel) {
         }
 
@@ -831,6 +836,10 @@ public abstract class AbstractSubsystemTest {
 
         @Override
         public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
+        }
+
+        @Override
+        public void unregisterMetric(String attributeName) {
         }
 
         @Override

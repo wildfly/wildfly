@@ -81,6 +81,8 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      */
     ManagementResourceRegistration registerSubModel(ResourceDefinition resourceDefinition);
 
+    ManagementResourceRegistration clone();
+
     /**
      * Register the existence of an addressable sub-node of this model node.
      *
@@ -268,6 +270,15 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @throws IllegalArgumentException if {@code attributeName} or {@code metricHandler} are {@code null}
      */
     void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags);
+
+
+    /**
+     * Remove that the given attribute as metric if present.
+     *
+     * @param attributeName the name of the attribute. Cannot be {@code null}
+     *
+     */
+    void unregisterMetric(String attributeName);
 
     /**
      * Register a proxy controller.
