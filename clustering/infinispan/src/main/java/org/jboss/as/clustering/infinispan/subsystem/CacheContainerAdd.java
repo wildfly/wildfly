@@ -76,6 +76,8 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
 
     private static final Logger log = Logger.getLogger(CacheContainerAdd.class.getPackage().getName());
 
+    public static final CacheContainerAdd INSTANCE = new CacheContainerAdd();
+
     static ModelNode createOperation(ModelNode address, ModelNode existing) {
         ModelNode operation = Util.getEmptyOperation(ADD, address);
         populate(existing, operation);

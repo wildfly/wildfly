@@ -21,38 +21,22 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+
 import java.util.Locale;
 
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import org.infinispan.config.Configuration.CacheMode;
-import org.infinispan.eviction.EvictionStrategy;
-import org.infinispan.transaction.LockingMode;
-import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
-import static org.jboss.as.clustering.infinispan.InfinispanLogger.ROOT_LOGGER;
 
 /**
  * Defines the Infinispan subsystem and its addressable resources.
@@ -70,10 +54,7 @@ public class InfinispanExtension implements Extension, DescriptionProvider {
     private static final PathElement replicatedCachePath = PathElement.pathElement(ModelKeys.REPLICATED_CACHE);
     private static final PathElement distributedCachePath = PathElement.pathElement(ModelKeys.DISTRIBUTED_CACHE);
 
-    private static final InfinispanSubsystemAdd add = new InfinispanSubsystemAdd();
-    private static final InfinispanSubsystemDescribe describe = new InfinispanSubsystemDescribe();
-    private static final CacheContainerAdd containerAdd = new CacheContainerAdd();
-    private static final CacheContainerRemove containerRemove = new CacheContainerRemove();
+    private static final PathElement transportPath = PathElement.pathElement(ModelKeys.SINGLETON, ModelKeys.TRANSPORT);
 
     private static final DescriptionProvider containerDescription = new DescriptionProvider() {
         @Override
@@ -105,6 +86,12 @@ public class InfinispanExtension implements Extension, DescriptionProvider {
             return InfinispanDescriptions.getDistributedCacheDescription(locale);
         }
     };
+    private static final DescriptionProvider transportDescription = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return InfinispanDescriptions.getTransportDescription(locale);
+        }
+    };
 
     /**
      * {@inheritDoc}
@@ -116,32 +103,38 @@ public class InfinispanExtension implements Extension, DescriptionProvider {
         subsystem.registerXMLElementWriter(InfinispanSubsystemParser_1_0.getInstance());
 
         ManagementResourceRegistration registration = subsystem.registerSubsystemModel(this);
-        registration.registerOperationHandler(ModelDescriptionConstants.ADD, add, add, false);
-        registration.registerOperationHandler(ModelDescriptionConstants.DESCRIBE, describe, describe, false, EntryType.PRIVATE);
+        registration.registerOperationHandler(ADD, InfinispanSubsystemAdd.INSTANCE, InfinispanSubsystemAdd.INSTANCE, false);
+        registration.registerOperationHandler(DESCRIBE, InfinispanSubsystemDescribe.INSTANCE, InfinispanSubsystemDescribe.INSTANCE, false, EntryType.PRIVATE);
 
         ManagementResourceRegistration container = registration.registerSubModel(containerPath, containerDescription);
-        container.registerOperationHandler(ModelDescriptionConstants.ADD, containerAdd, containerAdd, false);
-        container.registerOperationHandler(ModelDescriptionConstants.REMOVE, containerRemove, containerRemove, false);
+        container.registerOperationHandler(ADD, CacheContainerAdd.INSTANCE, CacheContainerAdd.INSTANCE, false);
+        container.registerOperationHandler(REMOVE, CacheContainerRemove.INSTANCE, CacheContainerRemove.INSTANCE, false);
+
+        // add /subsystem=infinispan/cache-container=*/singleton=transport:write-attribute
+        final ManagementResourceRegistration transport = container.registerSubModel(transportPath, transportDescription);
+        transport.registerOperationHandler(ADD, TransportAdd.INSTANCE, TransportAdd.INSTANCE, false);
+        transport.registerOperationHandler(REMOVE, TransportRemove.INSTANCE, TransportRemove.INSTANCE, false);
+        // TransportWriteAttributeHandler.INSTANCE.registerAttributes(transport);
 
         // add /subsystem=infinispan/cache-container=*/local-cache=*
         ManagementResourceRegistration local = container.registerSubModel(localCachePath, localCacheDescription);
-        local.registerOperationHandler(ModelDescriptionConstants.ADD, LocalCacheAdd.INSTANCE, LocalCacheAdd.INSTANCE, false);
-        local.registerOperationHandler(ModelDescriptionConstants.REMOVE, CacheRemove.INSTANCE, CacheRemove.INSTANCE, false);
+        local.registerOperationHandler(ADD, LocalCacheAdd.INSTANCE, LocalCacheAdd.INSTANCE, false);
+        local.registerOperationHandler(REMOVE, CacheRemove.INSTANCE, CacheRemove.INSTANCE, false);
 
         // add /subsystem=infinispan/cache-container=*/invalidation-cache=*
         ManagementResourceRegistration invalidation = container.registerSubModel(invalidationCachePath, invalidationCacheDescription);
-        invalidation.registerOperationHandler(ModelDescriptionConstants.ADD, InvalidationCacheAdd.INSTANCE, InvalidationCacheAdd.INSTANCE, false);
-        invalidation.registerOperationHandler(ModelDescriptionConstants.REMOVE, CacheRemove.INSTANCE, CacheRemove.INSTANCE, false);
+        invalidation.registerOperationHandler(ADD, InvalidationCacheAdd.INSTANCE, InvalidationCacheAdd.INSTANCE, false);
+        invalidation.registerOperationHandler(REMOVE, CacheRemove.INSTANCE, CacheRemove.INSTANCE, false);
 
         // add /subsystem=infinispan/cache-container=*/local-cache=*
         ManagementResourceRegistration replicated = container.registerSubModel(replicatedCachePath, replicatedCacheDescription);
-        replicated.registerOperationHandler(ModelDescriptionConstants.ADD, ReplicatedCacheAdd.INSTANCE, ReplicatedCacheAdd.INSTANCE, false);
-        replicated.registerOperationHandler(ModelDescriptionConstants.REMOVE, CacheRemove.INSTANCE, CacheRemove.INSTANCE, false);
+        replicated.registerOperationHandler(ADD, ReplicatedCacheAdd.INSTANCE, ReplicatedCacheAdd.INSTANCE, false);
+        replicated.registerOperationHandler(REMOVE, CacheRemove.INSTANCE, CacheRemove.INSTANCE, false);
 
         // add /subsystem=infinispan/cache-container=*/local-cache=*
         ManagementResourceRegistration distributed = container.registerSubModel(distributedCachePath, distributedCacheDescription);
-        distributed.registerOperationHandler(ModelDescriptionConstants.ADD, DistributedCacheAdd.INSTANCE, DistributedCacheAdd.INSTANCE, false);
-        distributed.registerOperationHandler(ModelDescriptionConstants.REMOVE, CacheRemove.INSTANCE, CacheRemove.INSTANCE, false);
+        distributed.registerOperationHandler(ADD, DistributedCacheAdd.INSTANCE, DistributedCacheAdd.INSTANCE, false);
+        distributed.registerOperationHandler(REMOVE, CacheRemove.INSTANCE, CacheRemove.INSTANCE, false);
     }
 
     /**
