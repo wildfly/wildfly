@@ -65,4 +65,5 @@ if "x%MODULEPATH%" == "x" (
      org.jboss.as.domain-add-user ^
      %*
 
+:END
 if "x%NOPAUSE%" == "x" pause
