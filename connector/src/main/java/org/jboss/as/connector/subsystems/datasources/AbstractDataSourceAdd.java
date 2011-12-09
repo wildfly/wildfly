@@ -30,12 +30,10 @@ import java.sql.Driver;
 import java.util.List;
 
 import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.connector.StatisticsDescrptionProvider;
-import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeploymentService;
+import org.jboss.as.connector.StatisticsDescriptionProvider;
 import org.jboss.as.connector.pool.PoolMetrics;
 import org.jboss.as.connector.registry.DriverRegistry;
-import org.jboss.as.connector.subsystems.ClearMetricsHandler;
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders;
+import org.jboss.as.connector.subsystems.ClearStatisticsHandler;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -108,23 +106,23 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
                         StatisticsPlugin jdbcStats = deploymentMD.getDataSources()[0].getStatistics();
                         if (jdbcStats.getNames().size() != 0) {
-                            ManagementResourceRegistration subRegistration = registration.registerSubModel(PathElement.pathElement("statistics", "jdbc"), new StatisticsDescrptionProvider(jdbcStats));
+                            ManagementResourceRegistration subRegistration = registration.registerSubModel(PathElement.pathElement("statistics", "jdbc"), new StatisticsDescriptionProvider(jdbcStats));
 
                             for (String statName : jdbcStats.getNames()) {
                                 subRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(jdbcStats));
                             }
-                            subRegistration.registerOperationHandler("clear-metrics", new ClearMetricsHandler(jdbcStats), DataSourcesSubsystemProviders.CLEAR_METRICS_DESC, false);
+                            subRegistration.registerOperationHandler("clear-metrics", new ClearStatisticsHandler(jdbcStats), DataSourcesSubsystemProviders.CLEAR_STATISTICS_DESC, false);
 
                         }
 
                         StatisticsPlugin poolStats = deploymentMD.getDataSources()[0].getPool().getStatistics();
                         if (poolStats.getNames().size() != 0) {
-                            ManagementResourceRegistration subRegistration = registration.registerSubModel(PathElement.pathElement("statistics", "pool"), new StatisticsDescrptionProvider(poolStats));
+                            ManagementResourceRegistration subRegistration = registration.registerSubModel(PathElement.pathElement("statistics", "pool"), new StatisticsDescriptionProvider(poolStats));
 
                             for (String statName : poolStats.getNames()) {
                                 subRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
                             }
-                            subRegistration.registerOperationHandler("clear-metrics", new ClearMetricsHandler(poolStats), DataSourcesSubsystemProviders.CLEAR_METRICS_DESC, false);
+                            subRegistration.registerOperationHandler("clear-statistics", new ClearStatisticsHandler(poolStats), DataSourcesSubsystemProviders.CLEAR_STATISTICS_DESC, false);
                         }
                         break;
 

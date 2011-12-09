@@ -37,11 +37,11 @@ import org.jboss.jca.core.spi.statistics.StatisticsPlugin;
  *
  * @author Stefano Maestri
  */
-public class ClearMetricsHandler implements OperationStepHandler {
+public class ClearStatisticsHandler implements OperationStepHandler {
 
     private final List<StatisticsPlugin> stats;
 
-    public ClearMetricsHandler(StatisticsPlugin... stats) {
+    public ClearStatisticsHandler(StatisticsPlugin... stats) {
         this.stats = Arrays.asList(stats);
     }
 
