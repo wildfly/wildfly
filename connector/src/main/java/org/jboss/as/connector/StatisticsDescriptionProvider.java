@@ -42,13 +42,13 @@ import org.jboss.jca.core.spi.statistics.StatisticsPlugin;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class StatisticsDescrptionProvider implements DescriptionProvider {
+public class StatisticsDescriptionProvider implements DescriptionProvider {
 
-    static final String RESOURCE_NAME = StatisticsDescrptionProvider.class.getPackage().getName() + ".LocalDescriptions";
+    static final String RESOURCE_NAME = StatisticsDescriptionProvider.class.getPackage().getName() + ".LocalDescriptions";
 
     private final StatisticsPlugin plugin;
 
-    public StatisticsDescrptionProvider(final StatisticsPlugin plugin) {
+    public StatisticsDescriptionProvider(final StatisticsPlugin plugin) {
         this.plugin = plugin;
     }
 

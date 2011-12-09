@@ -396,13 +396,13 @@ public class ResourceAdaptersSubsystemProviders {
         }
     };
 
-    public static DescriptionProvider CLEAR_METRICS_DESC = new DescriptionProvider() {
+    public static DescriptionProvider CLEAR_STATISTICS_DESC = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(final Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode operation = new ModelNode();
-            operation.get(OPERATION_NAME).set("clear-metrics");
-            operation.get(DESCRIPTION).set(bundle.getString("resourceadapter.clear-metrics"));
+            operation.get(OPERATION_NAME).set("clear-statistics");
+            operation.get(DESCRIPTION).set(bundle.getString("resourceadapter.clear-statistics"));
             return operation;
         }
     };
