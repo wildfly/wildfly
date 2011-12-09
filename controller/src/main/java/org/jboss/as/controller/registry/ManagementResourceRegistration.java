@@ -297,12 +297,12 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
 
 
     /**
-     * Remove that the given attribute as metric if present.
+     * Remove that the given attribute if present.
      *
      * @param attributeName the name of the attribute. Cannot be {@code null}
      *
      */
-    void unregisterMetric(String attributeName);
+    void unregisterAttribute(String attributeName);
 
     /**
      * Register a proxy controller.

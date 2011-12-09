@@ -27,6 +27,8 @@ import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGE
 import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 
 import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.StatisticsDescrptionProvider;
+import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeploymentService;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterXmlDeploymentService;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.pool.PoolMetrics;
@@ -34,6 +36,7 @@ import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.ClearMetricsHandler;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.security.service.SubjectFactoryService;
@@ -159,26 +162,26 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
                     switch (transition) {
                         case STARTING_to_UP: {
 
-                            CommonDeployment deploymentMD = ((ResourceAdapterXmlDeploymentService) controller.getService()).getRaxmlDeployment();
+                            CommonDeployment deploymentMD = ((ResourceAdapterDeploymentService) controller.getService()).getRaDeployment();
 
                             StatisticsPlugin poolStats = deploymentMD.getConnectionManagers()[0].getPool().getStatistics();
-                            for (String statName : poolStats.getNames()) {
-                                registration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
-                                SUBSYSTEM_DATASOURCES_LOGGER.infof("registering metric: %s", statName);
+                            if (poolStats.getNames().size() != 0) {
+                                ManagementResourceRegistration subRegistration = registration.registerSubModel(PathElement.pathElement("statistics", "pool"), new StatisticsDescrptionProvider(poolStats));
+                                for (String statName : poolStats.getNames()) {
+                                    subRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
+                                }
+                                subRegistration.registerOperationHandler("clear-metrics", new ClearMetricsHandler(poolStats), ResourceAdaptersSubsystemProviders.CLEAR_METRICS_DESC, false);
                             }
-                            registration.registerOperationHandler("clear-metrics", new ClearMetricsHandler(poolStats), ResourceAdaptersSubsystemProviders.CLEAR_METRICS_DESC, false);
                             break;
 
                         }
                         case UP_to_STOP_REQUESTED: {
 
-                            CommonDeployment deploymentMD = ((ResourceAdapterXmlDeploymentService) controller.getService()).getRaxmlDeployment();
+                            CommonDeployment deploymentMD = ((ResourceAdapterDeploymentService) controller.getService()).getRaDeployment();
 
                             StatisticsPlugin poolStats = deploymentMD.getConnectionManagers()[0].getPool().getStatistics();
-                            for (String statName : poolStats.getNames()) {
-                                registration.unregisterMetric(statName);
-                                SUBSYSTEM_DATASOURCES_LOGGER.infof("Unregistering metric: %s", statName);
-
+                            if (poolStats.getNames().size() != 0) {
+                                registration.unregisterSubModel(PathElement.pathElement("statistics", "pool"));
                             }
                             break;
 

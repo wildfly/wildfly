@@ -23,6 +23,7 @@
 package org.jboss.as.connector.deployers.processors;
 
 import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.StatisticsDescrptionProvider;
 import org.jboss.as.connector.annotations.repository.jandex.JandexAnnotationRepositoryImpl;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeploymentService;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
@@ -32,6 +33,7 @@ import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.ClearMetricsHandler;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.server.deployment.Attachments;
@@ -69,7 +71,6 @@ import org.jboss.as.security.service.SubjectFactoryService;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
 import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 
 /**
@@ -152,11 +153,13 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                             CommonDeployment deploymentMD = ((ResourceAdapterDeploymentService) controller.getService()).getRaDeployment();
 
                             StatisticsPlugin poolStats = deploymentMD.getConnectionManagers()[0].getPool().getStatistics();
-                            for (String statName : poolStats.getNames()) {
-                                registration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
+                            if (poolStats.getNames().size() != 0) {
+                                ManagementResourceRegistration subRegistration = registration.registerSubModel(PathElement.pathElement("statistics", "pool"), new StatisticsDescrptionProvider(poolStats));
+                                for (String statName : poolStats.getNames()) {
+                                    subRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
+                                }
+                                subRegistration.registerOperationHandler("clear-metrics", new ClearMetricsHandler(poolStats), ResourceAdaptersSubsystemProviders.CLEAR_METRICS_DESC, false);
                             }
-                            registration.registerOperationHandler("clear-metrics", new ClearMetricsHandler(poolStats), ResourceAdaptersSubsystemProviders.CLEAR_METRICS_DESC, false);
-
                             break;
 
                         }
@@ -165,8 +168,8 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                             CommonDeployment deploymentMD = ((ResourceAdapterDeploymentService) controller.getService()).getRaDeployment();
 
                             StatisticsPlugin poolStats = deploymentMD.getConnectionManagers()[0].getPool().getStatistics();
-                            for (String statName : poolStats.getNames()) {
-                                registration.unregisterMetric(statName);
+                            if (poolStats.getNames().size() != 0) {
+                                registration.unregisterSubModel(PathElement.pathElement("statistics", "pool"));
                             }
                             break;
 

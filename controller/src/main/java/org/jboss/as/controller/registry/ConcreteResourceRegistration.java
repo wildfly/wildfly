@@ -287,7 +287,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     @Override
-    public void unregisterMetric(String attributeName) {
+    public void unregisterAttribute(String attributeName) {
         attributesUpdater.remove(this, attributeName);
     }
 
