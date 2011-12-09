@@ -14,10 +14,21 @@ public class DynamicStubFactoryFactory extends StubFactoryFactoryDynamicBase {
 
     @Override
     public PresentationManager.StubFactory makeDynamicStubFactory(final PresentationManager pm, final PresentationManager.ClassData classData, final ClassLoader classLoader) {
-        final String stubClassName = classData.getMyClass() + "_Stub";
+        final Class<?> myClass = classData.getMyClass();
+        Class<?> theClass = makeStubClass(myClass);
+        return new StubFactory(classData, theClass);
+    }
+
+    /**
+     * Makes a dynamic stub class, if it does not already exist.
+     * @param myClass The class to create a stub for
+     * @return The dynamic stub class
+     */
+    public static Class<?> makeStubClass(final Class<?> myClass) {
+        final String stubClassName = myClass + "_Stub";
         ClassLoader cl = SecurityActions.getContextClassLoader();
         if (cl == null) {
-            cl = classData.getMyClass().getClassLoader();
+            cl = myClass.getClassLoader();
         }
         if (cl == null) {
             throw EjbMessages.MESSAGES.couldNotFindClassLoaderForStub(stubClassName);
@@ -27,7 +38,7 @@ public class DynamicStubFactoryFactory extends StubFactoryFactoryDynamicBase {
             theClass = cl.loadClass(stubClassName);
         } catch (ClassNotFoundException e) {
             try {
-                final ClassFile clazz = IIOPStubCompiler.compile(classData.getMyClass(), stubClassName);
+                final ClassFile clazz = IIOPStubCompiler.compile(myClass, stubClassName);
                 theClass = clazz.define(cl);
             } catch (RuntimeException ex) {
                 //there is a possibility that another thread may have defined the same class in the meantime
@@ -39,7 +50,7 @@ public class DynamicStubFactoryFactory extends StubFactoryFactoryDynamicBase {
                 }
             }
         }
-        return new StubFactory(classData, theClass);
+        return theClass;
     }
 
     private static final class StubFactory extends StubFactoryBase {

@@ -39,6 +39,7 @@ import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
+import org.jboss.as.ejb3.iiop.stub.DynamicStubFactoryFactory;
 import org.jboss.as.jacorb.csiv2.CSIv2Policy;
 import org.jboss.as.jacorb.rmi.ir.InterfaceRepository;
 import org.jboss.as.jacorb.rmi.marshal.strategy.SkeletonStrategy;
@@ -244,7 +245,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
             // Build binding name of the bean.
             final EJBComponent component = ejbComponentInjectedValue.getValue();
             final String earApplicationName = component.getEarApplicationName();
-            if(iiopMetaData != null && iiopMetaData.getBindingName() != null) {
+            if (iiopMetaData != null && iiopMetaData.getBindingName() != null) {
                 name = iiopMetaData.getBindingName();
             } else if (useQualifiedName) {
                 if (component.getDistinctName() == null || component.getDistinctName().isEmpty()) {
@@ -301,7 +302,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
             }
 
             String securityDomain = "CORBA_REMOTE"; //TODO: what should this default to
-            if(component.getSecurityMetaData() != null) {
+            if (component.getSecurityMetaData() != null) {
                 securityDomain = component.getSecurityMetaData().getSecurityDomain();
             }
 
@@ -319,13 +320,16 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
 
             // Instantiate home servant, bind it to the servant registry, and create CORBA reference to the EJBHome.
             final EjbCorbaServant homeServant = new EjbCorbaServant(poaCurrent, homeMethodMap, homeRepositoryIds, homeInterfaceDef,
-                    orb, homeView.getValue(),factory, configuration, component.getTransactionManager(), module.getClassLoader(), true, securityDomain);
+                    orb, homeView.getValue(), factory, configuration, component.getTransactionManager(), module.getClassLoader(), true, securityDomain);
 
             homeServantRegistry = poaRegistry.getValue().getRegistryWithPersistentPOAPerServant();
             ReferenceFactory homeReferenceFactory = homeServantRegistry.bind(homeServantName(name), homeServant, policies);
 
             final org.omg.CORBA.Object corbaRef = homeReferenceFactory.createReference(homeRepositoryIds[0]);
+
+            //we do this twice to force eager dynamic stub creation
             ejbHome = (EJBHome) PortableRemoteObject.narrow(corbaRef, EJBHome.class);
+
             final HomeHandleImplIIOP homeHandle = new HomeHandleImplIIOP(orb.object_to_string(corbaRef));
             homeServant.setHomeHandle(homeHandle);
 
@@ -366,6 +370,20 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
             // Register bean home in local CORBA naming context
             rebind(corbaNamingContext.getValue(), name, corbaRef);
             logger.debug("Home IOR for " + component.getComponentName() + " bound to " + this.name + " in CORBA naming service");
+
+            //now eagerly force stub creation, so de-serialization of stubs will work correctly
+            //TODO: generate a readResolve for the dynamic stubs to handle this, so this is no longer nessesary
+            final ClassLoader cl = SecurityActions.getContextClassLoader();
+            try {
+                SecurityActions.setContextClassLoader(module.getClassLoader());
+                DynamicStubFactoryFactory.makeStubClass(homeView.getValue().getViewClass());
+                DynamicStubFactoryFactory.makeStubClass(remoteView.getValue().getViewClass());
+                DynamicStubFactoryFactory.makeStubClass(remoteView.getValue().getViewClass());
+            } finally {
+                SecurityActions.setContextClassLoader(cl);
+            }
+
+
         } catch (Exception e) {
             throw new StartException(e);
         }
@@ -456,9 +474,9 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
      * This method is synchronized on the class object, if multiple services attempt to bind the
      * same context name at once it will fail
      *
-     * @param ctx a reference to the COSNaming service.
+     * @param ctx     a reference to the COSNaming service.
      * @param strName the name under which the CORBA object is to be bound.
-     * @param obj the CORBA object to be bound.
+     * @param obj     the CORBA object to be bound.
      * @throws Exception if an error occurs while binding the object.
      */
     public static synchronized void rebind(final NamingContextExt ctx, final String strName, final org.omg.CORBA.Object obj) throws Exception {
