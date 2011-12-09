@@ -63,4 +63,13 @@ public interface AppClientLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 14401, value = "%s running app client main")
     void exceptionRunningAppClient(@Cause Throwable cause, String exceptionName);
+
+
+    /**
+     *
+     * @param cause         the cause of the error.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 14402, value = "Error closing connection")
+    void exceptionClosingConnection(@Cause Throwable cause);
 }

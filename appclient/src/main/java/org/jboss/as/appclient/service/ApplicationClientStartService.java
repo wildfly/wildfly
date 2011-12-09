@@ -126,7 +126,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                                             EJBClientContext.setSelector(previousSelector);
                                         }
                                     }
-                                }  catch (Exception e) {
+                                } catch (Exception e) {
                                     ROOT_LOGGER.exceptionRunningAppClient(e, e.getClass().getSimpleName());
                                 } finally {
                                     SecurityActions.setContextClassLoader(oldTccl);
@@ -135,10 +135,18 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                                 CurrentServiceContainer.getServiceContainer().shutdown();
                             }
                         } finally {
-                            connection.close();
+                            try {
+                                connection.close();
+                            } catch (Throwable e) {
+                                ROOT_LOGGER.exceptionClosingConnection(e);
+                            }
                         }
                     } finally {
-                        endpoint.close();
+                        try {
+                            endpoint.close();
+                        } catch (Throwable e) {
+                            ROOT_LOGGER.exceptionClosingConnection(e);
+                        }
                     }
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -153,7 +161,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
 
     @Override
     public synchronized void stop(final StopContext context) {
-        if(instance != null) {
+        if (instance != null) {
             instance.destroy();
         }
         thread.interrupt();
