@@ -850,6 +850,15 @@ public class ThreadsSubsystemTestCase {
                 }
             };
         }
+
+        @Override
+        public ExtensionContext createWrapper(String moduleName) {
+            return this;
+        }
+
+        @Override
+        public void cleanup(String moduleName) {
+        }
     }
 
     static List<ModelNode> createSubSystem(String subsystemContents) throws XMLStreamException {

@@ -19,12 +19,17 @@
 package org.jboss.as.controller.operations.common;
 
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+
 import java.util.Locale;
+
 import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import org.jboss.as.controller.descriptions.common.ExtensionDescription;
 import org.jboss.dmr.ModelNode;
 
@@ -36,18 +41,26 @@ import org.jboss.dmr.ModelNode;
 public class ExtensionRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = REMOVE;
-
-    public static final ExtensionRemoveHandler INSTANCE = new ExtensionRemoveHandler();
+    private final ExtensionContext extensionContext;
 
     /**
      * Create the ExtensionRemoveHandler
      */
-    private ExtensionRemoveHandler() {
+    public ExtensionRemoveHandler(final ExtensionContext extensionContext) {
+        this.extensionContext = extensionContext;
     }
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return ExtensionDescription.getExtensionRemoveOperation(locale);
+    }
+
+    @Override
+    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        super.performRemove(context, operation, model);
+        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        String module = address.getLastElement().getValue();
+        extensionContext.cleanup(module);
     }
 
     @Override

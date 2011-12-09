@@ -48,6 +48,9 @@ public interface ExtensionContext {
      */
     SubsystemRegistration registerSubsystem(String name) throws IllegalArgumentException;
 
+    ExtensionContext createWrapper(String moduleName);
+
+    void cleanup(String moduleName);
     /**
      * Provide the current Process Type.
      * @return The current Process Type.

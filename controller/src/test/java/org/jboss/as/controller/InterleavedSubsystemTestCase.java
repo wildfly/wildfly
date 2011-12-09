@@ -39,7 +39,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -187,6 +188,15 @@ public class InterleavedSubsystemTestCase {
                 @Override
                 public ProcessType getProcessType() {
                     throw new UnsupportedOperationException("Test should not invoke this");
+                }
+
+                @Override
+                public ExtensionContext createWrapper(String moduleName) {
+                    return this;
+                }
+
+                @Override
+                public void cleanup(String moduleName) {
                 }
             }, false);
             this.rootRegistration = rootRegistration;

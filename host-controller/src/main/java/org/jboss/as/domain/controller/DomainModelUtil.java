@@ -43,7 +43,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 
 import java.util.EnumSet;
 
-import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ExtensionContextImpl;
 import org.jboss.as.controller.PathElement;
@@ -253,7 +252,8 @@ public class DomainModelUtil {
         final ExtensionContext extensionContext = new ExtensionContextImpl(profile, deployments, configurationPersister, ProcessType.HOST_CONTROLLER);
         final ExtensionAddHandler addExtensionHandler = new ExtensionAddHandler(extensionContext, true);
         extensions.registerOperationHandler(ExtensionAddHandler.OPERATION_NAME, addExtensionHandler, addExtensionHandler, false);
-        extensions.registerOperationHandler(ExtensionRemoveHandler.OPERATION_NAME, ExtensionRemoveHandler.INSTANCE, ExtensionRemoveHandler.INSTANCE, false);
+        final ExtensionRemoveHandler removeExtensionHandler = new ExtensionRemoveHandler(extensionContext);
+        extensions.registerOperationHandler(ExtensionRemoveHandler.OPERATION_NAME, removeExtensionHandler, removeExtensionHandler, false);
 
         if(!isMaster) {
             ApplyRemoteMasterDomainModelHandler armdmh = new ApplyRemoteMasterDomainModelHandler(extensionContext, fileRepository, hostControllerInfo);
