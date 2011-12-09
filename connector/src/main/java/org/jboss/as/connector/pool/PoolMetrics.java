@@ -68,15 +68,12 @@ public abstract class PoolMetrics implements OperationStepHandler {
                                 result.set("" + stat.getValue(attributeName));
                             }
                         } catch (Exception e) {
-                            e.printStackTrace();
-                            throw new OperationFailedException(new ModelNode().set(MESSAGES.failedToGetMetrics(e.getLocalizedMessage())));
+                            throw new OperationFailedException(MESSAGES.failedToGetMetrics(e.getLocalizedMessage()));
                         }
                     }
                    context.completeStep();
                 }
             }, OperationContext.Stage.RUNTIME);
-        } else {
-            context.getResult().set(MESSAGES.noMetricsAvailable());
         }
 
         context.completeStep();
@@ -108,16 +105,12 @@ public abstract class PoolMetrics implements OperationStepHandler {
                                 result.set("" + stats.getValue(attributeName));
 
                             } catch (Exception e) {
-                                e.printStackTrace();
-                                throw new OperationFailedException(new ModelNode().set("failed to get metrics "
-                                        + e.getMessage()));
+                               throw new OperationFailedException(MESSAGES.failedToGetMetrics(e.getLocalizedMessage()));
                             }
                         }
                         context.completeStep();
                     }
                 }, OperationContext.Stage.RUNTIME);
-            } else {
-                context.getResult().set("no metrics available");
             }
 
             context.completeStep();
