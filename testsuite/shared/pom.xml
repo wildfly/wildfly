@@ -28,13 +28,28 @@
     
     <build>
         <plugins>
-            <!-- TODO: Don't fail on checkstyle until AS7-2954 is fixed.  -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <configuration>
+                    <!-- TODO: Don't fail on checkstyle until AS7-2954 is fixed.  -->
                     <failsOnError>false</failsOnError>
                 </configuration>
+                
+                <executions>
+                    <execution>
+                        <id>check-style-ts-shared</id>
+                        <phase>compile</phase>
+                        <goals><goal>checkstyle</goal></goals>
+                        <configuration>
+                            <configLocation>${basedir}/src/main/config/checkstyle.xml</configLocation>
+                            <consoleOutput>true</consoleOutput>
+                            <failsOnError>false</failsOnError>
+                            <useFile/>
+                        </configuration>
+                    </execution>
+                </executions>
+                
             </plugin>
         </plugins>
     </build>
