@@ -796,6 +796,11 @@
 
                 <dependency>
                     <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-jaxr</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-jaxrs</artifactId>
                 </dependency>
 
@@ -1433,11 +1438,6 @@
                 <dependency>
                     <groupId>org.jboss.ws.native</groupId>
                     <artifactId>jbossws-native-services</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.xml.registry</groupId>
-                    <artifactId>jboss-jaxr-client</artifactId>
                 </dependency>
 
                 <dependency>
