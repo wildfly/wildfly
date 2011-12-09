@@ -23,14 +23,7 @@ package org.jboss.as.cli.impl;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
 import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Writer;
 
 import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.handlers.VersionHandler;
@@ -177,37 +170,8 @@ public class CliLauncher {
 
             // Interactive mode
 
-            final jline.ConsoleReader console = initConsoleReader();
-            final CommandContextImpl cmdCtx = new CommandContextImpl(console, defaultControllerHost, defaultControllerPort, username, password);
-            SecurityActions.addShutdownHook(new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    cmdCtx.disconnectController();
-                }
-            }));
-
-            if(connect) {
-                cmdCtx.connectController(null, -1);
-            } else {
-                cmdCtx.printLine("You are disconnected at the moment." +
-                    " Type 'connect' to connect to the server or" +
-                    " 'help' for the list of supported commands.");
-            }
-
-            try {
-                while (!cmdCtx.isTerminated()) {
-                    final String line = console.readLine(cmdCtx.getPrompt());
-                    if(line == null) {
-                        cmdCtx.terminateSession();
-                    } else {
-                        cmdCtx.processLine(line.trim());
-                    }
-                }
-            } catch(Throwable t) {
-                t.printStackTrace();
-            } finally {
-                cmdCtx.disconnectController();
-            }
+            final CommandContextImpl cmdCtx = new CommandContextImpl(defaultControllerHost, defaultControllerPort, username, password, true);
+            cmdCtx.interact(connect);
         } catch(Throwable t) {
             t.printStackTrace();
         } finally {
@@ -218,7 +182,7 @@ public class CliLauncher {
 
     private static void processCommands(String[] commands, String defaultControllerHost, int defaultControllerPort, final boolean connect, final String username, final char[] password) throws CliInitializationException {
 
-        final CommandContextImpl cmdCtx = new CommandContextImpl(defaultControllerHost, defaultControllerPort, username, password);
+        final CommandContextImpl cmdCtx = new CommandContextImpl(defaultControllerHost, defaultControllerPort, username, password, false);
         SecurityActions.addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
@@ -246,7 +210,7 @@ public class CliLauncher {
 
     private static void processFile(File file, String defaultControllerHost, int defaultControllerPort, final boolean connect, final String username, final char[] password) throws CliInitializationException {
 
-        final CommandContextImpl cmdCtx = new CommandContextImpl(defaultControllerHost, defaultControllerPort, username, password);
+        final CommandContextImpl cmdCtx = new CommandContextImpl(defaultControllerHost, defaultControllerPort, username, password, false);
         SecurityActions.addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
@@ -275,44 +239,6 @@ public class CliLauncher {
                 cmdCtx.terminateSession();
             }
             cmdCtx.disconnectController();
-        }
-    }
-
-    protected static jline.ConsoleReader initConsoleReader() {
-
-        final String bindingsName;
-        final String osName = SecurityActions.getSystemProperty("os.name").toLowerCase();
-        if(osName.indexOf("windows") >= 0) {
-            bindingsName = "keybindings/jline-windows-bindings.properties";
-        } else if(osName.startsWith("mac")) {
-            bindingsName = "keybindings/jline-mac-bindings.properties";
-        } else {
-            bindingsName = "keybindings/jline-default-bindings.properties";
-        }
-
-        ClassLoader cl = SecurityActions.getClassLoader(CliLauncher.class);
-        InputStream bindingsIs = cl.getResourceAsStream(bindingsName);
-        if(bindingsIs == null) {
-            System.err.println("Failed to locate key bindings for OS '" + osName +"': " + bindingsName);
-            try {
-                return new jline.ConsoleReader();
-            } catch (IOException e) {
-                throw new IllegalStateException("Failed to initialize console reader", e);
-            }
-        } else {
-            try {
-                final InputStream in = new FileInputStream(FileDescriptor.in);
-                String encoding = SecurityActions.getSystemProperty("jline.WindowsTerminal.output.encoding");
-                if(encoding == null) {
-                    encoding = SecurityActions.getSystemProperty("file.encoding");
-                }
-                final Writer out = new PrintWriter(new OutputStreamWriter(System.out, encoding));
-                return new jline.ConsoleReader(in, out, bindingsIs);
-            } catch(Exception e) {
-                throw new IllegalStateException("Failed to initialize console reader", e);
-            } finally {
-                StreamUtils.safeClose(bindingsIs);
-            }
         }
     }
 }
