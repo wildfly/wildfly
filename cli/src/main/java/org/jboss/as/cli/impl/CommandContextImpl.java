@@ -131,8 +131,7 @@ class CommandContextImpl implements CommandContext {
 
     private final CommandRegistry cmdRegistry = new CommandRegistry();
 
-    private jline.ConsoleReader console;
-    private final CommandHistory history;
+    private Console console;
 
     /** whether the session should be terminated */
     private boolean terminate;
@@ -184,7 +183,6 @@ class CommandContextImpl implements CommandContext {
      */
     CommandContextImpl() throws CliInitializationException {
         this.console = null;
-        this.history = null;
         this.operationCandidatesProvider = null;
         this.cmdCompleter = null;
         operationHandler = new OperationRequestHandler();
@@ -195,12 +193,8 @@ class CommandContextImpl implements CommandContext {
     /**
      * Non-interactive mode
      */
-    CommandContextImpl(String defaultControllerHost, int defaultControllerPort, String username, char[] password)
+    CommandContextImpl(String defaultControllerHost, int defaultControllerPort, String username, char[] password, boolean initConsole)
         throws CliInitializationException {
-        this.console = null;
-        this.history = null;
-        this.operationCandidatesProvider = null;
-        this.cmdCompleter = null;
         operationHandler = new OperationRequestHandler();
 
         this.username = username;
@@ -212,45 +206,21 @@ class CommandContextImpl implements CommandContext {
             this.defaultControllerPort = defaultControllerPort;
         }
         initCommands();
-        config = CliConfigImpl.parse(this, new File(SecurityActions.getSystemProperty("user.home"), "jboss-cli.xml"));
-    }
 
-    /**
-     * Interactive mode
-     */
-    CommandContextImpl(jline.ConsoleReader console, String defaultControllerHost, int defaultControllerPort,
-            String username, char[] password) throws CliInitializationException {
-        this.console = console;
-
-        console.setUseHistory(true);
-        String userHome = SecurityActions.getSystemProperty("user.home");
+        final String userHome = SecurityActions.getSystemProperty("user.home");
         config = CliConfigImpl.parse(this, new File(userHome, "jboss-cli.xml"));
-        File historyFile = new File(userHome, ".jboss-cli-history");
-        try {
-            console.getHistory().setHistoryFile(historyFile);
-        } catch (IOException e) {
-            System.err.println("Failed to setup the history file "
-                    + historyFile.getAbsolutePath() + ": "
-                    + e.getLocalizedMessage());
+
+        if(initConsole) {
+            cmdCompleter = new CommandCompleter(cmdRegistry);
+            this.console = Console.Factory.getConsole(this);
+            console.setUseHistory(true);
+            console.setHistoryFile(new File(userHome, ".jboss-cli-history"));
+            console.addCompleter(cmdCompleter);
+            this.operationCandidatesProvider = new DefaultOperationCandidatesProvider();
+        } else {
+            this.cmdCompleter = null;
+            this.operationCandidatesProvider = null;
         }
-
-        this.history = new HistoryImpl();
-        operationCandidatesProvider = new DefaultOperationCandidatesProvider();
-
-        operationHandler = new OperationRequestHandler();
-
-        cmdCompleter = new CommandCompleter(cmdRegistry, this);
-        console.addCompletor(cmdCompleter);
-
-        this.username = username;
-        this.password = password;
-        if(defaultControllerHost != null) {
-            this.defaultControllerHost = defaultControllerHost;
-        }
-        if(defaultControllerPort != -1) {
-            this.defaultControllerPort = defaultControllerPort;
-        }
-        initCommands();
     }
 
     private void initCommands() {
@@ -428,13 +398,8 @@ class CommandContextImpl implements CommandContext {
         }
 
         if (console != null) {
-            try {
-                console.printString(message);
-                console.printNewline();
-            } catch (IOException e) {
-                System.err.println("Failed to print '" + message
-                        + "' to the console: " + e.getLocalizedMessage());
-            }
+            console.print(message);
+            console.printNewLine();
         } else { // non-interactive mode
             System.out.println(message);
         }
@@ -442,10 +407,10 @@ class CommandContextImpl implements CommandContext {
 
     private String readLine(String prompt, boolean password, boolean disableHistory) throws IOException {
         if (console == null) {
-            console = CliLauncher.initConsoleReader();
+            console = Console.Factory.getConsole(this);
         }
 
-        boolean useHistory = console.getUseHistory();
+        boolean useHistory = console.isUseHistory();
         if (useHistory && disableHistory) {
             console.setUseHistory(false);
         }
@@ -479,12 +444,7 @@ class CommandContextImpl implements CommandContext {
         }
 
         if (console != null) {
-            try {
-                console.printColumns(col);
-            } catch (IOException e) {
-                System.err.println("Failed to print columns '" + col
-                        + "' to the console: " + e.getLocalizedMessage());
-            }
+            console.printColumns(col);
         } else { // non interactive mode
             for (String item : col) {
                 System.out.println(item);
@@ -630,14 +590,7 @@ class CommandContextImpl implements CommandContext {
 
     @Override
     public void clearScreen() {
-        try {
-            console.setDefaultPrompt("");// it has to be reset apparently
-                                         // because otherwise it'll be printed
-                                         // twice
-            console.clearScreen();
-        } catch (IOException e) {
-            printLine(e.getLocalizedMessage());
-        }
+        console.clearScreen();
     }
 
     String promptConnectPart;
@@ -681,7 +634,7 @@ class CommandContextImpl implements CommandContext {
 
     @Override
     public CommandHistory getHistory() {
-        return history;
+        return console.getHistory();
     }
 
     @Override
@@ -809,6 +762,38 @@ class CommandContextImpl implements CommandContext {
         }
     }
 
+    void interact(boolean connect) {
+        SecurityActions.addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                disconnectController();
+            }
+        }));
+
+        if(connect) {
+            connectController(null, -1);
+        } else {
+            printLine("You are disconnected at the moment." +
+                " Type 'connect' to connect to the server or" +
+                " 'help' for the list of supported commands.");
+        }
+
+        try {
+            while (!isTerminated()) {
+                final String line = console.readLine(getPrompt());
+                if(line == null) {
+                    terminateSession();
+                } else {
+                    processLine(line.trim());
+                }
+            }
+        } catch(Throwable t) {
+            t.printStackTrace();
+        } finally {
+            disconnectController();
+        }
+    }
+
     private enum ConnectStatus {
         SUCCESS, AUTHENTICATION_FAILURE, CONNECTION_FAILURE
     }
@@ -890,30 +875,6 @@ class CommandContextImpl implements CommandContext {
                 realmShown = true;
                 printLine("Authenticating against security realm: " + realm);
             }
-        }
-    }
-
-    private class HistoryImpl implements CommandHistory {
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public List<String> asList() {
-            return console.getHistory().getHistoryList();
-        }
-
-        @Override
-        public boolean isUseHistory() {
-            return console.getUseHistory();
-        }
-
-        @Override
-        public void setUseHistory(boolean useHistory) {
-            console.setUseHistory(useHistory);
-        }
-
-        @Override
-        public void clear() {
-            console.getHistory().clear();
         }
     }
 }

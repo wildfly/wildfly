@@ -30,31 +30,22 @@ import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationRequestCompleter;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 
-import jline.Completor;
 
 /**
  * Tab-completer for commands starting with '/'.
  *
  * @author Alexey Loubyansky
  */
-public class CommandCompleter implements Completor, CommandLineCompleter {
+public class CommandCompleter implements CommandLineCompleter {
 
-    private final CommandContext ctx;
     private final CommandRegistry cmdRegistry;
     private final CommandCandidatesProvider cmdProvider;
 
-    public CommandCompleter(CommandRegistry cmdRegistry, CommandContext ctx) {
+    public CommandCompleter(CommandRegistry cmdRegistry) {
         if(cmdRegistry == null)
             throw new IllegalArgumentException("Command registry can't be null.");
         this.cmdRegistry = cmdRegistry;
         this.cmdProvider = new CommandCandidatesProvider(cmdRegistry);
-        this.ctx = ctx;
-    }
-
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    @Override
-    public int complete(String buffer, int cursor, List candidates) {
-        return complete(ctx, buffer, cursor, candidates);
     }
 
     @Override
