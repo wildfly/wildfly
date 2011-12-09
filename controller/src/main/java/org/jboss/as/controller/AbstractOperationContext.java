@@ -441,18 +441,15 @@ abstract class AbstractOperationContext implements OperationContext {
     }
 
     public final ProcessType getProcessType() {
-        assert isControllingThread();
         return processType;
     }
 
     public final RunningMode getRunningMode() {
-        assert isControllingThread();
         return runningMode;
     }
 
     @SuppressWarnings("deprecation")
     public final Type getType() {
-        assert isControllingThread();
         return contextType;
     }
 
