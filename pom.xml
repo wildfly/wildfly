@@ -210,7 +210,7 @@
         <version.org.jboss.staxmapper>1.0.0.Final</version.org.jboss.staxmapper>
         <version.org.jboss.stdio.jboss-stdio>1.0.1.GA</version.org.jboss.stdio.jboss-stdio>
         <version.org.jboss.threads.jboss-threads>2.0.0.GA</version.org.jboss.threads.jboss-threads>
-        <version.org.jboss.web>7.0.4.Final</version.org.jboss.web>
+        <version.org.jboss.web>7.0.5.Final</version.org.jboss.web>
         <version.org.jboss.web.jasper-jdt>7.0.3.Final</version.org.jboss.web.jasper-jdt>
         <version.org.jboss.weld.weld>1.1.4.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>1.1.Final</version.org.jboss.weld.weld-api>
