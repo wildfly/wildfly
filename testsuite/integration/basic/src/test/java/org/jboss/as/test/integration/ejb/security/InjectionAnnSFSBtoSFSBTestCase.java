@@ -22,11 +22,10 @@
 
 package org.jboss.as.test.integration.ejb.security;
 
-import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.ejb.security.authorization.SingleMethodsAnnOnlyCheckSLSB;
+import org.jboss.as.test.integration.ejb.security.authorization.InjectionSFSBtoSFSB;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -34,23 +33,23 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * This test case check whether basic EJB authorization works from EJB client to remote stateful EJB.
+ * This test case check whether basic EJB authorization works from EJB client to injected stateless remote EJB.
  *
- * @author <a href="mailto:pskopek@redhat.com">Peter Skopek</a>
+ * @author <a href="mailto:jlanik@redhat.com">Jan Lanik</a>
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class SingleMethodsAnnSLSBTestCase extends AnnSBTest {
+public class InjectionAnnSFSBtoSFSBTestCase extends AnnSBTest {
 
    private static final Logger log = Logger.getLogger(testClass());
-   private static final String MODULE = "singleMethodsAnnOnlySLSB";
+   private static final String MODULE = "injectionAnnOnlySFSBtoSFSB";
 
-   private static Class testClass() {
-      return SingleMethodsAnnSLSBTestCase.class;
+   private static Class testClass(){
+      return InjectionAnnSFSBtoSFSBTestCase.class;
    }
 
-   private static Class beanClass() {
-      return SingleMethodsAnnOnlyCheckSLSB.class;
+   private static Class beanClass(){
+      return InjectionSFSBtoSFSB.class;
    }
 
    @Deployment(name = MODULE + ".jar", order = 1, testable = false)
@@ -60,7 +59,7 @@ public class SingleMethodsAnnSLSBTestCase extends AnnSBTest {
 
    @Test
    public void testSingleMethodAnnotationsNoUser() throws Exception {
-      testSingleMethodAnnotationsNoUserTemplate(MODULE, log, beanClass());
+      testSingleMethodAnnotationsNoUserTemplate(MODULE,log, beanClass());
    }
 
    @Test

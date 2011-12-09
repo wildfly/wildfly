@@ -19,38 +19,37 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.test.integration.ejb.security;
 
-import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.ejb.security.authorization.SingleMethodsAnnOnlyCheckSLSB;
+import org.jboss.as.test.integration.ejb.security.authorization.InherritanceAnnOnlyCheckSLSB;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-/**
- * This test case check whether basic EJB authorization works from EJB client to remote stateful EJB.
- *
- * @author <a href="mailto:pskopek@redhat.com">Peter Skopek</a>
- */
+
 @RunWith(Arquillian.class)
 @RunAsClient
-public class SingleMethodsAnnSLSBTestCase extends AnnSBTest {
+/**
+ * This test case check whether basic EJB authorization works from EJB client to inherrited stateless remote EJB.
+ *
+ * @author <a href="mailto:jlanik@redhat.com">Jan Lanik</a>
+ */
+public class InherritanceAnnSLSBTestCase extends AnnSBTest {
 
    private static final Logger log = Logger.getLogger(testClass());
-   private static final String MODULE = "singleMethodsAnnOnlySLSB";
+   private static final String MODULE = "inherritanceAnnOnlySLSB";
 
    private static Class testClass() {
-      return SingleMethodsAnnSLSBTestCase.class;
+      return InherritanceAnnSLSBTestCase.class;
    }
 
    private static Class beanClass() {
-      return SingleMethodsAnnOnlyCheckSLSB.class;
+      return InherritanceAnnOnlyCheckSLSB.class;
    }
 
    @Deployment(name = MODULE + ".jar", order = 1, testable = false)
@@ -72,5 +71,4 @@ public class SingleMethodsAnnSLSBTestCase extends AnnSBTest {
    public void testSingleMethodAnnotationsUser2() throws Exception {
       testSingleMethodAnnotationsUser2Template(MODULE, log, beanClass());
    }
-
 }
