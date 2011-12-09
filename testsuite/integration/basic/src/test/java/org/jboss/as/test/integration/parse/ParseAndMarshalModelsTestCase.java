@@ -209,6 +209,11 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     @Test
+    public void testStandaloneJtsXml() throws Exception {
+        standaloneXmlTest(getExampleConfigFile("standalone-jts.xml"));
+    }
+
+    @Test
     public void test700StandaloneXml() throws Exception {
         standaloneXmlTest(getLegacyConfigFile("standalone", "7-0-0.xml"));
     }
@@ -323,6 +328,11 @@ public class ParseAndMarshalModelsTestCase {
     @Test
     public void testDomainOSGiOnlyXml() throws Exception {
         domainXmlTest(getExampleConfigFile("domain-osgi-only.xml"));
+    }
+
+    @Test
+    public void testDomainJtsXml() throws Exception {
+        domainXmlTest(getExampleConfigFile("domain-jts.xml"));
     }
 
     @Test
