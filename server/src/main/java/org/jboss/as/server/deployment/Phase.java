@@ -292,10 +292,11 @@ public enum Phase {
     public static final int DEPENDENCIES_JDK                            = 0x1200;
     public static final int DEPENDENCIES_JACORB                         = 0x1300;
     public static final int DEPENDENCIES_CMP                            = 0x1500;
+    public static final int DEPENDENCIES_JAXR                           = 0x1600;
     //these must be last, and in this specific order
-    public static final int DEPENDENCIES_APPLICATION_CLIENT             = 0x1600;
-    public static final int DEPENDENCIES_VISIBLE_MODULES                = 0x1700;
-    public static final int DEPENDENCIES_EE_CLASS_DESCRIPTIONS          = 0x1800;
+    public static final int DEPENDENCIES_APPLICATION_CLIENT             = 0x2000;
+    public static final int DEPENDENCIES_VISIBLE_MODULES                = 0x2100;
+    public static final int DEPENDENCIES_EE_CLASS_DESCRIPTIONS          = 0x2200;
 
 
     // CONFIGURE_MODULE
