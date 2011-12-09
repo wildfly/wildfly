@@ -22,8 +22,9 @@
 
 package org.jboss.as.ejb3.component.entity.interceptors;
 
+import javax.ejb.Handle;
+
 import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
-import org.jboss.ejb.client.EJBHandle;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
@@ -38,7 +39,7 @@ public class EntityBeanHomeRemoveByHandleInterceptorFactory implements Intercept
     public Interceptor create(final InterceptorFactoryContext context) {
         return new AbstractEJBInterceptor() {
             public Object processInvocation(final InterceptorContext interceptorContext) throws Exception {
-                final EJBHandle handle = (EJBHandle) interceptorContext.getParameters()[0];
+                final Handle handle = (Handle) interceptorContext.getParameters()[0];
                 handle.getEJBObject().remove();
                 return null;
             }
