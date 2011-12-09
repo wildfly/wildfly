@@ -393,9 +393,9 @@ public final class ExtensionContextImpl implements ExtensionContext {
         }
 
         @Override
-        public void unregisterMetric(String attributeName) {
-            deployments.unregisterMetric(attributeName);
-            subdeployments.unregisterMetric(attributeName);
+        public void unregisterAttribute(String attributeName) {
+            deployments.unregisterAttribute(attributeName);
+            subdeployments.unregisterAttribute(attributeName);
         }
 
         @Override

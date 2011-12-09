@@ -152,7 +152,7 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
     }
 
     @Override
-    public void unregisterMetric(String attributeName) {
+    public void unregisterAttribute(String attributeName) {
         alreadyRegistered();
     }
 

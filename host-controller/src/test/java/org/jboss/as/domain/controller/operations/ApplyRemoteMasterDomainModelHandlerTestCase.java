@@ -971,7 +971,7 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase {
         }
 
         @Override
-        public void unregisterMetric(String attributeName) {
+        public void unregisterAttribute(String attributeName) {
 
         }
 

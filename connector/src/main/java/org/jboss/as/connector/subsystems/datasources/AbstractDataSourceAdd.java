@@ -22,32 +22,28 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
-import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.sql.Driver;
 import java.util.List;
 
-import javax.sql.DataSource;
-
 import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.StatisticsDescrptionProvider;
+import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeploymentService;
 import org.jboss.as.connector.pool.PoolMetrics;
 import org.jboss.as.connector.registry.DriverRegistry;
 import org.jboss.as.connector.subsystems.ClearMetricsHandler;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.ServiceBasedNamingStore;
-import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.dmr.ModelNode;
@@ -104,21 +100,32 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         dataSourceServiceBuilder.addListener(new AbstractServiceListener<Object>() {
             public void transition(final ServiceController<? extends Object> controller,
                                    final ServiceController.Transition transition) {
+
                 switch (transition) {
                     case STARTING_to_UP: {
 
                         CommonDeployment deploymentMD = ((AbstractDataSourceService) controller.getService()).getDeploymentMD();
 
                         StatisticsPlugin jdbcStats = deploymentMD.getDataSources()[0].getStatistics();
-                        for (String statName : jdbcStats.getNames()) {
-                            registration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(jdbcStats));
+                        if (jdbcStats.getNames().size() != 0) {
+                            ManagementResourceRegistration subRegistration = registration.registerSubModel(PathElement.pathElement("statistics", "jdbc"), new StatisticsDescrptionProvider(jdbcStats));
+
+                            for (String statName : jdbcStats.getNames()) {
+                                subRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(jdbcStats));
+                            }
+                            subRegistration.registerOperationHandler("clear-metrics", new ClearMetricsHandler(jdbcStats), DataSourcesSubsystemProviders.CLEAR_METRICS_DESC, false);
+
                         }
 
                         StatisticsPlugin poolStats = deploymentMD.getDataSources()[0].getPool().getStatistics();
-                        for (String statName : poolStats.getNames()) {
-                            registration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
+                        if (poolStats.getNames().size() != 0) {
+                            ManagementResourceRegistration subRegistration = registration.registerSubModel(PathElement.pathElement("statistics", "pool"), new StatisticsDescrptionProvider(poolStats));
+
+                            for (String statName : poolStats.getNames()) {
+                                subRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
+                            }
+                            subRegistration.registerOperationHandler("clear-metrics", new ClearMetricsHandler(poolStats), DataSourcesSubsystemProviders.CLEAR_METRICS_DESC, false);
                         }
-                        registration.registerOperationHandler("clear-metrics", new ClearMetricsHandler(jdbcStats,poolStats), DataSourcesSubsystemProviders.CLEAR_METRICS_DESC, false);
                         break;
 
 
@@ -128,13 +135,13 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                         CommonDeployment deploymentMD = ((AbstractDataSourceService) controller.getService()).getDeploymentMD();
 
                         StatisticsPlugin jdbcStats = deploymentMD.getDataSources()[0].getStatistics();
-                        for (String statName : jdbcStats.getNames()) {
-                            registration.unregisterMetric(statName);
+                        if (jdbcStats.getNames().size() != 0) {
+                            registration.unregisterSubModel(PathElement.pathElement("statistics", "jdbc"));
                         }
 
                         StatisticsPlugin poolStats = deploymentMD.getDataSources()[0].getPool().getStatistics();
-                        for (String statName : poolStats.getNames()) {
-                            registration.unregisterMetric(statName);
+                        if (poolStats.getNames().size() != 0) {
+                            registration.unregisterSubModel(PathElement.pathElement("statistics", "pool"));
                         }
                         break;
 

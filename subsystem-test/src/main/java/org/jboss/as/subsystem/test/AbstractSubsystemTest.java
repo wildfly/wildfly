@@ -851,7 +851,7 @@ public abstract class AbstractSubsystemTest {
         }
 
         @Override
-        public void unregisterMetric(String attributeName) {
+        public void unregisterAttribute(String attributeName) {
         }
 
         @Override
