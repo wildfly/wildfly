@@ -18,16 +18,20 @@
  */
 package org.jboss.as.arquillian.container.domain.managed;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 import static org.jboss.as.arquillian.container.Authentication.PASSWORD;
 import static org.jboss.as.arquillian.container.Authentication.USERNAME;
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -55,6 +59,7 @@ import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
 import org.jboss.dmr.ModelNode;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
+import org.xnio.IoUtils;
 
 /**
  * Utility for controlling the lifecycle of a domain.
@@ -149,21 +154,27 @@ public class DomainLifecycleUtil {
             cmd.add("--");
             cmd.add("-default-jvm");
             cmd.add(java);
-            if (configuration.getDomainConfigFile() != null) {
-                cmd.add("-domain-config");
-                cmd.add(configuration.getDomainConfigFile());
-            }
-            if (configuration.getHostConfigFile() != null) {
-                cmd.add("-host-config");
-                cmd.add(configuration.getHostConfigFile());
-            }
             if (configuration.getHostCommandLineProperties() != null) {
                 for (String opt : configuration.getHostCommandLineProperties().split("\\s+")) {
                     cmd.add(opt);
                 }
             }
-            if (configuration.getDomainDirectory() != null) {
-                cmd.add("-Djboss.domain.base.dir=" + configuration.getDomainDirectory());
+
+            String domainDirectory = configuration.getDomainDirectory();
+            if (domainDirectory != null) {
+                cmd.add("-Djboss.domain.base.dir=" + domainDirectory);
+            } else {
+                domainDirectory = domainPath;
+            }
+            if (configuration.getDomainConfigFile() != null) {
+                String name = copyConfigFile(new File(configuration.getDomainConfigFile()), new File(domainDirectory, "configuration"));
+                cmd.add("-domain-config");
+                cmd.add(name);
+            }
+            if (configuration.getHostConfigFile() != null) {
+                String name = copyConfigFile(new File(configuration.getHostConfigFile()), new File(domainDirectory, "configuration"));
+                cmd.add("-host-config");
+                cmd.add(name);
             }
 
             log.info("Starting container with: " + cmd.toString());
@@ -432,4 +443,33 @@ public class DomainLifecycleUtil {
             return t;
         }
     }
+
+    private String copyConfigFile(File file, File dir) {
+        File newFile = new File(dir, "testing-" + file.getName());
+        if (newFile.exists()) {
+            newFile.delete();
+        }
+        try {
+            InputStream in = new BufferedInputStream(new FileInputStream(file));
+            try {
+                OutputStream out = new BufferedOutputStream(new FileOutputStream(newFile));
+                try {
+                    int i = in.read();
+                    while (i != -1) {
+                        out.write(i);
+                        i = in.read();
+                    }
+                } finally {
+                    IoUtils.safeClose(out);
+                }
+            } finally {
+                IoUtils.safeClose(in);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return newFile.getName();
+    }
+
+
 }
