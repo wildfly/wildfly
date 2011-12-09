@@ -40,8 +40,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class ModelControllerClientOperationHandlerFactoryService extends AbstractModelControllerOperationHandlerFactoryService {
 
-    private volatile ManagementMessageHandler handler;
-
     @Override
     public synchronized HandleableCloseable.Key startReceiving(Channel channel) {
         final ManagementMessageHandler handler = new ModelControllerClientOperationHandler(getController(), getExecutor());
@@ -49,26 +47,18 @@ public class ModelControllerClientOperationHandlerFactoryService extends Abstrac
         Channel.Key key = channel.addCloseHandler(new CloseHandler<Channel>() {
             @Override
             public void handleClose(Channel closed, IOException exception) {
-                handler.shutdownNow();
+                handler.shutdown();
+                try {
+                    handler.awaitCompletion(100, TimeUnit.MILLISECONDS);
+                } catch (Exception e) {
+                    ControllerLogger.ROOT_LOGGER.warnf(e , "service shutdown did not complete");
+                } finally {
+                    handler.shutdownNow();
+                }
             }
         });
         channel.receiveMessage(receiver);
         return key;
     }
 
-    @Override
-    public synchronized void stop(StopContext context) {
-        super.stop(context);
-        final ManagementMessageHandler handler = this.handler;
-        if(handler != null) {
-            handler.shutdown();
-            try {
-                handler.awaitCompletion(100, TimeUnit.MILLISECONDS);
-            } catch (Exception e) {
-                ControllerLogger.ROOT_LOGGER.warnf(e , "service shutdown did not complete");
-            } finally {
-                handler.shutdownNow();
-            }
-        }
-    }
 }

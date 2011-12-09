@@ -21,6 +21,7 @@
 */
 package org.jboss.as.host.controller.mgmt;
 
+import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.remote.AbstractModelControllerOperationHandlerFactoryService;
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFactoryService;
 import org.jboss.as.domain.controller.DomainController;
@@ -31,6 +32,7 @@ import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Installs {@link MasterDomainControllerOperationHandlerImpl} which handles requests from slave DC to master DC.
@@ -56,7 +58,14 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
         Channel.Key key = channel.addCloseHandler(new CloseHandler<Channel>() {
             @Override
             public void handleClose(Channel closed, IOException exception) {
-                handler.shutdownNow();
+                handler.shutdown();
+                try {
+                    handler.awaitCompletion(100, TimeUnit.MILLISECONDS);
+                } catch (Exception e) {
+                    ControllerLogger.ROOT_LOGGER.warnf(e , "service shutdown did not complete");
+                } finally {
+                    handler.shutdownNow();
+                }
             }
         });
         channel.receiveMessage(handler);
