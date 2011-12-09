@@ -23,14 +23,14 @@
 package org.jboss.as.connector.deployers.processors;
 
 import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.connector.StatisticsDescrptionProvider;
+import org.jboss.as.connector.StatisticsDescriptionProvider;
 import org.jboss.as.connector.annotations.repository.jandex.JandexAnnotationRepositoryImpl;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeploymentService;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
 import org.jboss.as.connector.pool.PoolMetrics;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
-import org.jboss.as.connector.subsystems.ClearMetricsHandler;
+import org.jboss.as.connector.subsystems.ClearStatisticsHandler;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders;
 import org.jboss.as.controller.PathElement;
@@ -154,11 +154,11 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
 
                             StatisticsPlugin poolStats = deploymentMD.getConnectionManagers()[0].getPool().getStatistics();
                             if (poolStats.getNames().size() != 0) {
-                                ManagementResourceRegistration subRegistration = registration.registerSubModel(PathElement.pathElement("statistics", "pool"), new StatisticsDescrptionProvider(poolStats));
+                                ManagementResourceRegistration subRegistration = registration.registerSubModel(PathElement.pathElement("statistics", "pool"), new StatisticsDescriptionProvider(poolStats));
                                 for (String statName : poolStats.getNames()) {
                                     subRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
                                 }
-                                subRegistration.registerOperationHandler("clear-metrics", new ClearMetricsHandler(poolStats), ResourceAdaptersSubsystemProviders.CLEAR_METRICS_DESC, false);
+                                subRegistration.registerOperationHandler("clear-statistics", new ClearStatisticsHandler(poolStats), ResourceAdaptersSubsystemProviders.CLEAR_STATISTICS_DESC, false);
                             }
                             break;
 
