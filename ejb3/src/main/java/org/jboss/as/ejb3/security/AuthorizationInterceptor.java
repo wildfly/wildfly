@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.security;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 import java.util.Collection;
 
@@ -31,7 +33,6 @@ import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * EJB authorization interceptor responsible for handling invocation on EJB methods and doing the necessary authorization
  * checks on the invoked method.
@@ -95,7 +96,8 @@ public class AuthorizationInterceptor implements Interceptor {
             if (!allowedRoles.isEmpty()) {
                 // call the security API to do authorization check
                 final SimpleSecurityManager securityManager = ejbComponent.getSecurityManager();
-                if (!securityManager.isCallerInRole(ejbComponent.getSecurityMetaData().getSecurityRoles(), allowedRoles.toArray(new String[allowedRoles.size()]))) {
+                final EJBSecurityMetaData ejbSecurityMetaData = ejbComponent.getSecurityMetaData();
+                if (!securityManager.isCallerInRole(ejbSecurityMetaData.getSecurityRoles(), ejbSecurityMetaData.getSecurityRoleLinks(), allowedRoles.toArray(new String[allowedRoles.size()]))) {
                     throw MESSAGES.invocationOfMethodNotAllowed(invokedMethod,ejbComponent.getComponentName());
                 }
             }
