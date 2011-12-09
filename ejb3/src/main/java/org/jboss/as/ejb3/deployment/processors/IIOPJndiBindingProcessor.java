@@ -39,6 +39,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
@@ -57,6 +58,7 @@ public class IIOPJndiBindingProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
 
         if (moduleDescription == null) {
             return;
@@ -72,13 +74,13 @@ public class IIOPJndiBindingProcessor implements DeploymentUnitProcessor {
 
         if (DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit) || DeploymentTypeMarker.isType(DeploymentType.APPLICATION_CLIENT, deploymentUnit)) {
             final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(), moduleDescription.getModuleName());
-            bindService(serviceTarget, moduleContextServiceName);
+            bindService(serviceTarget, moduleContextServiceName, module);
         }
 
         for (ComponentDescription component : moduleDescription.getComponentDescriptions()) {
             if (component.getNamingMode() == ComponentNamingMode.CREATE) {
                 final ServiceName compContextServiceName = ContextNames.contextServiceNameOfComponent(moduleDescription.getApplicationName(), moduleDescription.getModuleName(), component.getComponentName());
-                bindService(serviceTarget, compContextServiceName);
+                bindService(serviceTarget, compContextServiceName, module);
             }
         }
 
@@ -90,7 +92,7 @@ public class IIOPJndiBindingProcessor implements DeploymentUnitProcessor {
      * @param serviceTarget      The service target
      * @param contextServiceName The service name of the context to bind to
      */
-    private void bindService(final ServiceTarget serviceTarget, final ServiceName contextServiceName) {
+    private void bindService(final ServiceTarget serviceTarget, final ServiceName contextServiceName, final Module module) {
 
         final ServiceName orbServiceName = contextServiceName.append("ORB");
         final BinderService orbService = new BinderService("ORB");
@@ -103,7 +105,7 @@ public class IIOPJndiBindingProcessor implements DeploymentUnitProcessor {
 
         final ServiceName handleDelegateServiceName = contextServiceName.append("HandleDelegate");
         final BinderService handleDelegateBindingService = new BinderService("HandleDelegate");
-        handleDelegateBindingService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue(new HandleDelegateImpl())));
+        handleDelegateBindingService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue(new HandleDelegateImpl(module.getClassLoader()))));
         serviceTarget.addService(handleDelegateServiceName, handleDelegateBindingService)
                 .addDependency(contextServiceName, ServiceBasedNamingStore.class, handleDelegateBindingService.getNamingStoreInjector())
                 .install();

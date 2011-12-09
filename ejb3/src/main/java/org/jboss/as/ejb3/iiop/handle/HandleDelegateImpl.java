@@ -21,10 +21,9 @@
  */
 package org.jboss.as.ejb3.iiop.handle;
 
-import org.jboss.util.NestedRuntimeException;
-import org.omg.CORBA.BAD_OPERATION;
-import org.omg.CORBA.ORB;
-import org.omg.CORBA.portable.ObjectImpl;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 import javax.ejb.EJBHome;
 import javax.ejb.EJBObject;
@@ -33,9 +32,11 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.rmi.CORBA.Stub;
 import javax.rmi.PortableRemoteObject;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+
+import org.jboss.util.NestedRuntimeException;
+import org.omg.CORBA.BAD_OPERATION;
+import org.omg.CORBA.ORB;
+import org.omg.CORBA.portable.ObjectImpl;
 
 /**
  * <P>Implementation of the javax.ejb.spi.HandleDelegate interface</P>
@@ -54,14 +55,11 @@ import java.io.ObjectOutputStream;
  */
 public class HandleDelegateImpl implements HandleDelegate {
 
-    public static HandleDelegate getDelegate() {
-        try {
-            final InitialContext ctx = new InitialContext();
-            return (HandleDelegate) ctx.lookup("java:comp/HandleDelegate");
-        } catch (NamingException e) {
-            throw new NestedRuntimeException(e);
-        }
+    public HandleDelegateImpl(final ClassLoader classLoader) {
+        proxy = SerializationHackProxy.proxy(classLoader);
     }
+
+    private final SerializationHackProxy proxy;
 
     public void writeEJBObject(final EJBObject ejbObject, final ObjectOutputStream oostream)
             throws IOException {
@@ -70,7 +68,7 @@ public class HandleDelegateImpl implements HandleDelegate {
 
     public EJBObject readEJBObject(final ObjectInputStream oistream)
             throws IOException, ClassNotFoundException {
-        final Object ejbObject = oistream.readObject();
+        final Object ejbObject = proxy.read(oistream);
         reconnect(ejbObject);
         return (EJBObject) PortableRemoteObject.narrow(ejbObject, EJBObject.class);
     }
@@ -82,7 +80,7 @@ public class HandleDelegateImpl implements HandleDelegate {
 
     public EJBHome readEJBHome(final ObjectInputStream oistream)
             throws IOException, ClassNotFoundException {
-        final Object ejbHome = oistream.readObject();
+        final Object ejbHome = proxy.read(oistream);
         reconnect(ejbHome);
         return (EJBHome) PortableRemoteObject.narrow(ejbHome, EJBHome.class);
     }
@@ -105,6 +103,15 @@ public class HandleDelegateImpl implements HandleDelegate {
             }
         } else {
             throw new IOException("Not an ObjectImpl " + object.getClass().getName());
+        }
+    }
+
+    public static HandleDelegate getDelegate() {
+        try {
+            final InitialContext ctx = new InitialContext();
+            return (HandleDelegate) ctx.lookup("java:comp/HandleDelegate");
+        } catch (NamingException e) {
+            throw new NestedRuntimeException(e);
         }
     }
 }
