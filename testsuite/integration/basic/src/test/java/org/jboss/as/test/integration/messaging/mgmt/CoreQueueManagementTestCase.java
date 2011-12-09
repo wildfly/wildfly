@@ -244,6 +244,7 @@ public class CoreQueueManagementTestCase {
 
     }
 
+    @org.junit.Ignore("AS7-2480")
     @Test
     public void testChangeMessagePriority() throws Exception {
 
