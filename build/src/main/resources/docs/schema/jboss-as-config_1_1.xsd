@@ -723,7 +723,7 @@
             <xs:element name="paths" type="specified-pathsType" minOccurs="0" maxOccurs="1" />
 
             <xs:element name="interfaces" type="specified-interfacesType" minOccurs="0"/>
-            <xs:element name="socket-binding-group" type="socket-binding-group-refType" minOccurs="0"/>
+            <xs:element name="socket-bindings" type="server-socket-bindingsType" minOccurs="0"/>
 
             <!--<xs:element name="loggers" type="loggersType" minOccurs="0"/>-->
             <xs:element name="system-properties" type="properties-with-boottime" minOccurs="0"/>
@@ -732,6 +732,37 @@
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="group" type="xs:string" use="required"/>
         <xs:attribute name="auto-start" type="xs:boolean" default="true"/>
+    </xs:complexType>
+
+    <xs:complexType name="server-socket-bindingsType">
+        <xs:annotation>
+            <xs:documentation>
+            <![CDATA[
+                Server-specific overrides to the default socket binding configuration inherited from the server group.
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="socket-binding-group" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                <![CDATA[
+                    The socket binding group to use for the server. If undefined, the socket binding group
+                    specified for the server group is used.
+                ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="port-offset" type="xs:int" default="0">
+            <xs:annotation>
+                <xs:documentation>
+                <![CDATA[
+                    Increment to apply to the base port values defined in the
+                    referenced socket binding group to derive the values to use on this
+                    server.
+                ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="extensionsType">

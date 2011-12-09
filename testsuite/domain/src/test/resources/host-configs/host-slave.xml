@@ -69,17 +69,17 @@
 
     <servers>
         <server name="main-three" group="main-server-group">
-            <socket-binding-group ref="standard-sockets" port-offset="350"/>
+            <socket-bindings socket-binding-group="standard-sockets" port-offset="350"/>
             <jvm name="default"/>
         </server>
         <server name="main-four" group="main-server-group" auto-start="false">
-            <socket-binding-group ref="standard-sockets" port-offset="450"/>
+            <socket-bindings port-offset="450"/>
             <jvm name="default">
                 <heap size="64m" max-size="256m"/>
             </jvm>
         </server>
         <server name="other-two" group="other-server-group">
-            <socket-binding-group ref="osgi-sockets" port-offset="550"/>
+            <socket-bindings socket-binding-group="osgi-sockets" port-offset="550"/>
         </server>
     </servers>
 </host>

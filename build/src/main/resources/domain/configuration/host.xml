@@ -55,7 +55,7 @@
         <server name="server-two" group="main-server-group" auto-start="true">
             <!-- server-two avoids port conflicts by incrementing the ports in
                  the default socket-group declared in the server-group -->
-            <socket-binding-group ref="standard-sockets" port-offset="150"/>
+            <socket-bindings port-offset="150"/>
             <jvm name="default">
                 <heap size="64m" max-size="256m"/>
             </jvm>
@@ -63,7 +63,7 @@
         <server name="server-three" group="other-server-group" auto-start="false">
             <!-- server-three avoids port conflicts by incrementing the ports in
                  the default socket-group declared in the server-group -->
-            <socket-binding-group ref="ha-sockets" port-offset="250"/>
+            <socket-bindings port-offset="250"/>
         </server>
     </servers>
 </host>

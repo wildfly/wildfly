@@ -41,7 +41,7 @@
         <server name="server-two" group="other-server-group">
             <!-- server-two avoids port conflicts by incrementing the ports in
                  the default socket-group declared in the server-group -->
-            <socket-binding-group ref="standard-sockets" port-offset="150"/>
+            <socket-bindings port-offset="150"/>
         </server>
     </servers>
 </host>

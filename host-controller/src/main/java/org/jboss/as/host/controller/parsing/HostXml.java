@@ -813,11 +813,11 @@ public class HostXml extends CommonXml {
                     parsePaths(reader, serverAddress, expectedNs, list, true);
                     break;
                 }
-                case SOCKET_BINDING_GROUP: {
+                case SOCKET_BINDINGS: {
                     if (sawSocketBinding) {
                         throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
-                    parseSocketBindingGroupRef(reader, serverAddress, list);
+                    parseServerSocketBindings(reader, serverAddress, list);
                     sawSocketBinding = true;
                     break;
                 }
@@ -884,6 +884,56 @@ public class HostXml extends CommonXml {
             addUpdate.get(AUTO_START).set(start.booleanValue());
         }
         return addUpdate;
+    }
+
+    private void parseServerSocketBindings(final XMLExtendedStreamReader reader, final ModelNode address,
+            final List<ModelNode> updates) throws XMLStreamException {
+        // Handle attributes
+        String name = null;
+        Integer offset = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw ParseUtils.unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case SOCKET_BINDING_GROUP: {
+                        if (name != null)
+                            throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
+                        name = value;
+                        break;
+                    }
+                    case PORT_OFFSET: {
+                        try {
+                            if (offset != null)
+                                throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
+                            offset = Integer.parseInt(value);
+                        } catch (final NumberFormatException e) {
+                            throw MESSAGES.invalid(e, offset, attribute.getLocalName(), reader.getLocation());
+                        }
+                        break;
+                    }
+                    default:
+                        throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+
+        // Handle elements
+        requireNoContent(reader);
+
+        if (name != null) {
+            ModelNode update = Util.getWriteAttributeOperation(address, SOCKET_BINDING_GROUP, name);
+            updates.add(update);
+        }
+
+        if (offset != 0) {
+            ModelNode update = Util.getWriteAttributeOperation(address, SOCKET_BINDING_PORT_OFFSET, offset.intValue());
+            updates.add(update);
+        }
+
     }
 
     protected void writeNativeManagementProtocol(final XMLExtendedStreamWriter writer, final ModelNode protocol)
@@ -965,10 +1015,12 @@ public class HostXml extends CommonXml {
                     break; // TODO just write the first !?
                 }
             }
-            if (server.hasDefined(SOCKET_BINDING_GROUP)) {
-                writer.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
-                writeAttribute(writer, Attribute.REF, server.get(SOCKET_BINDING_GROUP).asString());
-                if (server.hasDefined(SOCKET_BINDING_PORT_OFFSET) && server.get(SOCKET_BINDING_PORT_OFFSET).asInt() > 0) {
+            if (server.hasDefined(SOCKET_BINDING_GROUP) || server.hasDefined(SOCKET_BINDING_PORT_OFFSET)) {
+                writer.writeStartElement(Element.SOCKET_BINDINGS.getLocalName());
+                if (server.hasDefined(SOCKET_BINDING_GROUP)) {
+                    writeAttribute(writer, Attribute.REF, server.get(SOCKET_BINDING_GROUP).asString());
+                }
+                if (server.hasDefined(SOCKET_BINDING_PORT_OFFSET)) {
                     writeAttribute(writer, Attribute.PORT_OFFSET, server.get(SOCKET_BINDING_PORT_OFFSET).asString());
                 }
                 writer.writeEndElement();

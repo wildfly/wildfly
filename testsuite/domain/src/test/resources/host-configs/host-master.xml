@@ -74,7 +74,7 @@
         <server name="main-two" group="main-server-group" auto-start="false">
             <!-- server-two avoids port conflicts by incrementing the ports in
                  the default socket-group declared in the server-group -->
-            <socket-binding-group ref="standard-sockets" port-offset="150"/>
+            <socket-bindings socket-binding-group="standard-sockets" port-offset="150"/>
             <jvm name="default">
                 <heap size="64m" max-size="256m"/>
             </jvm>
@@ -82,7 +82,7 @@
         <server name="other-one" group="other-server-group" auto-start="false">
             <!-- server-three avoids port conflicts by incrementing the ports in
                  the default socket-group declared in the server-group -->
-            <socket-binding-group ref="osgi-sockets" port-offset="250"/>
+            <socket-bindings port-offset="250"/>
         </server>
     </servers>
 </host>
