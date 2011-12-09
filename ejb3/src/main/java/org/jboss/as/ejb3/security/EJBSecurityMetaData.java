@@ -30,9 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
-import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 
 /**
@@ -92,59 +90,12 @@ public class EJBSecurityMetaData {
         this.securityDomain = ejbComponentDescription.getSecurityDomain();
         this.runAsPrincipal = ejbComponentDescription.getRunAsPrincipal();
         this.securityRoles = ejbComponentDescription.getSecurityRoles();
-        this.securityRoleLinks = ejbComponentDescription.getSecurityRoleLinks();
+        final Map<String, Collection<String>> links = ejbComponentDescription.getSecurityRoleLinks();
+        // security role links configured via <security-role-ref>
+        this.securityRoleLinks = links == null ? Collections.<String, Collection<String>>emptyMap() : Collections.unmodifiableMap(links);
         // @DeclareRoles
         final Set<String> roles = ejbComponentDescription.getDeclaredRoles();
         this.declaredRoles = roles == null ? Collections.<String>emptySet() : Collections.unmodifiableSet(roles);
-
-        // The jboss-ejb3.xml allows for mapping a security role to a principal:
-        // <security-role>
-        //  <principal-name>fooPrincipal</principal-name>
-        //  <role-name>Administrator</role-name>
-        // </security-role>
-        //
-        // The ejb-jar.xml allows for linking a "x" role to a "y" alias role via the security-role-ref element:
-        //
-        // <security-role-ref>
-        //  <role-name>ADM</role-name>
-        //  <role-link>Administrator</role-link>
-        // </security-role-ref>
-        //
-        // The code here ensures that we setup the appropriate metadata to ensure that the "fooPrincipal" prinicipal
-        // is mapped to the role alias "ADM".
-        // So ultimately we will have a fooPrincipal -> Administrator and fooPrincipal -> ADM mapping in our security roles
-        if (this.securityRoleLinks != null && this.securityRoles != null) {
-            for (final Map.Entry<String, Collection<String>> entry : this.securityRoleLinks.entrySet()) {
-                final String aliasRoleName = entry.getKey();
-                // get the real role names for this alias
-                final Collection<String> roleNames = entry.getValue();
-                if (roleNames == null || roleNames.isEmpty()) {
-                    continue;
-                }
-                // for each of these roles, see if we have a role name to principals mapping
-                for (final String roleName : roleNames) {
-                    if (roleName == null || roleName.isEmpty()) {
-                        continue;
-                    }
-                    final SecurityRoleMetaData securityRole = this.getSecurityRole(roleName);
-                    if (securityRole == null) {
-                        continue;
-                    }
-                    // found a role name to principal(s) mapping, we'll now create a mapping between these
-                    // principals to the alias role
-                    final Set<String> principals = securityRole.getPrincipals();
-                    if (principals == null || principals.isEmpty()) {
-                        continue;
-                    }
-                    // create a new security role which maps the principals to the alias role
-                    final SecurityRoleMetaData aliasSecurityRole = new SecurityRoleMetaData();
-                    aliasSecurityRole.setRoleName(aliasRoleName);
-                    aliasSecurityRole.setPrincipals(principals);
-                    // add this new security role to our existing security role collection for this bean
-                    this.securityRoles.add(aliasSecurityRole);
-                }
-            }
-        }
     }
 
     /**
@@ -193,25 +144,12 @@ public class EJBSecurityMetaData {
     }
 
     /**
-     * Returns the {@link SecurityRoleMetaData} for the passed <code>roleName</code>, from the collection of security
-     * roles configured for this bean. Returns null if there's no security role for the role name.
+     * Returns the security role links (configured via <security-role-ref>) applicable for the
+     * EJB. Returns an empty map if no role links are configured
      *
-     * @param roleName The role name
      * @return
      */
-    private SecurityRoleMetaData getSecurityRole(final String roleName) {
-        if (roleName == null || roleName.trim().isEmpty()) {
-            EjbMessages.MESSAGES.stringParamCannotBeNullOrEmpty("Role name");
-        }
-        if (this.securityRoles == null) {
-            return null;
-        }
-        for (final SecurityRoleMetaData securityRole : this.securityRoles) {
-            if (roleName.equals(securityRole.getRoleName())) {
-                return securityRole;
-            }
-        }
-        return null;
+    public Map<String, Collection<String>> getSecurityRoleLinks() {
+        return this.securityRoleLinks;
     }
-
 }

@@ -327,7 +327,7 @@ public abstract class EJBComponent extends BasicComponent {
     }
 
     public boolean isCallerInRole(final String roleName) throws IllegalStateException {
-        return utilities.getSecurityManager().isCallerInRole(securityMetaData.getSecurityRoles(), roleName);
+        return utilities.getSecurityManager().isCallerInRole(securityMetaData.getSecurityRoles(), securityMetaData.getSecurityRoleLinks(), roleName);
     }
 
     public Object lookup(String name) throws IllegalArgumentException {

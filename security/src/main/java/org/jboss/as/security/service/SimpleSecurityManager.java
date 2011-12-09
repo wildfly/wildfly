@@ -26,10 +26,12 @@ import static java.security.AccessController.doPrivileged;
 import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.security.acl.Group;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.security.auth.Subject;
@@ -125,11 +127,14 @@ public class SimpleSecurityManager {
 
     /**
      *
-     * @param mappedRoles
-     * @param roleNames
-     * @return true if the user is in any one of the roles listed
+     * @param mappedRoles The principal vs roles mapping (if any). Can be null.
+     * @param roleLinks The role link map where the key is a alias role name and the value is the collection of
+     *                  role names, that alias represents. Can be null.
+     * @param roleNames The role names for which the caller is being checked for
+     * @return true if the user is in <b>any</b> one of the <code>roleNames</code>. Else returns false
      */
-    public boolean isCallerInRole(final SecurityRolesMetaData mappedRoles, final String... roleNames) {
+    public boolean isCallerInRole(final SecurityRolesMetaData mappedRoles, final Map<String, Collection<String>> roleLinks,
+                                  final String... roleNames) {
         final SecurityContext securityContext = doPrivileged(securityContext());
         if (securityContext == null) {
             return false;
@@ -168,10 +173,26 @@ public class SimpleSecurityManager {
                 actualRoles.addAll(mapped);
             }
         }
-
-        boolean userNotInRole = Collections.disjoint(requiredRoles, actualRoles);
-
-        return userNotInRole == false;
+        // if the actual roles matches any of the required roles, then return true
+        if (!Collections.disjoint(requiredRoles, actualRoles)) {
+            return true;
+        }
+        // we did not have a match between the required roles and the actual roles.
+        // let's now get the alias role names (if any) for each of the actual role
+        // and see if any of those aliases of the actual roles matches the required roles
+        if (roleLinks != null) {
+            for (final String actualRole : actualRoles) {
+                // get aliases (if any) for actual role
+                final Set<String> aliases = this.getRoleAliases(actualRole, roleLinks);
+                // if there's a match between the required role and an alias of an actual role, then
+                // return true indicating that the caller is in one of the required roles
+                if (!Collections.disjoint(requiredRoles, aliases)) {
+                    return true;
+                }
+            }
+        }
+        // caller is not in any of the required roles
+        return false;
     }
 
     /**
@@ -253,5 +274,29 @@ public class SimpleSecurityManager {
     public void pop() {
         final SecurityContext sc = contexts.pop();
         SecurityContextAssociation.setSecurityContext(sc);
+    }
+
+    /**
+     * Returns the alias role names for the passed <code>roleName</code>. Returns an empty set if the passed
+     * role name doesn't have any aliases
+     *
+     * @param roleName The role name
+     * @param roleLinks The role link map where the key is a alias role name and the value is the collection of
+     *                  role names, that alias represents
+     * @return
+     */
+    private Set<String> getRoleAliases(final String roleName, final Map<String, Collection<String>> roleLinks) {
+        if (roleLinks == null || roleLinks.isEmpty()) {
+            return Collections.emptySet();
+        }
+        final Set<String> aliases = new HashSet<String>();
+        for (final Map.Entry<String, Collection<String>> roleLinkEntry : roleLinks.entrySet()) {
+            final String aliasRoleName = roleLinkEntry.getKey();
+            final Collection<String> realRoleNames = roleLinkEntry.getValue();
+            if (realRoleNames != null && realRoleNames.contains(roleName)) {
+                aliases.add(aliasRoleName);
+            }
+        }
+        return aliases;
     }
 }
