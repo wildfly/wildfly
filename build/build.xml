@@ -594,8 +594,6 @@
         </module-def>
 
         <module-def name="org.infinispan">
-            <maven-resource group="org.infinispan" artifact="infinispan-api"/>
-            <maven-resource group="org.infinispan" artifact="infinispan-commons"/>
             <maven-resource group="org.infinispan" artifact="infinispan-core"/>
             <maven-resource group="org.infinispan" artifact="infinispan-cachestore-jdbc"/>
             <maven-resource group="org.infinispan" artifact="infinispan-cachestore-remote"/>
