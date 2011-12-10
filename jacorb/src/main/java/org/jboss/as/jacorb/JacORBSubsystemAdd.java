@@ -35,6 +35,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.jacorb.deployment.JacORBDependencyProcessor;
 import org.jboss.as.jacorb.deployment.JacORBMarkerProcessor;
 import org.jboss.as.jacorb.naming.jndi.JBossCNCtxFactory;
+import org.jboss.as.jacorb.rmi.DelegatingStubFactoryFactory;
 import org.jboss.as.jacorb.security.DomainServerSocketFactory;
 import org.jboss.as.jacorb.security.DomainSocketFactory;
 import org.jboss.as.jacorb.service.CorbaNamingService;
@@ -45,7 +46,6 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
-import org.jboss.com.sun.corba.se.impl.orbutil.ORBConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
@@ -109,8 +109,12 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
 
         // set the ORBUseDynamicStub system property.
         SecurityActions.setSystemProperty("org.jboss.com.sun.CORBA.ORBUseDynamicStub", "true");
-        SecurityActions.setSystemProperty(ORBConstants.DYNAMIC_STUB_FACTORY_FACTORY_CLASS,
-                "org.jboss.as.jacorb.rmi.DelegatingStubFactoryFactory");
+        //we set the same stub factory to both the static and dynamic stub factory. As there is no way to dynamically change
+        //the userDynamicStubs's property at runtime it is possible for the ORB class's <clinit> method to be
+        //called before this property is set.
+        //TODO: investigate a better way to handle this
+        org.jboss.com.sun.corba.se.spi.orb.ORB.getPresentationManager().setStubFactoryFactory(true, new DelegatingStubFactoryFactory());
+        org.jboss.com.sun.corba.se.spi.orb.ORB.getPresentationManager().setStubFactoryFactory(false, new DelegatingStubFactoryFactory());
 
         //setup naming.
         InitialContext.addUrlContextFactory("corbaloc", JBossCNCtxFactory.INSTANCE);

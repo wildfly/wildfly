@@ -36,6 +36,7 @@ import org.jacorb.ssl.SSLPolicyValue;
 import org.jacorb.ssl.SSLPolicyValueHelper;
 import org.jacorb.ssl.SSL_POLICY_TYPE;
 import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
@@ -372,13 +373,19 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
             logger.debug("Home IOR for " + component.getComponentName() + " bound to " + this.name + " in CORBA naming service");
 
             //now eagerly force stub creation, so de-serialization of stubs will work correctly
-            //TODO: generate a readResolve for the dynamic stubs to handle this, so this is no longer nessesary
             final ClassLoader cl = SecurityActions.getContextClassLoader();
             try {
                 SecurityActions.setContextClassLoader(module.getClassLoader());
-                DynamicStubFactoryFactory.makeStubClass(homeView.getValue().getViewClass());
-                DynamicStubFactoryFactory.makeStubClass(remoteView.getValue().getViewClass());
-                DynamicStubFactoryFactory.makeStubClass(remoteView.getValue().getViewClass());
+                try {
+                    DynamicStubFactoryFactory.makeStubClass(homeView.getValue().getViewClass());
+                } catch (Exception e) {
+                    EjbLogger.EJB3_LOGGER.dynamicStubCreationFailed(homeView.getValue().getViewClass().getName(), e);
+                }
+                try {
+                    DynamicStubFactoryFactory.makeStubClass(remoteView.getValue().getViewClass());
+                } catch (Exception e) {
+                    EjbLogger.EJB3_LOGGER.dynamicStubCreationFailed(remoteView.getValue().getViewClass().getName(), e);
+                }
             } finally {
                 SecurityActions.setContextClassLoader(cl);
             }
