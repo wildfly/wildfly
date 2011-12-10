@@ -279,7 +279,7 @@ public abstract class CascadeDeleteStrategy {
          * to be set on removal.
          */
         if(component.getLocalClass() != null) {
-            final EJBLocalObject ejbObject = component.getEjbLocalObject(relatedId);
+            final EJBLocalObject ejbObject = component.getEJBLocalObject(relatedId);
             ejbObject.remove();
         } else {
             final EJBObject ejbObject = component.getEJBObject(relatedId);

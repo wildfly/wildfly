@@ -48,7 +48,7 @@ public class EntityBeanHomeRemoveInterceptorFactory implements InterceptorFactor
                 if(remote) {
                     component.getEJBObject(context.getParameters()[0]).remove();
                 } else {
-                    component.getEjbLocalObject(context.getParameters()[0]).remove();
+                    component.getEJBLocalObject(context.getParameters()[0]).remove();
                 }
                 return null;
             }

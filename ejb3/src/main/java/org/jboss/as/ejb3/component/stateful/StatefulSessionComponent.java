@@ -135,17 +135,17 @@ public class StatefulSessionComponent extends SessionBeanComponent {
     }
 
     public EJBLocalObject getEJBLocalObject(final InterceptorContext ctx) throws IllegalStateException {
-        if (getEjbLocalObjectView() == null) {
+        if (getEjbLocalObjectViewServiceName() == null) {
             throw new IllegalStateException("Bean " + getComponentName() + " does not have an EJBLocalObject");
         }
-        return createViewInstanceProxy(EJBLocalObject.class, Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, getSessionIdOf(ctx)), getEjbLocalObjectView());
+        return createViewInstanceProxy(EJBLocalObject.class, Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, getSessionIdOf(ctx)), getEjbLocalObjectViewServiceName());
     }
 
     public EJBObject getEJBObject(final InterceptorContext ctx) throws IllegalStateException {
-        if (getEjbObjectView() == null) {
+        if (getEjbObjectViewServiceName() == null) {
             throw MESSAGES.beanComponentMissingEjbObject(getComponentName(),"EJBObject");
         }
-        final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(getEjbObjectView());
+        final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(getEjbObjectViewServiceName());
         final ComponentView view = (ComponentView) serviceController.getValue();
         final String locatorAppName = getEarApplicationName() == null ? "" : getEarApplicationName();
         return EJBClient.createProxy(new StatefulEJBLocator<EJBObject>((Class<EJBObject>) view.getViewClass(), locatorAppName, getModuleName(), getComponentName(), getDistinctName(), getSessionIdOf(ctx)));

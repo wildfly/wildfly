@@ -338,7 +338,7 @@ public class RelationSet implements Set {
 
                 try {
                     currentId = idIterator.next();
-                    return cmrField.getRelatedComponent().getEjbLocalObject(currentId);
+                    return cmrField.getRelatedComponent().getEJBLocalObject(currentId);
                 } catch (ConcurrentModificationException e) {
                     throw new IllegalStateException("Underlying collection has " +
                             "been modified");

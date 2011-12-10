@@ -78,10 +78,10 @@ public abstract class EJBComponent extends BasicComponent {
     private final Map<Class<?>, ApplicationExceptionDetails> applicationExceptions;
     private final EJBSecurityMetaData securityMetaData;
     private final Map<String, ServiceName> viewServices;
-    private final ServiceName ejbLocalHome;
-    private final ServiceName ejbHome;
-    private final ServiceName ejbObject;
-    private final ServiceName ejbLocalObject;
+    private final ServiceName ejbLocalHomeViewServiceName;
+    private final ServiceName ejbHomeViewServiceName;
+    private final ServiceName ejbObjectViewServiceName;
+    private final ServiceName ejbLocalObjectViewServiceName;
 
     private final TimerService timerService;
     protected final Map<Method, InterceptorFactory> timeoutInterceptors;
@@ -120,14 +120,14 @@ public abstract class EJBComponent extends BasicComponent {
         this.timerService = ejbComponentCreateService.getTimerService();
         this.timeoutInterceptors = ejbComponentCreateService.getTimeoutInterceptors();
         this.timeoutMethod = ejbComponentCreateService.getTimeoutMethod();
-        this.ejbLocalHome = ejbComponentCreateService.getEjbLocalHome();
-        this.ejbHome = ejbComponentCreateService.getEjbHome();
+        this.ejbLocalHomeViewServiceName = ejbComponentCreateService.getEjbLocalHome();
+        this.ejbHomeViewServiceName = ejbComponentCreateService.getEjbHome();
         this.applicationName = ejbComponentCreateService.getApplicationName();
         this.earApplicationName = ejbComponentCreateService.getEarApplicationName();
         this.distinctName = ejbComponentCreateService.getDistinctName();
         this.moduleName = ejbComponentCreateService.getModuleName();
-        this.ejbObject = ejbComponentCreateService.getEjbObject();
-        this.ejbLocalObject = ejbComponentCreateService.getEjbLocalObject();
+        this.ejbObjectViewServiceName = ejbComponentCreateService.getEjbObject();
+        this.ejbLocalObjectViewServiceName = ejbComponentCreateService.getEjbLocalObject();
 
 
         this.ejbRemoteTransactionsRepository = ejbComponentCreateService.getEJBRemoteTransactionsRepository();
@@ -220,38 +220,38 @@ public abstract class EJBComponent extends BasicComponent {
     }
 
     public EJBHome getEJBHome() throws IllegalStateException {
-        if (ejbHome == null) {
+        if (ejbHomeViewServiceName == null) {
             throw MESSAGES.beanHomeInterfaceIsNull(getComponentName());
         }
-        final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(ejbHome);
+        final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(ejbHomeViewServiceName);
         final ComponentView view = (ComponentView) serviceController.getValue();
         final String locatorAppName = earApplicationName == null ? "" : earApplicationName;
         return EJBClient.createProxy(new EJBHomeLocator<EJBHome>((Class<EJBHome>) view.getViewClass(), locatorAppName, moduleName, getComponentName(), distinctName));
     }
 
     public Class<?> getEjbObjectType() {
-        if(ejbObject == null) {
+        if(ejbObjectViewServiceName == null) {
             return null;
         }
-        final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(ejbObject);
+        final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(ejbObjectViewServiceName);
         final ComponentView view = (ComponentView) serviceController.getValue();
         return view.getViewClass();
     }
 
     public Class<?> getEjbLocalObjectType() {
-        if(ejbLocalObject == null) {
+        if(ejbLocalObjectViewServiceName == null) {
             return null;
         }
-        final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(ejbLocalObject);
+        final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(ejbLocalObjectViewServiceName);
         final ComponentView view = (ComponentView) serviceController.getValue();
         return view.getViewClass();
     }
 
     public EJBLocalHome getEJBLocalHome() throws IllegalStateException {
-        if (ejbLocalHome == null) {
+        if (ejbLocalHomeViewServiceName == null) {
             throw MESSAGES.beanLocalHomeInterfaceIsNull(getComponentName());
         }
-        return createViewInstanceProxy(EJBLocalHome.class, Collections.emptyMap(), ejbLocalHome);
+        return createViewInstanceProxy(EJBLocalHome.class, Collections.emptyMap(), ejbLocalHomeViewServiceName);
     }
 
     public boolean getRollbackOnly() throws IllegalStateException {
@@ -423,6 +423,22 @@ public abstract class EJBComponent extends BasicComponent {
 
     public String getModuleName() {
         return moduleName;
+    }
+
+    public ServiceName getEjbLocalObjectViewServiceName() {
+        return ejbLocalObjectViewServiceName;
+    }
+
+    public ServiceName getEjbLocalHomeViewServiceName() {
+        return ejbLocalHomeViewServiceName;
+    }
+
+    public ServiceName getEjbHomeViewServiceName() {
+        return ejbHomeViewServiceName;
+    }
+
+    public ServiceName getEjbObjectViewServiceName() {
+        return ejbObjectViewServiceName;
     }
 
     /**

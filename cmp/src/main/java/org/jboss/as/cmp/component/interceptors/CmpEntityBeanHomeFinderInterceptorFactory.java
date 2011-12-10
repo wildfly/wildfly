@@ -72,7 +72,7 @@ public class CmpEntityBeanHomeFinderInterceptorFactory extends EntityBeanHomeFin
 
         final JDBCQueryCommand.EntityProxyFactory factory = new JDBCQueryCommand.EntityProxyFactory() {
             public Object getEntityObject(final Object primaryKey) {
-                return localHome ? cmpComponent.getEjbLocalObject(primaryKey) : cmpComponent.getEJBObject(primaryKey);
+                return localHome ? cmpComponent.getEJBLocalObject(primaryKey) : cmpComponent.getEJBObject(primaryKey);
             }
         };
 

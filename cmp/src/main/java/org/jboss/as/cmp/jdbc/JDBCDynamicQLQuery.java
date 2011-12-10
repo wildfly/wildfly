@@ -145,7 +145,7 @@ public final class JDBCDynamicQLQuery extends JDBCAbstractQueryCommand {
         EntityProxyFactory factoryToUse = new EntityProxyFactory() {
             public Object getEntityObject(Object primaryKey) {
                 return metadata.isResultTypeMappingLocal() && component.getLocalHomeClass() != null ?
-                        component.getEjbLocalObject(primaryKey) : component.getEJBObject(primaryKey);
+                        component.getEJBLocalObject(primaryKey) : component.getEJBObject(primaryKey);
             }
         };
 

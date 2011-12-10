@@ -95,7 +95,7 @@ public class EJBSelectBridge implements SelectorBridge {
         JDBCQueryCommand.EntityProxyFactory factory = new JDBCQueryCommand.EntityProxyFactory() {
             public Object getEntityObject(Object primaryKey) {
                 return metadata.isResultTypeMappingLocal() && selectedComponent.getLocalHomeClass() != null ?
-                        selectedComponent.getEjbLocalObject(primaryKey) : selectedComponent.getEJBObject(primaryKey);
+                        selectedComponent.getEJBLocalObject(primaryKey) : selectedComponent.getEJBObject(primaryKey);
             }
         };
         Object result;

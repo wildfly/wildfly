@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.ejb.EJBException;
-import javax.ejb.EJBLocalHome;
 import javax.ejb.EJBLocalObject;
 import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.RemoveException;
@@ -684,12 +683,12 @@ public final class JDBCCMRFieldBridge extends JDBCAbstractCMRFieldBridge {
 
         if (hasFKFieldsMappedToCMPFields && relatedManager.getReadAheadCache().getPreloadDataMap(fk, false) == null) {  // not in preload cache
             try {
-                relatedLocalObject = relatedContainer.getEjbLocalObject(fk);
+                relatedLocalObject = relatedContainer.getEJBLocalObject(fk);
             } catch (Exception ignore) {
                 // no such entity. it is ok to ignore
             }
         } else {
-            relatedLocalObject = relatedContainer.getEjbLocalObject(fk);
+            relatedLocalObject = relatedContainer.getEJBLocalObject(fk);
         }
 
         return relatedLocalObject;
@@ -708,7 +707,7 @@ public final class JDBCCMRFieldBridge extends JDBCAbstractCMRFieldBridge {
             valid = true;
         } else {
             try {
-                Object result = getRelatedComponent().getEjbLocalObject(fk);
+                Object result = getRelatedComponent().getEJBLocalObject(fk);
                 valid = result != null;
             } catch (Exception ignore) {
                 // no such entity. it is ok to ignore

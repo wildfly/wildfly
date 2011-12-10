@@ -523,7 +523,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
             if (value == null) {
                 localObject = null;
             } else if (localObject == null) {
-                localObject = relatedComponent.getEjbLocalObject(value);
+                localObject = relatedComponent.getEJBLocalObject(value);
             }
             return localObject;
         }
@@ -1320,7 +1320,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
                         throw new IllegalStateException(e.getMessage());
                     }
 
-                    return relatedComponent.getEjbLocalObject(curId);
+                    return relatedComponent.getEJBLocalObject(curId);
                 }
             };
         }
@@ -1333,7 +1333,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
             int i = 0;
             for (Iterator iter = value.iterator(); iter.hasNext(); ) {
                 Object id = iter.next();
-                result[i++] = relatedComponent.getEjbLocalObject(id);
+                result[i++] = relatedComponent.getEJBLocalObject(id);
             }
 
             return result;
@@ -1348,7 +1348,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
             int i = 0;
             for (Iterator iter = value.iterator(); iter.hasNext(); ) {
                 Object id = iter.next();
-                a[i++] = relatedComponent.getEjbLocalObject(id);
+                a[i++] = relatedComponent.getEJBLocalObject(id);
             }
 
             return a;
