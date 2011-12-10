@@ -214,17 +214,15 @@ public class TimerImpl implements Timer {
         if (timerState != TimerState.EXPIRED) {
             setTimerState(TimerState.CANCELED);
         }
-        // if in tx, register with tx so cancel on tx completion
-        final Transaction currentTx = this.timerService.getTransaction();
-        if (currentTx == null) {
+        if (timerService.transactionActive()) {
+            final Transaction currentTx = this.timerService.getTransaction();
+            this.registerTimerCancellationWithTx(currentTx);
+        } else {
             // cancel any scheduled Future for this timer
             this.cancelTimeout();
             // persist changes
             timerService.persistTimer(this);
-        } else {
-            this.registerTimerCancellationWithTx(currentTx);
         }
-
     }
 
     /**
@@ -422,9 +420,9 @@ public class TimerImpl implements Timer {
      * <li>{@link TimerState#CANCELED}</li>
      * <li>{@link TimerState#EXPIRED}</li>
      * </ul>
-     *
+     * <p/>
      * And if the corresponding timer service is still up
-     *
+     * <p/>
      * </p>
      *
      * @return
@@ -503,13 +501,14 @@ public class TimerImpl implements Timer {
         if (timerState == TimerState.CANCELED)
             throw MESSAGES.timerWasCanceled();
         final InterceptorContext ctx = CurrentInvocationContext.get();
-        if(ctx != null) {
-            if(ctx.getPrivateData(Component.class) instanceof StatefulSessionComponent) {
-                if(ctx.getMethod() == null) {
+        if (ctx != null) {
+            if (ctx.getPrivateData(Component.class) instanceof StatefulSessionComponent) {
+                if (ctx.getMethod() == null) {
                     throw new IllegalStateException("Timer methods may not be invoked from lifecycle methods of a stateful session bean");
                 }
             }
         }
+        TimerServiceDisabledTacker.assertEnabled();
     }
 
     /**
@@ -618,6 +617,7 @@ public class TimerImpl implements Timer {
     public int hashCode() {
         return this.handle.hashCode();
     }
+
 
     /**
      * A nice formatted string output for this timer

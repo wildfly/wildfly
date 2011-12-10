@@ -46,7 +46,7 @@ public class EntityBeanHomeRemoveInterceptorFactory implements InterceptorFactor
             public Object processInvocation(final InterceptorContext context) throws Exception {
                 final EntityBeanComponent component = getComponent(context, EntityBeanComponent.class);
                 if(remote) {
-                component.getEJBObject(context.getParameters()[0]).remove();
+                    component.getEJBObject(context.getParameters()[0]).remove();
                 } else {
                     component.getEjbLocalObject(context.getParameters()[0]).remove();
                 }

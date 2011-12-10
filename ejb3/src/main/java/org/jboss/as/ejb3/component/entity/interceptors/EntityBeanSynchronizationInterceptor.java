@@ -25,12 +25,14 @@ import javax.ejb.EJBException;
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.TransactionSynchronizationRegistry;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;
 import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
+import org.jboss.as.ejb3.component.stateful.CurrentSynchronizationCallback;
 import org.jboss.as.ejb3.tx.OwnableReentrantLock;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -95,7 +97,7 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
                             transactionSynchronizationRegistry.registerInterposedSynchronization(entitySynchronization);
                             if (ROOT_LOGGER.isTraceEnabled()) {
                                 ROOT_LOGGER.trace("Registered tx synchronization: " + entitySynchronization + " for tx: " + currentTransactionKey +
-                                    " associated with stateful component instance: " + instance);
+                                        " associated with stateful component instance: " + instance);
                             }
                         }
                         instance.setSynchronizationRegistered(true);
@@ -157,35 +159,46 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
 
         @Override
         public void beforeCompletion() {
-            synchronized (threadLock) {
-                //invoke the EJB store method within the transaction
-                try {
-                    if(!componentInstance.isRemoved() && !componentInstance.isDiscarded()) {
-                        componentInstance.store();
-                    }
-                } catch (Throwable t) {
-                    lock.pushOwner(lockOwner);
+            try {
+                CurrentSynchronizationCallback.set(CurrentSynchronizationCallback.CallbackType.BEFORE_COMPLETION);
+                synchronized (threadLock) {
+                    //invoke the EJB store method within the transaction
                     try {
-                        handleThrowableInTxSync(componentInstance, t);
-                    } finally {
-                        lock.popOwner();
+                        if (!componentInstance.isRemoved() && !componentInstance.isDiscarded()) {
+                            componentInstance.store();
+                        }
+                    } catch (Throwable t) {
+                        lock.pushOwner(lockOwner);
+                        try {
+                            handleThrowableInTxSync(componentInstance, t);
+                        } finally {
+                            lock.popOwner();
+                        }
                     }
                 }
+            } finally {
+                CurrentSynchronizationCallback.clear();
             }
         }
 
         @Override
         public void afterCompletion(int status) {
-            synchronized (threadLock) {
-                // tx has completed, so mark the SFSB instance as no longer in use
-                lock.pushOwner(lockOwner);
-                try {
-                    releaseInstance(componentInstance, status == Status.STATUS_COMMITTED);
-                } catch (Exception e) {
-                    EJB3_LOGGER.exceptionReleasingEntity(e);
-                } finally {
-                    lock.popOwner();
+            try {
+
+                CurrentSynchronizationCallback.set(CurrentSynchronizationCallback.CallbackType.AFTER_COMPLETION);
+                synchronized (threadLock) {
+                    // tx has completed, so mark the SFSB instance as no longer in use
+                    lock.pushOwner(lockOwner);
+                    try {
+                        releaseInstance(componentInstance, status == Status.STATUS_COMMITTED);
+                    } catch (Exception e) {
+                        EJB3_LOGGER.exceptionReleasingEntity(e);
+                    } finally {
+                        lock.popOwner();
+                    }
                 }
+            } finally {
+                CurrentSynchronizationCallback.clear();
             }
         }
 
@@ -201,7 +214,7 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
          * @return
          */
         private Error handleThrowableInTxSync(final EntityBeanComponentInstance instance, final Throwable t) {
-            ROOT_LOGGER.discardingEntityComponent(instance,t);
+            ROOT_LOGGER.discardingEntityComponent(instance, t);
             try {
                 // discard the Entity instance
                 instance.discard();

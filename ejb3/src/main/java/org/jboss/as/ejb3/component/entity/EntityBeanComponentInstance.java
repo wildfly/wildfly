@@ -33,6 +33,7 @@ import javax.ejb.EntityBean;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ejb3.component.EjbComponentInstance;
 import org.jboss.as.ejb3.context.EntityContextImpl;
+import org.jboss.as.ejb3.timerservice.TimerServiceDisabledTacker;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -54,6 +55,7 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
     private final Interceptor ejbActivate;
     private final Interceptor ejbLoad;
     private final Interceptor ejbPassivate;
+    private final Interceptor unsetEntityContext;
 
     protected EntityBeanComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, final Map<Method, Interceptor> timeoutInterceptors) {
         super(component, instanceReference, preDestroyInterceptor, methodInterceptors, timeoutInterceptors);
@@ -62,6 +64,7 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
         this.ejbActivate = ejbComponent.createInterceptor(ejbComponent.getEjbActivate());
         this.ejbLoad = ejbComponent.createInterceptor(ejbComponent.getEjbLoad());
         this.ejbPassivate = ejbComponent.createInterceptor(ejbComponent.getEjbPassivate());
+        this.unsetEntityContext = ejbComponent.createInterceptor(ejbComponent.getUnsetEntityContext());
     }
 
     @Override
@@ -90,11 +93,20 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
     @Override
     public void destroy() {
         try {
-            getInstance().unsetEntityContext();
+            invokeUnsetEntityContext();
         } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
         super.destroy();
+    }
+
+    protected void invokeUnsetEntityContext() throws Exception {
+        final InterceptorContext context = prepareInterceptorContext();
+        final EntityBeanComponent component = getComponent();
+        context.setMethod(component.getUnsetEntityContextMethod());
+        unsetEntityContext.processInvocation(context);
     }
 
     /**
@@ -170,7 +182,10 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
     }
 
     public void setupContext() {
+
+        String prev = TimerServiceDisabledTacker.getDisabledReason();
         try {
+            TimerServiceDisabledTacker.setDisabledReason("setEntityContext");
             final EntityContextImpl entityContext = new EntityContextImpl(this);
             setEjbContext(entityContext);
             getInstance().setEntityContext(entityContext);
@@ -178,6 +193,8 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
             throw new WrappedRemoteException(e);
         } catch (Exception e) {
             throw new RuntimeException(e);
+        } finally {
+            TimerServiceDisabledTacker.setDisabledReason(prev);
         }
     }
 

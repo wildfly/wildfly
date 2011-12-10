@@ -1861,4 +1861,11 @@ public interface EjbMessages {
     @Message(id=14526, value = "Cannot call method %s in afterCompletion callback")
     IllegalStateException cannotCallMethodInAfterCompletion(String methodName);
 
+    /**
+     * Exception thrown if the timer service is currently not accessible
+     * @param methodName The ejb callback that disabled it
+     */
+    @Message(id=14527, value = "Cannot call timer service methods in %s")
+    IllegalStateException cannotCallTimerServiceMethod(String methodName);
+
 }

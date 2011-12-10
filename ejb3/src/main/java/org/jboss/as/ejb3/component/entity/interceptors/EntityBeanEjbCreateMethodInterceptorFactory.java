@@ -71,7 +71,7 @@ public class EntityBeanEjbCreateMethodInterceptorFactory implements InterceptorF
 
                 if (existing != null) {
                     primaryKeyReference.set(existing);
-                    return context.proceed();
+                    return existing;
                 }
                 final Component component = context.getPrivateData(Component.class);
                 if (!(component instanceof EntityBeanComponent)) {

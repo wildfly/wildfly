@@ -198,7 +198,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     @Override
     public Timer createCalendarTimer(ScheduleExpression schedule) throws IllegalArgumentException,
             IllegalStateException, EJBException {
-        handleLifecycleCallback();
         return this.createCalendarTimer(schedule, null);
     }
 
@@ -208,7 +207,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     @Override
     public Timer createCalendarTimer(ScheduleExpression schedule, TimerConfig timerConfig)
             throws IllegalArgumentException, IllegalStateException, EJBException {
-        handleLifecycleCallback();
+        assertTimerServiceState();
         Serializable info = timerConfig == null ? null : timerConfig.getInfo();
         boolean persistent = timerConfig == null || timerConfig.isPersistent();
         return this.createCalendarTimer(schedule, info, persistent, null);
@@ -220,7 +219,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     @Override
     public Timer createIntervalTimer(Date initialExpiration, long intervalDuration, TimerConfig timerConfig)
             throws IllegalArgumentException, IllegalStateException, EJBException {
-        handleLifecycleCallback();
+        assertTimerServiceState();
         if (initialExpiration == null) {
             throw MESSAGES.initialExpirationIsNullCreatingTimer();
         }
@@ -239,7 +238,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     @Override
     public Timer createIntervalTimer(long initialDuration, long intervalDuration, TimerConfig timerConfig)
             throws IllegalArgumentException, IllegalStateException, EJBException {
-        handleLifecycleCallback();
+        assertTimerServiceState();
         if (initialDuration < 0) {
             throw MESSAGES.invalidInitialExpiration("intervalDuration");
         }
@@ -256,7 +255,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     @Override
     public Timer createSingleActionTimer(Date expiration, TimerConfig timerConfig) throws IllegalArgumentException,
             IllegalStateException, EJBException {
-        handleLifecycleCallback();
+        assertTimerServiceState();
         if (expiration == null) {
             throw MESSAGES.expirationIsNull();
         }
@@ -272,7 +271,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     @Override
     public Timer createSingleActionTimer(long duration, TimerConfig timerConfig) throws IllegalArgumentException,
             IllegalStateException, EJBException {
-        handleLifecycleCallback();
+        assertTimerServiceState();
         if (duration < 0)
             throw MESSAGES.invalidDurationActionTimer();
 
@@ -286,7 +285,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     @Override
     public Timer createTimer(long duration, Serializable info) throws IllegalArgumentException, IllegalStateException,
             EJBException {
-        handleLifecycleCallback();
+        assertTimerServiceState();
         if (duration < 0)
             throw MESSAGES.invalidDurationTimer();
         return createTimer(new Date(System.currentTimeMillis() + duration), 0, info, true);
@@ -298,7 +297,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     @Override
     public Timer createTimer(Date expiration, Serializable info) throws IllegalArgumentException, IllegalStateException,
             EJBException {
-        handleLifecycleCallback();
+        assertTimerServiceState();
         if (expiration == null) {
             throw MESSAGES.expirationDateIsNull();
         }
@@ -314,7 +313,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     @Override
     public Timer createTimer(long initialDuration, long intervalDuration, Serializable info)
             throws IllegalArgumentException, IllegalStateException, EJBException {
-        handleLifecycleCallback();
+        assertTimerServiceState();
         if (initialDuration < 0) {
             throw MESSAGES.invalidInitialDurationTimer();
         }
@@ -331,7 +330,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     @Override
     public Timer createTimer(Date initialExpiration, long intervalDuration, Serializable info)
             throws IllegalArgumentException, IllegalStateException, EJBException {
-        handleLifecycleCallback();
+        assertTimerServiceState();
         if (initialExpiration == null) {
             throw MESSAGES.initialExpirationDateIsNull();
         }
@@ -359,7 +358,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      */
     @Override
     public Collection<Timer> getTimers() throws IllegalStateException, EJBException {
-        handleLifecycleCallback();
+        assertTimerServiceState();
         Object pk = currentPrimaryKey();
         final Set<Timer> activeTimers = new HashSet<Timer>();
         // get all active non-persistent timers for this timerservice
@@ -720,26 +719,40 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      * @param timer
      */
     protected void registerTimerWithTx(TimerImpl timer) {
-        // get the current transaction
-        final Transaction tx = this.getTransaction();
-        if (tx != null) {
+        try {
+            if (transactionActive()) {
+                final Transaction tx = this.getTransaction();
+                // register for lifecycle events of transaction
+                tx.registerSynchronization(new TimerCreationTransactionSynchronization(timer));
+            }
+        } catch (RollbackException e) {
+            throw new EJBException(e);
+        } catch (SystemException e) {
+            throw new EJBException(e);
+        }
+    }
 
+    /**
+     * @return true if the transaction is in a state where synchronizations can be registered
+     */
+    boolean transactionActive() {
+        final Transaction currentTx = getTransaction();
+        if (currentTx != null) {
             try {
-                int status = tx.getStatus();
+                int status = currentTx.getStatus();
                 if (status == Status.STATUS_MARKED_ROLLBACK || status == Status.STATUS_ROLLEDBACK ||
                         status == Status.STATUS_ROLLING_BACK || status == Status.STATUS_NO_TRANSACTION ||
                         status == Status.STATUS_UNKNOWN || status == Status.STATUS_COMMITTED
                         || isBeforeCompletion()) {
-                    return;
+                    return false;
+                } else {
+                    return true;
                 }
-                // register for lifecycle events of transaction
-                tx.registerSynchronization(new TimerCreationTransactionSynchronization(timer));
-            } catch (RollbackException e) {
-                // TODO: throw the right exception
-                throw new EJBException(e);
             } catch (SystemException e) {
-                throw new EJBException(e);
+                throw new RuntimeException(e);
             }
+        } else {
+            return false;
         }
     }
 
@@ -1039,25 +1052,8 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         }
     }
 
-    private void endTx() {
-        try {
-            Transaction tx = this.transactionManager.getTransaction();
-            if (tx == null) {
-                throw MESSAGES.noTransactionInProgress();
-            }
-            if (tx.getStatus() == Status.STATUS_MARKED_ROLLBACK) {
-                this.transactionManager.rollback();
-            } else if (tx.getStatus() == Status.STATUS_ACTIVE) {
-                // Commit tx
-                this.transactionManager.commit();
-            }
-        } catch (Exception e) {
-            throw MESSAGES.failToEndTransaction(e);
-        }
-    }
-
-
-    private void handleLifecycleCallback() {
+    private void assertTimerServiceState() {
+        TimerServiceDisabledTacker.assertEnabled();
         if (isLifecycleCallbackInvocation() && !this.isSingletonBeanInvocation()) {
             throw MESSAGES.failToInvokeTimerServiceDoLifecycle();
         }

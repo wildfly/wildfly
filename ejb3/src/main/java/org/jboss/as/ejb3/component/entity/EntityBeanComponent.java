@@ -67,10 +67,12 @@ public class EntityBeanComponent extends EJBComponent {
     private final Method ejbLoadMethod;
     private final Method ejbActivateMethod;
     private final Method ejbPassivateMethod;
+    private final Method unsetEntityContextMethod;
     private final InterceptorFactory ejbStore;
     private final InterceptorFactory ejbLoad;
     private final InterceptorFactory ejbActivate;
     private final InterceptorFactory ejbPassivate;
+    private final InterceptorFactory unsetEntityContext;
 
     private final TimedObjectInvoker timedObjectInvoker;
 
@@ -105,6 +107,8 @@ public class EntityBeanComponent extends EJBComponent {
         this.ejbStoreMethod = ejbComponentCreateService.getEjbStoreMethod();
         this.ejbPassivate = ejbComponentCreateService.getEjbPassivate();
         this.ejbPassivateMethod = ejbComponentCreateService.getEjbPassivateMethod();
+        this.unsetEntityContext = ejbComponentCreateService.getUnsetEntityContext();
+        this.unsetEntityContextMethod = ejbComponentCreateService.getUnsetEntityContextMethod();
         final String deploymentName;
         if (ejbComponentCreateService.getDistinctName() == null || ejbComponentCreateService.getDistinctName().length() == 0) {
             deploymentName = ejbComponentCreateService.getApplicationName() + "." + ejbComponentCreateService.getModuleName();
@@ -210,6 +214,14 @@ public class EntityBeanComponent extends EJBComponent {
 
     public InterceptorFactory getEjbPassivate() {
         return ejbPassivate;
+    }
+
+    public Method getUnsetEntityContextMethod() {
+        return unsetEntityContextMethod;
+    }
+
+    public InterceptorFactory getUnsetEntityContext() {
+        return unsetEntityContext;
     }
 
     @Override

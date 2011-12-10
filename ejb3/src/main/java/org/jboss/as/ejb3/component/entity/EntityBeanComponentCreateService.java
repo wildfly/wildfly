@@ -37,6 +37,7 @@ import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.component.EJBComponentCreateServiceFactory;
 import org.jboss.as.ejb3.component.InvokeMethodOnTargetInterceptor;
+import org.jboss.as.ejb3.component.entity.interceptors.DisableTimerServiceInterceptorFactory;
 import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.invocation.ImmediateInterceptorFactory;
@@ -58,10 +59,12 @@ public class EntityBeanComponentCreateService extends EJBComponentCreateService 
     private final Method ejbLoadMethod;
     private final Method ejbActivateMethod;
     private final Method ejbPassivateMethod;
+    private final Method unsetEntityContextMethod;
     private final InterceptorFactory ejbStore;
     private final InterceptorFactory ejbLoad;
     private final InterceptorFactory ejbActivate;
     private final InterceptorFactory ejbPassivate;
+    private final InterceptorFactory unsetEntityContext;
 
     public EntityBeanComponentCreateService(final ComponentConfiguration componentConfiguration, final ApplicationExceptions ejbJarConfiguration) {
         super(componentConfiguration, ejbJarConfiguration);
@@ -81,43 +84,49 @@ public class EntityBeanComponentCreateService extends EJBComponentCreateService 
 
 
         Method ejbStore = null;
-        Method ejbLoad= null;
-        Method ejbActivate= null;
-        Method ejbPassivate= null;
-        for(final Method method : componentConfiguration.getDefinedComponentMethods()) {
-            if(method.getName().equals("ejbStore") && method.getParameterTypes().length == 0) {
+        Method ejbLoad = null;
+        Method ejbActivate = null;
+        Method ejbPassivate = null;
+        Method unsetEntityContext = null;
+        for (final Method method : componentConfiguration.getDefinedComponentMethods()) {
+            if (method.getName().equals("ejbStore") && method.getParameterTypes().length == 0) {
                 ejbStore = method;
-            } else if(method.getName().equals("ejbLoad") && method.getParameterTypes().length == 0) {
+            } else if (method.getName().equals("ejbLoad") && method.getParameterTypes().length == 0) {
                 ejbLoad = method;
-            }else if(method.getName().equals("ejbActivate") && method.getParameterTypes().length == 0) {
+            } else if (method.getName().equals("ejbActivate") && method.getParameterTypes().length == 0) {
                 ejbActivate = method;
-            }else if(method.getName().equals("ejbPassivate") && method.getParameterTypes().length == 0) {
+            } else if (method.getName().equals("ejbPassivate") && method.getParameterTypes().length == 0) {
                 ejbPassivate = method;
+            } else if (method.getName().equals("unsetEntityContext") && method.getParameterTypes().length == 0) {
+                unsetEntityContext = method;
             }
         }
-        if(ejbStore == null) {
+        if (ejbStore == null) {
             throw EjbMessages.MESSAGES.couldNotFindEntityBeanMethod("ejbStore");
-        } else if(ejbLoad == null) {
+        } else if (ejbLoad == null) {
             throw EjbMessages.MESSAGES.couldNotFindEntityBeanMethod("ejbLoad");
-        }else if(ejbActivate == null) {
+        } else if (ejbActivate == null) {
             throw EjbMessages.MESSAGES.couldNotFindEntityBeanMethod("ejbActivate");
-        }else if(ejbPassivate == null) {
+        } else if (ejbPassivate == null) {
             throw EjbMessages.MESSAGES.couldNotFindEntityBeanMethod("ejbPassivate");
+        } else if (unsetEntityContext == null) {
+            throw EjbMessages.MESSAGES.couldNotFindEntityBeanMethod("unsetEntityContext");
         }
 
         this.ejbActivateMethod = ejbActivate;
         this.ejbLoadMethod = ejbLoad;
         this.ejbStoreMethod = ejbStore;
         this.ejbPassivateMethod = ejbPassivate;
+        this.unsetEntityContextMethod = unsetEntityContext;
         this.ejbActivate = Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(ejbActivate));
         this.ejbLoad = Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(ejbLoad));
         this.ejbStore = Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(ejbStore));
-        this.ejbPassivate =Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(ejbPassivate));
-
+        this.ejbPassivate = Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(ejbPassivate));
+        this.unsetEntityContext = Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, new DisableTimerServiceInterceptorFactory("unsetEntityContext"), invokeMethodOnTarget(unsetEntityContext));
     }
 
     private Class<?> load(ClassLoader classLoader, String ejbClass) {
-        if(ejbClass != null) {
+        if (ejbClass != null) {
             try {
                 return classLoader.loadClass(ejbClass);
             } catch (ClassNotFoundException e) {
@@ -195,5 +204,13 @@ public class EntityBeanComponentCreateService extends EJBComponentCreateService 
 
     public InterceptorFactory getEjbPassivate() {
         return ejbPassivate;
+    }
+
+    public Method getUnsetEntityContextMethod() {
+        return unsetEntityContextMethod;
+    }
+
+    public InterceptorFactory getUnsetEntityContext() {
+        return unsetEntityContext;
     }
 }
