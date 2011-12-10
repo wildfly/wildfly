@@ -355,4 +355,11 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 14137, value = "Dynamic stub creation failed for class %s")
     void dynamicStubCreationFailed(String clazz, @Cause Throwable t);
 
+
+    /**
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 14138, value = "Exception releasing entity")
+    void exceptionReleasingEntity(@Cause Throwable t);
+
 }

@@ -129,8 +129,4 @@ public class BasicComponentInstance implements ComponentInstance {
         interceptorContext.setContextData(new HashMap<String, Object>());
         return interceptorContext;
     }
-
-    protected void finalize() {
-        destroy();
-    }
 }

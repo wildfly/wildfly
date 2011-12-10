@@ -36,6 +36,8 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
+
+import static org.jboss.as.ejb3.EjbLogger.EJB3_LOGGER;
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 
 /**
@@ -179,6 +181,8 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
                 lock.pushOwner(lockOwner);
                 try {
                     releaseInstance(componentInstance, status == Status.STATUS_COMMITTED);
+                } catch (Exception e) {
+                    EJB3_LOGGER.exceptionReleasingEntity(e);
                 } finally {
                     lock.popOwner();
                 }
