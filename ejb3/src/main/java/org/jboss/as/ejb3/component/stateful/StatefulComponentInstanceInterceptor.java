@@ -81,19 +81,19 @@ public class StatefulComponentInstanceInterceptor extends AbstractEJBInterceptor
                 if (ex instanceof RuntimeException || ex instanceof RemoteException) {
                     if (ROOT_LOGGER.isTraceEnabled())
                         ROOT_LOGGER.trace("Removing bean " + sessionId + " because of exception", ex);
-                    component.getCache().discard(sessionId);
+                    instance.discard();
                 }
             }
             throw ex;
         } catch (final Error e) {
             if (ROOT_LOGGER.isTraceEnabled())
                 ROOT_LOGGER.trace("Removing bean " + sessionId + " because of error", e);
-            component.getCache().discard(sessionId);
+            instance.discard();
             throw e;
         } catch (final Throwable t) {
             if (ROOT_LOGGER.isTraceEnabled())
                 ROOT_LOGGER.trace("Removing bean " + sessionId + " because of Throwable", t);
-            component.getCache().discard(sessionId);
+            instance.discard();
             throw new RuntimeException(t);
         } finally {
             // the StatefulSessionSynchronizationInterceptor will take care of releasing

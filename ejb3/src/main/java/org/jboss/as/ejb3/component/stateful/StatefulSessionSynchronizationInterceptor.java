@@ -106,7 +106,7 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
             // so that it can released on the tx synchronization callbacks
             boolean acquired = lock.tryLock(timeout.getValue(), timeout.getTimeUnit());
             if (!acquired) {
-                throw MESSAGES.failToObtainLock(context,timeout.getValue(),timeout.getTimeUnit());
+                throw MESSAGES.failToObtainLock(context, timeout.getValue(), timeout.getTimeUnit());
             }
             synchronized (threadLock) {
                 if (ROOT_LOGGER.isTraceEnabled()) {
@@ -148,7 +148,7 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
                     // taken care off by a tx synchronization callbacks.
                     if (!wasTxSyncRegistered && !synchronizationRegistered) {
                         releaseInstance(instance);
-                    } else if(!wasTxSyncRegistered) {
+                    } else if (!wasTxSyncRegistered) {
                         //if we don't release the lock here then it will be aquiared multiple times
                         //and only released once
                         releaseLock();
@@ -217,7 +217,9 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
                     ROOT_LOGGER.trace("Before completion callback invoked on Transaction synchronization: " + this +
                             " of stateful component instance: " + statefulSessionComponentInstance);
                 }
-                statefulSessionComponentInstance.beforeCompletion();
+                if (!statefulSessionComponentInstance.isDiscarded()) {
+                    statefulSessionComponentInstance.beforeCompletion();
+                }
             } catch (Throwable t) {
                 throw handleThrowableInTxSync(statefulSessionComponentInstance, t);
             }
@@ -226,11 +228,13 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
         @Override
         public void afterCompletion(int status) {
             try {
-                 if (ROOT_LOGGER.isTraceEnabled()) {
+                if (ROOT_LOGGER.isTraceEnabled()) {
                     ROOT_LOGGER.trace("After completion callback invoked on Transaction synchronization: " + this +
                             " of stateful component instance: " + statefulSessionComponentInstance);
-                 }
-                statefulSessionComponentInstance.afterCompletion(status == Status.STATUS_COMMITTED);
+                }
+                if (!statefulSessionComponentInstance.isDiscarded()) {
+                    statefulSessionComponentInstance.afterCompletion(status == Status.STATUS_COMMITTED);
+                }
             } catch (Throwable t) {
                 throw handleThrowableInTxSync(statefulSessionComponentInstance, t);
             }

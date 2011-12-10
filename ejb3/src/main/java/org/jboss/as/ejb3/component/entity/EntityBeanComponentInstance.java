@@ -46,7 +46,6 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
      * The primary key of this instance, is it is associated with an object identity
      */
     private volatile Object primaryKey;
-    private volatile boolean isDiscarded;
     private volatile EntityContextImpl entityContext;
     private volatile boolean removed = false;
     private volatile boolean synchronizeRegistered;
@@ -81,11 +80,11 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
 
 
     public void discard() {
-        if (!isDiscarded) {
-            isDiscarded = true;
+        if (!isDiscarded()) {
             getComponent().getCache().discard(this);
             this.primaryKey = null;
         }
+        super.discard();
     }
 
     @Override

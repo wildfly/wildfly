@@ -51,9 +51,6 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
     private final Interceptor afterBegin;
     private final Interceptor afterCompletion;
     private final Interceptor beforeCompletion;
-
-    private boolean isDiscarded = false;
-
     private final Interceptor ejb2XRemoveInterceptor;
 
     /**
@@ -105,9 +102,9 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
         }
     }
 
-    protected void discard() {
-        if (!isDiscarded) {
-            isDiscarded = true;
+    public void discard() {
+        if (!isDiscarded()) {
+            super.discard();
             getComponent().getCache().discard(id);
         }
     }

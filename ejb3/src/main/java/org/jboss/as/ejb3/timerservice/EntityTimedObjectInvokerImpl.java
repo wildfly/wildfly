@@ -76,16 +76,16 @@ public class EntityTimedObjectInvokerImpl implements MultiTimeoutMethodTimedObje
             }
             if (ex instanceof RuntimeException || ex instanceof RemoteException) {
                 discarded = true;
-                ejbComponent.getCache().discard(instance);
+                instance.discard();
             }
             throw ex;
         } catch (final Error e) {
             discarded = true;
-            ejbComponent.getCache().discard(instance);
+            instance.discard();
             throw e;
         } catch (final Throwable t) {
             discarded = true;
-            ejbComponent.getCache().discard(instance);
+            instance.discard();
             throw new RuntimeException(t);
         } finally {
             if (!discarded) {

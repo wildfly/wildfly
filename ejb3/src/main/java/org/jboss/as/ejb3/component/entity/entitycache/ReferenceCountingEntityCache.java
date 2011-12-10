@@ -63,6 +63,9 @@ public class ReferenceCountingEntityCache implements ReadyEntityCache {
     }
 
     public void release(final EntityBeanComponentInstance instance, boolean success) {
+        if(instance.isDiscarded()) {
+            return;
+        }
         if(instance.getPrimaryKey() == null) return;  // TODO: Should this be an Exception
         final CacheEntry cacheEntry = cache.get(instance.getPrimaryKey());
         if (cacheEntry == null) {
@@ -87,7 +90,6 @@ public class ReferenceCountingEntityCache implements ReadyEntityCache {
 
     public void discard(final EntityBeanComponentInstance instance) {
         cache.remove(instance.getPrimaryKey());
-        instance.discard();
     }
 
     public void start() {

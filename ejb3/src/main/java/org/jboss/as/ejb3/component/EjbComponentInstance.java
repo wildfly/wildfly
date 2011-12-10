@@ -41,6 +41,7 @@ public abstract class EjbComponentInstance extends BasicComponentInstance {
 
 
     private final Map<Method, Interceptor> timeoutInterceptors;
+    private volatile boolean discarded = false;
 
     private static final Object[] EMPTY_OBJECT_ARRAY = {};
     /**
@@ -79,19 +80,18 @@ public abstract class EjbComponentInstance extends BasicComponentInstance {
         }
     }
 
-    public void invokeTimeoutMethod(final Timer timer) {
-        final EJBComponent component = (EJBComponent) getComponent();
-        final Method method = component.getTimeoutMethod();
-        if (method == null) {
-            throw MESSAGES.componentTimeoutMethodNotSet(component.getComponentName());
-        }
-        invokeTimeoutMethod(method, timer);
-    }
-
     @Override
     public EJBComponent getComponent() {
         return (EJBComponent) super.getComponent();
     }
 
     public abstract EJBContextImpl getEjbContext();
+
+    public boolean isDiscarded() {
+        return discarded;
+    }
+
+    public void discard() {
+        this.discarded = true;
+    }
 }

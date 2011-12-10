@@ -90,6 +90,10 @@ public class TransactionLocalEntityCache implements ReadyEntityCache {
 
     @Override
     public void release(final EntityBeanComponentInstance instance, boolean success) {
+
+        if (instance.isDiscarded()) {
+            return;
+        }
         if (instance.getPrimaryKey() == null) {
             return;
         }
