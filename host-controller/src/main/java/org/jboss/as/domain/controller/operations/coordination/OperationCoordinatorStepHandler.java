@@ -54,7 +54,8 @@ import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
-import org.jboss.as.domain.controller.operations.deployment.NewDeploymentUploadUtil;
+import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadUtil;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -65,16 +66,19 @@ import org.jboss.dmr.ModelNode;
 public class OperationCoordinatorStepHandler {
 
     private final LocalHostControllerInfo localHostControllerInfo;
+    private final ContentRepository contentRepository;
     private final Map<String, ProxyController> hostProxies;
     private final Map<String, ProxyController> serverProxies;
     private final OperationSlaveStepHandler localSlaveHandler;
     private volatile ExecutorService executorService;
 
     OperationCoordinatorStepHandler(final LocalHostControllerInfo localHostControllerInfo,
+                                    ContentRepository contentRepository,
                                     final Map<String, ProxyController> hostProxies,
                                     final Map<String, ProxyController> serverProxies,
                                     final OperationSlaveStepHandler localSlaveHandler) {
         this.localHostControllerInfo = localHostControllerInfo;
+        this.contentRepository = contentRepository;
         this.hostProxies = hostProxies;
         this.serverProxies = serverProxies;
         this.localSlaveHandler = localSlaveHandler;
@@ -230,7 +234,7 @@ public class OperationCoordinatorStepHandler {
             if (address.size() == 0) {
                 String opName = opNode.get(OP).asString();
                 if (DeploymentFullReplaceHandler.OPERATION_NAME.equals(opName) && hasStorableContent(opNode)) {
-                    byte[] hash = NewDeploymentUploadUtil.storeDeploymentContent(context, opNode, localHostControllerInfo.getContentRepository());
+                    byte[] hash = DeploymentUploadUtil.storeDeploymentContent(context, opNode, contentRepository);
                     opNode.get(CONTENT).get(0).remove(INPUT_STREAM_INDEX);
                     opNode.get(CONTENT).get(0).get(HASH).set(hash);
                 }
@@ -243,7 +247,7 @@ public class OperationCoordinatorStepHandler {
             }
             else if (address.size() == 1 && DEPLOYMENT.equals(address.getElement(0).getKey())
                     && ADD.equals(opNode.get(OP).asString()) && hasStorableContent(opNode)) {
-                byte[] hash = NewDeploymentUploadUtil.storeDeploymentContent(context, opNode, localHostControllerInfo.getContentRepository());
+                byte[] hash = DeploymentUploadUtil.storeDeploymentContent(context, opNode, contentRepository);
                     opNode.get(CONTENT).get(0).remove(INPUT_STREAM_INDEX);
                     opNode.get(CONTENT).get(0).get(HASH).set(hash);
             }

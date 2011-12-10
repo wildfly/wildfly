@@ -678,8 +678,8 @@
 
         <module-def name="org.jboss.as.domain-http-error-context">
             <maven-resource group="org.jboss.as" artifact="jboss-as-domain-http-error-context"/>
-        </module-def>        	
-    	
+        </module-def>
+
         <module-def name="org.jboss.as.ee">
             <maven-resource group="org.jboss.as" artifact="jboss-as-ee"/>
         </module-def>
@@ -747,6 +747,10 @@
 
         <module-def name="org.jboss.as.mail">
             <maven-resource group="org.jboss.as" artifact="jboss-as-mail"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.management-client-content">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-management-client-content"/>
         </module-def>
 
         <module-def name="org.jboss.as.messaging">

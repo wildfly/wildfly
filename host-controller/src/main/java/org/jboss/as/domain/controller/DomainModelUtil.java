@@ -29,12 +29,15 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_CLIENT_CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_CODENAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLAN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLANS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
@@ -74,12 +77,16 @@ import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers.IntRangeValidatingHandler;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers.ModelTypeValidatingHandler;
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
+import org.jboss.as.domain.controller.descriptions.DomainRootDescription;
 import org.jboss.as.domain.controller.operations.ApplyRemoteMasterDomainModelHandler;
 import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
 import org.jboss.as.domain.controller.operations.ProcessTypeHandler;
@@ -104,6 +111,8 @@ import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymen
 import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentReplaceHandler;
 import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentUndeployHandler;
 import org.jboss.as.domain.controller.resource.SocketBindingResourceDefinition;
+import org.jboss.as.management.client.content.ManagedDMRContentResourceDefinition;
+import org.jboss.as.management.client.content.ManagedDMRContentTypeResourceDefinition;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionConstants;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
@@ -125,10 +134,10 @@ public class DomainModelUtil {
     /**
      * Update the model to hold domain level configuration.
      *
-     * @param rootModel - the model to be updated.
+     * @param rootResource the root resource to be updated.
      */
-    public static void updateCoreModel(final ModelNode rootModel) {
-
+    public static void updateCoreModel(final Resource rootResource) {
+        final ModelNode rootModel = rootResource.getModel();
         rootModel.get(RELEASE_VERSION).set(Version.AS_VERSION);
         rootModel.get(RELEASE_CODENAME).set(Version.AS_RELEASE_CODENAME);
     }
@@ -140,8 +149,8 @@ public class DomainModelUtil {
     }
 
     public static ExtensionContext initializeSlaveDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
-                                                                 final FileRepository fileRepository, final LocalHostControllerInfo hostControllerInfo) {
-        return initializeDomainRegistry(root, configurationPersister, null, fileRepository, false, null, null, hostControllerInfo);
+                                                                 final ContentRepository contentRepository, final FileRepository fileRepository, final LocalHostControllerInfo hostControllerInfo) {
+        return initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, false, null, null, hostControllerInfo);
     }
 
     private static ExtensionContext initializeDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
@@ -154,18 +163,21 @@ public class DomainModelUtil {
         // Other root resource operations
         XmlMarshallingHandler xmh = new XmlMarshallingHandler(configurationPersister);
         root.registerOperationHandler(XmlMarshallingHandler.OPERATION_NAME, xmh, xmh, false, OperationEntry.EntryType.PUBLIC, readOnly);
+
         root.registerOperationHandler(NamespaceAddHandler.OPERATION_NAME, NamespaceAddHandler.INSTANCE, NamespaceAddHandler.INSTANCE, false);
         root.registerOperationHandler(NamespaceRemoveHandler.OPERATION_NAME, NamespaceRemoveHandler.INSTANCE, NamespaceRemoveHandler.INSTANCE, false);
         root.registerOperationHandler(SchemaLocationAddHandler.OPERATION_NAME, SchemaLocationAddHandler.INSTANCE, SchemaLocationAddHandler.INSTANCE, false);
         root.registerOperationHandler(SchemaLocationRemoveHandler.OPERATION_NAME, SchemaLocationRemoveHandler.INSTANCE, SchemaLocationRemoveHandler.INSTANCE, false);
-        DeploymentUploadBytesHandler dubh = new DeploymentUploadBytesHandler(contentRepo);
+
+        DeploymentUploadBytesHandler dubh = isMaster ? new DeploymentUploadBytesHandler(contentRepo) : new DeploymentUploadBytesHandler();
         root.registerOperationHandler(DeploymentUploadBytesHandler.OPERATION_NAME, dubh, dubh, false, OperationEntry.EntryType.PUBLIC, deploymentUpload);
-        DeploymentUploadURLHandler duuh = new DeploymentUploadURLHandler(contentRepo);
+        DeploymentUploadURLHandler duuh = isMaster ? new DeploymentUploadURLHandler(contentRepo) : new DeploymentUploadURLHandler();
         root.registerOperationHandler(DeploymentUploadURLHandler.OPERATION_NAME, duuh, duuh, false, OperationEntry.EntryType.PUBLIC, deploymentUpload);
-        DeploymentUploadStreamAttachmentHandler dush = new DeploymentUploadStreamAttachmentHandler(contentRepo);
+        DeploymentUploadStreamAttachmentHandler dush = isMaster ? new DeploymentUploadStreamAttachmentHandler(contentRepo) : new DeploymentUploadStreamAttachmentHandler();
         root.registerOperationHandler(DeploymentUploadStreamAttachmentHandler.OPERATION_NAME, dush, dush, false, OperationEntry.EntryType.PUBLIC, deploymentUpload);
         DeploymentFullReplaceHandler dfrh = isMaster ? new DeploymentFullReplaceHandler(contentRepo) : new DeploymentFullReplaceHandler(fileRepository);
         root.registerOperationHandler(DeploymentFullReplaceHandler.OPERATION_NAME, dfrh, dfrh);
+
         SnapshotDeleteHandler snapshotDelete = new SnapshotDeleteHandler(configurationPersister);
         root.registerOperationHandler(SnapshotDeleteHandler.OPERATION_NAME, snapshotDelete, snapshotDelete, false);
         SnapshotListHandler snapshotList = new SnapshotListHandler(configurationPersister);
@@ -242,10 +254,18 @@ public class DomainModelUtil {
 
         // Root Deployments
         final ManagementResourceRegistration deployments = root.registerSubModel(PathElement.pathElement(DEPLOYMENT), DomainDescriptionProviders.DEPLOYMENT_PROVIDER);
-        DeploymentAddHandler dah = new DeploymentAddHandler(contentRepo);
+        DeploymentAddHandler dah = isMaster ? new DeploymentAddHandler(contentRepo) : new DeploymentAddHandler();
         deployments.registerOperationHandler(DeploymentAddHandler.OPERATION_NAME, dah, dah);
-        DeploymentRemoveHandler drh = new DeploymentRemoveHandler(contentRepo);
+        DeploymentRemoveHandler drh = isMaster ? new DeploymentRemoveHandler(contentRepo) : new DeploymentRemoveHandler();
         deployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, drh, drh);
+
+        // Management client content
+        ManagedDMRContentTypeResourceDefinition plansDef = new ManagedDMRContentTypeResourceDefinition(contentRepo, ROLLOUT_PLAN,
+                PathElement.pathElement(MANAGEMENT_CLIENT_CONTENT, ROLLOUT_PLANS), DomainRootDescription.getResourceDescriptionResolver(ROLLOUT_PLANS));
+        ManagementResourceRegistration mgmtContent = root.registerSubModel(plansDef);
+        ParameterValidator contentValidator = new ModelTypeValidator(ModelType.OBJECT); // TODO create a structural validator
+        ManagedDMRContentResourceDefinition planDef = ManagedDMRContentResourceDefinition.create(ROLLOUT_PLAN, contentValidator, DomainRootDescription.getResourceDescriptionResolver(ROLLOUT_PLAN));
+        mgmtContent.registerSubModel(planDef);
 
         // Extensions
         final ManagementResourceRegistration extensions = root.registerSubModel(PathElement.pathElement(EXTENSION), CommonProviders.EXTENSION_PROVIDER);
@@ -256,7 +276,7 @@ public class DomainModelUtil {
         extensions.registerOperationHandler(ExtensionRemoveHandler.OPERATION_NAME, removeExtensionHandler, removeExtensionHandler, false);
 
         if(!isMaster) {
-            ApplyRemoteMasterDomainModelHandler armdmh = new ApplyRemoteMasterDomainModelHandler(extensionContext, fileRepository, hostControllerInfo);
+            ApplyRemoteMasterDomainModelHandler armdmh = new ApplyRemoteMasterDomainModelHandler(extensionContext, fileRepository, contentRepo, hostControllerInfo);
             root.registerOperationHandler(ApplyRemoteMasterDomainModelHandler.OPERATION_NAME, armdmh, armdmh, false, OperationEntry.EntryType.PRIVATE);
         } else {
             ReadMasterDomainModelHandler rmdmh = new ReadMasterDomainModelHandler(domainController, registry);

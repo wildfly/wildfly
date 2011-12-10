@@ -54,21 +54,22 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
     public static final String OPERATION_NAME = "write-local-domain-controller";
 
     private final ManagementResourceRegistration rootRegistration;
-    private final HostControllerEnvironment environment;
     private final HostControllerConfigurationPersister overallConfigPersister;
     private final FileRepository fileRepository;
     private final LocalHostControllerInfoImpl hostControllerInfo;
+    private final ContentRepository contentRepository;
     private final DomainController domainController;
     private final UnregisteredHostChannelRegistry registry;
 
     public static LocalDomainControllerAddHandler getInstance(final ManagementResourceRegistration rootRegistration,
                                                                  final LocalHostControllerInfoImpl hostControllerInfo,
-                                                                 final HostControllerEnvironment environment,
                                                                  final HostControllerConfigurationPersister overallConfigPersister,
                                                                  final FileRepository fileRepository,
+                                                                 final ContentRepository contentRepository,
                                                                  final DomainController domainController,
                                                                  final UnregisteredHostChannelRegistry registry) {
-        return new LocalDomainControllerAddHandler(rootRegistration, hostControllerInfo, environment, overallConfigPersister, fileRepository, domainController, registry);
+        return new LocalDomainControllerAddHandler(rootRegistration, hostControllerInfo, overallConfigPersister,
+                fileRepository, contentRepository, domainController, registry);
     }
 
     /**
@@ -76,16 +77,16 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
      */
     protected LocalDomainControllerAddHandler(final ManagementResourceRegistration rootRegistration,
                                     final LocalHostControllerInfoImpl hostControllerInfo,
-                                    final HostControllerEnvironment environment,
                                     final HostControllerConfigurationPersister overallConfigPersister,
                                     final FileRepository fileRepository,
+                                    final ContentRepository contentRepository,
                                     final DomainController domainController,
                                     final UnregisteredHostChannelRegistry registry) {
-        this.environment = environment;
         this.rootRegistration = rootRegistration;
         this.overallConfigPersister = overallConfigPersister;
         this.fileRepository = fileRepository;
         this.hostControllerInfo = hostControllerInfo;
+        this.contentRepository = contentRepository;
         this.domainController = domainController;
         this.registry = registry;
     }
@@ -111,11 +112,8 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
         hostControllerInfo.setMasterDomainController(true);
         overallConfigPersister.initializeDomainConfigurationPersister(false);
 
-        ContentRepository contentRepo = new DomainContentRepository(environment.getDomainDeploymentDir());
-        hostControllerInfo.setContentRepository(contentRepo);
-
         DomainModelUtil.initializeMasterDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(),
-                contentRepo, fileRepository, domainController, registry);
+                contentRepository, fileRepository, domainController, registry);
     }
 
 

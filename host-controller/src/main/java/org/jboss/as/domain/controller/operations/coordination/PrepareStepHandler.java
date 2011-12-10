@@ -38,6 +38,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
@@ -63,11 +64,11 @@ public class PrepareStepHandler  implements OperationStepHandler {
     private final OperationSlaveStepHandler slaveHandler;
 
     public PrepareStepHandler(final LocalHostControllerInfo localHostControllerInfo,
-                              final Map<String, ProxyController> hostProxies,
+                              ContentRepository contentRepository, final Map<String, ProxyController> hostProxies,
                               final Map<String, ProxyController> serverProxies) {
         this.localHostControllerInfo = localHostControllerInfo;
         this.slaveHandler = new OperationSlaveStepHandler(localHostControllerInfo, serverProxies);
-        this.coordinatorHandler = new OperationCoordinatorStepHandler(localHostControllerInfo, hostProxies, serverProxies, slaveHandler);
+        this.coordinatorHandler = new OperationCoordinatorStepHandler(localHostControllerInfo, contentRepository, hostProxies, serverProxies, slaveHandler);
     }
 
     @Override

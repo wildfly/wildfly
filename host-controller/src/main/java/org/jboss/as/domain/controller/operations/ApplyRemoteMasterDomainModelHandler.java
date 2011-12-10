@@ -30,10 +30,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_CLIENT_CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLAN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLANS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
@@ -67,6 +70,8 @@ import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.operations.coordination.DomainServerUtils;
+import org.jboss.as.management.client.content.ManagedDMRContentTypeResource;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.as.server.operations.ServerRestartRequiredHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -85,14 +90,18 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
 
     private final Set<String> appliedExensions = new HashSet<String>();
     private final FileRepository fileRepository;
-
+    private final ContentRepository contentRepository;
     private final ExtensionContext extensionContext;
 
     private final LocalHostControllerInfo localHostInfo;
 
-    public ApplyRemoteMasterDomainModelHandler(final ExtensionContext extensionContext, final FileRepository fileRepository, final LocalHostControllerInfo localHostInfo) {
+    public ApplyRemoteMasterDomainModelHandler(final ExtensionContext extensionContext,
+                                               final FileRepository fileRepository,
+                                               final ContentRepository contentRepository,
+                                               final LocalHostControllerInfo localHostInfo) {
         this.extensionContext = extensionContext;
         this.fileRepository = fileRepository;
+        this.contentRepository = contentRepository;
         this.localHostInfo = localHostInfo;
     }
 
@@ -106,6 +115,7 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
         final Set<String> ourServerGroups = getOurServerGroups(context);
         final Map<String, Set<byte[]>> deploymentHashes = new HashMap<String, Set<byte[]>>();
         final Set<String> relevantDeployments = new HashSet<String>();
+        final Set<byte[]> requiredContent = new HashSet<byte[]>();
 
         final Resource rootResource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
         clearDomain(rootResource);
@@ -122,21 +132,30 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
             }
             resource.writeModel(resourceDescription.get("domain-resource-model"));
 
-            // Track deployment hashes and server group deployments so we can pull over the content we need
-            if (resourceAddress.size() == 1
-                    && resourceAddress.getElement(0).getKey().equals(DEPLOYMENT)) {
-                ModelNode model = resource.getModel();
-                String id = resourceAddress.getElement(0).getValue();
-                if (model.hasDefined(CONTENT)) {
-                    for (ModelNode contentItem : model.get(CONTENT).asList()) {
-                        if (contentItem.hasDefined(HASH)) {
-                            Set<byte[]> hashes = deploymentHashes.get(id);
-                            if (hashes == null) {
-                                hashes = new HashSet<byte[]>();
-                                deploymentHashes.put(id, hashes);
+            // Track deployment and management content hashes and server group deployments so we can pull over the content we need
+            if (resourceAddress.size() == 1) {
+                PathElement pe = resourceAddress.getElement(0);
+                String peKey = pe.getKey();
+                if (peKey.equals(DEPLOYMENT)) {
+                    ModelNode model = resource.getModel();
+                    String id = resourceAddress.getElement(0).getValue();
+                    if (model.hasDefined(CONTENT)) {
+                        for (ModelNode contentItem : model.get(CONTENT).asList()) {
+                            if (contentItem.hasDefined(HASH)) {
+                                Set<byte[]> hashes = deploymentHashes.get(id);
+                                if (hashes == null) {
+                                    hashes = new HashSet<byte[]>();
+                                    deploymentHashes.put(id, hashes);
+                                }
+                                hashes.add(contentItem.get(HASH).asBytes());
                             }
-                            hashes.add(contentItem.get(HASH).asBytes());
                         }
+                    }
+                } else if (peKey.equals(MANAGEMENT_CLIENT_CONTENT)) {
+                    // We need to pull over management content from the master HC's repo
+                    ModelNode model = resource.getModel();
+                    if (model.hasDefined(HASH)) {
+                        requiredContent.add(model.get(HASH).asBytes());
                     }
                 }
 
@@ -148,14 +167,15 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
             }
         }
 
-        // Make sure we have all needed deployment content
+        // Make sure we have all needed deployment and management client content
         for (String id : relevantDeployments) {
             Set<byte[]> hashes = deploymentHashes.remove(id);
             if (hashes != null) {
-                for (byte[] hash : hashes) {
-                    fileRepository.getDeploymentFiles(hash);
-                }
+                requiredContent.addAll(hashes);
             }
+        }
+        for (byte[] hash : requiredContent) {
+            fileRepository.getDeploymentFiles(hash);
         }
 
         if (!context.isBooting()) {
@@ -373,11 +393,20 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
             return rootResource;
         }
         Resource temp = rootResource;
+        int idx = 0;
         for(PathElement element : resourceAddress) {
             temp = temp.getChild(element);
             if(temp == null) {
-                return context.createResource(resourceAddress);
+                if (idx == 0 && element.getKey().equals(MANAGEMENT_CLIENT_CONTENT) && element.getValue().equals(ROLLOUT_PLANS)) {
+                    // Needs a specialized resource type
+                    temp = new ManagedDMRContentTypeResource(element, ROLLOUT_PLAN, null, contentRepository);
+                    context.addResource(resourceAddress, temp);
+                } else {
+                    temp = context.createResource(resourceAddress);
+                }
+                break;
             }
+            idx++;
         }
         return temp;
     }

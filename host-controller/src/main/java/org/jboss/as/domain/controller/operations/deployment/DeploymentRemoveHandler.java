@@ -58,6 +58,16 @@ public class DeploymentRemoveHandler implements OperationStepHandler, Descriptio
 
     private final ContentRepository contentRepository;
 
+    /** Constructor for a slave Host Controller */
+    public DeploymentRemoveHandler() {
+        this(null);
+    }
+
+    /**
+     * Constructor for a master Host Controller
+     *
+     * @param contentRepository the master content repository. If {@code null} this handler will function as a slave hander would.
+     */
     public DeploymentRemoveHandler(ContentRepository contentRepository) {
         this.contentRepository = contentRepository;
     }

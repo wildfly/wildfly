@@ -65,6 +65,7 @@ import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.remote.RemoteProxyController;
+import org.jboss.as.domain.controller.DomainContentRepository;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.domain.controller.FileRepository;
@@ -88,6 +89,7 @@ import org.jboss.as.remoting.EndpointService;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.BootstrapListener;
 import org.jboss.as.server.RuntimeExpressionResolver;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -130,6 +132,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     // TODO look into using the controller executor
     private final ExecutorService proxyExecutor = Executors.newCachedThreadPool();
     private final AbstractVaultReader vaultReader;
+    private final ContentRepository contentRepository;
 
     private volatile ServerInventory serverInventory;
 
@@ -144,9 +147,10 @@ public class DomainModelControllerService extends AbstractControllerService impl
         final LocalHostControllerInfoImpl hostControllerInfo = new LocalHostControllerInfoImpl(processState);
         final AbstractVaultReader vaultReader = service(AbstractVaultReader.class);
         log.debugf("Using VaultReader %s", vaultReader);
-        final PrepareStepHandler prepareStepHandler = new PrepareStepHandler(hostControllerInfo, hostProxies, serverProxies);
+        final ContentRepository contentRepository = new DomainContentRepository(environment.getDomainDeploymentDir());
+        final PrepareStepHandler prepareStepHandler = new PrepareStepHandler(hostControllerInfo, contentRepository, hostProxies, serverProxies);
         DomainModelControllerService service = new DomainModelControllerService(environment, runningModeControl, processState,
-                hostControllerInfo, hostProxies, serverProxies, prepareStepHandler, vaultReader, bootstrapListener);
+                hostControllerInfo, contentRepository, hostProxies, serverProxies, prepareStepHandler, vaultReader, bootstrapListener);
         return serviceTarget.addService(SERVICE_NAME, service)
                 .addDependency(HostControllerService.HC_EXECUTOR_SERVICE_NAME, ExecutorService.class, service.getExecutorServiceInjector())
                 .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerConnectionService.class, service.injectedProcessControllerConnection)
@@ -158,6 +162,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                                          final RunningModeControl runningModeControl,
                                          final ControlledProcessState processState,
                                          final LocalHostControllerInfoImpl hostControllerInfo,
+                                         final ContentRepository contentRepository,
                                          final Map<String, ProxyController> hostProxies,
                                          final Map<String, ProxyController> serverProxies,
                                          final PrepareStepHandler prepareStepHandler,
@@ -170,6 +175,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         this.hostControllerInfo = hostControllerInfo;
         this.localFileRepository = new LocalFileRepository(environment);
         this.remoteFileRepository = new RemoteFileRepository(localFileRepository);
+        this.contentRepository = contentRepository;
         this.hostProxies = hostProxies;
         this.serverProxies = serverProxies;
         this.prepareStepHandler = prepareStepHandler;
@@ -276,9 +282,9 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
     @Override
     protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
-        DomainModelUtil.updateCoreModel(rootResource.getModel());
+        DomainModelUtil.updateCoreModel(rootResource);
         HostModelUtil.createHostRegistry(rootRegistration, hostControllerConfigurationPersister, environment, runningModeControl,
-                localFileRepository, hostControllerInfo, new DelegatingServerInventory(), remoteFileRepository, this, this, vaultReader);
+                localFileRepository, hostControllerInfo, new DelegatingServerInventory(), remoteFileRepository, contentRepository, this, this, vaultReader);
         this.modelNodeRegistration = rootRegistration;
     }
 

@@ -46,6 +46,16 @@ implements DescriptionProvider {
 
     private final ParametersValidator streamValidator = new ParametersValidator();
 
+    /** Constructor for a slave Host Controller */
+    public DeploymentUploadStreamAttachmentHandler() {
+        this(null);
+    }
+
+    /**
+     * Constructor for a master Host Controller
+     *
+     * @param repository the master content repository. If {@code null} this handler will function as a slave hander would.
+     */
     public DeploymentUploadStreamAttachmentHandler(final ContentRepository repository) {
         super(repository);
         this.streamValidator.registerValidator(INPUT_STREAM_INDEX, new IntRangeValidator(0));
