@@ -35,7 +35,6 @@
         <module name="javax.transaction.api"/>
         <module name="org.hibernate"/>
         <module name="org.hibernate.validator"/>
-        <module name="org.infinispan"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.jpa.spi"/>
         <module name="org.jboss.as.jpa.util"/>
