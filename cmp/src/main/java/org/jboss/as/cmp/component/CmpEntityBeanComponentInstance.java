@@ -68,6 +68,8 @@ public class CmpEntityBeanComponentInstance extends EntityBeanComponentInstance 
             getComponent().getStoreManager().activateEntity(context);
         } catch (RemoteException e) {
             throw new WrappedRemoteException(e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -80,10 +82,11 @@ public class CmpEntityBeanComponentInstance extends EntityBeanComponentInstance 
     }
 
     public synchronized void store() {
-        EntityBean instance = getInstance();
         try {
             if (!isRemoved()) {
-                instance.ejbStore();
+
+                invokeEjbStore();
+
                 final CmpEntityBeanContext context = getEjbContext();
                 final JDBCEntityPersistenceStore store = getComponent().getStoreManager();
                 if (context.getPrimaryKey() != null && store.isStoreRequired(context)) {

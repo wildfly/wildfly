@@ -57,11 +57,11 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
 
     protected EntityBeanComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, final Map<Method, Interceptor> timeoutInterceptors) {
         super(component, instanceReference, preDestroyInterceptor, methodInterceptors, timeoutInterceptors);
-        final EntityBeanComponent ejbComponent = (EntityBeanComponent)component;
+        final EntityBeanComponent ejbComponent = (EntityBeanComponent) component;
         this.ejbStore = ejbComponent.createInterceptor(ejbComponent.getEjbStore());
         this.ejbActivate = ejbComponent.createInterceptor(ejbComponent.getEjbActivate());
         this.ejbLoad = ejbComponent.createInterceptor(ejbComponent.getEjbLoad());
-        this.ejbPassivate  = ejbComponent.createInterceptor(ejbComponent.getEjbPassivate());
+        this.ejbPassivate = ejbComponent.createInterceptor(ejbComponent.getEjbPassivate());
     }
 
     @Override
@@ -129,10 +129,7 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
     public synchronized void store() {
         try {
             if (!removed) {
-                final InterceptorContext context = prepareInterceptorContext();
-                final EntityBeanComponent component = getComponent();
-                context.setMethod(component.getEjbStoreMethod());
-                ejbStore.processInvocation(context);
+                invokeEjbStore();
             }
         } catch (RemoteException e) {
             throw new WrappedRemoteException(e);
@@ -141,6 +138,13 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    protected void invokeEjbStore() throws Exception {
+        final InterceptorContext context = prepareInterceptorContext();
+        final EntityBeanComponent component = getComponent();
+        context.setMethod(component.getEjbStoreMethod());
+        ejbStore.processInvocation(context);
     }
 
     /**
@@ -172,6 +176,8 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
             getInstance().setEntityContext(entityContext);
         } catch (RemoteException e) {
             throw new WrappedRemoteException(e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
