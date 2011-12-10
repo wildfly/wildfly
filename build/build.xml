@@ -609,7 +609,7 @@
         </module-def>
 
         <module-def name="org.javassist">
-            <maven-resource group="javassist" artifact="javassist"/>
+            <maven-resource group="org.javassist" artifact="javassist"/>
         </module-def>
 
         <module-def name="org.jaxen">

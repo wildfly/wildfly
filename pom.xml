@@ -141,7 +141,7 @@
         <version.org.hibernate.validator>4.2.0.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.2.7.Final</version.org.hornetq>
         <version.org.infinispan>5.1.0.CR1</version.org.infinispan>
-        <version.org.javassist>3.12.1.GA</version.org.javassist>
+        <version.org.javassist>3.15.0-GA</version.org.javassist>
         <version.org.jdom>1.1.2</version.org.jdom>
         <version.org.jboss.arquillian.core>1.0.0.CR6</version.org.jboss.arquillian.core>
         <version.org.jboss.arquillian.osgi>1.0.0.CR4</version.org.jboss.arquillian.osgi>
@@ -404,6 +404,7 @@
                                             <exclude>commons-httpclient:commons-httpclient</exclude>
                                             <exclude>commons-logging:commons-logging</exclude>
                                             <exclude>concurrent:concurrent</exclude>
+                                            <exclude>javassist:javassist</exclude>
                                             <exclude>javax.persistence:persistence-api</exclude>
                                             <exclude>javax.servlet:servlet-api</exclude>
                                             <exclude>javax.xml:jaxrpc-api</exclude>
@@ -1214,7 +1215,7 @@
             </dependency>
 
             <dependency>
-                <groupId>javassist</groupId>
+                <groupId>org.javassist</groupId>
                 <artifactId>javassist</artifactId>
                 <version>${version.org.javassist}</version>
             </dependency>
@@ -2998,6 +2999,10 @@
                         <artifactId>classmate</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>javassist</groupId>
+                        <artifactId>javassist</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>javax.transaction</groupId>
                         <artifactId>jta</artifactId>
                     </exclusion>
@@ -3076,6 +3081,10 @@
                     <exclusion>
                         <groupId>org.hibernate</groupId>
                         <artifactId>hibernate</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javassist</groupId>
+                        <artifactId>javassist</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>javax.transaction</groupId>
@@ -3469,6 +3478,12 @@
                 <groupId>org.jboss.interceptor</groupId>
                 <artifactId>jboss-interceptor-core</artifactId>
                 <version>${version.org.jboss.interceptor}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javassist</groupId>
+                        <artifactId>javassist</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -5448,6 +5463,10 @@
                         <artifactId>commons-logging</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>javassist</groupId>
+                        <artifactId>javassist</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>javax.xml.stream</groupId>
                         <artifactId>stax-api</artifactId>
                     </exclusion>
@@ -5758,6 +5777,12 @@
                 <groupId>org.scannotation</groupId>
                 <artifactId>scannotation</artifactId>
                 <version>${version.org.scannotation}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javassist</groupId>
+                        <artifactId>javassist</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>

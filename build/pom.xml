@@ -260,11 +260,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>javassist</groupId>
-                    <artifactId>javassist</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>javax.activation</groupId>
                     <artifactId>activation</artifactId>
                 </dependency>
@@ -706,6 +701,11 @@
                 <dependency>
                     <groupId>org.infinispan</groupId>
                     <artifactId>infinispan-core</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.javassist</groupId>
+                    <artifactId>javassist</artifactId>
                 </dependency>
 
                 <dependency>
