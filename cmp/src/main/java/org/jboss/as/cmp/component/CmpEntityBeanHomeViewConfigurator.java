@@ -23,11 +23,10 @@
 package org.jboss.as.cmp.component;
 
 import java.lang.reflect.Method;
+
 import org.jboss.as.cmp.component.interceptors.CmpEntityBeanHomeFinderInterceptorFactory;
-import org.jboss.as.cmp.component.interceptors.CmpEntityBeanHomeRemoveInterceptorFactory;
 import org.jboss.as.ejb3.component.entity.EntityBeanHomeViewConfigurator;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanHomeFinderInterceptorFactory;
-import org.jboss.invocation.InterceptorFactory;
 
 /**
  * @author John Bailey
@@ -35,9 +34,5 @@ import org.jboss.invocation.InterceptorFactory;
 public class CmpEntityBeanHomeViewConfigurator extends EntityBeanHomeViewConfigurator {
     protected EntityBeanHomeFinderInterceptorFactory createHomeFindInterceptorFactory(final Method ejbFind, final boolean localHome) {
         return new CmpEntityBeanHomeFinderInterceptorFactory(ejbFind, localHome);
-    }
-
-    protected InterceptorFactory createHomeRemoveInterceptorFactory(final Method remove) {
-        return new CmpEntityBeanHomeRemoveInterceptorFactory(remove);
     }
 }

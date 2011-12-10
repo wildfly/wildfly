@@ -22,13 +22,8 @@
 
 package org.jboss.as.ejb3.component.entity.interceptors;
 
-import java.lang.reflect.Method;
-import java.rmi.RemoteException;
-import javax.ejb.RemoveException;
-import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
-import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
+import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
@@ -36,41 +31,28 @@ import org.jboss.invocation.InterceptorFactoryContext;
 
 /**
  * @author John Bailey
+ * @author Stuart Douglas
  */
 public class EntityBeanHomeRemoveInterceptorFactory implements InterceptorFactory {
-    private static final Object[] EMPTY = {};
-    private final Method ejbRemove;
 
-    public EntityBeanHomeRemoveInterceptorFactory(final Method ejbRemove) {
-        this.ejbRemove = ejbRemove;
+    private final boolean remote;
+
+    public EntityBeanHomeRemoveInterceptorFactory(final boolean remote) {
+        this.remote = remote;
     }
 
     public Interceptor create(final InterceptorFactoryContext context) {
         return new AbstractEJBInterceptor() {
             public Object processInvocation(final InterceptorContext context) throws Exception {
                 final EntityBeanComponent component = getComponent(context, EntityBeanComponent.class);
-                final EntityBeanComponentInstance instance = component.getCache().get(context.getParameters()[0]);
-                final Method oldMethod = context.getMethod();
-                final Object[] oldParams = context.getParameters();
-                try {
-                    context.putPrivateData(ComponentInstance.class, instance);
-                    context.setMethod(ejbRemove);
-                    context.setParameters(EMPTY);
-                    context.setTarget(instance.getInstance());
-                    instance.getInterceptor(ejbRemove).processInvocation(context);
-                } finally {
-                    context.setMethod(oldMethod);
-                    context.setParameters(oldParams);
-                    context.setTarget(null);
-                    context.putPrivateData(ComponentInstance.class, null);
+                if(remote) {
+                component.getEJBObject(context.getParameters()[0]).remove();
+                } else {
+                    component.getEjbLocalObject(context.getParameters()[0]).remove();
                 }
-                afterRemove(instance);
                 return null;
             }
         };
     }
 
-    protected void afterRemove(final EntityBeanComponentInstance instance) throws RemoveException, RemoteException {
-        instance.setRemoved(true);
-    }
 }
