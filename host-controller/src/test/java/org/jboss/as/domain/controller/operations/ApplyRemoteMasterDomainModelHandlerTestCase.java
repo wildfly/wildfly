@@ -29,14 +29,17 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_CLIENT_CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLANS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.InputStream;
@@ -68,6 +71,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
+import org.jboss.as.management.client.content.ManagedDMRContentTypeResource;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
@@ -81,7 +85,8 @@ import org.junit.Test;
  * @author John Bailey
  */
 public class ApplyRemoteMasterDomainModelHandlerTestCase {
-    private final ApplyRemoteMasterDomainModelHandler handler = new ApplyRemoteMasterDomainModelHandler(null, null, HOST_INFO) {
+
+    private final ApplyRemoteMasterDomainModelHandler handler = new ApplyRemoteMasterDomainModelHandler(null, null, null, HOST_INFO) {
         protected void initializeExtension(String module) {
         }
     };
@@ -496,6 +501,20 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase {
         operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
         handler.execute(operationContext, operation);
         operationContext.verify();
+    }
+
+    @Test
+    public void testRolloutPlans() throws Exception {
+        final ModelNode operation = new ModelNode();
+        final ModelNode change = new ModelNode();
+        PathAddress pa = PathAddress.pathAddress(PathElement.pathElement(MANAGEMENT_CLIENT_CONTENT, ROLLOUT_PLANS));
+        change.get("domain-resource-address").set(pa.toModelNode());
+        change.get("domain-resource-model").set(new ModelNode());
+        operation.get(DOMAIN_MODEL).add(change);
+        final MockOperationContext operationContext = getOperationContext();
+        handler.execute(operationContext, operation);
+        Resource r = operationContext.root.navigate(pa);
+        assertTrue(r instanceof ManagedDMRContentTypeResource);
     }
 
     private static final LocalHostControllerInfo HOST_INFO = new LocalHostControllerInfo() {

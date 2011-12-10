@@ -68,6 +68,7 @@ public class ServerOperationResolver {
         SOCKET_BINDING_GROUP("socket-binding-group"),
         DEPLOYMENT("deployment"),
         SERVER_GROUP("server-group"),
+        MANAGMENT_CLIENT_CONTENT("management-client-content"),
         HOST("host");
 
         private final String name;
@@ -176,6 +177,9 @@ public class ServerOperationResolver {
                 }
                 case SERVER_GROUP: {
                     return getServerGroupOperations(operation, address, domain, host);
+                }
+                case MANAGMENT_CLIENT_CONTENT: {
+                    return Collections.emptyMap();
                 }
                 case HOST: {
                     return getServerHostOperations(operation, address, domain, host);

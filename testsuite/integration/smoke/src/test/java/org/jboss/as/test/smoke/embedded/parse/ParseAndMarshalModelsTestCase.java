@@ -435,7 +435,7 @@ public class ParseAndMarshalModelsTestCase {
 
                 //interface
                 ManagementResourceRegistration interfaces = hostRegistration.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
-                HostSpecifiedInterfaceAddHandler hsiah = new HostSpecifiedInterfaceAddHandler(hostControllerInfo);
+                HostSpecifiedInterfaceAddHandler hsiah = new HostSpecifiedInterfaceAddHandler();
                 interfaces.registerOperationHandler(InterfaceAddHandler.OPERATION_NAME, hsiah, hsiah, false);
                 InterfaceCriteriaWriteHandler.register(interfaces);
 
@@ -500,7 +500,7 @@ public class ParseAndMarshalModelsTestCase {
         final ModelNode model = new ModelNode();
         final ModelController controller = createController(ProcessType.HOST_CONTROLLER, model, new Setup() {
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
-                DomainModelUtil.updateCoreModel(resource.getModel());
+                DomainModelUtil.updateCoreModel(resource);
                 DomainModelUtil.initializeMasterDomainRegistry(rootRegistration, persister, null, new MockFileRepository(), new MockDomainController(), null);
             }
         });
@@ -812,7 +812,7 @@ public class ParseAndMarshalModelsTestCase {
          * Create the ServerAddHandler
          */
         protected MockRemoteDomainControllerAddHandler() {
-            super(null, null, null, null);
+            super(null, null, null, null, null);
         }
 
         @Override

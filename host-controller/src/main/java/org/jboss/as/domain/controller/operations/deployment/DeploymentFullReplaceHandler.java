@@ -79,12 +79,14 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
     private final ParametersValidator unmanagedContentValidator = new ParametersValidator();
     private final ParametersValidator managedContentValidator = new ParametersValidator();
 
+    /** Constructor for a master Host Controller */
     public DeploymentFullReplaceHandler(final ContentRepository contentRepository) {
         this.contentRepository = contentRepository;
         this.fileRepository = null;
         init();
     }
 
+    /** Constructor for a slave Host Controller */
     public DeploymentFullReplaceHandler(final FileRepository fileRepository) {
         this.contentRepository = null;
         this.fileRepository = fileRepository;

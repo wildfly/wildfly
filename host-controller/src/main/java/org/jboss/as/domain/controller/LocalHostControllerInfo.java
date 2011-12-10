@@ -113,21 +113,6 @@ public interface LocalHostControllerInfo {
     int getRemoteDomainControllertPort();
 
     /**
-     * Get the network interface by its name
-     *
-     *  @param name the binding name
-     *  @return the network interface binding
-     */
-    NetworkInterfaceBinding getNetworkInterfaceBinding(String name) throws SocketException, UnknownHostException;
-
-    /**
-     * Gets the domain content repository, if this host {@link #isMasterDomainController()}.
-     *
-     * @return the content repository, or {@code null} is the host is not the domain controller
-     */
-    ContentRepository getContentRepository();
-
-    /**
      * Gets the current state of the host controller process.
      * @return the state
      */

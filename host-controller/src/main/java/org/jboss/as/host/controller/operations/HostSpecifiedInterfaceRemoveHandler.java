@@ -20,7 +20,6 @@ package org.jboss.as.host.controller.operations;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.server.services.net.SpecifiedInterfaceRemoveHandler;
-import org.jboss.dmr.ModelNode;
 
 /**
  * Handler for removing a fully-specified interface.
@@ -29,21 +28,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class HostSpecifiedInterfaceRemoveHandler extends SpecifiedInterfaceRemoveHandler {
 
-    private final LocalHostControllerInfoImpl localHostControllerInfo;
-
-    public HostSpecifiedInterfaceRemoveHandler(final LocalHostControllerInfoImpl localHostControllerInfo) {
-        this.localHostControllerInfo = localHostControllerInfo;
-    }
-
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
-        super.performRuntime(context, operation, model);
-        localHostControllerInfo.removeNetworkInterfaceBinding(getInterfaceName(operation));
-    }
-
-    @Override
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
-        // TODO: Re-Add Services
+    public HostSpecifiedInterfaceRemoveHandler() {
     }
 
     @Override

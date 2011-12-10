@@ -85,6 +85,7 @@ public enum Element {
     LOOPBACK_ADDRESS("loopback-address"),
 
     MANAGEMENT("management"),
+    MANAGEMENT_CLIENT_CONTENT("management-client-content"),
     MANAGEMENT_INTERFACES("management-interfaces"),
     MULTICAST("multicast"),
 
@@ -114,8 +115,8 @@ public enum Element {
 
     REMOTE("remote"),
     REMOTE_DESTINATION("remote-destination"),
+    ROLLOUT_PLANS("rollout-plans"),
 
-    SCANNING("scanning"),
     SECRET("secret"),
     SECURITY_REALM("security-realm"),
     SECURITY_REALMS("security-realms"),

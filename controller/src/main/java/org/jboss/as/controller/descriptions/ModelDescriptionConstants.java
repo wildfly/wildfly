@@ -116,6 +116,7 @@ public class ModelDescriptionConstants {
     public static final String LOCALE = "locale";
     public static final String MANAGEMENT_SUBSYSTEM_ENDPOINT = "management-subsystem-endpoint";
     public static final String MANAGEMENT = "management";
+    public static final String MANAGEMENT_CLIENT_CONTENT = "management-client-content";
     public static final String MANAGEMENT_INTERFACE = "management-interface";
     public static final String MASK = "mask";
     public static final String MASTER = "master";
@@ -200,6 +201,7 @@ public class ModelDescriptionConstants {
     public static final String ROLLED_BACK = "rolled-back";
     public static final String ROLLING_TO_SERVERS = "rolling-to-servers";
     public static final String ROLLOUT_PLAN = "rollout-plan";
+    public static final String ROLLOUT_PLANS = "rollout-plans";
     public static final String RUNNING_SERVER = "server";
     public static final String RUNTIME_NAME = "runtime-name";
     public static final String RUNTIME_UPDATE_SKIPPED = "runtime-update-skipped";

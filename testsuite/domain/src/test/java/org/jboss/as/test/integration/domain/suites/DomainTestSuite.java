@@ -40,7 +40,8 @@ import org.junit.runners.Suite;
         ManagementReadsTestCase.class,
         DeploymentManagementTestCase.class,
         ServerManagementTestCase.class,
-        ManagementAccessTestCase.class
+        ManagementAccessTestCase.class,
+        ManagementClientContentTestCase.class
 })
 public class DomainTestSuite {
 

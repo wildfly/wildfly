@@ -85,6 +85,16 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
     private final ParametersValidator unmanagedContentValidator = new ParametersValidator();
     private final ParametersValidator managedContentValidator = new ParametersValidator();
 
+    /** Constructor for a slave Host Controller */
+    public DeploymentAddHandler() {
+        this(null);
+    }
+
+    /**
+     * Constructor for a master Host Controller
+     *
+     * @param contentRepository the master content repository. If {@code null} this handler will function as a slave hander would.
+     */
     public DeploymentAddHandler(final ContentRepository contentRepository) {
         this.contentRepository = contentRepository;
         this.validator.registerValidator(RUNTIME_NAME, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
