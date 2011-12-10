@@ -27,6 +27,7 @@ import java.util.Properties;
 import org.hibernate.cache.CacheException;
 import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceName;
 
@@ -50,7 +51,7 @@ public class InfinispanRegionFactory extends org.hibernate.cache.infinispan.Infi
     @Override
     protected EmbeddedCacheManager createCacheManager(Properties properties) throws CacheException {
         String container = ConfigurationHelper.getString(CACHE_CONTAINER, properties, DEFAULT_CACHE_CONTAINER);
-        ServiceName serviceName = ServiceName.JBOSS.append("infinispan", container);
+        ServiceName serviceName = EmbeddedCacheManagerService.getServiceName(container);
         return (EmbeddedCacheManager) CurrentServiceContainer.getServiceContainer().getRequiredService(serviceName).getValue();
     }
 

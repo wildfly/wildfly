@@ -23,25 +23,17 @@
   -->
 
 <!-- Represents the Hibernate 4.0.x module-->
-<module xmlns="urn:jboss:module:1.1" name="org.hibernate">
+<module xmlns="urn:jboss:module:1.1" name="org.jboss.as.jpa.hibernate.infinispan">
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
-        <module name="asm.asm"/>
-        <module name="javax.api"/>
-        <module name="javax.persistence.api"/>
-        <module name="javax.transaction.api"/>
-        <module name="javax.validation.api"/>
-        <module name="org.antlr"/>
-        <module name="org.apache.ant"/>
-        <module name="org.apache.commons.collections"/>
-        <module name="org.dom4j"/>
-        <module name="org.javassist"/>
-        <module name="org.jboss.as.jpa.hibernate" slot="4"/>
-        <module name="org.jboss.as.jpa.hibernate.infinispan"/>
-        <module name="org.jboss.logging"/>
-        <module name="org.hibernate.envers" services="import" optional="true"/>
+        <module name="org.hibernate"/>
+        <module name="org.hibernate.infinispan"/>
+        <module name="org.infinispan"/>
+        <module name="org.jboss.as.clustering.infinispan"/>
+        <module name="org.jboss.as.server"/>
+        <module name="org.jboss.msc"/>
     </dependencies>
 </module>
