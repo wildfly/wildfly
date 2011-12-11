@@ -22,9 +22,13 @@
 
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -35,6 +39,7 @@ import org.jboss.as.controller.persistence.SubsystemXmlWriterRegistry;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.staxmapper.XMLElementWriter;
 
 /**
@@ -48,6 +53,7 @@ public final class ExtensionContextImpl implements ExtensionContext {
     private final ManagementResourceRegistration profileRegistration;
     private final SubsystemXmlWriterRegistry writerRegistry;
     private final ManagementResourceRegistration subsystemDeploymentRegistration;
+    private final Map<String, List<String>> subsystemsByModule = new HashMap<String, List<String>>();
 
     /**
      * Construct a new instance.
@@ -81,14 +87,56 @@ public final class ExtensionContextImpl implements ExtensionContext {
         }
     }
 
+    public ExtensionContext createTracking(String moduleName) {
+        return new DelegatingExtensionContext(moduleName, this);
+    }
+
+
     @Override
     public ProcessType getProcessType() {
         return processType;
     }
 
+    private void trackSubsystem(String moduleName, String subysystemName) {
+        synchronized (subsystemsByModule) {
+            List<String> subsystems = subsystemsByModule.get(moduleName);
+            if (subsystems == null) {
+                subsystems = new ArrayList<String>();
+                subsystemsByModule.put(moduleName, subsystems);
+            }
+            subsystems.add(subysystemName);
+        }
+    }
+
+    @Override
+    public void cleanup(Resource rootResource, String moduleName) {
+        List<String> subsystems = null;
+        synchronized (subsystemsByModule) {
+            subsystems = subsystemsByModule.get(moduleName);
+            if (subsystems != null) {
+                for (String subsystem : subsystems) {
+                    if (rootResource.getChild(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, subsystem)) != null) {
+                        throw MESSAGES.removingExtensionWithRegisteredSubsystem(moduleName, subsystem);
+                    }
+                }
+                for (String subsystem : subsystems) {
+                    profileRegistration.unregisterSubModel(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, subsystem));
+                    subsystemDeploymentRegistration.unregisterSubModel(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, subsystem));
+                }
+                subsystems.remove(moduleName);
+            }
+        }
+    }
+
+
     /** {@inheritDoc} */
     @Override
     public SubsystemRegistration registerSubsystem(final String name) throws IllegalArgumentException {
+        ROOT_LOGGER.registerSubsystemNoWraper(name);
+        return doRegisterSubsystem(name);
+    }
+
+    public SubsystemRegistration doRegisterSubsystem(final String name) throws IllegalArgumentException {
         if (name == null) {
             throw MESSAGES.nullVar("name");
         }
@@ -335,5 +383,35 @@ public final class ExtensionContextImpl implements ExtensionContext {
             deployments.unregisterProxyController(address);
             subdeployments.unregisterProxyController(address);
         }
+    }
+
+    private class DelegatingExtensionContext implements ExtensionContext {
+        final String moduleName;
+
+        public DelegatingExtensionContext(String moduleName, ExtensionContext delegate) {
+            this.moduleName = moduleName;
+        }
+
+        @Override
+        public SubsystemRegistration registerSubsystem(String name) throws IllegalArgumentException {
+            trackSubsystem(moduleName, name);
+            return ExtensionContextImpl.this.registerSubsystem(name);
+        }
+
+        @Override
+        public ProcessType getProcessType() {
+            return ExtensionContextImpl.this.getProcessType();
+        }
+
+        @Override
+        public ExtensionContext createTracking(String moduleName) {
+            return this;
+        }
+
+        @Override
+        public void cleanup(Resource resource, String moduleName) {
+            ExtensionContextImpl.this.cleanup(resource, moduleName);
+        }
+
     }
 }
