@@ -48,6 +48,16 @@ public class DeploymentUploadBytesHandler
 
     private final ParametersValidator bytesValidator = new ParametersValidator();
 
+    /** Constructor for a slave Host Controller */
+    public DeploymentUploadBytesHandler() {
+        this(null);
+    }
+
+    /**
+     * Constructor for a master Host Controller
+     *
+     * @param repository the master content repository. If {@code null} this handler will function as a slave hander would.
+     */
     public DeploymentUploadBytesHandler(final ContentRepository repository) {
         super(repository);
         this.bytesValidator.registerValidator(BYTES, new ModelTypeValidator(ModelType.BYTES));

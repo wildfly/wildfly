@@ -268,6 +268,7 @@
         <module>domain-http</module>
         <module>domain-management</module>
         <module>embedded</module>
+        <module>management-client-content</module>
         <module>network</module>
         <module>platform-mbean</module>
         <module>process-controller</module>
@@ -886,6 +887,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-managed-beans</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-management-client-content</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -2764,11 +2771,11 @@
                   <exclusion>
                       <groupId>org.apache.geronimo.specs</groupId>
                       <artifactId>geronimo-saaj_1.3_spec</artifactId>
-                  </exclusion>              
+                  </exclusion>
                   <exclusion>
                       <groupId>org.apache.geronimo.specs</groupId>
                       <artifactId>geronimo-stax-api_1.0_spec</artifactId>
-                  </exclusion>              
+                  </exclusion>
               </exclusions>
             </dependency>
 
@@ -2827,7 +2834,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.apache.openjpa</groupId>
                 <artifactId>openjpa-persistence</artifactId>
@@ -5723,7 +5730,7 @@
                 <artifactId>jython-standalone</artifactId>
                 <version>${version.org.python.jython.standalone}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.rhq.helpers</groupId>
                 <artifactId>rhq-pluginAnnotations</artifactId>

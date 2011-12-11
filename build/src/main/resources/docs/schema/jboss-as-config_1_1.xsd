@@ -49,6 +49,7 @@
                 <xs:element name="socket-binding-groups" type="socket-binding-groupsType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="deployments" type="domain-deploymentsType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="server-groups" type="server-groupsType" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="management-client-content" type="management-client-contentType" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -1922,5 +1923,31 @@
       </xs:sequence>
       <xs:attribute name="code" type="xs:string" use="optional"/>
    </xs:complexType>
+
+    <xs:complexType name="management-client-contentType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                   Storage information about re-usable chunks of data useful to management clients that are stored
+                   in the domain content repository.
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="rollout-plans" type="contentType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                           Storage information about a set of named management update rollout plans useful to management
+                           clients that are stored in the domain content repository. The management API exposed by the domain
+                           controller provides access to these plans to management clients, allowing clients to use the plans
+                           by referencing them by name, avoiding the need to recreate them for each use.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
 
 </xs:schema>

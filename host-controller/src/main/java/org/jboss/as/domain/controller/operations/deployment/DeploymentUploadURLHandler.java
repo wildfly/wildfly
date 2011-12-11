@@ -49,6 +49,16 @@ implements DescriptionProvider {
 
     private final ParametersValidator urlValidator = new ParametersValidator();
 
+    /** Constructor for a slave Host Controller */
+    public DeploymentUploadURLHandler() {
+        this(null);
+    }
+
+    /**
+     * Constructor for a master Host Controller
+     *
+     * @param repository the master content repository. If {@code null} this handler will function as a slave hander would.
+     */
     public DeploymentUploadURLHandler(final ContentRepository repository) {
         super(repository);
         this.urlValidator.registerValidator(URL, new StringLengthValidator(1));

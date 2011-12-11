@@ -19,32 +19,26 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.host.controller.operations;
 
-import java.util.List;
+package org.jboss.as.management.client.content;
 
+import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ProcessType;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
-import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
-import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceController;
 
 /**
- * Handler for adding a fully specified interface to a host.
+ * Remove handler for a resource that represents a named bit of re-usable DMR.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class HostSpecifiedInterfaceAddHandler extends SpecifiedInterfaceAddHandler {
+public class ManagedDMRContentRemoveHandler extends AbstractRemoveStepHandler {
 
-    public HostSpecifiedInterfaceAddHandler() {
-        super();
+    public static final ManagedDMRContentRemoveHandler INSTANCE = new ManagedDMRContentRemoveHandler();
+
+    private ManagedDMRContentRemoveHandler() {
     }
 
     @Override
     protected boolean requiresRuntime(OperationContext context) {
-        return context.getProcessType() == ProcessType.HOST_CONTROLLER;
+        return false;
     }
 }

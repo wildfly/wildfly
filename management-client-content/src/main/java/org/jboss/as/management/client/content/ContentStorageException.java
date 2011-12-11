@@ -19,32 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.host.controller.operations;
 
-import java.util.List;
+package org.jboss.as.management.client.content;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ProcessType;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
-import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
-import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceController;
+import java.io.IOException;
 
 /**
- * Handler for adding a fully specified interface to a host.
+ * {@link RuntimeException} to wrap IOExceptions thrown when manipulating managed DMR content.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class HostSpecifiedInterfaceAddHandler extends SpecifiedInterfaceAddHandler {
+public class ContentStorageException extends RuntimeException {
 
-    public HostSpecifiedInterfaceAddHandler() {
-        super();
-    }
-
-    @Override
-    protected boolean requiresRuntime(OperationContext context) {
-        return context.getProcessType() == ProcessType.HOST_CONTROLLER;
+    public ContentStorageException(final IOException cause) {
+        super(cause);
     }
 }
