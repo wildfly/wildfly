@@ -2069,4 +2069,15 @@ public interface ControllerMessages {
      */
     @Message(id = 14809, value = "A node is already registered at '%s'")
     IllegalArgumentException nodeAlreadyRegistered(String location);
+
+    /**
+     * Creates an exception indicating that an attempt
+     *
+     * @param name the name of the subsystem that was attempted was made to remove an extension that still has subsystems
+     * registered
+     * @return an {@link IllegalStateException} for the error
+     */
+    @Message(id = 14810, value = "An attempt was made to unregister extension %s which still has subsystem %s registered")
+    IllegalStateException removingExtensionWithRegisteredSubsystem(String moduleName, String subsystem);
+
 }

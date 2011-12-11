@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller;
 
+import org.jboss.as.controller.registry.Resource;
+
 
 /**
  * The context for registering a new extension.
@@ -46,11 +48,27 @@ public interface ExtensionContext {
      * @param name the name of the subsystem
      * @throws IllegalArgumentException if the subsystem name has already been registered
      */
-    SubsystemRegistration registerSubsystem(String name) throws IllegalArgumentException;
+    SubsystemRegistration registerSubsystem(String name) throws IllegalArgumentException, IllegalStateException;
 
-    ExtensionContext createWrapper(String moduleName);
+    /**
+     * Used internally by the application server to create a tracking wrapper to record what subsystems
+     * are created by the extension to be able to clean up when the extension is deployed.
+     *
+     * @param moduleName the name of the module
+     * @return a tracking extension context or the current extension context if we already are a tracking extension context
+     */
+    ExtensionContext createTracking(String moduleName);
 
-    void cleanup(String moduleName);
+    /**
+     * Cleans up a module's subsystems from the resource registration model. This is for internal use by the application
+     * server.
+     *
+     * @param the model root resource
+     * @param moduleName the name of the extension module
+     * @throws IllegalStateException if the extension still has subsystems registered
+     */
+    void cleanup(Resource rootResource, String moduleName) throws IllegalStateException;
+
     /**
      * Provide the current Process Type.
      * @return The current Process Type.

@@ -331,7 +331,7 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
             for (final Extension extension : Module.loadServiceFromCallerModuleLoader(ModuleIdentifier.fromString(module), Extension.class)) {
                 ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(extension.getClass());
                 try {
-                    extension.initialize(extensionContext.createWrapper(module));
+                    extension.initialize(extensionContext.createTracking(module));
                 } finally {
                     SecurityActions.setThreadContextClassLoader(oldTccl);
                 }

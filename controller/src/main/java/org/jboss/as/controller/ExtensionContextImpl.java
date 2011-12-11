@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ import org.jboss.as.controller.persistence.SubsystemXmlWriterRegistry;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.staxmapper.XMLElementWriter;
 
 /**
@@ -85,7 +87,7 @@ public final class ExtensionContextImpl implements ExtensionContext {
         }
     }
 
-    public ExtensionContext createWrapper(String moduleName) {
+    public ExtensionContext createTracking(String moduleName) {
         return new DelegatingExtensionContext(moduleName, this);
     }
 
@@ -107,14 +109,22 @@ public final class ExtensionContextImpl implements ExtensionContext {
     }
 
     @Override
-    public void cleanup(String moduleName) {
+    public void cleanup(Resource rootResource, String moduleName) {
         List<String> subsystems = null;
         synchronized (subsystemsByModule) {
-            subsystems = subsystemsByModule.remove(moduleName);
-        }
-        for (String subsystem : subsystems) {
-            profileRegistration.unregisterSubModel(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, subsystem));
-            subsystemDeploymentRegistration.unregisterSubModel(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, subsystem));
+            subsystems = subsystemsByModule.get(moduleName);
+            if (subsystems != null) {
+                for (String subsystem : subsystems) {
+                    if (rootResource.getChild(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, subsystem)) != null) {
+                        throw MESSAGES.removingExtensionWithRegisteredSubsystem(moduleName, subsystem);
+                    }
+                }
+                for (String subsystem : subsystems) {
+                    profileRegistration.unregisterSubModel(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, subsystem));
+                    subsystemDeploymentRegistration.unregisterSubModel(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, subsystem));
+                }
+                subsystems.remove(moduleName);
+            }
         }
     }
 
@@ -122,6 +132,11 @@ public final class ExtensionContextImpl implements ExtensionContext {
     /** {@inheritDoc} */
     @Override
     public SubsystemRegistration registerSubsystem(final String name) throws IllegalArgumentException {
+        ROOT_LOGGER.registerSubsystemNoWraper(name);
+        return doRegisterSubsystem(name);
+    }
+
+    public SubsystemRegistration doRegisterSubsystem(final String name) throws IllegalArgumentException {
         if (name == null) {
             throw MESSAGES.nullVar("name");
         }
@@ -389,13 +404,13 @@ public final class ExtensionContextImpl implements ExtensionContext {
         }
 
         @Override
-        public ExtensionContext createWrapper(String moduleName) {
+        public ExtensionContext createTracking(String moduleName) {
             return this;
         }
 
         @Override
-        public void cleanup(String moduleName) {
-            ExtensionContextImpl.this.cleanup(moduleName);
+        public void cleanup(Resource resource, String moduleName) {
+            ExtensionContextImpl.this.cleanup(resource, moduleName);
         }
 
     }

@@ -191,12 +191,12 @@ public class InterleavedSubsystemTestCase {
                 }
 
                 @Override
-                public ExtensionContext createWrapper(String moduleName) {
+                public ExtensionContext createTracking(String moduleName) {
                     return this;
                 }
 
                 @Override
-                public void cleanup(String moduleName) {
+                public void cleanup(Resource resource, String moduleName) {
                 }
             }, false);
             this.rootRegistration = rootRegistration;

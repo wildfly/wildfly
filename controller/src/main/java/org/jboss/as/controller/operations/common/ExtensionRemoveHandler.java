@@ -60,7 +60,8 @@ public class ExtensionRemoveHandler extends AbstractRemoveStepHandler implements
         super.performRemove(context, operation, model);
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         String module = address.getLastElement().getValue();
-        extensionContext.cleanup(module);
+        //TODO Still root resource for host model?
+        extensionContext.cleanup(context.getRootResource(), module);
     }
 
     @Override

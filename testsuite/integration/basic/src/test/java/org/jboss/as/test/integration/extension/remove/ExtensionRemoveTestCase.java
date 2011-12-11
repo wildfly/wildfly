@@ -93,28 +93,39 @@ public class ExtensionRemoveTestCase {
         try {
             ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
             try {
+                //Check extension and subsystem is not there
                 Assert.assertFalse(readResource(client).get(EXTENSION, MODULE_NAME).isDefined());
                 Assert.assertFalse(readResourceDescription(client).get(SUBSYSTEM, TestExtension.SUBSYSTEM_NAME).isDefined());
                 Assert.assertFalse(readResource(client).get(SUBSYSTEM, TestExtension.SUBSYSTEM_NAME).isDefined());
 
-                executeOperation(client, ADD, PathAddress.pathAddress(PathElement.pathElement(EXTENSION, MODULE_NAME)));
+                //Add extension, no subsystem yet
+                executeOperation(client, ADD, PathAddress.pathAddress(PathElement.pathElement(EXTENSION, MODULE_NAME)), false);
                 Assert.assertTrue(readResource(client).get(EXTENSION, MODULE_NAME).isDefined());
                 Assert.assertTrue(readResourceDescription(client).get(CHILDREN, SUBSYSTEM, MODEL_DESCRIPTION, TestExtension.SUBSYSTEM_NAME).isDefined());
                 Assert.assertFalse(readResource(client).get(SUBSYSTEM, TestExtension.SUBSYSTEM_NAME).isDefined());
 
-                executeOperation(client, ADD, PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, TestExtension.SUBSYSTEM_NAME)));
-                executeOperation(client, ADD, PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, TestExtension.SUBSYSTEM_NAME), PathElement.pathElement("child", "one")));
+                //Add subsystem
+                executeOperation(client, ADD, PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, TestExtension.SUBSYSTEM_NAME)), false);
+                executeOperation(client, ADD, PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, TestExtension.SUBSYSTEM_NAME), PathElement.pathElement("child", "one")), false);
                 Assert.assertTrue(readResource(client).get(EXTENSION, MODULE_NAME).isDefined());
                 Assert.assertTrue(readResourceDescription(client).get(CHILDREN, SUBSYSTEM, MODEL_DESCRIPTION, TestExtension.SUBSYSTEM_NAME).isDefined());
                 Assert.assertTrue(readResource(client).get(SUBSYSTEM, TestExtension.SUBSYSTEM_NAME).isDefined());
 
-                executeOperation(client, REMOVE, PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, TestExtension.SUBSYSTEM_NAME), PathElement.pathElement("child", "one")));
-                executeOperation(client, REMOVE, PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, TestExtension.SUBSYSTEM_NAME)));
+                //Should not be possible to remove extension before subsystem is removed
+                executeOperation(client, REMOVE, PathAddress.pathAddress(PathElement.pathElement(EXTENSION, MODULE_NAME)), true);
+                Assert.assertTrue(readResource(client).get(EXTENSION, MODULE_NAME).isDefined());
+                Assert.assertTrue(readResourceDescription(client).get(CHILDREN, SUBSYSTEM, MODEL_DESCRIPTION, TestExtension.SUBSYSTEM_NAME).isDefined());
+                Assert.assertTrue(readResource(client).get(SUBSYSTEM, TestExtension.SUBSYSTEM_NAME).isDefined());
+
+                //Remove subsystem
+                executeOperation(client, REMOVE, PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, TestExtension.SUBSYSTEM_NAME), PathElement.pathElement("child", "one")), false);
+                executeOperation(client, REMOVE, PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, TestExtension.SUBSYSTEM_NAME)), false);
                 Assert.assertTrue(readResource(client).get(EXTENSION, MODULE_NAME).isDefined());
                 Assert.assertTrue(readResourceDescription(client).get(CHILDREN, SUBSYSTEM, MODEL_DESCRIPTION, TestExtension.SUBSYSTEM_NAME).isDefined());
                 Assert.assertFalse(readResource(client).get(SUBSYSTEM, TestExtension.SUBSYSTEM_NAME).isDefined());
 
-                executeOperation(client, REMOVE, PathAddress.pathAddress(PathElement.pathElement(EXTENSION, MODULE_NAME)));
+                //Remove extension
+                executeOperation(client, REMOVE, PathAddress.pathAddress(PathElement.pathElement(EXTENSION, MODULE_NAME)), false);
                 Assert.assertFalse(readResource(client).get(EXTENSION, MODULE_NAME).isDefined());
                 Assert.assertFalse(readResourceDescription(client).get(CHILDREN, SUBSYSTEM, MODEL_DESCRIPTION, TestExtension.SUBSYSTEM_NAME).isDefined());
                 Assert.assertFalse(readResource(client).get(SUBSYSTEM, TestExtension.SUBSYSTEM_NAME).isDefined());
@@ -126,13 +137,17 @@ public class ExtensionRemoveTestCase {
         }
     }
 
-    private ModelNode executeOperation(ModelControllerClient client, String name, PathAddress address) throws IOException {
+    private ModelNode executeOperation(ModelControllerClient client, String name, PathAddress address, boolean fail) throws IOException {
         ModelNode op = new ModelNode();
         op.get(OP).set(name);
         op.get(OP_ADDR).set(address.toModelNode());
 
         ModelNode result = client.execute(op);
-        Assert.assertFalse(result.get(FAILURE_DESCRIPTION).toString(), result.get(FAILURE_DESCRIPTION).isDefined());
+        if (!fail) {
+            Assert.assertFalse(result.get(FAILURE_DESCRIPTION).toString(), result.get(FAILURE_DESCRIPTION).isDefined());
+        } else {
+            Assert.assertTrue(result.get(FAILURE_DESCRIPTION).isDefined());
+        }
 
         return result.get(RESULT);
     }
