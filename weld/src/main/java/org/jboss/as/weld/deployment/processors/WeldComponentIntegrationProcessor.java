@@ -35,6 +35,7 @@ import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InterceptorDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ee.component.interceptors.UserInterceptorFactory;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -138,18 +139,18 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
         //if this is an ejb add the EJB interceptors
         if (description instanceof EJBComponentDescription) {
 
-
             final Jsr299BindingsInterceptor.Factory aroundInvokeFactory = new Jsr299BindingsInterceptor.Factory(description.getBeanDeploymentArchiveId(), beanName, InterceptionType.AROUND_INVOKE, classLoader);
-            builder.addDependency(weldServiceName, WeldContainer.class, aroundInvokeFactory.getWeldContainer());
-            configuration.addComponentInterceptor(aroundInvokeFactory, InterceptorOrder.Component.CDI_INTERCEPTORS, false);
-            if (description.isTimerServiceApplicable()) {
-                final Jsr299BindingsInterceptor.Factory aroundTimeoutFactory = new Jsr299BindingsInterceptor.Factory(description.getBeanDeploymentArchiveId(), beanName, InterceptionType.AROUND_TIMEOUT, classLoader);
-                configuration.addTimeoutInterceptor(aroundTimeoutFactory, InterceptorOrder.Component.CDI_INTERCEPTORS);
-                builder.addDependency(weldServiceName, WeldContainer.class, aroundTimeoutFactory.getWeldContainer());
+            final Jsr299BindingsInterceptor.Factory aroundTimeoutFactory = new Jsr299BindingsInterceptor.Factory(description.getBeanDeploymentArchiveId(), beanName, InterceptionType.AROUND_TIMEOUT, classLoader);
 
+            builder.addDependency(weldServiceName, WeldContainer.class, aroundTimeoutFactory.getWeldContainer());
+            builder.addDependency(weldServiceName, WeldContainer.class, aroundInvokeFactory.getWeldContainer());
+
+
+            configuration.addComponentInterceptor(new UserInterceptorFactory(aroundInvokeFactory, aroundTimeoutFactory), InterceptorOrder.Component.CDI_INTERCEPTORS, false);
+            if (description.isTimerServiceApplicable()) {
                 //we need to activate our own request scope for timer service invocations
                 final EjbRequestScopeActivationInterceptor.Factory requestFactory = new EjbRequestScopeActivationInterceptor.Factory(classLoader);
-                configuration.addTimeoutInterceptor(requestFactory, InterceptorOrder.Component.CDI_REQUEST_SCOPE);
+                configuration.addTimeoutViewInterceptor(requestFactory, InterceptorOrder.View.CDI_REQUEST_SCOPE);
                 builder.addDependency(weldServiceName, WeldContainer.class, requestFactory.getWeldContainer());
             }
 

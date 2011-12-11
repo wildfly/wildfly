@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.component;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -109,11 +110,13 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         if (ejbComponentDescription.isTimerServiceApplicable()) {
             Map<Method, InterceptorFactory> timeoutInterceptors = new IdentityHashMap<Method, InterceptorFactory>();
             for (Method method : componentConfiguration.getDefinedComponentMethods()) {
-                timeoutInterceptors.put(method, Interceptors.getChainedInterceptorFactory(componentConfiguration.getAroundTimeoutInterceptors(method)));
+                final InterceptorFactory interceptorFactory = Interceptors.getChainedInterceptorFactory(componentConfiguration.getAroundTimeoutInterceptors(method));
+                timeoutInterceptors.put(method, interceptorFactory);
             }
+
             this.timeoutInterceptors = timeoutInterceptors;
         } else {
-            timeoutInterceptors = null;
+            timeoutInterceptors = Collections.emptyMap();
         }
 
         List<ViewConfiguration> views = componentConfiguration.getViews();

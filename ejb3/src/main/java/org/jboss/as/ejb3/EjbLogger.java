@@ -31,9 +31,7 @@ import javax.ejb.Timer;
 
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
-import org.jboss.as.ejb3.timerservice.CalendarTimer;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
-import org.jboss.as.ejb3.timerservice.spi.MultiTimeoutMethodTimedObjectInvoker;
 import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.logging.BasicLogger;
@@ -260,14 +258,6 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 14124, value = "Timer is not active, skipping retry of timer: %s")
     void timerNotActive(Timer timer);
-
-    /**
-     * Logs an error message indicating Cannot invoke timeout method because timer is an auto timer,
-     * but invoker is not of type specified
-     */
-    @LogMessage(level = ERROR)
-    @Message(id = 14125, value = "Cannot invoke timeout method because timer: %s is an auto timer, but invoker is not of type %s")
-    void failToInvokeTimeout(CalendarTimer calendarTimer, Class<MultiTimeoutMethodTimedObjectInvoker> multiTimeoutMethodTimedObjectInvokerClass);
 
     /**
      * Logs an warning message indicating could not read timer information for EJB component

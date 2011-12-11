@@ -39,11 +39,8 @@ public class
 
         public static final int INITIAL_INTERCEPTOR                                         = 0x100;
         public static final int TCCL_INTERCEPTOR                                            = 0x200;
-        public static final int JNDI_NAMESPACE_INTERCEPTOR                                  = 0x300;
-        public static final int TIMEOUT_INVOCATION_CONTEXT_INTERCEPTOR                      = 0x310;
         public static final int CDI_REQUEST_SCOPE                                           = 0x320;
         public static final int BMT_TRANSACTION_INTERCEPTOR                                 = 0x400;
-        public static final int COMPONENT_CMT_INTERCEPTOR                                   = 0x410;
         public static final int SYNCHRONIZATION_INTERCEPTOR                                 = 0x500;
         public static final int REENTRANCY_INTERCEPTOR                                      = 0x501;
         public static final int ENTITY_BEAN_REMOVE_INTERCEPTOR                              = 0x502;
@@ -121,6 +118,7 @@ public class
         public static final int INVALID_METHOD_EXCEPTION                                = 0x201;
         public static final int SECURITY_CONTEXT                                        = 0x250;
         public static final int EJB_SECURITY_AUTHORIZATION_INTERCEPTOR                  = 0x300;
+        public static final int CDI_REQUEST_SCOPE                                       = 0x350;
         public static final int INVOCATION_CONTEXT_INTERCEPTOR                          = 0x400;
         // should happen before the CMT/BMT interceptors
         public static final int REMOTE_TRANSACTION_PROPOGATION_INTERCEPTOR              = 0x450;

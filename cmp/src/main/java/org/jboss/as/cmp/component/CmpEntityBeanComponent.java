@@ -26,13 +26,14 @@ import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+
 import javax.ejb.EJBException;
 import javax.ejb.EJBLocalHome;
 import javax.transaction.Transaction;
+
 import org.jboss.as.cmp.TransactionEntityMap;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.JDBCEntityPersistenceStore;
@@ -75,17 +76,7 @@ public class CmpEntityBeanComponent extends EntityBeanComponent {
         factoryContext.getContextData().put(Component.class, this);
         final Interceptor interceptor = relationInterceptorFactory.create(factoryContext);
 
-        final Map<Method, Interceptor> timeouts;
-        if (timeoutInterceptors != null) {
-            timeouts = new HashMap<Method, Interceptor>();
-            for (Map.Entry<Method, InterceptorFactory> entry : timeoutInterceptors.entrySet()) {
-                timeouts.put(entry.getKey(), entry.getValue().create(interceptorContext));
-            }
-        } else {
-            timeouts = Collections.emptyMap();
-        }
-
-        return new CmpEntityBeanComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors, timeouts, interceptor);
+        return new CmpEntityBeanComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors, interceptor);
     }
 
     public void start() {

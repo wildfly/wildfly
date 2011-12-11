@@ -52,6 +52,7 @@ import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+
 /**
  * User: jpai
  */
@@ -78,7 +79,7 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
         statelessComponentConfiguration.setComponentCreateServiceFactory(new StatelessComponentCreateServiceFactory());
 
         // setup the configurator to inject the PoolConfig in the StatelessSessionComponentCreateService
-        final StatelessComponentDescription  statelessComponentDescription = (StatelessComponentDescription) statelessComponentConfiguration.getComponentDescription();
+        final StatelessComponentDescription statelessComponentDescription = (StatelessComponentDescription) statelessComponentConfiguration.getComponentDescription();
         statelessComponentConfiguration.getCreateDependencies().add(new PoolInjectingConfigurator(statelessComponentDescription));
 
         // add the bmt interceptor
@@ -89,18 +90,18 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
 
                     // add the bmt interceptor factory
                     configuration.addComponentInterceptor(EjbBMTInterceptor.FACTORY, InterceptorOrder.Component.BMT_TRANSACTION_INTERCEPTOR, false);
-                    configuration.addTimeoutInterceptor(EjbBMTInterceptor.FACTORY, InterceptorOrder.Component.BMT_TRANSACTION_INTERCEPTOR);
-                }
-            });
-        } else {
-            getConfigurators().add(new ComponentConfigurator() {
-                @Override
-                public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                    configuration.addTimeoutInterceptor(TimerCMTTxInterceptor.FACTORY, InterceptorOrder.Component.COMPONENT_CMT_INTERCEPTOR);
                 }
             });
         }
-
+        getConfigurators().add(new ComponentConfigurator() {
+            @Override
+            public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                if (TransactionManagementType.CONTAINER.equals(getTransactionManagementType())) {
+                    configuration.addTimeoutViewInterceptor(TimerCMTTxInterceptor.FACTORY, InterceptorOrder.View.CMT_TRANSACTION_INTERCEPTOR);
+                }
+                configuration.addTimeoutViewInterceptor(StatelessComponentInstanceAssociatingFactory.instance(), InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
+            }
+        });
 
         return statelessComponentConfiguration;
     }
@@ -136,13 +137,14 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
                 }
 
                 // add the stateless component instance associating interceptor
-                configuration.addViewInterceptor(StatelessComponentInstanceAssociatingFactory.instance(), InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);            }
+                configuration.addViewInterceptor(StatelessComponentInstanceAssociatingFactory.instance(), InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
+            }
         });
 
 
         if (view instanceof EJBViewDescription) {
             EJBViewDescription ejbViewDescription = (EJBViewDescription) view;
-            if(ejbViewDescription.getMethodIntf() == MethodIntf.REMOTE ) {
+            if (ejbViewDescription.getMethodIntf() == MethodIntf.REMOTE) {
                 view.getConfigurators().add(new ViewConfigurator() {
                     @Override
                     public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {

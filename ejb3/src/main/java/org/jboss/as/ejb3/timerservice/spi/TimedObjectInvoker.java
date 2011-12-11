@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.timerservice.spi;
 
+import java.lang.reflect.Method;
+
 import org.jboss.as.ejb3.timerservice.TimerImpl;
 
 /**
@@ -47,6 +49,19 @@ public interface TimedObjectInvoker {
      */
     void callTimeout(TimerImpl timer) throws Exception;
 
+    /**
+     * Responsible for invoking the timeout method on the target object.
+     * <p/>
+     * <p>
+     * The timerservice implementation invokes this method as a callback when a timeout occurs for the passed
+     * <code>timer</code>. The timerservice implementation will be responsible for passing the correct
+     * timeout method corresponding to the <code>timer</code> on which the timeout has occurred.
+     * </p>
+     *
+     * @param timer         the Timer that is passed to ejbTimeout
+     * @param timeoutMethod The timeout method
+     */
+    void callTimeout(TimerImpl timer, Method timeoutMethod) throws Exception;
 
     /**
      * @return The class loader that should be used to load restore any timers for this object

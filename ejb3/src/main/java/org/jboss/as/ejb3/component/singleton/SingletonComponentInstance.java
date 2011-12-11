@@ -42,10 +42,9 @@ public class SingletonComponentInstance extends SessionBeanComponentInstance  {
      * Construct a new instance.
      *
      * @param component           the component
-     * @param timeoutInterceptors
      */
-    public SingletonComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, final Map<Method, Interceptor> timeoutInterceptors) {
-        super(component, instanceReference, preDestroyInterceptor, methodInterceptors, timeoutInterceptors);
+    public SingletonComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
+        super(component, instanceReference, preDestroyInterceptor, methodInterceptors);
     }
 
     @Override

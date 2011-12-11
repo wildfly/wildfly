@@ -22,13 +22,12 @@
 package org.jboss.as.ejb3.component.messagedriven;
 
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import java.util.Properties;
+import java.util.Set;
 
 import javax.ejb.MessageDrivenBean;
 import javax.ejb.TransactionManagementType;
 import javax.resource.spi.ResourceAdapter;
-import java.util.Properties;
-import java.util.Set;
 
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.ee.component.Component;
@@ -59,6 +58,8 @@ import org.jboss.metadata.ejb.spec.MessageDrivenBeanMetaData;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -94,6 +95,12 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         // add the interceptor which will invoke the setMessageDrivenContext() method on a MDB which implements
         // MessageDrivenBean interface
         this.addSetMessageDrivenContextMethodInvocationInterceptor();
+        getConfigurators().add(new ComponentConfigurator() {
+            @Override
+            public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                configuration.addTimeoutViewInterceptor(MessageDrivenComponentInstanceAssociatingFactory.instance(), InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
+            }
+        });
     }
 
     @Override
@@ -117,14 +124,13 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
 
                     // add the bmt interceptor factory
                     configuration.addComponentInterceptor(EjbBMTInterceptor.FACTORY, InterceptorOrder.Component.BMT_TRANSACTION_INTERCEPTOR, false);
-                    configuration.addTimeoutInterceptor(EjbBMTInterceptor.FACTORY, InterceptorOrder.Component.BMT_TRANSACTION_INTERCEPTOR);
                 }
             });
         } else {
             getConfigurators().add(new ComponentConfigurator() {
                 @Override
                 public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                    configuration.addTimeoutInterceptor(TimerCMTTxInterceptor.FACTORY, InterceptorOrder.Component.COMPONENT_CMT_INTERCEPTOR);
+                    configuration.addTimeoutViewInterceptor(TimerCMTTxInterceptor.FACTORY, InterceptorOrder.View.CMT_TRANSACTION_INTERCEPTOR);
                 }
             });
         }

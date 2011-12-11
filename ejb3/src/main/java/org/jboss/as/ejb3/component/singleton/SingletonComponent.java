@@ -23,8 +23,6 @@
 package org.jboss.as.ejb3.component.singleton;
 
 import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -38,14 +36,10 @@ import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.as.ejb3.concurrency.LockableComponent;
-import org.jboss.as.ejb3.timerservice.SingletonTimedObjectInvokerImpl;
-import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StopContext;
@@ -71,10 +65,7 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
 
     private final List<ServiceName> dependsOn;
 
-
     private final DefaultAccessTimeoutService defaultAccessTimeoutProvider;
-
-    private final TimedObjectInvoker timedObjectInvoker;
 
     /**
      * Construct a new instance.
@@ -92,13 +83,6 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
         this.methodLockTypes = singletonComponentCreateService.getMethodApplicableLockTypes();
         this.methodAccessTimeouts = singletonComponentCreateService.getMethodApplicableAccessTimeouts();
         this.defaultAccessTimeoutProvider = singletonComponentCreateService.getDefaultAccessTimeoutService();
-        final String deploymentName;
-        if (singletonComponentCreateService.getDistinctName() == null || singletonComponentCreateService.getDistinctName().length() == 0) {
-            deploymentName = singletonComponentCreateService.getApplicationName() + "." + singletonComponentCreateService.getModuleName();
-        } else {
-            deploymentName = singletonComponentCreateService.getApplicationName() + "." + singletonComponentCreateService.getModuleName() + "." + singletonComponentCreateService.getDistinctName();
-        }
-        this.timedObjectInvoker = new SingletonTimedObjectInvokerImpl(this, deploymentName);
     }
 
     @Override
@@ -118,17 +102,7 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
                 }
             }
         }
-        final Map<Method, Interceptor> timeouts;
-        if (timeoutInterceptors != null) {
-            timeouts = new HashMap<Method, Interceptor>();
-            for (Map.Entry<Method, InterceptorFactory> entry : timeoutInterceptors.entrySet()) {
-                timeouts.put(entry.getKey(), entry.getValue().create(interceptorContext));
-            }
-        } else {
-            timeouts = Collections.emptyMap();
-        }
-
-        return new SingletonComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors, timeouts);
+        return new SingletonComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
     }
 
     public SingletonComponentInstance getComponentInstance() {
@@ -199,10 +173,5 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
             singletonComponentInstance.destroy();
             this.singletonComponentInstance = null;
         }
-    }
-
-    @Override
-    public TimedObjectInvoker getTimedObjectInvoker() {
-        return timedObjectInvoker;
     }
 }

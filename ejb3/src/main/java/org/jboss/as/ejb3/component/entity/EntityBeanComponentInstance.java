@@ -57,8 +57,8 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
     private final Interceptor ejbPassivate;
     private final Interceptor unsetEntityContext;
 
-    protected EntityBeanComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, final Map<Method, Interceptor> timeoutInterceptors) {
-        super(component, instanceReference, preDestroyInterceptor, methodInterceptors, timeoutInterceptors);
+    protected EntityBeanComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
+        super(component, instanceReference, preDestroyInterceptor, methodInterceptors);
         final EntityBeanComponent ejbComponent = (EntityBeanComponent) component;
         this.ejbStore = ejbComponent.createInterceptor(ejbComponent.getEjbStore());
         this.ejbActivate = ejbComponent.createInterceptor(ejbComponent.getEjbActivate());

@@ -38,6 +38,7 @@ import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.EjbHomeViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
+import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanAssociatingInterceptorFactory;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanReentrancyInterceptor;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanRemoveInterceptor;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanSynchronizationInterceptor;
@@ -70,6 +71,7 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
             @Override
             public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
                 configuration.addPostConstructInterceptor(EntityBeanInterceptors.POST_CONSTRUCT, InterceptorOrder.ComponentPostConstruct.SETUP_CONTEXT);
+                configuration.addTimeoutViewInterceptor(EntityBeanAssociatingInterceptorFactory.INSTANCE, InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
             }
         });
         addRemoveInterceptor();
@@ -120,7 +122,7 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
         getConfigurators().add(new ComponentConfigurator() {
             @Override
             public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.addTimeoutInterceptor(TimerCMTTxInterceptor.FACTORY, InterceptorOrder.Component.COMPONENT_CMT_INTERCEPTOR);
+                configuration.addTimeoutViewInterceptor(TimerCMTTxInterceptor.FACTORY, InterceptorOrder.View.CMT_TRANSACTION_INTERCEPTOR);
             }
         });
         return configuration;

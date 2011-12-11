@@ -52,6 +52,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.msc.service.ServiceName;
+
 /**
  * Component description for a singleton bean
  *
@@ -81,6 +82,12 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
         // add container managed concurrency interceptor to the component
         this.addConcurrencyManagementInterceptor();
 
+        getConfigurators().add(new ComponentConfigurator() {
+            @Override
+            public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                configuration.addTimeoutViewInterceptor(SingletonComponentInstanceAssociationInterceptor.FACTORY, InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
+            }
+        });
     }
 
     @Override
@@ -99,7 +106,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                     configuration.addPostConstructInterceptor(new SingletonLifecycleCMTTxInterceptor.Factory(TransactionAttributeType.REQUIRES_NEW), InterceptorOrder.ComponentPostConstruct.TRANSACTION_INTERCEPTOR);
                     configuration.addPreDestroyInterceptor(new SingletonLifecycleCMTTxInterceptor.Factory(TransactionAttributeType.REQUIRES_NEW), InterceptorOrder.ComponentPreDestroy.TRANSACTION_INTERCEPTOR);
 
-                    configuration.addTimeoutInterceptor(TimerCMTTxInterceptor.FACTORY, InterceptorOrder.Component.COMPONENT_CMT_INTERCEPTOR);
+                    configuration.addTimeoutViewInterceptor(TimerCMTTxInterceptor.FACTORY, InterceptorOrder.View.CMT_TRANSACTION_INTERCEPTOR);
 
                 }
             });
@@ -113,7 +120,6 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                     configuration.addPreDestroyInterceptor(EjbBMTInterceptor.FACTORY, InterceptorOrder.ComponentPreDestroy.TRANSACTION_INTERCEPTOR);
                     // add the bmt interceptor factory
                     configuration.addComponentInterceptor(EjbBMTInterceptor.FACTORY, InterceptorOrder.Component.BMT_TRANSACTION_INTERCEPTOR, false);
-                    configuration.addTimeoutInterceptor(EjbBMTInterceptor.FACTORY, InterceptorOrder.Component.BMT_TRANSACTION_INTERCEPTOR);
 
                 }
             });
@@ -178,7 +184,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
 
         if (view instanceof EJBViewDescription) {
             EJBViewDescription ejbViewDescription = (EJBViewDescription) view;
-            if(ejbViewDescription.getMethodIntf() == MethodIntf.REMOTE) {
+            if (ejbViewDescription.getMethodIntf() == MethodIntf.REMOTE) {
                 view.getConfigurators().add(new ViewConfigurator() {
                     @Override
                     public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
@@ -205,8 +211,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                 if (singletonComponentDescription.getConcurrencyManagementType() == ConcurrencyManagementType.BEAN) {
                     return;
                 }
-                configuration.addComponentInterceptor(ContainerManagedConcurrencyInterceptorFactory.INSTANCE, InterceptorOrder.Component.SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR, true);
-                configuration.addTimeoutInterceptor(ContainerManagedConcurrencyInterceptorFactory.INSTANCE, InterceptorOrder.Component.SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR);
+                configuration.addComponentInterceptor(ContainerManagedConcurrencyInterceptorFactory.INSTANCE, InterceptorOrder.Component.SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR, false);
             }
         });
     }

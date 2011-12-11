@@ -23,7 +23,6 @@ package org.jboss.as.ejb3.component.stateful;
 
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -60,7 +59,7 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
      * @param ejb2XRemoveInterceptor
      */
     protected StatefulSessionComponentInstance(final StatefulSessionComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, final Interceptor ejb2XRemoveInterceptor) {
-        super(component, instanceReference, preDestroyInterceptor, methodInterceptors, Collections.<Method, Interceptor>emptyMap());
+        super(component, instanceReference, preDestroyInterceptor, methodInterceptors);
         this.ejb2XRemoveInterceptor = ejb2XRemoveInterceptor;
 
 

@@ -112,6 +112,8 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
     private final InjectedValue<java.util.Timer> timerInjectedValue = new InjectedValue<java.util.Timer>();
 
+    private final InjectedValue<TimedObjectInvoker> timedObjectInvoker = new InjectedValue<TimedObjectInvoker>();
+
     /**
      * Auto timers that should be added on startup
      */
@@ -163,7 +165,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         logger.debug("Starting timerservice for timedObjectId: " + getInvoker().getTimedObjectId());
         final EJBComponent component = ejbComponentInjectedValue.getValue();
         this.transactionManager = component.getTransactionManager();
-        final TimedObjectInvoker invoker = component.getTimedObjectInvoker();
+        final TimedObjectInvoker invoker = timedObjectInvoker.getValue();
         if (invoker == null) {
             throw MESSAGES.invokerIsNull();
         }
@@ -182,7 +184,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     @Override
     public synchronized void stop(final StopContext context) {
         suspendTimers();
-        timerPersistence.getValue().timerUndeployed(ejbComponentInjectedValue.getValue().getTimedObjectInvoker().getTimedObjectId());
+        timerPersistence.getValue().timerUndeployed(timedObjectInvoker.getValue().getTimedObjectId());
         started = false;
         this.transactionManager = null;
     }
@@ -512,7 +514,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      * @return
      */
     public TimedObjectInvoker getInvoker() {
-        return ejbComponentInjectedValue.getValue().getTimedObjectInvoker();
+        return timedObjectInvoker.getValue();
     }
 
     /**
@@ -647,7 +649,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         final List<ScheduleTimer> newAutoTimers = new LinkedList<ScheduleTimer>(autoTimers);
 
         ROOT_LOGGER.debug("Found " + restorableTimers.size() + " active timers for timedObjectId: "
-                + this.ejbComponentInjectedValue.getValue().getTimedObjectInvoker().getTimedObjectId());
+                + getInvoker().getTimedObjectId());
         // now "start" each of the restorable timer. This involves, moving the timer to an ACTIVE state
         // and scheduling the timer task
         for (final TimerImpl activeTimer : restorableTimers) {
@@ -1081,6 +1083,10 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
     public boolean isStarted() {
         return started;
+    }
+
+    public InjectedValue<TimedObjectInvoker> getTimedObjectInvoker() {
+        return timedObjectInvoker;
     }
 
     private class TimerCreationTransactionSynchronization implements Synchronization {

@@ -27,10 +27,7 @@ import java.util.GregorianCalendar;
 
 import org.jboss.as.ejb3.timerservice.CalendarTimer;
 import org.jboss.as.ejb3.timerservice.TimerState;
-import org.jboss.as.ejb3.timerservice.spi.MultiTimeoutMethodTimedObjectInvoker;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 
 /**
  * CalendarTimerTask
@@ -59,12 +56,8 @@ public class CalendarTimerTask extends TimerTask<CalendarTimer> {
         // finally invoke the timeout method through the invoker
         if (calendarTimer.isAutoTimer()) {
             TimedObjectInvoker invoker = this.timerService.getInvoker();
-            if (!(invoker instanceof MultiTimeoutMethodTimedObjectInvoker)) {
-                ROOT_LOGGER.failToInvokeTimeout(calendarTimer, MultiTimeoutMethodTimedObjectInvoker.class);
-                throw MESSAGES.failToInvokeTimeout(calendarTimer, MultiTimeoutMethodTimedObjectInvoker.class);
-            }
             // call the timeout method
-            ((MultiTimeoutMethodTimedObjectInvoker) invoker).callTimeout(calendarTimer, calendarTimer.getTimeoutMethod());
+            invoker.callTimeout(calendarTimer, calendarTimer.getTimeoutMethod());
         } else {
             this.timerService.getInvoker().callTimeout(calendarTimer);
         }

@@ -17,6 +17,12 @@
 
 package org.jboss.as.weld.ejb;
 
+import java.io.Serializable;
+
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
+
 import org.jboss.as.weld.WeldContainer;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -25,11 +31,6 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.context.ejb.EjbLiteral;
 import org.jboss.weld.context.ejb.EjbRequestContext;
-
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
-import java.io.Serializable;
 
 /**
  * Interceptor for activating the CDI request scope on some EJB invocations.
@@ -45,14 +46,35 @@ import java.io.Serializable;
  */
 public class EjbRequestScopeActivationInterceptor implements Serializable, org.jboss.invocation.Interceptor {
 
-    private final EjbRequestContext requestContext;
+    private volatile EjbRequestContext requestContext;
+    private final ClassLoader classLoader;
+    private final InjectedValue<WeldContainer> weldContainer;
 
-    public EjbRequestScopeActivationInterceptor(final EjbRequestContext context) {
-        this.requestContext = context;
+    public EjbRequestScopeActivationInterceptor(final ClassLoader classLoader, final InjectedValue<WeldContainer> weldContainer) {
+        this.classLoader = classLoader;
+        this.weldContainer = weldContainer;
     }
 
     @Override
     public Object processInvocation(final InterceptorContext context) throws Exception {
+        //create the context lazily, on the first invocation
+        //we can't do this on interceptor creation, as the timed object invoker make create the interceptor
+        //before we have been injected
+        if (requestContext == null) {
+            final ClassLoader tccl = SecurityActions.getContextClassLoader();
+            try {
+                SecurityActions.setContextClassLoader(classLoader);
+                //it does not matter if this happens twice
+                final BeanManager beanManager = weldContainer.getValue().getBeanManager();
+                final Bean<?> bean = beanManager.resolve(beanManager.getBeans(EjbRequestContext.class, EjbLiteral.INSTANCE));
+                final CreationalContext<?> ctx = beanManager.createCreationalContext(bean);
+                requestContext = (EjbRequestContext) beanManager.getReference(bean, EjbRequestContext.class, ctx);
+            } finally {
+                SecurityActions.setContextClassLoader(tccl);
+            }
+        }
+
+
         try {
             requestContext.associate(context.getInvocationContext());
             requestContext.activate();
@@ -67,30 +89,15 @@ public class EjbRequestScopeActivationInterceptor implements Serializable, org.j
     public static class Factory implements InterceptorFactory {
 
         private final InjectedValue<WeldContainer> weldContainer = new InjectedValue<WeldContainer>();
-        private final ClassLoader classLoader;
-        private volatile Interceptor interceptor = null;
+        private final Interceptor interceptor;
 
         public Factory(final ClassLoader classLoader) {
-            this.classLoader = classLoader;
+            this.interceptor = new EjbRequestScopeActivationInterceptor(classLoader, weldContainer);
         }
 
 
         @Override
         public org.jboss.invocation.Interceptor create(final InterceptorFactoryContext context) {
-            if (interceptor == null) {
-                final ClassLoader tccl = SecurityActions.getContextClassLoader();
-                try {
-                    SecurityActions.setContextClassLoader(classLoader);
-                    //it does not matter if this happens twice
-                    final BeanManager beanManager = weldContainer.getValue().getBeanManager();
-                    final Bean<?> bean = beanManager.resolve(beanManager.getBeans(EjbRequestContext.class, EjbLiteral.INSTANCE));
-                    final CreationalContext<?> ctx = beanManager.createCreationalContext(bean);
-                    EjbRequestContext requestContext = (EjbRequestContext) beanManager.getReference(bean, EjbRequestContext.class, ctx);
-                    interceptor = new EjbRequestScopeActivationInterceptor(requestContext);
-                } finally {
-                    SecurityActions.setContextClassLoader(tccl);
-                }
-            }
             return interceptor;
         }
 

@@ -193,31 +193,12 @@ public class ComponentConfiguration {
     }
 
     /**
-     * Adds a timeout interceptor factory to a given method. The method parameter *must* be retrived from either the
-     * {@link org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex} or from {@link #getDefinedComponentMethods()},
-     * as the methods are stored in an identity hash map
+     * Adds a timeout interceptor factory to every method on the component.
      *
-     * @param method   The method to add the interceptor to
      * @param factory  The interceptor factory to add
      * @param priority The interceptors relative order
      */
-    public void addTimeoutInterceptor(Method method, InterceptorFactory factory, int priority) {
-        OrderedItemContainer<InterceptorFactory> interceptors = timeoutInterceptors.get(method);
-        if (interceptors == null) {
-            timeoutInterceptors.put(method, interceptors = new OrderedItemContainer<InterceptorFactory>());
-        }
-        interceptors.add(factory, priority);
-    }
-
-    /**
-     * Adds a timeout interceptor factory to every method on the component.
-     *
-     * TODO: this should only add it to timer methods
-     *
-     * @param factory    The interceptor factory to add
-     * @param priority   The interceptors relative order
-     */
-    public void addTimeoutInterceptor(InterceptorFactory factory, int priority) {
+    public void addTimeoutViewInterceptor(InterceptorFactory factory, int priority) {
         for (Method method : classIndex.getClassMethods()) {
             OrderedItemContainer<InterceptorFactory> interceptors = timeoutInterceptors.get(method);
             if (interceptors == null) {
@@ -225,6 +206,21 @@ public class ComponentConfiguration {
             }
             interceptors.add(factory, priority);
         }
+    }
+
+    /**
+     * Adds a timeout interceptor factory to every method on the component.
+     *
+     * @param method   The method to add it to
+     * @param factory  The interceptor factory to add
+     * @param priority The interceptors relative order
+     */
+    public void addTimeoutViewInterceptor(final Method method, InterceptorFactory factory, int priority) {
+        OrderedItemContainer<InterceptorFactory> interceptors = timeoutInterceptors.get(method);
+        if (interceptors == null) {
+            timeoutInterceptors.put(method, interceptors = new OrderedItemContainer<InterceptorFactory>());
+        }
+        interceptors.add(factory, priority);
     }
 
 
@@ -375,7 +371,6 @@ public class ComponentConfiguration {
     }
 
     /**
-     *
      * @return The components namespace context selector, if any
      */
     public NamespaceContextSelector getNamespaceContextSelector() {

@@ -22,8 +22,6 @@
 package org.jboss.as.ejb3.component.messagedriven;
 
 import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -42,20 +40,16 @@ import org.jboss.as.ejb3.inflow.JBossMessageEndpointFactory;
 import org.jboss.as.ejb3.inflow.MessageEndpointService;
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.pool.StatelessObjectFactory;
-import org.jboss.as.ejb3.timerservice.PooledTimedObjectInvokerImpl;
-import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.StopContext;
 
 import static java.util.Collections.emptyMap;
 import static javax.ejb.TransactionAttributeType.REQUIRED;
-import static org.jboss.as.ejb3.component.MethodIntf.BEAN;
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.component.MethodIntf.BEAN;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -68,7 +62,6 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     private final MessageEndpointFactory endpointFactory;
     private final Class<?> messageListenerInterface;
     private ResourceAdapter resourceAdapter;
-    private final TimedObjectInvoker timedObjectInvoker;
 
     /**
      * Construct a new instance.
@@ -130,27 +123,11 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
             }
         };
         this.endpointFactory = new JBossMessageEndpointFactory(getComponentClass().getClassLoader(), service);
-        final String deploymentName;
-        if(ejbComponentCreateService.getDistinctName() == null || ejbComponentCreateService.getDistinctName().length() == 0) {
-            deploymentName = ejbComponentCreateService.getApplicationName() + "." + ejbComponentCreateService.getModuleName();
-        } else {
-            deploymentName = ejbComponentCreateService.getApplicationName() + "." + ejbComponentCreateService.getModuleName() + "." + ejbComponentCreateService.getDistinctName();
-        }
-        this.timedObjectInvoker = new PooledTimedObjectInvokerImpl(this, deploymentName);
     }
 
     @Override
     protected BasicComponentInstance instantiateComponentInstance(AtomicReference<ManagedReference> instanceReference, Interceptor preDestroyInterceptor, Map<Method, Interceptor> methodInterceptors, final InterceptorFactoryContext interceptorContext) {
-        final Map<Method, Interceptor> timeouts;
-        if (timeoutInterceptors != null) {
-            timeouts = new HashMap<Method, Interceptor>();
-            for (Map.Entry<Method, InterceptorFactory> entry : timeoutInterceptors.entrySet()) {
-                timeouts.put(entry.getKey(), entry.getValue().create(interceptorContext));
-            }
-        } else {
-            timeouts = Collections.emptyMap();
-        }
-        return new MessageDrivenComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors, timeouts);
+        return new MessageDrivenComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
     }
 
     @Override
@@ -190,10 +167,5 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
         resourceAdapter.endpointDeactivation(endpointFactory, activationSpec);
 
         super.stop(stopContext);
-    }
-
-    @Override
-    public TimedObjectInvoker getTimedObjectInvoker() {
-        return timedObjectInvoker;
     }
 }

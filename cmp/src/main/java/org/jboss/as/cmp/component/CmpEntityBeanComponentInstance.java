@@ -48,8 +48,8 @@ import org.jboss.invocation.InterceptorContext;
 public class CmpEntityBeanComponentInstance extends EntityBeanComponentInstance {
     private final Interceptor relationshipInterceptor;
 
-    CmpEntityBeanComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, Map<Method, Interceptor> methodInterceptors, Map<Method, Interceptor> timeoutInterceptors, final Interceptor relationshipInterceptor) {
-        super(component, instanceReference, preDestroyInterceptor, methodInterceptors, timeoutInterceptors);
+    CmpEntityBeanComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, Map<Method, Interceptor> methodInterceptors, final Interceptor relationshipInterceptor) {
+        super(component, instanceReference, preDestroyInterceptor, methodInterceptors);
         this.relationshipInterceptor = relationshipInterceptor;
     }
 
