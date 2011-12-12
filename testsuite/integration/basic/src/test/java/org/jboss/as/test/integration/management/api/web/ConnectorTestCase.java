@@ -51,7 +51,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.management.api.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.Before;
