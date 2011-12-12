@@ -152,7 +152,6 @@
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-testsuite-shared</artifactId>
-            <version>7.1.0.CR1-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
         
