@@ -22,18 +22,20 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import javax.xml.XMLConstants;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.XMLConstants;
+import org.jboss.as.controller.AttributeDefinition;
 
 /**
  * Enumerates the attributes used in the Infinispan subsystem schema.
  * @author Paul Ferraro
+ * @author Richard Achmatowicz (c) 2011 RedHat Inc.
  */
 public enum Attribute {
     // must be first
-    UNKNOWN(null),
+    UNKNOWN((String) null),
     ACQUIRE_TIMEOUT(ModelKeys.ACQUIRE_TIMEOUT),
     BATCH_SIZE(ModelKeys.BATCH_SIZE),
     BATCHING(ModelKeys.BATCHING),
@@ -95,9 +97,16 @@ public enum Attribute {
     ;
 
     private final String name;
+    private final AttributeDefinition definition;
 
     private Attribute(final String name) {
         this.name = name;
+        this.definition = null;
+    }
+
+    private Attribute(final AttributeDefinition definition) {
+        this.name = definition.getXmlName();
+        this.definition = definition;
     }
 
     /**
@@ -107,6 +116,10 @@ public enum Attribute {
      */
     public String getLocalName() {
         return name;
+    }
+
+    public AttributeDefinition getDefinition() {
+        return definition;
     }
 
     private static final Map<String, Attribute> attributes;

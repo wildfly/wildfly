@@ -96,12 +96,6 @@ public class InfinispanDescriptions {
         description.get(CHILDREN, ModelKeys.SINGLETON, MAX_OCCURS).set(1);
         description.get(CHILDREN, ModelKeys.SINGLETON, ALLOWED).setEmptyList().add("transport");
         description.get(CHILDREN, ModelKeys.SINGLETON, MODEL_DESCRIPTION);
-
-//        description.get(CHILDREN, ModelKeys.TRANSPORT, DESCRIPTION).set("The container transport configuration");
-//        description.get(CHILDREN, ModelKeys.TRANSPORT, MIN_OCCURS).set(0);
-//        description.get(CHILDREN, ModelKeys.TRANSPORT, MAX_OCCURS).set(1);
-//        description.get(CHILDREN, ModelKeys.TRANSPORT, MODEL_DESCRIPTION);
-
         // information about its child "local-cache"
         description.get(CHILDREN, ModelKeys.LOCAL_CACHE, DESCRIPTION).set("A local cache resource");
         description.get(CHILDREN, ModelKeys.LOCAL_CACHE, MIN_OCCURS).set(0);
