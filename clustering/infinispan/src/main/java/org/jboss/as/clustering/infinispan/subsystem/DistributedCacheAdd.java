@@ -72,6 +72,7 @@ public class DistributedCacheAdd extends ClusteredCacheAdd implements Descriptio
      * @param additionalDeps
      * @return
      */
+    @Override
     Configuration processModelNode(ModelNode cache, Configuration configuration, List<AdditionalDependency> additionalDeps) {
 
         // process the basic clustered configuration
@@ -103,10 +104,14 @@ public class DistributedCacheAdd extends ClusteredCacheAdd implements Descriptio
             if (rehashing.hasDefined(ModelKeys.TIMEOUT)) {
                 fluentHash.rehashRpcTimeout(rehashing.get(ModelKeys.TIMEOUT).asLong());
             }
+            if (rehashing.hasDefined(ModelKeys.WAIT)) {
+                fluentHash.rehashWait(rehashing.get(ModelKeys.WAIT).asLong());
+            }
         }
         return configuration;
     }
 
+    @Override
     public ModelNode getModelDescription(Locale locale) {
         return InfinispanDescriptions.getDistributedCacheAddDescription(locale);
     }
