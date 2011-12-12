@@ -274,11 +274,11 @@ public class LsHandler extends CommandHandlerWithHelp {
                                                     typeNames.add(buf.toString());
                                                     buf.setLength(0);
                                                 } else {
+                                                    final String[] line = new String[attrTable.columnsTotal()];
+                                                    line[0] = prop.getName();
+                                                    line[1] = prop.getValue().asString();
                                                     if(attrDescriptions.hasDefined(prop.getName())) {
                                                         final ModelNode attrDescr = attrDescriptions.get(prop.getName());
-                                                        final String[] line = new String[attrTable.columnsTotal()];
-                                                        line[0] = prop.getName();
-                                                        line[1] = prop.getValue().asString();
                                                         line[2] = getAsString(attrDescr, Util.TYPE);
                                                         if(additionalProps != null) {
                                                             int i = 3;
@@ -286,10 +286,12 @@ public class LsHandler extends CommandHandlerWithHelp {
                                                                 line[i++] = getAsString(attrDescr, additional);
                                                             }
                                                         }
-                                                        attrTable.addLine(line);
                                                     } else {
-                                                        attrTable.addLine(new String[]{prop.getName(), prop.getValue().asString(), "n/a"});
+                                                        for(int i = 2; i < line.length; ++i) {
+                                                            line[i] = "n/a";
+                                                        }
                                                     }
+                                                    attrTable.addLine(line);
                                                 }
                                             } else if(childDescriptions != null) {
                                                 if(childDescriptions.hasDefined(prop.getName())) {
