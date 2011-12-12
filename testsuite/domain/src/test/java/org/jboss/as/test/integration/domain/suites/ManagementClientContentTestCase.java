@@ -79,12 +79,15 @@ public class ManagementClientContentTestCase {
 
     static {
         ROLLOUT_PLANS_ADDRESS.protect();
-
-        ROLLOUT_PLAN_A.get(ROLLOUT_PLAN, IN_SERIES).add("main-server-group", new ModelNode());
+        ModelNode main = new ModelNode();
+        main.get("main-server-group");
+        ModelNode other = new ModelNode();
+        other.get("other-server-group");
+        ROLLOUT_PLAN_A.get(ROLLOUT_PLAN, IN_SERIES).add().get("server-group").set(main);
         ROLLOUT_PLAN_A.protect();
-        ROLLOUT_PLAN_B.get(ROLLOUT_PLAN, IN_SERIES).add("other-server-group", new ModelNode());
+        ROLLOUT_PLAN_B.get(ROLLOUT_PLAN, IN_SERIES).add().get("concurrent-groups").set(other);
         ROLLOUT_PLAN_B.protect();
-        ROLLOUT_PLAN_C.get(ROLLOUT_PLAN, IN_SERIES).add("main-server-group", new ModelNode());
+        ROLLOUT_PLAN_C.get(ROLLOUT_PLAN, IN_SERIES).add().get("server-group").set(main);
         ROLLOUT_PLAN_C.get(ROLLOUT_PLAN, ROLLBACK_ACROSS_GROUPS).set(false);
         ROLLOUT_PLAN_C.protect();
     }
