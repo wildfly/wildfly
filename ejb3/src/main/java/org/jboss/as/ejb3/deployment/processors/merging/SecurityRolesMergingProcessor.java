@@ -66,14 +66,13 @@ public class SecurityRolesMergingProcessor extends AbstractMergingProcessor<EJBC
         final EjbJarMetaData ejbJarMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
         if (ejbJarMetaData != null) {
             final AssemblyDescriptorMetaData assemblyDescriptorMetaData = ejbJarMetaData.getAssemblyDescriptor();
-            if (assemblyDescriptorMetaData == null) {
-                return;
-            }
-            // get the mapping between principal to rolename, defined in the assembly descriptor
-            final List<SecurityRoleMetaData> securityRoleMetaDatas = assemblyDescriptorMetaData.getAny(SecurityRoleMetaData.class);
-            if (securityRoleMetaDatas != null) {
-                for (SecurityRoleMetaData securityRoleMetaData : securityRoleMetaDatas) {
-                    roleMappings.add(securityRoleMetaData);
+            if (assemblyDescriptorMetaData != null) {
+                // get the mapping between principal to rolename, defined in the assembly descriptor
+                final List<SecurityRoleMetaData> securityRoleMetaDatas = assemblyDescriptorMetaData.getAny(SecurityRoleMetaData.class);
+                if (securityRoleMetaDatas != null) {
+                    for (SecurityRoleMetaData securityRoleMetaData : securityRoleMetaDatas) {
+                        roleMappings.add(securityRoleMetaData);
+                    }
                 }
             }
         }
