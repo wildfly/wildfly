@@ -247,8 +247,11 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
             orbInitializers.addAll(Arrays.asList(ORBInitializer.SECURITY.getInitializerClasses()));
 
         String installTransaction = (String) props.remove(JacORBSubsystemConstants.ORB_INIT_TRANSACTIONS);
-        if (installTransaction.equalsIgnoreCase("on"))
+        if (installTransaction.equalsIgnoreCase("on")) {
             orbInitializers.addAll(Arrays.asList(ORBInitializer.TRANSACTIONS.getInitializerClasses()));
+        } else if(installTransaction.equalsIgnoreCase("spec")) {
+            orbInitializers.addAll(Arrays.asList(ORBInitializer.SPEC_TRANSACTIONS.getInitializerClasses()));
+        }
 
         // add the standard jacorb initializer plus all configured initializers.
         props.setProperty(JacORBSubsystemConstants.JACORB_STD_INITIALIZER_KEY,

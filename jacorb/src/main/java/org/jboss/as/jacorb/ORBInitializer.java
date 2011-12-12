@@ -45,6 +45,10 @@ public enum ORBInitializer {
             "com.arjuna.ats.jts.orbspecific.jacorb.interceptors.interposition.InterpositionORBInitializerImpl",
             "com.arjuna.ats.jbossatx.jts.InboundTransactionCurrentInitializer",
             "org.jboss.as.jacorb.tm.TxIORInterceptorInitializer",
+            "org.jboss.as.jacorb.tm.TxServerInterceptorInitializer"),
+
+    // the transaction group that is used for spec compliant mode without JTS
+    SPEC_TRANSACTIONS("specTransactions",
             "org.jboss.as.jacorb.tm.TxServerInterceptorInitializer");
 
     private final String initializerName;
