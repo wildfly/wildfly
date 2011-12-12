@@ -34,6 +34,7 @@ import java.util.Set;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemXmlWriterRegistry;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -61,6 +62,7 @@ public final class ExtensionContextImpl implements ExtensionContext {
      * @param profileRegistration the profile registration
      * @param deploymentOverrideRegistration the deployment override registration
      * @param writerRegistry the registry for extension xml marshallers
+     * @param processType the type of process in which extensions are being registered
      */
     public ExtensionContextImpl(final ManagementResourceRegistration profileRegistration,
             final ManagementResourceRegistration deploymentOverrideRegistration,
@@ -88,7 +90,7 @@ public final class ExtensionContextImpl implements ExtensionContext {
     }
 
     public ExtensionContext createTracking(String moduleName) {
-        return new DelegatingExtensionContext(moduleName, this);
+        return new DelegatingExtensionContext(moduleName);
     }
 
 
@@ -110,7 +112,7 @@ public final class ExtensionContextImpl implements ExtensionContext {
 
     @Override
     public void cleanup(Resource rootResource, String moduleName) {
-        List<String> subsystems = null;
+        List<String> subsystems;
         synchronized (subsystemsByModule) {
             subsystems = subsystemsByModule.get(moduleName);
             if (subsystems != null) {
@@ -289,6 +291,24 @@ public final class ExtensionContextImpl implements ExtensionContext {
         }
 
         @Override
+        public boolean isAllowsOverride() {
+            return deployments.isAllowsOverride();
+        }
+
+        @Override
+        public ManagementResourceRegistration registerOverrideModel(String name, OverrideDescriptionProvider descriptionProvider) {
+            ManagementResourceRegistration depl = deployments.registerOverrideModel(name, descriptionProvider);
+            ManagementResourceRegistration subdepl = subdeployments.registerOverrideModel(name, descriptionProvider);
+            return new DeploymentManagementResourceRegistration(depl, subdepl);
+        }
+
+        @Override
+        public void unregisterOverrideModel(String name) {
+            deployments.unregisterOverrideModel(name);
+            subdeployments.unregisterOverrideModel(name);
+        }
+
+        @Override
         public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider) {
             deployments.registerOperationHandler(operationName, handler, descriptionProvider);
             subdeployments.registerOperationHandler(operationName, handler, descriptionProvider);
@@ -388,7 +408,7 @@ public final class ExtensionContextImpl implements ExtensionContext {
     private class DelegatingExtensionContext implements ExtensionContext {
         final String moduleName;
 
-        public DelegatingExtensionContext(String moduleName, ExtensionContext delegate) {
+        public DelegatingExtensionContext(String moduleName) {
             this.moduleName = moduleName;
         }
 

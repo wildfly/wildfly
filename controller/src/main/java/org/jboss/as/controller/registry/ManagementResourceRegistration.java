@@ -31,6 +31,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
@@ -48,7 +49,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * </p>
      *
      * @param address the address, relative to this node
-     * @return the node registration, <code>null</code> if there is none
+     * @return the resource registration, <code>null</code> if there is none
      */
     @Override
     ManagementResourceRegistration getSubModel(PathAddress address);
@@ -59,7 +60,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param address the address of the submodel (may include a wildcard)
      * @param descriptionProvider source for descriptive information describing this
      *                            portion of the model (must not be {@code null})
-     * @return a model node registration which may be used to add operations
+     * @return a resource registration which may be used to add attributes, operations and sub-models
      *
      * @throws IllegalArgumentException if a submodel is already registered at {@code address}
      * @throws IllegalStateException if {@link #isRuntimeOnly()} returns {@code true}
@@ -74,7 +75,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      *
      * @param resourceDefinition source for descriptive information describing this
      *                            portion of the model (must not be {@code null})
-     * @return a model node registration which may be used to add operations
+     * @return a resource registration which may be used to add attributes, operations and sub-models
      *
      * @throws IllegalArgumentException if a submodel is already registered at {@code address}
      * @throws IllegalStateException if {@link #isRuntimeOnly()} returns {@code true}
@@ -87,6 +88,38 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param address the child of this registry that should no longer be available
      */
     void unregisterSubModel(PathElement address);
+
+    /**
+     * Gets whether this registration will always throw an exception if
+     * {@link #registerOverrideModel(String, OverrideDescriptionProvider)} is invoked. An exception will always
+     * be thrown for root resource registrations, {@link PathElement#WILDCARD_VALUE wildcard registrations}, or
+     * {@link #isRemote() remote registrations}.
+     *
+     * @return {@code true} if an exception will not always be thrown; {@code false} if it will
+     */
+    boolean isAllowsOverride();
+
+    /**
+     * Register a specifically named resource that overrides this {@link PathElement#WILDCARD_VALUE wildcard registration}
+     * by adding additional attributes, operations or child types.
+     *
+     * @param name the specific name of the resource. Cannot be {@code null} or {@link PathElement#WILDCARD_VALUE}
+     * @param descriptionProvider provider for descriptions of the additional attributes or child types
+     *
+     * @return a resource registration which may be used to add attributes, operations and sub-models
+     *
+     * @throws IllegalArgumentException if either parameter is null or if there is already a registration under {@code name}
+     * @throws IllegalStateException if {@link #isRuntimeOnly()} returns {@code true} or if {@link #isAllowsOverride()} returns false
+     */
+    ManagementResourceRegistration registerOverrideModel(final String name, final OverrideDescriptionProvider descriptionProvider);
+
+    /**
+     * Unregister a specifically named resource that overrides a {@link PathElement#WILDCARD_VALUE wildcard registration}
+     * by adding additional attributes, operations or child types.
+     *
+     * @param name the specific name of the resource. Cannot be {@code null} or {@link PathElement#WILDCARD_VALUE}
+     */
+    void unregisterOverrideModel(final String name);
 
     /**
      * Register an operation handler for this resource.

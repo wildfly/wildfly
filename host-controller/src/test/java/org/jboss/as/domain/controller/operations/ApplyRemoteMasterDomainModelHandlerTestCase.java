@@ -65,6 +65,7 @@ import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -887,6 +888,20 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase {
         }
 
         public void unregisterSubModel(PathElement address) {
+        }
+
+        @Override
+        public boolean isAllowsOverride() {
+            return false;
+        }
+
+        @Override
+        public ManagementResourceRegistration registerOverrideModel(String name, OverrideDescriptionProvider descriptionProvider) {
+            return null;
+        }
+
+        @Override
+        public void unregisterOverrideModel(String name) {
         }
 
         public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider) {

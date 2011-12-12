@@ -37,6 +37,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public interface ImmutableManagementResourceRegistration {
+
     /**
      * Gets whether this model node only exists in the runtime and has no representation in the
      * persistent configuration model.

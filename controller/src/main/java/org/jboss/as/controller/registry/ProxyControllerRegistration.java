@@ -38,6 +38,7 @@ import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ProxyStepHandler;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.dmr.ModelNode;
 
@@ -82,6 +83,16 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
 
     @Override
     public void unregisterSubModel(final PathElement address) throws IllegalArgumentException {
+        throw alreadyRegistered();
+    }
+
+    @Override
+    public ManagementResourceRegistration registerOverrideModel(String name, OverrideDescriptionProvider descriptionProvider) {
+        throw alreadyRegistered();
+    }
+
+    @Override
+    public void unregisterOverrideModel(String name) {
         throw alreadyRegistered();
     }
 

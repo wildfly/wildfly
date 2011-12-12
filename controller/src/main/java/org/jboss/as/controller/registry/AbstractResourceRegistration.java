@@ -27,10 +27,12 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -38,7 +40,10 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
+import org.jboss.dmr.ModelNode;
 
 /**
  * A registry of model node information.  This registry is thread-safe.
@@ -65,6 +70,46 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
     /** {@inheritDoc} */
     @Override
     public abstract ManagementResourceRegistration registerSubModel(final ResourceDefinition resourceDefinition);
+
+    @Override
+    public boolean isAllowsOverride() {
+        return !isRemote() && parent != null && !PathElement.WILDCARD_VALUE.equals(valueString);
+    }
+
+    @Override
+    public ManagementResourceRegistration registerOverrideModel(String name, OverrideDescriptionProvider descriptionProvider) {
+        if (name == null) {
+            throw ControllerMessages.MESSAGES.nullVar("name");
+        }
+        if (descriptionProvider == null) {
+            throw ControllerMessages.MESSAGES.nullVar("descriptionProvider");
+        }
+
+        if (parent == null) {
+            throw ControllerMessages.MESSAGES.cannotOverrideRootRegistration();
+        }
+
+        if (!PathElement.WILDCARD_VALUE.equals(valueString)) {
+            throw ControllerMessages.MESSAGES.cannotOverrideNonWildCardRegistration(valueString);
+        }
+        PathElement pe = PathElement.pathElement(parent.getKeyName(), name);
+        return parent.getParent().registerSubModel(pe, new OverrideDescriptionCombiner(getModelDescription(PathAddress.EMPTY_ADDRESS), descriptionProvider));
+    }
+
+    @Override
+    public void unregisterOverrideModel(String name) {
+        if (name == null) {
+            throw ControllerMessages.MESSAGES.nullVar("name");
+        }
+        if (PathElement.WILDCARD_VALUE.equals(name)) {
+            throw ControllerMessages.MESSAGES.wildcardRegistrationIsNotAnOverride();
+        }
+        if (parent == null) {
+            throw ControllerMessages.MESSAGES.rootRegistrationIsNotOverridable();
+        }
+        PathElement pe = PathElement.pathElement(parent.getKeyName(), name);
+        parent.getParent().unregisterSubModel(pe);
+    }
 
     /** {@inheritDoc} */
     @Override
@@ -335,6 +380,30 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
         private RootInvocation(AbstractResourceRegistration root, PathAddress pathAddress) {
             this.root = root;
             this.pathAddress = pathAddress;
+        }
+    }
+
+    private static class OverrideDescriptionCombiner implements DescriptionProvider {
+        private final DescriptionProvider mainDescriptionProvider;
+        private final OverrideDescriptionProvider overrideDescriptionProvider;
+
+        private OverrideDescriptionCombiner(DescriptionProvider mainDescriptionProvider, OverrideDescriptionProvider overrideDescriptionProvider) {
+            this.mainDescriptionProvider = mainDescriptionProvider;
+            this.overrideDescriptionProvider = overrideDescriptionProvider;
+        }
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            ModelNode result = mainDescriptionProvider.getModelDescription(locale);
+            ModelNode attrs = result.get(ModelDescriptionConstants.ATTRIBUTES);
+            for (Map.Entry<String, ModelNode> entry : overrideDescriptionProvider.getAttributeOverrideDescriptions(locale).entrySet()) {
+                attrs.get(entry.getKey()).set(entry.getValue());
+            }
+            ModelNode children = result.get(ModelDescriptionConstants.ATTRIBUTES);
+            for (Map.Entry<String, ModelNode> entry : overrideDescriptionProvider.getChildTypeOverrideDescriptions(locale).entrySet()) {
+                children.get(entry.getKey()).set(entry.getValue());
+            }
+            return result;
         }
     }
 }

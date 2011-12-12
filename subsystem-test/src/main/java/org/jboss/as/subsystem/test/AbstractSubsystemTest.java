@@ -65,6 +65,7 @@ import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
@@ -770,6 +771,20 @@ public abstract class AbstractSubsystemTest {
 
         @Override
         public void unregisterSubModel(PathElement address) {
+        }
+
+        @Override
+        public boolean isAllowsOverride() {
+            return true;
+        }
+
+        @Override
+        public ManagementResourceRegistration registerOverrideModel(String name, OverrideDescriptionProvider descriptionProvider) {
+            return MOCK_RESOURCE_REG;
+        }
+
+        @Override
+        public void unregisterOverrideModel(String name) {
         }
 
         @Override

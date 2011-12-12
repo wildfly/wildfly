@@ -2084,13 +2084,50 @@ public interface ControllerMessages {
     IllegalArgumentException nodeAlreadyRegistered(String location);
 
     /**
-     * Creates an exception indicating that an attempt
+     * Creates an exception indicating that an attempt was made to remove an extension before removing all of its
+     * subsystems.
      *
-     * @param name the name of the subsystem that was attempted was made to remove an extension that still has subsystems
-     * registered
+     * @param moduleName the name of the extension
+     * @param subsystem the name of the subsystem
+     *
      * @return an {@link IllegalStateException} for the error
      */
     @Message(id = 14810, value = "An attempt was made to unregister extension %s which still has subsystem %s registered")
     IllegalStateException removingExtensionWithRegisteredSubsystem(String moduleName, String subsystem);
 
+    /**
+     * Creates an exception indicating that an attempt was made to register an override model for the root model
+     * registration.
+     *
+     * @return an {@link IllegalStateException} for the error
+     */
+    @Message(id = 14811, value = "An override model registration is not allowed for the root model registration")
+    IllegalStateException cannotOverrideRootRegistration();
+
+    /**
+     * Creates an exception indicating that an attempt was made to register an override model for a non-wildcard
+     * registration.
+     *
+     * @param valueName the name of the non-wildcard registration that cannot be overridden
+     * @return an {@link IllegalStateException} for the error
+     */
+    @Message(id = 14812, value = "An override model registration is not allowed for non-wildcard model registrations. This registration is for the non-wildcard name '%s'.")
+    IllegalStateException cannotOverrideNonWildCardRegistration(String valueName);
+
+    /**
+     * Creates an exception indicating that an attempt was made to remove a wildcard model registration via
+     * the unregisterOverrideModel API.
+     *
+     * @return an {@link IllegalArgumentException} for the error
+     */
+    @Message(id = 14813, value = "A registration named '*' is not an override model and cannot be unregistered via the unregisterOverrideModel API.")
+    IllegalArgumentException wildcardRegistrationIsNotAnOverride();
+
+    /**
+     * Creates an exception indicating that an attempt was made to remove a resource registration from the root registration.
+     *
+     * @return an {@link IllegalStateException} for the error
+     */
+    @Message(id = 14814, value = "The root resource registration does not support overrides, so no override can be removed.")
+    IllegalStateException rootRegistrationIsNotOverridable();
 }
