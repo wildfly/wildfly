@@ -84,7 +84,7 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
                     ROOT_LOGGER.trace("Acquired lock: " + lock + " for entity bean instance: " + instance + " during invocation: " + context);
                 }
 
-                //we need to check again, now that we actually have the lock
+                //we need to check again
                 if (instance.isRemoved() || instance.isDiscarded()) {
                     final Object primaryKey = context.getPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY);
                     throw MESSAGES.instaceWasRemoved(component.getComponentName(), primaryKey);
@@ -119,9 +119,11 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
                     // taken care off by a tx synchronization callbacks.
                     //if is important to note that we increase the lock count on every invocation
                     //which means we need to release it on every invocation except for the one where we actually registered the TX synchronization
-                    if (!syncRegistered) {
+                    if (currentTransactionKey == null) {
                         instance.store();
                         releaseInstance(instance, true);
+                    } else if(!syncRegistered) {
+                        lock.unlock();
                     }
                 }
             }

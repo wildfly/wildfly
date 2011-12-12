@@ -50,12 +50,6 @@ public interface TimerPersistence {
     TimerEntity loadTimer(String id, String timedObjectId);
 
     /**
-     * Delete a timer from persistent storage
-     * @param timerEntity
-     */
-    void removeTimer(TimerEntity timerEntity);
-
-    /**
      * Load all active timers for the given object
      * @param timedObjectId
      * @return

@@ -519,7 +519,7 @@ public class TimerImpl implements Timer {
         ROOT_LOGGER.debug("expireTimer: " + this);
         setTimerState(TimerState.EXPIRED);
         // remove from timerservice
-        timerService.removeTimer(this);
+        timerService.persistTimer(this);
         // Cancel any scheduled timer task for this timer
         this.cancelTimeout();
     }

@@ -42,6 +42,7 @@ import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.ejb3.component.stateful.CurrentSynchronizationCallback;
+import org.jboss.as.ejb3.timerservice.TimerState;
 import org.jboss.as.ejb3.timerservice.persistence.TimerEntity;
 import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
 import org.jboss.marshalling.InputStreamByteInput;
@@ -152,17 +153,34 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
                 try {
                     lock.lock();
                     Map<String, TimerEntity> map = getTimers(timerEntity.getTimedObjectId());
-                    map.put(timerEntity.getId(), timerEntity);
+                    if (timerEntity.getTimerState() == TimerState.CANCELED ||
+                            timerEntity.getTimerState() == TimerState.EXPIRED) {
+                        map.remove(timerEntity.getId());
+                    } else {
+                        map.put(timerEntity.getId(), timerEntity);
+                    }
                     writeFile(timerEntity);
                 } finally {
                     lock.unlock();
                 }
             } else {
-                transactionSynchronizationRegistry.getValue().registerInterposedSynchronization(new PersistTransactionSynchronization(timerEntity, lock));
+
+                final String key = timerTransactionKey(timerEntity);
+                Object existing = transactionSynchronizationRegistry.getValue().getResource(key);
+                //check is there is already a persist sync for this timer
+                if (existing == null) {
+                    transactionSynchronizationRegistry.getValue().registerInterposedSynchronization(new PersistTransactionSynchronization(lock, key));
+                }
+                //update the most recent version of the timer to be persisted
+                transactionSynchronizationRegistry.getValue().putResource(key, timerEntity);
             }
         } catch (SystemException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String timerTransactionKey(final TimerEntity timerEntity) {
+        return "org.jboss.as.ejb3.timerTransactionKey." + timerEntity.getId();
     }
 
     @Override
@@ -194,25 +212,6 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
             lock.lock();
             final Map<String, TimerEntity> timers = getTimers(timedObjectId);
             return timers.get(id);
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    @Override
-    public void removeTimer(final TimerEntity timerEntity) {
-        final Lock lock = getLock(timerEntity.getTimedObjectId());
-        try {
-            lock.lock();
-            //remove is not a transactional operation, as it only happens once the timer has expired
-            final Map<String, TimerEntity> timers = getTimers(timerEntity.getTimedObjectId());
-            timers.remove(timerEntity.getId());
-            final File file = fileName(timerEntity.getTimedObjectId(), timerEntity.getId());
-            if (file.exists()) {
-                if (!file.delete()) {
-                    ROOT_LOGGER.failedToRemovePersistentTimer(file);
-                }
-            }
         } finally {
             lock.unlock();
         }
@@ -353,17 +352,24 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
 
     private final class PersistTransactionSynchronization implements Synchronization {
 
-        private final TimerEntity timer;
+        private final String transactionKey;
         private final Lock lock;
+        private TimerEntity timer;
 
-        public PersistTransactionSynchronization(final TimerEntity timer, final Lock lock) {
-            this.timer = timer;
+        public PersistTransactionSynchronization(final Lock lock, final String transactionKey) {
             this.lock = lock;
+            this.transactionKey = transactionKey;
         }
 
         @Override
         public void beforeCompletion() {
-
+            //get the latest version of the entity
+            timer = (TimerEntity) transactionSynchronizationRegistry.getValue().getResource(transactionKey);
+            //we never want to persist a timer with state created.
+            //by definition once it has been persisted it is not longer in the created state
+            if (timer.getTimerState() == TimerState.CREATED) {
+                timer.setTimerState(TimerState.ACTIVE);
+            }
         }
 
         @Override
@@ -372,7 +378,12 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
                 lock.lock();
                 if (status == Status.STATUS_COMMITTED) {
                     final Map<String, TimerEntity> map = getTimers(timer.getTimedObjectId());
-                    map.put(timer.getId(), timer);
+                    if (timer.getTimerState() == TimerState.CANCELED ||
+                            timer.getTimerState() == TimerState.EXPIRED) {
+                        map.remove(timer.getId());
+                    } else {
+                        map.put(timer.getId(), timer);
+                    }
                     writeFile(timer);
                 }
             } finally {

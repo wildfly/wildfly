@@ -425,15 +425,12 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
 
         TimerImpl timer = new TimerImpl(uuid.toString(), this, initialExpiration, intervalDuration, info, persistent, currentPrimaryKey());
-        // if it's persistent, then save it
-        if (persistent) {
-            this.persistTimer(timer);
-        }
         // now "start" the timer. This involves, moving the timer to an ACTIVE state
         // and scheduling the timer task
         this.startTimer(timer);
 
         this.addTimer(timer);
+        this.persistTimer(timer);
         // return the newly created timer
         return timer;
     }
@@ -481,15 +478,12 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         // create the timer
         TimerImpl timer = new CalendarTimer(uuid.toString(), this, calendarTimeout, info, persistent, timeoutMethod, currentPrimaryKey());
 
-        if (persistent) {
-            this.persistTimer(timer);
-        }
-
         // now "start" the timer. This involves, moving the timer to an ACTIVE state
         // and scheduling the timer task
         this.startTimer(timer);
 
         this.addTimer(timer);
+        this.persistTimer(timer);
         // return the timer
         return timer;
     }
@@ -549,18 +543,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     }
 
     /**
-     * Remove a txtimer from the list of active timers
-     */
-    void removeTimer(TimerImpl timer) {
-        if (!timer.persistent) {
-            nonPersistentTimers.remove(timer.getTimerHandle());
-        } else {
-            this.persistentWaitingOnTxCompletionTimers.remove(timer.getTimerHandle());
-            timerPersistence.getValue().removeTimer(timer.getPersistentState());
-        }
-    }
-
-    /**
      * Persists the passed <code>timer</code>.
      * <p/>
      * <p>
@@ -590,13 +572,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                     ROOT_LOGGER.timerPersistenceNotEnable();
                     return;
                 }
-                if (timerEntity.getTimerState() == TimerState.EXPIRED ||
-                        timerEntity.getTimerState() == TimerState.CANCELED) {
-                    timerPersistence.getValue().removeTimer(timerEntity);
-                } else {
-                    timerPersistence.getValue().persistTimer(timerEntity);
-                }
-
+                timerPersistence.getValue().persistTimer(timerEntity);
 
             } catch (Throwable t) {
                 this.setRollbackOnly();
@@ -677,15 +653,14 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                         }
                     }
                 }
-                if (found) {
+                if(!found) {
+                    activeTimer.setTimerState(TimerState.CANCELED);
+                } else {
+
                     startTimer(activeTimer);
                     ROOT_LOGGER.debug("Started timer: " + activeTimer);
-                    // save any changes to the state (that will have happened on call to startTimer)
-                    this.persistTimer(activeTimer);
-                } else {
-                    //the annotation is no longer there
-                    this.removeTimer(activeTimer);
                 }
+                this.persistTimer(activeTimer);
             }
             //TODO: we need to make sure that these only fire one event after being restored
             this.startTimer(activeTimer);
@@ -714,7 +689,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         } else {
             registerTimerWithTx(timer);
         }
-        this.persistTimer(timer);
     }
 
     /**
@@ -1102,6 +1076,18 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             this.timer = timer;
         }
 
+        @Override
+        public void beforeCompletion() {
+            if (timer.getState() == TimerState.CREATED) {
+                // the timer was started/activated in a tx.
+                // now it's time to schedule the task
+                //we need to switch state here to make sure it is not persisted with
+                //a state of CREATED
+                timer.setTimerState(TimerState.ACTIVE);
+                persistTimer(timer);
+            }
+        }
+
         /**
          * {@inheritDoc}
          */
@@ -1117,10 +1103,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
                 TimerState timerState = this.timer.getState();
                 switch (timerState) {
-                    case CREATED:
-                        // the timer was started/activated in a tx.
-                        // now it's time to schedule the task
-                        timer.setTimerState(TimerState.ACTIVE);
+                    case ACTIVE:
                         this.timer.scheduleTimeout();
                         break;
                 }
@@ -1129,7 +1112,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
                 TimerState timerState = this.timer.getState();
                 switch (timerState) {
-                    case CREATED:
+                    case ACTIVE:
                         this.timer.setTimerState(TimerState.CANCELED);
                         break;
                 }
@@ -1138,10 +1121,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
         }
 
-        @Override
-        public void beforeCompletion() {
-
-        }
 
     }
 
