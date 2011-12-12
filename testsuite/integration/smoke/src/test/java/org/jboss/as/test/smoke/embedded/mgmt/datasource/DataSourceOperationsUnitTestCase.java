@@ -166,8 +166,9 @@ public class DataSourceOperationsUnitTestCase {
                 containsRightJndiname = true;
             }
         }
-        Assert.assertTrue(containsRightJndiname);
+        
         remove(address);
+        Assert.assertTrue(containsRightJndiname);
     }
 
     /**
@@ -218,8 +219,9 @@ public class DataSourceOperationsUnitTestCase {
                 containsRightJndiname = true;
             }
         }
-        Assert.assertTrue(containsRightJndiname);
         remove(address);
+        Assert.assertTrue(containsRightJndiname);
+        
     }
 
     @Test
@@ -279,8 +281,9 @@ public class DataSourceOperationsUnitTestCase {
                 containsRightJndiname = true;
             }
         }
-        Assert.assertTrue(containsRightJndiname);
         remove(address);
+        Assert.assertTrue(containsRightJndiname);
+        
     }
 
     @Test
@@ -647,10 +650,6 @@ public class DataSourceOperationsUnitTestCase {
 
         execute(datasourcePropertyOperation);
 
-        final ModelNode operationts = new ModelNode();
-        operationts.get(OP).set("take-snapshot");
-        execute(operationts);
-
         List<ModelNode> newList = marshalAndReparseDsResources("data-source");
 
         Assert.assertNotNull(newList);
@@ -709,10 +708,6 @@ public class DataSourceOperationsUnitTestCase {
 
         execute(xaDatasourcePropertyOperation);
 
-        final ModelNode operationts = new ModelNode();
-        operationts.get(OP).set("take-snapshot");
-        execute(operationts);
-
         List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source");
 
         Assert.assertNotNull(newList);
@@ -726,11 +721,11 @@ public class DataSourceOperationsUnitTestCase {
                 break;
             }
         }
-        Assert.assertTrue(containsRightJndiname);
-        controlParseChildrenParams(parseChildren, params);
 
         remove(address);
 
+        Assert.assertTrue(containsRightJndiname);
+        controlParseChildrenParams(parseChildren, params);
     }
     /**
      * Returns Hashtable with common parameters for both XA and Non-XA datasource
