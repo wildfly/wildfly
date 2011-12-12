@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.xts;
+package org.jboss.as.test.xts.basic;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -50,20 +50,18 @@ import static org.junit.Assert.assertTrue;
 public class XTSUnitTestCase extends XTSTestBase {
     private static final Logger log = Logger.getLogger(XTSUnitTestCase.class);
 
+    private static final String PATH_SEPARATOR = System.getProperty("file.separator");
+
     private static final String JBOSSXTS_TESTS_PATH_PROPERTY = "org.jboss.as.test.xts.tests.path";
-    private static final String JBOSSXTS_TESTS_PATH_DEFAULT  = "target/jbossxts-tests/";
+    private static final String JBOSSXTS_TESTS_PATH_DEFAULT  = "target" + PATH_SEPARATOR+ "jbossxts-tests" + PATH_SEPARATOR;
+
+    private static final String JBOSSXTS_TEST_PATH = System.getProperty(JBOSSXTS_TESTS_PATH_PROPERTY, JBOSSXTS_TESTS_PATH_DEFAULT);
 
     private static final String ARCHIVE_WSAS    = "wsas-tests.ear";
     private static final String ARCHIVE_WSCF    = "wscf-tests.ear";
     private static final String ARCHIVE_WSC     = "ws-c-tests.ear";
     private static final String ARCHIVE_WST     = "ws-t-tests.ear";
     private static final String ARCHIVE_WSTX    = "wstx-tests.ear";
-
-    private static String jbossxtsTestsPath;
-    static {
-        jbossxtsTestsPath = System.getProperty(JBOSSXTS_TESTS_PATH_PROPERTY, JBOSSXTS_TESTS_PATH_DEFAULT);
-        log.info("jbossxtsTestsPath = " + jbossxtsTestsPath);
-    }
 
     public XTSUnitTestCase() {
         super();
@@ -73,7 +71,7 @@ public class XTSUnitTestCase extends XTSTestBase {
     @Deployment(name = "wsas", testable = false)
     public static Archive<?> deploymentWSAS() throws Exception {
         Archive<?> archive = ShrinkWrap.create(ZipImporter.class, ARCHIVE_WSAS)
-                .importFrom(new ZipFile(jbossxtsTestsPath + "/" + ARCHIVE_WSAS)).as(EnterpriseArchive.class);
+                .importFrom(new ZipFile(JBOSSXTS_TEST_PATH + PATH_SEPARATOR + ARCHIVE_WSAS)).as(EnterpriseArchive.class);
 //        archive.as(ZipExporter.class).exportTo(new File("/tmp/deployment.zip"), true);
         return archive;
     }
@@ -81,28 +79,28 @@ public class XTSUnitTestCase extends XTSTestBase {
     @Deployment(name = "wscf", testable = false)
     public static Archive<?> deploymentWSCF() throws Exception {
         Archive<?> archive = ShrinkWrap.create(ZipImporter.class, ARCHIVE_WSCF)
-                .importFrom(new ZipFile(jbossxtsTestsPath + "/" + ARCHIVE_WSCF)).as(EnterpriseArchive.class);
+                .importFrom(new ZipFile(JBOSSXTS_TEST_PATH + PATH_SEPARATOR + ARCHIVE_WSCF)).as(EnterpriseArchive.class);
         return archive;
     }
 
     @Deployment(name = "wsc", testable = false)
     public static Archive<?> deploymentWSC() throws Exception {
         Archive<?> archive = ShrinkWrap.create(ZipImporter.class, ARCHIVE_WSC)
-                .importFrom(new ZipFile(jbossxtsTestsPath + "/" + ARCHIVE_WSC)).as(EnterpriseArchive.class);
+                .importFrom(new ZipFile(JBOSSXTS_TEST_PATH + PATH_SEPARATOR + ARCHIVE_WSC)).as(EnterpriseArchive.class);
         return archive;
     }
 
     @Deployment(name = "wst", testable = false)
     public static Archive<?> deploymentWST() throws Exception {
         Archive<?> archive = ShrinkWrap.create(ZipImporter.class, ARCHIVE_WST)
-                .importFrom(new ZipFile(jbossxtsTestsPath + "/" + ARCHIVE_WST)).as(EnterpriseArchive.class);
+                .importFrom(new ZipFile(JBOSSXTS_TEST_PATH + PATH_SEPARATOR + ARCHIVE_WST)).as(EnterpriseArchive.class);
         return archive;
     }
 
     @Deployment(name = "wstx", testable = false)
     public static Archive<?> deploymentWSTX() throws Exception {
         Archive<?> archive = ShrinkWrap.create(ZipImporter.class, ARCHIVE_WSTX)
-                .importFrom(new ZipFile(jbossxtsTestsPath + "/" + ARCHIVE_WSTX)).as(EnterpriseArchive.class);
+                .importFrom(new ZipFile(JBOSSXTS_TEST_PATH + PATH_SEPARATOR + ARCHIVE_WSTX)).as(EnterpriseArchive.class);
         return archive;
     }
 
@@ -111,7 +109,6 @@ public class XTSUnitTestCase extends XTSTestBase {
     public void testWSAS(@ArquillianResource URL contextPath) throws Throwable {
         String outfile = getOutfileName("wsas");
         try {
-            log.info("_contextPath = " + contextPath);
             boolean res = callTests(contextPath.toString() + "index.xml", outfile);
             assertTrue("The wsas tests failed, for more info see " + outfile, res);
         } catch (Throwable e) {
@@ -169,7 +166,7 @@ public class XTSUnitTestCase extends XTSTestBase {
     }
 
     private String getOutfileName(String tag) {
-        return jbossxtsTestsPath + "/" + "TEST-xts.unit.tests." + tag + ".xml";
+        return JBOSSXTS_TEST_PATH + PATH_SEPARATOR + "TEST-xts.unit.tests." + tag + ".xml";
     }
 
 }

@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.xts;
+package org.jboss.as.test.xts.basic;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -55,17 +55,15 @@ import static org.junit.Assert.assertTrue;
 public class XTSInteropTestCase extends XTSTestBase {
     private static final Logger log = Logger.getLogger(XTSTestBase.class);
 
+    private static final String PATH_SEPARATOR = System.getProperty("file.separator");
+
     private static final String JBOSSXTS_TESTS_PATH_PROPERTY = "org.jboss.as.test.xts.tests.path";
-    private static final String JBOSSXTS_TESTS_PATH_DEFAULT  = "target/jbossxts-tests/";
+    private static final String JBOSSXTS_TESTS_PATH_DEFAULT  = "target" + PATH_SEPARATOR+ "jbossxts-tests" + PATH_SEPARATOR;
+
+    private static String JBOSSXTS_TEST_PATH = System.getProperty(JBOSSXTS_TESTS_PATH_PROPERTY, JBOSSXTS_TESTS_PATH_DEFAULT);
 
     private static final String ARCHIVE_INTEROP11   = "interop11.war";
     private static final String ARCHIVE_SC007       = "sc007.war";
-
-    private static String jbossxtsTestsPath;
-    static {
-        jbossxtsTestsPath = System.getProperty(JBOSSXTS_TESTS_PATH_PROPERTY, JBOSSXTS_TESTS_PATH_DEFAULT);
-        log.info("jbossxtsTestsPath = " + jbossxtsTestsPath);
-    }
 
     public XTSInteropTestCase() {
         super();
@@ -77,7 +75,7 @@ public class XTSInteropTestCase extends XTSTestBase {
     @Deployment(name = "interop11", testable = false)
     public static Archive<?> deploymentInterop11() throws Exception {
         Archive<?> archive = ShrinkWrap.create(ZipImporter.class, ARCHIVE_INTEROP11)
-                .importFrom(new ZipFile(jbossxtsTestsPath + "/" + ARCHIVE_INTEROP11)).as(WebArchive.class);
+                .importFrom(new ZipFile(JBOSSXTS_TEST_PATH + PATH_SEPARATOR + ARCHIVE_INTEROP11)).as(WebArchive.class);
         return archive;
     }
 
@@ -85,7 +83,7 @@ public class XTSInteropTestCase extends XTSTestBase {
     @Deployment(name = "sc007", testable = false)
     public static Archive<?> deploymentSC007() throws Exception {
         Archive<?> archive = ShrinkWrap.create(ZipImporter.class, ARCHIVE_SC007)
-                .importFrom(new ZipFile(jbossxtsTestsPath + "/" + ARCHIVE_SC007)).as(WebArchive.class);
+                .importFrom(new ZipFile(JBOSSXTS_TEST_PATH + PATH_SEPARATOR + ARCHIVE_SC007)).as(WebArchive.class);
         return archive;
     }
 */
@@ -137,7 +135,7 @@ public class XTSInteropTestCase extends XTSTestBase {
     }
 
     private String getOutfileName(String tag) {
-        return jbossxtsTestsPath + "/TEST-xts.interop.tests." + tag + ".xml";
+        return JBOSSXTS_TEST_PATH + PATH_SEPARATOR + "TEST-xts.interop.tests." + tag + ".xml";
     }
 
 }

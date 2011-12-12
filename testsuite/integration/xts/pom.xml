@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.jboss.as</groupId>
+        <artifactId>jboss-as-testsuite-integration-agg</artifactId>
+        <version>7.1.0.CR1-SNAPSHOT</version>
+    </parent>
+
+    <!-- ********************************************************************************** -->
+    <!-- *********************************** XTS       *********************************** -->
+    <!-- ********************************************************************************** -->
+    <groupId>org.jboss.as</groupId>
+    <artifactId>jboss-as-testsuite-integration-xts</artifactId>
+    <version>7.1.0.CR1-SNAPSHOT</version>
+
+    <name>JBoss AS Test Suite: Integration - XTS</name>
+
+    <properties>
+        <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
+        <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
+        <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+    </properties>
+
+    <!--  TODO move this to parent? -->
+    <build>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+            </testResource>
+            <testResource>
+                <directory>src/test/java</directory>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
+            </testResource>
+        </testResources>
+    </build>
+
+    <profiles>
+
+        <profile>
+            <id>xts.integration.tests.profile</id>
+            <activation>
+                <property>
+                    <name>!ts.noXTS</name>
+                </property>
+            </activation>
+            <properties>
+            </properties>
+            <!--
+                XTS unit/interop test dependencies.
+            -->
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.jbossts</groupId>
+                    <artifactId>jbossxts-tests</artifactId>
+                    <version>${version.org.jboss.jbossts.jbossxts}</version>
+                    <type>zip</type>
+                    <scope>test</scope>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>commons-httpclient</groupId>
+                            <artifactId>commons-httpclient</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>emma</groupId>
+                            <artifactId>emma</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>emma</groupId>
+                            <artifactId>emma_ant</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>tanukisoft</groupId>
+                            <artifactId>wrapper</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>jacorb</groupId>
+                            <artifactId>idl</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.integration</groupId>
+                            <artifactId>jboss-corba-ots-spi</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.jbossas</groupId>
+                            <artifactId>jboss-server-manager</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.remoting</groupId>
+                            <artifactId>jboss-remoting</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+                <dependency>
+                    <groupId>org.jboss.jbossts</groupId>
+                    <artifactId>jbossxts-interop-tests</artifactId>
+                    <version>${version.org.jboss.jbossts.jbossxts}</version>
+                    <type>zip</type>
+                    <scope>test</scope>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>commons-httpclient</groupId>
+                            <artifactId>commons-httpclient</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>emma</groupId>
+                            <artifactId>emma</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>emma</groupId>
+                            <artifactId>emma_ant</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>tanukisoft</groupId>
+                            <artifactId>wrapper</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>jacorb</groupId>
+                            <artifactId>idl</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.integration</groupId>
+                            <artifactId>jboss-corba-ots-spi</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.jbossas</groupId>
+                            <artifactId>jboss-server-manager</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.remoting</groupId>
+                            <artifactId>jboss-remoting</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+            </dependencies>
+            <!--
+                Server configuration executions.
+            -->
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>process-xts-test.resource</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>unpack</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>org.jboss.jbossts</groupId>
+                                            <artifactId>jbossxts-tests</artifactId>
+                                            <type>zip</type>
+                                        </artifactItem>
+                                        <artifactItem>
+                                            <groupId>org.jboss.jbossts</groupId>
+                                            <artifactId>jbossxts-interop-tests</artifactId>
+                                            <type>zip</type>
+                                        </artifactItem>
+                                    </artifactItems>
+                                    <outputDirectory>${project.build.directory}/jbossxts-tests</outputDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>build-xts.server</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <!-- build the UDP server configs in target-->
+                                        <ant antfile="${jbossas.ts.integ.dir}/src/test/scripts/xts-build.xml">
+                                            <target name="build-xts"/>
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!--
+                       Surefire test executions
+                    -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions combine.children="append">
+
+                            <!-- Disable default-test execution. -->
+                            <execution><id>default-test</id><goals><goal>test</goal></goals><phase>none</phase></execution>
+
+                            <!-- Multi node clustering tests. -->
+                            <execution>
+                                <id>tests-xts.surefire</id>
+                                <phase>test</phase>
+                                <goals><goal>test</goal></goals>
+                                <configuration>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/xts/**/*TestCase.java</include>
+                                    </includes>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <jboss.server.config.file.name>../../docs/examples/configs/standalone-xts.xml</jboss.server.config.file.name>
+                                        <jboss.inst>${project.build.directory}/jbossas-xts</jboss.inst>
+                                        <org.jboss.as.test.xts.tests.path>${project.build.directory}/jbossxts-tests</org.jboss.as.test.xts.tests.path>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+
+    </profiles>
+</project>

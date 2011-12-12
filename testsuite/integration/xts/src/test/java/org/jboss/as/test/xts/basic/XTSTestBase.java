@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.xts;
+package org.jboss.as.test.xts.basic;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ResponseHandler;
@@ -45,13 +45,33 @@ import java.util.regex.Pattern;
 public abstract class XTSTestBase {
     private static final Logger log = Logger.getLogger(XTSTestBase.class);
 
+    private static final String TS_TR_NETIO = "ts.tr.netio";
+    private static final String JBOSSXTS_TESTS_WAIT_FOR_RETRY_IN_SECS_PROPERTY = "org.jboss.as.test.xts.tests.wait.for.retry.in.secs";
+    private static final String JBOSSXTS_TESTS_LOOP_RETRY_LIMIT_PROPERTY = "org.jboss.as.test.xts.tests.loop.retry.limit";
+
+    private static final int WAIT_FOR_RETRY_IN_SECS_DEFAULT = 5;
+    private static final int LOOP_RETRY_LIMIT_DEFAULT = 120;
+
+    private static final int TIMEOUT_RATIO_NET_IO = getSystemPropertyAsInt(TS_TR_NETIO, 100);
+    private static final int WAIT_FOR_RETRY_IN_SECS = getSystemPropertyAsInt(JBOSSXTS_TESTS_WAIT_FOR_RETRY_IN_SECS_PROPERTY, WAIT_FOR_RETRY_IN_SECS_DEFAULT) * TIMEOUT_RATIO_NET_IO / 100;
+    private static final int LOOP_RETRY_LIMIT = getSystemPropertyAsInt(JBOSSXTS_TESTS_LOOP_RETRY_LIMIT_PROPERTY, LOOP_RETRY_LIMIT_DEFAULT);
+
     protected boolean repeatable = true;
-    protected int waitForRetryInSecs = 10;
-    protected int loopRetryMax = 30;
 
     protected String headerRunName = "run";
     protected String headerRunValue = "run";
 
+    /**
+     * The method calls a test servlet to run the tests and then periodically checks
+     * whether the test has already been finished. Once the test finish, it grabs
+     * error and failure numbers from the result web page.
+     *
+     * @param url test servlet url
+     * @param params test servlet params
+     * @param outfile output file for results of the test
+     * @return true if the test passed, false otherwise
+     * @throws Throwable throws an exception in case of any error hit by the test
+     */
     public boolean callTestServlet(String url, List<NameValuePair> params, String outfile) throws Throwable {
         boolean result = true;
         DefaultHttpClient httpclient = new DefaultHttpClient();
@@ -70,16 +90,16 @@ public abstract class XTSTestBase {
             if (repeatable) {
                 int index = 0;
                 do {
-                    System.err.println("_____________ " + (index++) + "th round");
+                    log.info("_____________ " + (index++) + "th round");
                     // we have to give some time to the tests to finish
-                    Thread.sleep(waitForRetryInSecs * 1000);
+                    Thread.sleep(WAIT_FOR_RETRY_IN_SECS * 1000);
 
                     // let's try to get results
                     HttpGet httpget = new HttpGet(url);
 //                    responseHandler = new BasicResponseHandler();
                     response = httpclient.execute(httpget, responseHandler);
                 }
-                while (response != null && response.indexOf("finished") == -1 && index++ < loopRetryMax);
+                while (response != null && response.indexOf("finished") == -1 && index++ < LOOP_RETRY_LIMIT);
             }
 
             log.info("======================================================");
@@ -113,14 +133,20 @@ public abstract class XTSTestBase {
         return result;
     }
 
-    private int getInt(String value, int defaultValue) {
+    private static int getInt(String value, int defaultValue) {
         int ret;
         try {
             ret = Integer.parseInt(value);
         } catch (NumberFormatException e) {
             ret = defaultValue;
+        } catch (NullPointerException e) {
+            ret = defaultValue;
         }
         return ret;
+    }
+
+    private static int getSystemPropertyAsInt(String key, int defaultValue) {
+        return getInt(System.getProperty(key), defaultValue);
     }
 
 }
