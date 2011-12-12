@@ -34,8 +34,12 @@ import org.jboss.as.connector.pool.PoolMetrics;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.ClearStatisticsHandler;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.security.service.SubjectFactoryService;
@@ -166,7 +170,9 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
                             if (deploymentMD.getConnectionManagers() != null && deploymentMD.getConnectionManagers()[0].getPool() != null) {
                                 StatisticsPlugin poolStats = deploymentMD.getConnectionManagers()[0].getPool().getStatistics();
                                 if (poolStats.getNames().size() != 0) {
-                                    ManagementResourceRegistration subRegistration = registration.registerOverrideModel(deploymentUnit.getName(), new StatisticsDescriptionProvider(poolStats));
+                                    DescriptionProvider statsResourceDescriptionProvider = new StatisticsDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "statistics", poolStats);
+                                    PathElement pe = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ResourceAdaptersExtension.SUBSYSTEM_NAME);
+                                    ManagementResourceRegistration subRegistration = registration.registerSubModel(pe, statsResourceDescriptionProvider);
                                     for (String statName : poolStats.getNames()) {
                                         subRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
                                     }
@@ -178,18 +184,9 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
                         }
                         case UP_to_STOP_REQUESTED: {
 
-                            CommonDeployment deploymentMD = ((ResourceAdapterDeploymentService) controller.getService()).getRaDeployment();
-                            ManagementResourceRegistration subRegistration = registration.getOverrideModel(deploymentUnit.getName());
-                            if (subRegistration != null &&
-                                    deploymentMD.getConnectionManagers() != null && deploymentMD.getConnectionManagers()[0].getPool() != null) {
-                                StatisticsPlugin poolStats = deploymentMD.getConnectionManagers()[0].getPool().getStatistics();
-                                if (poolStats.getNames().size() != 0) {
-                                    for (String statName : poolStats.getNames()) {
-                                        subRegistration.unregisterAttribute(statName);
-                                    }
-                                    subRegistration.unregisterOperationHandler("clear-statistics");
-                                    registration.unregisterOverrideModel(deploymentUnit.getName());
-                                }
+                            PathElement pe = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ResourceAdaptersExtension.SUBSYSTEM_NAME);
+                            if (registration.getSubModel(PathAddress.pathAddress(pe)) != null) {
+                                registration.unregisterSubModel(pe);
                             }
                             break;
 

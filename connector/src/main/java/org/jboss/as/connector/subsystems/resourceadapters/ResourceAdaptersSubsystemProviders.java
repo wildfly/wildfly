@@ -106,7 +106,7 @@ public class ResourceAdaptersSubsystemProviders {
             CLASS_NAME, JNDINAME,
             USE_JAVA_CONTEXT, ENABLED};
 
-    static final String RESOURCE_NAME = ResourceAdaptersSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
+    public static final String RESOURCE_NAME = ResourceAdaptersSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
 
     static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
 
