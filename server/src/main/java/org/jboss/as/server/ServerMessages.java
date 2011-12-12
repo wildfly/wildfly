@@ -22,6 +22,7 @@
 
 package org.jboss.as.server;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.services.security.VaultReaderException;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
@@ -125,4 +126,7 @@ public interface ServerMessages {
 
     @Message(id = 15808, value = "hostControllerName may not be null if the server is in a managed domain")
     IllegalArgumentException hostControllerNameNullInDomain();
+
+    @Message(id = 15809, value = "An IP address cannot be resolved using the given interface selection criteria. Failure was -- %s")
+    OperationFailedException cannotResolveInterface(Exception msg, @Param Exception cause);
 }
