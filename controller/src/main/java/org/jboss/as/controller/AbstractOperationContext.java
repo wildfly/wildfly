@@ -110,8 +110,7 @@ abstract class AbstractOperationContext implements OperationContext {
     }
 
     public void addStep(final OperationStepHandler step, final Stage stage) throws IllegalArgumentException {
-        final ModelNode response = activeStep == null ? new ModelNode().setEmptyObject() : activeStep.response;
-        addStep(response, activeStep.operation, activeStep.address, step, stage);
+        addStep(step, stage, false);
     }
 
     public void addStep(final ModelNode operation, final OperationStepHandler step, final Stage stage) throws IllegalArgumentException {
@@ -123,8 +122,24 @@ abstract class AbstractOperationContext implements OperationContext {
         addStep(response, operation, null, step, stage);
     }
 
+    @Override
+    public void addStep(OperationStepHandler step, Stage stage, boolean addFirst) throws IllegalArgumentException {
+        final ModelNode response = activeStep == null ? new ModelNode().setEmptyObject() : activeStep.response;
+        addStep(response, activeStep.operation, activeStep.address, step, stage, addFirst);
+    }
+
     void addStep(final ModelNode response, final ModelNode operation, final PathAddress address,
                          final OperationStepHandler step, final Stage stage) throws IllegalArgumentException {
+        addStep(response, operation, address, step, stage, false);
+    }
+
+    @Override
+    public void addStep(ModelNode response, ModelNode operation, OperationStepHandler step, Stage stage, boolean addFirst) throws IllegalArgumentException {
+        addStep(response, operation, null, step, stage, addFirst);
+    }
+
+    void addStep(final ModelNode response, final ModelNode operation, final PathAddress address,
+                         final OperationStepHandler step, final Stage stage, boolean addFirst) throws IllegalArgumentException {
         assert isControllingThread();
         if (response == null) {
             throw MESSAGES.nullVar("response");
@@ -153,7 +168,12 @@ abstract class AbstractOperationContext implements OperationContext {
         if (stage == Stage.IMMEDIATE) {
             steps.get(currentStage).addFirst(new Step(step, response, operation, address));
         } else {
-            steps.get(stage).addLast(new Step(step, response, operation, address));
+            final Deque<Step> deque = steps.get(stage);
+            if(addFirst) {
+                deque.addFirst(new Step(step, response, operation, address));
+            } else {
+                deque.addLast(new Step(step, response, operation, address));
+            }
         }
     }
 

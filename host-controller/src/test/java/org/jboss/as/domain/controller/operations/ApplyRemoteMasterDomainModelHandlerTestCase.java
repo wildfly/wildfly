@@ -611,12 +611,22 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase {
             fail("Should not have added step");
         }
 
+        @Override
+        public void addStep(OperationStepHandler step, Stage stage, boolean addFirst) throws IllegalArgumentException {
+            addStep(step, stage);
+        }
+
         public void addStep(ModelNode operation, OperationStepHandler step, OperationContext.Stage stage) throws IllegalArgumentException {
             final PathAddress opAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
             if (!expectedSteps.contains(opAddress)) {
                 fail("Should not have added step for: " + opAddress);
             }
             expectedSteps.remove(opAddress);
+        }
+
+        @Override
+        public void addStep(ModelNode response, ModelNode operation, OperationStepHandler step, Stage stage, boolean addFirst) throws IllegalArgumentException {
+            addStep(operation, step, stage);
         }
 
         public void addStep(ModelNode response, ModelNode operation, OperationStepHandler step, OperationContext.Stage stage) throws IllegalArgumentException {

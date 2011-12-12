@@ -645,6 +645,16 @@ public abstract class AttributeDefinition {
         }
 
         @Override
+        public void addStep(ModelNode response, ModelNode operation, OperationStepHandler step, Stage stage, boolean addFirst) throws IllegalArgumentException {
+            //
+        }
+
+        @Override
+        public void addStep(OperationStepHandler step, Stage stage, boolean addFirst) throws IllegalArgumentException {
+            //
+        }
+
+        @Override
         public void acquireControllerLock() {
         }
 

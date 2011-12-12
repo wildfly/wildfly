@@ -22,6 +22,7 @@
 package org.jboss.as.controller.operations.global;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import org.jboss.as.controller.ProcessType;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
@@ -133,7 +134,7 @@ public class GlobalOperationHandlers {
             final ModelNode opAddr = operation.get(OP_ADDR);
             final PathAddress address = PathAddress.pathAddress(opAddr);
             final boolean recursive = operation.get(RECURSIVE).asBoolean(false);
-            final boolean queryRuntime = !recursive && operation.get(INCLUDE_RUNTIME).asBoolean(false);
+            final boolean queryRuntime = operation.get(INCLUDE_RUNTIME).asBoolean(false);
             final boolean proxies = operation.get(PROXIES).asBoolean(false);
             final boolean defaults = operation.get(INCLUDE_DEFAULTS).asBoolean(true);
 
@@ -153,12 +154,11 @@ public class GlobalOperationHandlers {
 
             // Last to execute is the handler that assembles the overall response from the pieces created by all the other steps
             final ReadResourceAssemblyHandler assemblyHandler = new ReadResourceAssemblyHandler(directAttributes, metrics, otherAttributes, directChildren, childResources);
-            context.addStep(assemblyHandler, queryRuntime ? OperationContext.Stage.VERIFY : OperationContext.Stage.IMMEDIATE);
+            context.addStep(assemblyHandler, queryRuntime ? OperationContext.Stage.VERIFY : OperationContext.Stage.IMMEDIATE, queryRuntime);
             final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
             final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
             // Get the model for this resource.
             final ModelNode model = resource.getModel();
-
 
             final Map<String, Set<String>> childrenByType = registry != null ? getChildAddresses(registry, resource, null) : Collections.<String, Set<String>>emptyMap();
 
@@ -246,7 +246,8 @@ public class GlobalOperationHandlers {
                     continue;
                 } else {
                     final AttributeAccess.Storage storage = access.getStorageType();
-                    if (!queryRuntime && storage != AttributeAccess.Storage.CONFIGURATION) {
+
+                    if (! queryRuntime && storage != AttributeAccess.Storage.CONFIGURATION) {
                         continue;
                     }
                     final AccessType type = access.getAccessType();

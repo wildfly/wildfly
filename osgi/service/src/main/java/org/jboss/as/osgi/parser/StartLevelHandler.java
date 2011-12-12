@@ -58,7 +58,9 @@ abstract class StartLevelHandler implements OperationStepHandler {
         ServiceController<?> svc = context.getServiceRegistry(false).getRequiredService(Services.START_LEVEL);
 
         if (svc == null || svc.getState() != ServiceController.State.UP) {
-            context.getFailureDescription().set(OSGiMessages.MESSAGES.osgiSubsystemNotActive());
+            // non-metric read-attribute handlers should not fail
+            // OSGiMessages.MESSAGES.osgiSubsystemNotActive()
+            context.getResult().set(new ModelNode());
         } else {
             StartLevel sls = (StartLevel) svc.getValue();
             invokeOperation(sls, context, operation);

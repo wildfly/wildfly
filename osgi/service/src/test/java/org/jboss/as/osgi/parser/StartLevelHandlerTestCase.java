@@ -29,6 +29,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.osgi.framework.Services;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.osgi.service.startlevel.StartLevel;
@@ -94,14 +95,14 @@ public class StartLevelHandlerTestCase {
         ServiceRegistry sr = Mockito.mock(ServiceRegistry.class);
         Mockito.when(sr.getRequiredService(Services.START_LEVEL)).thenReturn(sc);
 
-        ModelNode failureNode = new ModelNode();
+        ModelNode result = new ModelNode("test");
         OperationContext ctx = Mockito.mock(OperationContext.class);
         Mockito.when(ctx.getServiceRegistry(false)).thenReturn(sr);
-        Mockito.when(ctx.getFailureDescription()).thenReturn(failureNode);
+        Mockito.when(ctx.getResult()).thenReturn(result);
 
         StartLevelHandler handler = StartLevelHandler.READ_HANDLER;
-        Assert.assertFalse(failureNode.isDefined());
+        Assert.assertTrue(result.isDefined());
         handler.execute(ctx, new ModelNode());
-        Assert.assertTrue(failureNode.isDefined());
+        Assert.assertFalse(result.isDefined());
     }
 }
