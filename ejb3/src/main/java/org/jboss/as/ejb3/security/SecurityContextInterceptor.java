@@ -60,6 +60,9 @@ public class SecurityContextInterceptor implements Interceptor {
             @Override
             public Void run() {
                 holder.securityManager.pop();
+                if(holder.principalVsRolesMap != null){
+                    SecurityRolesAssociation.setSecurityRoles(null);//Clear the threadlocal
+                }
                 return null;
             }
         };
