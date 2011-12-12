@@ -218,6 +218,13 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     @Override
+    public void unregisterOperationHandler(final String operationName) {
+        if (operationsUpdater.remove(this, operationName) == null) {
+            throw operationNotRegisteredException(operationName, resourceDefinition.getPathElement());
+        }
+    }
+
+    @Override
     public void registerReadWriteAttribute(final String attributeName, final OperationStepHandler readHandler, final OperationStepHandler writeHandler, AttributeAccess.Storage storage) {
         AttributeAccess aa = new AttributeAccess(AccessType.READ_WRITE, storage, readHandler, writeHandler, null, null);
         if (attributesUpdater.putIfAbsent(this, attributeName, aa) != null) {
@@ -494,6 +501,10 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
 
     private IllegalArgumentException alreadyRegistered(final String type, final String name) {
         return MESSAGES.alreadyRegistered(type, name, getLocationString());
+    }
+
+    private IllegalArgumentException operationNotRegisteredException(String op, PathElement address) {
+        return MESSAGES.operationNotRegisteredException(op, PathAddress.pathAddress(address));
     }
 
 }

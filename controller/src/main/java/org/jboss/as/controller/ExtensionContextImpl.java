@@ -266,6 +266,11 @@ public final class ExtensionContextImpl implements ExtensionContext {
         }
 
         @Override
+        public ManagementResourceRegistration getOverrideModel(String name) {
+            return deployments.getOverrideModel(name);
+        }
+
+        @Override
         public ManagementResourceRegistration getSubModel(PathAddress address) {
             return deployments.getSubModel(address);
         }
@@ -336,6 +341,12 @@ public final class ExtensionContextImpl implements ExtensionContext {
         public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, OperationEntry.EntryType entryType, EnumSet<OperationEntry.Flag> flags) {
             deployments.registerOperationHandler(operationName, handler, descriptionProvider, inherited, entryType, flags);
             subdeployments.registerOperationHandler(operationName, handler, descriptionProvider, inherited, entryType, flags);
+        }
+
+        @Override
+        public void unregisterOperationHandler(String operationName) {
+            deployments.unregisterOperationHandler(operationName);
+            subdeployments.unregisterOperationHandler(operationName);
         }
 
         @Override

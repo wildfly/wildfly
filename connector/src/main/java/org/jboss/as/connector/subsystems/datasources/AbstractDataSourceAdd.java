@@ -64,8 +64,7 @@ import org.jboss.security.SubjectFactory;
  */
 public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> controllers) throws OperationFailedException {
-
+    protected void performRuntime(final OperationContext context, ModelNode operation, ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> controllers) throws OperationFailedException {
         final ModelNode address = operation.require(OP_ADDR);
         final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();
         final String jndiName = operation.hasDefined(JNDINAME.getName()) ? operation.get(JNDINAME.getName()).asString() : dsName;
@@ -105,24 +104,28 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                         CommonDeployment deploymentMD = ((AbstractDataSourceService) controller.getService()).getDeploymentMD();
 
                         StatisticsPlugin jdbcStats = deploymentMD.getDataSources()[0].getStatistics();
-                        if (jdbcStats.getNames().size() != 0) {
-                            ManagementResourceRegistration subRegistration = registration.registerSubModel(PathElement.pathElement("statistics", "jdbc"), new StatisticsDescriptionProvider(jdbcStats));
-
-                            for (String statName : jdbcStats.getNames()) {
-                                subRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(jdbcStats));
-                            }
-                            subRegistration.registerOperationHandler("clear-metrics", new ClearStatisticsHandler(jdbcStats), DataSourcesSubsystemProviders.CLEAR_STATISTICS_DESC, false);
-
-                        }
-
                         StatisticsPlugin poolStats = deploymentMD.getDataSources()[0].getPool().getStatistics();
-                        if (poolStats.getNames().size() != 0) {
-                            ManagementResourceRegistration subRegistration = registration.registerSubModel(PathElement.pathElement("statistics", "pool"), new StatisticsDescriptionProvider(poolStats));
+                        int size = jdbcStats.getNames().size() + poolStats.getNames().size();
+                        if (size != 0) {
+                            ManagementResourceRegistration subRegistration = registration.registerOverrideModel(dsName, new StatisticsDescriptionProvider(jdbcStats, poolStats));
+                            subRegistration.registerOperationHandler("clear-statistics", new ClearStatisticsHandler(jdbcStats,poolStats), DataSourcesSubsystemProviders.CLEAR_STATISTICS_DESC, false);
 
-                            for (String statName : poolStats.getNames()) {
-                                subRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
+                            if (jdbcStats.getNames().size() != 0) {
+
+                                //context.createResource(PathAddress.pathAddress(PathElement.pathElement("statistics")));
+                                //context.createResource(PathAddress.pathAddress(PathElement.pathElement("statistics"), PathElement.pathElement("jdbc")));
+                                for (String statName : jdbcStats.getNames()) {
+                                    subRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(jdbcStats));
+                                }
+
                             }
-                            subRegistration.registerOperationHandler("clear-statistics", new ClearStatisticsHandler(poolStats), DataSourcesSubsystemProviders.CLEAR_STATISTICS_DESC, false);
+
+                            if (poolStats.getNames().size() != 0) {
+
+                                for (String statName : poolStats.getNames()) {
+                                    subRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
+                                }
+                            }
                         }
                         break;
 
@@ -133,13 +136,27 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                         CommonDeployment deploymentMD = ((AbstractDataSourceService) controller.getService()).getDeploymentMD();
 
                         StatisticsPlugin jdbcStats = deploymentMD.getDataSources()[0].getStatistics();
-                        if (jdbcStats.getNames().size() != 0) {
-                            registration.unregisterSubModel(PathElement.pathElement("statistics", "jdbc"));
-                        }
-
                         StatisticsPlugin poolStats = deploymentMD.getDataSources()[0].getPool().getStatistics();
-                        if (poolStats.getNames().size() != 0) {
-                            registration.unregisterSubModel(PathElement.pathElement("statistics", "pool"));
+
+                        ManagementResourceRegistration subRegistration = registration.getOverrideModel(dsName);
+                        if (subRegistration != null) {
+                            if (jdbcStats.getNames().size() != 0) {
+
+                                //context.createResource(PathAddress.pathAddress(PathElement.pathElement("statistics")));
+                                //context.createResource(PathAddress.pathAddress(PathElement.pathElement("statistics"), PathElement.pathElement("jdbc")));
+                                for (String statName : jdbcStats.getNames()) {
+                                    subRegistration.unregisterAttribute(statName);
+                                }
+                            }
+
+                            if (poolStats.getNames().size() != 0) {
+
+                                for (String statName : poolStats.getNames()) {
+                                    subRegistration.unregisterAttribute(statName);
+                                }
+                            }
+                            subRegistration.unregisterOperationHandler("clear-statistics");
+                            registration.unregisterOverrideModel(dsName);
                         }
                         break;
 

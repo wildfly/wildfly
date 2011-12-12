@@ -139,6 +139,10 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
 
     /** {@inheritDoc} */
     @Override
+    public abstract void unregisterOperationHandler(final String operationName);
+
+    /** {@inheritDoc} */
+    @Override
     public abstract void registerProxyController(final PathElement address, final ProxyController controller) throws IllegalArgumentException;
 
     /** {@inheritDoc} */
@@ -309,12 +313,33 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
 
     /** {@inheritDoc} */
     @Override
+    public final ManagementResourceRegistration getOverrideModel(String name) {
+
+        if (name == null) {
+            throw ControllerMessages.MESSAGES.nullVar("name");
+        }
+
+        if (parent == null) {
+            throw ControllerMessages.MESSAGES.cannotOverrideRootRegistration();
+        }
+
+        if (!PathElement.WILDCARD_VALUE.equals(valueString)) {
+            throw ControllerMessages.MESSAGES.cannotOverrideNonWildCardRegistration(valueString);
+        }
+        PathElement pe = PathElement.pathElement(parent.getKeyName(),name);
+
+        return parent.getParent().getSubModel(PathAddress.pathAddress(pe));
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public final ManagementResourceRegistration getSubModel(PathAddress address) {
 
         return getSubRegistration(address);
     }
 
     final AbstractResourceRegistration getSubRegistration(PathAddress address) {
+
 
         if (parent != null) {
             RootInvocation ri = getRootInvocation();

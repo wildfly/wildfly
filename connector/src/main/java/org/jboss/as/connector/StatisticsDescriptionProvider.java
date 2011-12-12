@@ -28,10 +28,16 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.jca.core.spi.statistics.StatisticsPlugin;
@@ -42,48 +48,41 @@ import org.jboss.jca.core.spi.statistics.StatisticsPlugin;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class StatisticsDescriptionProvider implements DescriptionProvider {
+public class StatisticsDescriptionProvider implements OverrideDescriptionProvider {
 
     static final String RESOURCE_NAME = StatisticsDescriptionProvider.class.getPackage().getName() + ".LocalDescriptions";
 
-    private final StatisticsPlugin plugin;
+    private final List<StatisticsPlugin> plugins;
 
-    public StatisticsDescriptionProvider(final StatisticsPlugin plugin) {
-        this.plugin = plugin;
+    public StatisticsDescriptionProvider(final StatisticsPlugin... plugins) {
+        this.plugins = Arrays.asList(plugins);
     }
 
     @Override
-    public ModelNode getModelDescription(Locale locale) {
-        //final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode node = new ModelNode();
-        node.get(DESCRIPTION).set("description");
-                //bundle.getString("statistics"));
-
-        for (String name : plugin.getNames()) {
-            node.get(ATTRIBUTES, name, DESCRIPTION).set(plugin.getDescription(name));
-            ModelType modelType = ModelType.STRING;
-            if (plugin.getType(name) == int.class) {
-                modelType = ModelType.INT;
+    public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
+        Map<String, ModelNode> attributes = new HashMap<String, ModelNode>();
+        for (StatisticsPlugin plugin : plugins) {
+            for (String name : plugin.getNames()) {
+                ModelNode node = new ModelNode();
+                node.get(ATTRIBUTES, name, DESCRIPTION).set(plugin.getDescription(name));
+                ModelType modelType = ModelType.STRING;
+                if (plugin.getType(name) == int.class) {
+                    modelType = ModelType.INT;
+                }
+                if (plugin.getType(name) == long.class) {
+                    modelType = ModelType.LONG;
+                }
+                node.get(ATTRIBUTES, name, TYPE).set(modelType);
+                node.get(ATTRIBUTES, name, REQUIRED).set(false);
+                node.get(ATTRIBUTES, name, READ_ONLY).set(true);
+                attributes.put(name, node);
             }
-            if (plugin.getType(name) == long.class) {
-                modelType = ModelType.LONG;
-            }
-            node.get(ATTRIBUTES, name, TYPE).set(modelType);
-            node.get(ATTRIBUTES, name, REQUIRED).set(false);
-            node.get(ATTRIBUTES, name, READ_ONLY).set(true);
         }
-        // Should this be an attribute instead
-
-
-        return node;
+        return attributes;
     }
 
-    private ResourceBundle getResourceBundle(Locale locale) {
-        if (locale == null) {
-            locale = Locale.getDefault();
-        }
-        return ResourceBundle.getBundle(RESOURCE_NAME, locale);
+    @Override
+    public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
+        return Collections.emptyMap();
     }
-
 }
