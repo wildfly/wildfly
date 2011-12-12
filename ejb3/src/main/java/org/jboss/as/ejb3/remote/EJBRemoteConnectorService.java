@@ -21,6 +21,13 @@
  */
 package org.jboss.as.ejb3.remote;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.remote.protocol.versionone.VersionOneProtocolChannelReceiver;
 import org.jboss.ejb.client.remoting.PackedInteger;
@@ -44,13 +51,6 @@ import org.jboss.remoting3.Registration;
 import org.jboss.remoting3.ServiceRegistrationException;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
-
-import javax.transaction.TransactionManager;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.concurrent.ExecutorService;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -146,7 +146,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
             try {
                 EJBRemoteConnectorService.this.sendVersionMessage(channel);
             } catch (IOException e) {
-                log.error("Closing channel due to failure to send version message from server to channel " + channel, e);
+                EjbLogger.EJB3_LOGGER.closingChannel(channel, e);
                 IoUtils.safeClose(channel);
             }
 
@@ -156,7 +156,6 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
         @Override
         public void registrationTerminated() {
-            //To change body of implemented methods use File | Settings | File Templates.
         }
     }
 
@@ -170,7 +169,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
         @Override
         public void handleError(Channel channel, IOException error) {
-            log.error("Closing channel " + channel + " due to error: ", error);
+            EjbLogger.EJB3_LOGGER.closingChannel(channel, error);
             try {
                 channel.close();
             } catch (IOException ioe) {
@@ -180,7 +179,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
         @Override
         public void handleEnd(Channel channel) {
-            log.error("Channel end notification received, closing channel " + channel);
+            EjbLogger.EJB3_LOGGER.closingChannelOnChannelEnd(channel);
             try {
                 channel.close();
             } catch (IOException ioe) {
@@ -197,7 +196,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
                 log.debug("Client with protocol version " + version + " and marshalling strategy " + clientMarshallingStrategy +
                         " trying to communicate on " + channel);
                 if (!EJBRemoteConnectorService.this.isSupportedMarshallingStrategy(clientMarshallingStrategy)) {
-                    log.info("Unsupported client marshalling strategy " + clientMarshallingStrategy + " received on channel " + channel + ", no further communication will take place");
+                    EjbLogger.EJB3_LOGGER.unsupportedClientMarshallingStrategy(clientMarshallingStrategy, channel);
                     channel.close();
                     return;
                 }

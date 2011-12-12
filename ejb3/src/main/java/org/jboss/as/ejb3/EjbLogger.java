@@ -40,6 +40,7 @@ import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
+import org.jboss.remoting3.Channel;
 
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
@@ -351,5 +352,37 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 14138, value = "Exception releasing entity")
     void exceptionReleasingEntity(@Cause Throwable t);
+
+    /**
+     * Log message indicating that a unsupported client marshalling strategy was received from a remote client
+     *
+     * @param strategy The client marshalling strategy
+     * @param channel The channel on which the client marshalling strategy was received
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 14139, value = "Unsupported client marshalling strategy %s received on channel %s ,no further communication will take place")
+    void unsupportedClientMarshallingStrategy(String strategy, Channel channel);
+
+
+    /**
+     * Log message indicating that some error caused a channel to be closed
+     *
+     * @param channel The channel being closed
+     * @param t The cause
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 14140, value = "Closing channel %s due to an error")
+    void closingChannel(Channel channel, @Cause Throwable t);
+
+    /**
+     * Log message indicating that a {@link Channel.Receiver#handleEnd(org.jboss.remoting3.Channel)} notification
+     * was received and the channel is being closed
+     *
+     * @param channel The channel for which the {@link Channel.Receiver#handleEnd(org.jboss.remoting3.Channel)} notification
+     *                was received
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 14141, value = "Channel end notification received, closing channel %s")
+    void closingChannelOnChannelEnd(Channel channel);
 
 }
