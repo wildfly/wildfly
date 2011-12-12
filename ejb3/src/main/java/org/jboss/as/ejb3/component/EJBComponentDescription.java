@@ -68,10 +68,10 @@ import org.jboss.as.ejb3.security.EJBSecurityViewConfigurator;
 import org.jboss.as.ejb3.security.SecurityContextInterceptorFactory;
 import org.jboss.as.ejb3.timerservice.AutoTimer;
 import org.jboss.as.ejb3.timerservice.NonFunctionalTimerService;
-import org.jboss.as.ejb3.tx.TransactionMethodAttribute;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.ejb3.annotation.TransactionTimeout;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -173,7 +173,12 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     /**
      * The transaction attributes
      */
-    private final ApplicableMethodInformation<TransactionMethodAttribute> transactionAttributes;
+    private final ApplicableMethodInformation<TransactionAttributeType> transactionAttributes;
+
+    /**
+     * The transaction timeouts
+     */
+    private final ApplicableMethodInformation<TransactionTimeout> transactionTimeouts;
 
     /**
      * Construct a new instance.
@@ -199,7 +204,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         this.addCurrentInvocationContextFactory();
         // setup a dependency on EJB remote tx repository service, if this EJB exposes atleast one remote view
         this.addRemoteTransactionsRepositoryDependency();
-        this.transactionAttributes = new ApplicableMethodInformation<TransactionMethodAttribute>(componentName, new TransactionMethodAttribute(TransactionAttributeType.REQUIRED));
+        this.transactionAttributes = new ApplicableMethodInformation<TransactionAttributeType>(componentName, TransactionAttributeType.REQUIRED);
+        this.transactionTimeouts = new ApplicableMethodInformation<TransactionTimeout>(componentName, null);
         this.methodPermissions = new ApplicableMethodInformation<EJBMethodSecurityAttribute>(componentName, null);
         getConfigurators().add(new ComponentConfigurator() {
             @Override
@@ -657,8 +663,12 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         this.exposedViaIiop = exposedViaIiop;
     }
 
-    public ApplicableMethodInformation<TransactionMethodAttribute> getTransactionAttributes() {
+    public ApplicableMethodInformation<TransactionAttributeType> getTransactionAttributes() {
         return transactionAttributes;
+    }
+
+    public ApplicableMethodInformation<TransactionTimeout> getTransactionTimeouts() {
+        return transactionTimeouts;
     }
 
     public ApplicableMethodInformation<EJBMethodSecurityAttribute> getMethodPermissions() {
