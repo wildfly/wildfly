@@ -263,7 +263,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
         // corresponding JAR
         for (String jar : order) {
             WebFragmentMetaData webFragmentMetaData = webFragments.get(jar);
-            if (webFragmentMetaData == null) {
+            if (webFragmentMetaData == null || isComplete) {
                 webFragmentMetaData = new WebFragmentMetaData();
                 // Add non overriding default distributable flag
                 webFragmentMetaData.setDistributable(new EmptyMetaData());
