@@ -114,7 +114,7 @@ public class InfinispanExtension implements Extension, DescriptionProvider {
         final ManagementResourceRegistration transport = container.registerSubModel(transportPath, transportDescription);
         transport.registerOperationHandler(ADD, TransportAdd.INSTANCE, TransportAdd.INSTANCE, false);
         transport.registerOperationHandler(REMOVE, TransportRemove.INSTANCE, TransportRemove.INSTANCE, false);
-        // TransportWriteAttributeHandler.INSTANCE.registerAttributes(transport);
+        TransportWriteAttributeHandler.INSTANCE.registerAttributes(transport);
 
         // add /subsystem=infinispan/cache-container=*/local-cache=*
         ManagementResourceRegistration local = container.registerSubModel(localCachePath, localCacheDescription);

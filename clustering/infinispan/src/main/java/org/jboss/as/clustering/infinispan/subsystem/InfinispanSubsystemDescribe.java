@@ -69,6 +69,14 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler, Descri
                 address.add(ModelKeys.CACHE_CONTAINER, container.getName());
                 result.add(CacheContainerAdd.createOperation(address, container.getValue()));
 
+                // add operation to create the transport for the container
+                if (container.getValue().hasDefined(ModelKeys.SINGLETON)) {
+                    ModelNode transport = container.getValue().get(ModelKeys.SINGLETON, ModelKeys.TRANSPORT);
+                    ModelNode transportAddress = address.clone() ;
+                    transportAddress.add(ModelKeys.SINGLETON, ModelKeys.TRANSPORT) ;
+                    result.add(TransportAdd.createOperation(transportAddress, transport));
+                }
+
                 // list of (cacheType, OBJECT)
                 for (Property cacheTypeList : container.getValue().asPropertyList()) {
                     // add commands for local caches

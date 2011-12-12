@@ -21,19 +21,42 @@ public class TransportRemove extends AbstractRemoveStepHandler implements Descri
         super();
     }
 
+/*
     @Override
     protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         // need to remove the transport submodel
-        log.info("performing remove") ;
-        log.infof("Operation = %s", operation.toString());
-        log.infof("Model = %s", model.toString());
+
+        // check for corresponding ModelNode in parent
+        PathAddress transportAddress = PathAddress.pathAddress(operation.get(OP_ADDR)) ;
+        String transportName = transportAddress.getLastElement().getValue() ;
+        if (!transportName.equals(ModelKeys.TRANSPORT)) {
+            ModelNode exception = new ModelNode() ;
+            exception.get(FAILURE_DESCRIPTION).set("Add operation failed: sanity check failure on transport name.") ;
+            throw new OperationFailedException(exception);
+        }
+
+        PathAddress containerAddress = transportAddress.subAddress(0, transportAddress.size()-1) ;
+        ModelNode container = context.getRootResource().navigate(containerAddress).getModel();
+
+        // check if the unique anonymous ModelNode does not exist
+        if (!container.hasDefined(ModelKeys.TRANSPORT)) {
+            ModelNode exception = new ModelNode() ;
+            exception.get(FAILURE_DESCRIPTION).set("Add operation failed: singleton transport does not exist.") ;
+            throw new OperationFailedException(exception);
+        }
+
+        // remove the transport child
+        container.remove(ModelKeys.TRANSPORT) ;
     }
+*/
+
+
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         // need to set reload-required on the server
-        log.info("performing runtime") ;
-        // context.reloadRequired();
+        log.debug("performing runtime") ;
+        context.reloadRequired();
     }
 
     public ModelNode getModelDescription(Locale locale) {

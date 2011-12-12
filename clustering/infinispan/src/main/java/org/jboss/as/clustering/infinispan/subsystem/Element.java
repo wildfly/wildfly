@@ -25,12 +25,17 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.controller.AttributeDefinition;
+
 /**
+ * Enumerates the elements used in the Infinispan subsystem schema.
+ *
  * @author Paul Ferraro
+ * @author Richard Achmatowicz (c) 2011 RedHat Inc.
  */
 public enum Element {
     // must be first
-    UNKNOWN(null),
+    UNKNOWN((String)null),
 
     ALIAS(ModelKeys.ALIAS),
     BUCKET_TABLE(ModelKeys.BUCKET_TABLE),
@@ -60,9 +65,16 @@ public enum Element {
     ;
 
     private final String name;
+    private final AttributeDefinition definition;
 
     Element(final String name) {
         this.name = name;
+        this.definition = null;
+    }
+
+    Element(final AttributeDefinition definition) {
+        this.name = definition.getXmlName();
+        this.definition = definition;
     }
 
     /**
@@ -72,6 +84,10 @@ public enum Element {
      */
     public String getLocalName() {
         return name;
+    }
+
+    public AttributeDefinition getDefinition() {
+        return definition;
     }
 
     private static final Map<String, Element> elements;
