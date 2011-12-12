@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_DEFAULTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -34,14 +35,17 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import org.jboss.as.test.integration.domain.DomainTestSupport;
+import static org.jboss.as.test.integration.domain.DomainTestSupport.validateFailedResponse;
 import static org.jboss.as.test.integration.domain.DomainTestSupport.validateResponse;
 
 import java.io.IOException;
@@ -341,6 +345,68 @@ public class CoreResourceManagementTestCase {
         returnVal = validateResponse(response);
         Assert.assertEquals(ModelType.INT, returnVal.getType());
 
+    }
+
+    @Test
+    public void testUndefineSocketBindingPortOffset() throws IOException {
+        final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
+
+        final ModelNode address = new ModelNode();
+        address.add("server-group", "other-server-group");
+        address.protect();
+        {
+            final ModelNode operation = new ModelNode();
+            operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
+            operation.get(OP_ADDR).set(address);
+            operation.get(NAME).set("socket-binding-port-offset");
+            operation.get(INCLUDE_DEFAULTS).set(false);
+
+            final ModelNode response = masterClient.execute(operation);
+            validateResponse(response);
+            Assert.assertFalse(response.get(RESULT).isDefined());
+        }
+        {
+            final ModelNode operation = new ModelNode();
+            operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+            operation.get(OP_ADDR).set(address);
+            operation.get(NAME).set("socket-binding-port-offset");
+            operation.get(VALUE).set(0);
+
+            final ModelNode response = masterClient.execute(operation);
+            validateResponse(response);
+        }
+        {
+            final ModelNode operation = new ModelNode();
+            operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
+            operation.get(OP_ADDR).set(address);
+            operation.get(NAME).set("socket-binding-port-offset");
+            operation.get(INCLUDE_DEFAULTS).set(false);
+
+            final ModelNode response = masterClient.execute(operation);
+            validateResponse(response);
+            Assert.assertTrue(response.get(RESULT).isDefined());
+            Assert.assertEquals(0, response.get(RESULT).asInt());
+        }
+        {
+            final ModelNode operation = new ModelNode();
+            operation.get(OP).set(UNDEFINE_ATTRIBUTE_OPERATION);
+            operation.get(OP_ADDR).set(address);
+            operation.get(NAME).set("socket-binding-port-offset");
+
+            final ModelNode response = masterClient.execute(operation);
+            validateResponse(response);
+        }
+        {
+            final ModelNode operation = new ModelNode();
+            operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
+            operation.get(OP_ADDR).set(address);
+            operation.get(NAME).set("socket-binding-port-offset");
+            operation.get(INCLUDE_DEFAULTS).set(false);
+
+            final ModelNode response = masterClient.execute(operation);
+            validateResponse(response);
+            Assert.assertFalse(response.get(RESULT).isDefined());
+        }
     }
 
     private static ModelNode getSystemPropertyAddOperation(ModelNode address, String value, Boolean boottime) {

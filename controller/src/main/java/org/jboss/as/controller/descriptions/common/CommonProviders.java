@@ -150,6 +150,13 @@ public final class CommonProviders {
         }
     };
 
+    public static final DescriptionProvider UNDEFINE_ATTRIBUTE_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            return GlobalDescriptions.getUndefineAttributeOperationDescription(locale);
+        }
+    };
+
     public static final DescriptionProvider WRITE_ATTRIBUTE_PROVIDER = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
@@ -223,6 +230,7 @@ public final class CommonProviders {
             return CommonDescriptions.getServiceContainerDescription(locale);
         }
     };
+
     /**
      * Provider for a resource that defines the core security vault.
      */
