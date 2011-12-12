@@ -91,6 +91,7 @@ public enum Attribute {
     TIMEOUT(ModelKeys.TIMEOUT),
     TYPE(ModelKeys.TYPE),
     VIRTUAL_NODES(ModelKeys.VIRTUAL_NODES),
+    WAIT(ModelKeys.WAIT)
     ;
 
     private final String name;

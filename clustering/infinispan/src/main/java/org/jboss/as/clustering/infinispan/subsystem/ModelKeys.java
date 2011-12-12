@@ -106,4 +106,5 @@ public class ModelKeys {
     static final String TRANSPORT = "transport";
     static final String TYPE = "type";
     static final String VIRTUAL_NODES = "virtual-nodes";
+    static final String WAIT = "wait";
 }

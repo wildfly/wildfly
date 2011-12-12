@@ -30,7 +30,7 @@
                     <timestamp-column name="version" type="BIGINT"/>
                 </entry-table>
             </jdbc-store>
-            <rehashing enabled="false" timeout="1200000"/>
+            <rehashing enabled="true" timeout="1200000" wait="60000"/>
         </distributed-cache>
         <invalidation-cache name="invalid" mode="ASYNC" batching="true" indexing="NONE" queue-flush-interval="10" queue-size="1000" start="LAZY">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_UNCOMMITTED" striping="true"/>

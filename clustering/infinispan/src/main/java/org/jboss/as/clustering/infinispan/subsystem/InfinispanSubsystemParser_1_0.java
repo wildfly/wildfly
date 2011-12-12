@@ -514,6 +514,10 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
                     rehashing.get(ModelKeys.TIMEOUT).set(Long.parseLong(value));
                     break;
                 }
+                case WAIT: {
+                    rehashing.get(ModelKeys.WAIT).set(Long.parseLong(value));
+                    break;
+                }
                 default: {
                     throw ParseUtils.unexpectedAttribute(reader, i);
                 }
@@ -1127,6 +1131,7 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
                         writer.writeStartElement(Element.REHASHING.getLocalName());
                         this.writeOptional(writer, Attribute.ENABLED, rehashing, ModelKeys.ENABLED);
                         this.writeOptional(writer, Attribute.TIMEOUT, rehashing, ModelKeys.TIMEOUT);
+                        this.writeOptional(writer, Attribute.WAIT, rehashing, ModelKeys.WAIT);
                         writer.writeEndElement();
                     }
 
