@@ -27,6 +27,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
@@ -59,7 +60,7 @@ import static org.jboss.msc.service.ServiceController.Mode.REMOVE;
  */
 public class DeploymentHandlerUtil {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.server.controller");
+    private static final ServerLogger log = ServerLogger.DEPLOYMENT_LOGGER;
 
     static class ContentItem {
         // either hash or <path, relativeTo, isArchive>

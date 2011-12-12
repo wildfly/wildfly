@@ -43,6 +43,16 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 public interface ManagementResourceRegistration extends ImmutableManagementResourceRegistration {
 
     /**
+     * Get a specifically named resource that overrides this {@link PathElement#WILDCARD_VALUE wildcard registration}
+     * by adding additional attributes, operations or child types.
+     *
+     * @param name the specific name of the resource. Cannot be {@code null} or {@link PathElement#WILDCARD_VALUE}
+     *
+     * @return the resource registration, <code>null</code> if there is none
+     */
+
+    ManagementResourceRegistration getOverrideModel(String name);
+    /**
      * Get a sub model registration.
      * <p>This method overrides the superinterface method of the same name in order to require
      * that the returned registration be mutable.
@@ -177,6 +187,15 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @throws IllegalArgumentException if either parameter is {@code null}
      */
     void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, OperationEntry.EntryType entryType, EnumSet<OperationEntry.Flag> flags);
+
+
+    /**
+     * Unregister an operation handler for this resource.
+     *
+     * @param operationName       the operation name
+     * @throws IllegalArgumentException if operationName is not registered
+     */
+    void unregisterOperationHandler(final String operationName);
 
 
     /**
