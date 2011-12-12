@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.jaxr.service;
+package org.jboss.as.jaxr;
 
 import org.jboss.msc.service.ServiceName;
 
@@ -33,73 +33,39 @@ public class JAXRConfiguration {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("jaxr", "configuration");
 
-    public static final boolean DEFAULT_DROPONSTART = false;
-    public static final boolean DEFAULT_CREATEONSTART = false;
-    public static final boolean DEFAULT_DROPONSTOP = false;
-
     public static String[] REQUIRED_ATTRIBUTES = new String[]{
-            ModelConstants.CONNECTIONFACTORY,
-            ModelConstants.DATASOURCE,
-            ModelConstants.DROPONSTART,
-            ModelConstants.CREATEONSTART,
-            ModelConstants.DROPONSTOP
+            ModelConstants.CONNECTION_FACTORY,
+            ModelConstants.PUBLISH_URL,
+            ModelConstants.QUERY_URL
     };
 
-    // Datasource to Database
-    private String dataSourceBinding;
     // Context to which JAXR ConnectionFactory to bind to
     private String connectionFactoryBinding;
-    // Should all tables be dropped on Start
-    private boolean dropOnStart;
-    // Should all tables be created on Start
-    private boolean createOnStart;
-    // Should all tables be dropped on Stop
-    private boolean dropOnStop;
+    // The jUDDI server publish URL
+    private String publishURL;
+    // The jUDDI server publish URL
+    private String queryURL;
 
     public JAXRConfiguration() {
         init();
     }
 
     public void init() {
-        dataSourceBinding = null;
         connectionFactoryBinding = null;
-        dropOnStart = DEFAULT_DROPONSTART;
-        createOnStart = DEFAULT_CREATEONSTART;
-        dropOnStop = DEFAULT_DROPONSTOP;
     }
 
     public void applyUpdateToConfig(String attributeName, String attributeValue) {
         if (attributeValue != null) {
-            if (attributeName.equals(ModelConstants.CONNECTIONFACTORY)) {
+            if (attributeName.equals(ModelConstants.CONNECTION_FACTORY)) {
                 setConnectionFactoryBinding(attributeValue);
-            } else if (attributeName.equals(ModelConstants.DATASOURCE)) {
-                setDataSourceBinding(attributeValue);
-            } else if (attributeName.equals(ModelConstants.DROPONSTART)) {
-                setDropOnStart(Boolean.valueOf(attributeValue));
-            } else if (attributeName.equals(ModelConstants.CREATEONSTART)) {
-                setCreateOnStart(Boolean.valueOf(attributeValue));
-            } else if (attributeName.equals(ModelConstants.DROPONSTOP)) {
-                setDropOnStop(Boolean.valueOf(attributeValue));
+            } else if (attributeName.equals(ModelConstants.PUBLISH_URL)) {
+                setPublishURL(attributeValue);
+            } else if (attributeName.equals(ModelConstants.QUERY_URL)) {
+                setQueryURL(attributeValue);
             } else {
                 throw new IllegalArgumentException("Invalid attribute name: " + attributeName);
             }
         }
-    }
-
-    public boolean isDropOnStop() {
-        return dropOnStop;
-    }
-
-    public boolean isDropOnStart() {
-        return dropOnStart;
-    }
-
-    public boolean isCreateOnStart() {
-        return createOnStart;
-    }
-
-    public String getDataSourceBinding() {
-        return dataSourceBinding;
     }
 
     public String getConnectionFactoryBinding() {
@@ -110,19 +76,19 @@ public class JAXRConfiguration {
         this.connectionFactoryBinding = connectionFactoryBinding;
     }
 
-    public void setDataSourceBinding(String dataSourceBinding) {
-        this.dataSourceBinding = dataSourceBinding;
+    public String getPublishURL() {
+        return publishURL;
     }
 
-    public void setCreateOnStart(boolean createOnStart) {
-        this.createOnStart = createOnStart;
+    public void setPublishURL(String publishURL) {
+        this.publishURL = publishURL;
     }
 
-    public void setDropOnStart(boolean dropOnStart) {
-        this.dropOnStart = dropOnStart;
+    public String getQueryURL() {
+        return queryURL;
     }
 
-    public void setDropOnStop(boolean dropOnStop) {
-        this.dropOnStop = dropOnStop;
+    public void setQueryURL(String queryURL) {
+        this.queryURL = queryURL;
     }
 }

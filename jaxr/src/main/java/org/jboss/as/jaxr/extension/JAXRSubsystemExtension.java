@@ -30,9 +30,9 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.jaxr.service.JAXRConstants;
-import org.jboss.as.jaxr.service.JAXRConstants.Namespace;
-import org.jboss.as.jaxr.service.JAXRConfiguration;
+import org.jboss.as.jaxr.JAXRConfiguration;
+import org.jboss.as.jaxr.JAXRConstants;
+import org.jboss.as.jaxr.JAXRConstants.Namespace;
 import org.jboss.dmr.ModelNode;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;

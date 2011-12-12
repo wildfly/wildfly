@@ -21,10 +21,10 @@
  */
 package org.jboss.as.jaxr.extension;
 
-import org.jboss.as.jaxr.service.JAXRConstants.Attribute;
-import org.jboss.as.jaxr.service.JAXRConstants.Element;
-import org.jboss.as.jaxr.service.JAXRConstants.Namespace;
-import org.jboss.as.jaxr.service.ModelConstants;
+import org.jboss.as.jaxr.ModelConstants;
+import org.jboss.as.jaxr.JAXRConstants.Attribute;
+import org.jboss.as.jaxr.JAXRConstants.Element;
+import org.jboss.as.jaxr.JAXRConstants.Namespace;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -49,16 +49,12 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
                 case JAXR_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
-                        case CONNECTIONFACTORY: {
-                            parseBinding(reader, addop, ModelConstants.CONNECTIONFACTORY);
+                        case CONNECTION_FACTORY: {
+                            parseBinding(reader, addop);
                             break;
                         }
-                        case DATASOURCE: {
-                            parseBinding(reader, addop, ModelConstants.DATASOURCE);
-                            break;
-                        }
-                        case FLAGS: {
-                            parseFlags(reader, addop);
+                        case JUDDI_SERVER: {
+                            parseJUDDIServer(reader, addop);
                             break;
                         }
                         default:
@@ -70,7 +66,7 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
         operations.add(addop);
     }
 
-    private void parseBinding(XMLExtendedStreamReader reader, ModelNode addop, String modelAttribute) throws XMLStreamException {
+    private void parseBinding(XMLExtendedStreamReader reader, ModelNode addop) throws XMLStreamException {
 
         // Handle attributes
         String jndiName = null;
@@ -94,34 +90,41 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
 
         requireNoContent(reader);
 
-        addop.get(modelAttribute).set(jndiName);
+        addop.get(ModelConstants.CONNECTION_FACTORY).set(jndiName);
     }
 
-    private void parseFlags(XMLExtendedStreamReader reader, ModelNode addop) throws XMLStreamException {
+    private void parseJUDDIServer(XMLExtendedStreamReader reader, ModelNode addop) throws XMLStreamException {
 
         // Handle attributes
+        String publishURL = null;
+        String queryURL = null;
         int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
             final String attrValue = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
-                case DROPONSTART: {
-                    addop.get(ModelConstants.DROPONSTART).set(attrValue);
+                case PUBLISH_URL: {
+                    publishURL = attrValue;
                     break;
                 }
-                case CREATEONSTART: {
-                    addop.get(ModelConstants.CREATEONSTART).set(attrValue);
-                    break;
-                }
-                case DROPONSTOP: {
-                    addop.get(ModelConstants.DROPONSTOP).set(attrValue);
+                case QUERY_URL: {
+                    queryURL = attrValue;
                     break;
                 }
                 default:
                     throw unexpectedAttribute(reader, i);
             }
         }
+
+        if (publishURL == null)
+            throw missingRequired(reader, Collections.singleton(Attribute.PUBLISH_URL));
+        if (queryURL == null)
+            throw missingRequired(reader, Collections.singleton(Attribute.QUERY_URL));
+
         requireNoContent(reader);
+
+        addop.get(ModelConstants.PUBLISH_URL).set(publishURL);
+        addop.get(ModelConstants.QUERY_URL).set(queryURL);
     }
 }

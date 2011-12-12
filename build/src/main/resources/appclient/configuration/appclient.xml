@@ -36,13 +36,6 @@
         <extension module="org.jboss.as.webservices"/>
     </extensions>
 
-    <system-properties>
-        <property name="javax.xml.registry.ConnectionFactoryClass" value="org.apache.ws.scout.registry.ConnectionFactoryImpl"/>
-        <property name="jaxr.publish.url" value="http://localhost:8080/juddi/publish"/>
-        <property name="jaxr.query.url" value="http://localhost:8080/juddi/inquiry"/>
-        <property name="scout.proxy.transportClass" value="org.jboss.as.jaxr.scout.SaajTransport"/>
-    </system-properties>
-
     <profile>
         <subsystem xmlns="urn:jboss:domain:logging:1.1">
             <console-handler name="CONSOLE">
@@ -138,7 +131,8 @@
             </security-domains>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jaxr:1.0">
-           <connection-factory jndi-name="java:jboss/jaxr/ConnectionFactory"/>
+            <connection-factory jndi-name="java:jboss/jaxr/ConnectionFactory"/>
+            <juddi-server publish-url="http://localhost:8080/juddi/publish" query-url="http://localhost:8080/juddi/query"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:transactions:1.0">
             <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>

@@ -31,9 +31,8 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.jaxr.service.JAXRConfiguration;
-import org.jboss.as.jaxr.service.JAXRConstants;
-import org.jboss.as.jaxr.service.ModelConstants;
+import org.jboss.as.jaxr.JAXRConfiguration;
+import org.jboss.as.jaxr.JAXRConstants;
 
 import java.util.EnumSet;
 
@@ -57,7 +56,7 @@ class JAXRSubsystemRootResource extends SimpleResourceDefinition {
     }
 
     private static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
-        return new StandardResourceDescriptionResolver(keyPrefix, ModelConstants.RESOURCE_NAME, JAXRSubsystemRootResource.class.getClassLoader(), true, false);
+        return new StandardResourceDescriptionResolver(keyPrefix, JAXRConstants.RESOURCE_NAME, JAXRSubsystemRootResource.class.getClassLoader(), true, false);
     }
 
     @Override

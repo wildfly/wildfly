@@ -18,8 +18,7 @@
         </xs:annotation>
         <xs:all>
             <xs:element name="connection-factory" type="connectionFactoryType" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="datasource" type="datasourceType" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="flags" type="flagsType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="juddi-server" type="juddiServerType" minOccurs="0" maxOccurs="1"/>
         </xs:all>
     </xs:complexType>
 
@@ -35,45 +34,25 @@
         </xs:attribute>
     </xs:complexType>
 
-    <xs:complexType name="datasourceType" mixed="false">
-        <xs:attribute name="jndi-name" type="xs:token" use="required">
+    <xs:complexType name="juddiServerType" mixed="false">
+        <xs:attribute name="publish-url" type="xs:anyURI" use="required">
             <xs:annotation>
                 <xs:documentation>
-                <![CDATA[[
-                The JNDI name for the DataSource
+                    <![CDATA[[
+                The jUDDI server's publish URL
+                ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="query-url" type="xs:anyURI" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[[
+                The jUDDI server's query URL
                 ]]>
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
 
-    <xs:complexType name="flagsType" mixed="false">
-        <xs:attribute name="drop-on-start" type="xs:boolean" default="false">
-            <xs:annotation>
-                <xs:documentation>
-                <![CDATA[[
-                Should tables be dropped on Start
-                ]]>
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="create-on-start" type="xs:boolean" default="false">
-            <xs:annotation>
-                <xs:documentation>
-                <![CDATA[[
-                Should tables be created on Start
-                ]]>
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="drop-on-stop" type="xs:boolean" default="false">
-            <xs:annotation>
-                <xs:documentation>
-                <![CDATA[[
-                Should tables be dropped on Stop
-                ]]>
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-    </xs:complexType>
 </xs:schema>

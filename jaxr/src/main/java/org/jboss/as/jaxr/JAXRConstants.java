@@ -20,7 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.jaxr.service;
+package org.jboss.as.jaxr;
+
+import org.apache.ws.scout.registry.ConnectionFactoryImpl;
+import org.jboss.as.jaxr.scout.SaajTransport;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,6 +38,15 @@ import java.util.Map;
 public interface JAXRConstants {
 
     String SUBSYSTEM_NAME = "jaxr";
+    String RESOURCE_NAME = "org.jboss.as.jaxr.LocalDescriptions";
+
+    String SYSPROP_SCOUT_CONNECTION_FACTORY_CLASS = "javax.xml.registry.ConnectionFactoryClass";
+    String SYSPROP_SCOUT_TRANSPORT_CLASS = "scout.proxy.transportClass";
+    String SYSPROP_PUBLISH_URL = "jaxr.publish.url";
+    String SYSPROP_QUERY_URL = "jaxr.query.url";
+
+    String DEFAULT_SCOUT_CONNECTION_FACTORY_CLASS = ConnectionFactoryImpl.class.getName();
+    String DEFAULT_SCOUT_TRANSPORT_CLASS = SaajTransport.class.getName();
 
     enum Namespace {
 
@@ -73,9 +85,8 @@ public interface JAXRConstants {
     enum Attribute {
         UNKNOWN(null),
         JNDI_NAME("jndi-name"),
-        DROPONSTART("drop-on-start"),
-        CREATEONSTART("create-on-start"),
-        DROPONSTOP("drop-on-stop");
+        QUERY_URL("query-url"),
+        PUBLISH_URL("publish-url");
 
         private final String name;
         private static final Map<String, Attribute> MAP;
@@ -110,9 +121,8 @@ public interface JAXRConstants {
     enum Element {
         // must be first
         UNKNOWN(null),
-        CONNECTIONFACTORY("connection-factory"),
-        DATASOURCE("datasource"),
-        FLAGS("flags");
+        CONNECTION_FACTORY("connection-factory"),
+        JUDDI_SERVER("juddi-server");
 
         private final String name;
         private static final Map<String, Element> MAP;

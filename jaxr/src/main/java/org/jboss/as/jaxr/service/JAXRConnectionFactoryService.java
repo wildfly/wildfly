@@ -22,6 +22,7 @@
 package org.jboss.as.jaxr.service;
 
 import org.apache.ws.scout.registry.ConnectionFactoryImpl;
+import org.jboss.as.jaxr.JAXRConfiguration;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
