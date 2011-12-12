@@ -703,10 +703,18 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      * the timer to a active state, so that it becomes eligible for timeouts
      */
     protected void startTimer(TimerImpl timer) {
-        registerTimerWithTx(timer);
 
-        // the timer will actually go ACTIVE on tx commit
-        startInTx(timer);
+
+        // if there's no transaction, then trigger a schedule immidiately.
+        // Else, the timer will be scheduled on tx synchronization callback
+        if (!transactionActive()) {
+            timer.setTimerState(TimerState.ACTIVE);
+            // create and schedule a timer task
+            timer.scheduleTimeout();
+        } else {
+            registerTimerWithTx(timer);
+        }
+        this.persistTimer(timer);
     }
 
     /**
@@ -776,15 +784,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      * @param timer
      */
     protected void startInTx(TimerImpl timer) {
-        timer.setTimerState(TimerState.ACTIVE);
-        this.persistTimer(timer);
 
-        // if there's no transaction, then trigger a schedule immidiately.
-        // Else, the timer will be scheduled on tx synchronization callback
-        if (this.getTransaction() == null) {
-            // create and schedule a timer task
-            timer.scheduleTimeout();
-        }
 
     }
 
@@ -1117,9 +1117,10 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
                 TimerState timerState = this.timer.getState();
                 switch (timerState) {
-                    case ACTIVE:
+                    case CREATED:
                         // the timer was started/activated in a tx.
                         // now it's time to schedule the task
+                        timer.setTimerState(TimerState.ACTIVE);
                         this.timer.scheduleTimeout();
                         break;
                 }
@@ -1128,10 +1129,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
                 TimerState timerState = this.timer.getState();
                 switch (timerState) {
-                    case ACTIVE:
-                        if (this.timer.isPersistent()) {
-                            timerPersistence.getValue().removeTimer(this.timer.getPersistentState());
-                        }
+                    case CREATED:
                         this.timer.setTimerState(TimerState.CANCELED);
                         break;
                 }

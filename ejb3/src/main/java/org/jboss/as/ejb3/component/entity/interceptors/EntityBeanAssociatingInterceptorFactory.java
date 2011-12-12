@@ -27,9 +27,11 @@ import javax.ejb.ConcurrentAccessException;
 import javax.ejb.ConcurrentAccessTimeoutException;
 
 import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.ee.component.TimerInvocationMarker;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
+import org.jboss.as.ejb3.timerservice.spi.BeanRemovedException;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
@@ -37,6 +39,7 @@ import org.jboss.invocation.InterceptorFactoryContext;
 
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 /**
  * Interceptor factory for entity beans that associates an invocation with a primary key
  *
@@ -50,7 +53,7 @@ public class EntityBeanAssociatingInterceptorFactory implements InterceptorFacto
     }
 
     @Override
-    public Interceptor create(final  InterceptorFactoryContext factoryContext) {
+    public Interceptor create(final InterceptorFactoryContext factoryContext) {
 
         return new AbstractEJBInterceptor() {
             @Override
@@ -61,11 +64,20 @@ public class EntityBeanAssociatingInterceptorFactory implements InterceptorFacto
                 if (primaryKey == null) {
                     throw MESSAGES.primaryKeyIsNull();
                 }
+                final EntityBeanComponentInstance instance;
+                try {
+                    instance = component.getCache().get(primaryKey);
 
-                final EntityBeanComponentInstance instance = component.getCache().get(primaryKey);
-
-                if(instance.isRemoved()) {
-                    throw MESSAGES.instaceWasRemoved(component.getComponentName(),primaryKey);
+                    if (instance.isRemoved()) {
+                        throw MESSAGES.instaceWasRemoved(component.getComponentName(), primaryKey);
+                    }
+                } catch (javax.ejb.NoSuchEntityException e) {
+                    //if this is a timer service invocation we throw a special exception
+                    //that tells the invoker that this timer no longer exists, and can be removed
+                    if (context.getPrivateData(TimerInvocationMarker.class) != null) {
+                        throw new BeanRemovedException(e);
+                    }
+                    throw e;
                 }
 
                 try {

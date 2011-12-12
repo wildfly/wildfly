@@ -56,6 +56,7 @@ public class TimedObjectInvokerImpl implements TimedObjectInvoker, Serializable,
 
     private final InjectedValue<EJBComponent> ejbComponent = new InjectedValue<EJBComponent>();
     private final Module module;
+    private volatile boolean started = false;
 
     /**
      * String that uniquely identifies a deployment
@@ -71,6 +72,10 @@ public class TimedObjectInvokerImpl implements TimedObjectInvoker, Serializable,
 
     @Override
     public void callTimeout(final TimerImpl timer, final Method timeoutMethod) throws Exception {
+        if(!started) {
+            //this can happen if an invocation has been triggered as the deployment is shutting down
+            throw new RuntimeException("Timer invocation failed, invoker is not started");
+        }
         final Interceptor interceptor = timeoutInterceptors.get(timeoutMethod);
         if(interceptor == null) {
             throw EjbMessages.MESSAGES.failToInvokeTimeout(timeoutMethod);
@@ -121,11 +126,12 @@ public class TimedObjectInvokerImpl implements TimedObjectInvoker, Serializable,
             interceptors.put(entry.getKey(), entry.getValue().create(factoryContext));
         }
         this.timeoutInterceptors = interceptors;
+        started = true;
     }
 
     @Override
     public synchronized void stop(final StopContext context) {
-
+        started = false;
     }
 
     @Override

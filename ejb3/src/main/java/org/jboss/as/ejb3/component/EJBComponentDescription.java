@@ -54,6 +54,7 @@ import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.ComponentDispatcherInterceptor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.component.interceptors.EjbExceptionTransformingInterceptorFactories;
 import org.jboss.as.ejb3.component.interceptors.LoggingInterceptor;
 import org.jboss.as.ejb3.deployment.ApplicableMethodInformation;
@@ -125,7 +126,6 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * Security role links. The key is the "from" role name and the value is a collection of "to" role names of the link.
      */
     private final Map<String, Collection<String>> securityRoleLinks = new HashMap<String, Collection<String>>();
-
 
 
     private final ApplicableMethodInformation<EJBMethodSecurityAttribute> methodPermissions;
@@ -203,11 +203,17 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         getConfigurators().add(new ComponentConfigurator() {
             @Override
             public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                if (isSecurityEnabled()) {
-                    configuration.addTimeoutViewInterceptor(new SecurityContextInterceptorFactory(), InterceptorOrder.View.SECURITY_CONTEXT);
-                }
-                for(final Method method : configuration.getClassIndex().getClassMethods()) {
-                    configuration.addTimeoutViewInterceptor(method, new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(method)), InterceptorOrder.View.COMPONENT_DISPATCHER);
+                if (description.isTimerServiceApplicable()) {
+
+                    configuration.addTimeoutViewInterceptor(new ImmediateInterceptorFactory(new TCCLInterceptor(configuration.getModuleClassLoder())), InterceptorOrder.View.TCCL_INTERCEPTOR);
+                    configuration.addTimeoutViewInterceptor(configuration.getNamespaceContextInterceptorFactory(), InterceptorOrder.View.JNDI_NAMESPACE_INTERCEPTOR);
+                    configuration.addTimeoutViewInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.View.INVOCATION_CONTEXT_INTERCEPTOR);
+                    if (isSecurityEnabled()) {
+                        configuration.addTimeoutViewInterceptor(new SecurityContextInterceptorFactory(), InterceptorOrder.View.SECURITY_CONTEXT);
+                    }
+                    for (final Method method : configuration.getClassIndex().getClassMethods()) {
+                        configuration.addTimeoutViewInterceptor(method, new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(method)), InterceptorOrder.View.COMPONENT_DISPATCHER);
+                    }
                 }
             }
         });

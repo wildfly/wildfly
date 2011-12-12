@@ -15,6 +15,7 @@ import javax.ejb.IllegalLoopbackException;
 import javax.ejb.LockType;
 import javax.ejb.NoMoreTimeoutsException;
 import javax.ejb.NoSuchEJBException;
+import javax.ejb.NoSuchEntityException;
 import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
@@ -464,7 +465,7 @@ public interface EjbMessages {
      * @return a {@link NoSuchEJBException} for the error.
      */
     @Message(id = 14344, value = "Instance of %s with primary key %s has been removed")
-    NoSuchEJBException instaceWasRemoved(String componentName, Object primaryKey);
+    NoSuchEntityException instaceWasRemoved(String componentName, Object primaryKey);
 
     /**
      * Creates an exception indicating unexpected component

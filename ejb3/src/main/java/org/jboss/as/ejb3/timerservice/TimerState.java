@@ -58,7 +58,6 @@ public enum TimerState {
      */
     ACTIVE,
 
-
     /**
      * State indicating that the timer has been cancelled and will not
      * receive any future timeout notifications

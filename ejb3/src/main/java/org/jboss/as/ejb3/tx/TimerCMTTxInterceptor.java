@@ -62,8 +62,9 @@ public class TimerCMTTxInterceptor extends CMTTxInterceptor {
                 }
             } catch (SystemException e) {
                 throw new RuntimeException(e);
+            } finally {
+                super.endTransaction(tm, tx);
             }
-            super.endTransaction(tm, tx);
             if (rolledBack && EXCEPTION.get() == null) {
                 throw new TimerTransactionRolledBackException("Timer invocation failed, transaction rolled back");
             }

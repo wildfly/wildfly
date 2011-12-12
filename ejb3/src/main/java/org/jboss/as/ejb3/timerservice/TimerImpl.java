@@ -211,18 +211,19 @@ public class TimerImpl implements Timer {
     public void cancel() throws IllegalStateException, EJBException {
         // first check whether the timer has expired or has been cancelled
         this.assertTimerState();
+        boolean startedInTx = timerState == TimerState.CREATED;
         if (timerState != TimerState.EXPIRED) {
             setTimerState(TimerState.CANCELED);
         }
-        if (timerService.transactionActive()) {
+        if (timerService.transactionActive() && !startedInTx) {
             final Transaction currentTx = this.timerService.getTransaction();
             this.registerTimerCancellationWithTx(currentTx);
         } else {
             // cancel any scheduled Future for this timer
             this.cancelTimeout();
-            // persist changes
-            timerService.persistTimer(this);
         }
+        // persist changes
+        timerService.persistTimer(this);
     }
 
     /**
@@ -736,7 +737,6 @@ public class TimerImpl implements Timer {
                     case IN_TIMEOUT:
                     case RETRY_TIMEOUT:
                         this.timer.cancelTimeout();
-                        timerService.persistTimer(timer);
                         break;
 
                 }
@@ -748,15 +748,12 @@ public class TimerImpl implements Timer {
                     case CANCELED:
                         this.timer.setTimerState(TimerState.ACTIVE);
                         break;
-
                 }
-
             }
         }
 
         @Override
         public void beforeCompletion() {
-            // TODO Auto-generated method stub
 
         }
 
