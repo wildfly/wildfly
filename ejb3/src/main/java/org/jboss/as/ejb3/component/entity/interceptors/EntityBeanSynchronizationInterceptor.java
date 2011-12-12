@@ -187,29 +187,6 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
                         } finally {
                             lock.popOwner();
                         }
-                    } finally {
-
-                        int status = Status.STATUS_MARKED_ROLLBACK;
-                        try {
-                            status = this.componentInstance.getComponent().getTransactionManager().getStatus();
-                        } catch (Exception e) {
-                            EJB3_LOGGER.getTxManagerStatusFailed(e);
-                        }
-
-                        //now release the lock
-                        //we have to do it here rather than afterCompletion, as afterCompletion can run in a different
-                        //thread with JTS enabled
-                        lock.pushOwner(lockOwner);
-                        try {
-                            final boolean success = status != Status.STATUS_MARKED_ROLLBACK
-                                    && status != Status.STATUS_ROLLEDBACK &&
-                                    status != Status.STATUS_ROLLING_BACK;
-                            releaseInstance(componentInstance, success);
-                        } catch (Exception e) {
-                            EJB3_LOGGER.exceptionReleasingEntity(e);
-                        } finally {
-                            lock.popOwner();
-                        }
                     }
                 }
             } finally {
@@ -219,7 +196,18 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
 
         @Override
         public void afterCompletion(int status) {
-
+            //now release the lock
+            lock.pushOwner(lockOwner);
+            try {
+                final boolean success = status != Status.STATUS_MARKED_ROLLBACK
+                        && status != Status.STATUS_ROLLEDBACK &&
+                        status != Status.STATUS_ROLLING_BACK;
+                releaseInstance(componentInstance, success);
+            } catch (Exception e) {
+                EJB3_LOGGER.exceptionReleasingEntity(e);
+            } finally {
+                lock.popOwner();
+            }
         }
 
         /**
