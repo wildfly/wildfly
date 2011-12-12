@@ -22,25 +22,25 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.remoting.PackedInteger;
-import org.jboss.ejb.client.remoting.RemotingAttachments;
 import org.jboss.logging.Logger;
+import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageInputStream;
 import org.xnio.IoUtils;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-
 /**
- * User: jpai
+ * @author Jaikiran Pai
  */
 class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
 
@@ -50,9 +50,12 @@ class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
     private static final byte HEADER_EJB_NOT_STATEFUL = 0x0D;
 
     private final ExecutorService executorService;
+    private final MarshallerFactory marshallerFactory;
 
-    SessionOpenRequestHandler(final DeploymentRepository deploymentRepository, final String marshallingStrategy, final ExecutorService executorService) {
-        super(deploymentRepository, marshallingStrategy);
+    SessionOpenRequestHandler(final DeploymentRepository deploymentRepository, final MarshallerFactory marshallerFactory,
+                              final ExecutorService executorService) {
+        super(deploymentRepository);
+        this.marshallerFactory = marshallerFactory;
         this.executorService = executorService;
     }
 
@@ -80,16 +83,13 @@ class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
             this.writeInvocationFailure(channel, HEADER_EJB_NOT_STATEFUL, invocationId, failureMessage);
             return;
         }
-        // read the attachments
-        final RemotingAttachments attachments = this.readAttachments(dataInputStream);
-
         final StatefulSessionComponent statefulSessionComponent = (StatefulSessionComponent) component;
         // generate the session id and write out the response on a separate thread
-        executorService.submit(new SessionIDGeneratorTask(statefulSessionComponent, channel, invocationId, attachments));
+        executorService.submit(new SessionIDGeneratorTask(statefulSessionComponent, channel, invocationId));
 
     }
 
-    private void writeSessionId(final Channel channel, final short invocationId, final SessionID sessionID, final RemotingAttachments attachments) throws IOException {
+    private void writeSessionId(final Channel channel, final short invocationId, final SessionID sessionID) throws IOException {
         final byte[] sessionIdBytes = sessionID.getEncodedForm();
         final DataOutputStream dataOutputStream = new DataOutputStream(channel.writeMessage());
         try {
@@ -101,8 +101,6 @@ class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
             PackedInteger.writePackedInteger(dataOutputStream, sessionIdBytes.length);
             // write out the session id bytes
             dataOutputStream.write(sessionIdBytes);
-            // write out the attachments
-            this.writeAttachments(dataOutputStream, attachments);
         } finally {
             dataOutputStream.close();
         }
@@ -116,13 +114,11 @@ class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
         private final StatefulSessionComponent statefulSessionComponent;
         private final Channel channel;
         private final short invocationId;
-        private final RemotingAttachments attachments;
 
 
-        SessionIDGeneratorTask(final StatefulSessionComponent statefulSessionComponent, final Channel channel, final short invocationId, final RemotingAttachments attachments) {
+        SessionIDGeneratorTask(final StatefulSessionComponent statefulSessionComponent, final Channel channel, final short invocationId) {
             this.statefulSessionComponent = statefulSessionComponent;
             this.invocationId = invocationId;
-            this.attachments = attachments;
             this.channel = channel;
         }
 
@@ -133,10 +129,10 @@ class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
                 try {
                     sessionID = statefulSessionComponent.createSession();
                 } catch (Throwable t) {
-                    SessionOpenRequestHandler.this.writeException(channel, invocationId, t, attachments);
+                    SessionOpenRequestHandler.this.writeException(channel, SessionOpenRequestHandler.this.marshallerFactory, invocationId, t, null);
                     return;
                 }
-                SessionOpenRequestHandler.this.writeSessionId(channel, invocationId, sessionID, attachments);
+                SessionOpenRequestHandler.this.writeSessionId(channel, invocationId, sessionID);
             } catch (IOException ioe) {
                 logger.error("IOException while generating session id for invocation id: " + invocationId + " on channel " + channel, ioe);
                 // close the channel

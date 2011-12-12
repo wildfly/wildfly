@@ -351,7 +351,7 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
         if (!home) {
             if (componentView.getComponent() instanceof StatefulSessionComponent) {
                 final SessionID sessionID = (SessionID) unmarshalIdentifier();
-                interceptorContext.putPrivateData(SessionID.SESSION_ID_KEY, sessionID);
+                interceptorContext.putPrivateData(SessionID.class, sessionID);
             } else if (componentView.getComponent() instanceof EntityBeanComponent) {
                 final Object pk = unmarshalIdentifier();
                 interceptorContext.putPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, pk);

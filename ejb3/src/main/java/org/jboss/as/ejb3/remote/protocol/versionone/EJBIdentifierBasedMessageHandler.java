@@ -26,20 +26,15 @@ import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
-import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.MessageInputStream;
-
-import java.io.IOException;
 
 /**
- * User: jpai
+ * @author Jaikiran Pai
  */
 abstract class EJBIdentifierBasedMessageHandler extends AbstractMessageHandler {
 
     protected final DeploymentRepository deploymentRepository;
 
-    EJBIdentifierBasedMessageHandler(final DeploymentRepository deploymentRepository, final String marshallingStrategy) {
-        super(marshallingStrategy);
+    EJBIdentifierBasedMessageHandler(final DeploymentRepository deploymentRepository) {
         this.deploymentRepository = deploymentRepository;
     }
 
@@ -51,7 +46,6 @@ abstract class EJBIdentifierBasedMessageHandler extends AbstractMessageHandler {
         }
         return moduleDeployment.getEjbs().get(beanName);
     }
-
 
 
 }

@@ -48,10 +48,10 @@ public class StatefulComponentIdInterceptor extends AbstractEJBInterceptor {
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {
         try {
-            context.putPrivateData(SessionID.SESSION_ID_KEY, reference.get());
+            context.putPrivateData(SessionID.class, reference.get());
             return context.proceed();
         } finally {
-            context.putPrivateData(SessionID.SESSION_ID_KEY, null);
+            context.putPrivateData(SessionID.class, null);
         }
     }
 

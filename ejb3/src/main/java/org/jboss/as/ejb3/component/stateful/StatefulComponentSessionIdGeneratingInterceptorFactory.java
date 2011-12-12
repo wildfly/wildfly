@@ -48,7 +48,7 @@ public class StatefulComponentSessionIdGeneratingInterceptorFactory implements I
         context.getContextData().put(StatefulSessionComponent.SESSION_ID_REFERENCE_KEY, sessionIdReference);
 
         //if we are attaching to an existing instance this will not be null
-        final SessionID id = (SessionID) context.getContextData().get(SessionID.SESSION_ID_KEY);
+        final SessionID id = (SessionID) context.getContextData().get(SessionID.class);
         if(id == null) {
             return new StatefulComponentSessionIdGeneratingInterceptor(sessionIdReference);
         } else {

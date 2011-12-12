@@ -125,7 +125,7 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
             final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(viewServices.get(businessInterfaceType.getName()));
             final ComponentView view = (ComponentView) serviceController.getValue();
             try {
-                return (S) view.createInstance(Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, id)).getInstance();
+                return (S) view.createInstance(Collections.<Object, Object>singletonMap(SessionID.class, id)).getInstance();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

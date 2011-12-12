@@ -131,14 +131,14 @@ public class StatefulSessionComponent extends SessionBeanComponent {
         if (businessInterface == null) {
             throw MESSAGES.businessInterfaceIsNull();
         }
-        return createViewInstanceProxy(businessInterface, Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, getSessionIdOf(context)));
+        return createViewInstanceProxy(businessInterface, Collections.<Object, Object>singletonMap(SessionID.class, getSessionIdOf(context)));
     }
 
     public EJBLocalObject getEJBLocalObject(final InterceptorContext ctx) throws IllegalStateException {
         if (getEjbLocalObjectViewServiceName() == null) {
             throw new IllegalStateException("Bean " + getComponentName() + " does not have an EJBLocalObject");
         }
-        return createViewInstanceProxy(EJBLocalObject.class, Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, getSessionIdOf(ctx)), getEjbLocalObjectViewServiceName());
+        return createViewInstanceProxy(EJBLocalObject.class, Collections.<Object, Object>singletonMap(SessionID.class, getSessionIdOf(ctx)), getEjbLocalObjectViewServiceName());
     }
 
     public EJBObject getEJBObject(final InterceptorContext ctx) throws IllegalStateException {

@@ -60,6 +60,7 @@ import org.jboss.ejb.client.SerializedEJBInvocationHandler;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.ejb.client.StatelessEJBLocator;
+import org.jboss.ejb.client.TransactionID;
 import org.jboss.ejb.client.UnknownSessionID;
 import org.jboss.ejb.client.UserTransactionID;
 import org.jboss.ejb.client.XidTransactionID;
@@ -70,8 +71,10 @@ import org.jboss.marshalling.Unmarshaller;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 final class ProtocolV1ClassTable implements ClassTable {
+    static final ProtocolV1ClassTable INSTANCE = new ProtocolV1ClassTable();
+
     private static final Map<Class<?>, ByteWriter> writers;
-    private static Class<?>[] classes = {
+    private static final Class<?>[] classes = {
         EJBLocator.class,
         EJBHomeLocator.class,
         StatelessEJBLocator.class,
@@ -113,6 +116,9 @@ final class ProtocolV1ClassTable implements ClassTable {
         Exception.class,
         RuntimeException.class,
         StackTraceElement.class,
+        SessionID.Serialized.class,
+        TransactionID.class,
+        TransactionID.Serialized.class,
     };
 
     static {
@@ -145,5 +151,8 @@ final class ProtocolV1ClassTable implements ClassTable {
         public void writeClass(final org.jboss.marshalling.Marshaller marshaller, final Class<?> clazz) throws IOException {
             marshaller.write(bytes);
         }
+    }
+
+    private ProtocolV1ClassTable() {
     }
 }

@@ -25,6 +25,8 @@ import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.remote.protocol.versionone.VersionOneProtocolChannelReceiver;
 import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.logging.Logger;
+import org.jboss.marshalling.MarshallerFactory;
+import org.jboss.marshalling.Marshalling;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
@@ -47,6 +49,7 @@ import javax.transaction.TransactionManager;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -192,13 +195,19 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
                 final byte version = dataInputStream.readByte();
                 final String clientMarshallingStrategy = dataInputStream.readUTF();
                 log.debug("Client with protocol version " + version + " and marshalling strategy " + clientMarshallingStrategy +
-                        " will communicate on " + channel);
+                        " trying to communicate on " + channel);
+                if (!EJBRemoteConnectorService.this.isSupportedMarshallingStrategy(clientMarshallingStrategy)) {
+                    log.info("Unsupported client marshalling strategy " + clientMarshallingStrategy + " received on channel " + channel + ", no further communication will take place");
+                    channel.close();
+                    return;
+                }
                 switch (version) {
                     case 0x01:
+                        final MarshallerFactory marshallerFactory = EJBRemoteConnectorService.this.getMarshallerFactory(clientMarshallingStrategy);
                         // enroll VersionOneProtocolChannelReceiver for handling subsequent messages on this channel
                         final DeploymentRepository deploymentRepository = EJBRemoteConnectorService.this.deploymentRepositoryInjectedValue.getValue();
                         final VersionOneProtocolChannelReceiver receiver = new VersionOneProtocolChannelReceiver(channel, deploymentRepository,
-                                EJBRemoteConnectorService.this.ejbRemoteTransactionsRepositoryInjectedValue.getValue(), clientMarshallingStrategy, executorService.getValue());
+                                EJBRemoteConnectorService.this.ejbRemoteTransactionsRepositoryInjectedValue.getValue(), marshallerFactory, executorService.getValue());
                         receiver.startReceiving();
                         break;
 
@@ -228,5 +237,17 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
     public Injector<EJBRemoteTransactionsRepository> getEJBRemoteTransactionsRepositoryInjector() {
         return this.ejbRemoteTransactionsRepositoryInjectedValue;
+    }
+
+    private boolean isSupportedMarshallingStrategy(final String strategy) {
+        return Arrays.asList(this.supportedMarshallingStrategies).contains(strategy);
+    }
+
+    private MarshallerFactory getMarshallerFactory(final String marshallerStrategy) {
+        final MarshallerFactory marshallerFactory = Marshalling.getProvidedMarshallerFactory(marshallerStrategy);
+        if (marshallerFactory == null) {
+            throw new RuntimeException("Could not find a marshaller factory for " + marshallerStrategy + " marshalling strategy");
+        }
+        return marshallerFactory;
     }
 }

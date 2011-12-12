@@ -22,17 +22,16 @@
 
 package org.jboss.as.ejb3.remote;
 
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+import javax.transaction.UserTransaction;
+
 import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinationManager;
 import org.jboss.ejb.client.TransactionID;
 import org.jboss.ejb.client.UserTransactionID;
 import org.jboss.ejb.client.XidTransactionID;
-import org.jboss.ejb.client.remoting.RemotingAttachments;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
 
 /**
  * An interceptor which is responsible for identifying any remote transaction associated with the invocation
@@ -61,25 +60,20 @@ class EJBRemoteTransactionPropogatingInterceptor implements Interceptor {
      */
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {
-        final RemotingAttachments remotingAttachments = context.getPrivateData(RemotingAttachments.class);
         final TransactionManager transactionManager = this.ejbRemoteTransactionsRepository.getTransactionManager();
         Transaction originatingRemoteTx = null;
-        if (remotingAttachments != null) {
-            // get the transaction attachment
-            final byte[] transactionIDBytes = remotingAttachments.getPayloadAttachment(0x0001);
-            // A (remote) tx is associated with the invocation, so propogate it appropriately
-            if (transactionIDBytes != null) {
-                final TransactionID transactionID = TransactionID.createTransactionID(transactionIDBytes);
-                // if it's UserTransaction then create or resume the UserTransaction corresponding to the ID
-                if (transactionID instanceof UserTransactionID) {
-                    this.createOrResumeUserTransaction((UserTransactionID) transactionID);
-                } else if (transactionID instanceof XidTransactionID) {
-                    this.createOrResumeXidTransaction((XidTransactionID) transactionID);
-                }
-                // the invocation was associated with a remote tx, so keep a flag so that we can
-                // suspend (on this thread) the originating tx when returning from the invocation
-                originatingRemoteTx = transactionManager.getTransaction();
+        // get the transaction id attachment
+        final TransactionID transactionID = (TransactionID) context.getPrivateData(TransactionID.PRIVATE_DATA_KEY);
+        if (transactionID != null) {
+            // if it's UserTransaction then create or resume the UserTransaction corresponding to the ID
+            if (transactionID instanceof UserTransactionID) {
+                this.createOrResumeUserTransaction((UserTransactionID) transactionID);
+            } else if (transactionID instanceof XidTransactionID) {
+                this.createOrResumeXidTransaction((XidTransactionID) transactionID);
             }
+            // the invocation was associated with a remote tx, so keep a flag so that we can
+            // suspend (on this thread) the originating tx when returning from the invocation
+            originatingRemoteTx = transactionManager.getTransaction();
         }
         try {
             // we are done with any tx propogation setup, let's move on
