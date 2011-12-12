@@ -157,7 +157,7 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
                     break;
                 }
                 case TRANSPORT: {
-                    parseTransport(reader, container);
+                    parseTransport(reader, containerAddress, operations);
                     break;
                 }
                 case LOCAL_CACHE: {
@@ -183,10 +183,10 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
         }
     }
 
-    private void parseTransport(XMLExtendedStreamReader reader, ModelNode container) throws XMLStreamException {
+    private void parseTransport(XMLExtendedStreamReader reader, ModelNode containerAddress, List<ModelNode> operations) throws XMLStreamException {
 
-        ModelNode transport = new ModelNode() ;
-        transport.setEmptyObject();
+        // ModelNode for the cache add operation
+        ModelNode transport = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -223,7 +223,13 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
         }
         ParseUtils.requireNoContent(reader);
 
-        container.get(ModelKeys.TRANSPORT).set(transport) ;
+        // setup the transport address
+        ModelNode transportAddress = containerAddress.clone() ;
+        transportAddress.add(ModelKeys.SINGLETON, ModelKeys.TRANSPORT);
+        transportAddress.protect() ;
+        transport.get(ModelDescriptionConstants.OP_ADDR).set(transportAddress);
+
+        operations.add(transport);
     }
 
     private void parseCacheAttribute(XMLExtendedStreamReader reader, int index, Attribute attribute, String value, ModelNode cache) throws XMLStreamException {
@@ -990,9 +996,9 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
                     }
                 }
 
-                if (container.hasDefined(ModelKeys.TRANSPORT)) {
+                if (container.hasDefined(ModelKeys.SINGLETON)) {
                     writer.writeStartElement(Element.TRANSPORT.getLocalName());
-                    ModelNode transport = container.get(ModelKeys.TRANSPORT);
+                    ModelNode transport = container.get(ModelKeys.SINGLETON, ModelKeys.TRANSPORT);
                     this.writeOptional(writer, Attribute.STACK, transport, ModelKeys.STACK);
                     this.writeOptional(writer, Attribute.EXECUTOR, transport, ModelKeys.EXECUTOR);
                     this.writeOptional(writer, Attribute.LOCK_TIMEOUT, transport, ModelKeys.LOCK_TIMEOUT);
