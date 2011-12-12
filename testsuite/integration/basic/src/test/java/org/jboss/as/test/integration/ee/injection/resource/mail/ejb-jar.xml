@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+
+<ejb-jar
+        xmlns="http://java.sun.com/xml/ns/javaee"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+                            http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd"
+        version="3.0">
+
+   <display-name>ENC Tests</display-name>
+   <enterprise-beans>
+      <session>
+         <description>A session bean on looks up stuff in the ENC</description>
+         <ejb-name>StatelessMailBean</ejb-name>
+         
+		<resource-ref>
+			<description>Default Mail</description>
+            <res-ref-name>MyDefaultMail</res-ref-name>
+            <res-type>javax.mail.Session</res-type>
+            <res-auth>Container</res-auth>
+            <mapped-name>java:jboss/mail/Default</mapped-name>
+            
+			<injection-target>
+				<injection-target-class>org.jboss.as.test.integration.ee.injection.resource.mail.StatelessMailBean</injection-target-class>
+				<injection-target-name>dsSession</injection-target-name>
+			</injection-target>
+            
+         </resource-ref>
+	</session>
+
+   </enterprise-beans>
+</ejb-jar>
