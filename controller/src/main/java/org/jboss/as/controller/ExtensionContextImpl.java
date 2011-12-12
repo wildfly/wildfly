@@ -415,7 +415,7 @@ public final class ExtensionContextImpl implements ExtensionContext {
         @Override
         public SubsystemRegistration registerSubsystem(String name) throws IllegalArgumentException {
             trackSubsystem(moduleName, name);
-            return ExtensionContextImpl.this.registerSubsystem(name);
+            return ExtensionContextImpl.this.doRegisterSubsystem(name);
         }
 
         @Override

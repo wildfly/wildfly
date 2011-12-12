@@ -52,7 +52,7 @@ public interface ExtensionContext {
 
     /**
      * Used internally by the application server to create a tracking wrapper to record what subsystems
-     * are created by the extension to be able to clean up when the extension is deployed.
+     * are created by the extension to be able to clean up when the extension is removed.
      *
      * @param moduleName the name of the module
      * @return a tracking extension context or the current extension context if we already are a tracking extension context

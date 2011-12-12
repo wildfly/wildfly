@@ -49,6 +49,7 @@ import javax.xml.stream.XMLStreamReader;
 
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
+
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ControlledProcessState;
@@ -252,7 +253,7 @@ public abstract class AbstractSubsystemTest {
         StringConfigurationPersister persister = new StringConfigurationPersister(Collections.<ModelNode>emptyList(), testParser);
 
         Extension extension = mainExtension.getClass().newInstance();
-        extension.initialize(new ExtensionContextImpl(MOCK_RESOURCE_REG, MOCK_RESOURCE_REG, persister, ProcessType.EMBEDDED_SERVER));
+        extension.initialize(new ExtensionContextImpl(MOCK_RESOURCE_REG, MOCK_RESOURCE_REG, persister, ProcessType.EMBEDDED_SERVER).createTracking("Test"));
 
         ConfigurationPersister.PersistenceResource resource = persister.store(model, Collections.<PathAddress>emptySet());
         resource.commit();
@@ -589,7 +590,7 @@ public abstract class AbstractSubsystemTest {
 
             controllerInitializer.initializeModel(rootResource, rootRegistration);
 
-            ExtensionContext context = new ExtensionContextImpl(rootRegistration, deployments, persister, ProcessType.EMBEDDED_SERVER);
+            ExtensionContext context = new ExtensionContextImpl(rootRegistration, deployments, persister, ProcessType.EMBEDDED_SERVER).createTracking("Test");
             additionalInit.initializeExtraSubystemsAndModel(context, rootResource, rootRegistration);
             mainExtension.initialize(context);
         }
