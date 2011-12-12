@@ -152,13 +152,15 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
 
                             CommonDeployment deploymentMD = ((ResourceAdapterDeploymentService) controller.getService()).getRaDeployment();
 
-                            StatisticsPlugin poolStats = deploymentMD.getConnectionManagers()[0].getPool().getStatistics();
-                            if (poolStats.getNames().size() != 0) {
-                                ManagementResourceRegistration subRegistration = registration.registerSubModel(PathElement.pathElement("statistics", "pool"), new StatisticsDescriptionProvider(poolStats));
-                                for (String statName : poolStats.getNames()) {
-                                    subRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
+                            if (deploymentMD.getConnectionManagers() != null && deploymentMD.getConnectionManagers()[0].getPool() != null) {
+                                StatisticsPlugin poolStats = deploymentMD.getConnectionManagers()[0].getPool().getStatistics();
+                                if (poolStats.getNames().size() != 0) {
+                                    ManagementResourceRegistration subRegistration = registration.registerOverrideModel(deploymentUnit.getName(), new StatisticsDescriptionProvider(poolStats));
+                                    for (String statName : poolStats.getNames()) {
+                                        subRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
+                                    }
+                                    subRegistration.registerOperationHandler("clear-statistics", new ClearStatisticsHandler(poolStats), ResourceAdaptersSubsystemProviders.CLEAR_STATISTICS_DESC, false);
                                 }
-                                subRegistration.registerOperationHandler("clear-statistics", new ClearStatisticsHandler(poolStats), ResourceAdaptersSubsystemProviders.CLEAR_STATISTICS_DESC, false);
                             }
                             break;
 
@@ -166,10 +168,17 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                         case UP_to_STOP_REQUESTED: {
 
                             CommonDeployment deploymentMD = ((ResourceAdapterDeploymentService) controller.getService()).getRaDeployment();
-
-                            StatisticsPlugin poolStats = deploymentMD.getConnectionManagers()[0].getPool().getStatistics();
-                            if (poolStats.getNames().size() != 0) {
-                                registration.unregisterSubModel(PathElement.pathElement("statistics", "pool"));
+                            ManagementResourceRegistration subRegistration = registration.getOverrideModel(deploymentUnit.getName());
+                            if (subRegistration != null &&
+                                    deploymentMD.getConnectionManagers() != null && deploymentMD.getConnectionManagers()[0].getPool() != null) {
+                                StatisticsPlugin poolStats = deploymentMD.getConnectionManagers()[0].getPool().getStatistics();
+                                if (poolStats.getNames().size() != 0) {
+                                    for (String statName : poolStats.getNames()) {
+                                        subRegistration.unregisterAttribute(statName);
+                                    }
+                                    subRegistration.unregisterOperationHandler("clear-statistics");
+                                    registration.unregisterOverrideModel(deploymentUnit.getName());
+                                }
                             }
                             break;
 

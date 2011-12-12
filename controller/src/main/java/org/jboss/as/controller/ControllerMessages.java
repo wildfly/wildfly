@@ -1472,6 +1472,7 @@ public interface ControllerMessages {
     @Message(id = 14753, value = "There is no operation %s registered at address %s")
     String operationNotRegistered(String op, PathAddress address);
 
+
     /**
      * Creates an exception indicating an operation reply value type description is required but was not implemented
      * for the operation represented by the {@code operationName} parameter.
@@ -2130,4 +2131,16 @@ public interface ControllerMessages {
      */
     @Message(id = 14814, value = "The root resource registration does not support overrides, so no override can be removed.")
     IllegalStateException rootRegistrationIsNotOverridable();
+
+    /**
+     * Creates an exception indicating there is no operation, represented by the {@code op} parameter, registered at the address,
+     * represented by the {@code address} parameter.
+     *
+     * @param op      the operation.
+     * @param address the address.
+     * @return the message.
+     */
+    @Message(id = 14815, value = "There is no operation %s registered at address %s")
+    IllegalArgumentException operationNotRegisteredException(String op, PathAddress address);
+
 }
