@@ -37,6 +37,7 @@
                 <path name="com/sun/security/auth/login"/>
                 <path name="com/sun/security/auth/module"/>
                 <path name="sun/misc"/>
+                <path name="sun/io"/>
                 <path name="sun/nio"/>
                 <path name="sun/nio/ch"/>
                 <path name="sun/util"/>
