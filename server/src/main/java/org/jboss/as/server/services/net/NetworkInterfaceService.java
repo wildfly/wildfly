@@ -87,7 +87,7 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
     public synchronized void start(StartContext arg0) throws StartException {
         log.debug("Starting NetworkInterfaceService\n");
         try {
-            this.interfaceBinding = createBinding(name, anyLocalV4, anyLocalV6, anyLocal, criteria);
+            this.interfaceBinding = createBinding(anyLocalV4, anyLocalV6, anyLocal, criteria);
         } catch (Exception e) {
             throw new StartException(e);
         }
@@ -97,14 +97,14 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
         log.debugf("NetworkInterfaceService matched interface binding: %s\n", interfaceBinding);
     }
 
-    public static NetworkInterfaceBinding createBinding(String name, ParsedInterfaceCriteria criteria) throws SocketException,
+    public static NetworkInterfaceBinding createBinding(ParsedInterfaceCriteria criteria) throws SocketException,
             UnknownHostException {
-        return createBinding(name, criteria.isAnyLocalV4(), criteria.isAnyLocalV6(), criteria.isAnyLocal(),
+        return createBinding(criteria.isAnyLocalV4(), criteria.isAnyLocalV6(), criteria.isAnyLocal(),
                 new OverallInterfaceCriteria(criteria.getCriteria()));
     }
 
-    static NetworkInterfaceBinding createBinding(final String name, final boolean anyLocalV4, final boolean anyLocalV6,
-            final boolean anyLocal, final InterfaceCriteria criteria) throws SocketException, UnknownHostException {
+    static NetworkInterfaceBinding createBinding(final boolean anyLocalV4, final boolean anyLocalV6,
+                                                 final boolean anyLocal, final InterfaceCriteria criteria) throws SocketException, UnknownHostException {
         if (anyLocalV4) {
             return getNetworkInterfaceBinding(IPV4_ANYLOCAL);
         } else if (anyLocalV6) {
