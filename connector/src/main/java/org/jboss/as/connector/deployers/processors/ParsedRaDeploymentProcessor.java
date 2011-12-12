@@ -32,8 +32,12 @@ import org.jboss.as.connector.pool.PoolMetrics;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.ClearStatisticsHandler;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.server.deployment.Attachments;
@@ -48,6 +52,7 @@ import org.jboss.jandex.Index;
 import org.jboss.jca.common.annotations.Annotations;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.common.api.metadata.ra.Connector;
+import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
 import org.jboss.jca.common.metadata.merge.Merger;
 import org.jboss.jca.common.spi.annotations.repository.AnnotationRepository;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
@@ -72,6 +77,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
+
+import javax.resource.spi.ResourceAdapter;
 
 /**
  * DeploymentUnitProcessor responsible for using IronJacamar metadata and create
@@ -155,7 +162,9 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                             if (deploymentMD.getConnectionManagers() != null && deploymentMD.getConnectionManagers()[0].getPool() != null) {
                                 StatisticsPlugin poolStats = deploymentMD.getConnectionManagers()[0].getPool().getStatistics();
                                 if (poolStats.getNames().size() != 0) {
-                                    ManagementResourceRegistration subRegistration = registration.registerOverrideModel(deploymentUnit.getName(), new StatisticsDescriptionProvider(poolStats));
+                                    DescriptionProvider statsResourceDescriptionProvider = new StatisticsDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "statistics", poolStats);
+                                    PathElement pe = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ResourceAdaptersExtension.SUBSYSTEM_NAME);
+                                    ManagementResourceRegistration subRegistration = registration.registerSubModel(pe, statsResourceDescriptionProvider);
                                     for (String statName : poolStats.getNames()) {
                                         subRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
                                     }
@@ -167,18 +176,9 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                         }
                         case UP_to_STOP_REQUESTED: {
 
-                            CommonDeployment deploymentMD = ((ResourceAdapterDeploymentService) controller.getService()).getRaDeployment();
-                            ManagementResourceRegistration subRegistration = registration.getOverrideModel(deploymentUnit.getName());
-                            if (subRegistration != null &&
-                                    deploymentMD.getConnectionManagers() != null && deploymentMD.getConnectionManagers()[0].getPool() != null) {
-                                StatisticsPlugin poolStats = deploymentMD.getConnectionManagers()[0].getPool().getStatistics();
-                                if (poolStats.getNames().size() != 0) {
-                                    for (String statName : poolStats.getNames()) {
-                                        subRegistration.unregisterAttribute(statName);
-                                    }
-                                    subRegistration.unregisterOperationHandler("clear-statistics");
-                                    registration.unregisterOverrideModel(deploymentUnit.getName());
-                                }
+                            PathElement pe = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ResourceAdaptersExtension.SUBSYSTEM_NAME);
+                            if (registration.getSubModel(PathAddress.pathAddress(pe)) != null) {
+                                registration.unregisterSubModel(pe);
                             }
                             break;
 

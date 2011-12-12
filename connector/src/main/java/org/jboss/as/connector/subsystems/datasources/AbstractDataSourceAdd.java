@@ -27,7 +27,10 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.sql.Driver;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.StatisticsDescriptionProvider;
@@ -41,6 +44,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.security.service.SubjectFactoryService;
@@ -105,12 +109,26 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
                         StatisticsPlugin jdbcStats = deploymentMD.getDataSources()[0].getStatistics();
                         StatisticsPlugin poolStats = deploymentMD.getDataSources()[0].getPool().getStatistics();
-                        int size = jdbcStats.getNames().size() + poolStats.getNames().size();
-                        if (size != 0) {
+                        int jdbcStatsSize = jdbcStats.getNames().size();
+                        int poolStatsSize = poolStats.getNames().size();
+                        if (jdbcStatsSize > 0 || poolStatsSize > 0) {
+                            // TODO. This mixes the statistics attributes in with the regular attributes exposed by
+                            // the generic DS resource. This may be annoying to clients??
+                            // Consider registering an override model (e.g. /subsystem=datasource/datasource=H2DS)
+                            // solely to add a description of children "statistics=jdbc" and "statistics=pool" and then
+                            // add non-override but DS-specific submodel registrations for those two statistics children
+                            // to the override model. So, we end up with:
+                            // /subsystem=datasources/datasource=*  -- common attributes, ops, children
+                            // /subsystem=datasources/datasource=H2DS -- placeholder
+                            // /subsystem=datasources/datasource=H2DS/statistics=jdbc  -- H2DS-specific stats
+                            // /subsystem=datasources/datasource=H2DS/statistics=pool  -- H2DS-specific stats
+                            // /subsystem=datasources/datasource=OracleDS -- placeholder
+                            // /subsystem=datasources/datasource=OracleDS/statistics=jdbc  -- OracleDS-specific stats
+                            // /subsystem=datasources/datasource=OracleDS/statistics=pool  -- OracleDS-specific stats
                             ManagementResourceRegistration subRegistration = registration.registerOverrideModel(dsName, new StatisticsDescriptionProvider(jdbcStats, poolStats));
                             subRegistration.registerOperationHandler("clear-statistics", new ClearStatisticsHandler(jdbcStats,poolStats), DataSourcesSubsystemProviders.CLEAR_STATISTICS_DESC, false);
 
-                            if (jdbcStats.getNames().size() != 0) {
+                            if (jdbcStatsSize > 0) {
 
                                 //context.createResource(PathAddress.pathAddress(PathElement.pathElement("statistics")));
                                 //context.createResource(PathAddress.pathAddress(PathElement.pathElement("statistics"), PathElement.pathElement("jdbc")));
@@ -120,7 +138,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
                             }
 
-                            if (poolStats.getNames().size() != 0) {
+                            if (poolStatsSize > 0) {
 
                                 for (String statName : poolStats.getNames()) {
                                     subRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
@@ -133,29 +151,8 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                     }
                     case UP_to_STOP_REQUESTED: {
 
-                        CommonDeployment deploymentMD = ((AbstractDataSourceService) controller.getService()).getDeploymentMD();
-
-                        StatisticsPlugin jdbcStats = deploymentMD.getDataSources()[0].getStatistics();
-                        StatisticsPlugin poolStats = deploymentMD.getDataSources()[0].getPool().getStatistics();
-
                         ManagementResourceRegistration subRegistration = registration.getOverrideModel(dsName);
                         if (subRegistration != null) {
-                            if (jdbcStats.getNames().size() != 0) {
-
-                                //context.createResource(PathAddress.pathAddress(PathElement.pathElement("statistics")));
-                                //context.createResource(PathAddress.pathAddress(PathElement.pathElement("statistics"), PathElement.pathElement("jdbc")));
-                                for (String statName : jdbcStats.getNames()) {
-                                    subRegistration.unregisterAttribute(statName);
-                                }
-                            }
-
-                            if (poolStats.getNames().size() != 0) {
-
-                                for (String statName : poolStats.getNames()) {
-                                    subRegistration.unregisterAttribute(statName);
-                                }
-                            }
-                            subRegistration.unregisterOperationHandler("clear-statistics");
                             registration.unregisterOverrideModel(dsName);
                         }
                         break;

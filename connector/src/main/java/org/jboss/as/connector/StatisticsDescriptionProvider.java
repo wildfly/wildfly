@@ -23,7 +23,9 @@
 package org.jboss.as.connector;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ONLY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
@@ -38,24 +40,67 @@ import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.jca.core.spi.statistics.StatisticsPlugin;
 
 
 /**
- * TODO class javadoc.
+ * {@link DescriptionProvider} or {@link OverrideDescriptionProvider} for a resource whose contents include attributes
+ * provided by a list of {@link StatisticsPlugin}s. Use the {@link DescriptionProvider} API if the resource only
+ * includes the statistics attributes; use {@link OverrideDescriptionProvider} if the resource is an
+ * {@link ManagementResourceRegistration#registerOverrideModel(String, OverrideDescriptionProvider) override resource}
+ * that adds resource-specific statistics to a generic resource.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class StatisticsDescriptionProvider implements OverrideDescriptionProvider {
+public class StatisticsDescriptionProvider implements DescriptionProvider, OverrideDescriptionProvider {
 
-    static final String RESOURCE_NAME = StatisticsDescriptionProvider.class.getPackage().getName() + ".LocalDescriptions";
-
+    private final String bundleName;
+    private final String resourceDescriptionKey;
     private final List<StatisticsPlugin> plugins;
 
+    /**
+     * Constructor for the {@link OverrideDescriptionProvider} case. Internationalization support is not provided.
+     *
+     * @param plugins the statistics plugins
+     */
     public StatisticsDescriptionProvider(final StatisticsPlugin... plugins) {
+        this(null, null, plugins);
+    }
+
+    /**
+     * Constructor for the {@link DescriptionProvider} case.
+     *
+     * @param bundleName name to pass to {@link ResourceBundle#getBundle(String)}
+     * @param resourceDescriptionKey key to use for looking up the resource's description in the bundle
+     * @param plugins the statistics plugins
+     */
+    public StatisticsDescriptionProvider(final String bundleName, final String resourceDescriptionKey, final StatisticsPlugin... plugins) {
+        this.bundleName = bundleName;
+        this.resourceDescriptionKey = resourceDescriptionKey;
         this.plugins = Arrays.asList(plugins);
+    }
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode subsystem = new ModelNode();
+        subsystem.get(DESCRIPTION).set(bundle.getString(resourceDescriptionKey));
+
+        ModelNode attrs = subsystem.get(ATTRIBUTES);
+        final Map<String, ModelNode> attributeDescriptions = getAttributeOverrideDescriptions(locale);
+        for (Map.Entry<String, ModelNode> entry : attributeDescriptions.entrySet()) {
+            attrs.get(entry.getKey()).set(entry.getValue());
+        }
+
+        subsystem.get(OPERATIONS); // placeholder
+
+        subsystem.get(CHILDREN).setEmptyObject(); // no children
+
+        return subsystem;
     }
 
     @Override
@@ -84,5 +129,12 @@ public class StatisticsDescriptionProvider implements OverrideDescriptionProvide
     @Override
     public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
         return Collections.emptyMap();
+    }
+
+    private ResourceBundle getResourceBundle(Locale locale) {
+        if (locale == null) {
+            locale = Locale.getDefault();
+        }
+        return ResourceBundle.getBundle(bundleName, locale);
     }
 }
