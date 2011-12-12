@@ -28,6 +28,7 @@ import javax.ejb.EJBException;
 import javax.ejb.EJBTransactionRequiredException;
 import javax.ejb.EJBTransactionRolledbackException;
 import javax.ejb.NoSuchEJBException;
+import javax.ejb.TransactionAttributeType;
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
 import javax.transaction.RollbackException;
@@ -176,9 +177,9 @@ public class CMTTxInterceptor implements Interceptor {
     public Object processInvocation(InterceptorContext invocation) throws Exception {
         final EJBComponent component = (EJBComponent) invocation.getPrivateData(Component.class);
         final MethodIntf methodIntf = MethodIntfHelper.of(invocation);
-        final TransactionMethodAttribute attr = component.getTransactionAttribute(methodIntf, invocation.getMethod());
-        final int timeoutInSeconds = (int) attr.getUnit().toSeconds(attr.getTimeout());
-        switch (attr.getType()) {
+        final TransactionAttributeType attr = component.getTransactionAttributeType(methodIntf, invocation.getMethod());
+        final int timeoutInSeconds = component.getTransactionTimeout(methodIntf, invocation.getMethod());
+        switch (attr) {
             case MANDATORY:
                 return mandatory(invocation, component);
             case NEVER:

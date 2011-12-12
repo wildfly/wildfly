@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ejb.TimerService;
+import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
 
 import org.jboss.as.ee.component.BasicComponentCreateService;
@@ -40,8 +41,8 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
-import org.jboss.as.ejb3.tx.TransactionMethodAttribute;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.ejb3.annotation.TransactionTimeout;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
@@ -55,7 +56,9 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class EJBComponentCreateService extends BasicComponentCreateService {
 
-    private final Map<MethodTransactionAttributeKey, TransactionMethodAttribute> txAttrs;
+    private final Map<MethodTransactionAttributeKey, TransactionAttributeType> txAttrs;
+
+    private final Map<MethodTransactionAttributeKey, TransactionTimeout> txTimeouts;
 
     private final TransactionManagementType transactionManagementType;
 
@@ -100,9 +103,11 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
         // CMTTx
         if (transactionManagementType.equals(TransactionManagementType.CONTAINER)) {
-            this.txAttrs = new HashMap<MethodTransactionAttributeKey, TransactionMethodAttribute>();
+            this.txAttrs = new HashMap<MethodTransactionAttributeKey, TransactionAttributeType>();
+            this.txTimeouts = new HashMap<MethodTransactionAttributeKey, TransactionTimeout>();
         } else {
             this.txAttrs = null;
+            this.txTimeouts = null;
         }
         // Setup the security metadata for the bean
         this.securityMetaData = new EJBSecurityMetaData(componentConfiguration);
@@ -183,8 +188,12 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         return serviceController.getValue();
     }
 
-    Map<MethodTransactionAttributeKey, TransactionMethodAttribute> getTxAttrs() {
+    Map<MethodTransactionAttributeKey, TransactionAttributeType> getTxAttrs() {
         return txAttrs;
+    }
+
+    Map<MethodTransactionAttributeKey, TransactionTimeout> getTxTimeouts() {
+        return txTimeouts;
     }
 
     TransactionManagementType getTransactionManagementType() {
@@ -203,9 +212,14 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
         String className = method.getDeclaringClass().getName();
         String methodName = method.getName();
-        TransactionMethodAttribute txAttr = ejbComponentDescription.getTransactionAttributes().getAttribute(methodIntf, className, methodName, toString(method.getParameterTypes()));
-        // TODO: optimize, we don't have to copy over the default
-        txAttrs.put(new MethodTransactionAttributeKey(methodIntf, MethodIdentifier.getIdentifierForMethod(method)), txAttr);
+        TransactionAttributeType txAttr = ejbComponentDescription.getTransactionAttributes().getAttribute(methodIntf, className, methodName, toString(method.getParameterTypes()));
+        if (txAttr != TransactionAttributeType.REQUIRED) {
+            txAttrs.put(new MethodTransactionAttributeKey(methodIntf, MethodIdentifier.getIdentifierForMethod(method)), txAttr);
+        }
+        TransactionTimeout txTimeout = ejbComponentDescription.getTransactionTimeouts().getAttribute(methodIntf, className, methodName, toString(method.getParameterTypes()));
+        if (txTimeout != null) {
+            txTimeouts.put(new MethodTransactionAttributeKey(methodIntf, MethodIdentifier.getIdentifierForMethod(method)), txTimeout);
+        }
     }
 
     private static String[] toString(Class<?>[] a) {
