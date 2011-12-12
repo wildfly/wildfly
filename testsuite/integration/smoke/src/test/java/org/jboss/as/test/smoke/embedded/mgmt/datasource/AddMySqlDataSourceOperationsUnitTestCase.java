@@ -28,6 +28,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.getChildren;
+
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
@@ -73,7 +75,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("AS7-2515")
+
 public class AddMySqlDataSourceOperationsUnitTestCase {
 
     private ModelControllerClient client;
@@ -81,9 +83,9 @@ public class AddMySqlDataSourceOperationsUnitTestCase {
     @Deployment(testable = false)
     public static Archive<?> getDeployment() {
 				File jdbcJar = new File( System.getProperty("jbossas.ts.integ.dir", "."),
-                                 "src/test/resources/mysql-connector-java-5.1.15.jar");
+                                 "/smoke/src/test/resources/mysql-connector-java-5.1.15.jar");
         if( ! jdbcJar.exists() )
-            throw new IllegalStateException("Can't find " + jdbcJar + " using ${jbossas.ts.dir} == " + System.getProperty("jbossas.ts.dir") );
+            throw new IllegalStateException("Can't find " + jdbcJar + " using ${jbossas.ts.integ.dir} == " + System.getProperty("jbossas.ts.integ.dir") );
         Archive<?> archive = ShrinkWrap.createFromZipFile(JavaArchive.class, jdbcJar);
         Node node = archive.get("META-INF");
         return archive;
@@ -131,15 +133,20 @@ public class AddMySqlDataSourceOperationsUnitTestCase {
 
         Assert.assertNotNull(newList);
 
-        final Map<String, ModelNode> parseChildren = DataSourceOperationTestUtil.getChildren(newList.get(1));
-        Assert.assertFalse(parseChildren.isEmpty());
-        Assert.assertEquals("java:jboss/datasources/MySqlDs", parseChildren.get("jndi-name").asString());
-
+        boolean containsRightJndiname = false;
+        for(ModelNode res : newList){
+            final Map<String, ModelNode> parseChildren = getChildren(res);
+            if (! parseChildren.isEmpty() && parseChildren.get("jndi-name")!= null && parseChildren.get("jndi-name").asString().equals("java:jboss/datasources/MySqlDs")) {
+                containsRightJndiname = true;
+            }
+        }
+        
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set("remove");
         compensatingOperation.get(OP_ADDR).set(address);
 
         getModelControllerClient().execute(compensatingOperation);
+        Assert.assertTrue(containsRightJndiname);
     }
 
     public List<ModelNode> marshalAndReparseDsResources() throws Exception {
