@@ -7,12 +7,15 @@ import javax.ejb.ConcurrencyManagement;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.Singleton;
 
+import org.jboss.logging.Logger;
+
 /**
  * @author Stuart Douglas
  */
 @Singleton
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 public class AppClientStateSingleton implements AppClientSingletonRemote {
+    private static final Logger logger = Logger.getLogger("org.jboss.as.test.appclient");
 
     private volatile CountDownLatch latch = new CountDownLatch(1);
 
@@ -20,6 +23,7 @@ public class AppClientStateSingleton implements AppClientSingletonRemote {
 
     @Override
     public void reset() {
+        logger.info("Reset called!");
         value = null;
         //if we have a thread blocked on the latch release it
         latch.countDown();
@@ -28,6 +32,7 @@ public class AppClientStateSingleton implements AppClientSingletonRemote {
 
     @Override
     public void makeAppClientCall(final String value) {
+        logger.info("AppClient Call called!");
         this.value = value;
         latch.countDown();
     }
@@ -35,7 +40,8 @@ public class AppClientStateSingleton implements AppClientSingletonRemote {
     @Override
     public String awaitAppClientCall() {
         try {
-            latch.await(10, TimeUnit.SECONDS);
+            boolean b = latch.await(10, TimeUnit.SECONDS);
+            logger.info("Await returned: " + b + " : " + value);
             return value;
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
