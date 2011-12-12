@@ -122,7 +122,7 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
                     if (currentTransactionKey == null) {
                         instance.store();
                         releaseInstance(instance, true);
-                    } else if(!syncRegistered) {
+                    } else if (!syncRegistered) {
                         lock.unlock();
                     }
                 }
@@ -173,6 +173,7 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
         public void beforeCompletion() {
             try {
                 CurrentSynchronizationCallback.set(CurrentSynchronizationCallback.CallbackType.BEFORE_COMPLETION);
+
                 synchronized (threadLock) {
                     //invoke the EJB store method within the transaction
                     try {
@@ -186,6 +187,29 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
                         } finally {
                             lock.popOwner();
                         }
+                    } finally {
+
+                        int status = Status.STATUS_MARKED_ROLLBACK;
+                        try {
+                            status = this.componentInstance.getComponent().getTransactionManager().getStatus();
+                        } catch (Exception e) {
+                            EJB3_LOGGER.getTxManagerStatusFailed(e);
+                        }
+
+                        //now release the lock
+                        //we have to do it here rather than afterCompletion, as afterCompletion can run in a different
+                        //thread with JTS enabled
+                        lock.pushOwner(lockOwner);
+                        try {
+                            final boolean success = status != Status.STATUS_MARKED_ROLLBACK
+                                    && status != Status.STATUS_ROLLEDBACK &&
+                                    status != Status.STATUS_ROLLING_BACK;
+                            releaseInstance(componentInstance, success);
+                        } catch (Exception e) {
+                            EJB3_LOGGER.exceptionReleasingEntity(e);
+                        } finally {
+                            lock.popOwner();
+                        }
                     }
                 }
             } finally {
@@ -195,23 +219,7 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
 
         @Override
         public void afterCompletion(int status) {
-            try {
 
-                CurrentSynchronizationCallback.set(CurrentSynchronizationCallback.CallbackType.AFTER_COMPLETION);
-                synchronized (threadLock) {
-                    // tx has completed, so mark the SFSB instance as no longer in use
-                    lock.pushOwner(lockOwner);
-                    try {
-                        releaseInstance(componentInstance, status == Status.STATUS_COMMITTED);
-                    } catch (Exception e) {
-                        EJB3_LOGGER.exceptionReleasingEntity(e);
-                    } finally {
-                        lock.popOwner();
-                    }
-                }
-            } finally {
-                CurrentSynchronizationCallback.clear();
-            }
         }
 
         /**
