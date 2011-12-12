@@ -22,19 +22,20 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.ejb.client.TransactionID;
 import org.jboss.ejb.client.UserTransactionID;
 import org.jboss.ejb.client.XidTransactionID;
 import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.logging.Logger;
+import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageInputStream;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.concurrent.ExecutorService;
 
 /**
  * Handles a transaction message which complies with the EJB remote protocol specification
@@ -49,7 +50,8 @@ class TransactionRequestHandler extends AbstractMessageHandler {
 
     private final ExecutorService executorService;
     private final EJBRemoteTransactionsRepository transactionsRepository;
-    private TransactionRequestType txRequestType;
+    private final TransactionRequestType txRequestType;
+    private final MarshallerFactory marshallerFactory;
 
 
     enum TransactionRequestType {
@@ -60,11 +62,12 @@ class TransactionRequestHandler extends AbstractMessageHandler {
         BEFORE_COMPLETION
     }
 
-    TransactionRequestHandler(final EJBRemoteTransactionsRepository transactionsRepository, final ExecutorService executorService, final TransactionRequestType txRequestType, final String marshallingStrategy) {
-        super(marshallingStrategy);
+    TransactionRequestHandler(final EJBRemoteTransactionsRepository transactionsRepository, final MarshallerFactory marshallerFactory,
+                              final ExecutorService executorService, final TransactionRequestType txRequestType) {
         this.executorService = executorService;
         this.transactionsRepository = transactionsRepository;
         this.txRequestType = txRequestType;
+        this.marshallerFactory = marshallerFactory;
     }
 
     @Override
@@ -91,10 +94,10 @@ class TransactionRequestHandler extends AbstractMessageHandler {
             final UserTransactionManagementTask userTransactionManagementTask;
             switch (this.txRequestType) {
                 case COMMIT:
-                    userTransactionManagementTask = new UserTransactionCommitTask(this, this.transactionsRepository, (UserTransactionID) transactionID, channel, invocationId);
+                    userTransactionManagementTask = new UserTransactionCommitTask(this, this.transactionsRepository, this.marshallerFactory, (UserTransactionID) transactionID, channel, invocationId);
                     break;
                 case ROLLBACK:
-                    userTransactionManagementTask = new UserTransactionRollbackTask(this, this.transactionsRepository, (UserTransactionID) transactionID, channel, invocationId);
+                    userTransactionManagementTask = new UserTransactionRollbackTask(this, this.transactionsRepository, this.marshallerFactory, (UserTransactionID) transactionID, channel, invocationId);
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown transaction request type " + this.txRequestType);
@@ -108,19 +111,19 @@ class TransactionRequestHandler extends AbstractMessageHandler {
             final XidTransactionManagementTask xidTransactionManagementTask;
             switch (this.txRequestType) {
                 case COMMIT:
-                    xidTransactionManagementTask = new XidTransactionCommitTask(this, this.transactionsRepository, xidTransactionID, channel, invocationId, onePhaseCommit);
+                    xidTransactionManagementTask = new XidTransactionCommitTask(this, this.transactionsRepository, this.marshallerFactory, xidTransactionID, channel, invocationId, onePhaseCommit);
                     break;
                 case PREPARE:
-                    xidTransactionManagementTask = new XidTransactionPrepareTask(this, this.transactionsRepository, xidTransactionID, channel, invocationId);
+                    xidTransactionManagementTask = new XidTransactionPrepareTask(this, this.transactionsRepository, this.marshallerFactory, xidTransactionID, channel, invocationId);
                     break;
                 case ROLLBACK:
-                    xidTransactionManagementTask = new XidTransactionRollbackTask(this, this.transactionsRepository, xidTransactionID, channel, invocationId);
+                    xidTransactionManagementTask = new XidTransactionRollbackTask(this, this.transactionsRepository, this.marshallerFactory, xidTransactionID, channel, invocationId);
                     break;
                 case FORGET:
-                    xidTransactionManagementTask = new XidTransactionForgetTask(this, this.transactionsRepository, xidTransactionID, channel, invocationId);
+                    xidTransactionManagementTask = new XidTransactionForgetTask(this, this.transactionsRepository, this.marshallerFactory, xidTransactionID, channel, invocationId);
                     break;
                 case BEFORE_COMPLETION:
-                    xidTransactionManagementTask = new XidTransactionBeforeCompletionTask(this, this.transactionsRepository, xidTransactionID, channel, invocationId);
+                    xidTransactionManagementTask = new XidTransactionBeforeCompletionTask(this, this.transactionsRepository, this.marshallerFactory, xidTransactionID, channel, invocationId);
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown transaction request type " + this.txRequestType);

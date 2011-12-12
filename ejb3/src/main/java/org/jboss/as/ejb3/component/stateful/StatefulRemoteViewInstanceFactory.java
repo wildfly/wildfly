@@ -50,7 +50,7 @@ public class StatefulRemoteViewInstanceFactory implements ViewInstanceFactory {
 
     @Override
     public ManagedReference createViewInstance(final ComponentView componentView, final Map<Object, Object> contextData) throws Exception {
-        SessionID sessionID = (SessionID) contextData.get(SessionID.SESSION_ID_KEY);
+        SessionID sessionID = (SessionID) contextData.get(SessionID.class);
         if(sessionID == null) {
             sessionID = EJBClient.createSession(applicationName, moduleName, beanName, distinctName);
         }

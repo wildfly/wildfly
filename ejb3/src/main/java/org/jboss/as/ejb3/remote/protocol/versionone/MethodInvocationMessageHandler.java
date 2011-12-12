@@ -27,6 +27,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
@@ -42,16 +43,19 @@ import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.EntityEJBLocator;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
-import org.jboss.ejb.client.remoting.RemotingAttachments;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
+import org.jboss.marshalling.AbstractClassResolver;
+import org.jboss.marshalling.Marshaller;
+import org.jboss.marshalling.MarshallerFactory;
+import org.jboss.marshalling.Unmarshaller;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageInputStream;
 import org.xnio.IoUtils;
 
 
 /**
- * User: jpai
+ * @author Jaikiran Pai
  */
 class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
 
@@ -63,9 +67,11 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
     private static final byte HEADER_ASYNC_METHOD_NOTIFICATION = 0x0E;
 
     private final ExecutorService executorService;
+    private final MarshallerFactory marshallerFactory;
 
-    MethodInvocationMessageHandler(final DeploymentRepository deploymentRepository, final String marshallingStrategy, final ExecutorService executorService) {
-        super(deploymentRepository, marshallingStrategy);
+    MethodInvocationMessageHandler(final DeploymentRepository deploymentRepository, final org.jboss.marshalling.MarshallerFactory marshallerFactory, final ExecutorService executorService) {
+        super(deploymentRepository);
+        this.marshallerFactory = marshallerFactory;
         this.executorService = executorService;
     }
 
@@ -86,25 +92,22 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
         } else {
             methodParamTypes = signature.split(String.valueOf(METHOD_PARAM_TYPE_SEPARATOR));
         }
-        // read the attachments
-        final RemotingAttachments attachments = this.readAttachments(input);
 
         // read the Locator
-        final UnMarshaller unMarshaller = MarshallerFactory.createUnMarshaller(this.marshallingStrategy);
-        // we use a mutable ClassLoaderProvider, so that we can switch to a different (and correct deployment CL)
+        // we use a mutable ClassResolver, so that we can switch to a different (and correct deployment CL)
         // midway through the unmarshalling of the stream
-        final ClassLoaderSwitchingClassLoaderProvider classLoaderProvider = new ClassLoaderSwitchingClassLoaderProvider(Thread.currentThread().getContextClassLoader());
-        unMarshaller.start(input, classLoaderProvider);
+        final ClassLoaderSwitchingClassResolver classResolver = new ClassLoaderSwitchingClassResolver(Thread.currentThread().getContextClassLoader());
+        final Unmarshaller unmarshaller = this.prepareForUnMarshalling(this.marshallerFactory, classResolver, input);
         // read the EJB info
         final String appName;
         final String moduleName;
         final String distinctName;
         final String beanName;
         try {
-            appName = (String) unMarshaller.readObject();
-            moduleName = (String) unMarshaller.readObject();
-            distinctName = (String) unMarshaller.readObject();
-            beanName = (String) unMarshaller.readObject();
+            appName = (String) unmarshaller.readObject();
+            moduleName = (String) unmarshaller.readObject();
+            distinctName = (String) unmarshaller.readObject();
+            beanName = (String) unmarshaller.readObject();
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -120,11 +123,11 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
             SecurityActions.setContextClassLoader(ejbDeploymentInformation.getDeploymentClassLoader());
             // now switch the CL to the EJB deployment's CL so that the unmarshaller can use the
             // correct CL for the rest of the unmarshalling of the stream
-            classLoaderProvider.switchClassLoader(ejbDeploymentInformation.getDeploymentClassLoader());
+            classResolver.switchClassLoader(ejbDeploymentInformation.getDeploymentClassLoader());
             // read the Locator
             final EJBLocator locator;
             try {
-                locator = (EJBLocator) unMarshaller.readObject();
+                locator = (EJBLocator) unmarshaller.readObject();
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }
@@ -146,14 +149,23 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
             if (methodParamTypes.length > 0) {
                 for (int i = 0; i < methodParamTypes.length; i++) {
                     try {
-                        methodParams[i] = unMarshaller.readObject();
+                        methodParams[i] = unmarshaller.readObject();
                     } catch (ClassNotFoundException cnfe) {
                         // TODO: Write out invocation failure to channel outstream
                         throw new RuntimeException(cnfe);
                     }
                 }
             }
-            unMarshaller.finish();
+            // read the attachments
+            final Map<String, Object> attachments;
+            try {
+                attachments = this.readAttachments(unmarshaller);
+            } catch (ClassNotFoundException cnfe) {
+                // TODO: Write out invocation failure to channel outstream
+                throw new RuntimeException(cnfe);
+            }
+            // done with unmarshalling
+            unmarshaller.finish();
 
             runnable = new Runnable() {
 
@@ -178,7 +190,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                     } catch (Throwable throwable) {
                         try {
                             // write out the failure
-                            MethodInvocationMessageHandler.this.writeException(channel, invocationId, throwable, attachments);
+                            MethodInvocationMessageHandler.this.writeException(channel, MethodInvocationMessageHandler.this.marshallerFactory, invocationId, throwable, attachments);
                         } catch (IOException ioe) {
                             // we couldn't write out a method invocation failure message. So let's atleast log the
                             // actual method invocation exception, for debugging/reference
@@ -213,7 +225,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
 
     }
 
-    private Object invokeMethod(final ComponentView componentView, final Method method, final Object[] args, final EJBLocator ejbLocator, final RemotingAttachments attachments) throws Throwable {
+    private Object invokeMethod(final ComponentView componentView, final Method method, final Object[] args, final EJBLocator ejbLocator, final Map<String, Object> attachments) throws Throwable {
         final InterceptorContext interceptorContext = new InterceptorContext();
         interceptorContext.setParameters(args);
         interceptorContext.setMethod(method);
@@ -221,12 +233,20 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
         interceptorContext.putPrivateData(Component.class, componentView.getComponent());
         interceptorContext.putPrivateData(ComponentView.class, componentView);
         if (attachments != null) {
-            // attach the RemotingAttachments
-            interceptorContext.putPrivateData(RemotingAttachments.class, attachments);
+            // attach the attachments which were passed from the remote client
+            for (final Map.Entry<String, Object> attachment : attachments.entrySet()) {
+                if (attachment == null) {
+                    continue;
+                }
+                final String key = attachment.getKey();
+                final Object value = attachment.getValue();
+                // add it to the context
+                interceptorContext.putPrivateData(key, value);
+            }
         }
         // add the session id to the interceptor context, if it's a stateful ejb locator
         if (ejbLocator instanceof StatefulEJBLocator) {
-            interceptorContext.putPrivateData(SessionID.SESSION_ID_KEY, ((StatefulEJBLocator) ejbLocator).getSessionId());
+            interceptorContext.putPrivateData(SessionID.class, ((StatefulEJBLocator) ejbLocator).getSessionId());
         } else if (ejbLocator instanceof EntityEJBLocator) {
             final Object primaryKey = ((EntityEJBLocator) ejbLocator).getPrimaryKey();
             interceptorContext.putPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, primaryKey);
@@ -283,20 +303,19 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
         return null;
     }
 
-    private void writeMethodInvocationResponse(final Channel channel, final short invocationId, final Object result, final RemotingAttachments attachments) throws IOException {
+    private void writeMethodInvocationResponse(final Channel channel, final short invocationId, final Object result, final Map<String, Object> attachments) throws IOException {
         final DataOutputStream outputStream = new DataOutputStream(channel.writeMessage());
         try {
             // write invocation response header
             outputStream.write(HEADER_METHOD_INVOCATION_RESPONSE);
             // write the invocation id
             outputStream.writeShort(invocationId);
-            // write the attachments
-            this.writeAttachments(outputStream, attachments);
-
             // write out the result
-            final Marshaller marshaller = MarshallerFactory.createMarshaller(this.marshallingStrategy);
-            marshaller.start(outputStream);
+            final Marshaller marshaller = this.prepareForMarshalling(this.marshallerFactory, outputStream);
             marshaller.writeObject(result);
+            // write the attachments
+            this.writeAttachments(marshaller, attachments);
+            // finish marshalling
             marshaller.finish();
         } finally {
             outputStream.close();
@@ -317,29 +336,29 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
     }
 
     /**
-     * A mutable {@link org.jboss.as.ejb3.remote.protocol.versionone.UnMarshaller.ClassLoaderProvider}
+     * A mutable {@link org.jboss.marshalling.ClassResolver}
      */
-    private class ClassLoaderSwitchingClassLoaderProvider implements UnMarshaller.ClassLoaderProvider {
+    private class ClassLoaderSwitchingClassResolver extends AbstractClassResolver {
 
         private ClassLoader currentClassLoader;
 
-        ClassLoaderSwitchingClassLoaderProvider(final ClassLoader classLoader) {
+        ClassLoaderSwitchingClassResolver(final ClassLoader classLoader) {
             this.currentClassLoader = classLoader;
-        }
-
-        @Override
-        public ClassLoader provideClassLoader() {
-            return this.currentClassLoader;
         }
 
         /**
          * Sets the passed <code>newCL</code> as the classloader which will be returned on
-         * subsequent calls to {@link #provideClassLoader()}
+         * subsequent calls to {@link #getClassLoader()}
          *
          * @param newCL
          */
         void switchClassLoader(final ClassLoader newCL) {
             this.currentClassLoader = newCL;
+        }
+
+        @Override
+        protected ClassLoader getClassLoader() {
+            return this.currentClassLoader;
         }
     }
 }

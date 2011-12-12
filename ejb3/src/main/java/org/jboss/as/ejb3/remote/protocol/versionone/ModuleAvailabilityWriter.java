@@ -22,11 +22,11 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
-import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
-import org.jboss.ejb.client.remoting.PackedInteger;
-
 import java.io.DataOutput;
 import java.io.IOException;
+
+import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
+import org.jboss.ejb.client.remoting.PackedInteger;
 
 /**
  * User: jpai
@@ -36,10 +36,7 @@ class ModuleAvailabilityWriter {
     static final byte HEADER_MODULE_AVAILABLE = 0x08;
     static final byte HEADER_MODULE_UNAVAILABLE = 0x09;
 
-    private final String marshallingStrategy;
-
-    ModuleAvailabilityWriter(final String marshallingStrategy) {
-        this.marshallingStrategy = marshallingStrategy;
+    ModuleAvailabilityWriter() {
     }
 
     void writeModuleAvailability(final DataOutput output, final DeploymentModuleIdentifier[] availableModules) throws IOException {

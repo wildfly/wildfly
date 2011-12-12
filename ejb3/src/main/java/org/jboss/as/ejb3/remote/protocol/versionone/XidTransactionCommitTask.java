@@ -40,6 +40,7 @@ import com.arjuna.ats.internal.jts.orbspecific.coordinator.ArjunaTransactionImpl
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.ejb.client.XidTransactionID;
 import org.jboss.logging.Logger;
+import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.remoting3.Channel;
 
 /**
@@ -52,9 +53,9 @@ class XidTransactionCommitTask extends XidTransactionManagementTask {
     private final boolean onePhaseCommit;
 
     XidTransactionCommitTask(final TransactionRequestHandler txRequestHandler, final EJBRemoteTransactionsRepository transactionsRepository,
-                             final XidTransactionID xidTransactionID, final Channel channel,
+                             final MarshallerFactory marshallerFactory, final XidTransactionID xidTransactionID, final Channel channel,
                              final short invocationId, final boolean onePhaseCommit) {
-        super(txRequestHandler, transactionsRepository, xidTransactionID, channel, invocationId);
+        super(txRequestHandler, transactionsRepository, marshallerFactory, xidTransactionID, channel, invocationId);
         this.onePhaseCommit = onePhaseCommit;
     }
 

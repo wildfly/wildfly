@@ -28,6 +28,7 @@ import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinationManag
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.ejb.client.XidTransactionID;
 import org.jboss.logging.Logger;
+import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.remoting3.Channel;
 import org.xnio.IoUtils;
 
@@ -49,9 +50,10 @@ class XidTransactionPrepareTask extends XidTransactionManagementTask {
     private static final Logger logger = Logger.getLogger(XidTransactionPrepareTask.class);
 
     XidTransactionPrepareTask(final TransactionRequestHandler txRequestHandler, final EJBRemoteTransactionsRepository transactionsRepository,
-                              final XidTransactionID xidTransactionID, final Channel channel, final short invocationId) {
+                              final MarshallerFactory marshallerFactory, final XidTransactionID xidTransactionID,
+                              final Channel channel, final short invocationId) {
 
-        super(txRequestHandler, transactionsRepository, xidTransactionID, channel, invocationId);
+        super(txRequestHandler, transactionsRepository, marshallerFactory, xidTransactionID, channel, invocationId);
     }
 
     @Override
@@ -62,7 +64,7 @@ class XidTransactionPrepareTask extends XidTransactionManagementTask {
             try {
                 // write out a failure message to the channel to let the client know that
                 // the transaction operation failed
-                transactionRequestHandler.writeException(this.channel, this.invocationId, t, null);
+                transactionRequestHandler.writeException(this.channel, this.marshallerFactory, this.invocationId, t, null);
             } catch (IOException e) {
                 logger.error("Could not write out message to channel due to", e);
                 // close the channel

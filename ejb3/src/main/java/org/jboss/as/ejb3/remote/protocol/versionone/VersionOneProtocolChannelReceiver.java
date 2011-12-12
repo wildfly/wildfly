@@ -23,24 +23,25 @@
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.DeploymentRepositoryListener;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.logging.Logger;
+import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.MessageInputStream;
 import org.xnio.IoUtils;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-
 /**
- * User: jpai
+ * @author Jaikiran Pai
  */
 public class VersionOneProtocolChannelReceiver implements Channel.Receiver, DeploymentRepositoryListener {
 
@@ -63,13 +64,13 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
 
     private final EJBRemoteTransactionsRepository transactionsRepository;
 
-    private final String marshallingStrategy;
+    private final MarshallerFactory marshallerFactory;
 
     private final ExecutorService executorService;
 
     public VersionOneProtocolChannelReceiver(final Channel channel, final DeploymentRepository deploymentRepository,
-                                             final EJBRemoteTransactionsRepository transactionsRepository, final String marshallingStrategy, final ExecutorService executorService) {
-        this.marshallingStrategy = marshallingStrategy;
+                                             final EJBRemoteTransactionsRepository transactionsRepository, final MarshallerFactory marshallerFactory, final ExecutorService executorService) {
+        this.marshallerFactory = marshallerFactory;
         this.channel = channel;
         this.executorService = executorService;
         this.deploymentRepository = deploymentRepository;
@@ -118,25 +119,25 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             MessageHandler messageHandler = null;
             switch (header) {
                 case HEADER_INVOCATION_REQUEST:
-                    messageHandler = new MethodInvocationMessageHandler(this.deploymentRepository, this.marshallingStrategy, this.executorService);
+                    messageHandler = new MethodInvocationMessageHandler(this.deploymentRepository, this.marshallerFactory, this.executorService);
                     break;
                 case HEADER_SESSION_OPEN_REQUEST:
-                    messageHandler = new SessionOpenRequestHandler(this.deploymentRepository, this.marshallingStrategy, this.executorService);
+                    messageHandler = new SessionOpenRequestHandler(this.deploymentRepository, this.marshallerFactory, this.executorService);
                     break;
                 case HEADER_TX_COMMIT_REQUEST:
-                    messageHandler = new TransactionRequestHandler(this.transactionsRepository, this.executorService, TransactionRequestHandler.TransactionRequestType.COMMIT, this.marshallingStrategy);
+                    messageHandler = new TransactionRequestHandler(this.transactionsRepository, this.marshallerFactory, this.executorService, TransactionRequestHandler.TransactionRequestType.COMMIT);
                     break;
                 case HEADER_TX_ROLLBACK_REQUEST:
-                    messageHandler = new TransactionRequestHandler(this.transactionsRepository, this.executorService, TransactionRequestHandler.TransactionRequestType.ROLLBACK, this.marshallingStrategy);
+                    messageHandler = new TransactionRequestHandler(this.transactionsRepository, this.marshallerFactory, this.executorService, TransactionRequestHandler.TransactionRequestType.ROLLBACK);
                     break;
                 case HEADER_TX_FORGET_REQUEST:
-                    messageHandler = new TransactionRequestHandler(this.transactionsRepository, this.executorService, TransactionRequestHandler.TransactionRequestType.FORGET, this.marshallingStrategy);
+                    messageHandler = new TransactionRequestHandler(this.transactionsRepository, this.marshallerFactory, this.executorService, TransactionRequestHandler.TransactionRequestType.FORGET);
                     break;
                 case HEADER_TX_PREPARE_REQUEST:
-                    messageHandler = new TransactionRequestHandler(this.transactionsRepository, this.executorService, TransactionRequestHandler.TransactionRequestType.PREPARE, this.marshallingStrategy);
+                    messageHandler = new TransactionRequestHandler(this.transactionsRepository, this.marshallerFactory, this.executorService, TransactionRequestHandler.TransactionRequestType.PREPARE);
                     break;
                 case HEADER_TX_BEFORE_COMPLETION_REQUEST:
-                    messageHandler = new TransactionRequestHandler(this.transactionsRepository, this.executorService, TransactionRequestHandler.TransactionRequestType.BEFORE_COMPLETION, this.marshallingStrategy);
+                    messageHandler = new TransactionRequestHandler(this.transactionsRepository, this.marshallerFactory, this.executorService, TransactionRequestHandler.TransactionRequestType.BEFORE_COMPLETION);
                     break;
                 default:
                     logger.warn("Received unsupported message header 0x" + Integer.toHexString(header) + " on channel " + channel);
@@ -192,7 +193,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
 
     private void sendModuleAvailability(DeploymentModuleIdentifier[] availableModules) throws IOException {
         final DataOutputStream outputStream = new DataOutputStream(this.channel.writeMessage());
-        final ModuleAvailabilityWriter moduleAvailabilityWriter = new ModuleAvailabilityWriter(this.marshallingStrategy);
+        final ModuleAvailabilityWriter moduleAvailabilityWriter = new ModuleAvailabilityWriter();
         try {
             moduleAvailabilityWriter.writeModuleAvailability(outputStream, availableModules);
         } finally {
@@ -202,7 +203,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
 
     private void sendModuleUnAvailability(DeploymentModuleIdentifier[] availableModules) throws IOException {
         final DataOutputStream outputStream = new DataOutputStream(this.channel.writeMessage());
-        final ModuleAvailabilityWriter moduleAvailabilityWriter = new ModuleAvailabilityWriter(this.marshallingStrategy);
+        final ModuleAvailabilityWriter moduleAvailabilityWriter = new ModuleAvailabilityWriter();
         try {
             moduleAvailabilityWriter.writeModuleUnAvailability(outputStream, availableModules);
         } finally {

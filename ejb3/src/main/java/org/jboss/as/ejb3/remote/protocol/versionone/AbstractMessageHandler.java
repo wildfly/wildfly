@@ -25,19 +25,31 @@ package org.jboss.as.ejb3.remote.protocol.versionone;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.jboss.ejb.client.remoting.PackedInteger;
-import org.jboss.ejb.client.remoting.RemotingAttachments;
+import org.jboss.marshalling.ByteInput;
+import org.jboss.marshalling.ByteOutput;
+import org.jboss.marshalling.ClassResolver;
+import org.jboss.marshalling.Marshaller;
+import org.jboss.marshalling.MarshallerFactory;
+import org.jboss.marshalling.Marshalling;
+import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.Unmarshaller;
 import org.jboss.remoting3.Channel;
 
 
 /**
- * User: jpai
+ * @author Jaikiran Pai
  */
 abstract class AbstractMessageHandler implements MessageHandler {
-
-    protected final String marshallingStrategy;
 
     protected static final byte HEADER_NO_SUCH_EJB_FAILURE = 0x0A;
     protected static final byte HEADER_NO_SUCH_EJB_METHOD_FAILURE = 0x0B;
@@ -45,62 +57,50 @@ abstract class AbstractMessageHandler implements MessageHandler {
     private static final byte HEADER_INVOCATION_EXCEPTION = 0x06;
 
 
-    AbstractMessageHandler(final String marshallingStrategy) {
-        this.marshallingStrategy = marshallingStrategy;
-    }
-
-    protected RemotingAttachments readAttachments(final DataInput input) throws IOException {
-        int numAttachments = input.readByte();
+    protected Map<String, Object> readAttachments(final ObjectInput input) throws IOException, ClassNotFoundException {
+        final int numAttachments = input.readByte();
         if (numAttachments == 0) {
             return null;
         }
-        final RemotingAttachments attachments = new RemotingAttachments();
+        final Map<String, Object> attachments = new HashMap<String, Object>(numAttachments);
         for (int i = 0; i < numAttachments; i++) {
-            // read attachment id
-            final short attachmentId = input.readShort();
-            // read attachment data length
-            final int dataLength = PackedInteger.readPackedInteger(input);
-            // read the data
-            final byte[] data = new byte[dataLength];
-            input.readFully(data);
-
-            attachments.putPayloadAttachment(attachmentId, data);
+            // read the key
+            final String key = (String) input.readObject();
+            // read the attachment value
+            final Object val = input.readObject();
+            attachments.put(key, val);
         }
         return attachments;
     }
 
-    protected void writeAttachments(final DataOutput output, final RemotingAttachments attachments) throws IOException {
+    protected void writeAttachments(final ObjectOutput output, final Map<String, Object> attachments) throws IOException {
         if (attachments == null) {
             output.writeByte(0);
             return;
         }
-        // write attachment count
-        output.writeByte(attachments.size());
-        for (RemotingAttachments.RemotingAttachment attachment : attachments.entries()) {
-            // write attachment id
-            output.writeShort(attachment.getKey());
-            final byte[] data = attachment.getValue();
-            // write data length
-            PackedInteger.writePackedInteger(output, data.length);
-            // write the data
-            output.write(data);
-
+        // write the attachment count
+        PackedInteger.writePackedInteger(output, attachments.size());
+        for (Map.Entry<String, Object> entry : attachments.entrySet()) {
+            output.writeObject(entry.getKey());
+            output.writeObject(entry.getValue());
         }
     }
 
-    protected void writeException(final Channel channel, final short invocationId, final Throwable t, final RemotingAttachments attachments) throws IOException {
+    protected void writeException(final Channel channel, final MarshallerFactory marshallerFactory,
+                                  final short invocationId, final Throwable t,
+                                  final Map<String, Object> attachments) throws IOException {
         final DataOutputStream outputStream = new DataOutputStream(channel.writeMessage());
         try {
             // write the header
             outputStream.write(HEADER_INVOCATION_EXCEPTION);
             // write the invocation id
             outputStream.writeShort(invocationId);
-            // write the attachments
-            this.writeAttachments(outputStream, attachments);
             // write out the exception
-            final Marshaller marshaller = MarshallerFactory.createMarshaller(this.marshallingStrategy);
-            marshaller.start(outputStream);
+            final Marshaller marshaller = this.prepareForMarshalling(marshallerFactory, outputStream);
             marshaller.writeObject(t);
+            // write the attachments
+            this.writeAttachments(marshaller, attachments);
+            // finish marshalling
             marshaller.finish();
         } finally {
             outputStream.close();
@@ -165,4 +165,92 @@ abstract class AbstractMessageHandler implements MessageHandler {
         this.writeInvocationFailure(channel, HEADER_NO_SUCH_EJB_METHOD_FAILURE, invocationId, sb.toString());
     }
 
+    /**
+     * Creates and returns a {@link org.jboss.marshalling.Marshaller} which is ready to be used for marshalling. The {@link org.jboss.marshalling.Marshaller#start(org.jboss.marshalling.ByteOutput)}
+     * will be invoked by this method, to use the passed {@link java.io.DataOutput dataOutput}, before returning the marshaller.
+     *
+     * @param marshallerFactory The marshaller factory
+     * @param dataOutput        The {@link java.io.DataOutput} to which the data will be marshalled
+     * @return
+     * @throws IOException
+     */
+    protected org.jboss.marshalling.Marshaller prepareForMarshalling(final org.jboss.marshalling.MarshallerFactory marshallerFactory, final DataOutput dataOutput) throws IOException {
+        final org.jboss.marshalling.Marshaller marshaller = this.getMarshaller(marshallerFactory);
+        final OutputStream outputStream = new OutputStream() {
+            @Override
+            public void write(int b) throws IOException {
+                final int byteToWrite = b & 0xff;
+                dataOutput.write(byteToWrite);
+            }
+        };
+        final ByteOutput byteOutput = Marshalling.createByteOutput(outputStream);
+        // start the marshaller
+        marshaller.start(byteOutput);
+
+        return marshaller;
+    }
+
+    /**
+     * Creates and returns a {@link org.jboss.marshalling.Marshaller}
+     *
+     * @param marshallerFactory The marshaller factory
+     * @return
+     * @throws IOException
+     */
+    private org.jboss.marshalling.Marshaller getMarshaller(final org.jboss.marshalling.MarshallerFactory marshallerFactory) throws IOException {
+        final MarshallingConfiguration marshallingConfiguration = new MarshallingConfiguration();
+        marshallingConfiguration.setClassTable(ProtocolV1ClassTable.INSTANCE);
+        marshallingConfiguration.setObjectTable(ProtocolV1ObjectTable.INSTANCE);
+        marshallingConfiguration.setVersion(2);
+
+        return marshallerFactory.createMarshaller(marshallingConfiguration);
+    }
+
+    /**
+     * Creates and returns a {@link org.jboss.marshalling.Unmarshaller} which is ready to be used for unmarshalling. The {@link org.jboss.marshalling.Unmarshaller#start(org.jboss.marshalling.ByteInput)}
+     * will be invoked by this method, to use the passed {@link java.io.DataInput dataInput}, before returning the unmarshaller.
+     *
+     * @param marshallerFactory The marshaller factory
+     * @param classResolver     The {@link ClassResolver} which will be used during unmarshalling
+     * @param dataInput         The data input from which to unmarshall
+     * @return
+     * @throws IOException
+     */
+    protected Unmarshaller prepareForUnMarshalling(final MarshallerFactory marshallerFactory, final ClassResolver classResolver, final DataInput dataInput) throws IOException {
+        final Unmarshaller unmarshaller = this.getUnMarshaller(marshallerFactory, classResolver);
+        final InputStream is = new InputStream() {
+            @Override
+            public int read() throws IOException {
+                try {
+
+                    final int b = dataInput.readByte();
+                    return b & 0xff;
+                } catch (EOFException eof) {
+                    return -1;
+                }
+            }
+        };
+        final ByteInput byteInput = Marshalling.createByteInput(is);
+        // start the unmarshaller
+        unmarshaller.start(byteInput);
+
+        return unmarshaller;
+    }
+
+    /**
+     * Creates and returns a {@link Unmarshaller}
+     *
+     * @param marshallerFactory The marshaller factory
+     * @return
+     * @throws IOException
+     */
+    private Unmarshaller getUnMarshaller(final MarshallerFactory marshallerFactory, final ClassResolver classResolver) throws IOException {
+        final MarshallingConfiguration marshallingConfiguration = new MarshallingConfiguration();
+        marshallingConfiguration.setVersion(2);
+        marshallingConfiguration.setClassTable(ProtocolV1ClassTable.INSTANCE);
+        marshallingConfiguration.setObjectTable(ProtocolV1ObjectTable.INSTANCE);
+        marshallingConfiguration.setClassResolver(classResolver);
+
+        return marshallerFactory.createUnmarshaller(marshallingConfiguration);
+    }
 }
