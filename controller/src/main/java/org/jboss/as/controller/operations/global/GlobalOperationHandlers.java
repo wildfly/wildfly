@@ -64,6 +64,8 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -87,6 +89,7 @@ public class GlobalOperationHandlers {
     public static final OperationStepHandler READ_ATTRIBUTE = new ReadAttributeHandler();
     public static final OperationStepHandler READ_CHILDREN_NAMES = new ReadChildrenNamesOperationHandler();
     public static final OperationStepHandler READ_CHILDREN_RESOURCES = new ReadChildrenResourcesOperationHandler();
+    public static final OperationStepHandler UNDEFINE_ATTRIBUTE = new UndefineAttributeHandler();
     public static final OperationStepHandler WRITE_ATTRIBUTE = new WriteAttributeHandler();
     public static final OperationStepHandler VALIDATE_ADDRESS = new OperationStepHandler() {
 
@@ -495,6 +498,20 @@ public class GlobalOperationHandlers {
     }
 
     ;
+
+    /**
+     * The undefine-attribute handler, writing an undefined value for a single attribute.
+     */
+    public static class UndefineAttributeHandler extends WriteAttributeHandler {
+
+        @Override
+        public void execute(final OperationContext context, final ModelNode original) throws OperationFailedException {
+            final ModelNode operation = original.clone();
+            operation.get(VALUE).set(new ModelNode());
+            super.execute(context, operation);
+        }
+
+    }
 
     /**
      * {@link org.jboss.as.controller.OperationStepHandler} querying the children names of a given "child-type".

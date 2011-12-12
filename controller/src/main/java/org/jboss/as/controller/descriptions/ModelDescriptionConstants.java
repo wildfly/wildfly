@@ -250,6 +250,7 @@ public class ModelDescriptionConstants {
     public static final String TAIL_COMMENT_ALLOWED = "tail-comment-allowed";
     public static final String TO_REPLACE = "to-replace";
     public static final String TYPE = "type";
+    public static final String UNDEFINE_ATTRIBUTE_OPERATION = "undefine-attribute";
     public static final String UNDEPLOY = "undeploy";
     public static final String UPLOAD_DEPLOYMENT_BYTES = "upload-deployment-bytes";
     public static final String UPLOAD_DEPLOYMENT_URL = "upload-deployment-url";

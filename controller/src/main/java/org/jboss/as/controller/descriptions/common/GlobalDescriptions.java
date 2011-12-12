@@ -46,6 +46,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
@@ -267,6 +268,19 @@ public class GlobalDescriptions {
         return node;
     }
 
+    public static ModelNode getUndefineAttributeOperationDescription(Locale locale) {
+        ResourceBundle bundle = getResourceBundle(locale);
+
+        ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(UNDEFINE_ATTRIBUTE_OPERATION);
+        node.get(DESCRIPTION).set(bundle.getString("global.undefine-attribute"));
+
+        node.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("global.undefine-attribute.name"));
+        node.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
+
+        return node;
+    }
 
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {

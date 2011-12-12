@@ -85,12 +85,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.util.List;
 import java.util.Map;
 
-import javax.resource.spi.TransactionSupport;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
@@ -103,9 +101,7 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
-import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -164,7 +160,6 @@ public class ResourceAdaptersExtension implements Extension {
         final ManagementResourceRegistration connectionDefinition = resourceadapter.registerSubModel(PathElement.pathElement(CONNECTIONDEFINITIONS_NAME), CONNECTION_DEFINITION_DESC);
         connectionDefinition.registerOperationHandler(ADD, ConnectionDefinitionAdd.INSTANCE, ADD_CONNECTION_DEFINITION_DESC, false);
         connectionDefinition.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, REMOVE_CONNECTION_DEFINITION_DESC, false);
-        connectionDefinition.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
 
         final ManagementResourceRegistration configCF = connectionDefinition.registerSubModel(PathElement.pathElement(CONFIG_PROPERTIES.getName()), CONFIG_PROPERTIES_DESC);
         configCF.registerOperationHandler(ADD, CDConfigPropertyAdd.INSTANCE, ADD_CONFIG_PROPERTIES_DESC, false);
