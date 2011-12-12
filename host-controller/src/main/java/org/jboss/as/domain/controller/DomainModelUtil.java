@@ -24,18 +24,24 @@ package org.jboss.as.domain.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONCURRENT_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IN_SERIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_CLIENT_CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILED_SERVERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILURE_PERCENTAGE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_CODENAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ACROSS_GROUPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLING_TO_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLAN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLANS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
@@ -44,10 +50,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
+import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ExtensionContextImpl;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -77,7 +87,7 @@ import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers.IntRangeValidatingHandler;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers.ModelTypeValidatingHandler;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.AbstractParameterValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
@@ -122,6 +132,7 @@ import org.jboss.as.server.services.net.RemoteDestinationOutboundSocketBindingRe
 import org.jboss.as.version.Version;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+
 
 /**
  * Utilities related to the domain model.
@@ -263,7 +274,11 @@ public class DomainModelUtil {
         ManagedDMRContentTypeResourceDefinition plansDef = new ManagedDMRContentTypeResourceDefinition(contentRepo, ROLLOUT_PLAN,
                 PathElement.pathElement(MANAGEMENT_CLIENT_CONTENT, ROLLOUT_PLANS), DomainRootDescription.getResourceDescriptionResolver(ROLLOUT_PLANS));
         ManagementResourceRegistration mgmtContent = root.registerSubModel(plansDef);
-        ParameterValidator contentValidator = new ModelTypeValidator(ModelType.OBJECT); // TODO create a structural validator
+        ParameterValidator contentValidator = new AbstractParameterValidator(){
+            @Override
+            public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
+                validateRolloutPlanStructure(value);
+            }};
         ManagedDMRContentResourceDefinition planDef = ManagedDMRContentResourceDefinition.create(ROLLOUT_PLAN, contentValidator, DomainRootDescription.getResourceDescriptionResolver(ROLLOUT_PLAN));
         mgmtContent.registerSubModel(planDef);
 
@@ -284,5 +299,76 @@ public class DomainModelUtil {
         }
 
         return extensionContext;
+    }
+
+    public static void validateRolloutPlanStructure(ModelNode rolloutPlan) throws OperationFailedException {
+        if(rolloutPlan == null) {
+            throw new OperationFailedException("rolloutPlan argument is null.");
+        }
+        if(!rolloutPlan.hasDefined(ROLLOUT_PLAN)) {
+            throw new OperationFailedException("Rollout plan is missing " + ROLLOUT_PLAN + ": " + rolloutPlan);
+        }
+        rolloutPlan = rolloutPlan.get(ROLLOUT_PLAN);
+
+        final Set<String> keys;
+        try {
+            keys = rolloutPlan.keys();
+        } catch (IllegalArgumentException e) {
+            throw new OperationFailedException("Rollout plan is missing required child " + IN_SERIES + ": " + rolloutPlan);
+        }
+        if(!keys.contains(IN_SERIES)) {
+            throw new OperationFailedException("Rollout plan is missing required child " + IN_SERIES + ": " + rolloutPlan);
+        }
+        if(keys.size() > 2 || keys.size() == 2 && !keys.contains(ROLLBACK_ACROSS_GROUPS)) {
+            throw new OperationFailedException("Rollout plan recognizes only two children " + IN_SERIES + " and " + ROLLBACK_ACROSS_GROUPS + ": " + rolloutPlan);
+        }
+
+        final ModelNode inSeries = rolloutPlan.get(IN_SERIES);
+        if(!inSeries.isDefined()) {
+            throw new OperationFailedException(IN_SERIES + " child of rollout plan is not defined: " + rolloutPlan);
+        }
+
+        final List<ModelNode> groups = inSeries.asList();
+        if(groups.isEmpty()) {
+            throw new OperationFailedException(IN_SERIES + " doesn't contain any group: " + rolloutPlan);
+        }
+
+        for(ModelNode group : groups) {
+            if(group.hasDefined(SERVER_GROUP)) {
+                final ModelNode serverGroup = group.get(SERVER_GROUP);
+                final Set<String> groupKeys;
+                try {
+                    groupKeys = serverGroup.keys();
+                } catch(IllegalArgumentException e) {
+                    throw new OperationFailedException(SERVER_GROUP + " is missing server group name: " + rolloutPlan);
+                }
+                if(groupKeys.size() != 1) {
+                    throw new OperationFailedException(SERVER_GROUP + " allows only one child: " + rolloutPlan);
+                }
+                validateInSeriesServerGroup(serverGroup.asProperty().getValue());
+            } else if(group.hasDefined(CONCURRENT_GROUPS)) {
+                final ModelNode concurrent = group.get(CONCURRENT_GROUPS);
+                for(ModelNode child: concurrent.asList()) {
+                    validateInSeriesServerGroup(child.asProperty().getValue());
+                }
+            } else {
+                throw new OperationFailedException("One of the groups in the rollout plan does not define neither " + SERVER_GROUP +
+                        " nor " + CONCURRENT_GROUPS + ": " + rolloutPlan);
+            }
+        }
+    }
+
+    private static final List<String> ALLOWED_SERVER_GROUP_CHILDREN = Arrays.asList(new String[]{ROLLING_TO_SERVERS, MAX_FAILURE_PERCENTAGE, MAX_FAILED_SERVERS});
+    private static void validateInSeriesServerGroup(ModelNode serverGroup) throws OperationFailedException {
+        if(serverGroup.isDefined()) {
+            try {
+                final Set<String> specKeys = serverGroup.keys();
+                if(!ALLOWED_SERVER_GROUP_CHILDREN.containsAll(specKeys)) {
+                    throw new OperationFailedException(SERVER_GROUP + " contains unexpected children " + specKeys +
+                            " allowed children are " + ALLOWED_SERVER_GROUP_CHILDREN);
+                }
+            } catch(IllegalArgumentException e) {// ignore?
+            }
+        }
     }
 }
