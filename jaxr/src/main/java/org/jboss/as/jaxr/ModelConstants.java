@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.jaxr.service;
+package org.jboss.as.jaxr;
 
 
 /**
@@ -31,12 +31,8 @@ package org.jboss.as.jaxr.service;
  */
 public interface ModelConstants {
 
-    String RESOURCE_NAME = ModelConstants.class.getPackage().getName() + ".LocalDescriptions";
-
-    String CONNECTIONFACTORY = "connection-factory";
-    String DATASOURCE = "datasource";
-    String DROPONSTART = "drop-on-start";
-    String CREATEONSTART = "create-on-start";
-    String DROPONSTOP = "drop-on-stop";
+    String CONNECTION_FACTORY = "connection-factory";
+    String PUBLISH_URL = "publish-url";
+    String QUERY_URL = "query-url";
 
 }

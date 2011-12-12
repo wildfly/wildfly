@@ -8,6 +8,7 @@
         <extension module="org.jboss.as.deployment-scanner"/>
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.ejb3"/>
+        <extension module="org.jboss.as.jaxr"/>
         <extension module="org.jboss.as.jaxrs"/>
         <extension module="org.jboss.as.jdr"/>
         <extension module="org.jboss.as.jmx"/>
@@ -148,6 +149,10 @@
                     <eviction strategy="NONE"/>
                 </local-cache>
             </cache-container>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:jaxr:1.0">
+            <connection-factory jndi-name="java:jboss/jaxr/ConnectionFactory"/>
+            <juddi-server publish-url="http://localhost:8080/juddi/publish" query-url="http://localhost:8080/juddi/query"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
         <subsystem xmlns="urn:jboss:domain:jca:1.1">

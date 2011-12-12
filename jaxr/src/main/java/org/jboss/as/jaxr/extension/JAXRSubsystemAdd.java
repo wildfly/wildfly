@@ -26,10 +26,10 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.jaxr.service.JAXRConfiguration;
+import org.jboss.as.jaxr.JAXRConfiguration;
+import org.jboss.as.jaxr.JAXRConstants;
 import org.jboss.as.jaxr.service.JAXRConfigurationService;
 import org.jboss.as.jaxr.service.JAXRConnectionFactoryService;
-import org.jboss.as.jaxr.service.JAXRConstants;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
@@ -43,6 +43,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.jaxr.JAXRConstants.DEFAULT_SCOUT_CONNECTION_FACTORY_CLASS;
+import static org.jboss.as.jaxr.JAXRConstants.DEFAULT_SCOUT_TRANSPORT_CLASS;
+import static org.jboss.as.jaxr.JAXRConstants.SYSPROP_PUBLISH_URL;
+import static org.jboss.as.jaxr.JAXRConstants.SYSPROP_QUERY_URL;
+import static org.jboss.as.jaxr.JAXRConstants.SYSPROP_SCOUT_CONNECTION_FACTORY_CLASS;
+import static org.jboss.as.jaxr.JAXRConstants.SYSPROP_SCOUT_TRANSPORT_CLASS;
 
 /**
  * Handler responsible for adding the subsystem resource to the model
@@ -69,6 +75,8 @@ class JAXRSubsystemAdd extends AbstractBoottimeAddStepHandler {
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         for (String attr : JAXRConfiguration.REQUIRED_ATTRIBUTES) {
             ModelNode node = operation.get(attr);
+            if (node.isDefined() == false)
+                throw new IllegalStateException("Attribute not defined: " + attr);
             JAXRWriteAttributeHandler.applyUpdateToConfig(config, attr, node);
             model.get(attr).set(node);
         }
@@ -76,6 +84,12 @@ class JAXRSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     @Override
     protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verifyHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+
+        // [TODO] Remove this hack which pushes the jaxr config to system properties
+        SecurityActions.setSystemProperty(SYSPROP_SCOUT_TRANSPORT_CLASS, DEFAULT_SCOUT_TRANSPORT_CLASS);
+        SecurityActions.setSystemProperty(SYSPROP_SCOUT_CONNECTION_FACTORY_CLASS, DEFAULT_SCOUT_CONNECTION_FACTORY_CLASS);
+        SecurityActions.setSystemProperty(SYSPROP_PUBLISH_URL, config.getPublishURL());
+        SecurityActions.setSystemProperty(SYSPROP_QUERY_URL, config.getQueryURL());
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {

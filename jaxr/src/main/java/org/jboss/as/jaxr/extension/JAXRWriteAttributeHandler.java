@@ -28,8 +28,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.jaxr.service.JAXRConfiguration;
-import org.jboss.as.jaxr.service.ModelConstants;
+import org.jboss.as.jaxr.JAXRConfiguration;
+import org.jboss.as.jaxr.ModelConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -41,11 +41,9 @@ import org.jboss.dmr.ModelType;
  */
 public class JAXRWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
 
-    static AttributeDefinition DATASOURCE_ATTRIBUTE = new BindingAttributeDefinition(ModelConstants.DATASOURCE);
-    static AttributeDefinition CONNECTIONFACTORY_ATTRIBUTE = new BindingAttributeDefinition(ModelConstants.CONNECTIONFACTORY);
-    static AttributeDefinition DROPONSTART_ATTRIBUTE = new BooleanAttributeDefinition(ModelConstants.DROPONSTART, false);
-    static AttributeDefinition CREATEONSTART_ATTRIBUTE = new BooleanAttributeDefinition(ModelConstants.CREATEONSTART, false);
-    static AttributeDefinition DROPONSTOP_ATTRIBUTE = new BooleanAttributeDefinition(ModelConstants.DROPONSTOP, false);
+    static AttributeDefinition CONNECTION_FACTORY_ATTRIBUTE = new JAXRAttributeDefinition(ModelConstants.CONNECTION_FACTORY);
+    static AttributeDefinition PUBLISH_URL_ATTRIBUTE = new JAXRAttributeDefinition(ModelConstants.PUBLISH_URL);
+    static AttributeDefinition QUERY_URL_ATTRIBUTE = new JAXRAttributeDefinition(ModelConstants.QUERY_URL);
 
     private final JAXRConfiguration config;
 
@@ -54,11 +52,9 @@ public class JAXRWriteAttributeHandler extends AbstractWriteAttributeHandler<Voi
     }
 
     void registerAttributes(final ManagementResourceRegistration registry) {
-        registry.registerReadWriteAttribute(CONNECTIONFACTORY_ATTRIBUTE, null, this);
-        registry.registerReadWriteAttribute(DATASOURCE_ATTRIBUTE, null, this);
-        registry.registerReadWriteAttribute(DROPONSTART_ATTRIBUTE, null, this);
-        registry.registerReadWriteAttribute(CREATEONSTART_ATTRIBUTE, null, this);
-        registry.registerReadWriteAttribute(DROPONSTOP_ATTRIBUTE, null, this);
+        registry.registerReadWriteAttribute(CONNECTION_FACTORY_ATTRIBUTE, null, this);
+        registry.registerReadWriteAttribute(PUBLISH_URL_ATTRIBUTE, null, this);
+        registry.registerReadWriteAttribute(QUERY_URL_ATTRIBUTE, null, this);
     }
 
     @Override
@@ -78,15 +74,9 @@ public class JAXRWriteAttributeHandler extends AbstractWriteAttributeHandler<Voi
         }
     }
 
-    private static class BindingAttributeDefinition extends SimpleAttributeDefinition {
-        BindingAttributeDefinition(String name) {
+    private static class JAXRAttributeDefinition extends SimpleAttributeDefinition {
+        JAXRAttributeDefinition(String name) {
             super(name, ModelType.STRING, true, AttributeAccess.Flag.RESTART_ALL_SERVICES);
-        }
-    }
-
-    private static class BooleanAttributeDefinition extends SimpleAttributeDefinition {
-        BooleanAttributeDefinition(String name, boolean defaultValue) {
-            super(name, new ModelNode().set(defaultValue), ModelType.BOOLEAN, false, AttributeAccess.Flag.RESTART_ALL_SERVICES);
         }
     }
 }

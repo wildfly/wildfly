@@ -21,11 +21,11 @@
  */
 package org.jboss.as.jaxr.service;
 
+import org.jboss.as.jaxr.JAXRConfiguration;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
