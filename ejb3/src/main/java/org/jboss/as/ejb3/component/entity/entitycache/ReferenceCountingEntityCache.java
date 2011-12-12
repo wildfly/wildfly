@@ -116,14 +116,16 @@ public class ReferenceCountingEntityCache implements ReadyEntityCache {
     }
 
     public void discard(final EntityBeanComponentInstance instance) {
-        final CacheEntry entry = cache.get(instance);
-        if (instance == entry.replacedInstance) {
-            //this instance that is being discarded is the new instance
-            //we can just set it to null
-            entry.replacedInstance = null;
-        } else if (entry.replacedInstance == null) {
-            //if there is a new instance we cannot discard the entry entirly
-            cache.remove(instance.getPrimaryKey());
+        final CacheEntry entry = cache.get(instance.getPrimaryKey());
+        if (entry != null) {
+            if (instance == entry.replacedInstance) {
+                //this instance that is being discarded is the new instance
+                //we can just set it to null
+                entry.replacedInstance = null;
+            } else if (entry.replacedInstance == null) {
+                //if there is a new instance we cannot discard the entry entirely
+                cache.remove(instance.getPrimaryKey());
+            }
         }
     }
 
