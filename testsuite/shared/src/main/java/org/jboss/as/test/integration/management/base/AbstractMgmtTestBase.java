@@ -48,6 +48,12 @@ import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
 import static org.junit.Assert.*;
 import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 /**
  *
@@ -70,7 +76,9 @@ public class AbstractMgmtTestBase {
             }
         }
     }
-
+    protected  ModelControllerClient getModelControllerClient(){
+    	return modelControllerClient;
+    }
     protected static void closeModelControllerClient() throws IOException {
         if (modelControllerClient != null) {
             try {
@@ -86,8 +94,8 @@ public class AbstractMgmtTestBase {
         if (! unwrapResult) return ret;
 
         assertTrue("Management operation " + op.asString() + " failed: " + ret.asString(),
-                "success".equals(ret.get("outcome").asString()));
-        return ret.get("result");
+                SUCCESS.equals(ret.get(OUTCOME).asString()));
+        return ret.get(RESULT);
     }
 
     protected ModelNode executeOperation(final ModelNode op) throws IOException {
@@ -119,6 +127,52 @@ public class AbstractMgmtTestBase {
         ob.addInputStream(new FileInputStream(getBrokenWar()));
 
         return modelControllerClient.execute(ob.build());
+    }
+    protected void remove(final ModelNode address) throws IOException {
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("remove");
+        operation.get(OP_ADDR).set(address);
+        executeOperation(operation);
+    }
+
+    public static ModelNode createCompositeNode(ModelNode[] steps) {
+        ModelNode comp = new ModelNode();
+        comp.get(OP).set("composite");
+        for(ModelNode step : steps) {
+            comp.get("steps").add(step);
+        }
+        return comp;
+    }
+
+    public static ModelNode createOpNode(String address, String operation) {
+        ModelNode op = new ModelNode();
+
+        // set address
+        ModelNode list = op.get(OP_ADDR).setEmptyList();
+        if (address != null) {
+            String [] pathSegments = address.split("/");
+            for (String segment : pathSegments) {
+                String[] elements = segment.split("=");
+                list.add(elements[0], elements[1]);
+            }
+        }
+        op.get(OP).set(operation);
+        return op;
+    }
+
+    public boolean testRequestFail(String url) {
+        boolean failed = false;
+        try {
+            HttpRequest.get(url, 10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            failed = true;
+        }
+        return failed;
+
+    }
+
+    protected final String getBaseURL(URL url) throws MalformedURLException {
+        return new URL(url.getProtocol(), url.getHost(), url.getPort(), "/").toString();
     }
 
     private static File getBrokenWar() {
