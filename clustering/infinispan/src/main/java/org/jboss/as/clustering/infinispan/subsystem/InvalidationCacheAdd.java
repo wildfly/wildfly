@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Locale;
 
 import org.infinispan.config.Configuration;
+import org.infinispan.config.FluentConfiguration;
+import org.jboss.as.clustering.infinispan.subsystem.CacheAdd.AdditionalDependency;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -28,6 +30,7 @@ public class InvalidationCacheAdd extends ClusteredCacheAdd implements Descripti
         ModelNode operation = Util.getEmptyOperation(ADD, address);
         CacheAdd.populate(existing, operation);
         ClusteredCacheAdd.populate(existing, operation);
+        populate(existing, operation);
         return operation;
     }
 
@@ -35,6 +38,14 @@ public class InvalidationCacheAdd extends ClusteredCacheAdd implements Descripti
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         // transfer the model data from operation to model
         populateClusteredCacheModelNode(operation, model);
+        populate(operation, model);
+    }
+
+    protected static void populate(ModelNode operation, ModelNode model) {
+        // additional child node
+        if (operation.hasDefined(ModelKeys.STATE_TRANSFER)) {
+            model.get(ModelKeys.STATE_TRANSFER).set(operation.get(ModelKeys.STATE_TRANSFER)) ;
+        }
     }
 
     @Override
@@ -44,18 +55,37 @@ public class InvalidationCacheAdd extends ClusteredCacheAdd implements Descripti
     }
 
     /**
-     * Implementation of abstract method processModelNode suitable for replicated cache
+     * Implementation of abstract method processModelNode suitable for invalidation cache
      *
-     * @param model
-     * @param overrides
+     * @param cache
+     * @param configuration
      * @param additionalDeps
      * @return
      */
-    protected Configuration processModelNode(ModelNode model, Configuration overrides, List<AdditionalDependency> additionalDeps) {
-       // basic clustered cache model node processing
-       return processClusteredCacheModelNode(model, overrides, additionalDeps);
+    @Override
+    Configuration processModelNode(ModelNode cache, Configuration configuration, List<AdditionalDependency> additionalDeps) {
+        // process the basic clustered configuration
+        processClusteredCacheModelNode(cache, configuration, additionalDeps);
+
+        // process the invalidation-cache attributes and elements
+        FluentConfiguration fluent = configuration.fluent();
+        if (cache.hasDefined(ModelKeys.STATE_TRANSFER)) {
+            ModelNode stateTransfer = cache.get(ModelKeys.STATE_TRANSFER) ;
+            FluentConfiguration.StateRetrievalConfig fluentStateTransfer = fluent.stateRetrieval();
+            if (stateTransfer.hasDefined(ModelKeys.ENABLED)) {
+                fluentStateTransfer.fetchInMemoryState(stateTransfer.get(ModelKeys.ENABLED).asBoolean());
+            }
+            if (stateTransfer.hasDefined(ModelKeys.TIMEOUT)) {
+                fluentStateTransfer.timeout(stateTransfer.get(ModelKeys.TIMEOUT).asLong());
+            }
+            if (stateTransfer.hasDefined(ModelKeys.FLUSH_TIMEOUT)) {
+                fluentStateTransfer.logFlushTimeout(stateTransfer.get(ModelKeys.FLUSH_TIMEOUT).asLong());
+            }
+        }
+        return configuration;
     }
 
+    @Override
     public ModelNode getModelDescription(Locale locale) {
         return InfinispanDescriptions.getInvalidationCacheAddDescription(locale);
     }

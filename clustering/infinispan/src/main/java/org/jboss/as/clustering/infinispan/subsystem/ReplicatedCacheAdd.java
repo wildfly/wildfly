@@ -29,7 +29,7 @@ public class ReplicatedCacheAdd extends ClusteredCacheAdd implements Description
         ModelNode operation = Util.getEmptyOperation(ADD, address);
         CacheAdd.populate(existing, operation);
         ClusteredCacheAdd.populate(existing, operation);
-        populate(existing, operation) ;
+        populate(existing, operation);
         return operation;
     }
 
@@ -41,7 +41,6 @@ public class ReplicatedCacheAdd extends ClusteredCacheAdd implements Description
     }
 
     protected static void populate(ModelNode operation, ModelNode model) {
-
         // additional child node
         if (operation.hasDefined(ModelKeys.STATE_TRANSFER)) {
             model.get(ModelKeys.STATE_TRANSFER).set(operation.get(ModelKeys.STATE_TRANSFER)) ;
@@ -62,6 +61,7 @@ public class ReplicatedCacheAdd extends ClusteredCacheAdd implements Description
      * @param additionalDeps
      * @return
      */
+    @Override
     Configuration processModelNode(ModelNode cache, Configuration configuration, List<AdditionalDependency> additionalDeps) {
         // process the basic clustered configuration
         processClusteredCacheModelNode(cache, configuration, additionalDeps);
@@ -84,6 +84,7 @@ public class ReplicatedCacheAdd extends ClusteredCacheAdd implements Description
         return configuration;
     }
 
+    @Override
     public ModelNode getModelDescription(Locale locale) {
         return InfinispanDescriptions.getReplicatedCacheAddDescription(locale);
     }
