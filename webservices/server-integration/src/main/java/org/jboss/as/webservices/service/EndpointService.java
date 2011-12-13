@@ -23,6 +23,7 @@ package org.jboss.as.webservices.service;
 
 import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 
+import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -114,6 +115,8 @@ public final class EndpointService implements Service<Endpoint> {
         final ServiceName serviceName = getServiceName(unit, endpoint.getShortName());
         final EndpointService service = new EndpointService(endpoint, serviceName);
         final ServiceBuilder<Endpoint> builder = serviceTarget.addService(serviceName, service);
+        final ServiceName bindingDependencyService = JndiNamingDependencyProcessor.serviceName(unit);
+        builder.addDependency(DependencyType.REQUIRED, bindingDependencyService);
         builder.addDependency(DependencyType.REQUIRED,
                 SecurityDomainService.SERVICE_NAME.append(getDeploymentSecurityDomainName(endpoint)),
                 SecurityDomainContext.class, service.getSecurityDomainContextInjector());
