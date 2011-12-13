@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import javax.management.JMException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
@@ -41,17 +40,15 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.web.WebServer;
 import org.jboss.dmr.ModelNode;
-import org.jboss.modcluster.catalina.CatalinaEventHandlerAdapter;
-import org.jboss.modcluster.config.ModClusterConfig;
+import org.jboss.modcluster.container.catalina.CatalinaEventHandlerAdapter;
+import org.jboss.modcluster.config.impl.ModClusterConfig;
 import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProvider;
 import org.jboss.modcluster.load.impl.SimpleLoadBalanceFactorProvider;
-import org.jboss.modcluster.load.metric.LoadContext;
 import org.jboss.modcluster.load.metric.LoadMetric;
 import org.jboss.modcluster.load.metric.impl.ActiveSessionsLoadMetric;
 import org.jboss.modcluster.load.metric.impl.AverageSystemLoadMetric;
 import org.jboss.modcluster.load.metric.impl.BusyConnectorsLoadMetric;
-import org.jboss.modcluster.load.metric.impl.ConnectionPoolUsageLoadMetric;
 import org.jboss.modcluster.load.metric.impl.HeapMemoryUsageLoadMetric;
 import org.jboss.modcluster.load.metric.impl.ReceiveTrafficLoadMetric;
 import org.jboss.modcluster.load.metric.impl.RequestCountLoadMetric;
@@ -217,7 +214,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
             load = myload;
         }
 
-        Set<LoadMetric<LoadContext>> metrics = new HashSet<LoadMetric<LoadContext>>();
+        Set<LoadMetric> metrics = new HashSet<LoadMetric>();
         if (modelconf.hasDefined(CommonAttributes.DYNAMIC_LOAD_PROVIDER)) {
             final ModelNode node = modelconf.get(CommonAttributes.DYNAMIC_LOAD_PROVIDER);
             int decayFactor = node.get(CommonAttributes.DECAY).asInt(DynamicLoadBalanceFactorProvider.DEFAULT_DECAY_FACTOR);
@@ -246,25 +243,17 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
             load = myload;
         }
         service = new org.jboss.modcluster.ModClusterService(config, load);
-        adapter = new CatalinaEventHandlerAdapter(service, webServer.getValue().getServer(), webServer.getValue().getService());
-        try {
-            adapter.start();
-        } catch (JMException e) {
-            ROOT_LOGGER.startFailure(e, "ModClusterService");
-        }
+        adapter = new CatalinaEventHandlerAdapter(service, webServer.getValue().getServer());
+        adapter.start();
     }
 
     /** {@inheritDoc} */
     @Override
     public synchronized void stop(StopContext context) {
-        // TODO need something...
-        if (adapter != null)
-            try {
-                adapter.stop();
-            } catch (JMException e) {
-                ROOT_LOGGER.stopFailure(e, "ModClusterService");
-            }
-        adapter = null;
+        if (adapter != null) {
+            adapter.stop();
+            adapter = null;
+        }
     }
 
     @Override
@@ -276,7 +265,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         return Registry.getRegistry(null, null).getMBeanServer();
     }
 
-    private void addLoadMetrics(Set<LoadMetric<LoadContext>> metrics, ModelNode nodes) {
+    private void addLoadMetrics(Set<LoadMetric> metrics, ModelNode nodes) {
         for (ModelNode node: nodes.asList()) {
             double capacity = node.get(CommonAttributes.CAPACITY).asDouble(LoadMetric.DEFAULT_CAPACITY);
             int weight = node.get(CommonAttributes.WEIGHT).asInt(LoadMetric.DEFAULT_WEIGHT);
@@ -302,8 +291,9 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
                     loadMetricClass = RequestCountLoadMetric.class;
 
                 // MBeanAttributeRatioLoadMetric
-                if (type.equals("connection-pool"))
-                    loadMetricClass = ConnectionPoolUsageLoadMetric.class;
+                // TODO: possible to do that?
+                // if (type.equals("connection-pool"))
+                //    loadMetricClass = ConnectionPoolUsageLoadMetric.class;
                 if (type.equals("busyness"))
                     loadMetricClass = BusyConnectorsLoadMetric.class;
             } else {
@@ -317,7 +307,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
 
             if (loadMetricClass != null) {
                 try {
-                    LoadMetric<LoadContext> metric = loadMetricClass.newInstance();
+                    LoadMetric metric = loadMetricClass.newInstance();
                     metric.setCapacity(capacity);
                     metric.setWeight(weight);
                     metrics.add(metric);
