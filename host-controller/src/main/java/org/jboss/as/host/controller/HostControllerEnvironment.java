@@ -115,9 +115,20 @@ public class HostControllerEnvironment {
     public static final String JBOSS_BIND_ADDRESS_PREFIX = JBOSS_BIND_ADDRESS + ".";
 
     /**
-     * The default system property used to store bind address information from the command-line (-b).
+     * The default system property used to store multicast address information from the command-line (-u).
      */
     public static final String JBOSS_DEFAULT_MULTICAST_ADDRESS = "jboss.default.multicast.address";
+
+    /**
+     * The default system property used to store the master Host Controller's native management interface address
+     * from the command line.
+     */
+    public static final String JBOSS_DOMAIN_MASTER_ADDRESS = "jboss.domain.master.address";
+
+    /**
+     * The default system property used to store the master Host Controller's native of the master port from the command line.
+     */
+    public static final String JBOSS_DOMAIN_MASTER_PORT = "jboss.domain.master.port";
 
     private final Map<String, String> hostSystemProperties;
     private final InetAddress processControllerAddress;

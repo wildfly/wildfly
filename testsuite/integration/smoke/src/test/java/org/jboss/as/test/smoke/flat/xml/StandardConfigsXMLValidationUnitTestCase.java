@@ -21,7 +21,11 @@
  */
 package org.jboss.as.test.smoke.flat.xml;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.LinkedList;
@@ -36,8 +40,10 @@ import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
 import junit.framework.Assert;
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.python.google.common.io.LineReader;
 import org.xml.sax.SAXException;
 
 /**
@@ -58,9 +64,25 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
         SCHEMAS = sources.toArray(new StreamSource[0]);
     }
 
+    private File tmpFile;
+
+    @After
+    public void cleanUp() {
+        if (tmpFile != null) {
+            if (!tmpFile.delete()) {
+                tmpFile.deleteOnExit();
+            }
+        }
+    }
+
     @Test
     public void testHost() throws Exception {
         parseXml("domain/configuration/host.xml");
+    }
+
+    @Test
+    public void testHostSlave() throws Exception {
+        parseXml("domain/configuration/host-slave.xml");
     }
 
     @Test
@@ -89,7 +111,35 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
         validator.validate(new StreamSource(getXmlFile(xmlName)));
     }
 
-    private File getXmlFile(String xmlName) throws MalformedURLException {
-        return new File(getBaseDir(), xmlName);
+    private File getXmlFile(String xmlName) throws IOException {
+
+        // Copy the input file to tmp, replacing system prop expressions on non-string fields
+        // so they don't cause validation failures
+        // TODO we should just pass an IS to Validator
+        final File tmp = File.createTempFile(getClass().getSimpleName(), "xml");
+        tmp.deleteOnExit();
+        File target = new File(getBaseDir(), xmlName);
+        BufferedReader reader = new BufferedReader(new FileReader(target));
+        BufferedWriter writer = null;
+        try {
+            writer = new BufferedWriter(new FileWriter(tmp));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                writer.write(fixExpressions(line));
+            }
+        } finally {
+            reader.close();
+            if (writer != null) {
+                writer.close();
+            }
+        }
+        return tmp;
+    }
+
+    private static String fixExpressions(String line) {
+        String result = line.replace("${jboss.host.management.native.port:9999}", "9999");
+        result = result.replace("${jboss.host.management.http.port:9990}", "9990");
+        result = result.replace("${jboss.domain.master.port:9999}", "9999");
+        return result;
     }
 }

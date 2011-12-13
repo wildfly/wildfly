@@ -241,6 +241,38 @@ enum CommandLineArgument {
             return MESSAGES.argHostConfig();
         }
     },
+    MASTER_ADDRESS {
+        @Override
+        public String argument() {
+            return CommandLineConstants.MASTER_ADDRESS;
+        }
+
+        @Override
+        public String argumentExample() {
+            return String.format("%s=<address>", argument());
+        }
+
+        @Override
+        public String instructions() {
+            return MESSAGES.argInterProcessHcAddress();
+        }
+    },
+    MASTER_PORT {
+        @Override
+        public String argument() {
+            return CommandLineConstants.MASTER_PORT;
+        }
+
+        @Override
+        public String argumentExample() {
+            return String.format("%s=<port>", argument());
+        }
+
+        @Override
+        public String instructions() {
+            return MESSAGES.argInterProcessHcPort();
+        }
+    },
     INTERPROCESS_HC_ADDRESS {
         @Override
         public String argument() {
