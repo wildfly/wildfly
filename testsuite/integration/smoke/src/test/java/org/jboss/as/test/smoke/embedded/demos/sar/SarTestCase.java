@@ -23,6 +23,7 @@ package org.jboss.as.test.smoke.embedded.demos.sar;
 
 import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 
+import java.io.IOException;
 import java.net.InetAddress;
 
 import javax.management.Attribute;
@@ -59,11 +60,20 @@ public class SarTestCase {
     @Test
     public void testMBean() throws Exception {
         ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("127.0.0.1"), 9999, getCallbackHandler());
-        MBeanServerConnection mbeanServer = new TunneledMBeanServerConnection(client);
-        ObjectName objectName = new ObjectName("jboss:name=test,type=config");
-        PollingUtils.retryWithTimeout(10000, new PollingUtils.WaitForMBeanTask(mbeanServer, objectName));
-        mbeanServer.getAttribute(objectName, "IntervalSeconds");
-        mbeanServer.setAttribute(objectName, new Attribute("IntervalSeconds", 2));
+        try {
+            MBeanServerConnection mbeanServer = new TunneledMBeanServerConnection(client);
+            ObjectName objectName = new ObjectName("jboss:name=test,type=config");
+            PollingUtils.retryWithTimeout(10000, new PollingUtils.WaitForMBeanTask(mbeanServer, objectName));
+            mbeanServer.getAttribute(objectName, "IntervalSeconds");
+            mbeanServer.setAttribute(objectName, new Attribute("IntervalSeconds", 2));
+        } finally {
+            if(client != null) try {
+                client.close();
+            } catch(IOException e) {
+                //
+            }
+        }
+
     }
 
 }
