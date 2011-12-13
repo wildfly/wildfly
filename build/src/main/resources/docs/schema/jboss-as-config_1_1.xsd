@@ -331,13 +331,6 @@
             <xs:element name="properties" type="propertiesAuthenticationType" minOccurs="0" />
             <xs:element name="users" type="usersAuthenticationType" minOccurs="0" />
         </xs:choice>
-        <xs:attribute name="useDomainController" type="xs:boolean" default="false">
-            <xs:annotation>
-                <xs:documentation>
-                    Should the request delegate to the domain controller or handle the authentication locally.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="ldapAuthenticationType">
