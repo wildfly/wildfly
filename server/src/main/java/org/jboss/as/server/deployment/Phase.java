@@ -381,10 +381,6 @@ public enum Phase {
     public static final int INSTALL_SERVICE_ACTIVATOR                   = 0x0500;
     public static final int INSTALL_OSGI_DEPLOYMENT                     = 0x0600;
     public static final int INSTALL_OSGI_MODULE                         = 0x0650;
-    public static final int INSTALL_WS_UNIVERSAL_META_DATA_MODEL        = 0x0701;
-    public static final int INSTALL_WS_DEPLOYMENT_ASPECTS               = 0x0710;
-    // IMPORTANT: WS integration installs deployment aspects dynamically
-    // so consider INSTALL 0x0710 - 0x07FF reserved for WS subsystem!
     public static final int INSTALL_RA_NATIVE                           = 0x0800;
     public static final int INSTALL_RA_DEPLOYMENT                       = 0x0801;
     public static final int INSTALL_SERVICE_DEPLOYMENT                  = 0x0900;
@@ -405,6 +401,10 @@ public enum Phase {
     public static final int INSTALL_WELD_DEPLOYMENT                     = 0x1B00;
     public static final int INSTALL_WELD_BEAN_MANAGER                   = 0x1C00;
     public static final int INSTALL_JNDI_DEPENDENCIES                   = 0x1C01;
+    public static final int INSTALL_WS_UNIVERSAL_META_DATA_MODEL        = 0x1C10;
+    public static final int INSTALL_WS_DEPLOYMENT_ASPECTS               = 0x1C11;
+    // IMPORTANT: WS integration installs deployment aspects dynamically
+    // so consider INSTALL 0x1C10 - 0x1CFF reserved for WS subsystem!
     public static final int INSTALL_WAR_DEPLOYMENT                      = 0x1D00;
     public static final int INSTALL_DEPLOYMENT_REPOSITORY               = 0x1E00;
     public static final int INSTALL_EJB_MANAGEMENT_RESOURCES            = 0x1F00;

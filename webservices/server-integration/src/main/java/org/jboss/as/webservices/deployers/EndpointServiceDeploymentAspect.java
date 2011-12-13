@@ -21,11 +21,13 @@
  */
 package org.jboss.as.webservices.deployers;
 
+import static org.jboss.ws.common.integration.WSHelper.getOptionalAttachment;
+import static org.jboss.ws.common.integration.WSHelper.getRequiredAttachment;
+
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.service.EndpointService;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.ws.common.deployment.EndpointLifecycleDeploymentAspect;
-import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
 
@@ -33,19 +35,20 @@ import org.jboss.wsf.spi.deployment.Endpoint;
  * Creates Endpoint Service instance when starting the Endpoint
  *
  * @author alessio.soldano@jboss.com
- * @since 13-May-2011
+ * @author <a href="mailto:opalka dot richard at gmail dot com">Richard Opalka</a>
  */
 public final class EndpointServiceDeploymentAspect extends EndpointLifecycleDeploymentAspect {
 
     @Override
-    public void start(Deployment dep) {
+    public void start(final Deployment dep) {
         super.start(dep);
-        final ServiceTarget target = dep.getAttachment(ServiceTarget.class);
-        final DeploymentUnit unit = WSHelper.getRequiredAttachment(dep, DeploymentUnit.class);
+        final ServiceTarget target = getOptionalAttachment(dep, ServiceTarget.class);
         if (target != null) {
-            for (Endpoint ep : dep.getService().getEndpoints()) {
+            final DeploymentUnit unit = getRequiredAttachment(dep, DeploymentUnit.class);
+            for (final Endpoint ep : dep.getService().getEndpoints()) {
                 EndpointService.install(target, ep, unit);
             }
         }
     }
+
 }

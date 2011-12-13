@@ -23,13 +23,17 @@ package org.jboss.as.webservices.deployers;
 
 import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 
+import java.util.List;
+
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
@@ -68,12 +72,19 @@ public final class AspectDeploymentProcessor implements DeploymentUnitProcessor 
             if (aspect.canHandle(dep)) {
                 ROOT_LOGGER.aspectStart(aspect, unit.getName());
                 ClassLoader origClassLoader = SecurityActions.getContextClassLoader();
+                final List<SetupAction> setupActions = unit.getAttachmentList(org.jboss.as.ee.component.Attachments.EE_SETUP_ACTIONS);
                 try {
                     SecurityActions.setContextClassLoader(aspect.getLoader());
                     dep.addAttachment(ServiceTarget.class, phaseContext.getServiceTarget());
+                    for (final SetupAction action : setupActions) {
+                        action.setup(null);
+                    }
                     aspect.start(dep);
                     dep.removeAttachment(ServiceTarget.class);
                 } finally {
+                    for (final SetupAction action : setupActions) {
+                        action.teardown(null);
+                    }
                     SecurityActions.setContextClassLoader(origClassLoader);
                 }
             }
