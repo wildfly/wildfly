@@ -81,48 +81,56 @@ public class ServerInModuleDeploymentTestCase  {
                 Simple.class.getPackage());
         final ServerDeploymentManager manager = ServerDeploymentManager.Factory
                 .create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
-        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
-        testDeployments(client, new DeploymentExecutor() {
+        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+        try {
+            testDeployments(client, new DeploymentExecutor() {
 
-            @Override
-            public void initialDeploy() {
-                final InputStream is = archive.as(ZipExporter.class).exportAsInputStream();
-                try {
-                    Future<?> future = manager.execute(manager.newDeploymentPlan()
-                            .add("test-deployment.sar", is).deploy("test-deployment.sar").build());
-                    awaitDeploymentExecution(future);
-                } finally {
-                    if(is != null) try {
-                        is.close();
-                    } catch (IOException ignore) {
-                        //
+                @Override
+                public void initialDeploy() {
+                    final InputStream is = archive.as(ZipExporter.class).exportAsInputStream();
+                    try {
+                        Future<?> future = manager.execute(manager.newDeploymentPlan()
+                                .add("test-deployment.sar", is).deploy("test-deployment.sar").build());
+                        awaitDeploymentExecution(future);
+                    } finally {
+                        if(is != null) try {
+                            is.close();
+                        } catch (IOException ignore) {
+                            //
+                        }
                     }
                 }
-            }
 
-            @Override
-            public void fullReplace() {
-                final InputStream is = archive.as(ZipExporter.class).exportAsInputStream();
-                try {
-                    Future<?> future = manager.execute(manager.newDeploymentPlan()
-                            .replace("test-deployment.sar", is).build());
-                    awaitDeploymentExecution(future);
-                } finally {
-                    if(is != null) try {
-                        is.close();
-                    } catch (IOException ignore) {
-                        //
+                @Override
+                public void fullReplace() {
+                    final InputStream is = archive.as(ZipExporter.class).exportAsInputStream();
+                    try {
+                        Future<?> future = manager.execute(manager.newDeploymentPlan()
+                                .replace("test-deployment.sar", is).build());
+                        awaitDeploymentExecution(future);
+                    } finally {
+                        if(is != null) try {
+                            is.close();
+                        } catch (IOException ignore) {
+                            //
+                        }
                     }
                 }
-            }
 
-            @Override
-            public void undeploy() {
-                Future<?> future = manager.execute(manager.newDeploymentPlan().undeploy("test-deployment.sar")
-                        .remove("test-deployment.sar").build());
-                awaitDeploymentExecution(future);
+                @Override
+                public void undeploy() {
+                    Future<?> future = manager.execute(manager.newDeploymentPlan().undeploy("test-deployment.sar")
+                            .remove("test-deployment.sar").build());
+                    awaitDeploymentExecution(future);
+                }
+            });
+        } finally {
+            if(client != null) try {
+                client.close();
+            } catch (IOException ignore) {
+                //
             }
-        });
+        }
     }
 
     @Test
@@ -136,29 +144,37 @@ public class ServerInModuleDeploymentTestCase  {
         final File file = new File(dir, "test-deployment.sar");
         archive.as(ZipExporter.class).exportTo(file, true);
 
-        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
-        testDeployments(client, new DeploymentExecutor() {
+        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+        try {
+            testDeployments(client, new DeploymentExecutor() {
 
-            @Override
-            public void initialDeploy() throws IOException {
-                Future<?> future = manager.execute(manager.newDeploymentPlan().add("test-deployment.sar", file)
-                        .deploy("test-deployment.sar").build());
-                awaitDeploymentExecution(future);
-            }
+                @Override
+                public void initialDeploy() throws IOException {
+                    Future<?> future = manager.execute(manager.newDeploymentPlan().add("test-deployment.sar", file)
+                            .deploy("test-deployment.sar").build());
+                    awaitDeploymentExecution(future);
+                }
 
-            @Override
-            public void fullReplace() throws IOException {
-                Future<?> future = manager.execute(manager.newDeploymentPlan().replace("test-deployment.sar", file).build());
-                awaitDeploymentExecution(future);
-            }
+                @Override
+                public void fullReplace() throws IOException {
+                    Future<?> future = manager.execute(manager.newDeploymentPlan().replace("test-deployment.sar", file).build());
+                    awaitDeploymentExecution(future);
+                }
 
-            @Override
-            public void undeploy() {
-                Future<?> future = manager.execute(manager.newDeploymentPlan().undeploy("test-deployment.sar")
-                        .remove("test-deployment.sar").build());
-                awaitDeploymentExecution(future);
+                @Override
+                public void undeploy() {
+                    Future<?> future = manager.execute(manager.newDeploymentPlan().undeploy("test-deployment.sar")
+                            .remove("test-deployment.sar").build());
+                    awaitDeploymentExecution(future);
+                }
+            });
+        } finally {
+            if(client != null) try {
+                client.close();
+            } catch (IOException ignore) {
+                //
             }
-        });
+        }
     }
 
     @Test
