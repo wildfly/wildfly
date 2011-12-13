@@ -31,5 +31,5 @@ import javax.ejb.Stateless;
  */
 @Stateless
 @SecurityDomain("ejb3-tests")
-public class InherritanceAnnOnlyCheckSLSB extends ParentAnnOnlyCheck{
+public class InherritanceAnnOnlyCheckSLSB extends ParentAnnOnlyCheck implements SimpleAuthorizationRemote {
 }

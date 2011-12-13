@@ -24,12 +24,12 @@ package org.jboss.as.test.integration.ejb.security.authorization;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
 
-import javax.ejb.Stateless;
+import javax.ejb.Stateful;
 
 /**
  * @author <a href="mailto:jlanik@redhat.com">Jan Lanik</a>.
  */
-@Stateless
+@Stateful
 @SecurityDomain("ejb3-tests")
-public class InherritanceAnnOnlyCheckSFSB extends ParentAnnOnlyCheck{
+public class InherritanceAnnOnlyCheckSFSB extends ParentAnnOnlyCheck implements SimpleAuthorizationRemote {
 }
