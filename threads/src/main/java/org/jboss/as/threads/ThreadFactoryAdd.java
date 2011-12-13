@@ -35,6 +35,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -76,10 +77,6 @@ public class ThreadFactoryAdd extends AbstractAddStepHandler implements Descript
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
             final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-//        for(final AttributeDefinition attribute : ATTRIBUTES) {
-//            attribute.validateResolvedOperation(model);
-//        }
-
         final String threadNamePattern = PoolAttributeDefinitions.THREAD_NAME_PATTERN.resolveModelAttribute(context, model).asString();
         final int priority = PoolAttributeDefinitions.PRIORITY.resolveModelAttribute(context, model).asInt();
         final String groupName = PoolAttributeDefinitions.GROUP_NAME.resolveModelAttribute(context, model).asString();
@@ -92,10 +89,15 @@ public class ThreadFactoryAdd extends AbstractAddStepHandler implements Descript
         service.setNamePattern(threadNamePattern);
         service.setPriority(priority);
         service.setThreadGroupName(groupName);
-        //TODO What about the properties?
-        target.addService(ThreadsServices.threadFactoryName(name), service)
+        ServiceBuilder<?> serviceBuilder = target.addService(ThreadsServices.threadFactoryName(name), service)
                 .addListener(verificationHandler)
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
+                .setInitialMode(ServiceController.Mode.ACTIVE);
+        if (verificationHandler != null) {
+            serviceBuilder.addListener(verificationHandler);
+        }
+        ServiceController<?> sc = serviceBuilder.install();
+        if (newControllers != null) {
+            newControllers.add(sc);
+        }
     }
 }

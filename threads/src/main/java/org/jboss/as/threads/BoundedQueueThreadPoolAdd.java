@@ -33,6 +33,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.as.threads.ThreadsSubsystemThreadPoolOperationUtils.BoundedOperationParameters;
 import org.jboss.dmr.ModelNode;
@@ -82,11 +83,14 @@ public class BoundedQueueThreadPoolAdd extends AbstractAddStepHandler implements
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
             final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
+        final ModelNode resolved = new ModelNode();
+        resolved.get(OP).set(operation.get(OP));
+        resolved.get(OP_ADDR).set(operation.get(OP_ADDR));
         for(final AttributeDefinition attribute : ATTRIBUTES) {
-            attribute.resolveModelAttribute(context, model);
+            resolved.get(attribute.getName()).set(attribute.resolveModelAttribute(context, model));
         }
 
-        final BoundedOperationParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseBoundedThreadPoolOperationParameters(operation);
+        final BoundedOperationParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseBoundedThreadPoolOperationParameters(resolved);
 
         ServiceTarget target = context.getServiceTarget();
         final int coreThreads =  params.getCoreThreads() == null ? params.getMaxThreads().getScaledCount() : params.getCoreThreads().getScaledCount();
@@ -103,7 +107,13 @@ public class BoundedQueueThreadPoolAdd extends AbstractAddStepHandler implements
 
         final ServiceBuilder<ManagedQueueExecutorService> serviceBuilder = target.addService(serviceName, service);
         ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target, params.getName() + "-threads");
-        serviceBuilder.addListener(verificationHandler);
-        serviceBuilder.install();
+
+        if (verificationHandler != null) {
+            serviceBuilder.addListener(verificationHandler);
+        }
+        ServiceController<?> sc = serviceBuilder.install();
+        if (newControllers != null) {
+            newControllers.add(sc);
+        }
     }
 }

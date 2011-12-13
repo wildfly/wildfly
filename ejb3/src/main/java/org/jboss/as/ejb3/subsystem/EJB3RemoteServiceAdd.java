@@ -80,6 +80,7 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         return operation;
     }
 
+    // TODO why is this a boottime-only handler?
     @Override
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         newControllers.add(installRuntimeService(context, model, verificationHandler));
@@ -95,6 +96,7 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
     }
 
     ServiceController<EJBRemoteConnectorService> installRuntimeService(final OperationContext context, final ModelNode model, final ServiceVerificationHandler verificationHandler) {
+        // TODO this variable is unused
         final String connectorName = model.require(CONNECTOR_REF).asString();
         final String threadPoolName = model.require(THREAD_POOL_NAME).asString();
         final ServiceTarget serviceTarget = context.getServiceTarget();

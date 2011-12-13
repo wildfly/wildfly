@@ -27,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -47,7 +48,7 @@ public class EJB3AsyncResourceDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition THREAD_POOL_NAME =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.THREAD_POOL_NAME, ModelType.STRING, true)
                     .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
     private static final Map<String, AttributeDefinition> ATTRIBUTES;
@@ -69,8 +70,8 @@ public class EJB3AsyncResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         for (AttributeDefinition attr : ATTRIBUTES.values()) {
-            // TODO: Make this read-write attribute
-            resourceRegistration.registerReadOnlyAttribute(attr, null);
+            // TODO: Make this RESTART_NONE by updating AsynchronousMergingProcessor
+            resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
         }
     }
 }

@@ -24,6 +24,7 @@ package org.jboss.as.threads;
 import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
@@ -44,11 +45,11 @@ public class BoundedQueueThreadPoolRemove extends AbstractRemoveStepHandler impl
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        context.removeService(ThreadsServices.threadFactoryName(name));
+        context.removeService(ThreadsServices.executorName(name));
     }
 
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
-        // TODO:  RE-ADD SERVICES
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        BoundedQueueThreadPoolAdd.INSTANCE.performRuntime(context, operation, model, null, null);
     }
 
     @Override

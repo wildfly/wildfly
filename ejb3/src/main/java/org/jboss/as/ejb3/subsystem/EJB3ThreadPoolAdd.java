@@ -62,6 +62,7 @@ public class EJB3ThreadPoolAdd extends AbstractBoottimeAddStepHandler {
     private EJB3ThreadPoolAdd() {
     }
 
+    // TODO why is this a boottime handler?
     @Override
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();

@@ -27,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -50,7 +51,7 @@ public class EJB3ThreadPoolResourceDefinition extends SimpleResourceDefinition {
                     .setDefaultValue(new ModelNode().set(0))
                     .setValidator(new IntRangeValidator(0, true))
                     .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
     public static final SimpleAttributeDefinition KEEPALIVE_TIME =
@@ -58,7 +59,7 @@ public class EJB3ThreadPoolResourceDefinition extends SimpleResourceDefinition {
                     .setDefaultValue(new ModelNode().set(0))
                     .setValidator(new IntRangeValidator(0, true))
                     .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
 
@@ -83,8 +84,7 @@ public class EJB3ThreadPoolResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         for (AttributeDefinition attr : ATTRIBUTES.values()) {
-            // TODO: Make this read-write attribute
-            resourceRegistration.registerReadOnlyAttribute(attr, null);
+            resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
         }
     }
 }

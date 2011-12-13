@@ -33,6 +33,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.as.threads.ThreadsSubsystemThreadPoolOperationUtils.QueuelessOperationParameters;
 import org.jboss.dmr.ModelNode;
@@ -46,7 +47,6 @@ import org.jboss.msc.service.ServiceTarget;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
 public class QueuelessThreadPoolAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
@@ -79,11 +79,14 @@ public class QueuelessThreadPoolAdd extends AbstractAddStepHandler implements De
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
             final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
+        final ModelNode resolved = new ModelNode();
+        resolved.get(OP).set(operation.get(OP));
+        resolved.get(OP_ADDR).set(operation.get(OP_ADDR));
         for(final AttributeDefinition attribute : ATTRIBUTES) {
-            attribute.resolveModelAttribute(context, model);
+            resolved.get(attribute.getName()).set(attribute.resolveModelAttribute(context, model));
         }
 
-        final QueuelessOperationParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseQueuelessThreadPoolOperationParameters(operation);
+        final QueuelessOperationParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseQueuelessThreadPoolOperationParameters(resolved);
 
         ServiceTarget target = context.getServiceTarget();
         final ServiceName serviceName = ThreadsServices.executorName(params.getName());
@@ -93,7 +96,13 @@ public class QueuelessThreadPoolAdd extends AbstractAddStepHandler implements De
 
         final ServiceBuilder<ManagedQueuelessExecutorService> serviceBuilder = target.addService(serviceName, service);
         ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target, params.getName() + "-threads");
-        serviceBuilder.addListener(verificationHandler);
-        serviceBuilder.install();
+
+        if (verificationHandler != null) {
+            serviceBuilder.addListener(verificationHandler);
+        }
+        ServiceController<?> sc = serviceBuilder.install();
+        if (newControllers != null) {
+            newControllers.add(sc);
+        }
     }
 }
