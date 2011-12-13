@@ -3053,10 +3053,7 @@
         </entity-command>
 
         <!-- uses key generator to fetch the next key value -->
-        <!--
-        <entity-command name="key-generator" class="org.jboss.as.cmp.jdbc.keygen.JDBCKeyGeneratorCreateCommand">
-        </entity-command>
-        -->
+        <entity-command name="key-generator" class="org.jboss.as.cmp.jdbc.keygen.JDBCKeyGeneratorCreateCommand"/>
 
         <!-- uses JDBC 3.0 getGeneratedKeys() method -->
         <entity-command name="get-generated-keys"
