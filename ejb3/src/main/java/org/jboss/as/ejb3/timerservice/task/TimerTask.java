@@ -28,6 +28,7 @@ import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
 import org.jboss.as.ejb3.timerservice.TimerState;
 import org.jboss.as.ejb3.timerservice.spi.BeanRemovedException;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
+
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 

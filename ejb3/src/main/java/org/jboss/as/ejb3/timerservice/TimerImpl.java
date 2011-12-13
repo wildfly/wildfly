@@ -117,11 +117,6 @@ public class TimerImpl implements Timer {
     protected volatile Date previousRun;
 
     /**
-     * If the timer is persistent, then this represents its persistent state.
-     */
-    protected volatile TimerEntity persistentState;
-
-    /**
      * Creates a {@link TimerImpl}
      *
      * @param id               The id of this timer
@@ -540,16 +535,9 @@ public class TimerImpl implements Timer {
         if (this.persistent == false) {
             throw MESSAGES.failToPersistTimer(this);
         }
-        if (this.persistentState == null) {
-            // create a new new persistent state
-            this.persistentState = this.createPersistentState();
-        } else {
-            // just refresh the fields which change in the persistent timer
-            this.persistentState.setNextDate(this.nextExpiration);
-            this.persistentState.setPreviousRun(this.previousRun);
-            this.persistentState.setTimerState(this.timerState);
-        }
-        return this.persistentState;
+
+        //we always create a new copy of the persistent state
+        return this.createPersistentState();
     }
 
     /**

@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,7 +39,6 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
 import javax.ejb.EJBException;
@@ -127,14 +127,17 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     /**
      * All non-persistent timers which were created by this {@link TimerService}
      */
-    private final Map<TimerHandle, TimerImpl> nonPersistentTimers = new ConcurrentHashMap<TimerHandle, TimerImpl>();
+    private final Map<TimerHandle, TimerImpl> nonPersistentTimers = Collections.synchronizedMap(new HashMap<TimerHandle, TimerImpl>());
 
-    private final Map<TimerHandle, TimerImpl> persistentWaitingOnTxCompletionTimers = new ConcurrentHashMap<TimerHandle, TimerImpl>();
+    /**
+     * persistent timers that have been created in the current transaction
+     */
+    private final Map<TimerHandle, TimerImpl> persistentWaitingOnTxCompletionTimers = Collections.synchronizedMap(new HashMap<TimerHandle, TimerImpl>());
 
     /**
      * Holds the {@link java.util.concurrent.Future} of each of the timer tasks that have been scheduled
      */
-    private final Map<TimerHandle, java.util.TimerTask> scheduledTimerFutures = new ConcurrentHashMap<TimerHandle, java.util.TimerTask>();
+    private final Map<TimerHandle, java.util.TimerTask> scheduledTimerFutures = Collections.synchronizedMap(new HashMap<TimerHandle, java.util.TimerTask>());
 
     private TransactionManager transactionManager;
 
@@ -423,7 +426,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         UUID uuid = UUID.randomUUID();
         // create the timer
 
-
         TimerImpl timer = new TimerImpl(uuid.toString(), this, initialExpiration, intervalDuration, info, persistent, currentPrimaryKey());
         // now "start" the timer. This involves, moving the timer to an ACTIVE state
         // and scheduling the timer task
@@ -558,16 +560,21 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         }
         if (!timer.persistent) {
             switch (timer.getState()) {
-                case CANCELED:
                 case EXPIRED:
                     nonPersistentTimers.remove(timer.handle);
+                    break;
+                case CANCELED:
+                    //we only want to remove it on TX end
+                    if (transactionActive()) {
+                        registerSynchronization(new NonPersistentTimerRemoveSynchronization(timer.handle));
+                    } else {
+                        nonPersistentTimers.remove(timer.handle);
+                    }
             }
         } else {
             // get the persistent entity from the timer
             final TimerEntity timerEntity = timer.getPersistentState();
             try {
-                persistentWaitingOnTxCompletionTimers.remove(timer.handle);
-                //if timer persistence is disabled
                 if (timerPersistence == null) {
                     ROOT_LOGGER.timerPersistenceNotEnable();
                     return;
@@ -653,7 +660,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                         }
                     }
                 }
-                if(!found) {
+                if (!found) {
                     activeTimer.setTimerState(TimerState.CANCELED);
                 } else {
 
@@ -703,12 +710,14 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      * @param timer
      */
     protected void registerTimerWithTx(TimerImpl timer) {
+        registerSynchronization(new TimerCreationTransactionSynchronization(timer));
+    }
+
+    private void registerSynchronization(Synchronization synchronization) {
         try {
-            if (transactionActive()) {
-                final Transaction tx = this.getTransaction();
-                // register for lifecycle events of transaction
-                tx.registerSynchronization(new TimerCreationTransactionSynchronization(timer));
-            }
+            final Transaction tx = this.getTransaction();
+            // register for lifecycle events of transaction
+            tx.registerSynchronization(synchronization);
         } catch (RollbackException e) {
             throw new EJBException(e);
         } catch (SystemException e) {
@@ -746,20 +755,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             return type == CurrentSynchronizationCallback.CallbackType.BEFORE_COMPLETION;
         }
         return false;
-    }
-
-    /**
-     * Moves the timer to  {@link TimerState#ACTIVE}
-     * depending on whether there's any transaction active currently.
-     * <p>
-     * If there's no transaction currently active, then this method creates and schedules a timer task.
-     * </p>
-     *
-     * @param timer
-     */
-    protected void startInTx(TimerImpl timer) {
-
-
     }
 
     /**
@@ -1078,14 +1073,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
         @Override
         public void beforeCompletion() {
-            if (timer.getState() == TimerState.CREATED) {
-                // the timer was started/activated in a tx.
-                // now it's time to schedule the task
-                //we need to switch state here to make sure it is not persisted with
-                //a state of CREATED
-                timer.setTimerState(TimerState.ACTIVE);
-                persistTimer(timer);
-            }
         }
 
         /**
@@ -1103,13 +1090,19 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
                 TimerState timerState = this.timer.getState();
                 switch (timerState) {
+                    case CREATED:
+                        this.timer.setTimerState(TimerState.ACTIVE);
+                        this.timer.scheduleTimeout();
+                        break;
                     case ACTIVE:
                         this.timer.scheduleTimeout();
                         break;
                 }
             } else if (status == Status.STATUS_ROLLEDBACK) {
                 ROOT_LOGGER.debug("Rolling back timer creation: " + this.timer);
-
+                if (!timer.isPersistent()) {
+                    nonPersistentTimers.remove(timer.handle);
+                }
                 TimerState timerState = this.timer.getState();
                 switch (timerState) {
                     case ACTIVE:
@@ -1120,8 +1113,28 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             }
 
         }
+    }
 
 
+    private class NonPersistentTimerRemoveSynchronization implements Synchronization {
+
+        private final TimerHandle timerHandle;
+
+        private NonPersistentTimerRemoveSynchronization(final TimerHandle timerHandle) {
+            this.timerHandle = timerHandle;
+        }
+
+        @Override
+        public void beforeCompletion() {
+
+        }
+
+        @Override
+        public void afterCompletion(final int status) {
+            if (status == Status.STATUS_COMMITTED) {
+                nonPersistentTimers.remove(timerHandle);
+            }
+        }
     }
 
     private class Task extends java.util.TimerTask {

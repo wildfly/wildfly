@@ -21,12 +21,13 @@
  */
 package org.jboss.as.ejb3.timerservice.persistence;
 
-import org.jboss.as.ejb3.timerservice.CalendarTimer;
-import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
-
-import javax.ejb.ScheduleExpression;
 import java.lang.reflect.Method;
 import java.util.Date;
+
+import javax.ejb.ScheduleExpression;
+
+import org.jboss.as.ejb3.timerservice.CalendarTimer;
+import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
 
 /**
  * CalendarTimerEntity
@@ -40,33 +41,29 @@ public class CalendarTimerEntity extends TimerEntity {
 
     private transient CalendarBasedTimeout calendarTimeout;
 
-    private String scheduleExprSecond;
+    private final String scheduleExprSecond;
 
-    private String scheduleExprMinute;
+    private final String scheduleExprMinute;
 
-    private String scheduleExprHour;
+    private final String scheduleExprHour;
 
-    private String scheduleExprDayOfWeek;
+    private final String scheduleExprDayOfWeek;
 
-    private String scheduleExprDayOfMonth;
+    private final String scheduleExprDayOfMonth;
 
-    private String scheduleExprMonth;
+    private final String scheduleExprMonth;
 
-    private String scheduleExprYear;
+    private final String scheduleExprYear;
 
-    private Date scheduleExprStartDate;
+    private final Date scheduleExprStartDate;
 
-    private Date scheduleExprEndDate;
+    private final Date scheduleExprEndDate;
 
-    private String scheduleExprTimezone;
+    private final String scheduleExprTimezone;
 
-    private boolean autoTimer;
+    private final boolean autoTimer;
 
-    private TimeoutMethod timeoutMethod;
-
-    public CalendarTimerEntity() {
-
-    }
+    private final TimeoutMethod timeoutMethod;
 
     public CalendarTimerEntity(CalendarTimer calendarTimer) {
         super(calendarTimer);
@@ -80,6 +77,8 @@ public class CalendarTimerEntity extends TimerEntity {
                 params[i] = methodParams[i].getName();
             }
             this.timeoutMethod = new TimeoutMethod(method.getDeclaringClass().getName(), method.getName(), params);
+        } else {
+            this.timeoutMethod = null;
         }
 
         this.scheduleExprSecond = this.scheduleExpression.getSecond();
@@ -149,40 +148,20 @@ public class CalendarTimerEntity extends TimerEntity {
         return scheduleExprStartDate;
     }
 
-    public void setStartDate(Date start) {
-        this.scheduleExprStartDate = start;
-    }
-
     public Date getEndDate() {
         return scheduleExprEndDate;
-    }
-
-    public void setEndDate(Date end) {
-        this.scheduleExprEndDate = end;
     }
 
     public TimeoutMethod getTimeoutMethod() {
         return timeoutMethod;
     }
 
-    public void setTimeoutMethod(TimeoutMethod timeoutMethod) {
-        this.timeoutMethod = timeoutMethod;
-    }
-
     public boolean isAutoTimer() {
         return autoTimer;
     }
 
-    public void setAutoTimer(boolean autoTimer) {
-        this.autoTimer = autoTimer;
-    }
-
     public String getTimezone() {
         return scheduleExprTimezone;
-    }
-
-    public void setTimezone(String timezone) {
-        this.scheduleExprTimezone = timezone;
     }
 
     @Override

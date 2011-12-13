@@ -354,7 +354,7 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
 
         private final String transactionKey;
         private final Lock lock;
-        private TimerEntity timer;
+        private volatile TimerEntity timer;
 
         public PersistTransactionSynchronization(final Lock lock, final String transactionKey) {
             this.lock = lock;
@@ -365,15 +365,16 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         public void beforeCompletion() {
             //get the latest version of the entity
             timer = (TimerEntity) transactionSynchronizationRegistry.getValue().getResource(transactionKey);
-            //we never want to persist a timer with state created.
-            //by definition once it has been persisted it is not longer in the created state
-            if (timer.getTimerState() == TimerState.CREATED) {
-                timer.setTimerState(TimerState.ACTIVE);
+            if (timer == null) {
+                return;
             }
         }
 
         @Override
         public void afterCompletion(final int status) {
+            if (timer == null) {
+                return;
+            }
             try {
                 lock.lock();
                 if (status == Status.STATUS_COMMITTED) {

@@ -33,27 +33,23 @@ import org.jboss.as.ejb3.timerservice.TimerState;
  */
 public class TimerEntity implements Serializable {
 
-    protected String id;
+    protected final String id;
 
-    protected String timedObjectId;
+    protected final  String timedObjectId;
 
-    protected Date initialDate;
+    protected final  Date initialDate;
 
-    protected long repeatInterval;
+    protected final  long repeatInterval;
 
-    protected Date nextDate;
+    protected final  Date nextDate;
 
-    protected Date previousRun;
+    protected final  Date previousRun;
 
-    protected Serializable info;
+    protected final  Serializable info;
 
-    protected Object primaryKey;
+    protected final  Object primaryKey;
 
-    protected TimerState timerState;
-
-    public TimerEntity() {
-
-    }
+    protected final  TimerState timerState;
 
     public TimerEntity(TimerImpl timer) {
         this.id = timer.getId();
@@ -61,10 +57,16 @@ public class TimerEntity implements Serializable {
         this.repeatInterval = timer.getInterval();
         this.nextDate = timer.getNextExpiration();
         this.previousRun = timer.getPreviousRun();
-        this.timerState = timer.getState();
         this.timedObjectId = timer.getTimedObjectId();
         this.info = timer.getTimerInfo();
         this.primaryKey = timer.getPrimaryKey();
+
+        if(timer.getState() == TimerState.CREATED) {
+            //a timer that has been persisted cannot be in the created state
+            this.timerState = TimerState.ACTIVE;
+        } else {
+            this.timerState = timer.getState();
+        }
     }
 
     public String getId() {
@@ -91,24 +93,12 @@ public class TimerEntity implements Serializable {
         return nextDate;
     }
 
-    public void setNextDate(Date nextDate) {
-        this.nextDate = nextDate;
-    }
-
     public Date getPreviousRun() {
         return previousRun;
     }
 
-    public void setPreviousRun(Date previousRun) {
-        this.previousRun = previousRun;
-    }
-
     public TimerState getTimerState() {
         return timerState;
-    }
-
-    public void setTimerState(TimerState timerState) {
-        this.timerState = timerState;
     }
 
     public boolean isCalendarTimer() {
@@ -117,10 +107,6 @@ public class TimerEntity implements Serializable {
 
     public Object getPrimaryKey() {
         return primaryKey;
-    }
-
-    public void setPrimaryKey(final Object primaryKey) {
-        this.primaryKey = primaryKey;
     }
 
     @Override
