@@ -184,6 +184,8 @@ class Constants {
 
     static final String JDBC_COMPLIANT = "jdbc-compliant";
 
+    static final String STATISTICS = "statistics";
+
 
     static SimpleAttributeDefinition CONNECTION_URL = new SimpleAttributeDefinition(CONNECTION_URL_NAME, DataSource.Tag.CONNECTION_URL.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
 
