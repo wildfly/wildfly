@@ -187,6 +187,13 @@ public class InfinispanDescriptions {
         keyPrefix = "infinispan.clustered-cache";
         addCommonClusteredCacheRequestProperties(keyPrefix, description, resources);
 
+        keyPrefix = "infinispan.replicated-cache.state-transfer" ;
+        ModelNode requestProperties = description.get(ModelDescriptionConstants.REQUEST_PROPERTIES);
+        ModelNode stateTransfer = addNode(requestProperties, ModelKeys.STATE_TRANSFER, resources.getString(keyPrefix), ModelType.OBJECT, false).get(ModelDescriptionConstants.VALUE_TYPE);
+        addNode(stateTransfer, ModelKeys.ENABLED, resources.getString(keyPrefix+".enabled"), ModelType.BOOLEAN, false);
+        addNode(stateTransfer, ModelKeys.TIMEOUT, resources.getString(keyPrefix+".timeout"), ModelType.LONG, false);
+        addNode(stateTransfer, ModelKeys.FLUSH_TIMEOUT, resources.getString(keyPrefix+".flush-timeout"), ModelType.LONG, false);
+
         return description;
     }
 

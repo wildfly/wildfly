@@ -445,9 +445,16 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             Element element = Element.forName(reader.getLocalName());
-            this.parseCacheElement(reader, element, cache);
+            switch (element) {
+                case STATE_TRANSFER: {
+                    this.parseStateTransfer(reader, cache.get(ModelKeys.STATE_TRANSFER).setEmptyObject());
+                    break;
+                }
+                default: {
+                    this.parseCacheElement(reader, element, cache);
+                }
+            }
         }
-
         String name = cache.get(ModelKeys.NAME).asString();
         // setup the cache address
         ModelNode cacheAddress = containerAddress.clone() ;

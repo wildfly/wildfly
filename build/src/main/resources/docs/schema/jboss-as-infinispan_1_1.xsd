@@ -325,7 +325,15 @@
 
     <xs:complexType name="invalidation-cache">
         <xs:complexContent>
-            <xs:extension base="tns:clustered-cache"></xs:extension>
+            <xs:extension base="tns:clustered-cache">
+                <xs:sequence>
+                    <xs:element name="state-transfer" type="tns:state-transfer" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation></xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+            </xs:extension>
         </xs:complexContent>
     </xs:complexType>
 
