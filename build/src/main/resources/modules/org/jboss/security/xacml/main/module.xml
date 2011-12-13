@@ -30,5 +30,6 @@
     <dependencies>
         <module name="javax.api"/>
         <module name="sun.jdk"/>
+        <module name="javax.xml.bind.api"/>
     </dependencies>
 </module>
