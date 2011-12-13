@@ -22,13 +22,17 @@
 
 package org.jboss.as.cmp.component;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
+
 import javax.transaction.Transaction;
+
 import org.jboss.as.cmp.TransactionEntityMap;
 import org.jboss.as.cmp.jdbc.JDBCEntityPersistenceStore;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.as.ejb3.component.entity.EntityBeanRemoteViewInstanceFactory;
+import org.jboss.invocation.Interceptors;
 import org.jboss.tm.TxUtils;
 
 /**
@@ -43,7 +47,11 @@ public class CmpEntityBeanRemoteViewInstanceFactory extends EntityBeanRemoteView
         final CmpEntityBeanComponentInstance cmpInstance = CmpEntityBeanComponentInstance.class.cast(instance);
         final JDBCEntityPersistenceStore storeManager = cmpInstance.getComponent().getStoreManager();
         storeManager.initEntity(cmpInstance.getEjbContext());
-        ejbCreate.invoke(instance.getInstance(), params);
+        try {
+            ejbCreate.invoke(instance.getInstance(), params);
+        } catch (InvocationTargetException ite) {
+            throw Interceptors.rethrow(ite.getCause());
+        }
         return storeManager.createEntity(ejbCreate, params, cmpInstance.getEjbContext());
     }
 
@@ -52,7 +60,11 @@ public class CmpEntityBeanRemoteViewInstanceFactory extends EntityBeanRemoteView
         final CmpEntityBeanComponent component = cmpInstance.getComponent();
         final JDBCEntityPersistenceStore storeManager = component.getStoreManager();
         storeManager.postCreateEntity(ejbPostCreate, params, cmpInstance.getEjbContext());
-        ejbPostCreate.invoke(instance.getInstance(), params);
+        try {
+            ejbPostCreate.invoke(instance.getInstance(), params);
+        } catch (InvocationTargetException ite) {
+            throw Interceptors.rethrow(ite.getCause());
+        }
 
         if (storeManager.getCmpConfig().isInsertAfterEjbPostCreate()) {
             storeManager.createEntity(ejbPostCreate, params, cmpInstance.getEjbContext());
