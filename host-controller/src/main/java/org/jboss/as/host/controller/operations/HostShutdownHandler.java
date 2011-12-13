@@ -19,15 +19,17 @@
 package org.jboss.as.host.controller.operations;
 
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART;
+
 import java.util.Locale;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.host.controller.descriptions.HostRootDescription;
+import org.jboss.as.process.ExitCodes;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -53,10 +55,16 @@ public class HostShutdownHandler implements OperationStepHandler, DescriptionPro
      */
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        final boolean restart = operation.hasDefined(RESTART) ? operation.get(RESTART).asBoolean() : false;
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                domainController.stopLocalHost();
+                if (restart) {
+                    //Add to the exit code so that we get respawned
+                    System.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE + 1);
+                } else {
+                    domainController.stopLocalHost();
+                }
                 context.completeStep();
             }
         }, OperationContext.Stage.RUNTIME);
@@ -65,6 +73,6 @@ public class HostShutdownHandler implements OperationStepHandler, DescriptionPro
 
     @Override
     public ModelNode getModelDescription(final Locale locale) {
-        return HostRootDescription.getStopServerOperation(locale);
+        return HostRootDescription.getHostShutdownHandler(locale);
     }
 }
