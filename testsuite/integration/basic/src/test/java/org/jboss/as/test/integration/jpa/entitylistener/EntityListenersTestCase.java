@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.integration.jpa.entitylistener;
 
-import static org.junit.Assert.assertTrue;
-
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -34,8 +32,11 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * EntityListeners tests
@@ -43,6 +44,7 @@ import org.junit.runner.RunWith;
  * @author Scott Marlow
  */
 @RunWith(Arquillian.class)
+@Ignore("AS7-2968")
 public class EntityListenersTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_EntityListeners";
