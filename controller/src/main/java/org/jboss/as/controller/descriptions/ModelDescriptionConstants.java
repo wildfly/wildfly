@@ -194,6 +194,7 @@ public class ModelDescriptionConstants {
     public static final String REQUIRES = "requires";
     public static final String RESPONSE = "response";
     public static final String RESPONSE_HEADERS = "response-headers";
+    public static final String RESTART = "restart";
     public static final String RESTART_REQUIRED = "restart-required";
     public static final String RESULT = "result";
     public static final String ROLLBACK_ACROSS_GROUPS = "rollback-across-groups";

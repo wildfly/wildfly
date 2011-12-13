@@ -23,6 +23,7 @@
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXPRESSIONS_ALLOWED;
@@ -52,6 +53,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
@@ -67,6 +69,7 @@ import java.util.ResourceBundle;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.host.controller.operations.HostShutdownHandler;
 import org.jboss.as.host.controller.operations.RemoteDomainControllerAddHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -222,6 +225,19 @@ public class HostRootDescription {
         root.get(REQUEST_PROPERTIES, SERVER, NILLABLE).set(false);
         root.get(REPLY_PROPERTIES, TYPE).set(ModelType.STRING);
         root.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("host.stop-server.reply"));
+        return root;
+    }
+
+    public static ModelNode getHostShutdownHandler(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(OPERATION_NAME).set(HostShutdownHandler.OPERATION_NAME);
+        root.get(DESCRIPTION).set(bundle.getString("host.shutdown"));
+        root.get(REQUEST_PROPERTIES, RESTART, TYPE).set(ModelType.BOOLEAN);
+        root.get(REQUEST_PROPERTIES, RESTART, DESCRIPTION).set(bundle.getString("host.shutdown.restart"));
+        root.get(REQUEST_PROPERTIES, RESTART, DEFAULT).set(false);
+        root.get(REQUEST_PROPERTIES, RESTART, REQUIRED).set(false);
+        root.get(REQUEST_PROPERTIES, RESTART, NILLABLE).set(true);
         return root;
     }
 
