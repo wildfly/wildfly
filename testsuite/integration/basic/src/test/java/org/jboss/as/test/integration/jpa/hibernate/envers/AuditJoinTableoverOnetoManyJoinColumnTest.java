@@ -39,6 +39,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
+ * Test @AuditJoinTable over Uni-directional One-to-Many Relationship
+ * 
  * @author Madhumita Sadhukhan
  */
 @RunWith(Arquillian.class)

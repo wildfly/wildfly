@@ -42,7 +42,7 @@ import org.junit.runner.RunWith;
 
 /**
  * 
- * Tests that hibernate validator works correctly for WAR(Web Applications)
+ * Tests GroupSequenceProvider feature in  hibernate validator
  * 
  * 
  * @author Madhumita Sadhukhan

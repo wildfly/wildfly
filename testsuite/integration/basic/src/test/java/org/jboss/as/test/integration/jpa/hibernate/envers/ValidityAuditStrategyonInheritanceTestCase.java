@@ -37,6 +37,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
+ * Test Auditing on inherited attributes using Validity Audit strategy
+ * 
  * @author Madhumita Sadhukhan
  */
 @RunWith(Arquillian.class)
