@@ -22,12 +22,14 @@
 package org.jboss.as.test.integration.jmx;
 
 import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import java.io.ByteArrayOutputStream;
@@ -37,6 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanInfo;
 import javax.management.MBeanOperationInfo;
@@ -52,6 +55,7 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
 import junit.framework.Assert;
+
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -95,12 +99,12 @@ public class ModelControllerMBeanTestCase {
     }
 
     private static void enableJMXConnector(ModelControllerClient client) throws IOException {
-        ModelNode op = new ModelNode();
-        op.get(OP).set("add-connector");
-        op.get(OP_ADDR).set("subsystem", "jmx");
-        op.get("server-binding").set("jmx-connector-server");
-        op.get("registry-binding").set("jmx-connector-registry");
-        ModelNode result = client.execute(op);
+        final ModelNode connector = new ModelNode();
+        connector.get(OP).set(ADD);
+        connector.get(OP_ADDR).add(SUBSYSTEM, "jmx").add("connector", "jmx");
+        connector.get("server-binding").set("jmx-connector-server");
+        connector.get("registry-binding").set("jmx-connector-registry");
+        ModelNode result = client.execute(connector);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
     }
 
@@ -113,10 +117,8 @@ public class ModelControllerMBeanTestCase {
 
     private static void disableJMXConnector(ModelControllerClient client) throws IOException {
         ModelNode op = new ModelNode();
-        op.get(OP).set("remove-connector");
-        op.get(OP_ADDR).set("subsystem", "jmx");
-        op.get("server-binding").set("jmx-connector-server");
-        op.get("registry-binding").set("jmx-connector-registry");
+        op.get(OP).set("remove");
+        op.get(OP_ADDR).add(SUBSYSTEM, "jmx").add("connector", "jmx");
         ModelNode result = client.execute(op);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
     }
