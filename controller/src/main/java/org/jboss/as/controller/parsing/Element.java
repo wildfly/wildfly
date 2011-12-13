@@ -138,6 +138,8 @@ public enum Element {
     SUBSYSTEM("subsystem"),
     SYSTEM_PROPERTIES("system-properties"),
 
+    TRUSTSTORE("truststore"),
+
     UP("up"),
     USER("user"),
     USERNAME_FILTER("username-filter"),

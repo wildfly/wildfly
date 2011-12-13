@@ -324,13 +324,29 @@
         <xs:annotation>
             <xs:documentation>
                 Configuration of the server side authentication mechanisms.
+                
+                Optionally one truststore can be defined and one username/password based store can be defined,
+                authentication will first attemp to use the truststore and if this is not available fall back
+                to the username/password authentication.
+                
+                If none of these are specified the only available mechanism will be the local mechanism for the 
+                Native interface, the HTTP interface will not be accessible.
             </xs:documentation>
         </xs:annotation>
-        <xs:choice>
-            <xs:element name="ldap" type="ldapAuthenticationType" minOccurs="0" />
-            <xs:element name="properties" type="propertiesAuthenticationType" minOccurs="0" />
-            <xs:element name="users" type="usersAuthenticationType" minOccurs="0" />
-        </xs:choice>
+        <xs:sequence>
+            <xs:element name="truststore" type="keystoreType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Configuration of a keystore to use to create a trust manager to verify clients.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:choice minOccurs="0">
+                <xs:element name="ldap" type="ldapAuthenticationType" minOccurs="0" />
+                <xs:element name="properties" type="propertiesAuthenticationType" minOccurs="0" />
+                <xs:element name="users" type="usersAuthenticationType" minOccurs="0" />
+            </xs:choice>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="ldapAuthenticationType">

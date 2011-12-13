@@ -250,6 +250,7 @@ public class ModelDescriptionConstants {
     public static final String SYSTEM_PROPERTIES = "system-properties";
     public static final String TAIL_COMMENT_ALLOWED = "tail-comment-allowed";
     public static final String TO_REPLACE = "to-replace";
+    public static final String TRUSTSTORE = "truststore";
     public static final String TYPE = "type";
     public static final String UNDEFINE_ATTRIBUTE_OPERATION = "undefine-attribute";
     public static final String UNDEPLOY = "undeploy";
