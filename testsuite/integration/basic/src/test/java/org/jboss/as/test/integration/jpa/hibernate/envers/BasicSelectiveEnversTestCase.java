@@ -37,6 +37,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
+ * This testcase verifies Envers/Auditing functions on selected attributes(Audited and NotAudited)
+ * 
  * @author Madhumita Sadhukhan
  */
 @RunWith(Arquillian.class)

@@ -39,7 +39,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Transaction tests
+ * Test Envers on Transactions
  * 
  * @author Madhumita Sadhukhan
  */

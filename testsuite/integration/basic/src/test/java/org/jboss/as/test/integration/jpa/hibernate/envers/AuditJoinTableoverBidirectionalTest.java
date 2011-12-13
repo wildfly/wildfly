@@ -37,6 +37,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
+ * Test @AuditJoinTable over Bidirectional Relationship
+ * 
  * @author Madhumita Sadhukhan
  */
 @RunWith(Arquillian.class)

@@ -41,6 +41,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
+ * Test bean validation is propagated on inherited attributes
+ * 
  * @author Madhumita Sadhukhan
  */
 @RunWith(Arquillian.class)
