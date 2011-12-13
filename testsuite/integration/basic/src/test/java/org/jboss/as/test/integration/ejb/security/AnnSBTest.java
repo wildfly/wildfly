@@ -115,7 +115,7 @@ public abstract class AnnSBTest extends SecurityTest {
          Assert.fail("Method cannot be successfully called without logged in user");
       } catch (Exception e) {
          // expected
-         Assert.assertTrue("Thrown exception must be EJBAccessException, but was different", e instanceof EJBAccessException);
+         Assert.assertTrue("Thrown exception must be EJBAccessException, but was " + e.getClass().getSimpleName(), e instanceof EJBAccessException);
       }
 
       try {
@@ -123,7 +123,7 @@ public abstract class AnnSBTest extends SecurityTest {
          Assert.fail("Method cannot be successfully called without logged in user");
       } catch (Exception e) {
          // expected
-         Assert.assertTrue("Thrown exception must be EJBAccessException, but was different", e instanceof EJBAccessException);
+         Assert.assertTrue("Thrown exception must be EJBAccessException, but was " + e.getClass().getSimpleName(), e instanceof EJBAccessException);
       }
 
       try {
@@ -138,7 +138,7 @@ public abstract class AnnSBTest extends SecurityTest {
          Assert.fail("@DenyAll annotation must allow all users and no users to call the method");
       } catch (Exception e) {
          // expected
-         Assert.assertTrue("Thrown exception must be EJBAccessException, but was different", e instanceof EJBAccessException);
+         Assert.assertTrue("Thrown exception must be EJBAccessException, but was " + e.getClass().getSimpleName(), e instanceof EJBAccessException);
       }
 
 
@@ -157,7 +157,6 @@ public abstract class AnnSBTest extends SecurityTest {
     *
     * @throws Exception
     */
-
    @Ignore("AS7-2942")
    public void testSingleMethodAnnotationsUser1Template(final String MODULE, final Logger log, final Class SB_CLASS) throws Exception {
 
