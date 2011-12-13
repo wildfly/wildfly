@@ -19,7 +19,7 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.connector.subsystems.jca;
+package org.jboss.as.test.integration.management.util;
 
 import java.util.Enumeration;
 import java.util.Properties;
@@ -31,7 +31,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
-public class ParseDatasourceUtils {
+public class ComplexPropertiesParseUtils {
     /**
      * Returns common properties for both XA and Non-XA datasource
      * @param indiName
@@ -127,6 +127,80 @@ public class ParseDatasourceUtils {
         return params;
     }
     /**
+     * Returns common properties for resource-adapter element
+    
+     */
+    public static  Properties raCommonProperties(){
+    	Properties params=new Properties();
+    	 params.put("archive","some.rar");
+         params.put("transaction-support","XATransaction");
+         params.put("bootstrap-context","someContext");
+         
+    	return params;
+    }
+    /**
+     * Returns properties for RA connection-definition element
+     
+     */
+    public static  Properties raConnectionProperties(){
+    	Properties params=new Properties();
+    	//attributes
+    	params.put("use-java-context","false");
+        params.put("class-name","Class1");
+        params.put("use-ccm","true");
+    	params.put("jndi-name", "java:jboss/name1");
+    	params.put("enabled","false");
+        //pool
+        params.put("min-pool-size","1");
+        params.put("max-pool-size","5");
+        params.put("pool-prefill","true");
+        params.put("pool-use-strict-min","true");
+        params.put("flush-strategy","IdleConnections");
+        //xa-pool
+        params.put("same-rm-override","true");
+        params.put("interleaving","true");
+        params.put("no-tx-separate-pool","true");
+        params.put("pad-xid","true");
+        params.put("wrap-xa-resource","true");
+        //security
+        params.put("application","true");
+        params.put("security-domain-and-application","HsqlDbRealm1");
+        params.put("security-domain","HsqlDbRealm");
+        //validation
+        params.put("background-validation","true");
+        params.put("background-validation-millis","5000");
+        params.put("use-fast-fail","true");
+        //time-out
+        params.put("blocking-timeout-wait-millis","5000");
+        params.put("idle-timeout-minutes","4");
+        params.put("allocation-retry","2");
+        params.put("allocation-retry-wait-millis","3000");
+        params.put("xa-resource-timeout","300");
+        //recovery
+        params.put("no-recovery","false");
+        params.put("recovery-plugin-class-name","someClass2");
+        params.put("recovery-username","sa");
+        params.put("recovery-password","sa-pass");
+        params.put("recovery-security-domain","HsqlDbRealm");
+
+    	return params;
+    }
+    /**
+     * Returns properties for RA admin-object element
+     
+     */
+    public static  Properties raAdminProperties(){
+    	Properties params=new Properties();
+    	//attributes
+    	params.put("use-java-context","false");
+        params.put("class-name","Class3");
+    	params.put("jndi-name", "java:jboss/Name3");
+    	params.put("enabled","true");
+
+    	return params;
+    }
+
+    /**
      * Sets parameters for DMR operation
      * @param operation
      * @param params
@@ -169,8 +243,9 @@ public class ParseDatasourceUtils {
      * @param params
      */
     public static void controlModelParams(ModelNode node,Properties params){
+    	
+    	if (node==null) Assert.fail("ModelNode is empty, but must contain properties:\n"+params);
     	String str;
-        
         StringBuffer sb = new StringBuffer();
         String par,child;
         Enumeration e = params.propertyNames();

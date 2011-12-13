@@ -1,0 +1,79 @@
+<subsystem xmlns="urn:jboss:domain:resource-adapters:1.0">
+            <resource-adapters>
+                <resource-adapter>
+                    <archive>some.rar</archive>
+		    <bootstrap-context>someContext</bootstrap-context>
+                    
+		    <bean-validation-groups>
+		      <bean-validation-group>Class0</bean-validation-group>
+		      <bean-validation-group>Class00</bean-validation-group>
+		    </bean-validation-groups>
+		    <transaction-support>XATransaction</transaction-support>
+		    <config-property name="Property">A</config-property>
+                    <connection-definitions>
+                        <connection-definition
+                                class-name="Class1"
+                                jndi-name="java:jboss/name1"
+                                pool-name="Pool1"
+				use-ccm="true"
+				use-java-context="false"
+				enabled="false">
+                            <config-property name="Property">B</config-property>
+			    <xa-pool>
+			      <min-pool-size>1</min-pool-size>
+			      <max-pool-size>5</max-pool-size>
+			      <prefill>true</prefill>
+			       <use-strict-min>true</use-strict-min>
+			       <flush-strategy>IdleConnections</flush-strategy>
+			       <is-same-rm-override>true</is-same-rm-override>
+			       <interleaving/>
+			       <no-tx-separate-pools/>
+				 <pad-xid>true</pad-xid>
+				<wrap-xa-resource>true</wrap-xa-resource>
+			    </xa-pool>
+			    <security>
+			      <application/>
+			      <security-domain>HsqlDbRealm</security-domain>
+			      <security-domain-and-application>HsqlDbRealm1</security-domain-and-application>
+			    </security>
+			   <timeout>
+			      <blocking-timeout-millis>5000</blocking-timeout-millis>
+			      <idle-timeout-minutes>4</idle-timeout-minutes>
+			      <allocation-retry>2</allocation-retry>
+			      <allocation-retry-wait-millis>3000</allocation-retry-wait-millis>
+			      <xa-resource-timeout>300</xa-resource-timeout>
+			    </timeout>
+			     <validation>
+			      <background-validation>true</background-validation>
+			      <background-validation-millis>5000</background-validation-millis>
+			      <use-fast-fail>true</use-fast-fail>
+			    </validation>
+			  <recovery no-recovery="false">
+			    <recover-credential>
+			      <user-name>sa</user-name> 
+			       <password>sa-pass</password> 
+			        <security-domain>HsqlDbRealm</security-domain> 
+			     </recover-credential>
+			        <recover-plugin class-name="Class2">
+				<config-property name="Property">C</config-property>
+			      </recover-plugin>
+			    </recovery>
+			    
+		      </connection-definition>
+                    </connection-definitions>
+		    
+                    <admin-objects>
+                        <admin-object
+                                class-name="Class3"
+                                jndi-name="java:jboss/Name3"
+				pool-name="Pool2"
+				use-java-context="false"
+				enabled="true">
+                            <config-property name="Property">D</config-property>
+                        </admin-object>
+                    </admin-objects>
+
+                </resource-adapter>
+            </resource-adapters>
+
+        </subsystem>

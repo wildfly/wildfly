@@ -28,7 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 
 import java.util.HashMap;
 import java.util.Map;
-
+import java.util.List;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -72,5 +72,15 @@ public class DataSourceOperationTestUtil {
         final ModelNode result3 = client.execute(operation3);
         Assert.assertEquals(SUCCESS, result3.get(OUTCOME).asString());
     }
-
+    static ModelNode findNodeWithProperty(List<ModelNode> newList,String propertyName,String setTo){
+    	ModelNode toReturn=null;
+    	for(ModelNode result : newList){
+            final Map<String, ModelNode> parseChildren = getChildren(result);
+            if (! parseChildren.isEmpty() && parseChildren.get(propertyName)!= null && parseChildren.get(propertyName).asString().equals(setTo)) {
+                toReturn=result;break;
+            }
+        }
+    	//Assert.assertNotNull("Not found "+propertyName+"=>"+setTo+" in:\n"+newList,toReturn);
+    	return toReturn;
+    }
 }

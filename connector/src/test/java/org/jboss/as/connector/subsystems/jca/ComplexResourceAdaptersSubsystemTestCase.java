@@ -21,20 +21,17 @@
 */
 package org.jboss.as.connector.subsystems.jca;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.connector.subsystems.jca.ParseUtils.commonDsProperties;
-import static org.jboss.as.connector.subsystems.jca.ParseUtils.xaDsProperties;
-import static org.jboss.as.connector.subsystems.jca.ParseUtils.nonXaDsProperties;
+import static org.jboss.as.connector.subsystems.jca.ParseUtils.raCommonProperties;
+import static org.jboss.as.connector.subsystems.jca.ParseUtils.raConnectionProperties;
+import static org.jboss.as.connector.subsystems.jca.ParseUtils.raAdminProperties;
+
 import static org.jboss.as.connector.subsystems.jca.ParseUtils.controlModelParams;
 
 import java.util.List;
 import java.util.Properties;
 
-import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
 import javax.xml.stream.XMLStreamException;
 
 import junit.framework.Assert;
@@ -57,21 +54,19 @@ import org.jboss.as.controller.OperationContext.Type;
  *
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
-public class ComplexDatasourceSubsystemTestCase extends AbstractSubsystemTest {
+public class ComplexResourceAdaptersSubsystemTestCase extends AbstractSubsystemTest {
 
-    private static final String LAUNCH_TYPE = "launch-type";
-    private static final String TYPE_STANDALONE = "STANDALONE";
 
-    public ComplexDatasourceSubsystemTestCase() {
-        super(DataSourcesExtension.SUBSYSTEM_NAME, new DataSourcesExtension());
+    public ComplexResourceAdaptersSubsystemTestCase() {
+        super(ResourceAdaptersExtension.SUBSYSTEM_NAME, new ResourceAdaptersExtension());
     }
 
     @Test
-    @Ignore("AS7-3008")
-    public void testDatasource() throws Exception{
-        // Only contain the subsystem xml, e.g.
-        //  <subsystem xmlns="urn:jboss:domain:datasources:1.0"> ... </subsystem>
-        String xml = readResource("datasource.xml");
+    @Ignore("AS7-3007")
+
+    public void testResourceAdapters() throws Exception{
+        
+        String xml = readResource("ra.xml");
  
         KernelServices services = super.installInController(new AdditionalInitialization() {
  
@@ -85,24 +80,26 @@ public class ComplexDatasourceSubsystemTestCase extends AbstractSubsystemTest {
  
         ModelNode model = services.readWholeModel();
  
-        //Check model..
-        final String complexDs = "complexDs";
-        final String complexDsJndi = "java:jboss/datasources/" + complexDs;
-        Properties params=nonXaDsProperties(complexDsJndi);
-        ModelNode modelDs=model.get("subsystem", "datasources","data-source",complexDs+"_Pool");
-        controlModelParams(modelDs,params);
-        Assert.assertEquals(modelDs.asString(),"UTF-8",modelDs.get("connection-properties","char.encoding","value").asString());
-      
-        final String complexXaDs = "complexXaDs";
-        final String complexXaDsJndi = "java:jboss/xa-datasources/" + complexXaDs;
-        params=nonXaDsProperties(complexXaDsJndi);
-        ModelNode modelXaDs=model.get("subsystem", "datasources","xa-data-source",complexXaDs+"_Pool");
-        controlModelParams(modelXaDs,params);
-        Assert.assertEquals(modelXaDs.asString(),"jdbc:h2:mem:test",modelXaDs.get("xa-datasource-properties","URL","value").asString()); 
+        // Check model..
+        Properties params=raCommonProperties();
+        ModelNode raCommonModel=model.get("subsystem", "resource-adapters","resource-adapter","some.rar");
+        controlModelParams(raCommonModel,params);
+        Assert.assertEquals(raCommonModel.asString(),"A",raCommonModel.get("config-properties","Property","value").asString());
+
+        params=raAdminProperties();
+        ModelNode raAdminModel=raCommonModel.get("admin-objects", "Pool2");
+        controlModelParams(raAdminModel,params);
+        Assert.assertEquals(raAdminModel.asString(),"D",raAdminModel.get("config-properties","Property","value").asString());
+
+        params=raConnectionProperties();
+        ModelNode raConnModel=raCommonModel.get("connection-definitions", "Pool1");
+        controlModelParams(raConnModel,params);
+        Assert.assertEquals(raConnModel.asString(),"B",raConnModel.get("config-properties","Property","value").asString());
+        Assert.assertEquals(raConnModel.asString(),"C",raConnModel.get("recover-plugin-config-properties","Property","value").asString());
 
         //Marshal the xml to see that it is the same as before
         String marshalled = services.getPersistedSubsystemXml();
-       // Assert.assertEquals(normalizeXML(xml), normalizeXML(marshalled));
+        Assert.assertEquals(normalizeXML(xml), normalizeXML(marshalled));
  
         services = super.installInController(new AdditionalInitialization() {
  
