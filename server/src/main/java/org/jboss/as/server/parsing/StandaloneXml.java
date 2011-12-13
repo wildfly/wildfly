@@ -42,7 +42,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURE_PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
@@ -67,6 +70,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import javax.xml.XMLConstants;
+import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.operations.common.Util;
@@ -392,6 +396,113 @@ public class StandaloneXml extends CommonXml {
                 }
             }
         }
+    }
+
+    private void parseHttpManagementInterface1_0(final XMLExtendedStreamReader reader, final ModelNode address,
+                                                   final List<ModelNode> list) throws XMLStreamException {
+
+        final ModelNode mgmtSocket = new ModelNode();
+        mgmtSocket.get(OP).set(ADD);
+        ModelNode operationAddress = address.clone();
+        operationAddress.add(MANAGEMENT_INTERFACE, HTTP_INTERFACE);
+        mgmtSocket.get(OP_ADDR).set(operationAddress);
+
+        // Handle attributes
+        boolean hasInterfaceName = false;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final String value = reader.getAttributeValue(i);
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                final Location location = reader.getLocation();
+                switch (attribute) {
+                    case INTERFACE: {
+                        HttpManagementResourceDefinition.INTERFACE.parseAndSetParameter(value, mgmtSocket, location);
+                        hasInterfaceName = true;
+                        break;
+                    }
+                    case PORT: {
+                        HttpManagementResourceDefinition.HTTP_PORT.parseAndSetParameter(value, mgmtSocket, location);
+                        break;
+                    }
+                    case SECURE_PORT: {
+                        HttpManagementResourceDefinition.HTTPS_PORT.parseAndSetParameter(value, mgmtSocket, location);
+                        break;
+                    }
+                    case MAX_THREADS: {
+                        // ignore xsd mistake
+                        break;
+                    }
+                    case SECURITY_REALM: {
+                        HttpManagementResourceDefinition.SECURITY_REALM.parseAndSetParameter(value, mgmtSocket, location);
+                        break;
+                    }
+                    default:
+                        throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+
+        requireNoContent(reader);
+
+        if (!hasInterfaceName) {
+            throw missingRequired(reader, Collections.singleton(Attribute.INTERFACE.getLocalName()));
+        }
+
+        list.add(mgmtSocket);
+    }
+
+    private void parseNativeManagementInterface1_0(final XMLExtendedStreamReader reader, final ModelNode address,
+                                                   final List<ModelNode> list) throws XMLStreamException {
+
+        final ModelNode mgmtSocket = new ModelNode();
+        mgmtSocket.get(OP).set(ADD);
+        ModelNode operationAddress = address.clone();
+        operationAddress.add(MANAGEMENT_INTERFACE, NATIVE_INTERFACE);
+        mgmtSocket.get(OP_ADDR).set(operationAddress);
+
+        // Handle attributes
+        boolean hasInterface = false;
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final String value = reader.getAttributeValue(i);
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case INTERFACE: {
+                        NativeManagementResourceDefinition.INTERFACE.parseAndSetParameter(value, mgmtSocket, reader.getLocation());
+                        hasInterface = true;
+                        break;
+                    }
+                    case PORT: {
+                        NativeManagementResourceDefinition.NATIVE_PORT.parseAndSetParameter(value, mgmtSocket, reader.getLocation());
+                        break;
+                    }
+                    case SECURE_PORT:
+                        // ignore -- this was a bug in the xsd
+                        break;
+                    case SECURITY_REALM: {
+                        NativeManagementResourceDefinition.SECURITY_REALM.parseAndSetParameter(value, mgmtSocket, reader.getLocation());
+                        break;
+                    }
+                    default:
+                        throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+
+        requireNoContent(reader);
+
+        if (!hasInterface) {
+            throw missingRequired(reader, Collections.singleton(Attribute.INTERFACE.getLocalName()));
+        }
+
+        list.add(mgmtSocket);
     }
 
     private void parseManagementInterfaces_1_1(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,

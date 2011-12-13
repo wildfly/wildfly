@@ -12,10 +12,10 @@
         </security-realms>
         <management-interfaces>
             <native-interface security-realm="ManagementRealm">
-                <socket interface="management" port="9999"/>
+                <socket interface="management" port="${jboss.host.management.native.port:9999}"/>
             </native-interface>
             <http-interface security-realm="ManagementRealm">
-                <socket interface="management" port="9990"/>
+                <socket interface="management" port="${jboss.host.management.http.port:9990}"/>
             </http-interface>
         </management-interfaces>
     </management>
@@ -23,7 +23,7 @@
     <domain-controller>
        <local/>
        <!-- Alternative remote domain controller configuration with a host and port -->
-       <!-- <remote host="192.168.100.1" port="9999"/> -->
+       <!-- <remote host="${jboss.domain.master.address}" port="${jboss.domain.master.port:9999}"/> -->
     </domain-controller>
 
     <interfaces>
@@ -37,28 +37,24 @@
 
  	<jvms>
  	   <jvm name="default">
-          <heap size="64m" max-size="128m"/>
+          <heap size="64m" max-size="256m"/>
        </jvm>
  	</jvms>
 
     <servers>
         <server name="server-one" group="main-server-group">
-            <!-- server-one inherits the default socket-group declared in the server-group -->
+            <!-- Remote JPDA debugging for a specific server
             <jvm name="default">
-              <!-- Remote JPDA debugging for a specific server
               <jvm-options>
                 <option value="-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n"/>
               </jvm-options>
-              -->
            </jvm>
+           -->
         </server>
         <server name="server-two" group="main-server-group" auto-start="true">
             <!-- server-two avoids port conflicts by incrementing the ports in
                  the default socket-group declared in the server-group -->
             <socket-bindings port-offset="150"/>
-            <jvm name="default">
-                <heap size="64m" max-size="256m"/>
-            </jvm>
         </server>
         <server name="server-three" group="other-server-group" auto-start="false">
             <!-- server-three avoids port conflicts by incrementing the ports in
