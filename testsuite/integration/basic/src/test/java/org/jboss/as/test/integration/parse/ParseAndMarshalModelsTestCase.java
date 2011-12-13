@@ -62,6 +62,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.ObjectName;
 import javax.xml.namespace.QName;
@@ -186,6 +187,17 @@ public class ParseAndMarshalModelsTestCase {
     @After
     public void cleanup() throws Exception {
         ManagementFactory.getPlatformMBeanServer().unregisterMBean(new ObjectName("jboss.msc:type=container,name=test"));
+        if (serviceContainer != null) {
+            serviceContainer.shutdown();
+            try {
+                serviceContainer.awaitTermination(5, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            finally {
+                serviceContainer = null;
+            }
+        }
     }
 
     @Test
