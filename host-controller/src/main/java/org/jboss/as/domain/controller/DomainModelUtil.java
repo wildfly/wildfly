@@ -49,6 +49,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -306,7 +307,7 @@ public class DomainModelUtil {
             throw new OperationFailedException("rolloutPlan argument is null.");
         }
         if(!rolloutPlan.hasDefined(ROLLOUT_PLAN)) {
-            throw new OperationFailedException("Rollout plan is missing " + ROLLOUT_PLAN + ": " + rolloutPlan);
+            throw new OperationFailedException(MESSAGES.requiredChildIsMissing(ROLLOUT_PLAN, ROLLOUT_PLAN, rolloutPlan.toString()));
         }
         rolloutPlan = rolloutPlan.get(ROLLOUT_PLAN);
 
@@ -314,23 +315,23 @@ public class DomainModelUtil {
         try {
             keys = rolloutPlan.keys();
         } catch (IllegalArgumentException e) {
-            throw new OperationFailedException("Rollout plan is missing required child " + IN_SERIES + ": " + rolloutPlan);
+            throw new OperationFailedException(MESSAGES.requiredChildIsMissing(ROLLOUT_PLAN, IN_SERIES, rolloutPlan.toString()));
         }
         if(!keys.contains(IN_SERIES)) {
-            throw new OperationFailedException("Rollout plan is missing required child " + IN_SERIES + ": " + rolloutPlan);
+            throw new OperationFailedException(MESSAGES.requiredChildIsMissing(ROLLOUT_PLAN, IN_SERIES, rolloutPlan.toString()));
         }
         if(keys.size() > 2 || keys.size() == 2 && !keys.contains(ROLLBACK_ACROSS_GROUPS)) {
-            throw new OperationFailedException("Rollout plan recognizes only two children " + IN_SERIES + " and " + ROLLBACK_ACROSS_GROUPS + ": " + rolloutPlan);
+            throw new OperationFailedException(MESSAGES.unrecognizedChildren(ROLLOUT_PLAN, IN_SERIES + ", " + ROLLBACK_ACROSS_GROUPS, rolloutPlan.toString()));
         }
 
         final ModelNode inSeries = rolloutPlan.get(IN_SERIES);
         if(!inSeries.isDefined()) {
-            throw new OperationFailedException(IN_SERIES + " child of rollout plan is not defined: " + rolloutPlan);
+            throw new OperationFailedException(MESSAGES.requiredChildIsMissing(ROLLOUT_PLAN, IN_SERIES, rolloutPlan.toString()));
         }
 
         final List<ModelNode> groups = inSeries.asList();
         if(groups.isEmpty()) {
-            throw new OperationFailedException(IN_SERIES + " doesn't contain any group: " + rolloutPlan);
+            throw new OperationFailedException(MESSAGES.inSeriesIsMissingGroups(rolloutPlan.toString()));
         }
 
         for(ModelNode group : groups) {
@@ -340,10 +341,10 @@ public class DomainModelUtil {
                 try {
                     groupKeys = serverGroup.keys();
                 } catch(IllegalArgumentException e) {
-                    throw new OperationFailedException(SERVER_GROUP + " is missing server group name: " + rolloutPlan);
+                    throw new OperationFailedException(MESSAGES.serverGroupExpectsSingleChild(rolloutPlan.toString()));
                 }
                 if(groupKeys.size() != 1) {
-                    throw new OperationFailedException(SERVER_GROUP + " allows only one child: " + rolloutPlan);
+                    throw new OperationFailedException(MESSAGES.serverGroupExpectsSingleChild(rolloutPlan.toString()));
                 }
                 validateInSeriesServerGroup(serverGroup.asProperty().getValue());
             } else if(group.hasDefined(CONCURRENT_GROUPS)) {
@@ -352,8 +353,7 @@ public class DomainModelUtil {
                     validateInSeriesServerGroup(child.asProperty().getValue());
                 }
             } else {
-                throw new OperationFailedException("One of the groups in the rollout plan does not define neither " + SERVER_GROUP +
-                        " nor " + CONCURRENT_GROUPS + ": " + rolloutPlan);
+                throw new OperationFailedException(MESSAGES.unexpectedInSeriesGroup(rolloutPlan.toString()));
             }
         }
     }
@@ -364,8 +364,7 @@ public class DomainModelUtil {
             try {
                 final Set<String> specKeys = serverGroup.keys();
                 if(!ALLOWED_SERVER_GROUP_CHILDREN.containsAll(specKeys)) {
-                    throw new OperationFailedException(SERVER_GROUP + " contains unexpected children " + specKeys +
-                            " allowed children are " + ALLOWED_SERVER_GROUP_CHILDREN);
+                    throw new OperationFailedException(MESSAGES.unrecognizedChildren(SERVER_GROUP, ALLOWED_SERVER_GROUP_CHILDREN.toString(), specKeys.toString()));
                 }
             } catch(IllegalArgumentException e) {// ignore?
             }
