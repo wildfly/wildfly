@@ -85,6 +85,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOU
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOURCE_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRUSTSTORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
@@ -542,7 +543,6 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             switch (element) {
                 case LDAP: {
                     parseLdapConnection(reader, address, list);
-
                     break;
                 }
                 default: {
@@ -660,7 +660,14 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     parseServerIdentities(reader, expectedNs, add);
                     break;
                 case AUTHENTICATION: {
-                    parseAuthentication(reader, expectedNs, add);
+                    switch (expectedNs) {
+                        case DOMAIN_1_0:
+                            parseAuthentication_1_0(reader, expectedNs, add);
+                            break;
+                        default:
+                            parseAuthentication_1_1(reader, expectedNs, add);
+                    }
+
                     break;
                 }
                 default: {
@@ -760,7 +767,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case KEYSTORE: {
-                    parseKeystore(reader, ssl);
+                    parseKeystore(reader, ssl.get(KEYSTORE));
                     break;
                 }
                 default: {
@@ -771,10 +778,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
     }
 
-    protected void parseKeystore(final XMLExtendedStreamReader reader, final ModelNode securityRealmAdd)
+    protected void parseKeystore(final XMLExtendedStreamReader reader, final ModelNode keystore)
             throws XMLStreamException {
-        ModelNode keystore = securityRealmAdd.get(KEYSTORE);
-
         String password = null;
         String path = null;
         String relativeTo = null;
@@ -826,7 +831,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
-    protected void parseAuthentication(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode securityRealmAdd)
+    protected void parseAuthentication_1_0(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode securityRealmAdd)
             throws XMLStreamException {
         ModelNode authentication = securityRealmAdd.get(AUTHENTICATION);
 
@@ -840,28 +845,69 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             }
             switch (element) {
                 case LDAP: {
-                    switch (expectedNs) {
-                        case DOMAIN_1_0:
-                            parseLdapAuthentication_1_0(reader, authentication);
-                            break;
-                        default:
-                            parseLdapAuthentication_1_1(reader, expectedNs, authentication);
-                    }
+                    parseLdapAuthentication_1_0(reader, authentication);
                     break;
                 }
                 case PROPERTIES: {
-                    switch (expectedNs) {
-                        case DOMAIN_1_0:
-                            parsePropertiesAuthentication_1_0(reader, authentication);
-                            break;
-                        default:
-                            parsePropertiesAuthentication_1_1(reader, authentication);
-                            break;
-                    }
+                    parsePropertiesAuthentication_1_0(reader, authentication);
                     break;
                 }
                 case USERS: {
                     parseUsersAuthentication(reader, expectedNs, authentication);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+
+        }
+    }
+
+    protected void parseAuthentication_1_1(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+            final ModelNode securityRealmAdd) throws XMLStreamException {
+        ModelNode authentication = securityRealmAdd.get(AUTHENTICATION);
+
+        // Only one truststore can be defined.
+        boolean trustStoreFound = false;
+        // Only one of ldap, properties or users can be defined.
+        boolean usernamePasswordFound = false;
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+
+            switch (element) {
+                case LDAP: {
+                    if (usernamePasswordFound) {
+                        unexpectedElement(reader);
+                    }
+                    parseLdapAuthentication_1_1(reader, expectedNs, authentication);
+                    usernamePasswordFound = true;
+                    break;
+                }
+                case PROPERTIES: {
+                    if (usernamePasswordFound) {
+                        unexpectedElement(reader);
+                    }
+                    parsePropertiesAuthentication_1_1(reader, authentication);
+                    usernamePasswordFound = true;
+                    break;
+                }
+                case TRUSTSTORE: {
+                    if (trustStoreFound) {
+                        unexpectedElement(reader);
+                    }
+                    parseKeystore(reader, authentication.get(TRUSTSTORE));
+                    trustStoreFound = true;
+                    break;
+                }
+                case USERS: {
+                    if (usernamePasswordFound) {
+                        unexpectedElement(reader);
+                    }
+                    parseUsersAuthentication(reader, expectedNs, authentication);
+                    usernamePasswordFound = true;
                     break;
                 }
                 default: {
@@ -2865,6 +2911,16 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                             writer.writeAttribute(Attribute.PLAIN_TEXT.getLocalName(), properties.require(PLAIN_TEXT).asString());
                         }
 
+                        writer.writeEndElement();
+                    } else if (authentication.hasDefined(TRUSTSTORE)) {
+                        ModelNode truststore = authentication.require(TRUSTSTORE);
+                        writer.writeStartElement(Element.TRUSTSTORE.getLocalName());
+                        writer.writeAttribute(Attribute.PATH.getLocalName(), truststore.require(PATH).asString());
+                        if (truststore.hasDefined(RELATIVE_TO)) {
+                            writer.writeAttribute(Attribute.RELATIVE_TO.getLocalName(), truststore.require(RELATIVE_TO)
+                                    .asString());
+                        }
+                        writer.writeAttribute(Attribute.PASSWORD.getLocalName(), truststore.require(PASSWORD).asString());
                         writer.writeEndElement();
                     }
 
