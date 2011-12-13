@@ -53,6 +53,8 @@ import org.jboss.as.cmp.jdbc.bridge.JDBCCMRFieldBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCEntityBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCSelectorBridge;
 import org.jboss.as.cmp.jdbc.metadata.JDBCEntityMetaData;
+import org.jboss.as.cmp.keygenerator.KeyGeneratorFactory;
+import org.jboss.as.cmp.keygenerator.KeyGeneratorFactoryRegistry;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -100,6 +102,8 @@ public final class JDBCStoreManager implements JDBCEntityPersistenceStore {
     private EntityBridgeInvocationHandler bridgeInvocationHandler;
 
     private final Map<String, InjectedValue<DataSource>> dataSources = new HashMap<String, InjectedValue<DataSource>>();
+
+    private final InjectedValue<KeyGeneratorFactoryRegistry> keyGeneratorFactoryRegistry = new InjectedValue<KeyGeneratorFactoryRegistry>();
 
     private final Catalog catalog;
 
@@ -632,5 +636,13 @@ public final class JDBCStoreManager implements JDBCEntityPersistenceStore {
             map.put(selector.getMethod(), selector);
         }
         return Collections.unmodifiableMap(map);
+    }
+
+    public KeyGeneratorFactory getKeyGeneratorFactory(final String name) {
+        return keyGeneratorFactoryRegistry.getValue().getFactory(name);
+    }
+
+    public Injector<KeyGeneratorFactoryRegistry> getKeyGeneratorFactoryInjector() {
+        return keyGeneratorFactoryRegistry;
     }
 }

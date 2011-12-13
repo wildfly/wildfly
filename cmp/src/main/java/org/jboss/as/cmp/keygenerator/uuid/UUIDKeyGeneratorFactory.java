@@ -23,6 +23,11 @@ package org.jboss.as.cmp.keygenerator.uuid;
 
 import org.jboss.as.cmp.keygenerator.KeyGenerator;
 import org.jboss.as.cmp.keygenerator.KeyGeneratorFactory;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 
 /**
  * This is the factory for UUID key generator
@@ -30,18 +35,17 @@ import org.jboss.as.cmp.keygenerator.KeyGeneratorFactory;
  * @author <a href="mailto:loubyansky@ukr.net">Alex Loubyansky</a>
  * @version $Revision: 81030 $
  */
-public class UUIDKeyGeneratorFactory implements KeyGeneratorFactory, java.io.Serializable {
-    // Constants ----------------------------------------------------
+public class UUIDKeyGeneratorFactory implements KeyGeneratorFactory, Service<KeyGeneratorFactory> {
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("cmp", "keygen", UUIDKeyGeneratorFactory.class.getSimpleName());
 
-    public static final String NAME = "UUIDKeyGeneratorFactory";
+    public void start(StartContext context) throws StartException {
+    }
 
-    // KeyGeneratorFactory implementation -----------------------
+    public void stop(StopContext context) {
+    }
 
-    /**
-     * Returns the factory name
-     */
-    public String getFactoryName() {
-        return NAME;
+    public KeyGeneratorFactory getValue() throws IllegalStateException, IllegalArgumentException {
+        return this;
     }
 
     /**

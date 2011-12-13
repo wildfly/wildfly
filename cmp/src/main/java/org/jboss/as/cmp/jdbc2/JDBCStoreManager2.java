@@ -55,10 +55,14 @@ import org.jboss.as.cmp.jdbc2.bridge.EJBSelectBridge;
 import org.jboss.as.cmp.jdbc2.bridge.JDBCEntityBridge2;
 import org.jboss.as.cmp.jdbc2.schema.EntityTable;
 import org.jboss.as.cmp.jdbc2.schema.Schema;
+import org.jboss.as.cmp.keygenerator.KeyGeneratorFactory;
+import org.jboss.as.cmp.keygenerator.KeyGeneratorFactoryRegistry;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.logging.Logger;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.value.InjectedValue;
 import org.jboss.tm.TransactionLocal;
 
 
@@ -78,6 +82,8 @@ public class JDBCStoreManager2 implements JDBCEntityPersistenceStore {
     private JDBCTypeFactory typeFactory;
     private Schema schema;
     private Catalog catalog;
+
+    private final InjectedValue<KeyGeneratorFactoryRegistry> keyGeneratorFactoryRegistry = new InjectedValue<KeyGeneratorFactoryRegistry>();
 
     private QueryFactory queryFactory;
     private CreateCommand createCmd;
@@ -456,5 +462,13 @@ public class JDBCStoreManager2 implements JDBCEntityPersistenceStore {
         }
 
         return selectorsByMethod;
+    }
+
+    public KeyGeneratorFactory getKeyGeneratorFactory(final String name) {
+        return keyGeneratorFactoryRegistry.getValue().getFactory(name);
+    }
+
+    public Injector<KeyGeneratorFactoryRegistry> getKeyGeneratorFactoryInjector() {
+        return keyGeneratorFactoryRegistry;
     }
 }

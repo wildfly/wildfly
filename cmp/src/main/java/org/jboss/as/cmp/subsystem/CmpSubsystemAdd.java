@@ -22,6 +22,8 @@
 
 package org.jboss.as.cmp.subsystem;
 
+import org.jboss.as.cmp.keygenerator.KeyGeneratorFactoryRegistry;
+import org.jboss.as.cmp.keygenerator.uuid.UUIDKeyGeneratorFactory;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.APPCLIENT;
 
 import java.util.List;
@@ -56,6 +58,17 @@ public class CmpSubsystemAdd extends AbstractBoottimeAddStepHandler implements D
     protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         logger.info("Activating EJB CMP Subsystem");
         final boolean appclient = operation.hasDefined(APPCLIENT) && model.get(APPCLIENT).asBoolean();
+
+        final KeyGeneratorFactoryRegistry keyGeneratorFactoryRegistry = new KeyGeneratorFactoryRegistry();
+        newControllers.add(context.getServiceTarget().addService(KeyGeneratorFactoryRegistry.SERVICE_NAME, keyGeneratorFactoryRegistry)
+            .addListener(verificationHandler)
+            .install());
+
+        final UUIDKeyGeneratorFactory uuidKeyGeneratorFactory = new UUIDKeyGeneratorFactory();
+        newControllers.add(context.getServiceTarget().addService(UUIDKeyGeneratorFactory.SERVICE_NAME, uuidKeyGeneratorFactory)
+            .addDependency(KeyGeneratorFactoryRegistry.SERVICE_NAME, KeyGeneratorFactoryRegistry.class, KeyGeneratorFactoryRegistry.getRegistryInjector(UUIDKeyGeneratorFactory.class.getSimpleName(), uuidKeyGeneratorFactory))
+            .addListener(verificationHandler)
+            .install());
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {

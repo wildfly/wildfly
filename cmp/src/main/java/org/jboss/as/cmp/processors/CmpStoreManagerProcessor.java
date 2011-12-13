@@ -38,6 +38,7 @@ import org.jboss.as.cmp.jdbc.JdbcStoreManagerRelationshipsService;
 import org.jboss.as.cmp.jdbc.JdbcStoreManagerStartService;
 import org.jboss.as.cmp.jdbc.metadata.JDBCEntityMetaData;
 import org.jboss.as.cmp.jdbc.metadata.JDBCRelationshipRoleMetaData;
+import org.jboss.as.cmp.keygenerator.KeyGeneratorFactoryRegistry;
 import org.jboss.as.connector.subsystems.datasources.AbstractDataSourceService;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -110,6 +111,7 @@ public class CmpStoreManagerProcessor implements DeploymentUnitProcessor {
                         // Phase 1: Init the store
                         final JdbcStoreManagerInitService initService = new JdbcStoreManagerInitService(storeManager);
                         final ServiceBuilder<?> initBuilder = context.getServiceTarget().addService(initName, initService);
+                        initBuilder.addDependency(KeyGeneratorFactoryRegistry.SERVICE_NAME, KeyGeneratorFactoryRegistry.class, storeManager.getKeyGeneratorFactoryInjector());
                         addDataSourceDependency(initBuilder, storeManager, entityMetaData.getDataSourceName());
                         for (JDBCRelationshipRoleMetaData roleMetaData : entityMetaData.getRelationshipRoles()) {
                             final String dsName = roleMetaData.getRelationMetaData().getDataSourceName();

@@ -29,11 +29,6 @@ package org.jboss.as.cmp.keygenerator;
  */
 public interface KeyGeneratorFactory {
     /**
-     * Returns the name of the factory
-     */
-    String getFactoryName();
-
-    /**
      * Returns a new key generator
      */
     KeyGenerator getKeyGenerator() throws Exception;
