@@ -34,5 +34,28 @@
             </configuration>
         </container>
     </group>
+    
+    <!-- Group of manually managed containers used for failover testing,
+         see ARQ-336 for details. -->
+    <group qualifier="clustering-udp-unmanaged">
+
+        <container qualifier="clustering-udp-0-unmanaged" default="true" mode="manual" managed="false">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/jbossas-clustering-udp-0</property>
+                <!-- AS7-2493 different jboss.node.name must be specified -->
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-clustering-udp-0 -Djboss.node.name=node-udp-0</property>
+                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+            </configuration>
+        </container>
+
+        <container qualifier="clustering-udp-1-unmanaged" default="false" mode="manual" managed="false">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/jbossas-clustering-udp-1</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-clustering-udp-1 -Djboss.node.name=node-udp-1 -Djboss.port.offset=100</property>
+                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="managementPort">10099</property>
+            </configuration>
+        </container>
+    </group>
 
 </arquillian>
