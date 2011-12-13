@@ -52,6 +52,7 @@
                 </formatter>
                 <file relative-to="jboss.server.log.dir" path="appclient.log"/>
                 <suffix value=".yyyy-MM-dd"/>
+                <append value="true"/>
             </periodic-rotating-file-handler>
 
             <logger category="com.arjuna">
