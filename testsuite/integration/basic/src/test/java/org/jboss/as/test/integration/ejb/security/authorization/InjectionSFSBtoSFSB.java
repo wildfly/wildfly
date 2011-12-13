@@ -33,9 +33,8 @@ import javax.ejb.Stateful;
 @Stateful
 @SecurityDomain("ejb3-tests")
 public class InjectionSFSBtoSFSB implements SimpleAuthorizationRemote {
-   
-   @EJB AnnOnlyCheckSFSBForInjection injected;
 
+   @EJB AnnOnlyCheckSFSBForInjection injected;
 
    public String defaultAccess(String message) {
       return injected.defaultAccess(message);

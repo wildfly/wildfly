@@ -30,7 +30,7 @@ import javax.annotation.security.RolesAllowed;
 import javax.ejb.Stateful;
 
 /**
- * This is a no-interface session bean which is to be injected in InjectionSFSBtoSFSB
+ * This is a no-interface session bean which is to be injected.
  *
  * @author <a href="mailto:jlanik@redhat.com">Jan Lanik</a>.
  */

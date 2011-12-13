@@ -31,6 +31,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.Ignore;
 
 /**
  * This test case check whether basic EJB authorization works from EJB client to injected stateless remote EJB.
@@ -63,11 +64,13 @@ public class InjectionAnnSFSBtoSLSBTestCase extends AnnSBTest {
    }
 
    @Test
+   @Ignore("AS7-2942")
    public void testSingleMethodAnnotationsUser1() throws Exception {
       testSingleMethodAnnotationsUser1Template(MODULE, log, beanClass());
    }
 
    @Test
+   @Ignore("AS7-2942")
    public void testSingleMethodAnnotationsUser2() throws Exception {
       testSingleMethodAnnotationsUser2Template(MODULE, log, beanClass());
    }
