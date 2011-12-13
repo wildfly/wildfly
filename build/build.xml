@@ -782,7 +782,10 @@
 
         <module-def name="org.jboss.as.modcluster">
             <maven-resource group="org.jboss.as" artifact="jboss-as-modcluster"/>
-            <maven-resource group="org.jboss.mod_cluster" artifact="mod_cluster"/>
+            <maven-resource group="org.jboss.mod_cluster" artifact="mod_cluster-container-spi"/>
+            <maven-resource group="org.jboss.mod_cluster" artifact="mod_cluster-core"/>
+            <maven-resource group="org.jboss.mod_cluster" artifact="mod_cluster-container-catalina"/>
+            <maven-resource group="org.jboss.mod_cluster" artifact="mod_cluster-container-jbossweb"/>
         </module-def>
 
         <module-def name="org.jboss.as.pojo">

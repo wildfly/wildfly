@@ -1091,7 +1091,26 @@
 
                 <dependency>
                     <groupId>org.jboss.mod_cluster</groupId>
-                    <artifactId>mod_cluster</artifactId>
+                    <artifactId>mod_cluster-container-spi</artifactId>
+                    <version>${version.org.jboss.mod_cluster}</version>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.mod_cluster</groupId>
+                    <artifactId>mod_cluster-core</artifactId>
+                    <version>${version.org.jboss.mod_cluster}</version>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.mod_cluster</groupId>
+                    <artifactId>mod_cluster-container-catalina</artifactId>
+                    <version>${version.org.jboss.mod_cluster}</version>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.mod_cluster</groupId>
+                    <artifactId>mod_cluster-container-jbossweb</artifactId>
+                    <version>${version.org.jboss.mod_cluster}</version>
                 </dependency>
 
                 <dependency>
