@@ -23,14 +23,24 @@
 package org.jboss.as.test.integration.ejb.security;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.ejb.security.authorization.InherritanceAnnOnlyCheckSFSB;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.Ignore;
+import org.junit.runner.RunWith;
 
+import javax.ejb.EJBAccessException;
+import javax.naming.Context;
+
+@RunWith(Arquillian.class)
+@RunAsClient
 /**
+ * This test case check whether basic EJB authorization works from EJB client to inherrited stateless remote EJB.
+ *
  * @author <a href="mailto:jlanik@redhat.com">Jan Lanik</a>.
  */
 public class InherritanceAnnSFSBTestCase extends AnnSBTest{
