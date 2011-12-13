@@ -1,5 +1,11 @@
 package org.jboss.as.test.integration.ee.appclient.basic;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -42,6 +48,12 @@ public class AppClientStateSingleton implements AppClientSingletonRemote {
         try {
             boolean b = latch.await(10, TimeUnit.SECONDS);
             logger.info("Await returned: " + b + " : " + value);
+            if (!b) {
+                ThreadInfo[] threadInfos = ManagementFactory.getThreadMXBean().dumpAllThreads(true, true);
+                for (ThreadInfo info : threadInfos) {
+                    logger.info(info);
+                }
+            }
             return value;
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
