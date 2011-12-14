@@ -23,13 +23,17 @@ package org.jboss.as.ejb3.iiop;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.ejb.EJBMetaData;
+import javax.ejb.EJBObject;
+import javax.ejb.Handle;
 import javax.ejb.HomeHandle;
 import javax.management.MBeanException;
+import javax.rmi.PortableRemoteObject;
 import javax.transaction.Status;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
@@ -364,8 +368,9 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
         interceptorContext.putPrivateData(Component.class, componentView.getComponent());
     }
 
-    private boolean handleIsIdentical(final org.omg.CORBA.Object val) {
-        return val._is_equivalent(val);
+    private boolean handleIsIdentical(final org.omg.CORBA.Object val) throws RemoteException {
+        //TODO: is this correct?
+        return orb.object_to_string(_this_object()).equals(orb.object_to_string(val));
     }
 
     private Object unmarshalIdentifier() throws IOException, ClassNotFoundException {

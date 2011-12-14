@@ -49,7 +49,8 @@ public class BasicIIOPInvocationTestCase {
     @TargetsContainer("iiop-server")
     public static Archive<?> deployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "server.jar");
-        jar.addClasses(IIOPBasicBean.class, IIOPBasicHome.class, IIOPBasicRemote.class);
+        jar.addClasses(IIOPBasicBean.class, IIOPBasicHome.class, IIOPBasicRemote.class,
+                IIOPBasicStatefulBean.class, IIOPBasicStatefulHome.class, IIOPBasicStatefulRemote.class);
         return jar;
     }
 
@@ -57,7 +58,9 @@ public class BasicIIOPInvocationTestCase {
     @TargetsContainer("iiop-client")
     public static Archive<?> clientDeployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "client.jar");
-        jar.addClasses(ClientEjb.class, IIOPBasicHome.class, IIOPBasicRemote.class, BasicIIOPInvocationTestCase.class);
+        jar.addClasses(ClientEjb.class, IIOPBasicHome.class, IIOPBasicRemote.class,
+                BasicIIOPInvocationTestCase.class, IIOPBasicStatefulHome.class,
+                IIOPBasicStatefulRemote.class);
         return jar;
     }
 
@@ -87,6 +90,14 @@ public class BasicIIOPInvocationTestCase {
     public void testEjbMetadata() throws IOException, NamingException {
         final ClientEjb ejb = client();
         Assert.assertEquals("hello", ejb.getRemoteMessageViaEjbMetadata());
+    }
+
+
+    @Test
+    @OperateOnDeployment("client")
+    public void testIsIdentical() throws IOException, NamingException {
+        final ClientEjb ejb = client();
+        ejb.testIsIdentical();
     }
 
     private ClientEjb client() throws NamingException {

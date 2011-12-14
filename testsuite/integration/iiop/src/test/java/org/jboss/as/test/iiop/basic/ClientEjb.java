@@ -20,6 +20,10 @@ public class ClientEjb {
     @EJB(lookup = "corbaname:iiop:localhost:3628#server/IIOPBasicBean")
     private IIOPBasicHome home;
 
+
+    @EJB(lookup = "corbaname:iiop:localhost:3628#server/IIOPBasicStatefulBean")
+    private IIOPBasicStatefulHome statefulHome;
+
     public String getRemoteMessage() throws RemoteException {
         return home.create().hello();
     }
@@ -46,4 +50,15 @@ public class ClientEjb {
         return object.hello();
     }
 
+    public void testIsIdentical() throws RemoteException {
+        final IIOPBasicStatefulRemote b1 = statefulHome.create(10);
+        final IIOPBasicStatefulRemote b2 = statefulHome.create(20);
+        Assert.assertTrue(b1.isIdentical(b1));
+        Assert.assertFalse(b1.isIdentical(b2));
+
+        final IIOPBasicRemote s1 = home.create();
+        final IIOPBasicRemote s2 = home.create();
+        Assert.assertTrue(s1.isIdentical(s1));
+        Assert.assertTrue(s1.isIdentical(s2));
+    }
 }
