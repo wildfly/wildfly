@@ -885,6 +885,11 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase {
 
 
     private static final ManagementResourceRegistration RESOURCE_REGISTRATION = new ManagementResourceRegistration() {
+        @Override
+        public ManagementResourceRegistration getOverrideModel(String name) {
+            return null;
+        }
+
         public ManagementResourceRegistration getSubModel(PathAddress address) {
             return this;
         }
@@ -934,6 +939,11 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase {
 
         }
 
+        @Override
+        public void unregisterOperationHandler(String operationName) {
+
+        }
+
         public void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler, AttributeAccess.Storage storage) {
 
         }
@@ -967,6 +977,11 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase {
         }
 
         public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
+
+        }
+
+        @Override
+        public void unregisterAttribute(String attributeName) {
 
         }
 

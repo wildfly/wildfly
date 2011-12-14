@@ -107,6 +107,11 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
     }
 
     @Override
+    public void unregisterOperationHandler(final String operationName) {
+
+    }
+
+    @Override
     public void registerReadWriteAttribute(final String attributeName, final OperationStepHandler readHandler, final OperationStepHandler writeHandler, AttributeAccess.Storage storage) {
         throw alreadyRegistered();
     }
@@ -149,6 +154,11 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
     @Override
     public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
         throw alreadyRegistered();
+    }
+
+    @Override
+    public void unregisterAttribute(String attributeName) {
+        alreadyRegistered();
     }
 
     @Override

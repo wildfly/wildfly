@@ -756,6 +756,11 @@ public abstract class AbstractSubsystemTest {
         }
 
         @Override
+        public ManagementResourceRegistration getOverrideModel(String name) {
+            return null;
+        }
+
+        @Override
         public ManagementResourceRegistration getSubModel(PathAddress address) {
             return null;
         }
@@ -814,6 +819,11 @@ public abstract class AbstractSubsystemTest {
         }
 
         @Override
+        public void unregisterOperationHandler(String operationName) {
+
+        }
+
+        @Override
         public void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler,
                 OperationStepHandler writeHandler, Storage storage) {
         }
@@ -848,6 +858,10 @@ public abstract class AbstractSubsystemTest {
 
         @Override
         public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
+        }
+
+        @Override
+        public void unregisterAttribute(String attributeName) {
         }
 
         @Override

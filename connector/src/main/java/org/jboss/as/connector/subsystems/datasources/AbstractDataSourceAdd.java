@@ -22,35 +22,34 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
-import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.sql.Driver;
 import java.util.List;
 
-import javax.sql.DataSource;
-
 import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.StatisticsDescriptionProvider;
+import org.jboss.as.connector.pool.PoolMetrics;
 import org.jboss.as.connector.registry.DriverRegistry;
+import org.jboss.as.connector.subsystems.ClearStatisticsHandler;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.ServiceBasedNamingStore;
-import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.naming.service.BinderService;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.jca.core.api.management.ManagementRepository;
+import org.jboss.jca.core.spi.statistics.StatisticsPlugin;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
+import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -65,8 +64,7 @@ import org.jboss.security.SubjectFactory;
  */
 public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> controllers) throws OperationFailedException {
-
+    protected void performRuntime(final OperationContext context, ModelNode operation, ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> controllers) throws OperationFailedException {
         final ModelNode address = operation.require(OP_ADDR);
         final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();
         final String jndiName = operation.hasDefined(JNDINAME.getName()) ? operation.get(JNDINAME.getName()).asString() : dsName;
@@ -82,6 +80,8 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
         AbstractDataSourceService dataSourceService = createDataSourceService(dsName);
 
+        final ManagementResourceRegistration registration = context.getResourceRegistrationForUpdate();
+
         final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
         final ServiceBuilder<?> dataSourceServiceBuilder = serviceTarget
                 .addService(dataSourceServiceName, dataSourceService)
@@ -94,6 +94,76 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                 .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
                         dataSourceService.getDriverRegistryInjector()).addDependency(NamingService.SERVICE_NAME);
 
+        dataSourceServiceBuilder.addListener(new AbstractServiceListener<Object>() {
+            public void transition(final ServiceController<? extends Object> controller,
+                                   final ServiceController.Transition transition) {
+
+                switch (transition) {
+                    case STARTING_to_UP: {
+
+                        CommonDeployment deploymentMD = ((AbstractDataSourceService) controller.getService()).getDeploymentMD();
+
+                        StatisticsPlugin jdbcStats = deploymentMD.getDataSources()[0].getStatistics();
+                        StatisticsPlugin poolStats = deploymentMD.getDataSources()[0].getPool().getStatistics();
+                        int size = jdbcStats.getNames().size() + poolStats.getNames().size();
+                        if (size != 0) {
+                            ManagementResourceRegistration subRegistration = registration.registerOverrideModel(dsName, new StatisticsDescriptionProvider(jdbcStats, poolStats));
+                            subRegistration.registerOperationHandler("clear-statistics", new ClearStatisticsHandler(jdbcStats,poolStats), DataSourcesSubsystemProviders.CLEAR_STATISTICS_DESC, false);
+
+                            if (jdbcStats.getNames().size() != 0) {
+
+                                //context.createResource(PathAddress.pathAddress(PathElement.pathElement("statistics")));
+                                //context.createResource(PathAddress.pathAddress(PathElement.pathElement("statistics"), PathElement.pathElement("jdbc")));
+                                for (String statName : jdbcStats.getNames()) {
+                                    subRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(jdbcStats));
+                                }
+
+                            }
+
+                            if (poolStats.getNames().size() != 0) {
+
+                                for (String statName : poolStats.getNames()) {
+                                    subRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
+                                }
+                            }
+                        }
+                        break;
+
+
+                    }
+                    case UP_to_STOP_REQUESTED: {
+
+                        CommonDeployment deploymentMD = ((AbstractDataSourceService) controller.getService()).getDeploymentMD();
+
+                        StatisticsPlugin jdbcStats = deploymentMD.getDataSources()[0].getStatistics();
+                        StatisticsPlugin poolStats = deploymentMD.getDataSources()[0].getPool().getStatistics();
+
+                        ManagementResourceRegistration subRegistration = registration.getOverrideModel(dsName);
+                        if (subRegistration != null) {
+                            if (jdbcStats.getNames().size() != 0) {
+
+                                //context.createResource(PathAddress.pathAddress(PathElement.pathElement("statistics")));
+                                //context.createResource(PathAddress.pathAddress(PathElement.pathElement("statistics"), PathElement.pathElement("jdbc")));
+                                for (String statName : jdbcStats.getNames()) {
+                                    subRegistration.unregisterAttribute(statName);
+                                }
+                            }
+
+                            if (poolStats.getNames().size() != 0) {
+
+                                for (String statName : poolStats.getNames()) {
+                                    subRegistration.unregisterAttribute(statName);
+                                }
+                            }
+                            subRegistration.unregisterOperationHandler("clear-statistics");
+                            registration.unregisterOverrideModel(dsName);
+                        }
+                        break;
+
+                    }
+                }
+            }
+        });
         startConfigAndAddDependency(dataSourceServiceBuilder, dataSourceService, dsName, serviceTarget, operation, verificationHandler);
 
         final String driverName = node.asString();

@@ -48,8 +48,6 @@ public abstract class PoolMetrics implements OperationStepHandler {
 
     static final String[] NO_LOCATION = new String[0];
 
-    public static final Set<String> ATTRIBUTES =  (new ManagedConnectionPoolStatisticsImpl(1)).getNames();
-
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         if (context.getType() == OperationContext.Type.SERVER) {
             context.addStep(new OperationStepHandler() {
@@ -70,15 +68,12 @@ public abstract class PoolMetrics implements OperationStepHandler {
                                 result.set("" + stat.getValue(attributeName));
                             }
                         } catch (Exception e) {
-                            e.printStackTrace();
-                            throw new OperationFailedException(new ModelNode().set(MESSAGES.failedToGetMetrics(e.getLocalizedMessage())));
+                            throw new OperationFailedException(MESSAGES.failedToGetMetrics(e.getLocalizedMessage()));
                         }
                     }
                    context.completeStep();
                 }
             }, OperationContext.Stage.RUNTIME);
-        } else {
-            context.getResult().set(MESSAGES.noMetricsAvailable());
         }
 
         context.completeStep();
@@ -86,43 +81,40 @@ public abstract class PoolMetrics implements OperationStepHandler {
 
     protected abstract List<StatisticsPlugin> getMatchingStats(String jndiName, ManagementRepository repository);
 
-    public static class LocalAndXaDataSourcePoolMetricsHandler extends PoolMetrics {
-        public static LocalAndXaDataSourcePoolMetricsHandler INSTANCE = new LocalAndXaDataSourcePoolMetricsHandler();
+    public static class ParametrizedPoolMetricsHandler implements OperationStepHandler {
 
-        protected List<StatisticsPlugin> getMatchingStats(String jndiName, ManagementRepository repository) {
-            ArrayList<StatisticsPlugin> result = new ArrayList<StatisticsPlugin>(repository.getDataSources().size());
-            if (repository.getDataSources() != null) {
-                for (DataSource ds : repository.getDataSources()) {
-                    if (jndiName.equalsIgnoreCase(ds.getJndiName()) && ds.getPool() != null) {
-                        result.add(ds.getPool().getStatistics());
-                    }
+        private final StatisticsPlugin stats;
 
-                }
-            }
-            result.trimToSize();
-            return result;
+        public ParametrizedPoolMetricsHandler(StatisticsPlugin stats) {
+            this.stats = stats;
         }
 
-    }
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            if (context.getType() == OperationContext.Type.SERVER) {
+                context.addStep(new OperationStepHandler() {
+                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+                        final String attributeName = operation.require(NAME).asString();
 
-    public static class RaPoolMetricsHandler extends PoolMetrics {
-        public static RaPoolMetricsHandler INSTANCE = new RaPoolMetricsHandler();
+                        final ServiceController<?> managementRepoService = context.getServiceRegistry(false).getService(
+                                ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE);
+                        if (managementRepoService != null) {
+                            try {
+                                final ModelNode result = context.getResult();
+                                result.set("" + stats.getValue(attributeName));
 
-        protected List<StatisticsPlugin> getMatchingStats(String jndiName, ManagementRepository repository) {
-            ArrayList<StatisticsPlugin> result = new ArrayList<StatisticsPlugin>(repository.getConnectors().size());
-            if (repository.getConnectors() != null) {
-                for (Connector c : repository.getConnectors()) {
-                    if (jndiName.equalsIgnoreCase(c.getUniqueId())) {
-                        if (c.getConnectionFactories() == null || c.getConnectionFactories().get(0) == null
-                                || c.getConnectionFactories().get(0).getPool() == null)
-                            continue;
-                        result.add(c.getConnectionFactories().get(0).getPool().getStatistics());
+                            } catch (Exception e) {
+                               throw new OperationFailedException(MESSAGES.failedToGetMetrics(e.getLocalizedMessage()));
+                            }
+                        }
+                        context.completeStep();
                     }
-
-                }
+                }, OperationContext.Stage.RUNTIME);
             }
-            result.trimToSize();
-            return result;
+
+            context.completeStep();
+
         }
 
     }

@@ -266,6 +266,11 @@ public final class ExtensionContextImpl implements ExtensionContext {
         }
 
         @Override
+        public ManagementResourceRegistration getOverrideModel(String name) {
+            return deployments.getOverrideModel(name);
+        }
+
+        @Override
         public ManagementResourceRegistration getSubModel(PathAddress address) {
             return deployments.getSubModel(address);
         }
@@ -339,6 +344,12 @@ public final class ExtensionContextImpl implements ExtensionContext {
         }
 
         @Override
+        public void unregisterOperationHandler(String operationName) {
+            deployments.unregisterOperationHandler(operationName);
+            subdeployments.unregisterOperationHandler(operationName);
+        }
+
+        @Override
         public void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler, AttributeAccess.Storage storage) {
             deployments.registerReadWriteAttribute(attributeName, readHandler, writeHandler, storage);
             subdeployments.registerReadWriteAttribute(attributeName, readHandler, writeHandler, storage);
@@ -390,6 +401,12 @@ public final class ExtensionContextImpl implements ExtensionContext {
         public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
             deployments.registerMetric(attributeName, metricHandler, flags);
             subdeployments.registerMetric(attributeName, metricHandler, flags);
+        }
+
+        @Override
+        public void unregisterAttribute(String attributeName) {
+            deployments.unregisterAttribute(attributeName);
+            subdeployments.unregisterAttribute(attributeName);
         }
 
         @Override
