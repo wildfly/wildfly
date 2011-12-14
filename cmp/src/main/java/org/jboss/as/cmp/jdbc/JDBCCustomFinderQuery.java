@@ -111,7 +111,7 @@ public final class JDBCCustomFinderQuery implements JDBCQueryCommand {
                 return EntityProxyFactory.Util.getEntityCollection(factory, result);
             } else {
                 // Don't bother trying to cache this
-                return Collections.singleton(factory.getEntityObject(value));
+                return Collections.singleton(value != null ? factory.getEntityObject(value) : null);
             }
         } catch (IllegalAccessException e) {
             log.error("Error invoking custom finder " + finderMethod.getName(), e);

@@ -47,7 +47,7 @@ public interface JDBCQueryCommand {
                 List<Object> result = new ArrayList<Object>();
                 if (!ids.isEmpty()) {
                     for (Object id : ids) {
-                        result.add(factory.getEntityObject(id));
+                        result.add(id != null ? factory.getEntityObject(id) : null);
                     }
                 }
                 return result;

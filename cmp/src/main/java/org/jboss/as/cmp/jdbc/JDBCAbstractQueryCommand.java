@@ -627,7 +627,7 @@ public abstract class JDBCAbstractQueryCommand implements JDBCQueryCommand {
                         boolean addPk = (loadOnFindCmr ? !pk.equals(prevPk) : true);
                         if (addPk) {
                             ids.add(pk);
-                            results.add(factory.getEntityObject(pk));
+                            results.add(pk != null ? factory.getEntityObject(pk) : null);
                             prevPk = pk;
                         }
 
@@ -861,7 +861,7 @@ public abstract class JDBCAbstractQueryCommand implements JDBCQueryCommand {
                         boolean addPk = (loadOnFindCmr ? !curPk.equals(prevPk) : true);
                         if (addPk) {
                             prevPk = curPk;
-                            currentResult = factory.getEntityObject(curPk);
+                            currentResult = curPk != null ? factory.getEntityObject(curPk) : null;
                         }
 
                         // read the preload fields

@@ -133,7 +133,7 @@ public final class JDBCFindByPrimaryKeyQuery extends JDBCAbstractQueryCommand {
                 pk = pkField.setPrimaryKeyValue(pk, fieldValue);
             }
 
-            return Collections.singletonList(factory.getEntityObject(pk));
+            return Collections.singletonList(pk != null ? factory.getEntityObject(pk) : null);
         }
         return super.execute(finderMethod, args, ctx, factory);
     }

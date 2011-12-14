@@ -791,13 +791,18 @@ public class JDBCEntityBridge implements JDBCAbstractEntityBridge {
 
         // create pk fields
         for (JDBCCMPFieldMetaData fieldMD : cmpFieldsMD) {
-            JDBCCMPFieldBridge cmpField = createCMPField(metadata, fieldMD);
             if (fieldMD.isPrimaryKeyMember()) {
-                pkFieldsList.add(cmpField);
-            } else {
-                cmpFieldsList.add(cmpField);
+                pkFieldsList.add(createCMPField(metadata, fieldMD));
+
             }
         }
+        for (JDBCCMPFieldMetaData fieldMD : cmpFieldsMD) {
+            if (!fieldMD.isPrimaryKeyMember()) {
+                cmpFieldsList.add(createCMPField(metadata, fieldMD));
+
+            }
+        }
+
         // save the pk fields in the pk field array
         primaryKeyFields = pkFieldsList.toArray(new JDBCCMPFieldBridge[pkFieldsList.size()]);
         // add the pk fields to the front of the cmp list, per guarantee above

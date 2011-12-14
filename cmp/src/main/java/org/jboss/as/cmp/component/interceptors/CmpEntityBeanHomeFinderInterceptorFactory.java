@@ -102,9 +102,6 @@ public class CmpEntityBeanHomeFinderInterceptorFactory extends EntityBeanHomeFin
                 };
             }
             default: {
-                if (result == null) {
-                    throw new ObjectNotFoundException("Could not find entity from " + finderMethod + " with params " + Arrays.toString(context.getParameters()));
-                }
                 return result;
             }
         }
