@@ -8,6 +8,7 @@
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-parent</artifactId>
         <version>7.1.0.CR1-SNAPSHOT</version>
+        <relativePath>../..</relativePath>
     </parent>
 
     <groupId>org.jboss.as</groupId>
