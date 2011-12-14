@@ -72,6 +72,12 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
     }
 
     @Override
+    public void setRuntimeOnly(final boolean runtimeOnly) {
+
+    }
+
+
+    @Override
     public boolean isRemote() {
         return true;
     }
@@ -104,6 +110,11 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
     @Override
     public void registerOperationHandler(final String operationName, final OperationStepHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited, EntryType entryType, EnumSet<OperationEntry.Flag> flags) {
         throw alreadyRegistered();
+    }
+
+    @Override
+    public void unregisterOperationHandler(final String operationName) {
+
     }
 
     @Override
@@ -149,6 +160,11 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
     @Override
     public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
         throw alreadyRegistered();
+    }
+
+    @Override
+    public void unregisterAttribute(String attributeName) {
+        alreadyRegistered();
     }
 
     @Override

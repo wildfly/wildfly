@@ -78,7 +78,7 @@ import org.jboss.dmr.ModelType;
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
  */
-class ResourceAdaptersSubsystemProviders {
+public class ResourceAdaptersSubsystemProviders {
 
     static final String[] RESOURCEADAPTER_ATTRIBUTE = new String[]{ARCHIVE.getName(), TRANSACTIONSUPPORT.getName(), BOOTSTRAPCONTEXT.getName(),
             CONFIG_PROPERTIES.getName(), BEANVALIDATIONGROUPS.getName(), CONNECTIONDEFINITIONS_NAME, ADMIN_OBJECTS_NAME};
@@ -106,7 +106,7 @@ class ResourceAdaptersSubsystemProviders {
             CLASS_NAME, JNDINAME,
             USE_JAVA_CONTEXT, ENABLED};
 
-    static final String RESOURCE_NAME = ResourceAdaptersSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
+    public static final String RESOURCE_NAME = ResourceAdaptersSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
 
     static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
 
@@ -392,6 +392,17 @@ class ResourceAdaptersSubsystemProviders {
             final ModelNode operation = new ModelNode();
             operation.get(OPERATION_NAME).set("test-connection-in-pool");
             operation.get(DESCRIPTION).set(bundle.getString("resourceadapter.test-connection-in-pool"));
+            return operation;
+        }
+    };
+
+    public static DescriptionProvider CLEAR_STATISTICS_DESC = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode operation = new ModelNode();
+            operation.get(OPERATION_NAME).set("clear-statistics");
+            operation.get(DESCRIPTION).set(bundle.getString("resourceadapter.clear-statistics"));
             return operation;
         }
     };

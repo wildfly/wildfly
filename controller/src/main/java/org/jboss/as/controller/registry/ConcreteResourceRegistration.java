@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -61,7 +62,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     @SuppressWarnings("unused")
     private volatile Map<String, AttributeAccess> attributes;
 
-    private final boolean runtimeOnly;
+    private final AtomicBoolean runtimeOnly = new AtomicBoolean();
 
     private static final AtomicMapFieldUpdater<ConcreteResourceRegistration, String, NodeSubregistry> childrenUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteResourceRegistration.class, Map.class, "children"));
     private static final AtomicMapFieldUpdater<ConcreteResourceRegistration, String, OperationEntry> operationsUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteResourceRegistration.class, Map.class, "operations"));
@@ -74,12 +75,17 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
         operationsUpdater.clear(this);
         attributesUpdater.clear(this);
         descriptionProviderUpdater.set(this, provider);
-        this.runtimeOnly = runtimeOnly;
+        this.runtimeOnly.set(runtimeOnly);
     }
 
     @Override
     public boolean isRuntimeOnly() {
-        return runtimeOnly;
+        return runtimeOnly.get();
+    }
+
+    @Override
+    public void setRuntimeOnly(final boolean runtimeOnly) {
+        this.runtimeOnly.set(runtimeOnly);
     }
 
     @Override
@@ -96,7 +102,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
         if (address == null) {
             throw MESSAGES.cannotRegisterSubmodelWithNullPath();
         }
-        if (runtimeOnly) {
+        if (isRuntimeOnly()) {
             throw MESSAGES.cannotRegisterSubmodel();
         }
         final AbstractResourceRegistration existing = getSubRegistration(PathAddress.pathAddress(address));
@@ -111,7 +117,6 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
         return resourceRegistration;
     }
 
-    @Override
     public void unregisterSubModel(final PathElement address) throws IllegalArgumentException {
         final Map<String, NodeSubregistry> snapshot = childrenUpdater.get(this);
         final NodeSubregistry subregistry = snapshot.get(address.getKey());
@@ -193,6 +198,13 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     @Override
+    public void unregisterOperationHandler(final String operationName) {
+        if (operationsUpdater.remove(this, operationName) == null) {
+            throw operationNotRegisteredException(operationName, resourceDefinition.getPathElement());
+        }
+    }
+
+    @Override
     public void registerReadWriteAttribute(final String attributeName, final OperationStepHandler readHandler, final OperationStepHandler writeHandler, AttributeAccess.Storage storage) {
         AttributeAccess aa = new AttributeAccess(AccessType.READ_WRITE, storage, readHandler, writeHandler, null, null);
         if (attributesUpdater.putIfAbsent(this, attributeName, aa) != null) {
@@ -259,6 +271,11 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
         if (attributesUpdater.putIfAbsent(this, attributeName, aa) != null) {
             throw alreadyRegistered("attribute", attributeName);
         }
+    }
+
+    @Override
+    public void unregisterAttribute(String attributeName) {
+        attributesUpdater.remove(this, attributeName);
     }
 
     @Override
@@ -464,6 +481,10 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
 
     private IllegalArgumentException alreadyRegistered(final String type, final String name) {
         return MESSAGES.alreadyRegistered(type, name, getLocationString());
+    }
+
+    private IllegalArgumentException operationNotRegisteredException(String op, PathElement address) {
+        return MESSAGES.operationNotRegisteredException(op, PathAddress.pathAddress(address));
     }
 
 }
