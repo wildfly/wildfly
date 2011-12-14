@@ -785,6 +785,10 @@ public abstract class AbstractSubsystemTest {
         }
 
         @Override
+        public void setRuntimeOnly(boolean runtimeOnly) {
+        }
+
+        @Override
         public ManagementResourceRegistration registerOverrideModel(String name, OverrideDescriptionProvider descriptionProvider) {
             return MOCK_RESOURCE_REG;
         }

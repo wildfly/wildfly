@@ -109,6 +109,16 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      */
     boolean isAllowsOverride();
 
+
+    /**
+     * Sets whether this model node only exists in the runtime and has no representation in the
+     * persistent configuration model.
+     *
+     * @param runtimeOnly {@code true} if the model node will have no representation in the
+     * persistent configuration model; {@code false} otherwise
+     */
+    void setRuntimeOnly(final boolean runtimeOnly);
+
     /**
      * Register a specifically named resource that overrides this {@link PathElement#WILDCARD_VALUE wildcard registration}
      * by adding additional attributes, operations or child types.
