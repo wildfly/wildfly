@@ -95,6 +95,10 @@ public final class ConnectorServices {
 
     public static final ServiceName CCM_SERVICE = ServiceName.JBOSS.append("cached-connection-manager");
 
+    public static final ServiceName IDLE_REMOVER_SERVICE = ServiceName.JBOSS.append("ironjacamar", "idle-remover");
+
+    public static final ServiceName CONNECTION_VALIDATOR_SERVICE = ServiceName.JBOSS.append("ironjacamar", "connection-validator");
+
     private static final String RA_SERVICE_NAME_SEPARATOR = "#";
 
     private ConnectorServices() {

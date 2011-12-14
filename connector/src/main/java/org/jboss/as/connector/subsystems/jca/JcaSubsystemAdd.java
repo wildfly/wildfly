@@ -94,6 +94,20 @@ class JcaSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .setInitialMode(Mode.ACTIVE)
                 .install());
 
+        final IdleRemoverService idleRemoverService = new IdleRemoverService();
+        newControllers.add(serviceTarget
+                .addService(ConnectorServices.IDLE_REMOVER_SERVICE, idleRemoverService)
+                .addListener(verificationHandler)
+                .setInitialMode(Mode.ACTIVE)
+                .install());
+
+        final ConnectionValidatorService connectionValidatorService = new ConnectionValidatorService();
+        newControllers.add(serviceTarget
+                .addService(ConnectorServices.CONNECTION_VALIDATOR_SERVICE, connectionValidatorService)
+                .addListener(verificationHandler)
+                .setInitialMode(Mode.ACTIVE)
+                .install());
+
         // TODO does the install of this and the DriverProcessor
         // belong in DataSourcesSubsystemAdd?
         final DriverRegistryService driverRegistryService = new DriverRegistryService();

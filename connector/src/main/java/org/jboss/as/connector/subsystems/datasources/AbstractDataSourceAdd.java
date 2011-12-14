@@ -92,7 +92,10 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                 .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
                         dataSourceService.getSubjectFactoryInjector())
                 .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
-                        dataSourceService.getDriverRegistryInjector()).addDependency(NamingService.SERVICE_NAME);
+                        dataSourceService.getDriverRegistryInjector())
+                .addDependency(ConnectorServices.IDLE_REMOVER_SERVICE)
+                .addDependency(ConnectorServices.CONNECTION_VALIDATOR_SERVICE)
+                .addDependency(NamingService.SERVICE_NAME);
 
         dataSourceServiceBuilder.addListener(new AbstractServiceListener<Object>() {
 
