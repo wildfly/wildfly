@@ -131,7 +131,7 @@
         <version.org.apache.xalan>2.7.1.jbossorg-1</version.org.apache.xalan>
         <version.org.apache.xerces>2.9.1-jbossas-1</version.org.apache.xerces>
         <version.org.apache.xml-resolver>1.2</version.org.apache.xml-resolver>
-        <version.org.codehaus.jackson>1.6.3</version.org.codehaus.jackson>
+        <version.org.codehaus.jackson>1.9.2</version.org.codehaus.jackson>
         <version.org.codehaus.woodstox.stax2-api>3.1.1</version.org.codehaus.woodstox.stax2-api>
         <version.org.codehaus.woodstox.woodstox-core-asl>4.1.1</version.org.codehaus.woodstox.woodstox-core-asl>
         <version.org.hibernate>4.0.0.CR7</version.org.hibernate>
