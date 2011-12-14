@@ -45,7 +45,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.jboss.logging.Logger;
 import org.junit.runner.RunWith;
@@ -116,7 +115,6 @@ public class ClusteredWebFailoverTestCase {
      * @throws InterruptedException  
      */
     @Test
-    @Ignore("AS7-2912")
     @InSequence(1)
     /* @OperateOnDeployment(DEPLOYMENT1) -- See http://community.jboss.org/thread/176096 */
     public void testGracefulSimpleFailover(/*@ArquillianResource(SimpleServlet.class) URL baseURL*/) throws IOException, InterruptedException {
@@ -214,7 +212,6 @@ public class ClusteredWebFailoverTestCase {
      * @throws InterruptedException  
      */
     @Test
-    @Ignore("AS7-2912")
     @InSequence(2)
     public void testGracefulUndeployFailover() throws IOException, InterruptedException {
         // Container is unmanaged, need to start manually.
