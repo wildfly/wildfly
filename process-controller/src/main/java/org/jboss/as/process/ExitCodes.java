@@ -22,10 +22,25 @@
 package org.jboss.as.process;
 
 /**
+ * Reserved process exit codes handled differently
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class ExitCodes {
-    /** Exit code from host controller which the process controller does not try to respawn */
+    /** Exit code which serves two functions:
+     * <ul>
+     *   <li>
+     *     <b>standalone mode:</b> - if a standalone server's exit code the startup script will start up the server again.
+     *  </li>
+     *  <li>
+     *     <b>domain mode:</b> - if the host controller process returns this exit code, the process controller will terminate
+     *      with this exit code, and the domain's startup script will start up the process controller again, which in turn will start up
+     *      the host controller and any {@code autostart="true"} servers.
+     *  </li>
+     * </ul>
+     */
+    public static final int RESTART_PROCESS_FROM_STARTUP_SCRIPT = 10;
+
+    /** Exit code from host controller which the process controller does not try to respawn, and leads to the process controller shutting down in turn*/
     public static final int HOST_CONTROLLER_ABORT_EXIT_CODE = 99;
 }

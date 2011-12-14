@@ -238,6 +238,7 @@ public class HostRootDescription {
         root.get(REQUEST_PROPERTIES, RESTART, DEFAULT).set(false);
         root.get(REQUEST_PROPERTIES, RESTART, REQUIRED).set(false);
         root.get(REQUEST_PROPERTIES, RESTART, NILLABLE).set(true);
+        root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
     }
 
