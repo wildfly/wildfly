@@ -565,11 +565,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.apache.juddi</groupId>
-                    <artifactId>juddi</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>org.apache.neethi</groupId>
                     <artifactId>neethi</artifactId>
                 </dependency>

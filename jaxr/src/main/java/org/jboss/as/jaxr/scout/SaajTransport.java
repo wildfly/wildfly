@@ -21,7 +21,6 @@
  */
 package org.jboss.as.jaxr.scout;
 
-import org.apache.juddi.IRegistry;
 import org.apache.ws.scout.registry.RegistryException;
 import org.apache.ws.scout.transport.Transport;
 import org.jboss.logging.Logger;
@@ -57,6 +56,8 @@ import java.net.URI;
  * @author Richard Opalka (richard.opalka@redhat.com)
  */
 public class SaajTransport implements Transport {
+
+    public static final String UDDI_V2_NAMESPACE = "urn:uddi-org:api_v2";
 
     private static Logger log = Logger.getLogger(SaajTransport.class);
 
@@ -109,10 +110,9 @@ public class SaajTransport implements Transport {
         SOAPPart soapPart = message.getSOAPPart();
         SOAPBody soapBody = soapPart.getEnvelope().getBody();
         //Create the outer body element
-        String uddins = IRegistry.UDDI_V2_NAMESPACE;
-        Name bodyName = factory.createName(elem.getNodeName(), prefix, uddins);
+        Name bodyName = factory.createName(elem.getNodeName(), prefix, UDDI_V2_NAMESPACE);
         SOAPBodyElement bodyElement = soapBody.addBodyElement(bodyName);
-        bodyElement.addNamespaceDeclaration(prefix, uddins);
+        bodyElement.addNamespaceDeclaration(prefix, UDDI_V2_NAMESPACE);
         appendAttributes(bodyElement, elem.getAttributes(), factory);
         appendElements(bodyElement, elem.getChildNodes(), factory);
         return message;
@@ -139,15 +139,13 @@ public class SaajTransport implements Transport {
 
     private void appendElements(SOAPElement bodyElement, NodeList nlist, SOAPFactory factory) throws SOAPException {
         String prefix = "";
-        String uddins = IRegistry.UDDI_V2_NAMESPACE;
         int len = nlist != null ? nlist.getLength() : 0;
-
         for (int i = 0; i < len; i++) {
             Node node = nlist.item(i);
             short nodeType = node != null ? node.getNodeType() : -100;
             if (Node.ELEMENT_NODE == nodeType) {
                 Element el = (Element) node;
-                Name name = factory.createName(el.getNodeName(), prefix, uddins);
+                Name name = factory.createName(el.getNodeName(), prefix, UDDI_V2_NAMESPACE);
                 SOAPElement attachedEl = bodyElement.addChildElement(name);
                 appendAttributes(attachedEl, el.getAttributes(), factory);
                 appendElements(attachedEl, el.getChildNodes(), factory);

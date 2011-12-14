@@ -512,10 +512,6 @@
             <maven-resource group="org.apache.james" artifact="apache-mime4j"/>
         </module-def>
 
-        <module-def name="org.apache.juddi">
-            <maven-resource group="org.apache.juddi" artifact="juddi"/>
-        </module-def>
-
         <module-def name="org.apache.neethi">
             <maven-resource group="org.apache.neethi" artifact="neethi"/>
         </module-def>

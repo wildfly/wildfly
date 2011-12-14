@@ -53,7 +53,7 @@ public final class JAXRConnectionFactoryService extends AbstractService<Void> {
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("jaxr", "connectionfactory");
 
     // [TODO] AS7-2277 JAXR subsystem i18n
-    private final Logger log = Logger.getLogger(JAXRConnectionFactoryService.class);
+    private final Logger log = Logger.getLogger("org.jboss.as.jaxr");
 
     private final InjectedValue<NamingStore> injectedJavaContext = new InjectedValue<NamingStore>();
     private final InjectedValue<JAXRConfiguration> injectedConfig = new InjectedValue<JAXRConfiguration>();
