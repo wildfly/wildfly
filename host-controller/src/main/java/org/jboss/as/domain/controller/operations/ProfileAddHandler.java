@@ -22,13 +22,10 @@
 
 package org.jboss.as.domain.controller.operations;
 
-import org.jboss.as.controller.OperationContext;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-
 import java.util.Locale;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.ProfileDescription;
 import org.jboss.dmr.ModelNode;
@@ -41,9 +38,11 @@ public class ProfileAddHandler extends AbstractAddStepHandler implements Descrip
     public static final ProfileAddHandler INSTANCE = new ProfileAddHandler();
 
     protected void populateModel(final ModelNode operation, final ModelNode model) {
+        /* This will be reintroduced for 7.2.0, leave commented out
         if (operation.has(INCLUDES)) {
             model.get(INCLUDES).set(operation.get(INCLUDES));
         }
+        */
     }
 
     protected boolean requiresRuntime(OperationContext context) {

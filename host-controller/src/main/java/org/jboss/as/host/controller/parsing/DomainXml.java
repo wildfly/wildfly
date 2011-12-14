@@ -58,15 +58,17 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
 
-import javax.xml.XMLConstants;
-import javax.xml.stream.XMLStreamException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+
+import javax.xml.XMLConstants;
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -377,11 +379,15 @@ public class DomainXml extends CommonXml {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case INCLUDE: {
+                    HOST_CONTROLLER_LOGGER.warnIgnoringSocketBindingGroupIgnore(reader.getLocation());
+
+                    /* This will be reintroduced for 7.2.0, leave commented out
                     final String includedGroup = readStringAttributeElement(reader, Attribute.SOCKET_BINDING_GROUP.getLocalName());
                     if (!includedGroups.add(includedGroup)) {
                         throw MESSAGES.alreadyDeclared(Attribute.SOCKET_BINDING_GROUP.getLocalName(), includedGroup, reader.getLocation());
                     }
                     SocketBindingGroupResourceDefinition.INCLUDES.parseAndAddParameterElement(includedGroup, bindingGroupUpdate, reader.getLocation());
+                    */
                     break;
                 }
                 case SOCKET_BINDING: {
@@ -427,6 +433,7 @@ public class DomainXml extends CommonXml {
             requireNamespace(reader, expectedNs);
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
+               /* This will be reintroduced for 7.2.0, leave commented out
                 case INCLUDE: {
                     final String includedGroup = readStringAttributeElement(reader, Attribute.SOCKET_BINDING_GROUP.getLocalName());
                     if (!includedGroups.add(includedGroup)) {
@@ -435,6 +442,7 @@ public class DomainXml extends CommonXml {
                     SocketBindingGroupResourceDefinition.INCLUDES.parseAndAddParameterElement(includedGroup, bindingGroupUpdate, reader.getLocation());
                     break;
                 }
+                */
                 case SOCKET_BINDING: {
                     final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, updates);
                     if (!uniqueBindingNames.add(bindingName)) {
@@ -592,7 +600,8 @@ public class DomainXml extends CommonXml {
             // Sequence
             final Set<String> configuredSubsystemTypes = new HashSet<String>();
             while (reader.nextTag() != END_ELEMENT) {
-                switch (Namespace.forUri(reader.getNamespaceURI())) {
+                Namespace ns = Namespace.forUri(reader.getNamespaceURI());
+                switch (ns) {
                     case UNKNOWN: {
                         if (Element.forName(reader.getLocalName()) != Element.SUBSYSTEM) {
                             throw unexpectedElement(reader);
@@ -615,6 +624,12 @@ public class DomainXml extends CommonXml {
                         if (Element.forName(reader.getLocalName()) != Element.INCLUDE) {
                             throw unexpectedElement(reader);
                         }
+                        //Remove support for profile includes until 7.2.0
+                        if (ns == Namespace.DOMAIN_1_0) {
+                            HOST_CONTROLLER_LOGGER.warnIgnoringSocketBindingGroupIgnore(reader.getLocation());
+                        }
+                        throw unexpectedElement(reader);
+                        /* This will be reintroduced for 7.2.0, leave commented out
                         final String includedName = readStringAttributeElement(reader, Attribute.PROFILE.getLocalName());
                         if (! names.contains(includedName)) {
                             throw MESSAGES.profileNotFound(reader.getLocation());
@@ -624,6 +639,7 @@ public class DomainXml extends CommonXml {
                         }
                         profileIncludes.add(includedName);
                         break;
+                        */
                     }
                     default: {
                         throw unexpectedElement(reader);
@@ -633,7 +649,9 @@ public class DomainXml extends CommonXml {
             final ModelNode profile = new ModelNode();
             profile.get(OP).set(ADD);
             profile.get(OP_ADDR).set(address).add(ModelDescriptionConstants.PROFILE, name);
+            /* This will be reintroduced for 7.2.0, leave commented out
             profile.get(INCLUDES).set(profileIncludes);
+            */
             list.add(profile);
 
             // Process subsystems

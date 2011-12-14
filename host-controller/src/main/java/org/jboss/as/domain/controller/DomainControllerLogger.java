@@ -22,8 +22,13 @@
 
 package org.jboss.as.domain.controller;
 
+import javax.xml.stream.Location;
+
 import org.jboss.logging.BasicLogger;
+import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
+import org.jboss.logging.Logger.Level;
+import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 
 /**
@@ -63,5 +68,10 @@ public interface DomainControllerLogger extends BasicLogger {
      * A logger with the category of {@code org.jboss.as.host.controller}.
      */
     DomainControllerLogger HOST_CONTROLLER_LOGGER = Logger.getMessageLogger(DomainControllerLogger.class, "org.jboss.as.host.controller");
+
+    @LogMessage(level = Level.WARN)
+    @Message(id = 11500, value = "Ignoring 'include' child of 'socket-binding-group' %s")
+    void warnIgnoringSocketBindingGroupIgnore(Location location);
+
 
 }

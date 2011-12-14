@@ -979,7 +979,6 @@
             <xs:documentation>Contains a list of subsystems</xs:documentation>
         </xs:annotation>
         <xs:sequence>
-            <xs:element name="include" type="profile-includeType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded">
                 <xs:annotation>
                     <xs:documentation>A profile declaration may include configuration
@@ -991,19 +990,6 @@
         <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>Name of the profile</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-    </xs:complexType>
-
-    <xs:complexType name="profile-includeType">
-        <xs:annotation>
-            <xs:documentation>Specifies that a contents of a named profile are to be included in
-                the profile whose definition includes this type.
-            </xs:documentation>
-        </xs:annotation>
-        <xs:attribute name="profile" use="required">
-            <xs:annotation>
-                <xs:documentation>Name of the profile to include</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
@@ -1040,7 +1026,6 @@
             <xs:documentation>Contains a list of socket configurations</xs:documentation>
         </xs:annotation>
         <xs:sequence>
-            <xs:element name="include" type="socket-binding-group-includeType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="socket-binding" type="socket-bindingType" maxOccurs="unbounded"/>
             <xs:element name="outbound-socket-binding" type="outbound-socket-bindingType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
@@ -1051,19 +1036,6 @@
                     Name of an interface that should be used as the interface for
                     any sockets that do not explicitly declare one.
                 </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-    </xs:complexType>
-
-    <xs:complexType name="socket-binding-group-includeType">
-        <xs:annotation>
-            <xs:documentation>Specifies that a contents of a named socket-binding-group are to be included in
-                the socket-binding-group whose definition includes this type.
-            </xs:documentation>
-        </xs:annotation>
-        <xs:attribute name="socket-binding-group" use="required">
-            <xs:annotation>
-                <xs:documentation>Name of the socket-binding-group to include</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
