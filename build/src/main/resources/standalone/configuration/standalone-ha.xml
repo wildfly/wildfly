@@ -454,7 +454,7 @@
         </interface>
     </interfaces>
 
-    <socket-binding-group name="standard-sockets" default-interface="public">
+    <socket-binding-group name="standard-sockets" default-interface="public" port-offset="${jboss.socket.binding.port-offset:0}">
         <socket-binding name="http" port="8080"/>
         <socket-binding name="https" port="8443"/>
         <socket-binding name="jacorb" port="3528"/>
@@ -465,8 +465,8 @@
         <socket-binding name="jgroups-tcp" port="7600"/>
         <socket-binding name="jgroups-tcp-fd" port="57600"/>
         <socket-binding name="jgroups-mping" port="0" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45700"/>
-        <socket-binding name="management-native" interface="management" port="9999"/>
-        <socket-binding name="management-http" interface="management" port="9990"/>
+        <socket-binding name="management-native" interface="management" port="${jboss.management.native.port:9999}"/>
+        <socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}"/>
         <socket-binding name="messaging" port="5445"/>
         <socket-binding name="messaging-throughput" port="5455"/>
         <socket-binding name="modcluster" port="0"  multicast-address="224.0.1.105" multicast-port="23364"/>

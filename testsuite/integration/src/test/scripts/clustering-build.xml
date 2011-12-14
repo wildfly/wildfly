@@ -24,7 +24,7 @@
            <propertyset refid="ds.properties"/>
         </antcall>
         <change-ip-multicast-addresses name="clustering-udp-1" node="${node1}" mcastaddr="${udpGroup}"/>
-        <add-port-offset name="clustering-udp-1" offset="100" nativePort="19999" httpPort="19990"/>
+        <add-port-offset name="clustering-udp-1" offset="100" nativePort="9999" httpPort="9990"/>
 
     </target>
 

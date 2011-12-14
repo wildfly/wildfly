@@ -308,15 +308,15 @@
         </interface>
     </interfaces>
 
-    <socket-binding-group name="standard-sockets" default-interface="public">
+    <socket-binding-group name="standard-sockets" default-interface="public" port-offset="${jboss.socket.binding.port-offset:0}">
         <socket-binding name="http" port="8080"/>
         <socket-binding name="https" port="8443"/>
         <socket-binding name="jacorb" port="3528"/>
         <socket-binding name="jacorb-ssl" port="3529"/>
         <socket-binding name="jmx-connector-registry" interface="management" port="1090"/>
         <socket-binding name="jmx-connector-server" interface="management" port="1091"/>
-        <socket-binding name="management-native" interface="management" port="9999"/>
-        <socket-binding name="management-http" interface="management" port="9990"/>
+        <socket-binding name="management-native" interface="management" port="${jboss.management.native.port:9999}"/>
+        <socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}"/>
         <socket-binding name="messaging" port="5445"/>
         <socket-binding name="messaging-throughput" port="5455"/>
         <socket-binding name="osgi-http" interface="management" port="8090"/>
