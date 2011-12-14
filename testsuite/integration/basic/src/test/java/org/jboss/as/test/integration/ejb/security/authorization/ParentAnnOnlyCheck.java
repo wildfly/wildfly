@@ -5,11 +5,9 @@ import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 
 /**
- * Created by IntelliJ IDEA.
- * User: jlanik
- * Date: 12/9/11
- * Time: 10:33 AM
- * To change this template use File | Settings | File Templates.
+ * This is a parent class with methods which will be inherrited in test session bean to check that the annotations are inherrited.
+ *
+ * @author <a href="mailto:jlanik@redhat.com">Jan Lanik</a>.
  */
 public abstract class ParentAnnOnlyCheck implements SimpleAuthorizationRemote {
 
