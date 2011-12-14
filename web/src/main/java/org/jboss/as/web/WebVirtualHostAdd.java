@@ -82,8 +82,9 @@ class WebVirtualHostAdd extends AbstractAddStepHandler implements DescriptionPro
 //        model.get(Constants.SSO).set(operation.get(Constants.SSO));
         model.get(Constants.DEFAULT_WEB_MODULE).set(operation.get(Constants.DEFAULT_WEB_MODULE));
 
-        final boolean welcome = operation.hasDefined(Constants.ENABLE_WELCOME_ROOT) && operation.get(Constants.ENABLE_WELCOME_ROOT).asBoolean();
-        model.get(Constants.ENABLE_WELCOME_ROOT).set(welcome);
+        if(operation.hasDefined(Constants.ENABLE_WELCOME_ROOT)) {
+            model.get(Constants.ENABLE_WELCOME_ROOT).set(operation.get(Constants.ENABLE_WELCOME_ROOT));
+        }
     }
 
     @Override
