@@ -212,10 +212,8 @@ public class GlobalOperationHandlers {
                             if (childReg == null) {
                                 throw new OperationFailedException(new ModelNode().set(MESSAGES.noChildRegistry(childType, child)));
                             }
-                            // We only invoke runtime resources if they are remote proxies
-                            if (childReg.isRuntimeOnly() && (!proxies || !childReg.isRemote())) {
-                                storeDirect = true;
-                            } else {
+                            // Decide if we want to invoke on this child resource
+                            if (!childReg.isRuntimeOnly() ||queryRuntime || (proxies && childReg.isRemote())) {
                                 // Add a step to read the child resource
                                 ModelNode rrOp = new ModelNode();
                                 rrOp.get(OP).set(opName);
@@ -228,6 +226,8 @@ public class GlobalOperationHandlers {
 
                                 OperationStepHandler rrHandler = childReg.getOperationHandler(PathAddress.EMPTY_ADDRESS, opName);
                                 context.addStep(rrRsp, rrOp, rrHandler, OperationContext.Stage.IMMEDIATE);
+                            } else {
+                                storeDirect = true;
                             }
                         }
                         if (storeDirect) {
