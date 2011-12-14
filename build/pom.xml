@@ -1154,11 +1154,6 @@
 
                 <dependency>
                     <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-jpa-openjpa</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-jpa-spi</artifactId>
                 </dependency>
 
@@ -2616,10 +2611,6 @@
                                         <group>
                                             <title>Module org.jboss.as.jpa</title>
                                             <packages>org.jboss.as.jpa.classloader:org.jboss.as.jpa.classloader.:org.jboss.as.jpa.config:org.jboss.as.jpa.container:org.jboss.as.jpa.injectors:org.jboss.as.jpa.interceptor:org.jboss.as.jpa.persistenceprovider:org.jboss.as.jpa.processor:org.jboss.as.jpa.puparser:org.jboss.as.jpa.service:org.jboss.as.jpa.subsystem:org.jboss.as.jpa.transaction:org.jboss.as.jpa.validator</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.jboss.as.jpa.openjpa</title>
-                                            <packages>org.jboss.as.jpa.openjpa</packages>
                                         </group>
                                         <group>
                                             <title>Module org.jboss.as.jpa.spi</title>

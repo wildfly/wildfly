@@ -891,10 +891,6 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-jpa-hibernate4"/>
         </module-def>
 
-        <module-def name="org.jboss.as.jpa.openjpa">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-jpa-openjpa"/>
-        </module-def>
-
         <module-def name="org.jboss.as.jpa.spi">
             <maven-resource group="org.jboss.as" artifact="jboss-as-jpa-spi"/>
         </module-def>

@@ -3173,66 +3173,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.openjpa</groupId>
-                <artifactId>openjpa-persistence</artifactId>
-                <version>${version.org.apache.openjpa}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.openjpa</groupId>
-                        <artifactId>openjpa-kernel</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jpa_2.0_spec</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.openjpa</groupId>
-                <artifactId>openjpa-kernel</artifactId>
-                <version>${version.org.apache.openjpa}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.openjpa</groupId>
-                        <artifactId>openjpa-lib</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-pool</groupId>
-                        <artifactId>commons-pool</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jms_1.1_spec</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.openjpa</groupId>
-                <artifactId>openjpa-lib</artifactId>
-                <version>${version.org.apache.openjpa}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-lang</groupId>
-                        <artifactId>commons-lang</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-collections</groupId>
-                        <artifactId>commons-collections</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>net.sourceforge.serp</groupId>
-                        <artifactId>serp</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>org.apache.santuario</groupId>
                 <artifactId>xmlsec</artifactId>
                 <version>${version.org.apache.santuario}</version>
@@ -4113,11 +4053,6 @@
                         <artifactId>hibernate-infinispan</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-jpa-openjpa</artifactId>
-                <version>${project.version}</version>
             </dependency>
 
             <dependency>

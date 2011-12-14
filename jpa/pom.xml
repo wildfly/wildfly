@@ -46,7 +46,7 @@
         <module>spi</module>
         <module>hibernate4</module>
         <module>hibernate3</module>
-        <module>openjpa</module>
+        <!-- <module>openjpa</module> -->
     </modules>
 
     <dependencies>
