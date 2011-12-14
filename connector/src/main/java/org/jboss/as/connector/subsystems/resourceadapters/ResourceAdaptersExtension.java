@@ -181,11 +181,11 @@ public class ResourceAdaptersExtension implements Extension {
                     reloadRequiredWriteAttributeHandler, Storage.CONFIGURATION);
         }
 
-        resourceadapter.registerOperationHandler("flush-idle-connection-in-pool",
+        connectionDefinition.registerOperationHandler("flush-idle-connection-in-pool",
                 PoolOperations.FlushIdleConnectionInPool.RA_INSTANCE, FLUSH_IDLE_CONNECTION_DESC, false);
-        resourceadapter.registerOperationHandler("flush-all-connection-in-pool",
+        connectionDefinition.registerOperationHandler("flush-all-connection-in-pool",
                 PoolOperations.FlushAllConnectionInPool.RA_INSTANCE, FLUSH_ALL_CONNECTION_DESC, false);
-        resourceadapter.registerOperationHandler("test-connection-in-pool", PoolOperations.TestConnectionInPool.RA_INSTANCE,
+        connectionDefinition.registerOperationHandler("test-connection-in-pool", PoolOperations.TestConnectionInPool.RA_INSTANCE,
                 TEST_CONNECTION_DESC, false);
 
     }
