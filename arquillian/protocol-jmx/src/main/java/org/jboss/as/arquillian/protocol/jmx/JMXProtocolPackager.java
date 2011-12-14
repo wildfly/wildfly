@@ -94,7 +94,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
             archiveHolder.setArchive(archive);
         }
         addModulesManifestDependencies(appArchive);
-        archiveHolder.addPreparedDeployment(appArchive);
+        archiveHolder.addPreparedDeployment(testDeployment.getDeploymentName());
         return appArchive;
     }
 

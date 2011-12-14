@@ -46,11 +46,12 @@ public class ArquillianServiceDeployer {
     public synchronized void doServiceDeploy(@Observes BeforeDeploy event, Container container, ServiceArchiveHolder archiveHolder) {
         // already deployed?
         if(serviceArchiveDeployed.contains(container.getName())) {
-            return;
+           archiveHolder.deploymentExistsAndRemove(event.getDeployment().getName()); // cleanup
+           return;
         }
 
         // only deploy the service if the deployment has been enriched by the jmx-as7 protocol
-        if(archiveHolder.deploymentExistsAndRemove(event.getDeployment().getTestableArchive())) {
+        if(archiveHolder.deploymentExistsAndRemove(event.getDeployment().getName())) {
             Archive<?> serviceArchive = archiveHolder.getArchive();
             try {
                 log.infof("Deploy arquillian service: %s", serviceArchive);
