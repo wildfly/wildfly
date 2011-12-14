@@ -22,12 +22,15 @@
 
 package org.jboss.as.server.operations;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART;
+
 import java.util.Locale;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.process.ExitCodes;
 import org.jboss.as.server.controller.descriptions.ServerRootDescription;
 import org.jboss.dmr.ModelNode;
 
@@ -47,12 +50,13 @@ public class ServerShutdownHandler implements OperationStepHandler, DescriptionP
     /** {@inheritDoc} */
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        final boolean restart = operation.hasDefined(RESTART) ? operation.get(RESTART).asBoolean() : false;
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 final Thread thread = new Thread(new Runnable() {
                     public void run() {
-                        System.exit(0);
+                        System.exit(restart ? ExitCodes.RESTART_PROCESS_FROM_STARTUP_SCRIPT : 0);
                     }
                 });
                 // The intention is that this shutdown is graceful, and so the client gets a reply.
