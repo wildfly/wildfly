@@ -123,6 +123,11 @@ public class SecurityRealmService implements Service<SecurityRealmService>, Secu
         return null;
     }
 
+    public boolean hasTrustStore() {
+        SSLIdentityService service;
+        return ((service = sslIdentity.getOptionalValue()) != null && service.hasTrustStore());
+    }
+
     public CallbackHandlerFactory getSecretCallbackHandlerFactory() {
         return secretCallbackFactory.getValue();
     }

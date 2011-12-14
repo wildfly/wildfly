@@ -51,6 +51,14 @@ public interface SecurityRealm {
     SSLContext getSSLContext();
 
     /**
+     * Identify if a trust store has been configured for authentication, if defined
+     * it means CLIENT-CERT type authentication can occur.
+     *
+     * @return true if a trust store has been configured for authentication.
+     */
+    boolean hasTrustStore();
+
+    /**
      * @return A CallbackHandlerFactory for a pre-configured secret.
      */
     CallbackHandlerFactory getSecretCallbackHandlerFactory();
