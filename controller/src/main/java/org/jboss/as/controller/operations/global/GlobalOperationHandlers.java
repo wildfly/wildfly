@@ -213,7 +213,9 @@ public class GlobalOperationHandlers {
                                 throw new OperationFailedException(new ModelNode().set(MESSAGES.noChildRegistry(childType, child)));
                             }
                             // Decide if we want to invoke on this child resource
-                            if (!childReg.isRuntimeOnly() ||queryRuntime || (proxies && childReg.isRemote())) {
+                            boolean proxy = childReg.isRemote();
+                            boolean runtimeResource = childReg.isRuntimeOnly();
+                            if (!runtimeResource || (queryRuntime && !proxy)  || (proxies && proxy)) {
                                 // Add a step to read the child resource
                                 ModelNode rrOp = new ModelNode();
                                 rrOp.get(OP).set(opName);
