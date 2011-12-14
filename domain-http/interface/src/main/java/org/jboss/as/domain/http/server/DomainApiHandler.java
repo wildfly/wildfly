@@ -66,16 +66,14 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.domain.http.server.multipart.BoundaryDelimitedInputStream;
 import org.jboss.as.domain.http.server.multipart.MimeHeaderParser;
-import org.jboss.as.domain.http.server.security.BasicAuthenticator;
-import org.jboss.as.domain.http.server.security.DigestAuthenticator;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.security.DomainCallbackHandler;
+import org.jboss.com.sun.net.httpserver.Authenticator;
 import org.jboss.com.sun.net.httpserver.Headers;
 import org.jboss.com.sun.net.httpserver.HttpContext;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpServer;
 import org.jboss.dmr.ModelNode;
-import org.jboss.sasl.callback.DigestHashCallback;
 
 /**
  * An embedded web server that provides a JSON over HTTP API to the domain management model.
@@ -117,10 +115,13 @@ class DomainApiHandler implements ManagementHttpHandler {
         }
     }
 
+    private final Authenticator authenticator;
     private ModelControllerClient modelController;
 
-    DomainApiHandler(ModelControllerClient modelController) {
+
+    DomainApiHandler(ModelControllerClient modelController, Authenticator authenticator) {
         this.modelController = modelController;
+        this.authenticator = authenticator;
     }
 
     public void handle(HttpExchange http) throws IOException {
@@ -506,31 +507,17 @@ class DomainApiHandler implements ManagementHttpHandler {
 
     public void start(HttpServer httpServer, SecurityRealm securityRealm) {
         HttpContext context = httpServer.createContext(DOMAIN_API_CONTEXT, this);
-        if (securityRealm != null) {
+        if (authenticator != null) {
             DomainCallbackHandler callbackHandler = securityRealm.getCallbackHandler();
-            Class[] supportedCallbacks = callbackHandler.getSupportedCallbacks();
-            if (DigestAuthenticator.requiredCallbacksSupported(supportedCallbacks)) {
-                context.setAuthenticator(new DigestAuthenticator(callbackHandler, securityRealm.getName(), contains(DigestHashCallback.class, supportedCallbacks)));
-            } else if (BasicAuthenticator.requiredCallbacksSupported(supportedCallbacks)) {
-                context.setAuthenticator(new BasicAuthenticator(callbackHandler, securityRealm.getName()));
-            }
+            context.setAuthenticator(authenticator);
             context.getFilters().add(new RealmReadinessFilter(callbackHandler, ErrorHandler.getRealmRedirect()));
         }
+
     }
 
     public void stop(HttpServer httpServer) {
         httpServer.removeContext(DOMAIN_API_CONTEXT);
         modelController = null;
-    }
-
-    // TODO - This still needs cleaning up to use collections so we can remove the array iteration.
-    private static boolean contains(Class clazz, Class[] classes) {
-        for (Class current : classes) {
-            if (current.equals(clazz)) {
-                return true;
-            }
-        }
-        return false;
     }
 
 }
