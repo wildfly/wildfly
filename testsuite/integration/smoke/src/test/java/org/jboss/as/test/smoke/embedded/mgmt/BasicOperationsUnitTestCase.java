@@ -36,7 +36,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE_DEPTH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import java.io.IOException;
@@ -69,7 +72,7 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class BasicOperationsUnitTestCase {
 
-    private ModelControllerClient client;
+    private volatile ModelControllerClient client;
 
     @Deployment
     public static Archive<?> getDeployment() {
@@ -78,8 +81,9 @@ public class BasicOperationsUnitTestCase {
 
     // [ARQ-458] @Before not called with @RunAsClient
     private ModelControllerClient getModelControllerClient() throws UnknownHostException {
-        StreamUtils.safeClose(client);
-        client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+        if(client == null) {
+            client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
+        }
         return client;
     }
 
@@ -110,6 +114,22 @@ public class BasicOperationsUnitTestCase {
             Assert.assertTrue(step.hasDefined(RESULT));
             Assert.assertEquals(SUCCESS, step.get(OUTCOME).asString());
         }
+    }
+
+    public void testReadResourceRecursiveDepth() throws IOException {
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(READ_RESOURCE_OPERATION);
+        operation.get(OP_ADDR).setEmptyList();
+        operation.get(RECURSIVE_DEPTH).set(1);
+
+        final ModelNode result = getModelControllerClient().execute(operation);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertTrue(result.hasDefined(RESULT));
+
+        final ModelNode web = result.get(RESULT, SUBSYSTEM, "web");
+        Assert.assertTrue(web.hasDefined("connector"));
+        Assert.assertTrue(web.get("connector").has("http"));
+        Assert.assertFalse(web.get("connector").hasDefined("http"));
     }
 
     @Test

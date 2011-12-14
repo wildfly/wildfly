@@ -22,7 +22,6 @@
 package org.jboss.as.controller.operations.global;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-import org.jboss.as.controller.ProcessType;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
@@ -43,6 +42,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ONLY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE_DEPTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART_REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STORAGE;
@@ -65,7 +65,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -73,7 +72,6 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
@@ -125,6 +123,7 @@ public class GlobalOperationHandlers {
 
         public ReadResourceHandler() {
             validator.registerValidator(RECURSIVE, new ModelTypeValidator(ModelType.BOOLEAN, true));
+            validator.registerValidator(RECURSIVE_DEPTH, new ModelTypeValidator(ModelType.INT, true));
             validator.registerValidator(INCLUDE_RUNTIME, new ModelTypeValidator(ModelType.BOOLEAN, true));
             validator.registerValidator(PROXIES, new ModelTypeValidator(ModelType.BOOLEAN, true));
             validator.registerValidator(INCLUDE_DEFAULTS, new ModelTypeValidator(ModelType.BOOLEAN, true));
@@ -138,7 +137,8 @@ public class GlobalOperationHandlers {
             final String opName = operation.require(OP).asString();
             final ModelNode opAddr = operation.get(OP_ADDR);
             final PathAddress address = PathAddress.pathAddress(opAddr);
-            final boolean recursive = operation.get(RECURSIVE).asBoolean(false);
+            final int recursiveDepth = operation.get(RECURSIVE_DEPTH).asInt(0);
+            final boolean recursive = recursiveDepth > 0 ? true : operation.get(RECURSIVE).asBoolean(false);
             final boolean queryRuntime = operation.get(INCLUDE_RUNTIME).asBoolean(false);
             final boolean proxies = operation.get(PROXIES).asBoolean(false);
             final boolean defaults = operation.get(INCLUDE_DEFAULTS).asBoolean(true);
@@ -216,6 +216,7 @@ public class GlobalOperationHandlers {
                             boolean proxy = childReg.isRemote();
                             boolean runtimeResource = childReg.isRuntimeOnly();
                             if (!runtimeResource || (queryRuntime && !proxy)  || (proxies && proxy)) {
+                                final int newDepth = recursiveDepth > 0 ? recursiveDepth - 1 : 0;
                                 // Add a step to read the child resource
                                 ModelNode rrOp = new ModelNode();
                                 rrOp.get(OP).set(opName);
@@ -580,6 +581,7 @@ public class GlobalOperationHandlers {
         public ReadChildrenResourcesOperationHandler() {
             validator.registerValidator(CHILD_TYPE, new StringLengthValidator(1));
             validator.registerValidator(RECURSIVE, new ModelTypeValidator(ModelType.BOOLEAN, true));
+            validator.registerValidator(RECURSIVE_DEPTH, new ModelTypeValidator(ModelType.INT, true));
             validator.registerValidator(INCLUDE_RUNTIME, new ModelTypeValidator(ModelType.BOOLEAN, true));
             validator.registerValidator(PROXIES, new ModelTypeValidator(ModelType.BOOLEAN, true));
             validator.registerValidator(INCLUDE_DEFAULTS, new ModelTypeValidator(ModelType.BOOLEAN, true));
@@ -622,6 +624,9 @@ public class GlobalOperationHandlers {
                     }
                     if (operation.hasDefined(RECURSIVE)) {
                         readOp.get(RECURSIVE).set(operation.get(RECURSIVE));
+                    }
+                    if(operation.hasDefined(RECURSIVE_DEPTH)) {
+                        readOp.get(RECURSIVE_DEPTH).set(operation.get(RECURSIVE_DEPTH));
                     }
                     if (operation.hasDefined(PROXIES)) {
                         readOp.get(PROXIES).set(operation.get(PROXIES));
@@ -786,6 +791,7 @@ public class GlobalOperationHandlers {
 
         {
             validator.registerValidator(RECURSIVE, new ModelTypeValidator(ModelType.BOOLEAN, true));
+            validator.registerValidator(RECURSIVE_DEPTH, new ModelTypeValidator(ModelType.INT, true));
             validator.registerValidator(PROXIES, new ModelTypeValidator(ModelType.BOOLEAN, true));
             validator.registerValidator(OPERATIONS, new ModelTypeValidator(ModelType.BOOLEAN, true));
             validator.registerValidator(INHERITED, new ModelTypeValidator(ModelType.BOOLEAN, true));
@@ -818,7 +824,8 @@ public class GlobalOperationHandlers {
             final String opName = operation.require(OP).asString();
             final ModelNode opAddr = operation.get(OP_ADDR);
             final PathAddress address = PathAddress.pathAddress(opAddr);
-            final boolean recursive = operation.get(RECURSIVE).asBoolean(false);
+            final int recursiveDepth = operation.get(RECURSIVE_DEPTH).asInt(0);
+            final boolean recursive = recursiveDepth > 0 ? true : operation.get(RECURSIVE).asBoolean(false);
             final boolean proxies = operation.get(PROXIES).asBoolean(false);
             final boolean ops = operation.get(OPERATIONS).asBoolean(false);
             final boolean inheritedOps = operation.get(INHERITED).asBoolean(true);
@@ -885,6 +892,7 @@ public class GlobalOperationHandlers {
                         readChild = false;
                     }
                     if (readChild) {
+                        final int newDepth = recursiveDepth > 0 ? recursiveDepth - 1 : 0;
                         ModelNode rrOp = new ModelNode();
                         rrOp.get(OP).set(opName);
                         try {
@@ -892,7 +900,8 @@ public class GlobalOperationHandlers {
                         } catch (Exception e) {
                             continue;
                         }
-                        rrOp.get(RECURSIVE).set(true);
+                        rrOp.get(RECURSIVE).set(operation.get(RECURSIVE));
+                        rrOp.get(RECURSIVE_DEPTH).set(newDepth);
                         rrOp.get(PROXIES).set(proxies);
                         rrOp.get(OPERATIONS).set(ops);
                         rrOp.get(INHERITED).set(inheritedOps);
