@@ -182,7 +182,7 @@ public class ManagementClient {
             String socketBinding = rootNode.get("subsystem").get("web").get("connector").get("http").get("socket-binding").asString();
             return getBinding(socketBinding);
         } else if ("jmx".equals(subsystem)) {
-            String socketBinding = rootNode.get("subsystem").get("jmx").get("registry-binding").asString();
+            String socketBinding = rootNode.get("subsystem").get("jmx").get("connector").get("jmx").get("registry-binding").asString();
             return getBinding(socketBinding);
         }
         throw new IllegalArgumentException("No handler for subsystem " + subsystem);
