@@ -1,0 +1,18 @@
+<?xml version='1.0' ?>
+<ejb-jar
+        xmlns="http://java.sun.com/xml/ns/javaee"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+                            http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd"
+        version="3.0">
+	<enterprise-beans>
+		<session>
+			<ejb-name>Test3</ejb-name>
+			<ejb-ref>
+				<ejb-ref-name>ejb/Test2</ejb-ref-name>
+				<ejb-ref-type>Session</ejb-ref-type>
+			</ejb-ref>            
+		</session>
+	</enterprise-beans>
+</ejb-jar>
+
