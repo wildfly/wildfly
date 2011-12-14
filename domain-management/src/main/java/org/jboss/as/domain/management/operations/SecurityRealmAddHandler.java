@@ -27,16 +27,19 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.KEY
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PASSWORD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECRET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRUSTSTORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 
+import java.security.KeyStore;
 import java.util.List;
 import java.util.Locale;
 
@@ -51,6 +54,7 @@ import org.jboss.as.controller.descriptions.common.ManagementDescription;
 import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.connections.ConnectionManager;
 import org.jboss.as.domain.management.security.DomainCallbackHandler;
+import org.jboss.as.domain.management.security.FileKeystoreService;
 import org.jboss.as.domain.management.security.LdapConnectionManagerService;
 import org.jboss.as.domain.management.security.PropertiesCallbackHandler;
 import org.jboss.as.domain.management.security.SSLIdentityService;
@@ -106,7 +110,15 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
         ServiceBuilder<?> realmBuilder = serviceTarget.addService(realmServiceName, securityRealmService);
 
         ServiceName authenticationName = null;
+        ModelNode authTruststore = null;
         if (authentication != null) {
+            // Authentication can have a truststore defined at the same time as a username/password based mechanism.
+            //
+            // In this case it is expected certificate based authentication will first occur with a fallback to username/password
+            // based authentication.
+            if (authentication.hasDefined(TRUSTSTORE)) {
+                authTruststore = authentication.require(TRUSTSTORE);
+            }
             if (authentication.hasDefined(LDAP)) {
                 authenticationName = addLdapService(authentication.require(LDAP), realmServiceName, serviceTarget, newControllers);
             } else if (authentication.hasDefined(PROPERTIES)) {
@@ -121,7 +133,7 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
 
         if (serverIdentities != null) {
             if (serverIdentities.hasDefined(SSL)) {
-                ServiceName sslServiceName = addSSLService(context, serverIdentities.require(SSL), realmServiceName, serviceTarget, newControllers);
+                ServiceName sslServiceName = addSSLService(context, serverIdentities.require(SSL), authTruststore, realmServiceName, serviceTarget, newControllers);
                 realmBuilder.addDependency(sslServiceName, SSLIdentityService.class, securityRealmService.getSSLIdentityInjector());
             }
             if (serverIdentities.hasDefined(SECRET)) {
@@ -133,9 +145,6 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
         newControllers.add(realmBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install());
     }
-
-    // TODO - These need to be split into more fine grained services so allow service specific checks.
-
 
     public ModelNode getModelDescription(Locale locale) {
         return ManagementDescription.getAddManagementSecurityRealmDescription(locale);
@@ -174,21 +183,54 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
         return propsServiceName;
     }
 
-    // TODO - The operation will also be split out into it's own handler when I make the operations more fine grained.
-    private ServiceName addSSLService(OperationContext context, ModelNode ssl, ServiceName realmServiceName, ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    private ServiceName addSSLService(OperationContext context, ModelNode ssl, ModelNode trustStore, ServiceName realmServiceName,
+            ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) throws OperationFailedException {
         ServiceName sslServiceName = realmServiceName.append(SSLIdentityService.SERVICE_SUFFIX);
-        SSLIdentityService sslIdentityService = new SSLIdentityService(ssl, unmaskSslKeystorePassword(context, ssl));
+
+        ServiceName keystoreServiceName = null;
+        char[] password = null;
+        if (ssl.hasDefined(KEYSTORE)) {
+            keystoreServiceName = realmServiceName.append(FileKeystoreService.KEYSTORE_SUFFIX);
+            password = addFileKeystoreService(context, ssl.require(KEYSTORE), keystoreServiceName, serviceTarget,
+                    newControllers);
+        }
+        ServiceName truststoreServiceName = null;
+        if (trustStore != null) {
+            truststoreServiceName = realmServiceName.append(FileKeystoreService.TRUSTSTORE_SUFFIX);
+            addFileKeystoreService(context, trustStore, truststoreServiceName, serviceTarget, newControllers);
+        }
+
+        SSLIdentityService sslIdentityService = new SSLIdentityService(ssl, password);
 
         ServiceBuilder<?> sslBuilder = serviceTarget.addService(sslServiceName, sslIdentityService);
 
-        if (ssl.hasDefined(KEYSTORE) && ssl.get(KEYSTORE).hasDefined(RELATIVE_TO)) {
-            sslBuilder.addDependency(pathName(ssl.get(KEYSTORE, RELATIVE_TO).asString()), String.class, sslIdentityService.getRelativeToInjector());
+        if (keystoreServiceName != null) {
+            sslBuilder.addDependency(keystoreServiceName, KeyStore.class, sslIdentityService.getKeyStoreInjector());
+        }
+        if (truststoreServiceName != null) {
+            sslBuilder.addDependency(truststoreServiceName, KeyStore.class, sslIdentityService.getTrustStoreInjector());
         }
 
-        newControllers.add(sslBuilder.setInitialMode(ON_DEMAND)
-                .install());
+        newControllers.add(sslBuilder.setInitialMode(ON_DEMAND).install());
 
         return sslServiceName;
+    }
+
+    private char[] addFileKeystoreService(OperationContext context, ModelNode keystore, ServiceName serviceName,
+            ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        char[] password = unmaskPassword(context, keystore.require(PASSWORD));
+
+        FileKeystoreService fileKeystoreService = new FileKeystoreService(keystore.require(PATH).asString(), password);
+
+        ServiceBuilder<?> serviceBuilder = serviceTarget.addService(serviceName, fileKeystoreService);
+        if (keystore.hasDefined(RELATIVE_TO)) {
+            serviceBuilder.addDependency(pathName(keystore.require(RELATIVE_TO).asString()), String.class,
+                    fileKeystoreService.getRelativeToInjector());
+        }
+
+        newControllers.add(serviceBuilder.setInitialMode(ON_DEMAND).install());
+
+        return password;
     }
 
     private ServiceName addSecretService(ModelNode secret, ServiceName realmServiceName, ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) {
@@ -222,14 +264,8 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
         return ServiceName.JBOSS.append("server", "path", relativeTo);
     }
 
-    private String unmaskSslKeystorePassword(OperationContext context, ModelNode ssl) throws OperationFailedException {
-        if (!ssl.hasDefined(KEYSTORE)) {
-            return null;
-        }
-        if (!ssl.hasDefined(PASSWORD)) {
-            return null;
-        }
-        return context.resolveExpressions(ssl.get(KEYSTORE, PASSWORD)).asString();
+    private char[] unmaskPassword(OperationContext context, ModelNode password) throws OperationFailedException {
+        return context.resolveExpressions(password).asString().toCharArray();
     }
 
     private ModelNode unmaskUsersPasswords(OperationContext context, ModelNode users) throws OperationFailedException {
