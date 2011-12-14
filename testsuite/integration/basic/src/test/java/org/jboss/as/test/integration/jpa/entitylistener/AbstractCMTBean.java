@@ -23,22 +23,39 @@
 package org.jboss.as.test.integration.jpa.entitylistener;
 
 import javax.annotation.Resource;
-import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;
-import javax.ejb.Stateful;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 
 /**
- * stateful session bean
- *
- * @author Scott Marlow
+ * @author Jaikiran Pai
  */
-@Stateful
-@LocalBean
-@TransactionManagement(TransactionManagementType.CONTAINER)
-public class SFSBCMT extends AbstractCMTBean {
+public abstract class AbstractCMTBean {
+    @PersistenceContext(unitName = "mypc")
+    EntityManager em;
+
+    @Resource
+    SessionContext sessionContext;
+
+    public void createEmployee(String name, String address, int id) {
+        Employee emp = new Employee();
+        emp.setId(id);
+        emp.setAddress(address);
+        emp.setName(name);
+        em.joinTransaction();
+        em.persist(emp);
+        //em.flush();
+    }
+
+    public void updateEmployee(Employee emp) {
+        emp.setName("hacked " + emp.getName());
+        em.merge(emp);
+        //em.flush();
+    }
+
+
+    public Employee getEmployeeNoTX(int id) {
+        return em.find(Employee.class, id, LockModeType.NONE);
+    }
 }

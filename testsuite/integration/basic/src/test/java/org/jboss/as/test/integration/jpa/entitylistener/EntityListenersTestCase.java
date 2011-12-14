@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.jpa.entitylistener;
 
+import static org.junit.Assert.assertTrue;
+
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -32,11 +34,8 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertTrue;
 
 /**
  * EntityListeners tests
@@ -49,27 +48,22 @@ public class EntityListenersTestCase {
     private static final String ARCHIVE_NAME = "jpa_EntityListeners";
 
     private static final String persistence_xml =
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
-            "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
-            "  <persistence-unit name=\"mypc\">" +
-            "    <description>Persistence Unit." +
-            "    </description>" +
-            "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
-            "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
-            "</properties>" +
-            "  </persistence-unit>" +
-            "</persistence>";
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
+                    "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
+                    "  <persistence-unit name=\"mypc\">" +
+                    "    <description>Persistence Unit." +
+                    "    </description>" +
+                    "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
+                    "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
+                    "</properties>" +
+                    "  </persistence-unit>" +
+                    "</persistence>";
 
     @Deployment
     public static Archive<?> deploy() {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
-        jar.addClasses(EntityListenersTestCase.class,
-            Employee.class,
-            MyListener.class,
-            SFSBBMT.class,
-            SFSBCMT.class
-        );
+        jar.addPackage(EntityListenersTestCase.class.getPackage());
 
         jar.addAsResource(new StringAsset(persistence_xml), "META-INF/persistence.xml");
         return jar;
@@ -87,26 +81,116 @@ public class EntityListenersTestCase {
         return interfaceType.cast(iniCtx.lookup(name));
     }
 
+    /**
+     * Tests that the entity listeners are correctly invoked and have access to the java:comp/EJBContext
+     * when a entity is persisted via a stateful BMT bean
+     *
+     * @throws Exception
+     */
     @Test
-    public void testBMT() throws Exception {
+    public void testSFSBBMT() throws Exception {
         MyListener.setInvocationCount(0);
         SFSBBMT bmt = lookup("SFSBBMT", SFSBBMT.class);
-        bmt.createEmployee("Alfred E. Neuman", "101010 Mad Street", 1);
-        Employee emp = bmt.getEmployeeNoTX(1);
-        bmt.updateEmployee(emp);
-        assertTrue("could not load added employee", emp != null);
-        assertTrue("EntityListener wasn't invoked twice as expected, instead " + MyListener.getInvocationCount(), 2 == MyListener.getInvocationCount());
+        this.doBMTTest(bmt, 1);
     }
 
+    /**
+     * Tests that the entity listeners are correctly invoked and have access to the java:comp/EJBContext
+     * when a entity is persisted via a stateful CMT bean
+     *
+     * @throws Exception
+     */
     @Test
-    public void testCMT() throws Exception {
+    public void testSFSBCMT() throws Exception {
         MyListener.setInvocationCount(0);
         SFSBCMT cmt = lookup("SFSBCMT", SFSBCMT.class);
-        cmt.createEmployee("Alfred E. Neuman", "101010 Mad Street", 2);
-        Employee emp = cmt.getEmployeeNoTX(2);
-        cmt.updateEmployee(emp);
+        this.doCMTTest(cmt, 2);
+
+    }
+
+    /**
+     * Tests that the entity listeners are correctly invoked and have access to the java:comp/EJBContext
+     * when a entity is persisted via a stateless CMT bean
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testSLSBCMT() throws Exception {
+        MyListener.setInvocationCount(0);
+        SLSBCMT cmt = lookup("SLSBCMT", SLSBCMT.class);
+        this.doCMTTest(cmt, 3);
+
+    }
+
+    /**
+     * Tests that the entity listeners are correctly invoked and have access to the java:comp/EJBContext
+     * when a entity is persisted via a stateless BMT bean
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testSLSBBMT() throws Exception {
+        MyListener.setInvocationCount(0);
+        SLSBBMT bmt = lookup("SLSBBMT", SLSBBMT.class);
+        this.doBMTTest(bmt, 4);
+
+    }
+
+    /**
+     * Tests that the entity listeners are correctly invoked and have access to the java:comp/EJBContext
+     * when a entity is persisted via a singleton CMT bean
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testSingletonCMT() throws Exception {
+        MyListener.setInvocationCount(0);
+        SingletonCMT cmt = lookup("SingletonCMT", SingletonCMT.class);
+        this.doCMTTest(cmt, 5);
+
+    }
+
+    /**
+     * Tests that the entity listeners are correctly invoked and have access to the java:comp/EJBContext
+     * when a entity is persisted via a singleton BMT bean
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testSingletonBMT() throws Exception {
+        MyListener.setInvocationCount(0);
+        SingletonBMT bmt = lookup("SingletonBMT", SingletonBMT.class);
+        this.doBMTTest(bmt, 6);
+
+    }
+
+    /**
+     * Tests that the entity listeners are correctly invoked and have access to the java:comp/EJBContext
+     * when a entity is persisted via a BMT bean
+     *
+     * @param bmtBean The BMT bean
+     * @throws Exception
+     */
+    private void doBMTTest(final AbstractBMTBean bmtBean, final int empId) throws Exception {
+        bmtBean.createEmployee("Alfred E. Neuman", "101010 Mad Street", empId);
+        Employee emp = bmtBean.getEmployeeNoTX(empId);
+        bmtBean.updateEmployee(emp);
         assertTrue("could not load added employee", emp != null);
         assertTrue("EntityListener wasn't invoked twice as expected, instead " + MyListener.getInvocationCount(), 2 == MyListener.getInvocationCount());
     }
 
+    /**
+     * Tests that the entity listeners are correctly invoked and have access to the java:comp/EJBContext
+     * when a entity is persisted via a CMT bean
+     *
+     * @param cmtBean The CMT bean
+     * @throws Exception
+     */
+    private void doCMTTest(final AbstractCMTBean cmtBean, final int empId) throws Exception {
+        cmtBean.createEmployee("Alfred E. Neuman", "101010 Mad Street", empId);
+        Employee emp = cmtBean.getEmployeeNoTX(empId);
+        cmtBean.updateEmployee(emp);
+        assertTrue("could not load added employee", emp != null);
+        assertTrue("EntityListener wasn't invoked twice as expected, instead " + MyListener.getInvocationCount(), 2 == MyListener.getInvocationCount());
+    }
 }

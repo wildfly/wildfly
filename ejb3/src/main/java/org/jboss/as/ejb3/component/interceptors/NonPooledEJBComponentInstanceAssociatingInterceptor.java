@@ -78,7 +78,6 @@ public class NonPooledEJBComponentInstanceAssociatingInterceptor extends Abstrac
             discard = true;
             throw new RuntimeException(t);
         } finally {
-            context.putPrivateData(ComponentInstance.class, null);
             // destroy the instance
             if (!discard) {
                 componentInstance.destroy();

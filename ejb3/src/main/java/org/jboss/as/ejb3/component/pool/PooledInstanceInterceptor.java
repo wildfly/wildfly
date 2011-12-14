@@ -73,7 +73,6 @@ public class PooledInstanceInterceptor extends AbstractEJBInterceptor {
             component.getPool().discard(instance);
             throw new RuntimeException(t);
         }  finally {
-            context.putPrivateData(ComponentInstance.class, null);
             if (!discarded) {
                 component.getPool().release(instance);
             }

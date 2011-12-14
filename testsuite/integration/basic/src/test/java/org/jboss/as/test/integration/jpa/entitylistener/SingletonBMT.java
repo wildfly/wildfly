@@ -22,23 +22,16 @@
 
 package org.jboss.as.test.integration.jpa.entitylistener;
 
-import javax.annotation.Resource;
 import javax.ejb.LocalBean;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateful;
+import javax.ejb.Singleton;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
-import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
-import javax.persistence.PersistenceContext;
 
 /**
- * stateful session bean
- *
- * @author Scott Marlow
+ * @author Jaikiran Pai
  */
-@Stateful
+@Singleton
 @LocalBean
-@TransactionManagement(TransactionManagementType.CONTAINER)
-public class SFSBCMT extends AbstractCMTBean {
+@TransactionManagement(TransactionManagementType.BEAN)
+public class SingletonBMT extends AbstractBMTBean {
 }
