@@ -44,7 +44,6 @@ import static org.junit.Assert.assertTrue;
  * @author Scott Marlow
  */
 @RunWith(Arquillian.class)
-@Ignore("AS7-2968")
 public class EntityListenersTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_EntityListeners";
