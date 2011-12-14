@@ -26,12 +26,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
@@ -80,10 +78,13 @@ public class ProfileDescription {
     public static ModelNode getProfileWithIncludesDescription(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = getBasicProfileDescription(bundle);
+        root.get(REQUEST_PROPERTIES).setEmptyObject();
+        /* This will be reintroduced for 7.2.0, leave commented out
         root.get(ATTRIBUTES, INCLUDES, DESCRIPTION).set(bundle.getString("profile.includes"));
         root.get(ATTRIBUTES, INCLUDES, TYPE).set(ModelType.LIST);
         root.get(ATTRIBUTES, INCLUDES, VALUE_TYPE).set(ModelType.STRING);
         root.get(ATTRIBUTES, INCLUDES, REQUIRED).set(false);
+        */
         appendSubsystemChild(root, bundle);
         return root;
     }
@@ -116,11 +117,14 @@ public class ProfileDescription {
         final ModelNode root = new ModelNode();
         root.get(OPERATION_NAME).set(ADD);
         root.get(DESCRIPTION).set(bundle.getString("profile.add"));
+        root.get(REQUEST_PROPERTIES).setEmptyObject();
+        /* This will be reintroduced for 7.2.0, leave commented out
         root.get(REQUEST_PROPERTIES, INCLUDES, TYPE).set(ModelType.LIST);
         root.get(REQUEST_PROPERTIES, INCLUDES, DESCRIPTION).set(bundle.getString("profile.add.includes"));
         root.get(REQUEST_PROPERTIES, INCLUDES, VALUE_TYPE).set(ModelType.STRING);
         root.get(REQUEST_PROPERTIES, INCLUDES, REQUIRED).set(false);
         root.get(REQUEST_PROPERTIES, INCLUDES, NILLABLE).set(true);
+        */
 
         root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
