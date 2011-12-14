@@ -36,6 +36,7 @@ import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -72,6 +73,12 @@ public class InfinispanExtension implements Extension, DescriptionProvider {
 
     private static final InfinispanSubsystemAdd add = new InfinispanSubsystemAdd();
     private static final InfinispanSubsystemDescribe describe = new InfinispanSubsystemDescribe();
+    private static final DescriptionProvider remove = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return InfinispanDescriptions.getSubsystemRemoveDescription(locale);
+        }
+    };
     private static final CacheContainerAdd containerAdd = new CacheContainerAdd();
     private static final CacheContainerRemove containerRemove = new CacheContainerRemove();
 
@@ -118,6 +125,7 @@ public class InfinispanExtension implements Extension, DescriptionProvider {
         ManagementResourceRegistration registration = subsystem.registerSubsystemModel(this);
         registration.registerOperationHandler(ModelDescriptionConstants.ADD, add, add, false);
         registration.registerOperationHandler(ModelDescriptionConstants.DESCRIBE, describe, describe, false, EntryType.PRIVATE);
+        registration.registerOperationHandler(ModelDescriptionConstants.REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, remove, false);
 
         ManagementResourceRegistration container = registration.registerSubModel(containerPath, containerDescription);
         container.registerOperationHandler(ModelDescriptionConstants.ADD, containerAdd, containerAdd, false);

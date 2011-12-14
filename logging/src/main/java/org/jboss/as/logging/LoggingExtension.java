@@ -22,6 +22,7 @@
 
 package org.jboss.as.logging;
 
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISABLE;
@@ -111,6 +112,7 @@ public class LoggingExtension implements Extension {
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(LoggingSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, NewLoggingSubsystemAdd.ADD_INSTANCE, LoggingSubsystemProviders.SUBSYSTEM_ADD, false);
         registration.registerOperationHandler(DESCRIBE, LoggingDescribeHandler.INSTANCE, LoggingDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        registration.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, LoggingSubsystemProviders.SUBSYSTEM_REMOVE, false);
 
         subsystem.registerXMLElementWriter(LoggingSubsystemParser.INSTANCE);
 

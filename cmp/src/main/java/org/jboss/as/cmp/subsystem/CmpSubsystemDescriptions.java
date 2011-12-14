@@ -30,7 +30,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import org.jboss.dmr.ModelNode;
 
@@ -55,6 +57,15 @@ public class CmpSubsystemDescriptions {
         return subsystem;
     }
 
+    static ModelNode getSubsystemRemoveDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(DESCRIPTION).set(bundle.getString("cmp.remove"));
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        return op;
+    }
 
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {
@@ -74,4 +85,5 @@ public class CmpSubsystemDescriptions {
 
         return op;
     }
+
 }

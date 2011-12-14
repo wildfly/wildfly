@@ -26,6 +26,7 @@ import java.util.EnumSet;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
@@ -60,6 +61,7 @@ public class OSGiExtension implements Extension {
         registration.registerReadWriteAttribute(ModelConstants.STARTLEVEL, StartLevelHandler.READ_HANDLER, StartLevelHandler.WRITE_HANDLER, Storage.RUNTIME);
         registration.registerOperationHandler(ModelConstants.ACTIVATE, ActivateOperationHandler.INSTANCE, ActivateOperationHandler.INSTANCE, EnumSet.of(OperationEntry.Flag.RESTART_NONE));
         registration.registerOperationHandler(ModelDescriptionConstants.DESCRIBE, OSGiSubsystemDescribeHandler.INSTANCE, OSGiSubsystemAdd.DESCRIPTION, false, OperationEntry.EntryType.PRIVATE);
+        registration.registerOperationHandler(ModelDescriptionConstants.REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, OSGiSubsystemProviders.SUBSYSTEM_REMOVE, false);
 
         // Configuration Admin Setings
         ManagementResourceRegistration configuration = registration.registerSubModel(PathElement.pathElement(ModelConstants.CONFIGURATION), OSGiSubsystemProviders.CONFIGURATION_DESCRIPTION);

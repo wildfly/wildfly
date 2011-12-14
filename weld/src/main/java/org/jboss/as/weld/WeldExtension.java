@@ -31,6 +31,7 @@ import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -38,6 +39,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
@@ -75,6 +77,7 @@ public class WeldExtension implements Extension {
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(SUBSYSTEM_DESCRIPTION);
         registration.registerOperationHandler(ADD, WeldSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESCRIPTION, false);
         registration.registerOperationHandler(DESCRIBE, WeldSubsystemDescribeHandler.INSTANCE, WeldSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        registration.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, SUBSYSTEM_REMOVE_DESCRIPTION, false);
         subsystem.registerXMLElementWriter(parser);
     }
 
@@ -124,6 +127,13 @@ public class WeldExtension implements Extension {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             return WeldSubsystemProviders.getSubsystemAddDescription(locale);
+        }
+    };
+
+    static final DescriptionProvider SUBSYSTEM_REMOVE_DESCRIPTION = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return WeldSubsystemProviders.getSubsystemRemoveDescription(locale);
         }
     };
 

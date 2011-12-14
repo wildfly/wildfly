@@ -22,6 +22,8 @@
 
 package org.jboss.as.jaxrs;
 
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.jaxrs.JaxrsLogger.JAXRS_LOGGER;
 
 import java.util.List;
@@ -74,6 +76,7 @@ public class JaxrsExtension implements Extension {
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(SUBSYSTEM_DESCRIPTION);
         registration.registerOperationHandler(ADD, JaxrsSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESCRIPTION, false);
         registration.registerOperationHandler(DESCRIBE, JaxrsSubsystemDescribeHandler.INSTANCE, JaxrsSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        registration.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, SUBSYSTEM_REMOVE_DESCRIPTION, false);
         subsystem.registerXMLElementWriter(parser);
     }
 
@@ -122,6 +125,13 @@ public class JaxrsExtension implements Extension {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             return JaxrsSubsystemProviders.getSubsystemAddDescription(locale);
+        }
+    };
+
+    static final DescriptionProvider SUBSYSTEM_REMOVE_DESCRIPTION = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return JaxrsSubsystemProviders.getSubsystemRemoveDescription(locale);
         }
     };
 

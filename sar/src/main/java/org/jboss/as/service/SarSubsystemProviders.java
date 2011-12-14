@@ -27,6 +27,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 
 import java.util.Locale;
@@ -69,6 +72,20 @@ public class SarSubsystemProviders {
             return op;
         }
     };
+
+    static final DescriptionProvider SUBSYSTEM_REMOVE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode op = new ModelNode();
+            op.get(OPERATION_NAME).set(REMOVE);
+            op.get(DESCRIPTION).set(bundle.getString("sar.remove"));
+            op.get(REPLY_PROPERTIES).setEmptyObject();
+            op.get(REQUEST_PROPERTIES).setEmptyObject();
+            return op;
+        }
+    };
+
 
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {
