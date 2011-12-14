@@ -501,15 +501,8 @@ public class RemoteProxyControllerProtocolTestCase {
         operation.get("test").set("123");
 
         CommitProxyOperationControl commitControl = new CommitProxyOperationControl();
-        try {
-            proxyController.execute(operation,
-                    null,
-                    commitControl,
-                    null);
-            latch.await();
-        } catch (Exception ignore) {
-            //
-        }
+        proxyController.execute(operation, null, commitControl, null);
+        latch.await();
         Assert.assertEquals(1, commitControl.txCompletionStatus.get());
         Assert.assertNull(errorRef.get());
     }
