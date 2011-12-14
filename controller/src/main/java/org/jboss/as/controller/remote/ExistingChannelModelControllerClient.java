@@ -23,9 +23,13 @@ package org.jboss.as.controller.remote;
 
 import org.jboss.as.controller.client.impl.AbstractModelControllerClient;
 import org.jboss.remoting3.Channel;
+import org.jboss.threads.JBossThreadFactory;
 
 import java.io.IOException;
+import java.security.AccessController;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 /**
  *
@@ -33,10 +37,11 @@ import java.util.concurrent.Executors;
  * @version $Revision: 1.1 $
  */
 public class ExistingChannelModelControllerClient extends AbstractModelControllerClient {
+
     private final Channel channel;
 
-    public ExistingChannelModelControllerClient(final Channel channel) {
-        super(Executors.newCachedThreadPool()); // TODO
+    public ExistingChannelModelControllerClient(final Channel channel, final ExecutorService executorService) {
+        super(executorService);
         this.channel = channel;
     }
 

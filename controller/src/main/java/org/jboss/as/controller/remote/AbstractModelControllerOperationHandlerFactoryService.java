@@ -21,8 +21,13 @@
 */
 package org.jboss.as.controller.remote;
 
+import java.security.AccessController;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
@@ -34,6 +39,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 import static org.jboss.as.controller.ControllerLogger.SERVER_MANAGEMENT_LOGGER;
+import org.jboss.threads.JBossThreadFactory;
 
 /**
  * Service used to create operation handlers per incoming channel
@@ -45,8 +51,7 @@ public abstract class AbstractModelControllerOperationHandlerFactoryService impl
     public static final ServiceName OPERATION_HANDLER_NAME_SUFFIX = ServiceName.of("operation", "handler");
 
     private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
-
-    private volatile ExecutorService executor = Executors.newCachedThreadPool();
+    private final InjectedValue<ExecutorService> executor = new InjectedValue<ExecutorService>();
 
     /**
      * Use to inject the model controller that will be the target of the operations
@@ -57,10 +62,21 @@ public abstract class AbstractModelControllerOperationHandlerFactoryService impl
         return modelControllerValue;
     }
 
+    public InjectedValue<ExecutorService> getExecutorInjector() {
+        return executor;
+    }
+
     /** {@inheritDoc} */
     @Override
     public synchronized void start(StartContext context) throws StartException {
         SERVER_MANAGEMENT_LOGGER.debugf("Starting operation handler service %s", context.getController().getName());
+        if(executor.getOptionalValue() == null) {
+            final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("management-handler-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
+            final ExecutorService executorService = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
+                                                            5L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
+                                                            threadFactory);
+            getExecutorInjector().inject(executorService);
+        }
     }
 
     /** {@inheritDoc} */
@@ -80,6 +96,7 @@ public abstract class AbstractModelControllerOperationHandlerFactoryService impl
     }
 
     protected ExecutorService getExecutor() {
-        return executor;
+        return executor.getValue();
     }
+
 }

@@ -85,7 +85,7 @@ public class ModelControllerClientTestCase {
 
     private ModelControllerClient createTestClient() {
         final Channel clientChannel = channels.getClientChannel();
-        final ExistingChannelModelControllerClient client = new ExistingChannelModelControllerClient(clientChannel);
+        final ExistingChannelModelControllerClient client = new ExistingChannelModelControllerClient(clientChannel, channels.getExecutorService());
         clientChannel.receiveMessage(ManagementChannelReceiver.createDelegating(client));
         return client;
     }
