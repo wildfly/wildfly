@@ -46,7 +46,7 @@ public class AppClientStateSingleton implements AppClientSingletonRemote {
     @Override
     public String awaitAppClientCall() {
         try {
-            boolean b = latch.await(10, TimeUnit.SECONDS);
+            boolean b = latch.await(30, TimeUnit.SECONDS);
             logger.info("Await returned: " + b + " : " + value);
             if (!b) {
                 ThreadInfo[] threadInfos = ManagementFactory.getThreadMXBean().dumpAllThreads(true, true);
