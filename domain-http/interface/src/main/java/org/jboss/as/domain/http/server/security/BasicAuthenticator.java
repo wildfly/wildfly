@@ -21,15 +21,21 @@
  */
 package org.jboss.as.domain.http.server.security;
 
+import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.net.ssl.SSLSession;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import java.io.IOException;
+import java.security.Principal;
 import java.util.Arrays;
 
 import org.jboss.as.domain.management.security.DomainCallbackHandler;
+import org.jboss.com.sun.net.httpserver.HttpExchange;
+import org.jboss.com.sun.net.httpserver.HttpPrincipal;
+import org.jboss.com.sun.net.httpserver.HttpsExchange;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
 
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
@@ -48,6 +54,27 @@ public class BasicAuthenticator extends org.jboss.com.sun.net.httpserver.BasicAu
         super(realm);
         this.callbackHandler = callbackHandler;
         verifyPasswordCallback = contains(VerifyPasswordCallback.class, callbackHandler.getSupportedCallbacks());
+    }
+
+    @Override
+    public Result authenticate(HttpExchange httpExchange) {
+        // If we already have a Principal from the SSLSession no need to continue with
+        // username / password authentication.
+        if (httpExchange instanceof HttpsExchange) {
+            HttpsExchange httpsExch = (HttpsExchange) httpExchange;
+            SSLSession session = httpsExch.getSSLSession();
+            if (session != null) {
+                try {
+                    Principal p = session.getPeerPrincipal();
+
+                    return new Success(new HttpPrincipal(p.getName(), realm));
+
+                } catch (SSLPeerUnverifiedException e) {
+                }
+            }
+        }
+
+        return super.authenticate(httpExchange);
     }
 
     @Override

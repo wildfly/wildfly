@@ -29,6 +29,8 @@ import static org.jboss.as.domain.http.server.Constants.WWW_AUTHENTICATE_HEADER;
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
 
+import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.net.ssl.SSLSession;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -38,6 +40,7 @@ import javax.security.sasl.RealmCallback;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,6 +49,7 @@ import org.jboss.com.sun.net.httpserver.Authenticator;
 import org.jboss.com.sun.net.httpserver.Headers;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpPrincipal;
+import org.jboss.com.sun.net.httpserver.HttpsExchange;
 import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.util.HexConverter;
 
@@ -80,6 +84,22 @@ public class DigestAuthenticator extends Authenticator {
 
     @Override
     public Result authenticate(HttpExchange httpExchange) {
+        // If we already have a Principal from the SSLSession no need to continue with
+        // username / password authentication.
+        if (httpExchange instanceof HttpsExchange) {
+            HttpsExchange httpsExch = (HttpsExchange) httpExchange;
+            SSLSession session = httpsExch.getSSLSession();
+            if (session != null) {
+                try {
+                    Principal p = session.getPeerPrincipal();
+
+                    return new Success(new HttpPrincipal(p.getName(), realm));
+
+                } catch (SSLPeerUnverifiedException e) {
+                }
+            }
+        }
+
         // If authentication has already completed for this connection re-use it.
         DigestContext context = getOrCreateNegotiationContext(httpExchange);
         if (context.isAuthenticated()) {
