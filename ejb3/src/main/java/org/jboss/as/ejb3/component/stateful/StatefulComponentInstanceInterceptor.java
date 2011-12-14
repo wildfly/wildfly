@@ -95,9 +95,6 @@ public class StatefulComponentInstanceInterceptor extends AbstractEJBInterceptor
                 ROOT_LOGGER.trace("Removing bean " + sessionId + " because of Throwable", t);
             instance.discard();
             throw new RuntimeException(t);
-        } finally {
-            // the StatefulSessionSynchronizationInterceptor will take care of releasing
-            context.putPrivateData(ComponentInstance.class, null);
         }
     }
 
