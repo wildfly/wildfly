@@ -266,6 +266,22 @@ interface ProcessMessages {
      *
      * @return the message.
      */
-    @Message(id = 12066, value = "Set the host controller's running type to ADMIN_ONLY causing it to open administrative interfaces \nand accept management requests but will not start servers or, if this host controller is \nthe master for the domain, accept incoming connections from slave host controllers.")
+    @Message(id = 12066, value = "Set the host controller's running type to ADMIN_ONLY causing it to open administrative interfaces and accept management requests but not start servers or, if this host controller is the master for the domain, accept incoming connections from slave host controllers.")
     String argAdminOnly();
+
+    /**
+     * Instructions for the {@link CommandLineArgument#ADMIN_ONLY} command line argument.
+     *
+     * @return the message.
+     */
+    @Message(id = 12067, value = "Set system property jboss.domain.master.address to the given value. In a default slave Host Controller config, this is used to configure the address of the master Host Controller.")
+    String argMasterAddress();
+
+    /**
+     * Instructions for the {@link CommandLineArgument#ADMIN_ONLY} command line argument.
+     *
+     * @return the message.
+     */
+    @Message(id = 12068, value = "Set system property jboss.domain.master.port to the given value. In a default slave Host Controller config, this is used to configure the port used for native management communication by the master Host Controller.")
+    String argMasterPort();
 }

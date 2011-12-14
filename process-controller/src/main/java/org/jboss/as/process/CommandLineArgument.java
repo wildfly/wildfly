@@ -23,6 +23,8 @@
 package org.jboss.as.process;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.jboss.as.process.ProcessMessages.MESSAGES;
 
@@ -241,38 +243,6 @@ enum CommandLineArgument {
             return MESSAGES.argHostConfig();
         }
     },
-    MASTER_ADDRESS {
-        @Override
-        public String argument() {
-            return CommandLineConstants.MASTER_ADDRESS;
-        }
-
-        @Override
-        public String argumentExample() {
-            return String.format("%s=<address>", argument());
-        }
-
-        @Override
-        public String instructions() {
-            return MESSAGES.argInterProcessHcAddress();
-        }
-    },
-    MASTER_PORT {
-        @Override
-        public String argument() {
-            return CommandLineConstants.MASTER_PORT;
-        }
-
-        @Override
-        public String argumentExample() {
-            return String.format("%s=<port>", argument());
-        }
-
-        @Override
-        public String instructions() {
-            return MESSAGES.argInterProcessHcPort();
-        }
-    },
     INTERPROCESS_HC_ADDRESS {
         @Override
         public String argument() {
@@ -303,6 +273,38 @@ enum CommandLineArgument {
         @Override
         public String instructions() {
             return MESSAGES.argInterProcessHcPort();
+        }
+    },
+    MASTER_ADDRESS {
+        @Override
+        public String argument() {
+            return CommandLineConstants.MASTER_ADDRESS;
+        }
+
+        @Override
+        public String argumentExample() {
+            return String.format("%s=<address>", argument());
+        }
+
+        @Override
+        public String instructions() {
+            return MESSAGES.argMasterAddress();
+        }
+    },
+    MASTER_PORT {
+        @Override
+        public String argument() {
+            return CommandLineConstants.MASTER_PORT;
+        }
+
+        @Override
+        public String argumentExample() {
+            return String.format("%s=<port>", argument());
+        }
+
+        @Override
+        public String instructions() {
+            return MESSAGES.argMasterPort();
         }
     },
     SHORT_PROPERTIES {
@@ -491,7 +493,30 @@ enum CommandLineArgument {
 
     @Override
     public String toString() {
-        return String.format("    %-35s %s", argumentExample(), instructions());
+        final List<String> instructions = new ArrayList<String>();
+        segmentInstructions(instructions(), instructions);
+        StringBuilder sb = new StringBuilder(String.format("    %-35s %s", argumentExample(), instructions.get(0)));
+        for (int i = 1; i < instructions.size(); i++) {
+            sb.append("\n");
+            sb.append(String.format("%-40s%s", " ", instructions.get(i)));
+        }
+        sb.append('\n');
+        return sb.toString();
+    }
+
+    private static void segmentInstructions(String instructions, List<String> segments) {
+        if (instructions.length() <= 40) {
+            segments.add(instructions);
+        } else {
+            String testFragment = instructions.substring(0,40);
+            int lastSpace = testFragment.lastIndexOf(' ');
+            if (lastSpace < 0) {
+                // degenerate case; we just have to chop not at a space
+                lastSpace = 39;
+            }
+            segments.add(instructions.substring(0, lastSpace + 1));
+            segmentInstructions(instructions.substring(lastSpace + 1), segments);
+        }
     }
 
     public static void printUsage(final PrintStream out) {

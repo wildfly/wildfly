@@ -59,25 +59,24 @@ public final class Main {
         System.out.println("Usage: ./standalone.sh [args...]\n");
         System.out.println("where args include:");
         System.out.println("    --admin-only                       Set the server's running type to ADMIN_ONLY causing it to open administrative interfaces ");
-        System.out.println("                                       and accept management requests but not start other runtime services or accept end user requests.");
-        System.out.println("    -b=<value>                         Set system property jboss.bind.address to the given value");
-        System.out.println("    -b <value>                         Set system property jboss.bind.address to the given value");
-        System.out.println("    -b<interface>=<value>              Set system property jboss.bind.address.<interface> to the given value");
-        System.out.println("    -c=<config>                        Name of the server configuration file to use (default is \"standalone.xml\")");
-        System.out.println("    -c <config>                        Name of the server configuration file to use (default is \"standalone.xml\")");
-        System.out.println("    -D<name>[=<value>]                 Set a system property");
-        System.out.println("    -h                                 Display this message and exit");
+        System.out.println("                                       and accept management requests but not start other runtime services or accept end user requests.\n");
+        System.out.println("    -b=<value>                         Set system property jboss.bind.address to the given value\n");
+        System.out.println("    -b <value>                         Set system property jboss.bind.address to the given value\n");
+        System.out.println("    -b<interface>=<value>              Set system property jboss.bind.address.<interface> to the given value\n");
+        System.out.println("    -c=<config>                        Name of the server configuration file to use (default is \"standalone.xml\")\n");
+        System.out.println("    -c <config>                        Name of the server configuration file to use (default is \"standalone.xml\")\n");
+        System.out.println("    -D<name>[=<value>]                 Set a system property\n");
+        System.out.println("    -h                                 Display this message and exit\n");
         System.out.println("    --help                             Display this message and exit");
-        System.out.println("    -P=<url>                           Load system properties from the given url");
-        System.out.println("    -P <url>                           Load system properties from the given url");
-        System.out.println("    --properties=<url>                 Load system properties from the given url");
-        System.out.println("    --server-config=<config>           Name of the server configuration file to use (default is \"standalone.xml\")");
-        System.out.println("    -u=<value>                         Set system property jboss.default.multicast.address to the given value");
-        System.out.println("    -u <value>                         Set system property jboss.default.multicast.address to the given value");
-        System.out.println("    -V                                 Print version and exit");
-        System.out.println("    -v                                 Print version and exit");
-        System.out.println("    --version                          Print version and exit");
-        System.out.println();
+        System.out.println("    -P=<url>                           Load system properties from the given url\n");
+        System.out.println("    -P <url>                           Load system properties from the given url\n");
+        System.out.println("    --properties=<url>                 Load system properties from the given url\n");
+        System.out.println("    --server-config=<config>           Name of the server configuration file to use (default is \"standalone.xml\")\n");
+        System.out.println("    -u=<value>                         Set system property jboss.default.multicast.address to the given value\n");
+        System.out.println("    -u <value>                         Set system property jboss.default.multicast.address to the given value\n");
+        System.out.println("    -V                                 Print version and exit\n");
+        System.out.println("    -v                                 Print version and exit\n");
+        System.out.println("    --version                          Print version and exit\n");
     }
 
     private Main() {
