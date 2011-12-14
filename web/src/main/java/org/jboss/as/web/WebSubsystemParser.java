@@ -133,8 +133,9 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 writer.writeStartElement(Element.VIRTUAL_SERVER.getLocalName());
                 writer.writeAttribute(NAME, host.getName());
                 writeAttribute(writer, Attribute.DEFAULT_WEB_MODULE.getLocalName(), config);
-                if (config.hasDefined(ENABLE_WELCOME_ROOT) && config.get(ENABLE_WELCOME_ROOT).asBoolean())
-                    writer.writeAttribute(ENABLE_WELCOME_ROOT, "true");
+                if (config.hasDefined(ENABLE_WELCOME_ROOT)) {
+                    writer.writeAttribute(ENABLE_WELCOME_ROOT, String.valueOf(config.get(ENABLE_WELCOME_ROOT).asBoolean()));
+                }
 
                 if(config.hasDefined(ALIAS)) {
                     for(final ModelNode alias : config.get(ALIAS).asList()) {
