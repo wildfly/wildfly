@@ -153,7 +153,7 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
             Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case ALIAS: {
-                    container.get(ModelKeys.ALIAS).add(reader.getElementText());
+                    parseAlias(reader, containerAddress, operations);
                     break;
                 }
                 case TRANSPORT: {
@@ -183,9 +183,25 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
         }
     }
 
+    private void parseAlias(XMLExtendedStreamReader reader, ModelNode containerAddress, List<ModelNode> operations) throws XMLStreamException {
+
+        // ModelNode for the alias add operation
+        ModelNode alias = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
+
+        ParseUtils.requireNoAttributes(reader);
+        String aliasName = reader.getElementText();
+
+        // setup the alias address
+        ModelNode aliasAddress = containerAddress.clone() ;
+        aliasAddress.add(ModelKeys.ALIAS, aliasName);
+        aliasAddress.protect() ;
+        alias.get(ModelDescriptionConstants.OP_ADDR).set(aliasAddress);
+
+        operations.add(alias);
+    }
     private void parseTransport(XMLExtendedStreamReader reader, ModelNode containerAddress, List<ModelNode> operations) throws XMLStreamException {
 
-        // ModelNode for the cache add operation
+        // ModelNode for the transport add operation
         ModelNode transport = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
@@ -989,9 +1005,9 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
                 this.writeOptional(writer, Attribute.REPLICATION_QUEUE_EXECUTOR, container, ModelKeys.REPLICATION_QUEUE_EXECUTOR);
 
                 if (container.hasDefined(ModelKeys.ALIAS)) {
-                    for (ModelNode alias: container.get(ModelKeys.ALIAS).asList()) {
+                    for (Property alias: container.get(ModelKeys.ALIAS).asPropertyList()) {
                         writer.writeStartElement(Element.ALIAS.getLocalName());
-                        writer.writeCharacters(alias.asString());
+                        writer.writeCharacters(alias.getName());
                         writer.writeEndElement();
                     }
                 }
