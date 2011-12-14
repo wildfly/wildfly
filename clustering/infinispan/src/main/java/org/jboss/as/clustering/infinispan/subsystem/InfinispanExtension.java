@@ -54,6 +54,7 @@ public class InfinispanExtension implements Extension, DescriptionProvider {
     private static final PathElement replicatedCachePath = PathElement.pathElement(ModelKeys.REPLICATED_CACHE);
     private static final PathElement distributedCachePath = PathElement.pathElement(ModelKeys.DISTRIBUTED_CACHE);
 
+    private static final PathElement aliasPath = PathElement.pathElement(ModelKeys.ALIAS);
     private static final PathElement transportPath = PathElement.pathElement(ModelKeys.SINGLETON, ModelKeys.TRANSPORT);
 
     private static final DescriptionProvider containerDescription = new DescriptionProvider() {
@@ -92,6 +93,12 @@ public class InfinispanExtension implements Extension, DescriptionProvider {
             return InfinispanDescriptions.getTransportDescription(locale);
         }
     };
+    private static final DescriptionProvider aliasDescription = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return InfinispanDescriptions.getAliasDescription(locale);
+        }
+    };
 
     /**
      * {@inheritDoc}
@@ -109,6 +116,12 @@ public class InfinispanExtension implements Extension, DescriptionProvider {
         ManagementResourceRegistration container = registration.registerSubModel(containerPath, containerDescription);
         container.registerOperationHandler(ADD, CacheContainerAdd.INSTANCE, CacheContainerAdd.INSTANCE, false);
         container.registerOperationHandler(REMOVE, CacheContainerRemove.INSTANCE, CacheContainerRemove.INSTANCE, false);
+        CacheContainerWriteAttributeHandler.INSTANCE.registerAttributes(container);
+
+        // add /subsystem=infinispan/cache-container=*/alias=aliasName:add()
+        final ManagementResourceRegistration alias = container.registerSubModel(aliasPath, aliasDescription);
+        alias.registerOperationHandler(ADD, AliasAdd.INSTANCE, AliasAdd.INSTANCE, false);
+        alias.registerOperationHandler(REMOVE, AliasRemove.INSTANCE, AliasRemove.INSTANCE, false);
 
         // add /subsystem=infinispan/cache-container=*/singleton=transport:write-attribute
         final ManagementResourceRegistration transport = container.registerSubModel(transportPath, transportDescription);
@@ -125,16 +138,19 @@ public class InfinispanExtension implements Extension, DescriptionProvider {
         ManagementResourceRegistration invalidation = container.registerSubModel(invalidationCachePath, invalidationCacheDescription);
         invalidation.registerOperationHandler(ADD, InvalidationCacheAdd.INSTANCE, InvalidationCacheAdd.INSTANCE, false);
         invalidation.registerOperationHandler(REMOVE, CacheRemove.INSTANCE, CacheRemove.INSTANCE, false);
+        registerCommonCacheAttributeHandlers(invalidation);
 
-        // add /subsystem=infinispan/cache-container=*/local-cache=*
+        // add /subsystem=infinispan/cache-container=*/replicated-cache=*
         ManagementResourceRegistration replicated = container.registerSubModel(replicatedCachePath, replicatedCacheDescription);
         replicated.registerOperationHandler(ADD, ReplicatedCacheAdd.INSTANCE, ReplicatedCacheAdd.INSTANCE, false);
         replicated.registerOperationHandler(REMOVE, CacheRemove.INSTANCE, CacheRemove.INSTANCE, false);
+        registerCommonCacheAttributeHandlers(replicated);
 
-        // add /subsystem=infinispan/cache-container=*/local-cache=*
+        // add /subsystem=infinispan/cache-container=*/distributed-cache=*
         ManagementResourceRegistration distributed = container.registerSubModel(distributedCachePath, distributedCacheDescription);
         distributed.registerOperationHandler(ADD, DistributedCacheAdd.INSTANCE, DistributedCacheAdd.INSTANCE, false);
         distributed.registerOperationHandler(REMOVE, CacheRemove.INSTANCE, CacheRemove.INSTANCE, false);
+        registerCommonCacheAttributeHandlers(distributed);
     }
 
     /**
@@ -154,6 +170,10 @@ public class InfinispanExtension implements Extension, DescriptionProvider {
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return InfinispanDescriptions.getSubsystemDescription(locale);
+    }
+
+    private void registerCommonCacheAttributeHandlers(ManagementResourceRegistration resource) {
+
     }
 
 }

@@ -12,12 +12,12 @@ import org.jboss.logging.Logger;
 /**
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class TransportRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
+public class AliasRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
 
-    private static final Logger log = Logger.getLogger(TransportRemove.class.getPackage().getName());
-    public static final TransportRemove INSTANCE = new TransportRemove();
+    private static final Logger log = Logger.getLogger(AliasRemove.class.getPackage().getName());
+    public static final AliasRemove INSTANCE = new AliasRemove();
 
-    public TransportRemove() {
+    public AliasRemove() {
         super();
     }
 
@@ -28,6 +28,6 @@ public class TransportRemove extends AbstractRemoveStepHandler implements Descri
     }
 
     public ModelNode getModelDescription(Locale locale) {
-        return InfinispanDescriptions.getTransportRemoveDescription(locale) ;
+        return InfinispanDescriptions.getAliasRemoveDescription(locale) ;
     }
 }
