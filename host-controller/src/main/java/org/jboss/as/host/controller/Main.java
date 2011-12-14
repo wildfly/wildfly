@@ -179,22 +179,22 @@ public final class Main {
                 } else if (CommandLineConstants.PROPERTIES.equals(arg) || CommandLineConstants.OLD_PROPERTIES.equals(arg)
                         || CommandLineConstants.SHORT_PROPERTIES.equals(arg)) {
                     // Set system properties from url/file
-                    if (!processProperties(arg, args[++i])) {
+                    if (!processProperties(arg, args[++i], hostSystemProperties)) {
                         return null;
                     }
                 } else if (arg.startsWith(CommandLineConstants.PROPERTIES)) {
                     String urlSpec = parseValue(arg, CommandLineConstants.PROPERTIES);
-                    if (urlSpec == null || !processProperties(arg, urlSpec)) {
+                    if (urlSpec == null || !processProperties(arg, urlSpec, hostSystemProperties)) {
                         return null;
                     }
                 } else if (arg.startsWith(CommandLineConstants.SHORT_PROPERTIES)) {
                     String urlSpec = parseValue(arg, CommandLineConstants.SHORT_PROPERTIES);
-                    if (urlSpec == null || !processProperties(arg, urlSpec)) {
+                    if (urlSpec == null || !processProperties(arg, urlSpec, hostSystemProperties)) {
                         return null;
                     }
                 }  else if (arg.startsWith(CommandLineConstants.OLD_PROPERTIES)) {
                     String urlSpec = parseValue(arg, CommandLineConstants.OLD_PROPERTIES);
-                    if (urlSpec == null || !processProperties(arg, urlSpec)) {
+                    if (urlSpec == null || !processProperties(arg, urlSpec, hostSystemProperties)) {
                         return null;
                     }
                 } else if (CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT.equals(arg)) {
@@ -394,12 +394,17 @@ public final class Main {
         return value;
     }
 
-    private static boolean processProperties(final String arg, final String urlSpec) {
+    private static boolean processProperties(final String arg, final String urlSpec, Map<String, String> hostSystemProperties) {
          URL url = null;
          try {
              url = makeURL(urlSpec);
-             Properties props = SecurityActions.getSystemProperties();
+             Properties props = new Properties();
              props.load(url.openConnection().getInputStream());
+
+             SecurityActions.getSystemProperties().putAll(props);
+             for (Map.Entry<Object, Object> entry : props.entrySet()) {
+                 hostSystemProperties.put((String)entry.getKey(), (String)entry.getValue());
+             }
              return true;
          } catch (MalformedURLException e) {
              System.err.printf("Malformed URL provided for option %s\n", arg);

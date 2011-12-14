@@ -76,7 +76,6 @@ import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.host.controller.ManagedServer.ManagedServerBootConfiguration;
 import org.jboss.as.process.DefaultJvmUtils;
-import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.jmx.PluggableMBeanServer;
 import org.jboss.as.server.services.net.BindingGroupAddHandler;
 import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingAddHandler;
@@ -92,6 +91,10 @@ import org.jboss.dmr.Property;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 class ModelCombiner implements ManagedServerBootConfiguration {
+
+    private static final String RMI_CLIENT_INTERVAL = "sun.rmi.dgc.client.gcInterval";
+    private static final String RMI_SERVER_INTERVAL = "sun.rmi.dgc.server.gcInterval";
+    private static final String DEFAULT_RMI_INTERVAL = "3600000";
 
     private static final ModelNode EMPTY = new ModelNode();
     static {
@@ -206,6 +209,10 @@ class ModelCombiner implements ManagedServerBootConfiguration {
 
         JvmOptionsBuilderFactory.getInstance().addOptions(jvmElement, command);
 
+        //These need to go in on the command-line
+        command.add("-D" + RMI_CLIENT_INTERVAL + "=" + SecurityActions.getSystemProperty(RMI_CLIENT_INTERVAL, DEFAULT_RMI_INTERVAL));
+        command.add("-D" + RMI_SERVER_INTERVAL + "=" + SecurityActions.getSystemProperty(RMI_SERVER_INTERVAL, DEFAULT_RMI_INTERVAL));
+
         Map<String, String> bootTimeProperties = getAllSystemProperties(true);
         // Add in properties passed in to the ProcessController command line
         bootTimeProperties.putAll(environment.getHostSystemProperties());
@@ -265,7 +272,6 @@ class ModelCombiner implements ManagedServerBootConfiguration {
     @Override
     public Map<String, String> getServerLaunchEnvironment() {
         final Map<String, String> env = new HashMap<String, String>();
-        addStandardProperties(serverName, environment, env);
         for(final Entry<String, String> property : jvmElement.getEnvironmentVariables().entrySet()) {
             env.put(property.getKey(), property.getValue());
         }
@@ -525,37 +531,5 @@ class ModelCombiner implements ManagedServerBootConfiguration {
 
     private ModelNode pathAddress(PathElement...elements) {
         return PathAddress.pathAddress(elements).toModelNode();
-    }
-
-
-    /**
-     * Equivalent to default JAVA_OPTS in < AS 7 run.conf file
-     *
-     * TODO externalize this somewhere if doing this at all is the right thing
-     *
-     * @param sysProps
-     */
-    static void addStandardProperties(final String serverName, final HostControllerEnvironment environment, Map<String, String> sysProps) {
-        //
-        if (!sysProps.containsKey("sun.rmi.dgc.client.gcInterval")) {
-            sysProps.put("sun.rmi.dgc.client.gcInterval","3600000");
-        }
-        if (!sysProps.containsKey("sun.rmi.dgc.server.gcInterval")) {
-            sysProps.put("sun.rmi.dgc.server.gcInterval","3600000");
-        }
-
-        sysProps.put(HostControllerEnvironment.HOME_DIR, environment.getHomeDir().getAbsolutePath());
-        String key = ServerEnvironment.SERVER_BASE_DIR;
-        if (sysProps.get(key) == null) {
-            File serverBaseDir = new File(environment.getDomainServersDir(), serverName);
-            sysProps.put(key, serverBaseDir.getAbsolutePath());
-        }
-
-        // Servers should use the host controller's deployment content repo
-        key = ServerEnvironment.SERVER_DEPLOY_DIR;
-        if (sysProps.get(key) == null) {
-            File serverDeploymentDir = environment.getDomainDeploymentDir();
-            sysProps.put(key, serverDeploymentDir.getAbsolutePath());
-        }
     }
 }

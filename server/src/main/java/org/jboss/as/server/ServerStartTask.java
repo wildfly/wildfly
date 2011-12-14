@@ -61,6 +61,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
     private final List<ModelNode> updates;
     private final ServerEnvironment providedEnvironment;
 
+
     public ServerStartTask(final String hostControllerName, final String serverName, final int portOffset, final List<ServiceActivator> startServices, final List<ModelNode> updates) {
         if (serverName == null || serverName.length() == 0) {
             throw new IllegalArgumentException("Server name \"" + serverName + "\" is invalid; cannot be null or blank");
@@ -72,12 +73,14 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         this.portOffset = portOffset;
         this.startServices = startServices;
         this.updates = updates;
-        final Properties properties = new Properties(System.getProperties());
+
+        final Properties properties = new Properties();
         properties.setProperty(ServerEnvironment.SERVER_NAME, serverName);
-        properties.setProperty(ServerEnvironment.SERVER_DEPLOY_DIR, properties.getProperty("jboss.domain.deployment.dir"));
-        properties.setProperty(ServerEnvironment.SERVER_BASE_DIR, properties.getProperty("jboss.domain.servers.dir") + File.separatorChar + serverName);
-        properties.setProperty(ServerEnvironment.CONTROLLER_TEMP_DIR, properties.getProperty("jboss.domain.temp.dir"));
-        providedEnvironment = new ServerEnvironment(hostControllerName, properties, System.getenv(), null, ServerEnvironment.LaunchType.DOMAIN, RunningMode.NORMAL);
+        properties.setProperty(ServerEnvironment.HOME_DIR, ServerEnvironment.HOME_DIR);
+        properties.setProperty(ServerEnvironment.SERVER_DEPLOY_DIR, SecurityActions.getSystemProperty("jboss.domain.deployment.dir"));
+        properties.setProperty(ServerEnvironment.SERVER_BASE_DIR, SecurityActions.getSystemProperty("jboss.domain.servers.dir") + File.separatorChar + serverName);
+        properties.setProperty(ServerEnvironment.CONTROLLER_TEMP_DIR, SecurityActions.getSystemProperty("jboss.domain.temp.dir"));
+        providedEnvironment = new ServerEnvironment(hostControllerName, properties, SecurityActions.getSystemEnvironment(), null, ServerEnvironment.LaunchType.DOMAIN, RunningMode.NORMAL);
     }
 
     @Override
