@@ -34,9 +34,11 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.security.AccessController;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.security.auth.callback.CallbackHandler;
@@ -81,7 +83,7 @@ import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
-import org.xnio.IoFuture;
+import org.jboss.threads.JBossThreadFactory;
 import org.xnio.OptionMap;
 
 
@@ -106,7 +108,8 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     private final AtomicBoolean shutdown = new AtomicBoolean();
     private volatile Channel channel;
     private volatile AbstractMessageHandler handler;
-    private final ExecutorService executor = Executors.newCachedThreadPool();
+    private final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("domain-connection-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
+    private final ExecutorService executor = Executors.newCachedThreadPool(threadFactory);
     private final AtomicBoolean connected = new AtomicBoolean(false);
     private final AtomicBoolean registered = new AtomicBoolean(false);
     private final FutureClient futureClient = new FutureClient();
@@ -234,7 +237,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             });
             channel.receiveMessage(ManagementChannelReceiver.createDelegating(this.handler));
 
-            masterProxy = new ExistingChannelModelControllerClient(channel);
+            masterProxy = new ExistingChannelModelControllerClient(channel, executor);
         } catch (IOException e) {
             log.warnf("Could not connect to remote domain controller %s:%d", host.getHostAddress(), port);
             throw new IllegalStateException(e);
