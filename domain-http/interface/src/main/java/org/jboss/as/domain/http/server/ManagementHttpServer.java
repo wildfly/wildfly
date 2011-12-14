@@ -34,6 +34,7 @@ import javax.net.ssl.SSLParameters;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.domain.http.server.security.BasicAuthenticator;
+import org.jboss.as.domain.http.server.security.ClientCertAuthenticator;
 import org.jboss.as.domain.http.server.security.DigestAuthenticator;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.security.DomainCallbackHandler;
@@ -122,7 +123,7 @@ public class ManagementHttpServer {
                 // For this to return true we know we have a trust store to use to verify client certificates.
                 if (auth == null) {
                     certAuthMode = CertAuth.NEED;
-                    // TODO - Need to supply an Authenticator for this scenario.
+                    auth = new ClientCertAuthenticator(securityRealm.getName());
                 } else {
                     // We have the possibility to use Client Cert but also Username/Password authentication so don't
                     // need to force clients into presenting a Cert.
