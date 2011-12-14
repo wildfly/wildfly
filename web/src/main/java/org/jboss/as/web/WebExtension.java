@@ -22,6 +22,7 @@
 
 package org.jboss.as.web;
 
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -76,6 +77,7 @@ public class WebExtension implements Extension {
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(WebSubsystemDescriptionProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, WebSubsystemAdd.INSTANCE, WebSubsystemAdd.INSTANCE, false);
         registration.registerOperationHandler(DESCRIBE, WebSubsystemDescribe.INSTANCE, WebSubsystemDescribe.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        registration.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, WebSubsystemDescriptionProviders.SUBSYSTEM_REMOVE, false);
         subsystem.registerXMLElementWriter(WebSubsystemParser.getInstance());
 
         // connectors

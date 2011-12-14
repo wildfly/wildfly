@@ -8,6 +8,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
@@ -65,6 +66,19 @@ class MailSubsystemProviders {
             operation.get(REPLY_PROPERTIES).setEmptyObject();
 
             return operation;
+        }
+    };
+
+    public static final DescriptionProvider SUBSYSTEM_REMOVE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode op = new ModelNode();
+            op.get(OPERATION_NAME).set(REMOVE);
+            op.get(DESCRIPTION).set(bundle.getString("mail.remove"));
+            op.get(REPLY_PROPERTIES).setEmptyObject();
+            op.get(REQUEST_PROPERTIES).setEmptyObject();
+            return op;
         }
     };
 
@@ -139,6 +153,16 @@ class MailSubsystemProviders {
             return operation;
         }
     };
+
+    static ModelNode getMailSessionRemove(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode op = new ModelNode();
+            op.get(OPERATION_NAME).set(REMOVE);
+            op.get(DESCRIPTION).set(bundle.getString("mail-session.remove"));
+            op.get(REPLY_PROPERTIES).setEmptyObject();
+            op.get(REQUEST_PROPERTIES).setEmptyObject();
+            return op;
+        }
 
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {

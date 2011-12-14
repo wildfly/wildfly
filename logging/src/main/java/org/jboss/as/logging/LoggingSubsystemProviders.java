@@ -138,6 +138,19 @@ class LoggingSubsystemProviders {
         }
     };
 
+    static final DescriptionProvider SUBSYSTEM_REMOVE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode op = new ModelNode();
+            op.get(OPERATION_NAME).set(REMOVE);
+            op.get(DESCRIPTION).set(bundle.getString("logging.remove"));
+            op.get(REPLY_PROPERTIES).setEmptyObject();
+            op.get(REQUEST_PROPERTIES).setEmptyObject();
+            return op;
+        }
+    };
+
     static final DescriptionProvider ROOT_LOGGER = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {

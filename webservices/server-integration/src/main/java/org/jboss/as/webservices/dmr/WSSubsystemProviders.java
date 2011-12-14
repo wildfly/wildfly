@@ -97,6 +97,13 @@ final class WSSubsystemProviders {
         }
     };
 
+    static final DescriptionProvider SUBSYSTEM_REMOVE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return Descriptions.getSubsystemRemoveDescription(locale);
+        }
+    };
+
     static final DescriptionProvider DEPLOYMENT_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
             return Descriptions.getDeploymentDescription(locale);
@@ -493,6 +500,16 @@ final class WSSubsystemProviders {
 
             op.get(REPLY_PROPERTIES).setEmptyObject();
 
+            return op;
+        }
+
+        static ModelNode getSubsystemRemoveDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode op = new ModelNode();
+            op.get(OPERATION_NAME).set(REMOVE);
+            op.get(DESCRIPTION).set(bundle.getString("ws.remove"));
+            op.get(REPLY_PROPERTIES).setEmptyObject();
+            op.get(REQUEST_PROPERTIES).setEmptyObject();
             return op;
         }
     }

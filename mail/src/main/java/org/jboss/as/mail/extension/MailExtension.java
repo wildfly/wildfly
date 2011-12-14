@@ -7,8 +7,10 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -53,10 +55,11 @@ public class MailExtension implements Extension {
         final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(MailSubsystemProviders.SUBSYSTEM);
         subsystem.registerOperationHandler(ADD, MailSubsystemAdd.INSTANCE, MailSubsystemProviders.SUBSYSTEM_ADD, false);
         subsystem.registerOperationHandler(DESCRIBE, SubsystemDescribeHandler.INSTANCE, SubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        subsystem.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, MailSubsystemProviders.SUBSYSTEM_REMOVE, false);
 
         final ManagementResourceRegistration mailSessions = subsystem.registerSubModel(PathElement.pathElement(ModelKeys.MAIL_SESSION), MailSubsystemProviders.MAIL_SESSION_DESC);
         mailSessions.registerOperationHandler(ADD, MailSessionAdd.INSTANCE, MailSubsystemProviders.ADD_MAIL_SESSION_DESC, false);
-
+        mailSessions.registerOperationHandler(REMOVE, MailSessionRemove.INSTANCE, MailSessionRemove.INSTANCE, false);
     }
 
 

@@ -37,4 +37,11 @@ public class CmpSubsystemProviders {
         }
     };
 
+    static final DescriptionProvider SUBSYSTEM_REMOVE = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            return CmpSubsystemDescriptions.getSubsystemRemoveDescription(locale);
+        }
+    };
+
 }

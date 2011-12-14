@@ -21,6 +21,7 @@
  */
 package org.jboss.as.threads;
 
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -74,6 +75,13 @@ public class ThreadsExtension implements Extension {
 
     public static String SUBSYSTEM_NAME = "threads";
 
+    private static final DescriptionProvider SUBSYSTEM_REMOVE_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            return ThreadsSubsystemProviders.getSubsystemRemoveDescription(locale);
+        }
+    };
+
     @Override
     public void initialize(final ExtensionContext context) {
 
@@ -87,6 +95,7 @@ public class ThreadsExtension implements Extension {
         subsystem.registerOperationHandler(ADD, ThreadsSubsystemAdd.INSTANCE, ThreadsSubsystemAdd.INSTANCE, false);
         subsystem.registerOperationHandler(DESCRIBE, ThreadsSubsystemDescribeHandler.INSTANCE,
                 ThreadsSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        subsystem.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, SUBSYSTEM_REMOVE_PROVIDER, false);
 
         final ManagementResourceRegistration threadFactories = subsystem.registerSubModel(PathElement.pathElement(THREAD_FACTORY),
                 THREAD_FACTORY_DESC);

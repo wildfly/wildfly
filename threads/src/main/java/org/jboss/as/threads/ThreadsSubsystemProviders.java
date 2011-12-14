@@ -517,6 +517,16 @@ public class ThreadsSubsystemProviders {
         return operation;
     }
 
+    static ModelNode getSubsystemRemoveDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(DESCRIPTION).set(bundle.getString("threads.remove"));
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {
             locale = Locale.getDefault();

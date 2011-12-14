@@ -19,6 +19,13 @@ class WebSubsystemDescriptionProviders {
         }
     };
 
+    public static final DescriptionProvider SUBSYSTEM_REMOVE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return WebSubsystemDescriptions.getSubsystemRemoveDescription(locale);
+        }
+    };
+
     public static final DescriptionProvider CONNECTOR = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
@@ -125,6 +132,5 @@ class WebSubsystemDescriptionProviders {
         }
 
     };
-
 
 }

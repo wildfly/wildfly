@@ -32,6 +32,10 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -77,6 +81,16 @@ public class InfinispanDescriptions {
         description.get(ModelDescriptionConstants.REPLY_PROPERTIES, ModelDescriptionConstants.TYPE).set(ModelType.LIST);
         description.get(ModelDescriptionConstants.REPLY_PROPERTIES, ModelDescriptionConstants.VALUE_TYPE).set(ModelType.OBJECT);
         return description;
+    }
+
+    static ModelNode getSubsystemRemoveDescription(Locale locale) {
+        final ResourceBundle bundle = getResources(locale);
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(DESCRIPTION).set(bundle.getString("infinispan.remove"));
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        return op;
     }
 
     // cache containers
@@ -417,4 +431,5 @@ public class InfinispanDescriptions {
         addNode(requestProperties, ModelKeys.QUEUE_FLUSH_INTERVAL, resources.getString(keyPrefix+".queue-flush-interval"), ModelType.LONG, false);
         addNode(requestProperties, ModelKeys.REMOTE_TIMEOUT, resources.getString(keyPrefix+".remote-timeout"), ModelType.LONG, false);
     }
+
 }
