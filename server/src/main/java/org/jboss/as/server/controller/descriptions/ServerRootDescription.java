@@ -25,6 +25,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DUMP_SERVICES;
@@ -45,6 +46,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SHUTDOWN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
@@ -194,7 +196,11 @@ public class ServerRootDescription {
         ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set(SHUTDOWN);
         node.get(DESCRIPTION).set(bundle.getString("shutdown"));
-        node.get(REQUEST_PROPERTIES).setEmptyObject();
+        node.get(REQUEST_PROPERTIES, RESTART, TYPE).set(ModelType.BOOLEAN);
+        node.get(REQUEST_PROPERTIES, RESTART, DESCRIPTION).set(bundle.getString("shutdown.restart"));
+        node.get(REQUEST_PROPERTIES, RESTART, DEFAULT).set(false);
+        node.get(REQUEST_PROPERTIES, RESTART, REQUIRED).set(false);
+        node.get(REQUEST_PROPERTIES, RESTART, NILLABLE).set(true);
         node.get(REPLY_PROPERTIES).setEmptyObject();
         return node;
     }
