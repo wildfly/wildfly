@@ -126,9 +126,9 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
                             if (jdbcStatsSize > 0) {
                                 ManagementResourceRegistration jdbcRegistration = subRegistration.registerSubModel(PathElement.pathElement("statistics", "jdbc"), new StatisticsDescriptionProvider(DataSourcesSubsystemProviders.RESOURCE_NAME, "statistics", jdbcStats));
+                                jdbcRegistration.setRuntimeOnly(true);
                                 jdbcRegistration.registerOperationHandler("clear-statistics", new ClearStatisticsHandler(jdbcStats), DataSourcesSubsystemProviders.CLEAR_STATISTICS_DESC, false);
 
-                                //context.createResource(PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement("statistics", "jdbc")));
                                 for (String statName : jdbcStats.getNames()) {
                                     jdbcRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(jdbcStats));
                                 }
@@ -137,6 +137,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
                             if (poolStatsSize > 0) {
                                 ManagementResourceRegistration poolRegistration = subRegistration.registerSubModel(PathElement.pathElement("statistics", "pool"), new StatisticsDescriptionProvider(DataSourcesSubsystemProviders.RESOURCE_NAME, "statistics", poolStats));
+                                poolRegistration.setRuntimeOnly(true);
                                 poolRegistration.registerOperationHandler("clear-statistics", new ClearStatisticsHandler(poolStats), DataSourcesSubsystemProviders.CLEAR_STATISTICS_DESC, false);
 
                                 for (String statName : poolStats.getNames()) {

@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -61,7 +62,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     @SuppressWarnings("unused")
     private volatile Map<String, AttributeAccess> attributes;
 
-    private final boolean runtimeOnly;
+    private final AtomicBoolean runtimeOnly = new AtomicBoolean();
 
     private static final AtomicMapFieldUpdater<ConcreteResourceRegistration, String, NodeSubregistry> childrenUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteResourceRegistration.class, Map.class, "children"));
     private static final AtomicMapFieldUpdater<ConcreteResourceRegistration, String, OperationEntry> operationsUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteResourceRegistration.class, Map.class, "operations"));
@@ -74,12 +75,17 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
         operationsUpdater.clear(this);
         attributesUpdater.clear(this);
         descriptionProviderUpdater.set(this, provider);
-        this.runtimeOnly = runtimeOnly;
+        this.runtimeOnly.set(runtimeOnly);
     }
 
     @Override
     public boolean isRuntimeOnly() {
-        return runtimeOnly;
+        return runtimeOnly.get();
+    }
+
+    @Override
+    public void setRuntimeOnly(final boolean runtimeOnly) {
+        this.runtimeOnly.set(runtimeOnly);
     }
 
     @Override
@@ -96,7 +102,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
         if (address == null) {
             throw MESSAGES.cannotRegisterSubmodelWithNullPath();
         }
-        if (runtimeOnly) {
+        if (isRuntimeOnly()) {
             throw MESSAGES.cannotRegisterSubmodel();
         }
         final AbstractResourceRegistration existing = getSubRegistration(PathAddress.pathAddress(address));

@@ -72,6 +72,12 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
     }
 
     @Override
+    public void setRuntimeOnly(final boolean runtimeOnly) {
+
+    }
+
+
+    @Override
     public boolean isRemote() {
         return true;
     }

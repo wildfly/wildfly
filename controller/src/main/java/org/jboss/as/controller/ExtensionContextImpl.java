@@ -201,6 +201,12 @@ public final class ExtensionContextImpl implements ExtensionContext {
         }
 
         @Override
+        public void setRuntimeOnly(final boolean runtimeOnly){
+            deployments.setRuntimeOnly(runtimeOnly);
+        }
+
+
+        @Override
         public boolean isRemote() {
             return deployments.isRemote();
         }
