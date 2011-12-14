@@ -69,6 +69,17 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler, Descri
                 address.add(ModelKeys.CACHE_CONTAINER, container.getName());
                 result.add(CacheContainerAdd.createOperation(address, container.getValue()));
 
+                // add operation to create any aliases for the container
+                if (container.getValue().hasDefined(ModelKeys.ALIAS)) {
+                    for (Property alias : container.getValue().get(ModelKeys.ALIAS).asPropertyList()) {
+                        String aliasName = alias.getName();
+                        ModelNode aliasValue = alias.getValue() ;
+                        ModelNode aliasAddress = address.clone();
+                        aliasAddress.add(ModelKeys.ALIAS, aliasName);
+                        result.add(AliasAdd.createOperation(aliasAddress, aliasValue));
+                    }
+                }
+
                 // add operation to create the transport for the container
                 if (container.getValue().hasDefined(ModelKeys.SINGLETON)) {
                     ModelNode transport = container.getValue().get(ModelKeys.SINGLETON, ModelKeys.TRANSPORT);

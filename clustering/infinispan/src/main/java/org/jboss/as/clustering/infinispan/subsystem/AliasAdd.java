@@ -1,13 +1,11 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 
 import java.util.List;
 import java.util.Locale;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -20,10 +18,10 @@ import org.jboss.msc.service.ServiceController;
 /**
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class TransportAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class AliasAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
-    private static final Logger log = Logger.getLogger(TransportAdd.class.getPackage().getName());
-    public static final TransportAdd INSTANCE = new TransportAdd();
+    private static final Logger log = Logger.getLogger(AliasAdd.class.getPackage().getName());
+    public static final AliasAdd INSTANCE = new AliasAdd();
 
     static ModelNode createOperation(ModelNode address, ModelNode existing) {
         ModelNode operation = Util.getEmptyOperation(ADD, address);
@@ -31,21 +29,11 @@ public class TransportAdd extends AbstractAddStepHandler implements DescriptionP
         return operation;
     }
 
-    public TransportAdd() {
+    public AliasAdd() {
         super();
     }
 
-
-
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-
-        // this is not necessary as the CLI checks for duplicate addresses
-        if (model.isDefined()) {
-            ModelNode exception = new ModelNode() ;
-            exception.get(FAILURE_DESCRIPTION).set("Add operation failed: singleton transport already exists.") ;
-            throw new OperationFailedException(exception);
-        }
-
         // copy operation data to the model
         populate(operation, model);
     }
@@ -58,17 +46,10 @@ public class TransportAdd extends AbstractAddStepHandler implements DescriptionP
     }
 
     public ModelNode getModelDescription(Locale locale) {
-        return InfinispanDescriptions.getTransportAddDescription(locale) ;
+        return InfinispanDescriptions.getAliasAddDescription(locale) ;
     }
 
     private static void populate(ModelNode operation, ModelNode model) {
-
-        // simply transfer the attributes from operation to model
-        for (AttributeDefinition attr : CommonAttributes.TRANSPORT_ATTRIBUTES) {
-
-            if (operation.hasDefined(attr.getName())) {
-                model.get(attr.getName()).set(operation.get(attr.getName()));
-            }
-        }
+        // alias resources do not hold data
     }
 }

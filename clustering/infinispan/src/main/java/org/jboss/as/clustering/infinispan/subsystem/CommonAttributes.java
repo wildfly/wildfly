@@ -7,6 +7,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
+ * Attributes used in setting up Infinispan configurations
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
@@ -106,5 +107,21 @@ public interface CommonAttributes {
     SimpleAttributeDefinition VIRTUAL_NODES = new SimpleAttributeDefinition(ModelKeys.VIRTUAL_NODES,
             new ModelNode().set(intDefault), ModelType.INT, true);
 
+    AttributeDefinition[] CACHE_CONTAINER_ATTRIBUTES = { DEFAULT_CACHE, JNDI_NAME, LISTENER_EXECUTOR, EVICTION_EXECUTOR, REPLICATION_QUEUE_EXECUTOR, ALIAS };
     AttributeDefinition[] TRANSPORT_ATTRIBUTES = { STACK, EXECUTOR, LOCK_TIMEOUT, SITE, RACK, MACHINE  };
+
+    AttributeDefinition[] CACHE_ATTRIBUTES = { STACK, EXECUTOR, LOCK_TIMEOUT, SITE, RACK, MACHINE  };
+    AttributeDefinition[] LOCKING_ATTRIBUTES = { ISOLATION, STRIPING, ACQUIRE_TIMEOUT, CONCURRENCY_LEVEL  };
+    AttributeDefinition[] TRANSACTION_ATTRIBUTES = { MODE, STOP_TIMEOUT, EAGER_LOCKING  };
+    AttributeDefinition[] EVICTION_ATTRIBUTES = { STRATEGY, MAX_ENTRIES };
+    AttributeDefinition[] EXPIRATION_ATTRIBUTES = { MAX_IDLE, LIFESPAN, INTERVAL };
+
+    AttributeDefinition[] STORE_ATTRIBUTES = { SHARED, PRELOAD, PASSIVATION, FETCH_STATE, PURGE, SINGLETON /* PROPERTY */};
+    AttributeDefinition[] FILESTORE_ATTRIBUTES = { RELATIVE_TO, PATH };
+    AttributeDefinition[] JDBC_STORE_ATTRIBUTES = { DATA_SOURCE };
+    AttributeDefinition[] REMOTE_ATTRIBUTES = { /* REMOTE_SERVER */ };
+
+    AttributeDefinition[] STATE_TRANSFER_ATTRIBUTES = { ENABLED, TIMEOUT, FLUSH_TIMEOUT };
+    AttributeDefinition[] REHASHING_ATTRIBUTES = { ENABLED, TIMEOUT };
+
 }
