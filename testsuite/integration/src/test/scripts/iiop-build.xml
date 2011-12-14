@@ -22,7 +22,7 @@
            <param name="server-config" value="iiop-server"/>
            <propertyset refid="ds.properties"/>
         </antcall>
-        <add-port-offset name="iiop-server" offset="100" nativePort="19999" httpPort="19990"/>
+        <add-port-offset name="iiop-server" offset="100" nativePort="9999" httpPort="9990"/>
         <add-jts name="iiop-server"/>
 
     </target>

@@ -54,6 +54,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.After;
 import org.junit.Test;
@@ -132,7 +133,8 @@ public class BasicOperationsUnitTestCase {
         for(final ModelNode step : steps) {
             Assert.assertTrue(step.hasDefined(OP_ADDR));
             Assert.assertTrue(step.hasDefined(RESULT));
-            Assert.assertTrue(step.get(RESULT).asInt() > 0);
+            final ModelNode stepResult = step.get(RESULT);
+            Assert.assertTrue(stepResult.getType() == ModelType.EXPRESSION || stepResult.asInt() > 0);
         }
     }
 

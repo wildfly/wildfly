@@ -86,6 +86,11 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
     }
 
     @Test
+    public void testHostMaster() throws Exception {
+        parseXml("domain/configuration/host-master.xml");
+    }
+
+    @Test
     public void testDomain() throws Exception {
         parseXml("domain/configuration/domain.xml");
     }
@@ -98,6 +103,46 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
     @Test
     public void testStandaloneHA() throws Exception {
         parseXml("standalone/configuration/standalone-ha.xml");
+    }
+
+    @Test
+    public void testStandaloneFull() throws Exception {
+        parseXml("standalone/configuration/standalone-full.xml");
+    }
+
+    @Test
+    public void testDomainJTS() throws Exception {
+        parseXml("docs/examples/configs/domain-jts.xml");
+    }
+
+    @Test
+    public void testDomainOSGiOnly() throws Exception {
+        parseXml("docs/examples/configs/domain-osgi-only.xml");
+    }
+
+    @Test
+    public void testHornetQColocated() throws Exception {
+        parseXml("docs/examples/configs/standalone-hornetq-colocated.xml");
+    }
+
+    @Test
+    public void testStandaloneJTS() throws Exception {
+        parseXml("docs/examples/configs/standalone-jts.xml");
+    }
+
+    @Test
+    public void testStandaloneOSGiOnly() throws Exception {
+        parseXml("docs/examples/configs/standalone-osgi-only.xml");
+    }
+
+    @Test
+    public void testStandaloneMinimalistic() throws Exception {
+        parseXml("docs/examples/configs/standalone-minimalistic.xml");
+    }
+
+    @Test
+    public void testStandaloneXTS() throws Exception {
+        parseXml("docs/examples/configs/standalone-xts.xml");
     }
 
     private void parseXml(String xmlName) throws ParserConfigurationException, SAXException, IOException {
@@ -137,9 +182,10 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
     }
 
     private static String fixExpressions(String line) {
-        String result = line.replace("${jboss.host.management.native.port:9999}", "9999");
-        result = result.replace("${jboss.host.management.http.port:9990}", "9990");
+        String result = line.replace("${jboss.management.native.port:9999}", "9999");
+        result = result.replace("${jboss.management.http.port:9990}", "9990");
         result = result.replace("${jboss.domain.master.port:9999}", "9999");
+        result = result.replace("${jboss.socket.binding.port-offset:0}", "0");
         return result;
     }
 }
