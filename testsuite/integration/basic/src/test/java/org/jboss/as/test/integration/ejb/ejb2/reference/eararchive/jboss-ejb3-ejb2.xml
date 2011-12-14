@@ -1,0 +1,28 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
+                  xmlns="http://java.sun.com/xml/ns/javaee"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd
+                     http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd
+                     http://www.jboss.org/j2ee/schema/jboss_5_0.xsd"
+                  version="3.1"
+                  impl-version="2.0">
+   <enterprise-beans>
+      <session>
+         <ejb-name>ejb_Test2</ejb-name>
+         <ejb-ref>
+		    <ejb-ref-name>ejb/Test3Home</ejb-ref-name>
+		    <jndi-name>java:app/multideploy-ejb3/Test3!org.jboss.as.test.integration.ejb.ejb2.reference.eararchive.Test3Home</jndi-name>
+		 </ejb-ref>
+         <ejb-ref>
+            <ejb-ref-name>ejb/Test3</ejb-ref-name>
+            <jndi-name>java:app/multideploy-ejb3/Test3!org.jboss.as.test.integration.ejb.ejb2.reference.eararchive.Test3</jndi-name>
+         </ejb-ref>
+
+         <!-- 
+         JBoss descriptor does not provide this global jnd-name binding functionality. see jira AS7-3015. 
+          <jndi-name>Test2</jndi-name>  -->
+
+      </session>
+   </enterprise-beans>
+</jboss:ejb-jar>
