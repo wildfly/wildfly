@@ -21,6 +21,9 @@
  */
 package org.jboss.as.ejb3.timerservice.task;
 
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.util.Date;
 
 import org.jboss.as.ejb3.timerservice.TimerImpl;
@@ -28,9 +31,6 @@ import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
 import org.jboss.as.ejb3.timerservice.TimerState;
 import org.jboss.as.ejb3.timerservice.spi.BeanRemovedException;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
-
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * A timer task which will be invoked at appropriate intervals based on a {@link javax.ejb.Timer}
@@ -46,6 +46,7 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
  * </p>
  *
  * @author Jaikiran Pai
+ * @author Wolf-Dieter Fink
  * @version $Revision: $
  */
 public class TimerTask<T extends TimerImpl> implements Runnable {
@@ -90,12 +91,20 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
     @Override
     public void run() {
         Date now = new Date();
-        ROOT_LOGGER.debug("Timer task invoked at: " + now + " for timer " + this.timer);
+        if(ROOT_LOGGER.isDebugEnabled()) {
+            ROOT_LOGGER.debug("Timer task invoked at: " + now + " for timer " + this.timer);
+        }
 
         // If a retry thread is in progress, we don't want to allow another
         // interval to execute until the retry is complete. See JIRA-1926.
         if (this.timer.isInRetry()) {
             ROOT_LOGGER.debug("Timer in retry mode, skipping this scheduled execution at: " + now);
+            // compute the next timeout, See JIRA AS7-2995.
+            this.timer.setNextTimeout(calculateNextTimeout());
+            this.timerService.persistTimer(this.timer);
+            if(this.timer.getNextExpiration() != null) {
+                this.timer.scheduleTimeout();
+            }
             return;
         }
 
