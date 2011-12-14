@@ -192,18 +192,6 @@ public class RespawnTestCase {
         readHostControllerServers();
     }
 
-    @Test
-    public void testHostControllerShutdown() throws Exception {
-        waitForAllProcesses();
-        readHostControllerServers();
-
-        shutdownHostController(true);
-        waitForAllProcesses();
-        readHostControllerServers();
-
-        shutdownHostController(false);
-    }
-
     private void shutdownHostController(boolean restart) throws Exception {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(SHUTDOWN);

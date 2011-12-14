@@ -191,5 +191,9 @@ while true; do
             grep "$JBOSS_PID" $JBOSS_PIDFILE && rm $JBOSS_PIDFILE
       fi 
    fi
-   exit $JBOSS_STATUS
+   if [ "$JBOSS_STATUS" -eq 10 ]; then
+      echo "Restarting JBoss..."
+   else
+      exit $JBOSS_STATUS
+   fi
 done

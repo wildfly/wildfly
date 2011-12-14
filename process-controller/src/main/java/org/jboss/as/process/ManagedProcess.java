@@ -296,6 +296,16 @@ final class ManagedProcess {
                             System.exit(0);
                         }
                     }).start();
+                } else if (isPrivileged() && exitCode == ExitCodes.RESTART_PROCESS_FROM_STARTUP_SCRIPT) {
+                    // Host Controller restart via exit code picked up by script
+                    processController.removeProcess(processName);
+                    new Thread(new Runnable() {
+                        public void run() {
+                            processController.shutdown();
+                            System.exit(ExitCodes.RESTART_PROCESS_FROM_STARTUP_SCRIPT);
+                        }
+                    }).start();
+
                 } else {
                     if(! stopRequested) {
                         respawn = true;
