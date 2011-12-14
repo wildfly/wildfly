@@ -73,7 +73,9 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -161,84 +163,82 @@ public class GlobalOperationHandlers {
             final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
 
             // Get the model for this resource.
-            if (!registry.isRuntimeOnly()) {
-                final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
-                final Map<String, Set<String>> childrenByType = registry != null ? getChildAddresses(registry, resource, null) : Collections.<String, Set<String>>emptyMap();
-                final ModelNode model = resource.getModel();
+            final Resource resource = nullSafeReadResource(context, registry);
+            final Map<String, Set<String>> childrenByType = registry != null ? getChildAddresses(registry, resource, null) : Collections.<String, Set<String>>emptyMap();
+            final ModelNode model = resource.getModel();
 
-                if (model.isDefined()) {
-                    // Store direct attributes first
-                    for (String key : model.keys()) {
-                        // In case someone put some garbage in it
-                        if (!childrenByType.containsKey(key)) {
-                            directAttributes.put(key, model.get(key));
-                        }
+            if (model.isDefined()) {
+                // Store direct attributes first
+                for (String key : model.keys()) {
+                    // In case someone put some garbage in it
+                    if (!childrenByType.containsKey(key)) {
+                        directAttributes.put(key, model.get(key));
                     }
-                    if (defaults) {
-                        //get the model description
-                        final DescriptionProvider descriptionProvider = registry.getModelDescription(PathAddress.EMPTY_ADDRESS);
-                        final Locale locale = getLocale(operation);
-                        final ModelNode nodeDescription = descriptionProvider.getModelDescription(locale);
+                }
+                if (defaults) {
+                    //get the model description
+                    final DescriptionProvider descriptionProvider = registry.getModelDescription(PathAddress.EMPTY_ADDRESS);
+                    final Locale locale = getLocale(operation);
+                    final ModelNode nodeDescription = descriptionProvider.getModelDescription(locale);
 
-                        if (nodeDescription.isDefined() && nodeDescription.hasDefined(ATTRIBUTES)) {
-                            for (String key : nodeDescription.get(ATTRIBUTES).keys()) {
-                                if ((!childrenByType.containsKey(key)) &&
-                                        (!directAttributes.containsKey(key) || !directAttributes.get(key).isDefined()) &&
-                                        nodeDescription.get(ATTRIBUTES).hasDefined(key) &&
-                                        nodeDescription.get(ATTRIBUTES, key).hasDefined(DEFAULT)) {
-                                    directAttributes.put(key, nodeDescription.get(ATTRIBUTES, key, DEFAULT));
-                                }
+                    if (nodeDescription.isDefined() && nodeDescription.hasDefined(ATTRIBUTES)) {
+                        for (String key : nodeDescription.get(ATTRIBUTES).keys()) {
+                            if ((!childrenByType.containsKey(key)) &&
+                                    (!directAttributes.containsKey(key) || !directAttributes.get(key).isDefined()) &&
+                                    nodeDescription.get(ATTRIBUTES).hasDefined(key) &&
+                                    nodeDescription.get(ATTRIBUTES, key).hasDefined(DEFAULT)) {
+                                directAttributes.put(key, nodeDescription.get(ATTRIBUTES, key, DEFAULT));
                             }
                         }
                     }
                 }
+            }
 
 
-                // Next, process child resources
-                for (Map.Entry<String, Set<String>> entry : childrenByType.entrySet()) {
-                    String childType = entry.getKey();
-                    Set<String> children = entry.getValue();
-                    if (children.isEmpty()) {
-                        // Just treat it like an undefined attribute
-                        directAttributes.put(childType, new ModelNode());
-                    } else {
-                        for (String child : children) {
-                            boolean storeDirect = !recursive;
-                            if (recursive) {
-                                PathElement childPE = PathElement.pathElement(childType, child);
-                                PathAddress relativeAddr = PathAddress.pathAddress(childPE);
-                                ImmutableManagementResourceRegistration childReg = registry.getSubModel(relativeAddr);
-                                if (childReg == null) {
-                                    throw new OperationFailedException(new ModelNode().set(MESSAGES.noChildRegistry(childType, child)));
-                                }
-                                // We only invoke runtime resources if they are remote proxies
-                                if (childReg.isRuntimeOnly() && (!proxies || !childReg.isRemote())) {
-                                    storeDirect = true;
-                                } else {
-                                    // Add a step to read the child resource
-                                    ModelNode rrOp = new ModelNode();
-                                    rrOp.get(OP).set(opName);
-                                    rrOp.get(OP_ADDR).set(PathAddress.pathAddress(address, childPE).toModelNode());
-                                    rrOp.get(RECURSIVE).set(true);
-                                    rrOp.get(PROXIES).set(proxies);
-                                    rrOp.get(INCLUDE_RUNTIME).set(queryRuntime);
-                                    ModelNode rrRsp = new ModelNode();
-                                    childResources.put(childPE, rrRsp);
-
-                                    OperationStepHandler rrHandler = childReg.getOperationHandler(PathAddress.EMPTY_ADDRESS, opName);
-                                    context.addStep(rrRsp, rrOp, rrHandler, OperationContext.Stage.IMMEDIATE);
-                                }
+            // Next, process child resources
+            for (Map.Entry<String, Set<String>> entry : childrenByType.entrySet()) {
+                String childType = entry.getKey();
+                Set<String> children = entry.getValue();
+                if (children.isEmpty()) {
+                    // Just treat it like an undefined attribute
+                    directAttributes.put(childType, new ModelNode());
+                } else {
+                    for (String child : children) {
+                        boolean storeDirect = !recursive;
+                        if (recursive) {
+                            PathElement childPE = PathElement.pathElement(childType, child);
+                            PathAddress relativeAddr = PathAddress.pathAddress(childPE);
+                            ImmutableManagementResourceRegistration childReg = registry.getSubModel(relativeAddr);
+                            if (childReg == null) {
+                                throw new OperationFailedException(new ModelNode().set(MESSAGES.noChildRegistry(childType, child)));
                             }
-                            if (storeDirect) {
-                                ModelNode childMap = directChildren.get(childType);
-                                if (childMap == null) {
-                                    childMap = new ModelNode();
-                                    childMap.setEmptyObject();
-                                    directChildren.put(childType, childMap);
-                                }
-                                // Add a "child" => undefined
-                                childMap.get(child);
+                            // We only invoke runtime resources if they are remote proxies
+                            if (childReg.isRuntimeOnly() && (!proxies || !childReg.isRemote())) {
+                                storeDirect = true;
+                            } else {
+                                // Add a step to read the child resource
+                                ModelNode rrOp = new ModelNode();
+                                rrOp.get(OP).set(opName);
+                                rrOp.get(OP_ADDR).set(PathAddress.pathAddress(address, childPE).toModelNode());
+                                rrOp.get(RECURSIVE).set(true);
+                                rrOp.get(PROXIES).set(proxies);
+                                rrOp.get(INCLUDE_RUNTIME).set(queryRuntime);
+                                ModelNode rrRsp = new ModelNode();
+                                childResources.put(childPE, rrRsp);
+
+                                OperationStepHandler rrHandler = childReg.getOperationHandler(PathAddress.EMPTY_ADDRESS, opName);
+                                context.addStep(rrRsp, rrOp, rrHandler, OperationContext.Stage.IMMEDIATE);
                             }
+                        }
+                        if (storeDirect) {
+                            ModelNode childMap = directChildren.get(childType);
+                            if (childMap == null) {
+                                childMap = new ModelNode();
+                                childMap.setEmptyObject();
+                                directChildren.put(childType, childMap);
+                            }
+                            // Add a "child" => undefined
+                            childMap.get(child);
                         }
                     }
                 }
@@ -279,9 +279,26 @@ public class GlobalOperationHandlers {
             }
             context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }
-    }
 
-    ;
+        /**
+         *  Provides a resource for the current step, either from the context, if the context doesn't have one
+         *  and {@code registry} is runtime-only, it creates a dummy resource.
+         */
+        private static Resource nullSafeReadResource(final OperationContext context, final ImmutableManagementResourceRegistration registry) {
+
+            Resource result;
+            if (registry != null && registry.isRuntimeOnly()) {
+                try {
+                    result = context.readResource(PathAddress.EMPTY_ADDRESS);
+                } catch (RuntimeException e) {
+                    result = PlaceholderResource.INSTANCE;
+                }
+            } else {
+                result = context.readResource(PathAddress.EMPTY_ADDRESS);
+            }
+            return result;
+        }
+    }
 
     /**
      * Assembles the response to a read-resource request from the components gathered by earlier steps.
