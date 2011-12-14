@@ -507,12 +507,15 @@ class DomainApiHandler implements ManagementHttpHandler {
 
     public void start(HttpServer httpServer, SecurityRealm securityRealm) {
         HttpContext context = httpServer.createContext(DOMAIN_API_CONTEXT, this);
+        // Once there is a trust store we can no longer rely on users being defined so skip
+        // any redirects.
         if (authenticator != null) {
-            DomainCallbackHandler callbackHandler = securityRealm.getCallbackHandler();
             context.setAuthenticator(authenticator);
-            context.getFilters().add(new RealmReadinessFilter(callbackHandler, ErrorHandler.getRealmRedirect()));
+            if (securityRealm.hasTrustStore() == false) {
+                DomainCallbackHandler callbackHandler = securityRealm.getCallbackHandler();
+                context.getFilters().add(new RealmReadinessFilter(callbackHandler, ErrorHandler.getRealmRedirect()));
+            }
         }
-
     }
 
     public void stop(HttpServer httpServer) {
