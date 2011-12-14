@@ -36,6 +36,7 @@ public class MuxChannel extends JChannel {
     public MuxChannel(ProtocolStackConfigurator configurator) throws Exception {
         super(configurator);
         this.setUpHandler(new ClassLoaderAwareMuxUpHandler());
+        this.setAddressGenerator(new TopologyAddressGenerator(this));
     }
 
     @Override
