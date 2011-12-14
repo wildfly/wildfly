@@ -323,8 +323,16 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
 
 
     private void writeFile(TimerEntity entity) {
-        //write out our temporary file
         final File file = fileName(entity.getTimedObjectId(), entity.getId());
+
+        //if the timer is expired or cancelled delete the file
+        if(entity.getTimerState() == TimerState.CANCELED ||
+                entity.getTimerState() == TimerState.EXPIRED) {
+            if(file.exists()) {
+                file.delete();
+            }
+            return;
+        }
 
         FileOutputStream fileOutputStream = null;
         try {

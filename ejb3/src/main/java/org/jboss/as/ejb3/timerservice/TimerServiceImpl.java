@@ -348,11 +348,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         return this.createTimer(initialExpiration, intervalDuration, info, true);
     }
 
-    public TimerImpl loadAutoTimer(ScheduleExpression schedule, Method timeoutMethod) {
-
-        return this.createCalendarTimer(schedule, null, true, timeoutMethod);
-    }
-
     public TimerImpl loadAutoTimer(ScheduleExpression schedule,
                                    TimerConfig timerConfig, Method timeoutMethod) {
         return this.createCalendarTimer(schedule, timerConfig.getInfo(), timerConfig.isPersistent(), timeoutMethod);
@@ -663,14 +658,13 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 if (!found) {
                     activeTimer.setTimerState(TimerState.CANCELED);
                 } else {
-
                     startTimer(activeTimer);
                     ROOT_LOGGER.debug("Started timer: " + activeTimer);
                 }
                 this.persistTimer(activeTimer);
+            } else if(!ineligibleTimerStates.contains(activeTimer.getState())) {
+                this.startTimer(activeTimer);
             }
-            //TODO: we need to make sure that these only fire one event after being restored
-            this.startTimer(activeTimer);
             ROOT_LOGGER.debug("Started timer: " + activeTimer);
         }
 
