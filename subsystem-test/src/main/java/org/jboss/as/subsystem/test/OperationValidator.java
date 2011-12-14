@@ -21,6 +21,9 @@
  */
 package org.jboss.as.subsystem.test;
 
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALTERNATIVES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_LENGTH;
@@ -44,6 +47,7 @@ import junit.framework.Assert;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -67,6 +71,15 @@ class OperationValidator {
         }
         for (ModelNode operation : operations) {
             validateOperation(operation);
+        }
+    }
+
+    // TODO enable once AS7-2421 is complete
+    void validateRemoveOperations() {
+        final ModelNode missing = new ModelNode().setEmptyList();
+        validateRemoveOperations(PathAddress.EMPTY_ADDRESS, root, missing);
+        if(missing.asInt() > 0) {
+            Assert.fail("following resources are missing a remove operation " + missing);
         }
     }
 
@@ -324,6 +337,30 @@ class OperationValidator {
                         Assert.fail(paramName + " is expected to be a list of " + elementType + " " + operation);
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * Check that all resources registering an add operation also provide a remove operation.
+     *
+     * @param current the current path address
+     * @param registration the MNR
+     * @param missing the missing remove operations info
+     */
+    private void validateRemoveOperations(final PathAddress current, final ImmutableManagementResourceRegistration registration, final ModelNode missing) {
+        final OperationStepHandler addHandler = registration.getOperationHandler(PathAddress.EMPTY_ADDRESS, ModelDescriptionConstants.ADD);
+        if(addHandler != null) {
+            final OperationStepHandler remove = registration.getOperationHandler(PathAddress.EMPTY_ADDRESS, ModelDescriptionConstants.REMOVE);
+            if(remove == null) {
+                missing.add(current.toModelNode());
+            }
+        }
+        final Set<PathElement> children = registration.getChildAddresses(PathAddress.EMPTY_ADDRESS);
+        for(final PathElement child : children) {
+            final ImmutableManagementResourceRegistration childReg = registration.getSubModel(PathAddress.EMPTY_ADDRESS.append(child));
+            if(childReg != null) {
+                validateRemoveOperations(current.append(child), childReg, missing);
             }
         }
     }
