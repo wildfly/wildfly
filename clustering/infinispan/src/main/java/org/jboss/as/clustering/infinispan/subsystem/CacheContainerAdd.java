@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTBOUND_CONNECTION;
 
 import javax.management.MBeanServer;
 import javax.transaction.TransactionManager;
@@ -55,6 +56,7 @@ import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
@@ -75,6 +77,8 @@ import org.jgroups.Channel;
 public class CacheContainerAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
     private static final Logger log = Logger.getLogger(CacheContainerAdd.class.getPackage().getName());
+
+    public static final CacheContainerAdd INSTANCE = new CacheContainerAdd();
 
     static ModelNode createOperation(ModelNode address, ModelNode existing) {
         ModelNode operation = Util.getEmptyOperation(ADD, address);
@@ -109,15 +113,6 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
         if (source.hasDefined(ModelKeys.REPLICATION_QUEUE_EXECUTOR)) {
             target.get(ModelKeys.REPLICATION_QUEUE_EXECUTOR).set(source.get(ModelKeys.REPLICATION_QUEUE_EXECUTOR));
         }
-        if (source.hasDefined(ModelKeys.ALIAS)) {
-            ModelNode aliases = target.get(ModelKeys.ALIAS);
-            for (ModelNode alias : source.get(ModelKeys.ALIAS).asList()) {
-                aliases.add(alias);
-            }
-        }
-        if (source.hasDefined(ModelKeys.TRANSPORT)) {
-            target.get(ModelKeys.TRANSPORT).set(source.get(ModelKeys.TRANSPORT));
-        }
     }
 
     @Override
@@ -134,12 +129,16 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
 
         EmbeddedCacheManager config = new EmbeddedCacheManager(name, defaultCache);
 
+        //
+        // aliases are stored as a child resource /subsystem=infinispan/cache-container=name/alias=name
+        // in the form of a property list, so we need to retrieve them from the model
+        //
         ServiceName[] aliases = null;
-        if (operation.hasDefined(ModelKeys.ALIAS)) {
-            List<ModelNode> list = operation.get(ModelKeys.ALIAS).asList();
+        if (model.hasDefined(ModelKeys.ALIAS)) {
+            List<Property> list = model.get(ModelKeys.ALIAS).asPropertyList();
             aliases = new ServiceName[list.size()];
             for (int i = 0; i < list.size(); i++) {
-                aliases[i] = EmbeddedCacheManagerService.getServiceName(list.get(i).asString());
+                aliases[i] = EmbeddedCacheManagerService.getServiceName(list.get(i).getName());
             }
         }
 
@@ -172,8 +171,13 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
         // Here, we always assume that a transport may be required and so perform the necessary setup.
         Transport transportConfig = new Transport();
         String stack = null;
-        if (operation.hasDefined(ModelKeys.TRANSPORT)) {
-            ModelNode transport = operation.get(ModelKeys.TRANSPORT);
+
+        //
+        // the transport is stored as a child resource /subsystem=infinispan/cache-container=name/singleton=transport
+        // in the form of a ModelNode, so we need to retrieve it from the model
+        //
+        if (model.hasDefined(ModelKeys.SINGLETON)) {
+            ModelNode transport = operation.get(ModelKeys.SINGLETON, ModelKeys.TRANSPORT);
             if (transport.hasDefined(ModelKeys.STACK)) {
                 stack = transport.get(ModelKeys.STACK).asString();
             }

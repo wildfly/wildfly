@@ -35,6 +35,8 @@ import org.jboss.dmr.ModelNode;
  */
 public class CacheContainerRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
 
+    public static final CacheContainerRemove INSTANCE = new CacheContainerRemove();
+
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return InfinispanDescriptions.getCacheContainerRemoveDescription(locale);

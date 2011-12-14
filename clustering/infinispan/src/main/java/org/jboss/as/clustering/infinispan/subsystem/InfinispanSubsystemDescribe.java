@@ -40,6 +40,8 @@ import org.jboss.dmr.Property;
  */
 public class InfinispanSubsystemDescribe implements OperationStepHandler, DescriptionProvider {
 
+    public static final InfinispanSubsystemDescribe INSTANCE = new InfinispanSubsystemDescribe();
+
     /**
      * {@inheritDoc}
      *
@@ -66,6 +68,25 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler, Descri
                 ModelNode address = rootAddress.toModelNode();
                 address.add(ModelKeys.CACHE_CONTAINER, container.getName());
                 result.add(CacheContainerAdd.createOperation(address, container.getValue()));
+
+                // add operation to create any aliases for the container
+                if (container.getValue().hasDefined(ModelKeys.ALIAS)) {
+                    for (Property alias : container.getValue().get(ModelKeys.ALIAS).asPropertyList()) {
+                        String aliasName = alias.getName();
+                        ModelNode aliasValue = alias.getValue() ;
+                        ModelNode aliasAddress = address.clone();
+                        aliasAddress.add(ModelKeys.ALIAS, aliasName);
+                        result.add(AliasAdd.createOperation(aliasAddress, aliasValue));
+                    }
+                }
+
+                // add operation to create the transport for the container
+                if (container.getValue().hasDefined(ModelKeys.SINGLETON)) {
+                    ModelNode transport = container.getValue().get(ModelKeys.SINGLETON, ModelKeys.TRANSPORT);
+                    ModelNode transportAddress = address.clone() ;
+                    transportAddress.add(ModelKeys.SINGLETON, ModelKeys.TRANSPORT) ;
+                    result.add(TransportAdd.createOperation(transportAddress, transport));
+                }
 
                 // list of (cacheType, OBJECT)
                 for (Property cacheTypeList : container.getValue().asPropertyList()) {

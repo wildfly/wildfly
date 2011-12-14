@@ -153,11 +153,11 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
             Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case ALIAS: {
-                    container.get(ModelKeys.ALIAS).add(reader.getElementText());
+                    parseAlias(reader, containerAddress, operations);
                     break;
                 }
                 case TRANSPORT: {
-                    parseTransport(reader, container);
+                    parseTransport(reader, containerAddress, operations);
                     break;
                 }
                 case LOCAL_CACHE: {
@@ -183,10 +183,26 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
         }
     }
 
-    private void parseTransport(XMLExtendedStreamReader reader, ModelNode container) throws XMLStreamException {
+    private void parseAlias(XMLExtendedStreamReader reader, ModelNode containerAddress, List<ModelNode> operations) throws XMLStreamException {
 
-        ModelNode transport = new ModelNode() ;
-        transport.setEmptyObject();
+        // ModelNode for the alias add operation
+        ModelNode alias = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
+
+        ParseUtils.requireNoAttributes(reader);
+        String aliasName = reader.getElementText();
+
+        // setup the alias address
+        ModelNode aliasAddress = containerAddress.clone() ;
+        aliasAddress.add(ModelKeys.ALIAS, aliasName);
+        aliasAddress.protect() ;
+        alias.get(ModelDescriptionConstants.OP_ADDR).set(aliasAddress);
+
+        operations.add(alias);
+    }
+    private void parseTransport(XMLExtendedStreamReader reader, ModelNode containerAddress, List<ModelNode> operations) throws XMLStreamException {
+
+        // ModelNode for the transport add operation
+        ModelNode transport = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -223,7 +239,13 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
         }
         ParseUtils.requireNoContent(reader);
 
-        container.get(ModelKeys.TRANSPORT).set(transport) ;
+        // setup the transport address
+        ModelNode transportAddress = containerAddress.clone() ;
+        transportAddress.add(ModelKeys.SINGLETON, ModelKeys.TRANSPORT);
+        transportAddress.protect() ;
+        transport.get(ModelDescriptionConstants.OP_ADDR).set(transportAddress);
+
+        operations.add(transport);
     }
 
     private void parseCacheAttribute(XMLExtendedStreamReader reader, int index, Attribute attribute, String value, ModelNode cache) throws XMLStreamException {
@@ -983,16 +1005,16 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
                 this.writeOptional(writer, Attribute.REPLICATION_QUEUE_EXECUTOR, container, ModelKeys.REPLICATION_QUEUE_EXECUTOR);
 
                 if (container.hasDefined(ModelKeys.ALIAS)) {
-                    for (ModelNode alias: container.get(ModelKeys.ALIAS).asList()) {
+                    for (Property alias: container.get(ModelKeys.ALIAS).asPropertyList()) {
                         writer.writeStartElement(Element.ALIAS.getLocalName());
-                        writer.writeCharacters(alias.asString());
+                        writer.writeCharacters(alias.getName());
                         writer.writeEndElement();
                     }
                 }
 
-                if (container.hasDefined(ModelKeys.TRANSPORT)) {
+                if (container.hasDefined(ModelKeys.SINGLETON)) {
                     writer.writeStartElement(Element.TRANSPORT.getLocalName());
-                    ModelNode transport = container.get(ModelKeys.TRANSPORT);
+                    ModelNode transport = container.get(ModelKeys.SINGLETON, ModelKeys.TRANSPORT);
                     this.writeOptional(writer, Attribute.STACK, transport, ModelKeys.STACK);
                     this.writeOptional(writer, Attribute.EXECUTOR, transport, ModelKeys.EXECUTOR);
                     this.writeOptional(writer, Attribute.LOCK_TIMEOUT, transport, ModelKeys.LOCK_TIMEOUT);

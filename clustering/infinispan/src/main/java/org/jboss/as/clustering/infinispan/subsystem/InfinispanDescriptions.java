@@ -22,11 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -50,9 +46,9 @@ public class InfinispanDescriptions {
     static ModelNode getSubsystemDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
         ModelNode description = createDescription(resources, "infinispan");
-        description.get(ModelDescriptionConstants.HEAD_COMMENT_ALLOWED).set(true);
-        description.get(ModelDescriptionConstants.TAIL_COMMENT_ALLOWED).set(true);
-        description.get(ModelDescriptionConstants.NAMESPACE).set(Namespace.CURRENT.getUri());
+        description.get(HEAD_COMMENT_ALLOWED).set(true);
+        description.get(TAIL_COMMENT_ALLOWED).set(true);
+        description.get(NAMESPACE).set(Namespace.CURRENT.getUri());
 
         description.get(CHILDREN, ModelKeys.CACHE_CONTAINER, DESCRIPTION).set(resources.getString("infinispan.container"));
         description.get(CHILDREN, ModelKeys.CACHE_CONTAINER, MIN_OCCURS).set(1);
@@ -64,78 +60,87 @@ public class InfinispanDescriptions {
     static ModelNode getSubsystemAddDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
         ModelNode description = createSubsystemOperationDescription(ModelDescriptionConstants.ADD, resources);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.DEFAULT_CACHE_CONTAINER, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.DEFAULT_CACHE_CONTAINER, ModelDescriptionConstants.DESCRIPTION).set(resources.getString("infinispan.default-container"));
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.DEFAULT_CACHE_CONTAINER, ModelDescriptionConstants.REQUIRED).set(false);
+        description.get(REQUEST_PROPERTIES, ModelKeys.DEFAULT_CACHE_CONTAINER, TYPE).set(ModelType.STRING);
+        description.get(REQUEST_PROPERTIES, ModelKeys.DEFAULT_CACHE_CONTAINER, DESCRIPTION).set(resources.getString("infinispan.default-container"));
+        description.get(REQUEST_PROPERTIES, ModelKeys.DEFAULT_CACHE_CONTAINER, REQUIRED).set(false);
         return description;
     }
 
     static ModelNode getSubsystemDescribeDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
         ModelNode description = createSubsystemOperationDescription(ModelDescriptionConstants.DESCRIBE, resources);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES).setEmptyObject();
-        description.get(ModelDescriptionConstants.REPLY_PROPERTIES, ModelDescriptionConstants.TYPE).set(ModelType.LIST);
-        description.get(ModelDescriptionConstants.REPLY_PROPERTIES, ModelDescriptionConstants.VALUE_TYPE).set(ModelType.OBJECT);
+        description.get(REQUEST_PROPERTIES).setEmptyObject();
+        description.get(REPLY_PROPERTIES, TYPE).set(ModelType.LIST);
+        description.get(REPLY_PROPERTIES, VALUE_TYPE).set(ModelType.OBJECT);
         return description;
     }
 
     // cache containers
     static ModelNode getCacheContainerDescription(Locale locale) {
+        String keyPrefix = "infinispan.container" ;
         ResourceBundle resources = getResources(locale);
-        ModelNode description = createDescription(resources, "infinispan.container");
+        ModelNode description = createDescription(resources, keyPrefix);
 
+        // attributes
+        ModelNode attributes = description.get(ModelDescriptionConstants.ATTRIBUTES);
+        addNode(attributes, ModelKeys.DEFAULT_CACHE, resources.getString(keyPrefix+".default-cache"), ModelType.STRING, false);
+        addNode(attributes, ModelKeys.JNDI_NAME, resources.getString(keyPrefix+".jndi-name"), ModelType.STRING, false);
+        addNode(attributes, ModelKeys.LISTENER_EXECUTOR, resources.getString(keyPrefix+".listener-executor"), ModelType.STRING, false);
+        addNode(attributes, ModelKeys.EVICTION_EXECUTOR, resources.getString(keyPrefix+".eviction-executor"), ModelType.STRING, false);
+        addNode(attributes, ModelKeys.REPLICATION_QUEUE_EXECUTOR, resources.getString(keyPrefix+".replication-queue-executor"), ModelType.STRING, false);
+
+        // information about its child "alias"
+        description.get(CHILDREN, ModelKeys.ALIAS, DESCRIPTION).set(resources.getString(keyPrefix+".alias"));
+        description.get(CHILDREN, ModelKeys.ALIAS, MIN_OCCURS).set(0);
+        description.get(CHILDREN, ModelKeys.ALIAS, MAX_OCCURS).set(Integer.MAX_VALUE);
+        description.get(CHILDREN, ModelKeys.ALIAS, MODEL_DESCRIPTION);
+        // information about its child "singleton=transport"
+        description.get(CHILDREN, ModelKeys.SINGLETON, DESCRIPTION).set(resources.getString(keyPrefix+".transport"));
+        description.get(CHILDREN, ModelKeys.SINGLETON, MIN_OCCURS).set(0);
+        description.get(CHILDREN, ModelKeys.SINGLETON, MAX_OCCURS).set(1);
+        description.get(CHILDREN, ModelKeys.SINGLETON, ALLOWED).setEmptyList().add("transport");
+        description.get(CHILDREN, ModelKeys.SINGLETON, MODEL_DESCRIPTION);
         // information about its child "local-cache"
-        description.get(ModelDescriptionConstants.CHILDREN, ModelKeys.LOCAL_CACHE, ModelDescriptionConstants.DESCRIPTION).set("A local cache resource");
-        description.get(ModelDescriptionConstants.CHILDREN, ModelKeys.LOCAL_CACHE, ModelDescriptionConstants.MIN_OCCURS).set(0);
-        description.get(ModelDescriptionConstants.CHILDREN, ModelKeys.LOCAL_CACHE, ModelDescriptionConstants.MAX_OCCURS).set(Integer.MAX_VALUE);
-        description.get(ModelDescriptionConstants.CHILDREN, ModelKeys.LOCAL_CACHE, ModelDescriptionConstants.MODEL_DESCRIPTION);
+        description.get(CHILDREN, ModelKeys.LOCAL_CACHE, DESCRIPTION).set(resources.getString(keyPrefix+".local-cache"));
+        description.get(CHILDREN, ModelKeys.LOCAL_CACHE, MIN_OCCURS).set(0);
+        description.get(CHILDREN, ModelKeys.LOCAL_CACHE, MAX_OCCURS).set(Integer.MAX_VALUE);
+        description.get(CHILDREN, ModelKeys.LOCAL_CACHE, MODEL_DESCRIPTION);
         // information about its child "invalidation-cache"
-        description.get(ModelDescriptionConstants.CHILDREN, ModelKeys.INVALIDATION_CACHE, ModelDescriptionConstants.DESCRIPTION).set("An invalidation cache resource");
-        description.get(ModelDescriptionConstants.CHILDREN, ModelKeys.INVALIDATION_CACHE, ModelDescriptionConstants.MIN_OCCURS).set(0);
-        description.get(ModelDescriptionConstants.CHILDREN, ModelKeys.INVALIDATION_CACHE, ModelDescriptionConstants.MAX_OCCURS).set(Integer.MAX_VALUE);
-        description.get(ModelDescriptionConstants.CHILDREN, ModelKeys.INVALIDATION_CACHE, ModelDescriptionConstants.MODEL_DESCRIPTION);
+        description.get(CHILDREN, ModelKeys.INVALIDATION_CACHE, DESCRIPTION).set(resources.getString(keyPrefix+".invalidation-cache"));
+        description.get(CHILDREN, ModelKeys.INVALIDATION_CACHE, MIN_OCCURS).set(0);
+        description.get(CHILDREN, ModelKeys.INVALIDATION_CACHE, MAX_OCCURS).set(Integer.MAX_VALUE);
+        description.get(CHILDREN, ModelKeys.INVALIDATION_CACHE, MODEL_DESCRIPTION);
         // information about its child "local-cache"
-        description.get(ModelDescriptionConstants.CHILDREN, ModelKeys.REPLICATED_CACHE, ModelDescriptionConstants.DESCRIPTION).set("A replicated cache resource");
-        description.get(ModelDescriptionConstants.CHILDREN, ModelKeys.REPLICATED_CACHE, ModelDescriptionConstants.MIN_OCCURS).set(0);
-        description.get(ModelDescriptionConstants.CHILDREN, ModelKeys.REPLICATED_CACHE, ModelDescriptionConstants.MAX_OCCURS).set(Integer.MAX_VALUE);
-        description.get(ModelDescriptionConstants.CHILDREN, ModelKeys.REPLICATED_CACHE, ModelDescriptionConstants.MODEL_DESCRIPTION);
+        description.get(CHILDREN, ModelKeys.REPLICATED_CACHE, DESCRIPTION).set(resources.getString(keyPrefix+".replicated-cache"));
+        description.get(CHILDREN, ModelKeys.REPLICATED_CACHE, MIN_OCCURS).set(0);
+        description.get(CHILDREN, ModelKeys.REPLICATED_CACHE, MAX_OCCURS).set(Integer.MAX_VALUE);
+        description.get(CHILDREN, ModelKeys.REPLICATED_CACHE, MODEL_DESCRIPTION);
         // information about its child "local-cache"
-        description.get(ModelDescriptionConstants.CHILDREN, ModelKeys.DISTRIBUTED_CACHE, ModelDescriptionConstants.DESCRIPTION).set("A distributed cache resource");
-        description.get(ModelDescriptionConstants.CHILDREN, ModelKeys.DISTRIBUTED_CACHE, ModelDescriptionConstants.MIN_OCCURS).set(0);
-        description.get(ModelDescriptionConstants.CHILDREN, ModelKeys.DISTRIBUTED_CACHE, ModelDescriptionConstants.MAX_OCCURS).set(Integer.MAX_VALUE);
-        description.get(ModelDescriptionConstants.CHILDREN, ModelKeys.DISTRIBUTED_CACHE, ModelDescriptionConstants.MODEL_DESCRIPTION);
+        description.get(CHILDREN, ModelKeys.DISTRIBUTED_CACHE, DESCRIPTION).set(resources.getString(keyPrefix+".distributed-cache"));
+        description.get(CHILDREN, ModelKeys.DISTRIBUTED_CACHE, MIN_OCCURS).set(0);
+        description.get(CHILDREN, ModelKeys.DISTRIBUTED_CACHE, MAX_OCCURS).set(Integer.MAX_VALUE);
+        description.get(CHILDREN, ModelKeys.DISTRIBUTED_CACHE, MODEL_DESCRIPTION);
 
         return description;
     }
 
     static ModelNode getCacheContainerAddDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
-        ModelNode description = createCacheContainerOperationDescription(ModelDescriptionConstants.ADD, resources);
-        ModelNode requestProperties = description.get(ModelDescriptionConstants.REQUEST_PROPERTIES);
+        ModelNode description = createCacheContainerOperationDescription(ADD, resources);
+        ModelNode requestProperties = description.get(REQUEST_PROPERTIES);
         addNode(requestProperties, ModelKeys.DEFAULT_CACHE, resources.getString("infinispan.container.default-cache"), ModelType.STRING, true);
         addNode(requestProperties, ModelKeys.LISTENER_EXECUTOR, resources.getString("infinispan.container.listener-executor"), ModelType.STRING, false);
         addNode(requestProperties, ModelKeys.EVICTION_EXECUTOR, resources.getString("infinispan.container.eviction-executor"), ModelType.STRING, false);
         addNode(requestProperties, ModelKeys.REPLICATION_QUEUE_EXECUTOR, resources.getString("infinispan.container.replication-queue-executor"), ModelType.STRING, false);
         addNode(requestProperties, ModelKeys.JNDI_NAME, resources.getString("infinispan.container.jndi-name"), ModelType.STRING, false);
-        addNode(requestProperties, ModelKeys.ALIAS, resources.getString("infinispan.container.alias"), ModelType.LIST, false).get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
-
-        ModelNode transport = addNode(requestProperties, ModelKeys.TRANSPORT, resources.getString("infinispan.container.transport"), ModelType.OBJECT, false).get(ModelDescriptionConstants.VALUE_TYPE);
-        addNode(transport, ModelKeys.SITE, resources.getString("infinispan.container.transport.site"), ModelType.STRING, false);
-        addNode(transport, ModelKeys.RACK, resources.getString("infinispan.container.transport.rack"), ModelType.STRING, false);
-        addNode(transport, ModelKeys.MACHINE, resources.getString("infinispan.container.transport.machine"), ModelType.STRING, false);
-        addNode(transport, ModelKeys.SITE, resources.getString("infinispan.container.transport.site"), ModelType.STRING, false);
-        addNode(transport, ModelKeys.EXECUTOR, resources.getString("infinispan.container.transport.executor"), ModelType.STRING, false);
-        addNode(transport, ModelKeys.LOCK_TIMEOUT, resources.getString("infinispan.container.transport.lock-timeout"), ModelType.LONG, false);
-
-        // addNode(requestProperties, ModelKeys.CACHE, resources.getString("infinispan.container.cache"), ModelType.LIST, false).get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.OBJECT);
 
         return description;
     }
 
     static ModelNode getCacheContainerRemoveDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
-        ModelNode description = createCacheContainerOperationDescription(ModelDescriptionConstants.REMOVE, resources);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES).setEmptyObject();
+        ModelNode description = createCacheContainerOperationDescription(REMOVE, resources);
+        description.get(REQUEST_PROPERTIES).setEmptyObject();
         return description;
     }
 
@@ -150,7 +155,7 @@ public class InfinispanDescriptions {
 
     static ModelNode getLocalCacheAddDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
-        ModelNode description = createLocalCacheOperationDescription(ModelDescriptionConstants.ADD, resources);
+        ModelNode description = createLocalCacheOperationDescription(ADD, resources);
 
         // need to add in the parameters to the operation!
         String keyPrefix = "infinispan.cache" ;
@@ -162,8 +167,8 @@ public class InfinispanDescriptions {
     // TODO update me
     static ModelNode getCacheRemoveDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
-        ModelNode description = createCacheContainerOperationDescription(ModelDescriptionConstants.REMOVE, resources);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES).setEmptyObject();
+        ModelNode description = createCacheContainerOperationDescription(REMOVE, resources);
+        description.get(REQUEST_PROPERTIES).setEmptyObject();
         return description;
     }
 
@@ -178,7 +183,7 @@ public class InfinispanDescriptions {
 
     static ModelNode getInvalidationCacheAddDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
-        ModelNode description = createInvalidationCacheOperationDescription(ModelDescriptionConstants.ADD, resources);
+        ModelNode description = createInvalidationCacheOperationDescription(ADD, resources);
 
         // need to add in the parameters to the operation!
         String keyPrefix = "infinispan.cache" ;
@@ -208,7 +213,7 @@ public class InfinispanDescriptions {
 
     static ModelNode getReplicatedCacheAddDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
-        ModelNode description = createReplicatedCacheOperationDescription(ModelDescriptionConstants.ADD, resources);
+        ModelNode description = createReplicatedCacheOperationDescription(ADD, resources);
 
         // need to add in the parameters to the operation!
         String keyPrefix = "infinispan.cache" ;
@@ -218,7 +223,7 @@ public class InfinispanDescriptions {
         addCommonClusteredCacheRequestProperties(keyPrefix, description, resources);
 
         keyPrefix = "infinispan.replicated-cache.state-transfer" ;
-        ModelNode requestProperties = description.get(ModelDescriptionConstants.REQUEST_PROPERTIES);
+        ModelNode requestProperties = description.get(REQUEST_PROPERTIES);
         ModelNode stateTransfer = addNode(requestProperties, ModelKeys.STATE_TRANSFER, resources.getString(keyPrefix), ModelType.OBJECT, false).get(ModelDescriptionConstants.VALUE_TYPE);
         addNode(stateTransfer, ModelKeys.ENABLED, resources.getString(keyPrefix+".enabled"), ModelType.BOOLEAN, false);
         addNode(stateTransfer, ModelKeys.TIMEOUT, resources.getString(keyPrefix+".timeout"), ModelType.LONG, false);
@@ -261,6 +266,67 @@ public class InfinispanDescriptions {
         return description;
     }
 
+    // cache container transport element
+    static ModelNode getTransportDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        String keyPrefix = "infinispan.container.transport" ;
+        ModelNode description = createDescription(resources, keyPrefix);
+        // this does have attributes
+        ModelNode attributes = description.get(ModelDescriptionConstants.ATTRIBUTES);
+        addNode(attributes, ModelKeys.STACK, resources.getString(keyPrefix+".stack"), ModelType.STRING, true);
+        addNode(attributes, ModelKeys.EXECUTOR, resources.getString(keyPrefix+".executor"), ModelType.STRING, false);
+        addNode(attributes, ModelKeys.LOCK_TIMEOUT, resources.getString(keyPrefix+".lock-timeout"), ModelType.INT, false);
+        addNode(attributes, ModelKeys.SITE, resources.getString(keyPrefix+".site"), ModelType.STRING, false);
+        addNode(attributes, ModelKeys.MACHINE, resources.getString(keyPrefix+".machine"), ModelType.STRING, false);
+        addNode(attributes, ModelKeys.RACK, resources.getString(keyPrefix+".rack"), ModelType.STRING, false);
+
+        return description ;
+    }
+
+    static ModelNode getTransportAddDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        ModelNode description = createTransportOperationDescription(ADD, resources);
+
+        String keyPrefix = "infinispan.container.transport" ;
+        ModelNode requestProperties = description.get(ModelDescriptionConstants.REQUEST_PROPERTIES);
+        addNode(requestProperties, ModelKeys.STACK, resources.getString(keyPrefix+".stack"), ModelType.STRING, true);
+        addNode(requestProperties, ModelKeys.EXECUTOR, resources.getString(keyPrefix+".executor"), ModelType.STRING, false);
+        addNode(requestProperties, ModelKeys.LOCK_TIMEOUT, resources.getString(keyPrefix+".lock-timeout"), ModelType.INT, false);
+        addNode(requestProperties, ModelKeys.SITE, resources.getString(keyPrefix+".site"), ModelType.STRING, false);
+        addNode(requestProperties, ModelKeys.MACHINE, resources.getString(keyPrefix+".machine"), ModelType.STRING, false);
+        addNode(requestProperties, ModelKeys.RACK, resources.getString(keyPrefix+".rack"), ModelType.STRING, false);
+
+        return description;
+    }
+
+    static ModelNode getTransportRemoveDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        ModelNode description = createTransportOperationDescription(REMOVE, resources);
+        description.get(REQUEST_PROPERTIES).setEmptyObject();
+        return description;
+    }
+
+    // alias resource
+    static ModelNode getAliasDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        String keyPrefix = "infinispan.container.alias" ;
+        ModelNode description = createDescription(resources, keyPrefix);
+        // this does not have attributes
+        return description ;
+    }
+    static ModelNode getAliasAddDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        ModelNode description = createAliasOperationDescription(ADD, resources);
+        description.get(REQUEST_PROPERTIES).setEmptyObject();
+        return description;
+    }
+    static ModelNode getAliasRemoveDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        ModelNode description = createAliasOperationDescription(REMOVE, resources);
+        description.get(REQUEST_PROPERTIES).setEmptyObject();
+        return description;
+    }
+
 
     private static ResourceBundle getResources(Locale locale) {
         return ResourceBundle.getBundle(RESOURCE_NAME, (locale == null) ? Locale.getDefault() : locale);
@@ -273,9 +339,9 @@ public class InfinispanDescriptions {
     private static ModelNode createOperationDescription(String operation, ResourceBundle resources, String key) {
         ModelNode description = new ModelNode();
         if (operation != null) {
-            description.get(ModelDescriptionConstants.OPERATION_NAME).set(operation);
+            description.get(OPERATION_NAME).set(operation);
         }
-        description.get(ModelDescriptionConstants.DESCRIPTION).set(resources.getString(key));
+        description.get(DESCRIPTION).set(resources.getString(key));
         return description;
     }
 
@@ -303,9 +369,31 @@ public class InfinispanDescriptions {
         return createOperationDescription(operation, resources, "infinispan.container.distributed-cache." + operation);
     }
 
+    private static ModelNode createAliasOperationDescription(String operation, ResourceBundle resources) {
+        return createOperationDescription(operation, resources, "infinispan.container.alias." + operation);
+    }
 
-    private static ModelNode addNode(ModelNode parent, String attribute, String description,
-             ModelType type, boolean required) {
+    private static ModelNode createTransportOperationDescription(String operation, ResourceBundle resources) {
+        return createOperationDescription(operation, resources, "infinispan.container.transport." + operation);
+    }
+
+    private static ModelNode createLockingOperationDescription(String operation, ResourceBundle resources) {
+        return createOperationDescription(operation, resources, "infinispan.container.locking." + operation);
+    }
+
+    private static ModelNode createTransactionOperationDescription(String operation, ResourceBundle resources) {
+        return createOperationDescription(operation, resources, "infinispan.container.transaction." + operation);
+    }
+
+    private static ModelNode createEvictionOperationDescription(String operation, ResourceBundle resources) {
+        return createOperationDescription(operation, resources, "infinispan.container.eviction." + operation);
+    }
+
+    private static ModelNode createExpirationOperationDescription(String operation, ResourceBundle resources) {
+        return createOperationDescription(operation, resources, "infinispan.container.expiration." + operation);
+    }
+
+    private static ModelNode addNode(ModelNode parent, String attribute, String description, ModelType type, boolean required) {
        ModelNode node = parent.get(attribute);
        node.get(ModelDescriptionConstants.DESCRIPTION).set(description);
        node.get(ModelDescriptionConstants.TYPE).set(type);
@@ -417,4 +505,140 @@ public class InfinispanDescriptions {
         addNode(requestProperties, ModelKeys.QUEUE_FLUSH_INTERVAL, resources.getString(keyPrefix+".queue-flush-interval"), ModelType.LONG, false);
         addNode(requestProperties, ModelKeys.REMOTE_TIMEOUT, resources.getString(keyPrefix+".remote-timeout"), ModelType.LONG, false);
     }
+
+    // cache locking element
+    static ModelNode getLockingDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        String lockingPrefix = "infinispan.cache.locking" ;
+        ModelNode description = createDescription(resources, lockingPrefix);
+        // this does have attributes
+        ModelNode attributes = description.get(ModelDescriptionConstants.ATTRIBUTES);
+        addNode(attributes, ModelKeys.ISOLATION, resources.getString(lockingPrefix+".isolation"), ModelType.STRING, false);
+        addNode(attributes, ModelKeys.STRIPING, resources.getString(lockingPrefix+".striping"), ModelType.BOOLEAN, false);
+        addNode(attributes, ModelKeys.ACQUIRE_TIMEOUT, resources.getString(lockingPrefix+".acquire-timeout"), ModelType.LONG, false);
+        addNode(attributes, ModelKeys.CONCURRENCY_LEVEL, resources.getString(lockingPrefix+".concurrency-level"), ModelType.INT, false);
+
+        return description ;
+    }
+
+    static ModelNode getLockingAddDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        ModelNode description = createLockingOperationDescription(ADD, resources);
+
+        String lockingPrefix = "infinispan.cache.locking" ;
+        ModelNode requestProperties = description.get(ModelDescriptionConstants.REQUEST_PROPERTIES);
+        addNode(requestProperties, ModelKeys.ISOLATION, resources.getString(lockingPrefix+".isolation"), ModelType.STRING, false);
+        addNode(requestProperties, ModelKeys.STRIPING, resources.getString(lockingPrefix+".striping"), ModelType.BOOLEAN, false);
+        addNode(requestProperties, ModelKeys.ACQUIRE_TIMEOUT, resources.getString(lockingPrefix+".acquire-timeout"), ModelType.LONG, false);
+        addNode(requestProperties, ModelKeys.CONCURRENCY_LEVEL, resources.getString(lockingPrefix+".concurrency-level"), ModelType.INT, false);
+
+        return description;
+    }
+
+    static ModelNode getLockingRemoveDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        ModelNode description = createLockingOperationDescription(REMOVE, resources);
+        description.get(REQUEST_PROPERTIES).setEmptyObject();
+        return description;
+    }
+
+
+    // cache transaction element
+    static ModelNode getTransactionDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        String transactionPrefix = "infinispan.cache.transaction" ;
+        ModelNode description = createDescription(resources, transactionPrefix);
+        // this does have attributes
+        ModelNode attributes = description.get(ModelDescriptionConstants.ATTRIBUTES);
+        addNode(attributes, ModelKeys.MODE, resources.getString(transactionPrefix+".mode"), ModelType.STRING, false);
+        addNode(attributes, ModelKeys.STOP_TIMEOUT, resources.getString(transactionPrefix+".stop-timeout"), ModelType.INT, false);
+        addNode(attributes, ModelKeys.EAGER_LOCKING, resources.getString(transactionPrefix+".eager-locking"), ModelType.STRING, false);
+
+        return description ;
+    }
+
+    static ModelNode getTransactionAddDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        ModelNode description = createTransactionOperationDescription(ADD, resources);
+
+        String transactionPrefix = "infinispan.cache.transaction" ;
+        ModelNode requestProperties = description.get(ModelDescriptionConstants.REQUEST_PROPERTIES);
+        addNode(requestProperties, ModelKeys.MODE, resources.getString(transactionPrefix+".mode"), ModelType.STRING, false);
+        addNode(requestProperties, ModelKeys.STOP_TIMEOUT, resources.getString(transactionPrefix+".stop-timeout"), ModelType.INT, false);
+        addNode(requestProperties, ModelKeys.EAGER_LOCKING, resources.getString(transactionPrefix+".eager-locking"), ModelType.STRING, false);
+
+        return description;
+    }
+
+    static ModelNode getTransactionRemoveDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        ModelNode description = createTransactionOperationDescription(REMOVE, resources);
+        description.get(REQUEST_PROPERTIES).setEmptyObject();
+        return description;
+    }
+
+    // cache eviction element
+    static ModelNode getEvictionDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        String evictionPrefix = "infinispan.cache.eviction" ;
+        ModelNode description = createDescription(resources, evictionPrefix);
+        ModelNode attributes = description.get(ModelDescriptionConstants.ATTRIBUTES);
+        addNode(attributes, ModelKeys.STRATEGY, resources.getString(evictionPrefix+".strategy"), ModelType.STRING, false);
+        addNode(attributes, ModelKeys.MAX_ENTRIES, resources.getString(evictionPrefix+".max-entries"), ModelType.INT, false);
+
+        return description ;
+    }
+
+    static ModelNode getEvictionAddDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        ModelNode description = createEvictionOperationDescription(ADD, resources);
+
+        String evictionPrefix = "infinispan.cache.eviction" ;
+        ModelNode requestProperties = description.get(ModelDescriptionConstants.REQUEST_PROPERTIES);
+        addNode(requestProperties, ModelKeys.STRATEGY, resources.getString(evictionPrefix+".strategy"), ModelType.STRING, false);
+        addNode(requestProperties, ModelKeys.MAX_ENTRIES, resources.getString(evictionPrefix+".max-entries"), ModelType.INT, false);
+
+        return description;
+    }
+
+    static ModelNode getEvictionRemoveDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        ModelNode description = createEvictionOperationDescription(REMOVE, resources);
+        description.get(REQUEST_PROPERTIES).setEmptyObject();
+        return description;
+    }
+
+    // cache expiration element
+    static ModelNode getExpirationDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        String expirationPrefix = "infinispan.cache.expiration" ;
+        ModelNode description = createDescription(resources, expirationPrefix);
+        ModelNode attributes = description.get(ModelDescriptionConstants.ATTRIBUTES);
+        addNode(attributes, ModelKeys.MAX_IDLE, resources.getString(expirationPrefix+".max-idle"), ModelType.LONG, false);
+        addNode(attributes, ModelKeys.LIFESPAN, resources.getString(expirationPrefix+".lifespan"), ModelType.LONG, false);
+        addNode(attributes, ModelKeys.INTERVAL, resources.getString(expirationPrefix+".interval"), ModelType.LONG, false);
+
+        return description ;
+    }
+
+    static ModelNode getExpirationAddDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        ModelNode description = createExpirationOperationDescription(ADD, resources);
+
+        String expirationPrefix = "infinispan.cache.expiration" ;
+        ModelNode requestProperties = description.get(ModelDescriptionConstants.REQUEST_PROPERTIES);
+        addNode(requestProperties, ModelKeys.MAX_IDLE, resources.getString(expirationPrefix+".max-idle"), ModelType.LONG, false);
+        addNode(requestProperties, ModelKeys.LIFESPAN, resources.getString(expirationPrefix+".lifespan"), ModelType.LONG, false);
+        addNode(requestProperties, ModelKeys.INTERVAL, resources.getString(expirationPrefix+".interval"), ModelType.LONG, false);
+
+        return description;
+    }
+
+    static ModelNode getExpirationRemoveDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        ModelNode description = createExpirationOperationDescription(REMOVE, resources);
+        description.get(REQUEST_PROPERTIES).setEmptyObject();
+        return description;
+    }
+
 }
