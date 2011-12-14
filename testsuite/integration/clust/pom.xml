@@ -127,6 +127,28 @@
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
+                            
+                            <!-- Multi node clustering tests with UNMANAGED containers. -->
+                            <execution>
+                                <id>tests-clustering-multi-node-unmanaged.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/clustering/unmanaged/**/*TestCase.java</include>
+                                    </includes>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <arquillian.launch>clustering-udp-unmanaged</arquillian.launch>
+                                        <!-- Use combine.children="append" to pick up parent properties automatically. -->
+                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
 
                         </executions>
                     </plugin>
