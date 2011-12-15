@@ -51,7 +51,7 @@ public class ThreadFactoryAdd extends AbstractAddStepHandler implements Descript
 
     static final ThreadFactoryAdd INSTANCE = new ThreadFactoryAdd();
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {PoolAttributeDefinitions.PROPERTIES,
+    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {
         PoolAttributeDefinitions.GROUP_NAME, PoolAttributeDefinitions.THREAD_NAME_PATTERN, PoolAttributeDefinitions.PRIORITY};
 
     static final AttributeDefinition[] RW_ATTRIBUTES = new AttributeDefinition[] {

@@ -54,7 +54,7 @@ public class ScheduledThreadPoolAdd extends AbstractAddStepHandler implements De
     static final ScheduledThreadPoolAdd INSTANCE = new ScheduledThreadPoolAdd();
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {PoolAttributeDefinitions.KEEPALIVE_TIME,
-        PoolAttributeDefinitions.MAX_THREADS, PoolAttributeDefinitions.PROPERTIES, PoolAttributeDefinitions.THREAD_FACTORY};
+        PoolAttributeDefinitions.MAX_THREADS, PoolAttributeDefinitions.THREAD_FACTORY};
 
     static final AttributeDefinition[] RW_ATTRIBUTES = new AttributeDefinition[]{};
 

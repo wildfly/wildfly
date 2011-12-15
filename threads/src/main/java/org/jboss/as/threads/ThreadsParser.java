@@ -113,7 +113,7 @@ public final class ThreadsParser implements XMLStreamConstants, XMLElementReader
                     break;
                 }
                 case THREAD_FACTORY: {
-                    parseThreadFactory(reader, address, list, THREAD_FACTORY, null);
+                    parseThreadFactory(reader, readerNS, threadsNamespace, address, list, THREAD_FACTORY, null);
                     break;
                 }
                 case QUEUELESS_THREAD_POOL: {
@@ -135,8 +135,9 @@ public final class ThreadsParser implements XMLStreamConstants, XMLElementReader
         }
     }
 
-    public String parseThreadFactory(final XMLExtendedStreamReader reader, final ModelNode parentAddress,
-            final List<ModelNode> list, final String childAddress, final String providedName) throws XMLStreamException {
+    public String parseThreadFactory(final XMLExtendedStreamReader reader, final String expectedNs, Namespace threadsNamespace,
+                                     final ModelNode parentAddress, final List<ModelNode> list, final String childAddress,
+                                     final String providedName) throws XMLStreamException {
         final ModelNode op = new ModelNode();
         list.add(op);
 
@@ -182,12 +183,10 @@ public final class ThreadsParser implements XMLStreamConstants, XMLElementReader
         op.get(OP_ADDR).set(address);
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Element.forName(reader.getLocalName())) {
+            Element element = nextElement(reader, expectedNs);
+            switch (element) {
                 case PROPERTIES: {
-                    ModelNode props = parseProperties(reader);
-                    if (props.isDefined()) {
-                        op.get(PROPERTIES).set(props);
-                    }
+                    parseProperties(reader, threadsNamespace);
                     break;
                 }
                 default: {
@@ -271,10 +270,7 @@ public final class ThreadsParser implements XMLStreamConstants, XMLElementReader
                     break;
                 }
                 case PROPERTIES: {
-                    ModelNode props = parseProperties(reader);
-                    if (props.isDefined()) {
-                        op.get(PROPERTIES).set(props);
-                    }
+                    parseProperties(reader, threadsNamespace);
                     break;
                 }
                 case QUEUE_LENGTH: {
@@ -345,10 +341,7 @@ public final class ThreadsParser implements XMLStreamConstants, XMLElementReader
                     break;
                 }
                 case PROPERTIES: {
-                    ModelNode props = parseProperties(reader);
-                    if (props.isDefined()) {
-                        op.get(PROPERTIES).set(props);
-                    }
+                    parseProperties(reader, threadsNamespace);
                     break;
                 }
                 default: {
@@ -414,10 +407,7 @@ public final class ThreadsParser implements XMLStreamConstants, XMLElementReader
                     break;
                 }
                 case PROPERTIES: {
-                    ModelNode props = parseProperties(reader);
-                    if (props.isDefined()) {
-                        op.get(PROPERTIES).set(props);
-                    }
+                    parseProperties(reader, threadsNamespace);
                     break;
                 }
                 default: {
@@ -493,10 +483,7 @@ public final class ThreadsParser implements XMLStreamConstants, XMLElementReader
                     break;
                 }
                 case PROPERTIES: {
-                    ModelNode props = parseProperties(reader);
-                    if (props.isDefined()) {
-                        op.get(PROPERTIES).set(props);
-                    }
+                    parseProperties(reader, threadsNamespace);
                     break;
                 }
                 default: {
@@ -615,8 +602,13 @@ public final class ThreadsParser implements XMLStreamConstants, XMLElementReader
         return node;
     }
 
-    private ModelNode parseProperties(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        ModelNode node = new ModelNode();
+    private void parseProperties(final XMLExtendedStreamReader reader, final Namespace threadsNamespace) throws XMLStreamException {
+        if (threadsNamespace != Namespace.THREADS_1_0) {
+                throw unexpectedElement(reader);
+        }
+        // else consume and discard the never implemented 1.0 "properties" element.
+        // This code validates, which is a debatable given the data is going to be discarded
+
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Element.forName(reader.getLocalName())) {
                 case PROPERTY: {
@@ -650,13 +642,11 @@ public final class ThreadsParser implements XMLStreamConstants, XMLElementReader
                         }
                         throw missingRequired(reader, missing);
                     }
-                    node.add(propName, propValue);
 
                     ParseUtils.requireNoContent(reader);
                 }
             }
         }
-        return node;
     }
 
     /**

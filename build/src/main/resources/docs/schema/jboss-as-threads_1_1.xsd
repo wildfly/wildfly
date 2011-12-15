@@ -68,9 +68,6 @@
             ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:all>
-            <xs:element name="properties" type="properties" minOccurs="0"/>
-        </xs:all>
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="group-name" type="xs:string" use="optional"/>
         <xs:attribute name="thread-name-pattern" type="xs:string" use="optional"/>
@@ -100,7 +97,6 @@
             <xs:element name="max-threads" type="countType"/>
             <xs:element name="keepalive-time" type="time" minOccurs="0"/>
             <xs:element name="thread-factory" type="ref" minOccurs="0"/>
-            <xs:element name="properties" type="properties" minOccurs="0"/>
         </xs:all>
         <xs:attribute name="name" use="required" type="xs:string"/>
     </xs:complexType>
@@ -139,7 +135,6 @@
             <xs:element name="keepalive-time" type="time" minOccurs="0"/>
             <xs:element name="thread-factory" type="ref" minOccurs="0"/>
             <xs:element name="handoff-executor" type="ref" minOccurs="0"/>
-            <xs:element name="properties" type="properties" minOccurs="0"/>
         </xs:all>
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="allow-core-timeout" use="optional" type="xs:boolean" default="false"/>
@@ -172,7 +167,6 @@
             <xs:element name="keepalive-time" type="time" minOccurs="0"/>
             <xs:element name="thread-factory" type="ref" minOccurs="0"/>
             <xs:element name="handoff-executor" type="ref" minOccurs="0"/>
-            <xs:element name="properties" type="properties" minOccurs="0"/>
         </xs:all>
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="blocking" use="optional" type="xs:boolean" default="false"/>
@@ -193,7 +187,6 @@
             <xs:element name="max-threads" type="countType"/>
             <xs:element name="keepalive-time" type="time" minOccurs="0"/>
             <xs:element name="thread-factory" type="ref" minOccurs="0"/>
-            <xs:element name="properties" type="properties" minOccurs="0"/>
         </xs:all>
         <xs:attribute name="name" use="required" type="xs:string"/>
     </xs:complexType>
@@ -221,31 +214,6 @@
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="count" type="xs:int" use="required"/>
-    </xs:complexType>
-
-    <xs:complexType name="properties">
-        <xs:annotation>
-            <xs:documentation>
-            <![CDATA[
-                A set of free-form properties.
-            ]]>
-            </xs:documentation>
-        </xs:annotation>
-        <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element name="property" type="property"/>
-        </xs:choice>
-    </xs:complexType>
-
-    <xs:complexType name="property">
-        <xs:annotation>
-            <xs:documentation>
-            <![CDATA[
-                A free-form property.  The name is required; the value is optional.
-            ]]>
-            </xs:documentation>
-        </xs:annotation>
-        <xs:attribute name="name" type="xs:string" use="required"/>
-        <xs:attribute name="value" type="xs:string" use="optional"/>
     </xs:complexType>
 
     <xs:complexType name="ref">
