@@ -139,11 +139,14 @@ public class RolloutPlanHeader implements OperationRequestHeader {
     public void addTo(CommandContext ctx, ModelNode headers) throws CommandFormatException {
 
         if(planRef != null) {
-            final OperationRequestHeader rolloutPlan = ctx.getConfig().getRolloutPlan(planRef);
+/*            final OperationRequestHeader rolloutPlan = ctx.getConfig().getRolloutPlan(planRef);
             if(rolloutPlan == null) {
                 throw new CommandFormatException("Rollout plan with id '" + planRef + "' could not be found.");
             }
             rolloutPlan.addTo(ctx, headers);
+*/
+            ModelNode rolloutPlan = Util.getRolloutPlan(ctx.getModelControllerClient(), planRef);
+            headers.set(rolloutPlan);
             return;
         }
         ModelNode header = headers.get(HEADER_NAME);

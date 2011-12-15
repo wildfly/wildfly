@@ -21,6 +21,7 @@
  */
 package org.jboss.as.cli;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -59,8 +60,9 @@ public class Util {
     public static final String INCLUDE_DEFAULTS = "include-defaults";
     public static final String INCLUDE_RUNTIME = "include-runtime";
     public static final String INPUT_STREAM_INDEX = "input-stream-index";
-    public static final String MIN_OCCURS = "min-occurs";
+    public static final String MANAGEMENT_CLIENT_CONTENT = "management-client-content";
     public static final String MAX_OCCURS = "max-occurs";
+    public static final String MIN_OCCURS = "min-occurs";
     public static final String NAME = "name";
     public static final String NILLABLE = "nillable";
     public static final String OPERATION = "operation";
@@ -81,6 +83,7 @@ public class Util {
     public static final String RESTART_REQUIRED = "restart-required";
     public static final String RESULT = "result";
     public static final String ROLLOUT_PLAN = "rollout-plan";
+    public static final String ROLLOUT_PLANS = "rollout-plans";
     public static final String RUNTIME_NAME = "runtime-name";
     public static final String SERVER_GROUP = "server-group";
     public static final String STEP_1 = "step-1";
@@ -597,5 +600,30 @@ public class Util {
             }
         }
         return request;
+    }
+
+    public static ModelNode getRolloutPlan(ModelControllerClient client, String name) throws CommandFormatException {
+        final ModelNode request = new ModelNode();
+        request.get(OPERATION).set(READ_ATTRIBUTE);
+        final ModelNode addr = request.get(ADDRESS);
+        addr.add(MANAGEMENT_CLIENT_CONTENT, ROLLOUT_PLANS);
+        addr.add(ROLLOUT_PLAN, name);
+        request.get(NAME).set(CONTENT);
+        final ModelNode response;
+        try {
+            response = client.execute(request);
+        } catch(IOException e) {
+            throw new CommandFormatException("Failed to execute request: " + e.getMessage(), e);
+        }
+        if(!response.hasDefined(OUTCOME)) {
+            throw new CommandFormatException("Operation response if missing outcome: " + response);
+        }
+        if(!response.get(OUTCOME).asString().equals(SUCCESS)) {
+            throw new CommandFormatException("Failed to load rollout plan: " + response);
+        }
+        if(!response.hasDefined(RESULT)) {
+            throw new CommandFormatException("Operation response is missing result.");
+        }
+        return response.get(RESULT);
     }
 }

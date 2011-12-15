@@ -41,6 +41,7 @@ public class ServerGroupSeparatorState extends DefaultParsingState {
 
     ServerGroupSeparatorState(ServerGroupState sg) {
         super(ID);
+        setIgnoreWhitespaces(true);
         setDefaultHandler(new EnterStateCharacterHandler(sg));
         setReturnHandler(GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
     }

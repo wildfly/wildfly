@@ -79,6 +79,8 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
     private Map<String, CommandArgument> nodeProps;
     private Map<String, Map<String, CommandArgument>> propsByOp;
 
+    private Map<String, ArgumentValueConverter> propConverters;
+
     public GenericTypeOperationHandler(CommandContext ctx, String nodeType, String idProperty) {
         this(ctx, nodeType, idProperty, Arrays.asList("read-attribute", "read-children-names", "read-children-resources",
                 "read-children-types", "read-operation-description", "read-operation-names",
@@ -215,6 +217,13 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         staticArgs.add(operation);
     }
 
+    public void addValueConverter(String propertyName, ArgumentValueConverter converter) {
+        if(propConverters == null) {
+            propConverters = new HashMap<String, ArgumentValueConverter>();
+        }
+        propConverters.put(propertyName, converter);
+    }
+
     @Override
     public Collection<CommandArgument> getArguments(CommandContext ctx) {
         ParsedCommandLine args = ctx.getParsedCommandLine();
@@ -241,21 +250,27 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                     if(propDescr.has(Util.ACCESS_TYPE) && Util.READ_WRITE.equals(propDescr.get(Util.ACCESS_TYPE).asString())) {
                         ModelType type = null;
                         CommandLineCompleter valueCompleter = null;
-                        ArgumentValueConverter valueConverter = ArgumentValueConverter.DEFAULT;
-                        if(propDescr.has(Util.TYPE)) {
-                            type = propDescr.get(Util.TYPE).asType();
-                            if(ModelType.BOOLEAN == type) {
-                                valueCompleter = SimpleTabCompleter.BOOLEAN;
-                            } else if(prop.getName().endsWith("properties")) { // TODO this is bad but can't rely on proper descriptions
-                                valueConverter = ArgumentValueConverter.PROPERTIES;
-                            } else if(ModelType.LIST == type) {
-                                if(propDescr.hasDefined(Util.VALUE_TYPE) && propDescr.get(Util.VALUE_TYPE).asType() == ModelType.PROPERTY) {
+                        ArgumentValueConverter valueConverter = null;
+                        if(propConverters != null) {
+                            valueConverter = propConverters.get(prop.getName());
+                        }
+                        if(valueConverter == null) {
+                            valueConverter = ArgumentValueConverter.DEFAULT;
+                            if(propDescr.has(Util.TYPE)) {
+                                type = propDescr.get(Util.TYPE).asType();
+                                if(ModelType.BOOLEAN == type) {
+                                    valueCompleter = SimpleTabCompleter.BOOLEAN;
+                                } else if(prop.getName().endsWith("properties")) { // TODO this is bad but can't rely on proper descriptions
                                     valueConverter = ArgumentValueConverter.PROPERTIES;
-                                } else {
-                                    valueConverter = ArgumentValueConverter.LIST;
+                                } else if(ModelType.LIST == type) {
+                                    if(propDescr.hasDefined(Util.VALUE_TYPE) && propDescr.get(Util.VALUE_TYPE).asType() == ModelType.PROPERTY) {
+                                        valueConverter = ArgumentValueConverter.PROPERTIES;
+                                    } else {
+                                        valueConverter = ArgumentValueConverter.LIST;
+                                    }
+                                } else if(ModelType.OBJECT == type) {
+                                    valueConverter = ArgumentValueConverter.OBJECT;
                                 }
-                            } else if(ModelType.OBJECT == type) {
-                                valueConverter = ArgumentValueConverter.OBJECT;
                             }
                         }
                         final CommandArgument arg = new ArgumentWithValue(GenericTypeOperationHandler.this, valueCompleter, valueConverter, "--" + prop.getName());
@@ -288,21 +303,27 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                         final ModelNode propDescr = prop.getValue();
                         ModelType type = null;
                         CommandLineCompleter valueCompleter = null;
-                        ArgumentValueConverter valueConverter = ArgumentValueConverter.DEFAULT;
-                        if(propDescr.has(Util.TYPE)) {
-                            type = propDescr.get(Util.TYPE).asType();
-                            if(ModelType.BOOLEAN == type) {
-                                valueCompleter = SimpleTabCompleter.BOOLEAN;
-                            } else if(prop.getName().endsWith("properties")) { // TODO this is bad but can't rely on proper descriptions
-                                valueConverter = ArgumentValueConverter.PROPERTIES;
-                            } else if(ModelType.LIST == type) {
-                                if(propDescr.hasDefined(Util.VALUE_TYPE) && propDescr.get(Util.VALUE_TYPE).asType() == ModelType.PROPERTY) {
+                        ArgumentValueConverter valueConverter = null;
+                        if(propConverters != null) {
+                            valueConverter = propConverters.get(prop.getName());
+                        }
+                        if(valueConverter == null) {
+                            valueConverter = ArgumentValueConverter.DEFAULT;
+                            if(propDescr.has(Util.TYPE)) {
+                                type = propDescr.get(Util.TYPE).asType();
+                                if(ModelType.BOOLEAN == type) {
+                                    valueCompleter = SimpleTabCompleter.BOOLEAN;
+                                } else if(prop.getName().endsWith("properties")) { // TODO this is bad but can't rely on proper descriptions
                                     valueConverter = ArgumentValueConverter.PROPERTIES;
-                                } else {
-                                    valueConverter = ArgumentValueConverter.LIST;
+                                } else if(ModelType.LIST == type) {
+                                    if(propDescr.hasDefined(Util.VALUE_TYPE) && propDescr.get(Util.VALUE_TYPE).asType() == ModelType.PROPERTY) {
+                                        valueConverter = ArgumentValueConverter.PROPERTIES;
+                                    } else {
+                                        valueConverter = ArgumentValueConverter.LIST;
+                                    }
+                                } else if(ModelType.OBJECT == type) {
+                                    valueConverter = ArgumentValueConverter.OBJECT;
                                 }
-                            } else if(ModelType.OBJECT == type) {
-                                valueConverter = ArgumentValueConverter.OBJECT;
                             }
                         }
                         final CommandArgument arg = new ArgumentWithValue(GenericTypeOperationHandler.this, valueCompleter, valueConverter, "--" + prop.getName());

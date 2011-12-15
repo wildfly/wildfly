@@ -41,6 +41,7 @@ import javax.security.sasl.RealmCallback;
 import javax.security.sasl.RealmChoiceCallback;
 import javax.security.sasl.SaslException;
 
+import org.jboss.as.cli.ArgumentValueConverter;
 import org.jboss.as.cli.CliConfig;
 import org.jboss.as.cli.CliEvent;
 import org.jboss.as.cli.CliEventListener;
@@ -276,6 +277,10 @@ class CommandContextImpl implements CommandContext {
         // these are used for the cts setup
         cmdRegistry.registerHandler(new CreateJmsResourceHandler(this), false, "create-jms-resource");
         cmdRegistry.registerHandler(new DeleteJmsResourceHandler(this), false, "delete-jms-resource");
+
+        final GenericTypeOperationHandler rolloutPlan = new GenericTypeOperationHandler(this, "/management-client-content=rollout-plans/rollout-plan", null);
+        rolloutPlan.addValueConverter("content", ArgumentValueConverter.ROLLOUT_PLAN);
+        cmdRegistry.registerHandler(rolloutPlan, "rollout-plan");
     }
 
     @Override

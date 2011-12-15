@@ -302,7 +302,7 @@ public class LsHandler extends CommandHandlerWithHelp {
                                                             maxOccurs == null ? "n/a" : (maxOccurs == Integer.MAX_VALUE ? "unbounded" : maxOccurs.toString())
                                                             });
                                                 } else {
-                                                    attrTable.addLine(new String[]{prop.getName(), "n/a", "n/a"});
+                                                    childrenTable.addLine(new String[]{prop.getName(), "n/a", "n/a"});
                                                 }
                                             }
                                         }

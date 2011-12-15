@@ -68,7 +68,9 @@ public class RolloutPlanState extends DefaultParsingState {
                 final char ch = ctx.getCharacter();
                 if(ch == '}' || ch == ';') {
                     ctx.leaveState();
+                    return;
                 }
+                ctx.enterState(props);
                 //ctx.leaveState();
             }});
     }
