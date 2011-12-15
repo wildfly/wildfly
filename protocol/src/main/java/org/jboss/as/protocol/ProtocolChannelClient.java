@@ -137,6 +137,9 @@ public class ProtocolChannelClient implements Closeable {
         if(status == IoFuture.Status.DONE) {
             return future.get();
         }
+        if (status == IoFuture.Status.FAILED) {
+            throw ProtocolMessages.MESSAGES.failedToConnect(uri, future.getException());
+        }
         throw ProtocolMessages.MESSAGES.couldNotConnect(uri);
     }
 
