@@ -302,36 +302,36 @@ public class DomainModelUtil {
         return extensionContext;
     }
 
-    public static void validateRolloutPlanStructure(ModelNode rolloutPlan) throws OperationFailedException {
-        if(rolloutPlan == null) {
+    public static void validateRolloutPlanStructure(ModelNode plan) throws OperationFailedException {
+        if(plan == null) {
             throw new OperationFailedException("rolloutPlan argument is null.");
         }
-        if(!rolloutPlan.hasDefined(ROLLOUT_PLAN)) {
-            throw new OperationFailedException(MESSAGES.requiredChildIsMissing(ROLLOUT_PLAN, ROLLOUT_PLAN, rolloutPlan.toString()));
+        if(!plan.hasDefined(ROLLOUT_PLAN)) {
+            throw new OperationFailedException(MESSAGES.requiredChildIsMissing(ROLLOUT_PLAN, ROLLOUT_PLAN, plan.toString()));
         }
-        rolloutPlan = rolloutPlan.get(ROLLOUT_PLAN);
+        ModelNode rolloutPlan1 = plan.get(ROLLOUT_PLAN);
 
         final Set<String> keys;
         try {
-            keys = rolloutPlan.keys();
+            keys = rolloutPlan1.keys();
         } catch (IllegalArgumentException e) {
-            throw new OperationFailedException(MESSAGES.requiredChildIsMissing(ROLLOUT_PLAN, IN_SERIES, rolloutPlan.toString()));
+            throw new OperationFailedException(MESSAGES.requiredChildIsMissing(ROLLOUT_PLAN, IN_SERIES, plan.toString()));
         }
         if(!keys.contains(IN_SERIES)) {
-            throw new OperationFailedException(MESSAGES.requiredChildIsMissing(ROLLOUT_PLAN, IN_SERIES, rolloutPlan.toString()));
+            throw new OperationFailedException(MESSAGES.requiredChildIsMissing(ROLLOUT_PLAN, IN_SERIES, plan.toString()));
         }
         if(keys.size() > 2 || keys.size() == 2 && !keys.contains(ROLLBACK_ACROSS_GROUPS)) {
-            throw new OperationFailedException(MESSAGES.unrecognizedChildren(ROLLOUT_PLAN, IN_SERIES + ", " + ROLLBACK_ACROSS_GROUPS, rolloutPlan.toString()));
+            throw new OperationFailedException(MESSAGES.unrecognizedChildren(ROLLOUT_PLAN, IN_SERIES + ", " + ROLLBACK_ACROSS_GROUPS, plan.toString()));
         }
 
-        final ModelNode inSeries = rolloutPlan.get(IN_SERIES);
+        final ModelNode inSeries = rolloutPlan1.get(IN_SERIES);
         if(!inSeries.isDefined()) {
-            throw new OperationFailedException(MESSAGES.requiredChildIsMissing(ROLLOUT_PLAN, IN_SERIES, rolloutPlan.toString()));
+            throw new OperationFailedException(MESSAGES.requiredChildIsMissing(ROLLOUT_PLAN, IN_SERIES, plan.toString()));
         }
 
         final List<ModelNode> groups = inSeries.asList();
         if(groups.isEmpty()) {
-            throw new OperationFailedException(MESSAGES.inSeriesIsMissingGroups(rolloutPlan.toString()));
+            throw new OperationFailedException(MESSAGES.inSeriesIsMissingGroups(plan.toString()));
         }
 
         for(ModelNode group : groups) {
@@ -341,10 +341,10 @@ public class DomainModelUtil {
                 try {
                     groupKeys = serverGroup.keys();
                 } catch(IllegalArgumentException e) {
-                    throw new OperationFailedException(MESSAGES.serverGroupExpectsSingleChild(rolloutPlan.toString()));
+                    throw new OperationFailedException(MESSAGES.serverGroupExpectsSingleChild(plan.toString()));
                 }
                 if(groupKeys.size() != 1) {
-                    throw new OperationFailedException(MESSAGES.serverGroupExpectsSingleChild(rolloutPlan.toString()));
+                    throw new OperationFailedException(MESSAGES.serverGroupExpectsSingleChild(plan.toString()));
                 }
                 validateInSeriesServerGroup(serverGroup.asProperty().getValue());
             } else if(group.hasDefined(CONCURRENT_GROUPS)) {
@@ -353,7 +353,7 @@ public class DomainModelUtil {
                     validateInSeriesServerGroup(child.asProperty().getValue());
                 }
             } else {
-                throw new OperationFailedException(MESSAGES.unexpectedInSeriesGroup(rolloutPlan.toString()));
+                throw new OperationFailedException(MESSAGES.unexpectedInSeriesGroup(plan.toString()));
             }
         }
     }
