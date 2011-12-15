@@ -593,6 +593,8 @@ public class RolloutPlanParsingTestCase extends TestCase {
     @Test
     public void testRolloutId() throws Exception {
 
+/* the plans are not in the config any more, just test the parsing of the reference
+
         RolloutPlanHeader myPlan = new RolloutPlanHeader("myplan");
 
         ConcurrentRolloutPlanGroup concurrent = new ConcurrentRolloutPlanGroup();
@@ -615,7 +617,7 @@ public class RolloutPlanParsingTestCase extends TestCase {
         myPlan.addProperty("rollback-across-groups", "true");
 
         ((MockCliConfig)ctx.getConfig()).addRolloutPlan(myPlan);
-
+*/
         //parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout in-series = groupA}");
         parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout id = myplan}");
 
@@ -641,7 +643,7 @@ public class RolloutPlanParsingTestCase extends TestCase {
         final RolloutPlanHeader rollout = (RolloutPlanHeader) header;
         assertEquals("myplan", rollout.getPlanRef());
 
-        final ModelNode op = handler.toOperationRequest(ctx);
+/*        final ModelNode op = handler.toOperationRequest(ctx);
         assertTrue(op.hasDefined(Util.OPERATION_HEADERS));
         final ModelNode headersNode = op.get(Util.OPERATION_HEADERS);
 
@@ -670,7 +672,7 @@ public class RolloutPlanParsingTestCase extends TestCase {
         rolloutPlan.get("rollback-across-groups").set("true");
 
         assertEquals(expectedHeaders, headersNode);
-    }
+*/    }
 
     @Test
     public void testArgumentValueConverter() throws Exception {
