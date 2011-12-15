@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.net.ssl.SSLException;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -518,6 +519,9 @@ class CommandContextImpl implements CommandContext {
                 case AUTHENTICATION_FAILURE:
                     printLine("Unable to authenticate against controller at " + host + ":" + port);
                     break;
+                case SSL_FAILURE:
+                    printLine("Unable to negotiate SSL connection with controller at " + host + ":" + port);
+                    break;
             }
 
             if (newClient != null) {
@@ -551,18 +555,23 @@ class CommandContextImpl implements CommandContext {
             // does not throw an Exception.
             return ConnectStatus.SUCCESS;
         } catch (Exception e) {
-            boolean authenticationFailure = false;
-
-            Throwable current = e;
-            while (current != null && authenticationFailure == false) {
-                if (current instanceof SaslException) {
-                    authenticationFailure = true;
+            try {
+                Throwable current = e;
+                while (current != null) {
+                    if (current instanceof SaslException) {
+                        return ConnectStatus.AUTHENTICATION_FAILURE;
+                    }
+                    if (current instanceof SSLException) {
+                        return ConnectStatus.SSL_FAILURE;
+                    }
+                    current = current.getCause();
                 }
-                current = current.getCause();
-            }
 
-            StreamUtils.safeClose(client);
-            return authenticationFailure ? ConnectStatus.AUTHENTICATION_FAILURE : ConnectStatus.CONNECTION_FAILURE;
+                // We don't know what happened, most likely a timeout.
+                return ConnectStatus.CONNECTION_FAILURE;
+            } finally {
+                StreamUtils.safeClose(client);
+            }
         }
     }
 
@@ -801,7 +810,7 @@ class CommandContextImpl implements CommandContext {
     }
 
     private enum ConnectStatus {
-        SUCCESS, AUTHENTICATION_FAILURE, CONNECTION_FAILURE
+        SUCCESS, AUTHENTICATION_FAILURE, SSL_FAILURE, CONNECTION_FAILURE
     }
 
     private class AuthenticationCallbackHandler implements CallbackHandler {
