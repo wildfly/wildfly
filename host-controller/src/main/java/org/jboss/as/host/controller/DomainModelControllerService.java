@@ -355,7 +355,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
             NativeManagementAddHandler.installNativeManagementServices(serviceTarget, hostControllerInfo, null, null);
 
             if (hostControllerInfo.getHttpManagementInterface() != null) {
-                HttpManagementAddHandler.installHttpManagementServices(serviceTarget, hostControllerInfo, environment, null);
+                HttpManagementAddHandler.installHttpManagementServices(currentRunningMode, serviceTarget, hostControllerInfo, environment, null);
             }
 
             if (currentRunningMode == RunningMode.NORMAL) {

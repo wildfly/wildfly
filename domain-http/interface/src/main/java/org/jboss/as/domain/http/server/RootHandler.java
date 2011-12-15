@@ -44,7 +44,11 @@ public class RootHandler implements ManagementHttpHandler {
 
     public static final String ROOT_CONTEXT = "/";
 
-    private static final String CONSOLE_LOCATION = "/console/index.html";
+    private final ResourceHandler consoleHandler;
+
+    RootHandler(ResourceHandler consoleHandler){
+        this.consoleHandler = consoleHandler;
+    }
 
     public void start(HttpServer httpServer, SecurityRealm securityRealm) {
         httpServer.createContext(ROOT_CONTEXT, this);
@@ -65,9 +69,9 @@ public class RootHandler implements ManagementHttpHandler {
         }
 
         String path = uri.getPath();
-        if (path.equals("/")) {
+        if (path.equals("/") && consoleHandler != null) {
             Headers responseHeaders = http.getResponseHeaders();
-            responseHeaders.add(LOCATION, CONSOLE_LOCATION);
+            responseHeaders.add(LOCATION, consoleHandler.getDefaultUrl());
             http.sendResponseHeaders(MOVED_PERMENANTLY, 0);
             http.close();
         } else {

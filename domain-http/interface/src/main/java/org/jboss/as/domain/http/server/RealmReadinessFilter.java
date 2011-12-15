@@ -54,7 +54,7 @@ class RealmReadinessFilter extends Filter {
             chain.doFilter(exchange);
         } else {
             Headers responseHeaders = exchange.getResponseHeaders();
-            responseHeaders.add(LOCATION, redirectTo + "/");
+            responseHeaders.add(LOCATION, redirectTo);
             exchange.sendResponseHeaders(TEMPORARY_REDIRECT, 0);
             exchange.close();
         }

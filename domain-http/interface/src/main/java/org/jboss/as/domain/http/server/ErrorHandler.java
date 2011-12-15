@@ -35,7 +35,7 @@ class ErrorHandler extends ResourceHandler {
     private static final String INDEX_WIN_HTML = "index_win.html";
 
     private static final String ERROR_MODULE = "org.jboss.as.domain-http-error-context";
-    static final String ERROR_CONTEXT = "/error";
+    private static final String ERROR_CONTEXT = "/error";
     private static final String DEFAULT_RESOURCE;
 
     static {
@@ -61,6 +61,8 @@ class ErrorHandler extends ResourceHandler {
         return true;
     }
 
-
+    public static String getRealmRedirect() {
+        return ERROR_CONTEXT + DEFAULT_RESOURCE;
+    }
 
 }

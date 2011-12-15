@@ -37,6 +37,7 @@
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.deployment-repository"/>
         <module name="org.jboss.as.domain-management"/>
+        <module name="org.jboss.as.domain-http-interface"/>
         <module name="org.jboss.as.management-client-content"/>
         <module name="org.jboss.as.network"/>
         <module name="org.jboss.as.platform-mbean"/>

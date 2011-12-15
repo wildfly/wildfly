@@ -38,8 +38,10 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.domain.http.server.ConsoleMode;
 import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.SocketBinding;
@@ -196,7 +198,7 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
             Logger.getLogger("org.jboss.as").warn("No security realm has been defined for the http management service; all access will be unrestricted.");
         }
 
-        final HttpManagementService service = HttpManagementService.createStandalone();
+        final HttpManagementService service = new HttpManagementService(context.getRunningMode() == RunningMode.ADMIN_ONLY ? ConsoleMode.ADMIN_ONLY : ConsoleMode.CONSOLE);
         ServiceBuilder<HttpManagement> builder = serviceTarget.addService(HttpManagementService.SERVICE_NAME, service)
                 .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, service.getModelControllerInjector())
                 .addDependency(SocketBindingManagerImpl.SOCKET_BINDING_MANAGER, SocketBindingManager.class, service.getSocketBindingManagerInjector())
