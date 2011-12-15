@@ -29,5 +29,6 @@
   <dependencies>
     <module name="javax.api"/>
     <module name="javax.transaction.api"/>
+    <module name="javax.servlet.api" optional="true"/>
   </dependencies>
 </module>
