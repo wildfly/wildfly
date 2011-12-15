@@ -67,11 +67,8 @@ public class ComplexDatasourceSubsystemTestCase extends AbstractSubsystemTest {
     }
 
     @Test
-<<<<<<< HEAD
-    //@Ignore
-=======
     @Ignore("JBPAPP-7714")
->>>>>>> dbe27c3... JBQA-5684
+
     public void testDatasource() throws Exception{
         // Only contain the subsystem xml, e.g.
         //  <subsystem xmlns="urn:jboss:domain:datasources:1.0"> ... </subsystem>
