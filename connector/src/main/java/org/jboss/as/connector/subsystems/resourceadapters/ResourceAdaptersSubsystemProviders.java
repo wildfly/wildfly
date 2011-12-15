@@ -144,6 +144,22 @@ public class ResourceAdaptersSubsystemProviders {
 
     };
 
+    static final DescriptionProvider SUBSYSTEM_REMOVE_DESC = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode operation = new ModelNode();
+
+            operation.get(OPERATION_NAME).set("remove");
+            operation.get(DESCRIPTION).set(bundle.getString("resource-adapters.remove"));
+            operation.get(REQUEST_PROPERTIES).setEmptyObject();
+            operation.get(REPLY_PROPERTIES).setEmptyObject();
+
+            return operation;
+        }
+
+    };
+
 
     static DescriptionProvider CONFIG_PROPERTIES_DESC = new DescriptionProvider() {
 

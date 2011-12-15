@@ -118,6 +118,7 @@ import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystem
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_XA_DATA_SOURCE_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.SUBSYSTEM;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.SUBSYSTEM_ADD_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.SUBSYSTEM_REMOVE_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.TEST_CONNECTION_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.XADATASOURCE_PROPERTIES_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.XA_DATASOURCE_ATTRIBUTE;
@@ -202,6 +203,7 @@ public class DataSourcesExtension implements Extension {
         // Remoting subsystem description and operation handlers
         final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM);
         subsystem.registerOperationHandler(ADD, DataSourcesSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
+        subsystem.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, SUBSYSTEM_REMOVE_DESC, false);
         subsystem.registerOperationHandler(DESCRIBE, DataSourcesSubsystemDescribeHandler.INSTANCE,
                 DataSourcesSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 

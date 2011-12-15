@@ -92,17 +92,20 @@ class JcaSubsystemProviders {
         }
     };
 
-    static DescriptionProvider SUBSYSTEM_REMOVE_DESC = new DescriptionProvider() {
+    static final DescriptionProvider SUBSYSTEM_REMOVE_DESC = new DescriptionProvider() {
 
-        @Override
         public ModelNode getModelDescription(final Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
-            ModelNode operation = new ModelNode();
-            operation.get(OPERATION_NAME).set(REMOVE);
-            operation.get(DESCRIPTION).set(bundle.getString("jca.archive-validation.remove"));
+            final ModelNode operation = new ModelNode();
+
+            operation.get(OPERATION_NAME).set("remove");
+            operation.get(DESCRIPTION).set(bundle.getString("jca.remove"));
+            operation.get(REQUEST_PROPERTIES).setEmptyObject();
             operation.get(REPLY_PROPERTIES).setEmptyObject();
+
             return operation;
         }
+
     };
 
     static DescriptionProvider ARCHIVE_VALIDATION_DESC = new DescriptionProvider() {
