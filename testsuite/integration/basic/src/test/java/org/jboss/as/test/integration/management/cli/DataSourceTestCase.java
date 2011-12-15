@@ -59,14 +59,14 @@ public class DataSourceTestCase extends AbstractCliTestBase {
     @Test
     public void testDataSource() throws Exception {
         testAddDataSource();       
-        // testModifyDataSource();
+        testModifyDataSource();
         testRemoveDataSource();
     }
 
     @Test
     public void testXaDataSource() throws Exception {        
         testAddXaDataSource();
-        // testModifyXaDataSource();
+        testModifyXaDataSource();
         testRemoveXaDataSource();         
     }
 
@@ -100,7 +100,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
     }
 
     private void testModifyDataSource() throws Exception {
-        StringBuilder cmd = new StringBuilder("data-source modify --jndi-name=java:jboss/datasources/TestDS");
+        StringBuilder cmd = new StringBuilder("data-source --jndi-name=java:jboss/datasources/TestDS");
         for (String[] props : DS_PROPS) {
             cmd.append(" --");
             cmd.append(props[0]);
@@ -146,7 +146,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
     }
 
     private void testModifyXaDataSource() throws Exception {
-        StringBuilder cmd = new StringBuilder("modify-data-source --jndi-name=java:jboss/datasources/TestDS");
+        StringBuilder cmd = new StringBuilder("xa-data-source --jndi-name=java:jboss/datasources/TestXADS");
         for (String[] props : DS_PROPS) {
             cmd.append(" --");
             cmd.append(props[0]);
@@ -156,7 +156,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
         cli.sendLine(cmd.toString());
         
         // check that datasource was modified
-        cli.sendLine("/subsystem=datasources/data-source=java\\:jboss\\/datasources\\/TestDS:read-resource(recursive=true)");       
+        cli.sendLine("/subsystem=datasources/xa-data-source=java\\:jboss\\/datasources\\/TestXADS:read-resource(recursive=true)");       
         CLIOpResult result = cli.readAllAsOpResult(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
         assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof Map);
