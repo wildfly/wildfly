@@ -24,13 +24,9 @@ package org.jboss.as.test.integration.management.base;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
-
-import junit.framework.Assert;
-
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+
 
 /**
  *
@@ -41,14 +37,12 @@ public class AbstractCliTestBase {
     public final static long WAIT_TIMEOUT = 10000;
     public final static long WAIT_LINETIMEOUT = 1000;
     protected static CLIWrapper cli;
-
-    @BeforeClass
-    public static void before() throws Exception {
+    
+    public static void initCLI() throws Exception {
         if (cli == null) cli = new CLIWrapper(true);
     }
 
-    @AfterClass
-    public static void after() throws Exception {
+    public static void closeCLI() throws Exception {
         try {
             if (cli != null) cli.quit();
         } finally {
@@ -60,7 +54,8 @@ public class AbstractCliTestBase {
         return new URL(url.getProtocol(), url.getHost(), url.getPort(), "/").toString();
     }
 
-    protected void assertUndeployed(String spec) {
+    
+    protected boolean checkUndeployed(String spec) {
         try {
             final long firstTry = System.currentTimeMillis();
             HttpRequest.get(spec, 10, TimeUnit.SECONDS);
@@ -73,8 +68,10 @@ public class AbstractCliTestBase {
                     HttpRequest.get(spec, 10, TimeUnit.SECONDS);
                 }
             }
-            Assert.fail(spec + " is still available.");
+            return false;
         } catch (Exception e) {
         }
+        return true;
     }
+    
 }

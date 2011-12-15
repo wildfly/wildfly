@@ -91,13 +91,13 @@ public class BatchTestCase extends AbstractCliTestBase {
         warFiles[2] = new File(tempDir + File.separator + "deployment2.war");
         new ZipExporterImpl(wars[2]).exportTo(warFiles[2], true);
 
-        AbstractCliTestBase.before();
+        AbstractCliTestBase.initCLI();
     }
 
     @AfterClass
     public static void after() throws Exception {
         for (File warFile : warFiles) warFile.delete();
-        AbstractCliTestBase.after();
+        AbstractCliTestBase.closeCLI();
     }
 
     @Test
@@ -110,8 +110,8 @@ public class BatchTestCase extends AbstractCliTestBase {
         cli.sendLine("deploy " + warFiles[1].getAbsolutePath(), true);
 
         // check none of the archives are deployed yet
-        assertUndeployed(getBaseURL(url) + "deployment0/SimpleServlet");
-        assertUndeployed(getBaseURL(url) + "deployment1/SimpleServlet");
+        assertTrue(checkUndeployed(getBaseURL(url) + "deployment0/SimpleServlet"));
+        assertTrue(checkUndeployed(getBaseURL(url) + "deployment1/SimpleServlet"));
 
         cli.sendLine("run-batch");
 
@@ -138,8 +138,8 @@ public class BatchTestCase extends AbstractCliTestBase {
 
         cli.sendLine("run-batch");
         // check that both undeployed
-        assertUndeployed(getBaseURL(url) + "deployment0/SimpleServlet");
-        assertUndeployed(getBaseURL(url) + "deployment1/SimpleServlet");
+        assertTrue(checkUndeployed(getBaseURL(url) + "deployment0/SimpleServlet"));
+        assertTrue(checkUndeployed(getBaseURL(url) + "deployment1/SimpleServlet"));
     }
 
     @Test
@@ -151,8 +151,8 @@ public class BatchTestCase extends AbstractCliTestBase {
         cli.sendLine("deploy " + warFiles[2].getAbsolutePath(), true);
 
         // check none of the archives are deployed yet
-        assertUndeployed(getBaseURL(url) + "deployment0/SimpleServlet");
-        assertUndeployed(getBaseURL(url) + "deployment2/SimpleServlet");
+        assertTrue(checkUndeployed(getBaseURL(url) + "deployment0/SimpleServlet"));
+        assertTrue(checkUndeployed(getBaseURL(url) + "deployment2/SimpleServlet"));
 
         // this should fail
         cli.sendLine("run-batch");
@@ -161,8 +161,8 @@ public class BatchTestCase extends AbstractCliTestBase {
         assertTrue("Batch did not fail.", line.contains("Failed to execute batch"));
 
         // check that still none of the archives are deployed
-        assertUndeployed(getBaseURL(url) + "deployment0/SimpleServlet");
-        assertUndeployed(getBaseURL(url) + "deployment2/SimpleServlet");
+        assertTrue(checkUndeployed(getBaseURL(url) + "deployment0/SimpleServlet"));
+        assertTrue(checkUndeployed(getBaseURL(url) + "deployment2/SimpleServlet"));
 
         cli.sendLine("discard-batch");
 
@@ -174,6 +174,6 @@ public class BatchTestCase extends AbstractCliTestBase {
         assertTrue("Invalid response: " + response, response.indexOf("SimpleServlet") >=0);
         // undeploy
         cli.sendLine("undeploy deployment0.war");
-        assertUndeployed(getBaseURL(url) + "deployment0/SimpleServlet");
+        assertTrue(checkUndeployed(getBaseURL(url) + "deployment0/SimpleServlet"));
     }
 }

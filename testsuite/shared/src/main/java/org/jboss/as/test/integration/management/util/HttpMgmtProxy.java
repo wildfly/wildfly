@@ -44,15 +44,12 @@ import org.jboss.dmr.ModelNode;
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
 public class HttpMgmtProxy {
-    
+
     private static final String APPLICATION_JSON = "application/json";
-    
     private URL url;
-    
     private HttpClient httpClient;
     private HttpContext httpContext = new BasicHttpContext();
 
-    
     public HttpMgmtProxy(URL mgmtURL) {
         this.url = mgmtURL;
         DefaultHttpClient httpClient = new DefaultHttpClient();
@@ -60,23 +57,23 @@ public class HttpMgmtProxy {
         httpClient.getCredentialsProvider().setCredentials(new AuthScope(url.getHost(), url.getPort(), "ManagementRealm"), creds);
         this.httpClient = httpClient;
     }
-    
+
     public ModelNode sendGetCommand(String cmd) throws Exception {
-        
+
         HttpGet get = new HttpGet(url.toURI().toString() + cmd);
-        
+
         HttpResponse response = httpClient.execute(get, httpContext);
         String str = EntityUtils.toString(response.getEntity());
-        
+
         return ModelNode.fromJSONString(str);
     }
-    
+
     public ModelNode sendPostCommand(String address, String operation) throws Exception {
         return sendPostCommand(getOpNode(address, operation));
     }
-    
+
     public ModelNode sendPostCommand(ModelNode cmd) throws Exception {
-        
+
         String cmdStr = cmd.toJSONString(true);
         HttpPost post = new HttpPost(url.toURI());
         StringEntity entity = new StringEntity(cmdStr);
@@ -85,15 +82,15 @@ public class HttpMgmtProxy {
 
         HttpResponse response = httpClient.execute(post, httpContext);
         String str = EntityUtils.toString(response.getEntity());
-                
+
         return ModelNode.fromJSONString(str);
     }
-    
+
     public static ModelNode getOpNode(String address, String operation) {
         ModelNode op = new ModelNode();
-        
+
         // set address
-        String [] pathSegments = address.split("/");
+        String[] pathSegments = address.split("/");
         ModelNode list = op.get("address").setEmptyList();
         for (String segment : pathSegments) {
             String[] elements = segment.split("=");

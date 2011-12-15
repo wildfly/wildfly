@@ -74,13 +74,13 @@ public class DeployTestCase extends AbstractCliTestBase {
         warFile = new File(tempDir + File.separator + "SimpleServlet.war");
         new ZipExporterImpl(war).exportTo(warFile, true);
 
-        AbstractCliTestBase.before();
+        AbstractCliTestBase.initCLI();
     }
 
     @AfterClass
     public static void after() throws Exception {
         warFile.delete();
-        AbstractCliTestBase.after();
+        AbstractCliTestBase.closeCLI();
     }
 
     @Test
@@ -146,6 +146,6 @@ public class DeployTestCase extends AbstractCliTestBase {
         cli.sendLine("undeploy SimpleServlet.war", true);
 
         // check undeployment
-        assertUndeployed(getBaseURL(url) + "SimpleServlet/SimpleServlet");
+        assertTrue(checkUndeployed(getBaseURL(url) + "SimpleServlet/SimpleServlet"));
     }
 }

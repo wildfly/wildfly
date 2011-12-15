@@ -36,7 +36,7 @@ import static org.jboss.as.test.integration.management.util.ComplexPropertiesPar
 import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.nonXaDsProperties;
 import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.xaDsProperties;
 import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.addExtensionProperties;
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.controlModelParams;
+import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.checkModelParams;
 
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import java.io.IOException;
@@ -605,7 +605,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         ModelNode rightChild=findNodeWithProperty(newList,"jndi-name",complexDsJndi);
         
-        controlModelParams(rightChild, params);
+        Assert.assertTrue(checkModelParams(rightChild, params));
     }
     /**
      * AS7-2720 tests for parsing particular XA-datasource in standalone mode
@@ -654,7 +654,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         ModelNode rightChild=findNodeWithProperty(newList,"jndi-name",complexXaDsJndi);
         
-        controlModelParams(rightChild, params);
+        Assert.assertTrue(checkModelParams(rightChild, params));
     }
     
     

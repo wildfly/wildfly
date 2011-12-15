@@ -39,6 +39,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -92,7 +93,7 @@ public class VirtualServerTestCase extends AbstractMgmtTestBase {
     }
 
     @Test
-    public void testDefaultVirtualServer() throws IOException {
+    public void testDefaultVirtualServer() throws IOException, MgmtOperationException {
 
         // get default VS
         ModelNode result = executeOperation(createOpNode("subsystem=web/virtual-server=default-host", "read-resource"));
@@ -136,7 +137,7 @@ public class VirtualServerTestCase extends AbstractMgmtTestBase {
 
     }
 
-    private void addVirtualServer() throws IOException {
+    private void addVirtualServer() throws IOException, MgmtOperationException {
         ModelNode addOp = createOpNode("subsystem=web/virtual-server=test", "add");
         addOp.get("alias").add(virtualHost);
 
@@ -151,7 +152,7 @@ public class VirtualServerTestCase extends AbstractMgmtTestBase {
 
     }
 
-    private void removeVirtualServer() throws IOException {
+    private void removeVirtualServer() throws IOException, MgmtOperationException {
 
         executeOperation(createOpNode("subsystem=web/virtual-server=test", "remove"));
 

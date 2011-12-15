@@ -26,20 +26,13 @@ import org.jboss.dmr.Property;
 import java.util.List;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.UnknownHostException;
-import java.util.concurrent.TimeUnit;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.dmr.ModelNode;
@@ -47,8 +40,8 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
-import static org.junit.Assert.*;
 import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -92,23 +85,24 @@ public class AbstractMgmtTestBase {
         }
     }
 
-    protected ModelNode executeOperation(final ModelNode op, boolean unwrapResult) throws IOException {
+    protected ModelNode executeOperation(final ModelNode op, boolean unwrapResult) throws IOException, MgmtOperationException {
         ModelNode ret = modelControllerClient.execute(op);
         if (! unwrapResult) return ret;
 
-        assertTrue("Management operation " + op.asString() + " failed: " + ret.asString(),
-                SUCCESS.equals(ret.get(OUTCOME).asString()));
+        if (! SUCCESS.equals(ret.get(OUTCOME).asString())) {
+            throw new MgmtOperationException("Management operation failed.", op, ret);
+        }
         return ret.get(RESULT);
     }
 
-    protected ModelNode executeOperation(final ModelNode op) throws IOException {
+    protected ModelNode executeOperation(final ModelNode op) throws IOException, MgmtOperationException  {
         return executeOperation(op, true);
     }
 
-    protected ModelNode executeOperation(final String address, final String operation) throws IOException {
+    protected ModelNode executeOperation(final String address, final String operation) throws IOException, MgmtOperationException {
         return executeOperation(createOpNode(address, operation));
     }
-
+    
     protected ModelNode executeAndRollbackOperation(final ModelNode op) throws IOException, OperationFormatException {
 
         ModelNode addDeploymentOp = createOpNode("deployment=malformedDeployment.war", "add");
@@ -131,51 +125,12 @@ public class AbstractMgmtTestBase {
 
         return modelControllerClient.execute(ob.build());
     }
-    protected void remove(final ModelNode address) throws IOException {
+
+    protected void remove(final ModelNode address) throws IOException, MgmtOperationException {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set("remove");
         operation.get(OP_ADDR).set(address);
         executeOperation(operation);
-    }
-
-    public static ModelNode createCompositeNode(ModelNode[] steps) {
-        ModelNode comp = new ModelNode();
-        comp.get(OP).set("composite");
-        for(ModelNode step : steps) {
-            comp.get("steps").add(step);
-        }
-        return comp;
-    }
-
-    public static ModelNode createOpNode(String address, String operation) {
-        ModelNode op = new ModelNode();
-
-        // set address
-        ModelNode list = op.get(OP_ADDR).setEmptyList();
-        if (address != null) {
-            String [] pathSegments = address.split("/");
-            for (String segment : pathSegments) {
-                String[] elements = segment.split("=");
-                list.add(elements[0], elements[1]);
-            }
-        }
-        op.get(OP).set(operation);
-        return op;
-    }
-
-    public boolean testRequestFail(String url) {
-        boolean failed = false;
-        try {
-            HttpRequest.get(url, 10, TimeUnit.SECONDS);
-        } catch (Exception e) {
-            failed = true;
-        }
-        return failed;
-
-    }
-
-    protected final String getBaseURL(URL url) throws MalformedURLException {
-        return new URL(url.getProtocol(), url.getHost(), url.getPort(), "/").toString();
     }
 
     private static File getBrokenWar() {

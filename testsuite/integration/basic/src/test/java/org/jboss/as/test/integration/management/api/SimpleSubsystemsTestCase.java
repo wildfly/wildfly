@@ -31,6 +31,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.cli.GlobalOpsTestCase;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -95,7 +96,7 @@ public class SimpleSubsystemsTestCase extends AbstractMgmtTestBase {
         testSimpleSubsystem("jdr");
     }
     
-    private void testSimpleSubsystem(String subsystemName) throws IOException {        
+    private void testSimpleSubsystem(String subsystemName) throws IOException, MgmtOperationException {        
         ModelNode op = createOpNode("subsystem=" + subsystemName, "read-resource");        
         op.get("recursive").set(true);
         

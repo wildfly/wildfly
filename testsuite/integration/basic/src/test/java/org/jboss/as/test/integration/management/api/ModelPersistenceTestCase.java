@@ -33,6 +33,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.cli.GlobalOpsTestCase;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -87,7 +88,7 @@ public class ModelPersistenceTestCase extends AbstractMgmtTestBase {
     }
         
     @Before
-    public void before() throws IOException {
+    public void before() throws IOException, MgmtOperationException {
         
         initModelControllerClient(url.getHost(), MGMT_PORT);
         
