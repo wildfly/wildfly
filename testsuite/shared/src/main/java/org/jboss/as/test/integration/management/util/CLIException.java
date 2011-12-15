@@ -25,36 +25,22 @@ package org.jboss.as.test.integration.management.util;
  *
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
-public class CLIOpResult {
-
-    private boolean isOutcomeSuccess;
-    private Object result;
+public class CLIException extends Exception {
 
     /**
-     * @return the isOutcomeSuccess
+     * Creates a new instance of
+     * <code>CLIException</code> without detail message.
      */
-    public boolean isIsOutcomeSuccess() {
-        return isOutcomeSuccess;
+    public CLIException() {
     }
 
     /**
-     * @param isOutcomeSuccess the isOutcomeSuccess to set
+     * Constructs an instance of
+     * <code>CLIException</code> with the specified detail message.
+     *
+     * @param msg the detail message.
      */
-    public void setIsOutcomeSuccess(boolean isOutcomeSuccess) {
-        this.isOutcomeSuccess = isOutcomeSuccess;
-    }
-
-    /**
-     * @return the result
-     */
-    public Object getResult() {
-        return result;
-    }
-
-    /**
-     * @param result the result to set
-     */
-    public void setResult(Object result) {
-        this.result = result;
+    public CLIException(String msg) {
+        super(msg);
     }
 }

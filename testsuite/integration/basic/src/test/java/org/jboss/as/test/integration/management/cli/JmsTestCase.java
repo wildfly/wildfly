@@ -26,6 +26,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.jboss.arquillian.junit.Arquillian;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -36,6 +38,16 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class JmsTestCase extends AbstractCliTestBase {
 
+    @BeforeClass
+    public static void before() throws Exception {
+        AbstractCliTestBase.initCLI();
+    }
+
+    @AfterClass
+    public static void after() throws Exception {
+        AbstractCliTestBase.closeCLI();
+    }    
+    
     @Test
     public void testAddRemoveJmsQueue() throws Exception {
         testAddJmsQueue();

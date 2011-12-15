@@ -25,6 +25,8 @@ import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import static org.junit.Assert.assertTrue;
 
 import org.jboss.arquillian.junit.Arquillian;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -39,6 +41,16 @@ public class HelpTestCase extends AbstractCliTestBase {
         "cn", "connect", "deploy", "help", "history", "ls", "pwn", "quit", "undeploy", "version"
     };
 
+    @BeforeClass
+    public static void before() throws Exception {
+        AbstractCliTestBase.initCLI();
+    }
+
+    @AfterClass
+    public static void after() throws Exception {
+        AbstractCliTestBase.closeCLI();
+    }   
+    
     @Test
     public void testHelpCommand() throws Exception {
         cli.sendLine("help");

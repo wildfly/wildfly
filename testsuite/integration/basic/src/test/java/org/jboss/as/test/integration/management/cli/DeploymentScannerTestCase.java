@@ -76,13 +76,13 @@ public class DeploymentScannerTestCase extends AbstractCliTestBase {
             FileUtils.deleteDirectory(deployDir);
         }
         assertTrue("Unable to create deployment scanner directory.", deployDir.mkdir());
-        AbstractCliTestBase.before();
+        AbstractCliTestBase.initCLI();
     }
 
     @AfterClass
     public static void after() throws Exception {
         FileUtils.deleteDirectory(deployDir);
-        AbstractCliTestBase.after();
+        AbstractCliTestBase.closeCLI();
     }
 
     @Test
@@ -134,6 +134,6 @@ public class DeploymentScannerTestCase extends AbstractCliTestBase {
 
         // undeploy using CLI
         cli.sendLine("undeploy SimpleServlet.war", true);
-        assertUndeployed(getBaseURL(url) + "SimpleServlet/SimpleServlet");
+        assertTrue(checkUndeployed(getBaseURL(url) + "SimpleServlet/SimpleServlet"));
     }
 }

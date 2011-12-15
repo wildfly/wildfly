@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.management.util;
 import java.util.Enumeration;
 import java.util.Properties;
 
-import junit.framework.Assert;
 import org.jboss.dmr.ModelNode;
 
 /**Common utility class for parsing operation tests
@@ -238,13 +237,14 @@ public class ComplexPropertiesParseUtils {
 
     }
     /**
-     * Controls if result of reparsing contains certain parameters
+     * Checks if result of reparsing contains certain parameters
      * @param model
      * @param params
+     * @returns whether the node is ok
      */
-    public static void controlModelParams(ModelNode node,Properties params){
+    public static boolean checkModelParams(ModelNode node,Properties params){
     	
-    	if (node==null) Assert.fail("ModelNode is empty, but must contain properties:\n"+params);
+    	if (node==null) return false;
     	String str;
         StringBuffer sb = new StringBuffer();
         String par,child;
@@ -259,7 +259,9 @@ public class ComplexPropertiesParseUtils {
         		if (!child.equals(par)) sb.append("Parameter <"+str+"> is set to '"+child+"', but must be set to '"+par+"' \n");
         	}
         }
-        if (sb.length()>0) Assert.fail("There are parsing errors:\n"+sb.toString()+"Parsed configuration:\n"+node);
+        if (sb.length()>0) return false;
+        return true;
     }
+
     
 }

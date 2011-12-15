@@ -38,6 +38,8 @@ import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -50,6 +52,16 @@ import org.junit.runner.RunWith;
 public class GlobalOpsTestCase extends AbstractCliTestBase {
     
     @ArquillianResource URL url;
+    
+    @BeforeClass
+    public static void before() throws Exception {
+        AbstractCliTestBase.initCLI();
+    }
+
+    @AfterClass
+    public static void after() throws Exception {
+        AbstractCliTestBase.closeCLI();
+    }   
     
     @Deployment
     public static Archive<?> getDeployment() {
