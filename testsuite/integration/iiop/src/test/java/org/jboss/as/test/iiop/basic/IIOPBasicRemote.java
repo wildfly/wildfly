@@ -10,4 +10,6 @@ import javax.ejb.EJBObject;
 public interface IIOPBasicRemote extends EJBObject {
 
     String hello() throws RemoteException;
+
+    HandleWrapper wrappedHandle() throws RemoteException;
 }

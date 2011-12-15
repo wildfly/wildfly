@@ -10,6 +10,7 @@ import javax.ejb.Stateless;
 import javax.rmi.PortableRemoteObject;
 
 import junit.framework.Assert;
+import org.jboss.ejb.iiop.HandleImplIIOP;
 
 /**
  * @author Stuart Douglas
@@ -34,6 +35,8 @@ public class ClientEjb {
         final IIOPBasicRemote object = newHome.create();
         return object.hello();
     }
+
+
     public String getRemoteViaHandleMessage() throws RemoteException {
 
         final IIOPBasicRemote object = home.create();
@@ -41,6 +44,16 @@ public class ClientEjb {
         final IIOPBasicRemote newObject = (IIOPBasicRemote) PortableRemoteObject.narrow(handle.getEJBObject(), IIOPBasicRemote.class);
         return newObject.hello();
     }
+
+    public String getRemoteViaWrappedHandle() throws RemoteException {
+
+        final IIOPBasicRemote object = home.create();
+        final Handle handle = object.wrappedHandle().getHandle();
+        Assert.assertEquals(HandleImplIIOP.class, handle.getClass());
+        final IIOPBasicRemote newObject = (IIOPBasicRemote) PortableRemoteObject.narrow(handle.getEJBObject(), IIOPBasicRemote.class);
+        return newObject.hello();
+    }
+
     public String getRemoteMessageViaEjbMetadata() throws RemoteException {
         final EJBMetaData metadata = home.getEJBMetaData();
         final IIOPBasicHome newHome = (IIOPBasicHome) PortableRemoteObject.narrow(metadata.getEJBHome(), IIOPBasicHome.class);

@@ -51,6 +51,7 @@ import org.jboss.ejb.client.EntityEJBLocator;
 import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.ejb.client.StatelessEJBLocator;
 import org.jboss.ejb.iiop.EJBMetaDataImplIIOP;
+import org.jboss.ejb.iiop.HandleImplIIOP;
 import org.jboss.ejb.iiop.HomeHandleImplIIOP;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.Marshaller;
@@ -438,7 +439,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
      * @param locator The locator
      * @return The corba reference
      */
-    public Object referenceForLocator(final EJBLocator<?> locator) {
+    public org.omg.CORBA.Object referenceForLocator(final EJBLocator<?> locator) {
         final EJBComponent ejbComponent = ejbComponentInjectedValue.getValue();
         try {
             final String earApplicationName = ejbComponent.getEarApplicationName() == null ? "" : ejbComponent.getEarApplicationName();
@@ -447,7 +448,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
                     locator.getModuleName().equals(ejbComponent.getModuleName()) &&
                     locator.getDistinctName().equals(ejbComponent.getDistinctName())) {
                 if (locator instanceof EJBHomeLocator) {
-                    return ejbHome;
+                    return (org.omg.CORBA.Object) ejbHome;
                 } else if (locator instanceof StatelessEJBLocator) {
                     return beanReferenceFactory.createReference(beanRepositoryIds[0]);
                 } else if (locator instanceof StatefulEJBLocator) {
@@ -472,6 +473,20 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
         } catch (Exception e) {
             throw new RuntimeException("Could not create CORBA Object for " + locator + " for EJB " + ejbComponent, e);
         }
+    }
+
+    /**
+     * Gets a handle for the given ejb locator.
+     *
+     * @param locator The locator to get the handle for
+     * @return The {@link org.jboss.ejb.client.EJBHandle} or {@link org.jboss.ejb.client.EJBHomeHandle}
+     */
+    public Object handleForLocator(final EJBLocator locator) {
+        final org.omg.CORBA.Object reference = referenceForLocator(locator);
+        if(locator instanceof EJBHomeLocator) {
+            return new HomeHandleImplIIOP(orb.getValue().object_to_string(reference));
+        }
+        return new HandleImplIIOP(orb.getValue().object_to_string(reference));
     }
 
     /**

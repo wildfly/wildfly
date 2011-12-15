@@ -50,7 +50,8 @@ public class BasicIIOPInvocationTestCase {
     public static Archive<?> deployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "server.jar");
         jar.addClasses(IIOPBasicBean.class, IIOPBasicHome.class, IIOPBasicRemote.class,
-                IIOPBasicStatefulBean.class, IIOPBasicStatefulHome.class, IIOPBasicStatefulRemote.class);
+                IIOPBasicStatefulBean.class, IIOPBasicStatefulHome.class, IIOPBasicStatefulRemote.class,
+                HandleWrapper.class);
         return jar;
     }
 
@@ -60,7 +61,7 @@ public class BasicIIOPInvocationTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "client.jar");
         jar.addClasses(ClientEjb.class, IIOPBasicHome.class, IIOPBasicRemote.class,
                 BasicIIOPInvocationTestCase.class, IIOPBasicStatefulHome.class,
-                IIOPBasicStatefulRemote.class);
+                IIOPBasicStatefulRemote.class, HandleWrapper.class);
         return jar;
     }
 
@@ -81,6 +82,17 @@ public class BasicIIOPInvocationTestCase {
     @Test
     @OperateOnDeployment("client")
     public void testHandle() throws IOException, NamingException {
+        final ClientEjb ejb = client();
+        Assert.assertEquals("hello", ejb.getRemoteViaHandleMessage());
+    }
+
+    /**
+     * Tests that even if a handle is returned embedded in another object the substitution service will
+     * replace it with a correct IIOP version of a handle.
+     */
+    @Test
+    @OperateOnDeployment("client")
+    public void testWrappedHandle() throws IOException, NamingException {
         final ClientEjb ejb = client();
         Assert.assertEquals("hello", ejb.getRemoteViaHandleMessage());
     }

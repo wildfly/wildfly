@@ -11,12 +11,15 @@ import org.jboss.ejb.client.EJBHandle;
 import org.jboss.ejb.client.EJBHomeHandle;
 import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.EJBMetaDataImpl;
+import org.jboss.ejb.iiop.EJBMetaDataImplIIOP;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import javax.ejb.HomeHandle;
 
 /**
  * @author Stuart Douglas
@@ -36,40 +39,68 @@ public class RemoteObjectSubstitutionService implements RemoteObjectSubstitution
         }
 
         if (EJBClient.isEJBProxy(object)) {
-            EJBLocator<? extends Object> locator;
-            try {
-                locator = EJBClient.getLocatorFor(object);
-            } catch (Exception e) {
-                //not a EJB proxy
-                locator = null;
+            return createIIOPReferenceForBean(object, deploymentRepository);
+        } else if (object instanceof EJBHandle) {
+            final EJBHandle handle = (EJBHandle) object;
+            final EJBLocator<?> locator = handle.getLocator();
+            final EjbIIOPService factory = serviceForLocator(locator, deploymentRepository);
+            if (factory != null) {
+                return factory.handleForLocator(locator);
             }
-            if (locator != null) {
-                final ModuleDeployment module = deploymentRepository.getModules().get(new DeploymentModuleIdentifier(locator.getAppName(), locator.getModuleName(), locator.getDistinctName()));
-                if (module == null) {
-                    EjbLogger.ROOT_LOGGER.couldNotFindEjbForLocatorIIOP(locator);
-                    return object;
-                }
-                final EjbDeploymentInformation ejb = module.getEjbs().get(locator.getBeanName());
-                if (ejb == null) {
-                    EjbLogger.ROOT_LOGGER.couldNotFindEjbForLocatorIIOP(locator);
-                    return object;
-                }
-                final EjbIIOPService factory = ejb.getIorFactory();
-                if (factory == null) {
-                    EjbLogger.ROOT_LOGGER.ejbNotExposedOverIIOP(locator);
-                    return object;
-                }
-                return factory.referenceForLocator(locator);
+        } else if (object instanceof EJBHomeHandle) {
+            final EJBHomeHandle handle = (EJBHomeHandle) object;
+            final EJBLocator<?> locator = handle.getLocator();
+            final EjbIIOPService factory = serviceForLocator(locator, deploymentRepository);
+            if (factory != null) {
+                return factory.handleForLocator(locator);
             }
-        } else if(object instanceof EJBHandle) {
-            //TODO: this also needs to swap out the handle implementations
-            EJBHandle handle = (EJBHandle) object;
-        } else if(object instanceof EJBHomeHandle) {
-
-        } else if(object instanceof EJBMetaDataImpl) {
-
+        } else if (object instanceof EJBMetaDataImpl) {
+            final EJBMetaDataImpl metadata = (EJBMetaDataImpl) object;
+            Class<?> pk = null;
+            if (!metadata.isSession()) {
+                pk = metadata.getPrimaryKeyClass();
+            }
+            final EJBLocator<?> locator = EJBClient.getLocatorFor(metadata.getEJBHome());
+            final EjbIIOPService factory = serviceForLocator(locator, deploymentRepository);
+            return new EJBMetaDataImplIIOP(metadata.getRemoteInterfaceClass(), metadata.getHomeInterfaceClass(), pk, metadata.isSession(), metadata.isStatelessSession(), (HomeHandle) factory.handleForLocator(locator));
         }
         return object;
+    }
+
+    private Object createIIOPReferenceForBean(Object object, DeploymentRepository deploymentRepository) {
+        EJBLocator<? extends Object> locator;
+        try {
+            locator = EJBClient.getLocatorFor(object);
+        } catch (Exception e) {
+            //not a EJB proxy
+            locator = null;
+        }
+        if (locator != null) {
+            final EjbIIOPService factory = serviceForLocator(locator, deploymentRepository);
+            if (factory != null) {
+                return factory.referenceForLocator(locator);
+            }
+        }
+        return object;
+    }
+
+    private EjbIIOPService serviceForLocator(final EJBLocator locator, DeploymentRepository deploymentRepository) {
+        final ModuleDeployment module = deploymentRepository.getModules().get(new DeploymentModuleIdentifier(locator.getAppName(), locator.getModuleName(), locator.getDistinctName()));
+        if (module == null) {
+            EjbLogger.ROOT_LOGGER.couldNotFindEjbForLocatorIIOP(locator);
+            return null;
+        }
+        final EjbDeploymentInformation ejb = module.getEjbs().get(locator.getBeanName());
+        if (ejb == null) {
+            EjbLogger.ROOT_LOGGER.couldNotFindEjbForLocatorIIOP(locator);
+            return null;
+        }
+        final EjbIIOPService factory = ejb.getIorFactory();
+        if (factory == null) {
+            EjbLogger.ROOT_LOGGER.ejbNotExposedOverIIOP(locator);
+            return null;
+        }
+        return factory;
     }
 
     @Override
