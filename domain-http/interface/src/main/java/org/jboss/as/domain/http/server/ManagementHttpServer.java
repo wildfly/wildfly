@@ -61,7 +61,7 @@ public class ManagementHttpServer {
         this.securityRealm = securityRealm;
     }
 
-    private void addHandler(ManagementHttpHandler handler) {
+    void addHandler(ManagementHttpHandler handler) {
         handlers.add(handler);
     }
 
@@ -95,7 +95,7 @@ public class ManagementHttpServer {
         }
     }
 
-    public static ManagementHttpServer create(InetSocketAddress bindAddress, InetSocketAddress secureBindAddress, int backlog, ModelControllerClient modelControllerClient, Executor executor, SecurityRealm securityRealm, boolean showConsole)
+    public static ManagementHttpServer create(InetSocketAddress bindAddress, InetSocketAddress secureBindAddress, int backlog, ModelControllerClient modelControllerClient, Executor executor, SecurityRealm securityRealm, ConsoleMode consoleMode)
             throws IOException {
         Map<String, String> configuration = new HashMap<String, String>(1);
         configuration.put("sun.net.httpserver.maxReqTime", "15"); // HTTP Server to close connections if initial request not received within 15 seconds.
@@ -162,15 +162,18 @@ public class ManagementHttpServer {
         }
 
         ManagementHttpServer managementHttpServer = new ManagementHttpServer(httpServer, secureHttpServer, securityRealm);
-        managementHttpServer.addHandler(new RootHandler());
-        managementHttpServer.addHandler(new DomainApiHandler(modelControllerClient));
-
+        ResourceHandler consoleHandler;
         try {
-            if (showConsole) {
-                managementHttpServer.addHandler(new ConsoleHandler());
-            } else {
-                managementHttpServer.addHandler(new NoConsoleForSlaveDcHandler());
-            }
+            consoleHandler = consoleMode.createConsoleHandler();
+        } catch (ModuleLoadException e) {
+            throw new IOException("Unable to load resource handler", e);
+        }
+        managementHttpServer.addHandler(new RootHandler(consoleHandler));
+        managementHttpServer.addHandler(new DomainApiHandler(modelControllerClient));
+        if (consoleHandler != null) {
+            managementHttpServer.addHandler(consoleHandler);
+        }
+        try {
             managementHttpServer.addHandler(new ErrorHandler());
         } catch (ModuleLoadException e) {
             throw new IOException("Unable to load resource handler", e);

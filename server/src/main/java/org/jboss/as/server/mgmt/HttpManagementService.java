@@ -27,7 +27,9 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.domain.http.server.ConsoleMode;
 import org.jboss.as.domain.http.server.ManagementHttpServer;
 import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.network.ManagedBinding;
@@ -61,7 +63,7 @@ public class HttpManagementService implements Service<HttpManagement> {
     private final InjectedValue<Integer> securePortValue = new InjectedValue<Integer>();
     private final InjectedValue<ExecutorService> executorServiceValue = new InjectedValue<ExecutorService>();
     private final InjectedValue<SecurityRealmService> securityRealmServiceValue = new InjectedValue<SecurityRealmService>();
-    private final boolean showConsole;
+    private final ConsoleMode consoleMode;
     private ManagementHttpServer serverManagement;
     private SocketBindingManager socketBindingManager;
     private boolean useUnmanagedBindings = false;
@@ -112,16 +114,16 @@ public class HttpManagementService implements Service<HttpManagement> {
         }
     };
 
-    private HttpManagementService(boolean showConsole) {
-        this.showConsole = showConsole;
+    public HttpManagementService(ConsoleMode consoleMode) {
+        this.consoleMode = consoleMode;
     }
 
-    public static HttpManagementService createStandalone() {
-        return new HttpManagementService(true);
+    public HttpManagementService createForStandalone(RunningMode runningMode) {
+        return new HttpManagementService(runningMode == RunningMode.ADMIN_ONLY ? ConsoleMode.ADMIN_ONLY : ConsoleMode.CONSOLE);
     }
 
-    public static HttpManagementService createForHost(boolean isMaster) {
-        return new HttpManagementService(isMaster);
+    public HttpManagementService createForHost(RunningMode runningMode) {
+        return new HttpManagementService(runningMode == RunningMode.ADMIN_ONLY ? ConsoleMode.ADMIN_ONLY : ConsoleMode.CONSOLE);
     }
 
     /**
@@ -164,7 +166,7 @@ public class HttpManagementService implements Service<HttpManagement> {
         }
 
         try {
-            serverManagement = ManagementHttpServer.create(bindAddress, secureBindAddress, 50, modelControllerClient, executorService, securityRealmService, showConsole);
+            serverManagement = ManagementHttpServer.create(bindAddress, secureBindAddress, 50, modelControllerClient, executorService, securityRealmService, consoleMode);
             serverManagement.start();
 
             // Register the now-created sockets with the SBM

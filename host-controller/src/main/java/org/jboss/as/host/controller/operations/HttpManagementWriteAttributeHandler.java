@@ -73,7 +73,7 @@ public class HttpManagementWriteAttributeHandler extends AbstractWriteAttributeH
                                             final HostControllerEnvironment environment, final ServiceVerificationHandler verificationHandler) throws OperationFailedException {
         HttpManagementRemoveHandler.removeHttpManagementService(context);
         HttpManagementAddHandler.populateHostControllerInfo(hostControllerInfo, context, subModel);
-        HttpManagementAddHandler.installHttpManagementServices(context.getServiceTarget(), hostControllerInfo, environment, verificationHandler);
+        HttpManagementAddHandler.installHttpManagementServices(context.getRunningMode(), context.getServiceTarget(), hostControllerInfo, environment, verificationHandler);
     }
 
 }

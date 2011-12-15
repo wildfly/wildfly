@@ -115,6 +115,14 @@ class ResourceHandler implements ManagementHttpHandler {
         lastModified = createDateFormat().format(new Date());
     }
 
+    String getDefaultUrl() {
+        return context + defaultResource;
+    }
+
+    protected String getContext() {
+        return context;
+    }
+
     public void handle(HttpExchange http) throws IOException {
         final URI uri = http.getRequestURI();
         final String requestMethod = http.getRequestMethod();
@@ -136,7 +144,7 @@ class ResourceHandler implements ManagementHttpHandler {
              * default resource.
              */
             Headers responseHeaders = http.getResponseHeaders();
-            responseHeaders.add(LOCATION, context + defaultResource);
+            responseHeaders.add(LOCATION, getDefaultUrl());
             http.sendResponseHeaders(MOVED_PERMENANTLY, 0);
             http.close();
 
