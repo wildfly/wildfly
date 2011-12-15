@@ -96,7 +96,7 @@ public class CLIWrapper implements Runnable {
         }
         sendLine("version", false);
         line = readLine(5000);
-        if (!(line.indexOf("[standalone@") >= 0)) {
+        if (! ((line.indexOf("[standalone@") >= 0) || (line.indexOf("[domain@") >= 0)) ) {
             throw new CLIException("Connect failed. Line received: " + line);
         }
     }
@@ -302,13 +302,15 @@ public class CLIWrapper implements Runnable {
      */
     public synchronized void quit() throws Exception {
         sendLine("quit", false);
-        while ((outputReader != null) || (errorReader != null)) {
+        long timeout = System.currentTimeMillis() + 10000;
+        while ( ((outputReader != null) || (errorReader != null)) && (System.currentTimeMillis() < timeout) ) {
             try {
-                wait();
+                wait(1000);
             } catch (InterruptedException ie) {
             }
         }
-
+        if ((outputReader != null) || (errorReader != null))
+            throw new CLIException ("CLI did not quit properly.");
     }
 
     private void init() throws Exception {
