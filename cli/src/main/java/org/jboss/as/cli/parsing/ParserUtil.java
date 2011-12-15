@@ -69,6 +69,14 @@ public class ParserUtil {
         StateParser.parse(commandLine, callbackHandler, ArgumentListState.INSTANCE);
     }
 
+    public static void parse(String str, final CommandLineParser.CallbackHandler handler, ParsingState initialState) throws CommandFormatException {
+        if(str == null) {
+            return;
+        }
+        final ParsingStateCallbackHandler callbackHandler = getCallbackHandler(handler);
+        StateParser.parse(str, callbackHandler, initialState);
+    }
+
     protected static ParsingStateCallbackHandler getCallbackHandler(final CommandLineParser.CallbackHandler handler) {
 
         return new ParsingStateCallbackHandler() {

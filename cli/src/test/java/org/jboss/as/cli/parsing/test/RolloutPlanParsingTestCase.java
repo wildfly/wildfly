@@ -24,6 +24,7 @@ package org.jboss.as.cli.parsing.test;
 
 import java.util.List;
 
+import org.jboss.as.cli.ArgumentValueConverter;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.completion.mock.MockCliConfig;
@@ -338,10 +339,50 @@ public class RolloutPlanParsingTestCase extends TestCase {
     }
 
     @Test
+    public void testNonConcurrentGroupNames() throws Exception {
+
+        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout groupA ,  groupB");
+
+        assertTrue(handler.hasAddress());
+        assertTrue(handler.hasOperationName());
+        assertFalse(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnPropertyListStart());
+        assertFalse(handler.endsOnPropertySeparator());
+        assertFalse(handler.endsOnPropertyValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertTrue(handler.endsOnSeparator());
+        assertTrue(handler.endsOnHeaderListStart()); // TODO this is kind of strange but ok...
+        assertFalse(handler.isRequestComplete());
+
+        assertTrue(handler.hasHeaders());
+
+        final List<OperationRequestHeader> headers = handler.getHeaders();
+        assertEquals(1, headers.size());
+        final OperationRequestHeader header = headers.get(0);
+        assertTrue(header instanceof RolloutPlanHeader);
+
+        final ModelNode node = new ModelNode();
+        final ModelNode inSeries = node.get(Util.ROLLOUT_PLAN).get(Util.IN_SERIES);
+        ModelNode group = new ModelNode();
+        group.get("groupA");
+        inSeries.add().get(Util.SERVER_GROUP).set(group);
+
+        group = new ModelNode();
+        group.get("groupB");
+        inSeries.add().get(Util.SERVER_GROUP).set(group);
+
+        final ModelNode headersNode = new ModelNode();
+        header.addTo(ctx, headersNode);
+        assertEquals(node, headersNode);
+    }
+
+    @Test
     public void testTwoConcurrentGroups() throws Exception {
 
         parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout " +
-                "groupA(rolling-to-servers=true,max-failure-percentage=20) ^ groupB");
+                "groupA(rolling-to-servers=true,max-failure-percentage=20) ^  groupB");
 
         assertTrue(handler.hasAddress());
         assertTrue(handler.hasOperationName());
@@ -374,6 +415,46 @@ public class RolloutPlanParsingTestCase extends TestCase {
         group.get("max-failure-percentage").set("20");
 
         group = cg.get("groupB");
+
+        inSeries.add().set(concurrent);
+
+        final ModelNode headersNode = new ModelNode();
+        header.addTo(ctx, headersNode);
+        assertEquals(node, headersNode);
+    }
+
+    @Test
+    public void testTwoConcurrentGroupNames() throws Exception {
+
+        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout groupA ^ groupB");
+
+        assertTrue(handler.hasAddress());
+        assertTrue(handler.hasOperationName());
+        assertFalse(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnPropertyListStart());
+        assertFalse(handler.endsOnPropertySeparator());
+        assertFalse(handler.endsOnPropertyValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertTrue(handler.endsOnSeparator());
+        assertTrue(handler.endsOnHeaderListStart()); // TODO this is kind of strange but ok...
+        assertFalse(handler.isRequestComplete());
+
+        assertTrue(handler.hasHeaders());
+
+        final List<OperationRequestHeader> headers = handler.getHeaders();
+        assertEquals(1, headers.size());
+        final OperationRequestHeader header = headers.get(0);
+        assertTrue(header instanceof RolloutPlanHeader);
+
+        final ModelNode node = new ModelNode();
+        final ModelNode inSeries = node.get(Util.ROLLOUT_PLAN).get(Util.IN_SERIES);
+
+        final ModelNode concurrent = new ModelNode();
+        final ModelNode cg = concurrent.get(Util.CONCURRENT_GROUPS);
+        cg.get("groupA");
+        cg.get("groupB");
 
         inSeries.add().set(concurrent);
 
@@ -589,6 +670,49 @@ public class RolloutPlanParsingTestCase extends TestCase {
         rolloutPlan.get("rollback-across-groups").set("true");
 
         assertEquals(expectedHeaders, headersNode);
+    }
+
+    @Test
+    public void testArgumentValueConverter() throws Exception {
+
+        final ModelNode node = ArgumentValueConverter.ROLLOUT_PLAN.fromString("{ rollout " +
+                "groupA(rolling-to-servers=true,max-failure-percentage=20) ^ groupB, groupC," +
+                "groupD(rolling-to-servers=true,max-failed-servers=1) ^ groupE rollback-across-groups}");
+
+        final ModelNode expectedHeaders = new ModelNode();
+        final ModelNode rolloutPlan = expectedHeaders.get(Util.ROLLOUT_PLAN);
+        final ModelNode inSeries = rolloutPlan.get(Util.IN_SERIES);
+
+        ModelNode concurrent = new ModelNode();
+        ModelNode cg = concurrent.get(Util.CONCURRENT_GROUPS);
+
+        ModelNode group = cg.get("groupA");
+        group.get("rolling-to-servers").set("true");
+        group.get("max-failure-percentage").set("20");
+
+        group = cg.get("groupB");
+
+        inSeries.add().set(concurrent);
+
+        ModelNode sg = new ModelNode();
+        group = sg.get(Util.SERVER_GROUP);
+        group.get("groupC");
+        inSeries.add().set(sg);
+
+        concurrent = new ModelNode();
+        cg = concurrent.get(Util.CONCURRENT_GROUPS);
+
+        group = cg.get("groupD");
+        group.get("rolling-to-servers").set("true");
+        group.get("max-failed-servers").set("1");
+
+        cg.get("groupE");
+
+        inSeries.add().set(concurrent);
+
+        rolloutPlan.get("rollback-across-groups").set("true");
+
+        assertEquals(expectedHeaders, node);
     }
 
     protected void parse(String opReq) throws CommandFormatException {

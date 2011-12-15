@@ -22,6 +22,13 @@
 package org.jboss.as.cli;
 
 
+import java.util.List;
+
+import org.jboss.as.cli.operation.OperationRequestHeader;
+import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
+import org.jboss.as.cli.parsing.DefaultParsingState;
+import org.jboss.as.cli.parsing.ParserUtil;
+import org.jboss.as.cli.parsing.operation.HeaderListState;
 import org.jboss.dmr.ModelNode;
 
 
@@ -126,6 +133,31 @@ public interface ArgumentValueConverter {
                 o.get(propName).set(prop.substring(equals + 1));
             }
             return o;
+        }
+    };
+
+    ArgumentValueConverter ROLLOUT_PLAN = new DMRWithFallbackConverter() {
+        private final DefaultCallbackHandler callback = new DefaultCallbackHandler();
+        private final DefaultParsingState initialState = new DefaultParsingState("INITIAL_STATE");
+        {
+            initialState.enterState('{', HeaderListState.INSTANCE);
+        }
+
+        @Override
+        protected ModelNode fromNonDMRString(String value) throws CommandFormatException {
+            callback.reset();
+            ParserUtil.parse(value, callback, initialState);
+            final List<OperationRequestHeader> headers = callback.getHeaders();
+            if(headers.isEmpty()) {
+                return null;
+            }
+            if(headers.size() > 1) {
+                throw new CommandFormatException("Too many headers: " + headers);
+            }
+            final OperationRequestHeader header = headers.get(0);
+            final ModelNode node = new ModelNode();
+            header.addTo(null, node);
+            return node;
         }
     };
 

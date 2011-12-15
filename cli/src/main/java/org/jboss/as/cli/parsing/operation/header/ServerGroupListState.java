@@ -42,10 +42,14 @@ public class ServerGroupListState extends DefaultParsingState {
         this(ServerGroupState.INSTANCE, ServerGroupSeparatorState.INSTANCE, ConcurrentSignState.INSTANCE);
     }
 
-    ServerGroupListState(ServerGroupState sg, ServerGroupSeparatorState gs, ConcurrentSignState cs) {
+    ServerGroupListState(final ServerGroupState sg, final ServerGroupSeparatorState gs, final ConcurrentSignState cs) {
         super(ID);
         this.setIgnoreWhitespaces(true);
-        //setDefaultHandler(new EnterStateCharacterHandler(sg));
+        setDefaultHandler(new CharacterHandler(){
+            @Override
+            public void handle(ParsingContext ctx) throws CommandFormatException {
+                ctx.leaveState();
+            }});
         setEnterHandler(new EnterStateCharacterHandler(sg));
         putHandler('^', new EnterStateCharacterHandler(cs));
         putHandler(',', new EnterStateCharacterHandler(gs));
@@ -57,10 +61,29 @@ public class ServerGroupListState extends DefaultParsingState {
                 if(ctx.isEndOfContent()) {
                     return;
                 }
-                if(Character.isWhitespace(ctx.getCharacter())) {
+/*                if(Character.isWhitespace(ctx.getCharacter())) {
                     ctx.leaveState();
                 } else {
                     getHandler(ctx.getCharacter()).handle(ctx);
+                }
+*/
+                if(Character.isWhitespace(ctx.getCharacter())) {
+                    return;
+                }
+
+                switch(ctx.getCharacter()) {
+                case '^':
+                    ctx.enterState(cs);
+                    break;
+                case ',':
+                    ctx.enterState(gs);
+                    break;
+                case '}':
+                case ';':
+                    ctx.leaveState();
+                    break;
+                default:
+                    ctx.leaveState();
                 }
             }});
     }
