@@ -38,6 +38,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.server.deployment.Attachments;
@@ -48,6 +49,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.dmr.ModelNode;
 import org.jboss.jandex.Index;
 import org.jboss.jca.common.annotations.Annotations;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
@@ -73,6 +75,8 @@ import org.jboss.security.SubjectFactory;
 import org.jboss.as.security.service.SubjectFactoryService;
 
 
+import java.util.Collections;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -166,7 +170,24 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                                 if (poolStats.getNames().size() != 0) {
                                     DescriptionProvider statsResourceDescriptionProvider = new StatisticsDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "statistics", poolStats);
                                     PathElement pe = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ResourceAdaptersExtension.SUBSYSTEM_NAME);
-                                    ManagementResourceRegistration subRegistration = registration.registerSubModel(pe, statsResourceDescriptionProvider);
+                                    ManagementResourceRegistration overrideRegistration = registration;
+                                    //when you are in deploy you have a registration pointing to deployment=*
+                                    //when you are in re-deploy it points to specific deploymentUnit
+                                    if (registration.isAllowsOverride()) {
+                                        overrideRegistration = registration.registerOverrideModel(deploymentUnit.getName(), new OverrideDescriptionProvider() {
+                                            @Override
+                                            public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
+                                                return Collections.emptyMap();
+                                            }
+
+                                            @Override
+                                            public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
+                                                return Collections.emptyMap();
+                                            }
+                                        });
+                                    }
+
+                                    ManagementResourceRegistration subRegistration = overrideRegistration.registerSubModel(pe, statsResourceDescriptionProvider);
                                     for (String statName : poolStats.getNames()) {
                                         subRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
                                     }
@@ -179,8 +200,9 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                         case UP_to_STOP_REQUESTED: {
 
                             PathElement pe = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ResourceAdaptersExtension.SUBSYSTEM_NAME);
-                            if (registration.getSubModel(PathAddress.pathAddress(pe)) != null) {
-                                registration.unregisterSubModel(pe);
+                            ManagementResourceRegistration overrideRegistration = registration.getOverrideModel(deploymentUnit.getName());
+                            if (overrideRegistration.getSubModel(PathAddress.pathAddress(pe)) != null) {
+                                overrideRegistration.unregisterSubModel(pe);
                             }
                             break;
 
