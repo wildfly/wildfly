@@ -167,7 +167,7 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
                     switch (transition) {
                         case STARTING_to_UP: {
 
-                            CommonDeployment deploymentMD = ((ResourceAdapterDeploymentService) controller.getService()).getRaDeployment();
+                            CommonDeployment deploymentMD = ((ResourceAdapterXmlDeploymentService) controller.getService()).getRaxmlDeployment();
 
                             if (deploymentMD.getConnectionManagers() != null && deploymentMD.getConnectionManagers()[0].getPool() != null) {
                                 StatisticsPlugin poolStats = deploymentMD.getConnectionManagers()[0].getPool().getStatistics();
