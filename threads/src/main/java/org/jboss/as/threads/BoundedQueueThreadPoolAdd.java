@@ -55,7 +55,7 @@ public class BoundedQueueThreadPoolAdd extends AbstractAddStepHandler implements
     public static final BoundedQueueThreadPoolAdd INSTANCE = new BoundedQueueThreadPoolAdd();
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {PoolAttributeDefinitions.KEEPALIVE_TIME,
-        PoolAttributeDefinitions.MAX_THREADS, PoolAttributeDefinitions.PROPERTIES, PoolAttributeDefinitions.THREAD_FACTORY,
+        PoolAttributeDefinitions.MAX_THREADS, PoolAttributeDefinitions.THREAD_FACTORY,
         PoolAttributeDefinitions.CORE_THREADS, PoolAttributeDefinitions.QUEUE_LENGTH, PoolAttributeDefinitions.HANDOFF_EXECUTOR,
         PoolAttributeDefinitions.ALLOW_CORE_TIMEOUT, PoolAttributeDefinitions.BLOCKING};
 

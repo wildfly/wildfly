@@ -177,7 +177,6 @@
             <xs:element name="keepalive-time" type="threads:time" minOccurs="0"/>
             <xs:element name="thread-factory" type="threads:ref" minOccurs="0"/>
             <xs:element name="handoff-executor" type="threads:ref" minOccurs="0"/>
-            <xs:element name="properties" type="threads:properties" minOccurs="0"/>
         </xs:all>
         <xs:attribute name="allow-core-timeout" use="optional" type="xs:boolean"/>
         <xs:attribute name="blocking" use="optional" type="xs:boolean"/>

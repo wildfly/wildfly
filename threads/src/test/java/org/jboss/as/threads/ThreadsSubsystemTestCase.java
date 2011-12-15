@@ -216,15 +216,12 @@ public class ThreadsSubsystemTestCase {
         assertEquals(ModelType.STRING, threadFactoryDescription.require(ATTRIBUTES).require(THREAD_NAME_PATTERN).require(TYPE)
                 .asType());
         assertEquals(ModelType.INT, threadFactoryDescription.require(ATTRIBUTES).require(PRIORITY).require(TYPE).asType());
-        assertEquals(ModelType.LIST, threadFactoryDescription.require(ATTRIBUTES).require(PROPERTIES).require(TYPE).asType());
 
         ModelNode boundedQueueThreadPoolDesc = threadsDescription.get(CHILDREN, BOUNDED_QUEUE_THREAD_POOL, MODEL_DESCRIPTION, "*");
         assertEquals(ModelType.STRING, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(NAME).require(TYPE).asType());
         assertEquals(ModelType.STRING, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(THREAD_FACTORY).require(TYPE)
                 .asType());
 
-        assertEquals(ModelType.LIST, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(PROPERTIES).require(TYPE).asType());
-        assertEquals(ModelType.PROPERTY, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(PROPERTIES).require(VALUE_TYPE).asType());
         assertEquals(ModelType.INT, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(TYPE)
                 .asType());
         assertEquals(ModelType.INT, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(CORE_THREADS).require(TYPE)
@@ -248,8 +245,6 @@ public class ThreadsSubsystemTestCase {
         assertEquals(ModelType.STRING, queueLessThreadPoolDesc.require(ATTRIBUTES).require(NAME).require(TYPE).asType());
         assertEquals(ModelType.STRING, queueLessThreadPoolDesc.require(ATTRIBUTES).require(THREAD_FACTORY).require(TYPE)
                 .asType());
-        assertEquals(ModelType.LIST, queueLessThreadPoolDesc.require(ATTRIBUTES).require(PROPERTIES).require(TYPE).asType());
-        assertEquals(ModelType.PROPERTY, queueLessThreadPoolDesc.require(ATTRIBUTES).require(PROPERTIES).require(VALUE_TYPE).asType());
         assertEquals(ModelType.INT, queueLessThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(TYPE).asType());
         assertEquals(ModelType.LONG, queueLessThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE)
                 .require(TIME).require(TYPE).asType());
@@ -264,8 +259,6 @@ public class ThreadsSubsystemTestCase {
         assertEquals(ModelType.STRING, scheduledThreadPoolDesc.require(ATTRIBUTES).require(NAME).require(TYPE).asType());
         assertEquals(ModelType.STRING, scheduledThreadPoolDesc.require(ATTRIBUTES).require(THREAD_FACTORY).require(TYPE)
                 .asType());
-        assertEquals(ModelType.LIST, scheduledThreadPoolDesc.require(ATTRIBUTES).require(PROPERTIES).require(TYPE).asType());
-        assertEquals(ModelType.PROPERTY, scheduledThreadPoolDesc.require(ATTRIBUTES).require(PROPERTIES).require(VALUE_TYPE).asType());
         assertEquals(ModelType.INT, scheduledThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(TYPE).asType());
         assertEquals(ModelType.LONG, scheduledThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE)
                 .require(TIME).require(TYPE).asType());
@@ -278,8 +271,6 @@ public class ThreadsSubsystemTestCase {
         assertEquals(ModelType.STRING, unboundedThreadPoolDesc.require(ATTRIBUTES).require(NAME).require(TYPE).asType());
         assertEquals(ModelType.STRING, unboundedThreadPoolDesc.require(ATTRIBUTES).require(THREAD_FACTORY).require(TYPE)
                 .asType());
-        assertEquals(ModelType.LIST, unboundedThreadPoolDesc.require(ATTRIBUTES).require(PROPERTIES).require(TYPE).asType());
-        assertEquals(ModelType.PROPERTY, unboundedThreadPoolDesc.require(ATTRIBUTES).require(PROPERTIES).require(VALUE_TYPE).asType());
         assertEquals(ModelType.INT, unboundedThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(TYPE).asType());
         assertEquals(ModelType.LONG, unboundedThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE)
                 .require(TIME).require(TYPE).asType());
@@ -319,9 +310,7 @@ public class ThreadsSubsystemTestCase {
     @Test
     public void testFullThreadFactory() throws Exception {
         List<ModelNode> updates = createSubSystem("<thread-factory name=\"test-factory\"" + "   group-name=\"test-group\""
-                + "   thread-name-pattern=\"test-pattern\"" + "   priority=\"5\">" + "   <properties>"
-                + "      <property name=\"propA\" value=\"valueA\"/>" + "      <property name=\"propB\" value=\"valueB\"/>"
-                + "   </properties>" + "</thread-factory>");
+                + "   thread-name-pattern=\"test-pattern\"" + "   priority=\"5\"/>");
 
         executeForResult(updates.get(0));
         controller.execute(updates.get(1), null, null, null);
@@ -338,20 +327,6 @@ public class ThreadsSubsystemTestCase {
         assertEquals("test-group", threadFactory.require("test-factory").require("group-name").asString());
         assertEquals("test-pattern", threadFactory.require("test-factory").require("thread-name-pattern").asString());
         assertEquals(5, threadFactory.require("test-factory").require("priority").asInt());
-
-        ModelNode props = threadFactory.require("test-factory").require("properties");
-        assertTrue(props.isDefined());
-        assertEquals(2, props.asList().size());
-        for (ModelNode prop : props.asList()) {
-            Property property = prop.asProperty();
-            if (property.getName().equals("propA")) {
-                assertEquals("valueA", property.getValue().asString());
-            } else if (property.getName().equals("propB")) {
-                assertEquals("valueB", property.getValue().asString());
-            } else {
-                fail("Unknown property " + property);
-            }
-        }
     }
 
     @Test
@@ -421,10 +396,6 @@ public class ThreadsSubsystemTestCase {
                 "   <max-threads count=\"100\"/>" +
                 "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
                 "   <thread-factory name=\"test-factory\"/>" +
-                "   <properties>" +
-                "      <property name=\"propA\" value=\"valueA\"/>" +
-                "      <property name=\"propB\" value=\"valueB\"/>" +
-                "   </properties>" +
                 "</unbounded-queue-thread-pool>");
 
         executeForResult(updates.get(0));
@@ -463,20 +434,6 @@ public class ThreadsSubsystemTestCase {
         assertEquals(100, threadPool.require("test-pool").require(MAX_THREADS).asInt());
         assertEquals(1000L, threadPool.require("test-pool").require(KEEPALIVE_TIME).require(TIME).asLong());
         assertEquals("MILLISECONDS", threadPool.require("test-pool").require(KEEPALIVE_TIME).require(UNIT).asString());
-
-        ModelNode props = threadPool.require("test-pool").require("properties");
-        assertTrue(props.isDefined());
-        assertEquals(2, props.asList().size());
-        for (ModelNode prop : props.asList()) {
-            Property property = prop.asProperty();
-            if (property.getName().equals("propA")) {
-                assertEquals("valueA", property.getValue().asString());
-            } else if (property.getName().equals("propB")) {
-                assertEquals("valueB", property.getValue().asString());
-            } else {
-                fail("Unknown property " + property);
-            }
-        }
     }
 
     @Test
@@ -565,10 +522,6 @@ public class ThreadsSubsystemTestCase {
                 "   <max-threads count=\"100\"/>" +
                 "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
                 "   <thread-factory name=\"test-factory\"/>" +
-                "   <properties>" +
-                "      <property name=\"propA\" value=\"valueA\"/>" +
-                "      <property name=\"propB\" value=\"valueB\"/>" +
-                "   </properties>" +
                 "</scheduled-thread-pool>");
 
         executeForResult(updates.get(0));
@@ -607,20 +560,6 @@ public class ThreadsSubsystemTestCase {
         assertEquals(100, threadPool.require("test-pool").require(MAX_THREADS).asInt());
         assertEquals(1000L, threadPool.require("test-pool").require(KEEPALIVE_TIME).get(TIME).asLong());
         assertEquals("MILLISECONDS", threadPool.require("test-pool").require(KEEPALIVE_TIME).get(UNIT).asString());
-
-        ModelNode props = threadPool.require("test-pool").require("properties");
-        assertTrue(props.isDefined());
-        assertEquals(2, props.asList().size());
-        for (ModelNode prop : props.asList()) {
-            Property property = prop.asProperty();
-            if (property.getName().equals("propA")) {
-                assertEquals("valueA", property.getValue().asString());
-            } else if (property.getName().equals("propB")) {
-                assertEquals("valueB", property.getValue().asString());
-            } else {
-                fail("Unknown property " + property);
-            }
-        }
     }
 
     @Test
@@ -712,10 +651,6 @@ public class ThreadsSubsystemTestCase {
                 "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
                 "   <thread-factory name=\"test-factory\"/>" +
                 "   <handoff-executor name=\"other\"/>" +
-                "   <properties>" +
-                "      <property name=\"propA\" value=\"valueA\"/>" +
-                "      <property name=\"propB\" value=\"valueB\"/>" +
-                "   </properties>" +
                 "</queueless-thread-pool>");
 
         executeForResult(updates.get(0));
@@ -759,21 +694,6 @@ public class ThreadsSubsystemTestCase {
         assertEquals(1000L, threadPool.require("test-pool").require(KEEPALIVE_TIME).require(TIME).asLong());
         assertEquals("MILLISECONDS", threadPool.require("test-pool").require(KEEPALIVE_TIME).require(UNIT).asString());
         assertEquals("other", threadPool.require("test-pool").require("handoff-executor").asString());
-
-        ModelNode props = threadPool.require("test-pool").require("properties");
-        assertTrue(props.isDefined());
-        assertEquals(2, props.asList().size());
-        for (ModelNode prop : props.asList()) {
-            Property property = prop.asProperty();
-            if (property.getName().equals("propA")) {
-                assertEquals("valueA", property.getValue().asString());
-            } else if (property.getName().equals("propB")) {
-                assertEquals("valueB", property.getValue().asString());
-            } else {
-                fail("Unknown property " + property);
-            }
-        }
-
     }
 
     @Test
@@ -868,10 +788,6 @@ public class ThreadsSubsystemTestCase {
                 "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
                 "   <thread-factory name=\"test-factory\"/>" +
                 "   <handoff-executor name=\"other\"/>" +
-                "   <properties>" +
-                "      <property name=\"propA\" value=\"valueA\"/>" +
-                "      <property name=\"propB\" value=\"valueB\"/>" +
-                "   </properties>" +
                 "</bounded-queue-thread-pool>");
 
         executeForResult(updates.get(0));
@@ -918,20 +834,6 @@ public class ThreadsSubsystemTestCase {
         assertEquals(1000L, threadPool.require("test-pool").require(KEEPALIVE_TIME).require(TIME).asLong());
         assertEquals("MILLISECONDS", threadPool.require("test-pool").require(KEEPALIVE_TIME).require(UNIT).asString());
         assertEquals("other", threadPool.require("test-pool").require("handoff-executor").asString());
-
-        ModelNode props = threadPool.require("test-pool").require("properties");
-        assertTrue(props.isDefined());
-        assertEquals(2, props.asList().size());
-        for (ModelNode prop : props.asList()) {
-            Property property = prop.asProperty();
-            if (property.getName().equals("propA")) {
-                assertEquals("valueA", property.getValue().asString());
-            } else if (property.getName().equals("propB")) {
-                assertEquals("valueB", property.getValue().asString());
-            } else {
-                fail("Unknown property " + property);
-            }
-        }
     }
 
     @Test

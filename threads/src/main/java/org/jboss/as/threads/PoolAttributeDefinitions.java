@@ -25,29 +25,18 @@ package org.jboss.as.threads;
 import static org.jboss.as.threads.CommonAttributes.TIME;
 import static org.jboss.as.threads.CommonAttributes.UNIT;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
 import java.util.Set;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PropagatingCorrector;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.dmr.Property;
 
 /**
  *
@@ -58,43 +47,6 @@ public interface PoolAttributeDefinitions {
     SimpleAttributeDefinition NAME = new SimpleAttributeDefinition(CommonAttributes.NAME, ModelType.STRING, true);
 
     SimpleAttributeDefinition THREAD_FACTORY = new SimpleAttributeDefinition(CommonAttributes.THREAD_FACTORY, ModelType.STRING, true);
-
-    ListAttributeDefinition PROPERTIES = new ListAttributeDefinition(CommonAttributes.PROPERTIES, true, new ModelTypeValidator(ModelType.PROPERTY)){
-        @Override
-        protected void addValueTypeDescription(ModelNode node, ResourceBundle bundle) {
-            setValueType(node);
-        }
-        @Override
-        protected void addAttributeValueTypeDescription(ModelNode node, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
-            setValueType(node);
-        }
-        @Override
-        protected void addOperationParameterValueTypeDescription(
-                ModelNode node, String operationName,
-                ResourceDescriptionResolver resolver, Locale locale,
-                ResourceBundle bundle) {
-            setValueType(node);
-        }
-
-        private void setValueType(ModelNode node) {
-            node.get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.PROPERTY);
-        }
-
-        @Override
-        public void marshallAsElement(ModelNode resourceModel, XMLStreamWriter writer) throws XMLStreamException {
-            if (resourceModel.hasDefined(getName())) {
-                List<ModelNode> list = resourceModel.get(getName()).asList();
-                if (list.size() > 0) {
-                    writer.writeStartElement(Element.PROPERTIES.getLocalName());
-                    for (ModelNode child : list) {
-                        final Property prop = child.asProperty();
-                        writer.writeEmptyElement(Element.PROPERTY.getLocalName());
-                        writer.writeAttribute(Attribute.NAME.getLocalName(), prop.getName());
-                        writer.writeAttribute(Attribute.VALUE.getLocalName(), prop.getValue().asString());
-                    }
-                }
-            }
-        }};
 
     SimpleAttributeDefinition MAX_THREADS = new SimpleAttributeDefinitionBuilder(CommonAttributes.MAX_THREADS, ModelType.INT, false)
             .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, false, true)).setAllowExpression(true).build();
@@ -150,6 +102,6 @@ public interface PoolAttributeDefinitions {
             ModelType.INT, true, true, MeasurementUnit.NONE, new IntRangeValidator(-1, 10, true, true));
 
     AttributeDefinition[] THREAD_FACTORY_ATTRIBUTES = new AttributeDefinition[]{
-            NAME, PROPERTIES, GROUP_NAME, THREAD_NAME_PATTERN, PoolAttributeDefinitions.PRIORITY
+            NAME, GROUP_NAME, THREAD_NAME_PATTERN, PoolAttributeDefinitions.PRIORITY
     };
 }
