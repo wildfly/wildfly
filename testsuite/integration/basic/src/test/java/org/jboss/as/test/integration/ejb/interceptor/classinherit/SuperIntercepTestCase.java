@@ -19,6 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.test.integration.ejb.interceptor.classinherit;
 
 import javax.naming.InitialContext;
@@ -35,17 +36,16 @@ import org.junit.Assert;
 import org.junit.runner.RunWith;
 
 /**
- * Interceptor must also apply to super-methods.
- * Migrated from EJB3 testsuite [JBQA-5451] from ejbthree471
+ * Interceptor must also apply to super-methods. Migrated from EJB3 testsuite [JBQA-5451] from ejbthree471
  * 
- * @author Carlo de Wolf, Ondrej Chaloupka
+ * @author Carlo de Wolf, Bill Burke, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
 public class SuperIntercepTestCase {
-    
+
     @ArquillianResource
     InitialContext ctx;
-    
+
     @Deployment
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "super-intercept-test.jar");
@@ -67,5 +67,33 @@ public class SuperIntercepTestCase {
 
         String result = b.getMessage();
         Assert.assertEquals("Intercepted: The Message", result);
+    }
+
+    @Test
+    public void testInterceptionWithNoSuperClassAroundInvoke() throws Exception {
+        StatelessRemote slWithInterceptor = (StatelessRemote) ctx.lookup("java:module/" + StatelessBean.class.getSimpleName());
+
+        // supposing this chain fo interceptions
+        String supposedResult = TestInterceptor.class.getSimpleName() + ":" + StatelessBean.class.getSimpleName();
+        String result = slWithInterceptor.method();
+        Assert.assertEquals(supposedResult + ".method()", result);
+        
+        result = slWithInterceptor.superMethod();
+        Assert.assertEquals(supposedResult + ".superMethod()", result);
+    }
+
+    @Test
+    public void testInterceptionWithSuperClassAroundInvoke() throws Exception {
+        StatelessRemote slWithInterceptorAndBean = (StatelessRemote) ctx.lookup("java:module/"
+                + StatelessWithBeanInterceptorBean.class.getSimpleName());
+
+        // supposing this chain fo interceptions
+        String supposedResult = TestInterceptor.class.getSimpleName() + ":" + AbstractBaseClassWithInterceptor.class.getSimpleName() + ":" +
+                StatelessWithBeanInterceptorBean.class.getSimpleName();
+        String result = slWithInterceptorAndBean.method();
+        Assert.assertEquals(supposedResult + ".method()", result);
+
+        result = slWithInterceptorAndBean.superMethod();
+        Assert.assertEquals(supposedResult + ".superMethod()", result);
     }
 }

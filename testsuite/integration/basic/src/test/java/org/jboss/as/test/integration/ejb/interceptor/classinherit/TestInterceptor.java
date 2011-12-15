@@ -22,9 +22,18 @@
 
 package org.jboss.as.test.integration.ejb.interceptor.classinherit;
 
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.InvocationContext;
+
 /**
- * @author <a href="mailto:amay@ingenta.com">Andrew May</a>
+ * 
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public interface B extends A {
-    String getOtherMessage();
+public class TestInterceptor {
+    @AroundInvoke
+    public Object intercept(InvocationContext ctx) throws Exception {
+        String message = (String) ctx.proceed();
+        return TestInterceptor.class.getSimpleName() + ":" + message;
+    }
+
 }

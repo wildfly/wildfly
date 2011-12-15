@@ -23,8 +23,8 @@
 package org.jboss.as.test.integration.ejb.interceptor.classinherit;
 
 /**
- * @author <a href="mailto:amay@ingenta.com">Andrew May</a>
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public interface B extends A {
-    String getOtherMessage();
+public abstract class AbstractBaseClass {
+
 }

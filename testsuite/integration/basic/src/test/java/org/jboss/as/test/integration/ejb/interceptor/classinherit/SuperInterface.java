@@ -22,9 +22,12 @@
 
 package org.jboss.as.test.integration.ejb.interceptor.classinherit;
 
+import javax.ejb.Remote;
+
 /**
- * @author <a href="mailto:amay@ingenta.com">Andrew May</a>
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public interface B extends A {
-    String getOtherMessage();
+@Remote
+public interface SuperInterface {
+    String superMethod();
 }
