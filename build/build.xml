@@ -813,6 +813,7 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-web"/>
             <maven-resource group="org.jboss.web" artifact="jasper-jdt"/>
             <maven-resource group="org.jboss.web" artifact="jbossweb"/>
+            <extract-native-jar group="org.jboss.as" artifact="jbossweb-native"/>
         </module-def>
 
         <module-def name="org.jboss.as.webservices">
