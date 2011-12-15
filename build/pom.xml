@@ -115,6 +115,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jbossweb-native</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.invocation</groupId>
             <artifactId>jboss-invocation</artifactId>
         </dependency>
