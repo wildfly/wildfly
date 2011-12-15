@@ -210,6 +210,7 @@
 
         <plugins>
             
+            <!-- Testsuite debugging info. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-help-plugin</artifactId>
@@ -235,6 +236,19 @@
                         <phase>initialize</phase>
                         <goals><goal>system</goal></goals>
                         <configuration><output>target/help.system.txt</output></configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>properties-maven-plugin</artifactId>
+                <version>1.0-alpha-2</version>
+                <executions>
+                    <execution>
+                        <phase>initialize</phase>
+                        <goals><goal>write-project-properties</goal></goals>
+                        <configuration><outputFile>target/help.properties.txt</outputFile></configuration>
                     </execution>
                 </executions>
             </plugin>
