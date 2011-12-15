@@ -25,6 +25,7 @@ package org.jboss.as.connector.workmanager;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.jca.core.api.workmanager.WorkManager;
 import org.jboss.jca.core.security.UsersRoles;
+import org.jboss.jca.core.spi.security.Callback;
 import org.jboss.jca.core.tx.jbossts.XATerminatorImpl;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -42,6 +43,7 @@ import static org.jboss.as.connector.ConnectorLogger.ROOT_LOGGER;
 /**
  * A WorkManager Service.
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
+ * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
 public final class WorkManagerService implements Service<WorkManager> {
 
@@ -53,7 +55,7 @@ public final class WorkManagerService implements Service<WorkManager> {
 
     private final InjectedValue<JBossXATerminator> xaTerminator = new InjectedValue<JBossXATerminator>();
 
-    private volatile UsersRoles usersRoles;
+    private volatile Callback callback;
 
     /** create an instance **/
     public WorkManagerService(WorkManager value) {
@@ -87,12 +89,13 @@ public final class WorkManagerService implements Service<WorkManager> {
 
         if (usersProperties != null && rolesProperties != null) {
             try {
-                usersRoles = new UsersRoles();
+                UsersRoles usersRoles = new UsersRoles();
                 usersRoles.setUsersProperties(usersProperties);
                 usersRoles.setRolesProperties(rolesProperties);
                 usersRoles.start();
 
-                this.value.setCallbackSecurity(usersRoles);
+                this.callback = usersRoles;
+                this.value.setCallbackSecurity(callback);
             } catch (Throwable t) {
                 ROOT_LOGGER.debug(t.getMessage(), t);
             }
@@ -106,8 +109,8 @@ public final class WorkManagerService implements Service<WorkManager> {
         value.shutdown();
 
         try {
-            if (usersRoles != null)
-                usersRoles.stop();
+            if (callback != null)
+                callback.stop();
         } catch (Throwable t) {
             ROOT_LOGGER.debug(t.getMessage(), t);
         }

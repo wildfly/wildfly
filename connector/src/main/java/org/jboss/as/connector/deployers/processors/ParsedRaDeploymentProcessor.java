@@ -150,7 +150,9 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                     .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, JcaSubsystemConfiguration.class, raDeployementService.getConfigInjector())
                     .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class, raDeployementService.getSubjectFactoryInjector())
                     .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, raDeployementService.getCcmInjector())
-                        .addDependency(NamingService.SERVICE_NAME);
+                    .addDependency(ConnectorServices.IDLE_REMOVER_SERVICE)
+                    .addDependency(ConnectorServices.CONNECTION_VALIDATOR_SERVICE)
+                    .addDependency(NamingService.SERVICE_NAME);
             builder.addListener(new AbstractServiceListener<Object>() {
                 public void transition(final ServiceController<? extends Object> controller,
                                        final ServiceController.Transition transition) {

@@ -216,7 +216,7 @@ class DataSourceModelNodeUtil {
         final Boolean interleaving = getBooleanIfSetOrGetDefault(dataSourceNode, INTERLEAVING, Defaults.INTERLEAVING);
         final Boolean noTxSeparatePool = getBooleanIfSetOrGetDefault(dataSourceNode, NOTXSEPARATEPOOL, Defaults.NO_TX_SEPARATE_POOL);
         final Boolean padXid = getBooleanIfSetOrGetDefault(dataSourceNode, PAD_XID, Defaults.PAD_XID);
-        final Boolean isSameRmOverride = getBooleanIfSetOrGetDefault(dataSourceNode, SAME_RM_OVERRIDE, null); //Defaults.IS_SAME_RM_OVERRIDE);
+        final Boolean isSameRmOverride = getBooleanIfSetOrGetDefault(dataSourceNode, SAME_RM_OVERRIDE, Defaults.IS_SAME_RM_OVERRIDE);
         final Boolean wrapXaDataSource = getBooleanIfSetOrGetDefault(dataSourceNode, WRAP_XA_RESOURCE, Defaults.WRAP_XA_RESOURCE);
         final FlushStrategy flushStrategy = dataSourceNode.hasDefined(POOL_FLUSH_STRATEGY.getName()) ? FlushStrategy.forName(dataSourceNode
                 .get(POOL_FLUSH_STRATEGY.getName()).asString()) : Defaults.FLUSH_STRATEGY;

@@ -157,6 +157,8 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
                             .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
                                     service.getSubjectFactoryInjector())
                             .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, service.getCcmInjector())
+                            .addDependency(ConnectorServices.IDLE_REMOVER_SERVICE)
+                            .addDependency(ConnectorServices.CONNECTION_VALIDATOR_SERVICE)
                             .addDependency(NamingService.SERVICE_NAME)
                             .addDependency(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName()));
                             builder.addListener(new AbstractServiceListener<Object>() {
@@ -165,7 +167,7 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
                     switch (transition) {
                         case STARTING_to_UP: {
 
-                            CommonDeployment deploymentMD = ((ResourceAdapterDeploymentService) controller.getService()).getRaDeployment();
+                            CommonDeployment deploymentMD = ((ResourceAdapterXmlDeploymentService) controller.getService()).getRaxmlDeployment();
 
                             if (deploymentMD.getConnectionManagers() != null && deploymentMD.getConnectionManagers()[0].getPool() != null) {
                                 StatisticsPlugin poolStats = deploymentMD.getConnectionManagers()[0].getPool().getStatistics();

@@ -59,6 +59,7 @@ import org.jboss.jca.common.api.metadata.ra.ConfigProperty;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.jca.common.metadata.ds.DatasourcesImpl;
 import org.jboss.jca.common.metadata.ds.DriverImpl;
+import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.connectionmanager.ConnectionManager;
 import org.jboss.jca.core.spi.mdr.NotFoundException;
@@ -92,6 +93,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     private final InjectedValue<ManagementRepository> managementRepositoryValue = new InjectedValue<ManagementRepository>();
     private final InjectedValue<SubjectFactory> subjectFactory = new InjectedValue<SubjectFactory>();
     private final InjectedValue<DriverRegistry> driverRegistry = new InjectedValue<DriverRegistry>();
+    private final InjectedValue<CachedConnectionManager> ccmValue = new InjectedValue<CachedConnectionManager>();
 
     private final String jndiName;
 
@@ -164,6 +166,10 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
     public Injector<SubjectFactory> getSubjectFactoryInjector() {
         return subjectFactory;
+    }
+
+    public Injector<CachedConnectionManager> getCcmInjector() {
+        return ccmValue;
     }
 
     protected String buildConfigPropsString(Map<String, String> configProps) {
@@ -329,6 +335,11 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             } else {
                 return subjectFactory.getValue();
             }
+        }
+
+        @Override
+        public CachedConnectionManager getCachedConnectionManager() {
+            return ccmValue.getValue();
         }
 
         @Override
