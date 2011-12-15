@@ -131,8 +131,8 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
 
         final ThreadFactory httpMgmtThreads = new JBossThreadFactory(new ThreadGroup("HttpManagementService-threads"),
                 Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
-        final HttpManagementService service = new HttpManagementService();
-        ServiceBuilder builder = serviceTarget.addService(HttpManagementService.SERVICE_NAME, service)
+        final HttpManagementService service = HttpManagementService.createForHost(hostControllerInfo.isMasterDomainController());
+        ServiceBuilder<?> builder = serviceTarget.addService(HttpManagementService.SERVICE_NAME, service)
                 .addDependency(
                         NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName),
                         NetworkInterfaceBinding.class, service.getInterfaceInjector())
