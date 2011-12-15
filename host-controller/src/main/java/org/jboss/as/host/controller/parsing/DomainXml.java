@@ -379,7 +379,7 @@ public class DomainXml extends CommonXml {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case INCLUDE: {
-                    HOST_CONTROLLER_LOGGER.warnIgnoringSocketBindingGroupIgnore(reader.getLocation());
+                    HOST_CONTROLLER_LOGGER.warnIgnoringSocketBindingGroupInclude(reader.getLocation());
 
                     /* This will be reintroduced for 7.2.0, leave commented out
                     final String includedGroup = readStringAttributeElement(reader, Attribute.SOCKET_BINDING_GROUP.getLocalName());
@@ -626,7 +626,7 @@ public class DomainXml extends CommonXml {
                         }
                         //Remove support for profile includes until 7.2.0
                         if (ns == Namespace.DOMAIN_1_0) {
-                            HOST_CONTROLLER_LOGGER.warnIgnoringSocketBindingGroupIgnore(reader.getLocation());
+                            HOST_CONTROLLER_LOGGER.warnIgnoringProfileInclude(reader.getLocation());
                         }
                         throw unexpectedElement(reader);
                         /* This will be reintroduced for 7.2.0, leave commented out
