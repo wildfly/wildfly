@@ -58,6 +58,7 @@ import org.xnio.Sequence;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Emanuel Muckenhuber
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class ProtocolChannelClient implements Closeable {
 
@@ -120,8 +121,7 @@ public class ProtocolChannelClient implements Closeable {
         builder.set(Options.SSL_STARTTLS, true);
 
         CallbackHandler actualHandler = handler != null ? handler : new AnonymousCallbackHandler();
-        WrapperCallbackHandler wrapperHandler = new WrapperCallbackHandler(actualHandler);
-        return endpoint.connect(uri, builder.getMap(), wrapperHandler);
+        return endpoint.connect(uri, builder.getMap(), actualHandler);
     }
 
     public Connection connectSync(CallbackHandler handler) throws IOException {
@@ -129,9 +129,34 @@ public class ProtocolChannelClient implements Closeable {
     }
 
     public Connection connectSync(CallbackHandler handler, Map<String, String> saslOptions) throws IOException {
-        final IoFuture<Connection> future = connect(handler, saslOptions);
-        final IoFuture.Status status = future.await(configuration.getConnectionTimeout(), TimeUnit.MILLISECONDS);
-        if(status == IoFuture.Status.DONE) {
+        WrapperCallbackHandler wrapperHandler = new WrapperCallbackHandler(handler);
+        final IoFuture<Connection> future = connect(wrapperHandler, saslOptions);
+        long timeoutMillis = configuration.getConnectionTimeout();
+        IoFuture.Status status = future.await(timeoutMillis, TimeUnit.MILLISECONDS);
+        while (status == IoFuture.Status.WAITING) {
+            if (wrapperHandler.isInCall()) {
+                // If there is currently an interaction with the user just wait again.
+                status = future.await(timeoutMillis, TimeUnit.MILLISECONDS);
+            } else {
+                long lastInteraction = wrapperHandler.getCallFinished();
+                if (lastInteraction > 0) {
+                    long now = System.currentTimeMillis();
+                    long timeSinceLast = now - lastInteraction;
+                    if (timeSinceLast < timeoutMillis) {
+                        // As this point we are setting the timeout based on the time of the last interaction
+                        // with the user, if there is any time left we will wait for that time but dont wait for
+                        // a full timeout.
+                        status = future.await(timeoutMillis - timeSinceLast, TimeUnit.MILLISECONDS);
+                    } else {
+                        status = null;
+                    }
+                } else {
+                    status = null; // Just terminate status processing.
+                }
+            }
+        }
+
+        if (status == IoFuture.Status.DONE) {
             return future.get();
         }
         if (status == IoFuture.Status.FAILED) {
