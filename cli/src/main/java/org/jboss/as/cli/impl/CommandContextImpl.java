@@ -792,6 +792,7 @@ class CommandContextImpl implements CommandContext {
                     processLine(line.trim());
                 }
             }
+            printLine("");
         } catch(Throwable t) {
             t.printStackTrace();
         } finally {
