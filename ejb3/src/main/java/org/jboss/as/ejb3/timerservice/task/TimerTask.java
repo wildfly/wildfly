@@ -151,10 +151,12 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
     protected Date calculateNextTimeout() {
         long intervalDuration = this.timer.getInterval();
         if (intervalDuration > 0) {
-            Date nextExpiration = this.timer.getNextExpiration();
+            long now = new Date().getTime();
+            long nextExpiration = this.timer.getNextExpiration().getTime();
+            // compute skipped number of interval
+            int periods = (int)((now-nextExpiration)/intervalDuration);
             // compute the next timeout date
-            nextExpiration = new Date(nextExpiration.getTime() + intervalDuration);
-            return nextExpiration;
+            return new Date(nextExpiration + (periods * intervalDuration) + intervalDuration);
         }
         return null;
 
