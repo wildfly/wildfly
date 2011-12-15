@@ -90,7 +90,7 @@ public interface ProtocolMessages {
      *
      * @return a {@link ConnectException} for the error.
      */
-    @Message(id = 12144, value = "Could not connect to %s. Make sure the server is running.")
+    @Message(id = 12144, value = "Could not connect to %s. The connection timed out")
     ConnectException couldNotConnect(URI uri);
 
     @Message(id = 12145, value = "Connection was cancelled")
@@ -364,5 +364,16 @@ public interface ProtocolMessages {
 
     @Message(id = 12173, value = "Null executor")
     IllegalArgumentException nullExecutor();
+
+    /**
+     * Creates an exception indicating a connection could not be made.
+     *
+     * @param uri             the URI attempted to connect.
+     * @param cause           the cause of the failure.
+     *
+     * @return a {@link ConnectException} for the error.
+     */
+    @Message(id = 12174, value = "Could not connect to %s. The connection failed")
+    ConnectException failedToConnect(URI uri, @Cause IOException cause);
 
 }
