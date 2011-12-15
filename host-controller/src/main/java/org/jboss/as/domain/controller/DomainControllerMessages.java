@@ -97,7 +97,7 @@ public interface DomainControllerMessages {
      * @param parentSpec  the complete string representation of the parent element
      * @return  the error message
      */
-    @Message(id = 10979, value = "%s recognized only %s as children: %s")
+    @Message(id = 10979, value = "%s recognizes only %s as children: %s")
     String unrecognizedChildren(String parent, String children, String parentSpec);
 
     /**
