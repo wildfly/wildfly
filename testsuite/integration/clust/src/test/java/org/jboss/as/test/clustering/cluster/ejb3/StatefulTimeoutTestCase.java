@@ -39,7 +39,6 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -49,7 +48,6 @@ import org.junit.runner.RunWith;
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
-@Ignore("https://issues.jboss.org/browse/AS7-3029")
 public class StatefulTimeoutTestCase {
     private static final String ARCHIVE_NAME = "StatefulTimeoutTestCase";
 
@@ -73,7 +71,12 @@ public class StatefulTimeoutTestCase {
     @Deployment(name = "deployment-1")
     @TargetsContainer("clustering-udp-1")
     public static Archive<?> deployment1() {
-        return createJar();
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
+        jar.addPackage(StatefulTimeoutTestCase.class.getPackage());
+        jar.add(EmptyAsset.INSTANCE, "META-INF/beans.xml");
+        // TODO: Remove AS7-2779 workaround.
+        jar.addAsManifestResource(EmptyAsset.INSTANCE, "../web/force-hashcode-change.txt");
+        return jar;
     }
 
     private static Archive<?> createJar() {
