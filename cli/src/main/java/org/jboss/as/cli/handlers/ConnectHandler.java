@@ -62,7 +62,7 @@ public class ConnectHandler extends CommandHandlerWithHelp {
             }
             final String arg = args.get(0);
             String portStr = null;
-            int colonIndex = arg.indexOf(':');
+            int colonIndex = arg.lastIndexOf(':');
             if(colonIndex < 0) {
                 // default port
                 host = arg;
@@ -70,8 +70,25 @@ public class ConnectHandler extends CommandHandlerWithHelp {
                 // default host
                 portStr = arg.substring(1).trim();
             } else {
-                host = arg.substring(0, colonIndex).trim();
-                portStr = arg.substring(colonIndex + 1).trim();
+                final boolean hasPort;
+                int closeBracket = arg.lastIndexOf(']');
+                if (closeBracket != -1) {
+                    //possible ip v6
+                    if (closeBracket > colonIndex) {
+                        hasPort = false;
+                    } else {
+                        hasPort = true;
+                    }
+                } else {
+                    //probably ip v4
+                    hasPort = true;
+                }
+                if (hasPort) {
+                    host = arg.substring(0, colonIndex).trim();
+                    portStr = arg.substring(colonIndex + 1).trim();
+                } else {
+                    host = arg;
+                }
             }
 
             if(portStr != null) {
