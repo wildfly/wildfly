@@ -227,7 +227,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>javassist</groupId>
+      <groupId>org.javassist</groupId>
       <artifactId>javassist</artifactId>
       <licenses>
         <license>
