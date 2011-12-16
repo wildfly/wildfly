@@ -25,6 +25,7 @@ package org.jboss.as.controller.client.impl;
 import org.jboss.as.controller.client.ModelControllerClientConfiguration;
 import org.jboss.threads.JBossThreadFactory;
 
+import javax.net.ssl.SSLContext;
 import javax.security.auth.callback.CallbackHandler;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -32,7 +33,6 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -54,13 +54,15 @@ public class ClientConfigurationImpl implements ModelControllerClientConfigurati
     private final int port;
     private final CallbackHandler handler;
     private final Map<String, String> saslOptions;
+    private final SSLContext sslContext;
     private final ExecutorService executorService;
 
-    protected ClientConfigurationImpl(String address, int port, CallbackHandler handler, Map<String, String> saslOptions, ExecutorService executorService) {
+    protected ClientConfigurationImpl(String address, int port, CallbackHandler handler, Map<String, String> saslOptions, SSLContext sslContext, ExecutorService executorService) {
         this.address = address;
         this.port = port;
         this.handler = handler;
         this.saslOptions = saslOptions;
+        this.sslContext = sslContext;
         this.executorService = executorService;
     }
 
@@ -85,6 +87,11 @@ public class ClientConfigurationImpl implements ModelControllerClientConfigurati
     }
 
     @Override
+    public SSLContext getSSLContext() {
+        return sslContext;
+    }
+
+    @Override
     public int getConnectionTimeout() {
         return 5000;
     }
@@ -95,27 +102,31 @@ public class ClientConfigurationImpl implements ModelControllerClientConfigurati
     }
 
     public static ModelControllerClientConfiguration create(final InetAddress address, final int port) {
-        return new ClientConfigurationImpl(address.getHostName(), port, null, null, createDefaultExecutor());
+        return new ClientConfigurationImpl(address.getHostName(), port, null, null, null, createDefaultExecutor());
     }
 
     public static ModelControllerClientConfiguration create(final InetAddress address, final int port, final CallbackHandler handler){
-        return new ClientConfigurationImpl(address.getHostName(), port, handler, null, createDefaultExecutor());
+        return new ClientConfigurationImpl(address.getHostName(), port, handler, null, null, createDefaultExecutor());
     }
 
     public static ModelControllerClientConfiguration create(final InetAddress address, final int port, final CallbackHandler handler, final Map<String, String> saslOptions){
-        return new ClientConfigurationImpl(address.getHostName(), port, handler, saslOptions, createDefaultExecutor());
+        return new ClientConfigurationImpl(address.getHostName(), port, handler, saslOptions, null, createDefaultExecutor());
     }
 
     public static ModelControllerClientConfiguration create(final String hostName, final int port) throws UnknownHostException {
-        return new ClientConfigurationImpl(hostName, port, null, null, createDefaultExecutor());
+        return new ClientConfigurationImpl(hostName, port, null, null, null, createDefaultExecutor());
     }
 
     public static ModelControllerClientConfiguration create(final String hostName, final int port, final CallbackHandler handler) throws UnknownHostException {
-        return new ClientConfigurationImpl(hostName, port, handler, null, createDefaultExecutor());
+        return new ClientConfigurationImpl(hostName, port, handler, null, null, createDefaultExecutor());
+    }
+
+    public static ModelControllerClientConfiguration create(final String hostName, final int port, final CallbackHandler handler, final SSLContext sslContext) throws UnknownHostException {
+        return new ClientConfigurationImpl(hostName, port, handler, null, sslContext, createDefaultExecutor());
     }
 
     public static ModelControllerClientConfiguration create(final String hostName, final int port, final CallbackHandler handler, final Map<String, String> saslOptions) throws UnknownHostException {
-        return new ClientConfigurationImpl(hostName, port, handler, saslOptions, createDefaultExecutor());
+        return new ClientConfigurationImpl(hostName, port, handler, saslOptions, null, createDefaultExecutor());
     }
 
     private static int getSystemProperty(final String name, final int defaultValue) {

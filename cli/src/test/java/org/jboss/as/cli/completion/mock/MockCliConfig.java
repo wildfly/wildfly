@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.cli.CliConfig;
+import org.jboss.as.cli.SSLConfig;
 import org.jboss.as.cli.operation.OperationRequestHeader;
 import org.jboss.as.cli.operation.impl.RolloutPlanHeader;
 
@@ -50,4 +51,10 @@ public class MockCliConfig implements CliConfig {
         }
         rolloutPlans.put(rolloutPlan.getPlanId(), rolloutPlan);
     }
+
+    @Override
+    public SSLConfig getSslConfig() {
+        return null;
+    }
+
 }

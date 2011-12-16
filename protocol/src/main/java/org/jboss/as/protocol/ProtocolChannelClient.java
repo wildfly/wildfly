@@ -36,6 +36,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.net.ssl.SSLContext;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -97,10 +98,10 @@ public class ProtocolChannelClient implements Closeable {
     }
 
     public IoFuture<Connection> connect(CallbackHandler handler) throws IOException {
-        return connect(handler, null);
+        return connect(handler, null, null);
     }
 
-    public IoFuture<Connection> connect(CallbackHandler handler, Map<String, String> saslOptions) throws IOException {
+    public IoFuture<Connection> connect(CallbackHandler handler, Map<String, String> saslOptions, SSLContext sslContext) throws IOException {
 
         OptionMap.Builder builder = OptionMap.builder();
         builder.set(SASL_POLICY_NOANONYMOUS, Boolean.FALSE);
@@ -121,16 +122,16 @@ public class ProtocolChannelClient implements Closeable {
         builder.set(Options.SSL_STARTTLS, true);
 
         CallbackHandler actualHandler = handler != null ? handler : new AnonymousCallbackHandler();
-        return endpoint.connect(uri, builder.getMap(), actualHandler);
+        return endpoint.connect(uri, builder.getMap(), actualHandler, sslContext);
     }
 
     public Connection connectSync(CallbackHandler handler) throws IOException {
-        return connectSync(handler, null);
+        return connectSync(handler, null, null);
     }
 
-    public Connection connectSync(CallbackHandler handler, Map<String, String> saslOptions) throws IOException {
+    public Connection connectSync(CallbackHandler handler, Map<String, String> saslOptions, SSLContext sslContext) throws IOException {
         WrapperCallbackHandler wrapperHandler = new WrapperCallbackHandler(handler);
-        final IoFuture<Connection> future = connect(wrapperHandler, saslOptions);
+        final IoFuture<Connection> future = connect(wrapperHandler, saslOptions, sslContext);
         long timeoutMillis = configuration.getConnectionTimeout();
         IoFuture.Status status = future.await(timeoutMillis, TimeUnit.MILLISECONDS);
         while (status == IoFuture.Status.WAITING) {
