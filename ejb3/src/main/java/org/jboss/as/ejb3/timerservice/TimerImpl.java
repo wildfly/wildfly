@@ -718,25 +718,10 @@ public class TimerImpl implements Timer {
         public void afterCompletion(int status) {
             if (status == Status.STATUS_COMMITTED) {
                 ROOT_LOGGER.debug("commit timer cancellation: " + this.timer);
-
-                final TimerState timerState = this.timer.getState();
-                switch (timerState) {
-                    case CANCELED:
-                    case IN_TIMEOUT:
-                    case RETRY_TIMEOUT:
-                        this.timer.cancelTimeout();
-                        break;
-
-                }
+                this.timer.cancelTimeout();
             } else if (status == Status.STATUS_ROLLEDBACK) {
                 ROOT_LOGGER.debug("rollback timer cancellation: " + this.timer);
-
-                TimerState timerState = this.timer.getState();
-                switch (timerState) {
-                    case CANCELED:
-                        this.timer.setTimerState(TimerState.ACTIVE);
-                        break;
-                }
+                this.timer.setTimerState(TimerState.ACTIVE);
             }
         }
 

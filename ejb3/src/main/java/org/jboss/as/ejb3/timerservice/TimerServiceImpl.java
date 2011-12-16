@@ -804,21 +804,21 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             delay = 0;
         }
         long intervalDuration = timer.getInterval();
+        final Task task = new Task(timerTask);
         if (intervalDuration > 0) {
             ROOT_LOGGER.debug("Scheduling timer " + timer + " at fixed rate, starting at " + delay
                     + " milli seconds from now with repeated interval=" + intervalDuration);
             // schedule the task
-            final Task task = new Task(timerTask);
             this.timerInjectedValue.getValue().scheduleAtFixedRate(task, delay, intervalDuration);
             // maintain it in timerservice for future use (like cancellation)
             this.scheduledTimerFutures.put(timer.getTimerHandle(), task);
         } else {
             ROOT_LOGGER.debug("Scheduling a single action timer " + timer + " starting at " + delay + " milli seconds from now");
             // schedule the task
-            this.timerInjectedValue.getValue().schedule(new Task(timerTask), delay);
+            this.timerInjectedValue.getValue().schedule(task, delay);
             // maintain it in timerservice for future use (like cancellation)
-            final Task task = new Task(timerTask);
             this.scheduledTimerFutures.put(timer.getTimerHandle(), task);
+
         }
     }
 
@@ -829,7 +829,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      */
     protected void cancelTimeout(final TimerImpl timer) {
         TimerHandle handle = timer.getTimerHandle();
-        java.util.TimerTask timerTask = this.scheduledTimerFutures.get(handle);
+        java.util.TimerTask timerTask = this.scheduledTimerFutures.remove(handle);
         if (timerTask != null) {
             timerTask.cancel();
         }

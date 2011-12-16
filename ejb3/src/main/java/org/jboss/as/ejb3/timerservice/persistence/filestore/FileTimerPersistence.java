@@ -211,7 +211,7 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         try {
             lock.lock();
             final Map<String, TimerEntity> timers = getTimers(timedObjectId);
-            return timers.get(id);
+            return mostRecentEntityVersion(timers.get(id));
         } finally {
             lock.unlock();
         }
@@ -223,9 +223,34 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         try {
             lock.lock();
             final Map<String, TimerEntity> timers = getTimers(timedObjectId);
-            return new ArrayList<TimerEntity>(timers.values());
+            
+            final List<TimerEntity> entities = new ArrayList<TimerEntity>();
+            for(Map.Entry<String, TimerEntity> entry : timers.entrySet()) {
+                entities.add(mostRecentEntityVersion(entry.getValue()));
+            }
+            return entities;
         } finally {
             lock.unlock();
+        }
+    }
+
+
+    /**
+     * Returns either the loaded entity or the most recent version of the entity that has 
+     * been persisted in this transaction.
+     */
+    private TimerEntity mostRecentEntityVersion(final TimerEntity timerEntity) {
+        try {
+            final int status = transactionManager.getValue().getStatus();
+            if (status == Status.STATUS_UNKNOWN ||
+                    status == Status.STATUS_NO_TRANSACTION) {
+                return timerEntity;
+            }
+            final String key = timerTransactionKey(timerEntity);
+            TimerEntity existing = (TimerEntity) transactionSynchronizationRegistry.getValue().getResource(key);
+            return existing != null ? existing : timerEntity;
+        } catch (SystemException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -326,9 +351,9 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         final File file = fileName(entity.getTimedObjectId(), entity.getId());
 
         //if the timer is expired or cancelled delete the file
-        if(entity.getTimerState() == TimerState.CANCELED ||
+        if (entity.getTimerState() == TimerState.CANCELED ||
                 entity.getTimerState() == TimerState.EXPIRED) {
-            if(file.exists()) {
+            if (file.exists()) {
                 file.delete();
             }
             return;
