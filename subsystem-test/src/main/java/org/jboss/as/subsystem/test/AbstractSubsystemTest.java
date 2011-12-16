@@ -4,6 +4,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
@@ -14,6 +15,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
@@ -32,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -58,6 +63,8 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ExtensionContextImpl;
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -355,6 +362,75 @@ public abstract class AbstractSubsystemTest {
     }
 
     /**
+     * Checks that the subystem resources can be removed, i.e. that people have registered
+     * working 'remove' operations for every 'add' level.
+     *
+     * @param kernelServices the kernel services used to access the controller
+     */
+    protected void assertRemoveSubsystemResources(KernelServices kernelServices) {
+        Resource rootResource = grabRootResource(kernelServices);
+
+        List<PathAddress> addresses = new ArrayList<PathAddress>();
+        PathAddress pathAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, mainSubsystemName));
+        Resource subsystemResource = rootResource.getChild(pathAddress.getLastElement());
+        Assert.assertNotNull(subsystemResource);
+        addresses.add(pathAddress);
+
+        getAllChildAddressesForRemove(pathAddress, addresses, subsystemResource);
+
+        System.out.println(kernelServices.readWholeModel());
+
+        for (ListIterator<PathAddress> iterator = addresses.listIterator(addresses.size()) ; iterator.hasPrevious() ; ) {
+            PathAddress cur = iterator.previous();
+            ModelNode remove = new ModelNode();
+            remove.get(OP).set(REMOVE);
+            remove.get(OP_ADDR).set(cur.toModelNode());
+            ModelNode result = kernelServices.executeOperation(remove);
+            Assert.assertEquals("Error removing " + cur + ": " + result.get(FAILURE_DESCRIPTION).asString(), SUCCESS, result.get(OUTCOME).asString());
+        }
+
+        System.out.println(kernelServices.readWholeModel());
+
+        ModelNode model = kernelServices.readWholeModel().get(SUBSYSTEM, mainSubsystemName);
+        Assert.assertFalse("Subsystem resources were not removed " + model, model.isDefined());
+    }
+
+    private void getAllChildAddressesForRemove(PathAddress address, List<PathAddress> addresses, Resource resource) {
+        List<PathElement> childElements = new ArrayList<PathElement>();
+        for (String type : resource.getChildTypes()) {
+            for (String childName : resource.getChildrenNames(type)) {
+                PathElement element = PathElement.pathElement(type, childName);
+                childElements.add(element);
+            }
+        }
+
+        for (PathElement childElement : childElements) {
+            addresses.add(address.append(childElement));
+        }
+
+        for (PathElement childElement : childElements) {
+            getAllChildAddressesForRemove(address.append(childElement), addresses, resource.getChild(childElement));
+        }
+    }
+
+    /**
+     * Grabs the current root resource
+     *
+     * @param kernelServices the kernel services used to access the controller
+     */
+    protected Resource grabRootResource(KernelServices kernelServices) {
+        ModelNode op = new ModelNode();
+        op.get(OP).set(RootResourceGrabber.NAME);
+        op.get(OP_ADDR).setEmptyList();
+        ModelNode result = kernelServices.executeOperation(op);
+        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(), SUCCESS, result.get(OUTCOME).asString());
+
+        Resource rootResource = RootResourceGrabber.INSTANCE.resource;
+        Assert.assertNotNull(rootResource);
+        return rootResource;
+    }
+
+    /**
      * Compares two models to make sure that they are the same
      * @param node1 the first model
      * @param node2 the second model
@@ -581,6 +657,9 @@ public abstract class AbstractSubsystemTest {
             rootRegistration.registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true);
             rootRegistration.registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
             rootRegistration.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
+
+            //Handler to be able to get hold of the root resource
+            rootRegistration.registerOperationHandler(RootResourceGrabber.NAME, RootResourceGrabber.INSTANCE, RootResourceGrabber.INSTANCE, false);
 
             ManagementResourceRegistration deployments = rootRegistration.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);
 
@@ -905,5 +984,28 @@ public abstract class AbstractSubsystemTest {
             }
             file.delete();
         }
+    }
+
+    private static class RootResourceGrabber implements OperationStepHandler, DescriptionProvider {
+        static String NAME = "grab-root-resource";
+        static RootResourceGrabber INSTANCE = new RootResourceGrabber();
+        volatile Resource resource;
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            resource = context.getRootResource();
+            context.getResult().setEmptyObject();
+            context.completeStep();
+        }
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            ModelNode node = new ModelNode();
+            node.get(OPERATION_NAME).set(NAME);
+            node.get(DESCRIPTION).set("Grabs the root resource");
+            node.get(REQUEST_PROPERTIES).setEmptyObject();
+            node.get(REPLY_PROPERTIES).setEmptyObject();
+            return node;
+        }
+
+
     }
 }

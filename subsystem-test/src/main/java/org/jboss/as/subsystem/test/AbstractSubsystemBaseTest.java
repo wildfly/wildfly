@@ -134,6 +134,8 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
         final ModelNode modelC = servicesC.readWholeModel();
 
         super.compare(modelA, modelC);
+
+        super.assertRemoveSubsystemResources(servicesA);
     }
 
     protected ModelNode createDescribeOperation() {

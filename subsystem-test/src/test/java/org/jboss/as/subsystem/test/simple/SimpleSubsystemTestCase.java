@@ -95,6 +95,14 @@ public class SimpleSubsystemTestCase extends AbstractSubsystemTest {
 
         //Test that the service was installed
         services.getContainer().getRequiredService(SimpleService.NAME);
+
+        //Check that all the resources were removed
+        super.assertRemoveSubsystemResources(services);
+        try {
+            services.getContainer().getRequiredService(SimpleService.NAME);
+            Assert.fail("Should not have found simple service");
+        } catch (Exception expected) {
+        }
     }
 
     /**
@@ -120,6 +128,14 @@ public class SimpleSubsystemTestCase extends AbstractSubsystemTest {
 
         //Test that the service was not installed
         Assert.assertNull(services.getContainer().getService(SimpleService.NAME));
+
+        //Check that all the resources were removed
+        super.assertRemoveSubsystemResources(services);
+        try {
+            services.getContainer().getRequiredService(SimpleService.NAME);
+            Assert.fail("Should not have found simple service");
+        } catch (Exception expected) {
+        }
     }
 
     /**

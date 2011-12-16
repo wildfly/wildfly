@@ -1,6 +1,5 @@
 package org.jboss.as.subsystem.test.simple.subsystem;
 
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -64,7 +63,7 @@ public class SimpleSubsystemExtension implements Extension {
         //We always need to add a 'describe' operation
         registration.registerOperationHandler(DESCRIBE, SubsystemDescribeHandler.INSTANCE, SubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         //We always need to add a 'remove' operation
-        registration.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, SimpleSubsystemProviders.SUBSYSTEM_REMOVE, false);
+        registration.registerOperationHandler(REMOVE, SimpleSubsystemRemove.INSTANCE, SimpleSubsystemProviders.SUBSYSTEM_REMOVE, false);
 
         subsystem.registerXMLElementWriter(parser);
     }
