@@ -1003,7 +1003,7 @@ public abstract class AbstractSubsystemTest {
             node.get(DESCRIPTION).set("Grabs the root resource");
             node.get(REQUEST_PROPERTIES).setEmptyObject();
             node.get(REPLY_PROPERTIES).setEmptyObject();
-            return null;
+            return node;
         }
 
 

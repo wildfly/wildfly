@@ -218,6 +218,8 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         } while (connection == null && System.currentTimeMillis() < end);
         Assert.assertNotNull(connection);
         connection.getMBeanCount();
+
+        super.assertRemoveSubsystemResources(services);
     }
 
 
