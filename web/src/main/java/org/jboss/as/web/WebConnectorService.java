@@ -253,6 +253,10 @@ class WebConnectorService implements Service<Connector> {
                             Method m = connector.getProtocolHandler().getClass().getMethod("setKeytype", String.class);
                             m.invoke(connector.getProtocolHandler(), ssl.get(Constants.KEYSTORE_TYPE).asString());
                         }
+                        if (ssl.hasDefined(Constants.CA_REVOCATION_URL)) {
+                            Method m = connector.getProtocolHandler().getClass().getMethod("setAttribute", String.class, Object.class);
+                            m.invoke(connector.getProtocolHandler(), "crlFile", ssl.get(Constants.CA_REVOCATION_URL).asString());
+                        }
 
                     } catch (NoSuchMethodException e) {
                         throw new StartException(e);
