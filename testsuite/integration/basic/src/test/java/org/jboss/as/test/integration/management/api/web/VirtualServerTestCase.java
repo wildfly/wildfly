@@ -47,6 +47,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.junit.Assert.*;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
 /**
  *

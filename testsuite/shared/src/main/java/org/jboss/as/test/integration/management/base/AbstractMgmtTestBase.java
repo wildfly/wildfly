@@ -38,6 +38,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -46,6 +47,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
 import static org.junit.Assert.*;
 import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
 /**
  *
@@ -111,52 +113,12 @@ public class AbstractMgmtTestBase {
         steps[0] = op;
         steps[1] = addDeploymentOp;
         steps[2] = builder.buildRequest();
-        ModelNode compositeOp = createCompositeNode(steps);
+        ModelNode compositeOp = ModelUtil.createCompositeNode(steps);
 
         OperationBuilder ob = new OperationBuilder(compositeOp, true);
         ob.addInputStream(new FileInputStream(getBrokenWar()));
 
         return modelControllerClient.execute(ob.build());
-    }
-
-    public static ModelNode createCompositeNode(ModelNode[] steps) {
-        ModelNode comp = new ModelNode();
-        comp.get("operation").set("composite");
-        for(ModelNode step : steps) {
-            comp.get("steps").add(step);
-        }
-        return comp;
-    }
-
-    public static ModelNode createOpNode(String address, String operation) {
-        ModelNode op = new ModelNode();
-
-        // set address
-        ModelNode list = op.get("address").setEmptyList();
-        if (address != null) {
-            String [] pathSegments = address.split("/");
-            for (String segment : pathSegments) {
-                String[] elements = segment.split("=");
-                list.add(elements[0], elements[1]);
-            }
-        }
-        op.get("operation").set(operation);
-        return op;
-    }
-
-    public boolean testRequestFail(String url) {
-        boolean failed = false;
-        try {
-            HttpRequest.get(url, 10, TimeUnit.SECONDS);
-        } catch (Exception e) {
-            failed = true;
-        }
-        return failed;
-
-    }
-
-    protected final String getBaseURL(URL url) throws MalformedURLException {
-        return new URL(url.getProtocol(), url.getHost(), url.getPort(), "/").toString();
     }
 
     private static File getBrokenWar() {

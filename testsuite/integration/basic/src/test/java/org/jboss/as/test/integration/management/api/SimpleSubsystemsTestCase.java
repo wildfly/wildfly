@@ -19,51 +19,47 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
-package org.jboss.as.test.integration.management.api.core;
+package org.jboss.as.test.integration.management.api;
 
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URL;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.cli.GlobalOpsTestCase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
+
 /**
- * Test for functionality added with AS7-2139.
  *
- * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @author Dominik Pospisil <dpospisi@redhat.com>
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class ResolveExpressionTestCase extends AbstractMgmtTestBase {
-
-
+public class SimpleSubsystemsTestCase extends AbstractMgmtTestBase {
+    
     @ArquillianResource
     URL url;
-
+    
     @Deployment
     public static Archive<?> getDeployment() {
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
-        ja.addClass(ResolveExpressionTestCase.class);
+        ja.addClass(GlobalOpsTestCase.class);
         return ja;
     }
-
+    
     @Before
     public void before() throws IOException {
         initModelControllerClient(url.getHost(), MGMT_PORT);
@@ -73,41 +69,38 @@ public class ResolveExpressionTestCase extends AbstractMgmtTestBase {
     public static void after() throws IOException {
         closeModelControllerClient();
     }
-
+    
     @Test
-    public void testResolveExpression() throws Exception  {
-        ModelNode op = createOpNode(null, "resolve-expression");
-        op.get("expression").set("${file.separator}");
-
-        Assert.assertEquals(System.getProperty("file.separator"), executeOperation(op).asString());
+    public void testJaxrs() throws Exception {
+        testSimpleSubsystem("jaxrs");
     }
 
     @Test
-    public void testNonExpression() throws Exception  {
-        ModelNode op = createOpNode(null, "resolve-expression");
-        op.get("expression").set("hello");
-
-        Assert.assertEquals("hello", executeOperation(op).asString());
+    public void testSar() throws Exception {
+        testSimpleSubsystem("sar");
     }
 
     @Test
-    public void testUndefined() throws Exception  {
-        ModelNode op = createOpNode(null, "resolve-expression");
-
-        Assert.assertFalse(executeOperation(op).isDefined());
-
-        op.get("expression");
-
-        Assert.assertFalse(executeOperation(op).isDefined());
+    public void testWeld() throws Exception {
+        testSimpleSubsystem("weld");
     }
 
     @Test
-    public void testUnresolvableExpression() throws Exception  {
-        ModelNode op = createOpNode(null, "resolve-expression");
-        op.get("expression").set("${unresolvable}");
-
-        ModelNode response = executeOperation(op, false);
-        Assert.assertFalse("Management operation " + op.asString() + " succeeded: " + response.toString(),
-                "success".equals(response.get("outcome").asString()));
+    public void testPojo() throws Exception {
+        testSimpleSubsystem("pojo");
     }
+
+    @Test
+    public void testJdr() throws Exception {
+        testSimpleSubsystem("jdr");
+    }
+    
+    private void testSimpleSubsystem(String subsystemName) throws IOException {        
+        ModelNode op = createOpNode("subsystem=" + subsystemName, "read-resource");        
+        op.get("recursive").set(true);
+        
+        ModelNode result = executeOperation(op);
+        assertTrue("Subsystem not empty.", result.keys().size() == 0);
+    }
+    
 }

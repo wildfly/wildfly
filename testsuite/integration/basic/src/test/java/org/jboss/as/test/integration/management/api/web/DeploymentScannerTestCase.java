@@ -35,6 +35,7 @@ import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.cli.GlobalOpsTestCase;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
+import org.jboss.as.test.integration.management.util.WebUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -47,6 +48,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.junit.Assert.*;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+
 
 /**
  *
@@ -161,7 +164,7 @@ public class DeploymentScannerTestCase extends AbstractMgmtTestBase {
         File marker = new File(deployDir.getAbsolutePath() + File.separator + "SimpleServlet.war.deployed");
         assertTrue(marker.exists());
 
-        String response = HttpRequest.get(getBaseURL(url) + "SimpleServlet/SimpleServlet", 10, TimeUnit.SECONDS);
+        String response = HttpRequest.get(WebUtil.getBaseURL(url) + "SimpleServlet/SimpleServlet", 10, TimeUnit.SECONDS);
         assertTrue("Invalid response: " + response, response.indexOf("SimpleServlet") >=0);
 
     }
@@ -178,7 +181,7 @@ public class DeploymentScannerTestCase extends AbstractMgmtTestBase {
         Thread.sleep(2000);
 
         // check that the deployment is still live
-        String response = HttpRequest.get(getBaseURL(url) + "SimpleServlet/SimpleServlet", 10, TimeUnit.SECONDS);
+        String response = HttpRequest.get(WebUtil.getBaseURL(url) + "SimpleServlet/SimpleServlet", 10, TimeUnit.SECONDS);
         assertTrue("Invalid response: " + response, response.indexOf("SimpleServlet") >=0);
 
         // undeploy
