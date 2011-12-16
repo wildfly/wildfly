@@ -55,6 +55,7 @@ import org.jboss.jandex.DotName;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
@@ -94,7 +95,7 @@ public final class WSIntegrationProcessorJAXWS_EJB implements DeploymentUnitProc
             for (final SessionBeanComponentDescription sessionBean : sessionBeans) {
                 if (sessionBean.isStateless() || sessionBean.isSingleton()) {
                     final EJBViewDescription ejbViewDescription = sessionBean.addWebserviceEndpointView();
-                    final String ejbViewName = ejbViewDescription.getServiceName().getCanonicalName();
+                    final ServiceName ejbViewName = ejbViewDescription.getServiceName();
                     jaxwsDeployment.addEndpoint(new EJBEndpoint(sessionBean, ejbViewName, securityRoles, authMethod, isSecureWsdlAccess, transportGuarantee));
                 }
             }

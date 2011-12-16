@@ -56,6 +56,7 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.wsf.spi.invocation.HandlerCallback;
 import org.jboss.wsf.spi.invocation.Invocation;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
@@ -111,7 +112,7 @@ public final class WSIntegrationProcessorJAXRPC_EJB implements DeploymentUnitPro
         // JSR 109 - Version 1.3 - 6.2.2.5 Transaction
         // Handlers run under the transaction context of the component they are associated with.
         sessionBean.getConfigurators().addLast(new JAXRPCHandlersConfigurator());
-        final String ejbViewName = ejbViewDescription.getServiceName().getCanonicalName();
+        final ServiceName ejbViewName = ejbViewDescription.getServiceName();
 
         return new EJBEndpoint(sessionBean, ejbViewName, securityRoles, null, false, null);
     }
