@@ -90,7 +90,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
@@ -209,12 +208,12 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             required.remove(attribute);
             switch (attribute) {
                 case CATEGORY: {
-                    CATEGORY.parseAndSetParameter(value, node, reader.getLocation());
+                    CATEGORY.parseAndSetParameter(value, node, reader);
                     name = value;
                     break;
                 }
                 case USE_PARENT_HANDLERS: {
-                    USE_PARENT_HANDLERS.parseAndSetParameter(value, node, reader.getLocation());
+                    USE_PARENT_HANDLERS.parseAndSetParameter(value, node, reader);
                     break;
                 }
                 default:
@@ -236,7 +235,6 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         // Element
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            final Location location = reader.getLocation();
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case LOGGING_1_0:
                 case LOGGING_1_1: {
@@ -246,7 +244,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     }
                     switch (element) {
                         case LEVEL: {
-                            LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, location);
+                            LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, reader);
                             break;
                         }
                         case HANDLERS: {
@@ -283,7 +281,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             required.remove(attribute);
             switch (attribute) {
                 case NAME: {
-                    NAME.parseAndSetParameter(value, node, reader.getLocation());
+                    NAME.parseAndSetParameter(value, node, reader);
                     name = value;
                     break;
                 }
@@ -309,10 +307,9 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             if (!encountered.add(element)) {
                 throw unexpectedElement(reader);
             }
-            final Location location = reader.getLocation();
             switch (element) {
                 case LEVEL: {
-                    LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, location);
+                    LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, reader);
                     break;
                 }
                 case SUBHANDLERS: {
@@ -324,15 +321,15 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     break;
                 }
                 case FORMATTER: {
-                    FORMATTER.parseAndSetParameter(parseFormatterElement(reader), node, location);
+                    FORMATTER.parseAndSetParameter(parseFormatterElement(reader), node, reader);
                     break;
                 }
                 case QUEUE_LENGTH: {
-                    QUEUE_LENGTH.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, location);
+                    QUEUE_LENGTH.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, reader);
                     break;
                 }
                 case OVERFLOW_ACTION: {
-                    OVERFLOW_ACTION.parseAndSetParameter(readStringAttributeElement(reader, "value").toUpperCase(Locale.US), node, location);
+                    OVERFLOW_ACTION.parseAndSetParameter(readStringAttributeElement(reader, "value").toUpperCase(Locale.US), node, reader);
                     break;
                 }
                 default: {
@@ -354,7 +351,6 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         node.get(OP_ADDR).set(address).add(ROOT_LOGGER, ROOT_LOGGER_NAME);
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            final Location location = reader.getLocation();
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case LOGGING_1_0:
                 case LOGGING_1_1: {
@@ -369,7 +365,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                             break;
                         }
                         case LEVEL: {
-                            LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, location);
+                            LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, reader);
                             break;
                         }
                         case HANDLERS: {
@@ -402,12 +398,12 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             required.remove(attribute);
             switch (attribute) {
                 case NAME: {
-                    NAME.parseAndSetParameter(value, node, reader.getLocation());
+                    NAME.parseAndSetParameter(value, node, reader);
                     name = value;
                     break;
                 }
                 case AUTOFLUSH: {
-                    AUTOFLUSH.parseAndSetParameter(value, node, reader.getLocation());
+                    AUTOFLUSH.parseAndSetParameter(value, node, reader);
                     break;
                 }
                 default:
@@ -432,14 +428,13 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             if (!encountered.add(element)) {
                 throw unexpectedElement(reader);
             }
-            final Location location = reader.getLocation();
             switch (element) {
                 case LEVEL: {
-                    LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, location);
+                    LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, reader);
                     break;
                 }
                 case ENCODING: {
-                    ENCODING.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, location);
+                    ENCODING.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, reader);
                     break;
                 }
                 case FILTER: {
@@ -447,7 +442,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     break;
                 }
                 case FORMATTER: {
-                    FORMATTER.parseAndSetParameter(parseFormatterElement(reader), node, location);
+                    FORMATTER.parseAndSetParameter(parseFormatterElement(reader), node, reader);
                     break;
                 }
                 case TARGET: {
@@ -455,7 +450,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     if (!(target.equals("System.out") || target.equals("System.err"))) {
                         throw new XMLStreamException(MESSAGES.invalidTargetName(EnumSet.allOf(Target.class)), reader.getLocation());
                     }
-                    TARGET.parseAndSetParameter(target, node, location);
+                    TARGET.parseAndSetParameter(target, node, reader);
                     break;
                 }
                 default: {
@@ -479,12 +474,12 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             required.remove(attribute);
             switch (attribute) {
                 case NAME: {
-                    NAME.parseAndSetParameter(value, node, reader.getLocation());
+                    NAME.parseAndSetParameter(value, node, reader);
                     name = value;
                     break;
                 }
                 case AUTOFLUSH: {
-                    AUTOFLUSH.parseAndSetParameter(value, node, reader.getLocation());
+                    AUTOFLUSH.parseAndSetParameter(value, node, reader);
                     break;
                 }
                 default:
@@ -510,15 +505,14 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             if (!encountered.add(element)) {
                 throw unexpectedElement(reader);
             }
-            final Location location = reader.getLocation();
             requiredElem.remove(element);
             switch (element) {
                 case LEVEL: {
-                    LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, location);
+                    LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, reader);
                     break;
                 }
                 case ENCODING: {
-                    ENCODING.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, location);
+                    ENCODING.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, reader);
                     break;
                 }
                 case FILTER: {
@@ -526,7 +520,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     break;
                 }
                 case FORMATTER: {
-                    FORMATTER.parseAndSetParameter(parseFormatterElement(reader), node, location);
+                    FORMATTER.parseAndSetParameter(parseFormatterElement(reader), node, reader);
                     break;
                 }
                 case FILE: {
@@ -534,7 +528,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     break;
                 }
                 case APPEND: {
-                    APPEND.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, location);
+                    APPEND.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, reader);
                     break;
                 }
                 default: {
@@ -561,16 +555,16 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             required.remove(attribute);
             switch (attribute) {
                 case NAME: {
-                    NAME.parseAndSetParameter(value, node, reader.getLocation());
+                    NAME.parseAndSetParameter(value, node, reader);
                     name = value;
                     break;
                 }
                 case CLASS: {
-                    CLASS.parseAndSetParameter(value, node, reader.getLocation());
+                    CLASS.parseAndSetParameter(value, node, reader);
                     break;
                 }
                 case MODULE: {
-                    MODULE.parseAndSetParameter(value, node, reader.getLocation());
+                    MODULE.parseAndSetParameter(value, node, reader);
                     break;
                 }
                 default:
@@ -594,14 +588,13 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             if (!encountered.add(element)) {
                 throw unexpectedElement(reader);
             }
-            final Location location = reader.getLocation();
             switch (element) {
                 case LEVEL: {
-                    LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, location);
+                    LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, reader);
                     break;
                 }
                 case ENCODING: {
-                    ENCODING.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, location);
+                    ENCODING.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, reader);
                     break;
                 }
                 case FILTER: {
@@ -609,7 +602,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     break;
                 }
                 case FORMATTER: {
-                    FORMATTER.parseAndSetParameter(parseFormatterElement(reader), node, location);
+                    FORMATTER.parseAndSetParameter(parseFormatterElement(reader), node, reader);
                     break;
                 }
                 case PROPERTIES: {
@@ -637,12 +630,12 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             required.remove(attribute);
             switch (attribute) {
                 case NAME: {
-                    NAME.parseAndSetParameter(value, node, reader.getLocation());
+                    NAME.parseAndSetParameter(value, node, reader);
                     name = value;
                     break;
                 }
                 case AUTOFLUSH: {
-                    AUTOFLUSH.parseAndSetParameter(value, node, reader.getLocation());
+                    AUTOFLUSH.parseAndSetParameter(value, node, reader);
                     break;
                 }
                 default:
@@ -667,15 +660,14 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             if (!encountered.add(element)) {
                 throw unexpectedElement(reader);
             }
-            final Location location = reader.getLocation();
             requiredElem.remove(element);
             switch (element) {
                 case LEVEL: {
-                    LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, location);
+                    LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, reader);
                     break;
                 }
                 case ENCODING: {
-                    ENCODING.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, location);
+                    ENCODING.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, reader);
                     break;
                 }
                 case FILTER: {
@@ -683,7 +675,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     break;
                 }
                 case FORMATTER: {
-                    FORMATTER.parseAndSetParameter(parseFormatterElement(reader), node, location);
+                    FORMATTER.parseAndSetParameter(parseFormatterElement(reader), node, reader);
                     break;
                 }
                 case FILE: {
@@ -691,11 +683,11 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     break;
                 }
                 case APPEND: {
-                    APPEND.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, location);
+                    APPEND.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, reader);
                     break;
                 }
                 case SUFFIX: {
-                    SUFFIX.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, location);
+                    SUFFIX.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, reader);
                     break;
                 }
                 default: {
@@ -722,12 +714,12 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             required.remove(attribute);
             switch (attribute) {
                 case NAME: {
-                    NAME.parseAndSetParameter(value, node, reader.getLocation());
+                    NAME.parseAndSetParameter(value, node, reader);
                     name = value;
                     break;
                 }
                 case AUTOFLUSH: {
-                    AUTOFLUSH.parseAndSetParameter(value, node, reader.getLocation());
+                    AUTOFLUSH.parseAndSetParameter(value, node, reader);
                     break;
                 }
                 default:
@@ -753,14 +745,13 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                 throw unexpectedElement(reader);
             }
             requiredElem.remove(element);
-            final Location location = reader.getLocation();
             switch (element) {
                 case LEVEL: {
-                    LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, location);
+                    LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, reader);
                     break;
                 }
                 case ENCODING: {
-                    ENCODING.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, location);
+                    ENCODING.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, reader);
                     break;
                 }
                 case FILTER: {
@@ -768,7 +759,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     break;
                 }
                 case FORMATTER: {
-                    FORMATTER.parseAndSetParameter(parseFormatterElement(reader), node, location);
+                    FORMATTER.parseAndSetParameter(parseFormatterElement(reader), node, reader);
                     break;
                 }
                 case FILE: {
@@ -776,15 +767,15 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     break;
                 }
                 case APPEND: {
-                    APPEND.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, location);
+                    APPEND.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, reader);
                     break;
                 }
                 case ROTATE_SIZE: {
-                    ROTATE_SIZE.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, location);
+                    ROTATE_SIZE.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, reader);
                     break;
                 }
                 case MAX_BACKUP_INDEX: {
-                    MAX_BACKUP_INDEX.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, location);
+                    MAX_BACKUP_INDEX.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, reader);
                     break;
                 }
                 default: {
@@ -805,11 +796,11 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             required.remove(attribute);
             switch (attribute) {
                 case PATH: {
-                    PATH.parseAndSetParameter(value, node, reader.getLocation());
+                    PATH.parseAndSetParameter(value, node, reader);
                     break;
                 }
                 case RELATIVE_TO: {
-                    RELATIVE_TO.parseAndSetParameter(value, node, reader.getLocation());
+                    RELATIVE_TO.parseAndSetParameter(value, node, reader);
                     break;
                 }
                 default: {
@@ -960,10 +951,9 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                 case LOGGING_1_0:
                 case LOGGING_1_1: {
                     final Element element = Element.forName(reader.getLocalName());
-                    final Location location = reader.getLocation();
                     switch (element) {
                         case ACCEPT: {
-                            ACCEPT.parseAndSetParameter(Boolean.TRUE.toString(), node, location);
+                            ACCEPT.parseAndSetParameter(Boolean.TRUE.toString(), node, reader);
                             requireNoContent(reader);
                             break;
                         }
@@ -976,16 +966,16 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                             break;
                         }
                         case CHANGE_LEVEL: {
-                            CHANGE_LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "new-level"), node, location);
+                            CHANGE_LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "new-level"), node, reader);
                             break;
                         }
                         case DENY: {
-                            DENY.parseAndSetParameter(Boolean.TRUE.toString(), node, location);
+                            DENY.parseAndSetParameter(Boolean.TRUE.toString(), node, reader);
                             requireNoContent(reader);
                             break;
                         }
                         case LEVEL: {
-                            LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, location);
+                            LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, reader);
                             break;
                         }
                         case LEVEL_RANGE: {
@@ -998,7 +988,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                             break;
                         }
                         case MATCH: {
-                            MATCH.parseAndSetParameter(readStringAttributeElement(reader, "pattern"), node, location);
+                            MATCH.parseAndSetParameter(readStringAttributeElement(reader, "pattern"), node, reader);
                             break;
                         }
                         case NOT: {
@@ -1030,13 +1020,13 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         if (value == null) {
             throw missingRequired(reader, Collections.singleton(attribute.getName()));
         }
-        attribute.parseAndSetParameter(value, node, reader.getLocation());
+        attribute.parseAndSetParameter(value, node, reader);
     }
 
     private static void parseAttribute(final SimpleAttributeDefinition attribute, final XMLExtendedStreamReader reader, final ModelNode node) throws XMLStreamException {
         final String value = reader.getAttributeValue(null, attribute.getName());
         if (value != null) {
-            attribute.parseAndSetParameter(reader.getAttributeValue(null, attribute.getName()), node, reader.getLocation());
+            attribute.parseAndSetParameter(reader.getAttributeValue(null, attribute.getName()), node, reader);
         }
     }
 

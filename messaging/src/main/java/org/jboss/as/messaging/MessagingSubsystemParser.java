@@ -89,7 +89,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
@@ -98,7 +97,6 @@ import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.messaging.jms.JndiEntriesAttribute;
@@ -275,9 +273,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     parseDirectory(reader, CommonAttributes.LARGE_MESSAGES_DIRECTORY, address, list);
                     break;
                 case LIVE_CONNECTOR_REF: {
-                    Location location = reader.getLocation();
                     String string = readStringAttributeElement(reader, CommonAttributes.CONNECTOR_NAME);
-                    LIVE_CONNECTOR_REF.parseAndSetParameter(string, operation, location);
+                    LIVE_CONNECTOR_REF.parseAndSetParameter(string, operation, reader);
                     break;
                 }
                 case PAGING_DIRECTORY:
@@ -376,11 +373,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     break;
                 }
                 case PARAM: {
-                    final Location location = reader.getLocation();
                     String[] attrs = ParseUtils.requireAttributes(reader, Attribute.KEY.getLocalName(), Attribute.VALUE.getLocalName());
                     requireNoContent(reader);
                     final ModelNode paramAdd = org.jboss.as.controller.operations.common.Util.getEmptyOperation(ADD, serviceAddress.clone().add(CommonAttributes.PARAM, attrs[0]));
-                    CommonAttributes.VALUE.parseAndSetParameter(attrs[1], paramAdd, location);
+                    CommonAttributes.VALUE.parseAndSetParameter(attrs[1], paramAdd, reader);
                     updates.add(paramAdd);
                     break;
                 }
@@ -457,9 +453,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     if (seen.contains(Element.STATIC_CONNECTORS)) {
                         throw new XMLStreamException(MESSAGES.illegalElement(DISCOVERY_GROUP_REF, STATIC_CONNECTORS), reader.getLocation());
                     }
-                    final Location location = reader.getLocation();
                     final String groupRef = readStringAttributeElement(reader, DISCOVERY_GROUP_NAME.getXmlName());
-                    DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, bridgeAdd, location);
+                    DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, bridgeAdd, reader);
                     break;
                 }
                 default: {
@@ -518,9 +513,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     handleElementText(reader, element, bridgeAdd);
                     break;
                 case FILTER:  {
-                    final Location location = reader.getLocation();
                     String string = readStringAttributeElement(reader, CommonAttributes.STRING);
-                    FILTER.parseAndSetParameter(string, bridgeAdd, location);
+                    FILTER.parseAndSetParameter(string, bridgeAdd, reader);
                     break;
                 }
                 case RETRY_INTERVAL:
@@ -541,9 +535,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     if (seen.contains(Element.STATIC_CONNECTORS)) {
                         throw new XMLStreamException(MESSAGES.illegalElement(DISCOVERY_GROUP_REF, STATIC_CONNECTORS), reader.getLocation());
                     }
-                    final Location location = reader.getLocation();
                     final String groupRef = readStringAttributeElement(reader, DISCOVERY_GROUP_NAME.getXmlName());
-                    DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, bridgeAdd, location);
+                    DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, bridgeAdd, reader);
                     break;
                 }
                 default: {
@@ -573,9 +566,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case ALLOW_DIRECT_CONNECTIONS_ONLY: {
-                        final Location location = reader.getLocation();
                         final String attrValue = reader.getAttributeValue(i);
-                        CommonAttributes.ALLOW_DIRECT_CONNECTIONS_ONLY.parseAndSetParameter(attrValue, addOperation, location);
+                        CommonAttributes.ALLOW_DIRECT_CONNECTIONS_ONLY.parseAndSetParameter(attrValue, addOperation, reader);
                         break;
                     }
                     default: {
@@ -648,9 +640,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case CLASS_NAME: {
-                    final Location location = reader.getLocation();
                     final String value = reader.getElementText();
-                    REMOTING_INTERCEPTORS.parseAndAddParameterElement(value, operation, location);
+                    REMOTING_INTERCEPTORS.parseAndAddParameterElement(value, operation, reader);
                     break;
                 } default: {
                     throw ParseUtils.unexpectedElement(reader);
@@ -936,9 +927,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     handleElementText(reader, element, QUEUE_ADDRESS.getName(), queue);
                     break;
                 } case FILTER: {
-                    Location location = reader.getLocation();
                     String string = readStringAttributeElement(reader, CommonAttributes.STRING);
-                    FILTER.parseAndSetParameter(string, queue, location);
+                    FILTER.parseAndSetParameter(string, queue, reader);
                     break;
                 } case DURABLE: {
                     handleElementText(reader, element, queue);
@@ -1291,9 +1281,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     break;
                 }
                 case FILTER: {
-                    Location location = reader.getLocation();
                     String string = readStringAttributeElement(reader, CommonAttributes.STRING);
-                    FILTER.parseAndSetParameter(string, divertAdd, location);
+                    FILTER.parseAndSetParameter(string, divertAdd, reader);
                     break;
                 }
                 case TRANSFORMER_CLASS_NAME: {
@@ -1328,12 +1317,11 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
     static void handleElementText(final XMLExtendedStreamReader reader, final Element element, final String modelName, final ModelNode node) throws XMLStreamException {
         AttributeDefinition attributeDefinition = modelName == null ? element.getDefinition() : element.getDefinition(modelName);
         if (attributeDefinition != null) {
-            Location location = reader.getLocation();
             final String value = reader.getElementText();
             if (attributeDefinition instanceof SimpleAttributeDefinition) {
-                ((SimpleAttributeDefinition) attributeDefinition).parseAndSetParameter(value, node, location);
+                ((SimpleAttributeDefinition) attributeDefinition).parseAndSetParameter(value, node, reader);
             } else if (attributeDefinition instanceof ListAttributeDefinition) {
-                ((ListAttributeDefinition) attributeDefinition).parseAndAddParameterElement(value, node, location);
+                ((ListAttributeDefinition) attributeDefinition).parseAndAddParameterElement(value, node, reader);
             }
         } else {
             handleElementText(reader, element, node, ModelType.STRING, true, false);
@@ -1344,7 +1332,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
     @Deprecated
     static void handleElementText(final XMLExtendedStreamReader reader, final Element element, final ModelNode node, final ModelType expectedType,
                                   final boolean allowNull, final boolean allowExpression) throws XMLStreamException {
-        Location location = reader.getLocation();
         final String value = reader.getElementText();
         if(value != null && value.length() > 0) {
             ModelNode toSet = node.get(element.getLocalName());
@@ -1380,14 +1367,14 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                             toSet.set(modelValue.asString());
                             break;
                         default:
-                            throw new XMLStreamException(MESSAGES.illegalValue(value, element.getLocalName()), location);
+                            throw new XMLStreamException(MESSAGES.illegalValue(value, element.getLocalName()), reader.getLocation());
                     }
                 } catch (IllegalArgumentException iae) {
-                    throw new XMLStreamException(MESSAGES.illegalValue(value, element.getLocalName(), expectedType), location);
+                    throw new XMLStreamException(MESSAGES.illegalValue(value, element.getLocalName(), expectedType), reader.getLocation());
                 }
             }
         } else if (!allowNull) {
-            throw new XMLStreamException(MESSAGES.illegalValue(value, element.getLocalName()), location);
+            throw new XMLStreamException(MESSAGES.illegalValue(value, element.getLocalName()), reader.getLocation());
         }
     }
 
@@ -2064,9 +2051,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             final Element element = Element.forName(reader.getLocalName());
             switch(element) {
                 case ENTRY: {
-                    final Location location = reader.getLocation();
                     final String entry = readStringAttributeElement(reader, CommonAttributes.NAME);
-                    ENTRIES.parseAndAddParameterElement(entry, topic, location);
+                    ENTRIES.parseAndAddParameterElement(entry, topic, reader);
                     break;
                 } default: {
                     throw ParseUtils.unexpectedElement(reader);
@@ -2089,9 +2075,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             final Element element = Element.forName(reader.getLocalName());
             switch(element) {
                 case ENTRY: {
-                    final Location location = reader.getLocation();
                     final String entry = readStringAttributeElement(reader, CommonAttributes.NAME);
-                    ENTRIES.parseAndAddParameterElement(entry, queue, location);
+                    ENTRIES.parseAndAddParameterElement(entry, queue, reader);
                     break;
                 } case SELECTOR: {
                     if(queue.has(SELECTOR.getName())) {
@@ -2182,9 +2167,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             final Element element = Element.forName(reader.getLocalName());
             switch(element) {
                 case DISCOVERY_GROUP_REF: {
-                    final Location location = reader.getLocation();
                     final String groupRef = readStringAttributeElement(reader, DISCOVERY_GROUP_NAME.getXmlName());
-                    DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, connectionFactory, location);
+                    DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, connectionFactory, reader);
                     break;
                 } case CONNECTORS: {
                     connectionFactory.get(CONNECTOR).set(processJmsConnectors(reader));
@@ -2195,9 +2179,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                         if(local != Element.ENTRY ) {
                             throw ParseUtils.unexpectedElement(reader);
                         }
-                        final Location location = reader.getLocation();
                         final String entry = readStringAttributeElement(reader, CommonAttributes.NAME);
-                        JndiEntriesAttribute.CONNECTION_FACTORY.parseAndAddParameterElement(entry, connectionFactory, location);
+                        JndiEntriesAttribute.CONNECTION_FACTORY.parseAndAddParameterElement(entry, connectionFactory, reader);
                     }
                     break;
                 } case INBOUND_CONFIG: {

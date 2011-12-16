@@ -27,8 +27,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 
 import java.util.List;
 import java.util.ResourceBundle;
-import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -65,7 +65,7 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
 
 
     @Override
-    public ModelNode parse(final String value, final Location location) throws XMLStreamException {
+    public ModelNode parse(final String value, final XMLStreamReader reader) throws XMLStreamException {
         throw new UnsupportedOperationException();
     }
 

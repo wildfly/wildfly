@@ -149,37 +149,37 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
                     if (subsystemAdd.hasDefined(CommonAttributes.WORKER_READ_THREADS)) {
                         throw duplicateAttribute(reader, CommonAttributes.WORKER_READ_THREADS);
                     }
-                    RemotingSubsystemRootResource.WORKER_READ_THREADS.parseAndSetParameter(value, subsystemAdd, reader.getLocation());
+                    RemotingSubsystemRootResource.WORKER_READ_THREADS.parseAndSetParameter(value, subsystemAdd, reader);
                     break;
                 case WORKER_TASK_CORE_THREADS:
                     if (subsystemAdd.hasDefined(CommonAttributes.WORKER_TASK_CORE_THREADS)) {
                         throw duplicateAttribute(reader, CommonAttributes.WORKER_TASK_CORE_THREADS);
                     }
-                    RemotingSubsystemRootResource.WORKER_TASK_CORE_THREADS.parseAndSetParameter(value, subsystemAdd, reader.getLocation());
+                    RemotingSubsystemRootResource.WORKER_TASK_CORE_THREADS.parseAndSetParameter(value, subsystemAdd, reader);
                     break;
                 case WORKER_TASK_KEEPALIVE:
                     if (subsystemAdd.hasDefined(CommonAttributes.WORKER_TASK_KEEPALIVE)) {
                         throw duplicateAttribute(reader, CommonAttributes.WORKER_TASK_KEEPALIVE);
                     }
-                    RemotingSubsystemRootResource.WORKER_TASK_KEEPALIVE.parseAndSetParameter(value, subsystemAdd, reader.getLocation());
+                    RemotingSubsystemRootResource.WORKER_TASK_KEEPALIVE.parseAndSetParameter(value, subsystemAdd, reader);
                     break;
                 case WORKER_TASK_LIMIT:
                     if (subsystemAdd.hasDefined(CommonAttributes.WORKER_TASK_LIMIT)) {
                         throw duplicateAttribute(reader, CommonAttributes.WORKER_TASK_LIMIT);
                     }
-                    RemotingSubsystemRootResource.WORKER_TASK_LIMIT.parseAndSetParameter(value, subsystemAdd, reader.getLocation());
+                    RemotingSubsystemRootResource.WORKER_TASK_LIMIT.parseAndSetParameter(value, subsystemAdd, reader);
                     break;
                 case WORKER_TASK_MAX_THREADS:
                     if (subsystemAdd.hasDefined(CommonAttributes.WORKER_TASK_MAX_THREADS)) {
                         throw duplicateAttribute(reader, CommonAttributes.WORKER_TASK_MAX_THREADS);
                     }
-                    RemotingSubsystemRootResource.WORKER_TASK_MAX_THREADS.parseAndSetParameter(value, subsystemAdd, reader.getLocation());
+                    RemotingSubsystemRootResource.WORKER_TASK_MAX_THREADS.parseAndSetParameter(value, subsystemAdd, reader);
                     break;
                 case WORKER_WRITE_THREADS:
                     if (subsystemAdd.hasDefined(CommonAttributes.WORKER_WRITE_THREADS)) {
                         throw duplicateAttribute(reader, CommonAttributes.WORKER_WRITE_THREADS);
                     }
-                    RemotingSubsystemRootResource.WORKER_WRITE_THREADS.parseAndSetParameter(value, subsystemAdd, reader.getLocation());
+                    RemotingSubsystemRootResource.WORKER_WRITE_THREADS.parseAndSetParameter(value, subsystemAdd, reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);

@@ -22,8 +22,8 @@
 
 package org.jboss.as.controller;
 
-import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
@@ -137,15 +137,14 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
      * default value will be used.
      * </p>
      *
-     * @param value the value. Will be {@link String#trim() trimmed} before use if not {@code null}.
-     * @param location current location of the parser's {@link javax.xml.stream.XMLStreamReader}. Used for any exception
-     *                 message
      *
+     * @param value the value. Will be {@link String#trim() trimmed} before use if not {@code null}.
+     * @param reader
      * @return {@code ModelNode} representing the parsed value
      *
      * @throws javax.xml.stream.XMLStreamException if {@code value} is not valid
      */
-    public ModelNode parse(final String value, final Location location) throws XMLStreamException {
+    public ModelNode parse(final String value, final XMLStreamReader reader) throws XMLStreamException {
 
         final String trimmed = value == null ? null : value.trim();
         ModelNode node;
@@ -190,14 +189,14 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
         try {
             getValidator().validateParameter(getXmlName(), node);
         } catch (OperationFailedException e) {
-            throw new XMLStreamException(e.getFailureDescription().toString(), location);
+            throw new XMLStreamException(e.getFailureDescription().toString(), reader.getLocation());
         }
 
         return node;
     }
 
-    public void parseAndSetParameter(final String value, final ModelNode operation, final Location location) throws XMLStreamException {
-        ModelNode paramVal = parse(value, location);
+    public void parseAndSetParameter(final String value, final ModelNode operation, final XMLStreamReader reader) throws XMLStreamException {
+        ModelNode paramVal = parse(value, reader);
         operation.get(getName()).set(paramVal);
     }
 

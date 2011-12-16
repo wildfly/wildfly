@@ -25,8 +25,8 @@ package org.jboss.as.controller;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.ListValidator;
@@ -74,14 +74,14 @@ public abstract class ListAttributeDefinition extends AttributeDefinition {
      * </p>
      *
      * @param value the value. Will be {@link String#trim() trimmed} before use if not {@code null}.
-     * @param location current location of the parser's {@link javax.xml.stream.XMLStreamReader}. Used for any exception
+     * @param reader current location of the parser's {@link javax.xml.stream.XMLStreamReader}. Used for any exception
      *                 message
      *
      * @return {@code ModelNode} representing the parsed value
      *
      * @throws javax.xml.stream.XMLStreamException if {@code value} is not valid
      */
-    public ModelNode parse(final String value, final Location location) throws XMLStreamException {
+    public ModelNode parse(final String value, final XMLStreamReader reader) throws XMLStreamException {
 
         final String trimmed = value == null ? null : value.trim();
         ModelNode node;
@@ -94,14 +94,14 @@ public abstract class ListAttributeDefinition extends AttributeDefinition {
         try {
             elementValidator.validateParameter(getXmlName(), node);
         } catch (OperationFailedException e) {
-            throw new XMLStreamException(e.getFailureDescription().toString(), location);
+            throw new XMLStreamException(e.getFailureDescription().toString(), reader.getLocation());
         }
 
         return node;
     }
 
-    public void parseAndAddParameterElement(final String value, final ModelNode operation, final Location location) throws XMLStreamException {
-        ModelNode paramVal = parse(value, location);
+    public void parseAndAddParameterElement(final String value, final ModelNode operation, final XMLStreamReader reader) throws XMLStreamException {
+        ModelNode paramVal = parse(value, reader);
         operation.get(getName()).add(paramVal);
     }
 

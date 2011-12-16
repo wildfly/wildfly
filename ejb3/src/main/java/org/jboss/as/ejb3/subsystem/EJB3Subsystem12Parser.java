@@ -74,7 +74,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
@@ -641,12 +640,12 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
                 case BEAN_INSTANCE_POOL_REF: {
                     final String poolName = readStringAttributeElement(reader, EJB3SubsystemXMLAttribute.POOL_NAME.getLocalName());
-                    EJB3SubsystemRootResourceDefinition.DEFAULT_MDB_INSTANCE_POOL.parseAndSetParameter(poolName, ejb3SubsystemAddOperation, reader.getLocation());
+                    EJB3SubsystemRootResourceDefinition.DEFAULT_MDB_INSTANCE_POOL.parseAndSetParameter(poolName, ejb3SubsystemAddOperation, reader);
                     break;
                 }
                 case RESOURCE_ADAPTER_REF: {
                     final String resourceAdapterName = readStringAttributeElement(reader, EJB3SubsystemXMLAttribute.RESOURCE_ADAPTER_NAME.getLocalName());
-                    EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME.parseAndSetParameter(resourceAdapterName, ejb3SubsystemAddOperation, reader.getLocation());
+                    EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME.parseAndSetParameter(resourceAdapterName, ejb3SubsystemAddOperation, reader);
                     break;
                 }
                 default: {
@@ -698,7 +697,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
                 case BEAN_INSTANCE_POOL_REF: {
                     final String poolName = readStringAttributeElement(reader, EJB3SubsystemXMLAttribute.POOL_NAME.getLocalName());
-                    EJB3SubsystemRootResourceDefinition.DEFAULT_SLSB_INSTANCE_POOL.parseAndSetParameter(poolName, ejb3SubsystemAddOperation, reader.getLocation());
+                    EJB3SubsystemRootResourceDefinition.DEFAULT_SLSB_INSTANCE_POOL.parseAndSetParameter(poolName, ejb3SubsystemAddOperation, reader);
                     break;
                 }
                 default: {
@@ -720,15 +719,15 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case DEFAULT_ACCESS_TIMEOUT: {
-                    defaultAccessTimeout = EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT.parse(value, reader.getLocation()).asString();
+                    defaultAccessTimeout = EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT.parse(value, reader).asString();
                     break;
                 }
                 case CACHE_REF: {
-                    cache = EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_CACHE.parse(value, reader.getLocation()).asString();
+                    cache = EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_CACHE.parse(value, reader).asString();
                     break;
                 }
                 case CLUSTERED_CACHE_REF: {
-                    clusteredCache = EJB3SubsystemRootResourceDefinition.DEFAULT_CLUSTERED_SFSB_CACHE.parse(value, reader.getLocation()).asString();
+                    clusteredCache = EJB3SubsystemRootResourceDefinition.DEFAULT_CLUSTERED_SFSB_CACHE.parse(value, reader).asString();
                     break;
                 }
                 default: {
@@ -742,9 +741,9 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
         if (!missingRequiredAttributes.isEmpty()) {
             throw missingRequired(reader, missingRequiredAttributes);
         }
-        EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT.parseAndSetParameter(defaultAccessTimeout, ejb3SubsystemAddOperation, reader.getLocation());
-        EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_CACHE.parseAndSetParameter(cache, ejb3SubsystemAddOperation, reader.getLocation());
-        EJB3SubsystemRootResourceDefinition.DEFAULT_CLUSTERED_SFSB_CACHE.parseAndSetParameter(clusteredCache, ejb3SubsystemAddOperation, reader.getLocation());
+        EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT.parseAndSetParameter(defaultAccessTimeout, ejb3SubsystemAddOperation, reader);
+        EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_CACHE.parseAndSetParameter(cache, ejb3SubsystemAddOperation, reader);
+        EJB3SubsystemRootResourceDefinition.DEFAULT_CLUSTERED_SFSB_CACHE.parseAndSetParameter(clusteredCache, ejb3SubsystemAddOperation, reader);
     }
 
     private void parseSingletonBean(final XMLExtendedStreamReader reader, final List<ModelNode> operations, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
@@ -757,7 +756,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case DEFAULT_ACCESS_TIMEOUT:
-                    defaultAccessTimeout = EJB3SubsystemRootResourceDefinition.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT.parse(value, reader.getLocation()).asString();
+                    defaultAccessTimeout = EJB3SubsystemRootResourceDefinition.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT.parse(value, reader).asString();
                     // found the mandatory attribute
                     missingRequiredAttributes.remove(EJB3SubsystemXMLAttribute.DEFAULT_ACCESS_TIMEOUT);
                     break;
@@ -769,7 +768,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
         if (!missingRequiredAttributes.isEmpty()) {
             throw missingRequired(reader, missingRequiredAttributes);
         }
-        EJB3SubsystemRootResourceDefinition.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT.parseAndSetParameter(defaultAccessTimeout, ejb3SubsystemAddOperation, reader.getLocation());
+        EJB3SubsystemRootResourceDefinition.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT.parseAndSetParameter(defaultAccessTimeout, ejb3SubsystemAddOperation, reader);
     }
 
     private void parsePools(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {
@@ -820,13 +819,13 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                     poolName = value;
                     break;
                 case MAX_POOL_SIZE:
-                    maxPoolSize = StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.parse(value, reader.getLocation()).asInt();
+                    maxPoolSize = StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.parse(value, reader).asInt();
                     break;
                 case INSTANCE_AQUISITION_TIMEOUT:
-                    timeout = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.parse(value, reader.getLocation()).asLong();
+                    timeout = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.parse(value, reader).asLong();
                     break;
                 case INSTANCE_AQUISITION_TIMEOUT_UNIT:
-                    unit = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.parse(value, reader.getLocation()).asString();
+                    unit = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.parse(value, reader).asString();
                     break;
 
                 default:
@@ -871,12 +870,12 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                     break;
                 }
                 case PASSIVATION_STORE_REF: {
-                    passivationStore = CacheFactoryResourceDefinition.PASSIVATION_STORE.parse(value, reader.getLocation()).asString();
+                    passivationStore = CacheFactoryResourceDefinition.PASSIVATION_STORE.parse(value, reader).asString();
                     break;
                 }
                 case ALIASES: {
                     for (String alias: reader.getListAttributeValue(i)) {
-                        aliases.add(CacheFactoryResourceDefinition.ALIASES.parse(alias, reader.getLocation()).asString());
+                        aliases.add(CacheFactoryResourceDefinition.ALIASES.parse(alias, reader).asString());
                     }
                     break;
                 }
@@ -932,31 +931,31 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                     break;
                 }
                 case MAX_SIZE: {
-                    maxSize = FilePassivationStoreResourceDefinition.MAX_SIZE.parse(value, reader.getLocation()).asInt();
+                    maxSize = FilePassivationStoreResourceDefinition.MAX_SIZE.parse(value, reader).asInt();
                     break;
                 }
                 case IDLE_TIMEOUT: {
-                    timeout = PassivationStoreResourceDefinition.IDLE_TIMEOUT.parse(value, reader.getLocation()).asLong();
+                    timeout = PassivationStoreResourceDefinition.IDLE_TIMEOUT.parse(value, reader).asLong();
                     break;
                 }
                 case IDLE_TIMEOUT_UNIT: {
-                    unit = PassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT.parse(value, reader.getLocation()).asString();
+                    unit = PassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT.parse(value, reader).asString();
                     break;
                 }
                 case RELATIVE_TO: {
-                    relativeTo = FilePassivationStoreResourceDefinition.RELATIVE_TO.parse(value, reader.getLocation()).asString();
+                    relativeTo = FilePassivationStoreResourceDefinition.RELATIVE_TO.parse(value, reader).asString();
                     break;
                 }
                 case GROUPS_PATH: {
-                    groupsPath = FilePassivationStoreResourceDefinition.GROUPS_PATH.parse(value, reader.getLocation()).asString();
+                    groupsPath = FilePassivationStoreResourceDefinition.GROUPS_PATH.parse(value, reader).asString();
                     break;
                 }
                 case SESSIONS_PATH: {
-                    sessionsPath = FilePassivationStoreResourceDefinition.SESSIONS_PATH.parse(value, reader.getLocation()).asString();
+                    sessionsPath = FilePassivationStoreResourceDefinition.SESSIONS_PATH.parse(value, reader).asString();
                     break;
                 }
                 case SUBDIRECTORY_COUNT: {
-                    subdirectoryCount = FilePassivationStoreResourceDefinition.SUBDIRECTORY_COUNT.parse(value, reader.getLocation()).asInt();
+                    subdirectoryCount = FilePassivationStoreResourceDefinition.SUBDIRECTORY_COUNT.parse(value, reader).asInt();
                     break;
                 }
                 default: {
@@ -988,23 +987,23 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                     break;
                 }
                 case MAX_SIZE: {
-                    maxSize = ClusterPassivationStoreResourceDefinition.MAX_SIZE.parse(value, reader.getLocation()).asInt();
+                    maxSize = ClusterPassivationStoreResourceDefinition.MAX_SIZE.parse(value, reader).asInt();
                     break;
                 }
                 case IDLE_TIMEOUT: {
-                    timeout = PassivationStoreResourceDefinition.IDLE_TIMEOUT.parse(value, reader.getLocation()).asLong();
+                    timeout = PassivationStoreResourceDefinition.IDLE_TIMEOUT.parse(value, reader).asLong();
                     break;
                 }
                 case IDLE_TIMEOUT_UNIT: {
-                    unit = PassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT.parse(value, reader.getLocation()).asString();
+                    unit = PassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT.parse(value, reader).asString();
                     break;
                 }
                 case BACKING_CACHE: {
-                    backingCache = ClusterPassivationStoreResourceDefinition.BACKING_CACHE.parse(value, reader.getLocation()).asString();
+                    backingCache = ClusterPassivationStoreResourceDefinition.BACKING_CACHE.parse(value, reader).asString();
                     break;
                 }
                 case PASSIVATE_EVENTS_ON_REPLICATE: {
-                    passivateEventsOnReplicate = ClusterPassivationStoreResourceDefinition.PASSIVATE_EVENTS_ON_REPLICATE.parse(value, reader.getLocation()).asBoolean();
+                    passivateEventsOnReplicate = ClusterPassivationStoreResourceDefinition.PASSIVATE_EVENTS_ON_REPLICATE.parse(value, reader).asBoolean();
                     break;
                 }
                 default: {
@@ -1059,7 +1058,6 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                     final int count = reader.getAttributeCount();
                     for (int i = 0; i < count; i++) {
                         requireNoNamespaceAttribute(reader, i);
-                        final Location location = reader.getLocation();
                         final String value = reader.getAttributeValue(i);
                         final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
                         switch (attribute) {
@@ -1067,13 +1065,13 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                                 if (dataStorePath != null) {
                                     throw unexpectedAttribute(reader, i);
                                 }
-                                dataStorePath = TimerServiceResourceDefinition.PATH.parse(value, location).asString();
+                                dataStorePath = TimerServiceResourceDefinition.PATH.parse(value, reader).asString();
                                 break;
                             case RELATIVE_TO:
                                 if (dataStorePathRelativeTo != null) {
                                     throw unexpectedAttribute(reader, i);
                                 }
-                                dataStorePathRelativeTo = TimerServiceResourceDefinition.RELATIVE_TO.parse(value, location).asString();
+                                dataStorePathRelativeTo = TimerServiceResourceDefinition.RELATIVE_TO.parse(value, reader).asString();
                                 break;
                             default:
                                 throw unexpectedAttribute(reader, i);
@@ -1131,10 +1129,10 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                     threadPoolName = value.trim();
                     break;
                 case MAX_THREADS:
-                    maxThreads = EJB3ThreadPoolResourceDefinition.MAX_THREADS.parse(value, reader.getLocation()).asInt();
+                    maxThreads = EJB3ThreadPoolResourceDefinition.MAX_THREADS.parse(value, reader).asInt();
                     break;
                 case KEEPALIVE_TIME:
-                    keepAlive = EJB3ThreadPoolResourceDefinition.KEEPALIVE_TIME.parse(value, reader.getLocation()).asInt();
+                    keepAlive = EJB3ThreadPoolResourceDefinition.KEEPALIVE_TIME.parse(value, reader).asInt();
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);

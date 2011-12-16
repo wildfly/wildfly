@@ -45,7 +45,6 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
-import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -405,21 +404,18 @@ public class JcaExtension implements Extension {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case ENABLED: {
-                        final Location location = reader.getLocation();
                         String value = rawAttributeText(reader,  ArchiveValidationParameters.ARCHIVE_VALIDATION_ENABLED.getAttribute().getXmlName());
-                        ArchiveValidationParameters.ARCHIVE_VALIDATION_ENABLED.getAttribute().parseAndSetParameter(value, archiveValidationOperation, location);
+                        ArchiveValidationParameters.ARCHIVE_VALIDATION_ENABLED.getAttribute().parseAndSetParameter(value, archiveValidationOperation, reader);
                         break;
                     }
                     case FAIL_ON_ERROR: {
-                        final Location location = reader.getLocation();
                         String value = rawAttributeText(reader, ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_ERROR.getAttribute().getXmlName());
-                        ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_ERROR.getAttribute().parseAndSetParameter(value, archiveValidationOperation, location);
+                        ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_ERROR.getAttribute().parseAndSetParameter(value, archiveValidationOperation, reader);
                         break;
                     }
                     case FAIL_ON_WARN: {
-                        final Location location = reader.getLocation();
                         String value = rawAttributeText(reader, ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_WARN.getAttribute().getXmlName());
-                        ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_WARN.getAttribute().parseAndSetParameter(value, archiveValidationOperation, location);
+                        ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_WARN.getAttribute().parseAndSetParameter(value, archiveValidationOperation, reader);
                         break;
                     }
                     default: {
@@ -446,9 +442,8 @@ public class JcaExtension implements Extension {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case NAME: {
-                        final Location location = reader.getLocation();
                         name = rawAttributeText(reader, WorkManagerAdd.WmParameters.NAME.getAttribute().getXmlName());
-                        WorkManagerAdd.WmParameters.NAME.getAttribute().parseAndSetParameter(name, workManagerOperation, location);
+                        WorkManagerAdd.WmParameters.NAME.getAttribute().parseAndSetParameter(name, workManagerOperation, reader);
                         break;
                     }
                     default: {
@@ -518,9 +513,8 @@ public class JcaExtension implements Extension {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case ENABLED: {
-                        final Location location = reader.getLocation();
                         String value = rawAttributeText(reader, BeanValidationAdd.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().getXmlName());
-                        BeanValidationAdd.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().parseAndSetParameter(value, beanValidationOperation, location);
+                        BeanValidationAdd.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().parseAndSetParameter(value, beanValidationOperation, reader);
                         break;
                     }
                     default: {
@@ -551,15 +545,13 @@ public class JcaExtension implements Extension {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case DEBUG: {
-                        final Location location = reader.getLocation();
                         String value = rawAttributeText(reader, CachedConnectionManagerAdd.CcmParameters.DEBUG.getAttribute().getXmlName());
-                        CachedConnectionManagerAdd.CcmParameters.DEBUG.getAttribute().parseAndSetParameter(value, ccmOperation, location);
+                        CachedConnectionManagerAdd.CcmParameters.DEBUG.getAttribute().parseAndSetParameter(value, ccmOperation, reader);
                         break;
                     }
                     case ERROR: {
-                        final Location location = reader.getLocation();
                         String value = rawAttributeText(reader, CachedConnectionManagerAdd.CcmParameters.ERROR.getAttribute().getXmlName());
-                        CachedConnectionManagerAdd.CcmParameters.ERROR.getAttribute().parseAndSetParameter(value, ccmOperation, location);
+                        CachedConnectionManagerAdd.CcmParameters.ERROR.getAttribute().parseAndSetParameter(value, ccmOperation, reader);
                         break;
                     }
                     default: {
@@ -592,15 +584,13 @@ public class JcaExtension implements Extension {
                             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                             switch (attribute) {
                                 case NAME: {
-                                    final Location location = reader.getLocation();
                                     name = rawAttributeText(reader, BootstrapContextAdd.BootstrapCtxParameters.NAME.getAttribute().getXmlName());
-                                    BootstrapContextAdd.BootstrapCtxParameters.NAME.getAttribute().parseAndSetParameter(name, bootstrapContextOperation, location);
+                                    BootstrapContextAdd.BootstrapCtxParameters.NAME.getAttribute().parseAndSetParameter(name, bootstrapContextOperation, reader);
                                     break;
                                 }
                                 case WORKMANAGER: {
-                                    final Location location = reader.getLocation();
                                     wmName = rawAttributeText(reader, BootstrapContextAdd.BootstrapCtxParameters.WORKMANAGER.getAttribute().getXmlName());
-                                    BootstrapContextAdd.BootstrapCtxParameters.WORKMANAGER.getAttribute().parseAndSetParameter(wmName, bootstrapContextOperation, location);
+                                    BootstrapContextAdd.BootstrapCtxParameters.WORKMANAGER.getAttribute().parseAndSetParameter(wmName, bootstrapContextOperation, reader);
                                     break;
                                 }
                                 default: {
