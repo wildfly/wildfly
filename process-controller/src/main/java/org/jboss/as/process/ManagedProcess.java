@@ -64,7 +64,7 @@ final class ManagedProcess {
     private final RespawnPolicy respawnPolicy;
 
     private OutputStream stdin;
-    private State state = State.DOWN;
+    private volatile State state = State.DOWN;
     private Process process;
     private boolean shutdown;
     private boolean stopRequested = false;
@@ -150,6 +150,7 @@ final class ManagedProcess {
     }
 
     public void sendStdin(final InputStream msg) {
+        assert holdsLock(lock); // Call under lock
         try {
             StreamUtils.copyStream(msg, stdin);
             stdin.flush();
@@ -159,6 +160,7 @@ final class ManagedProcess {
     }
 
     public void reconnect(String hostName, int port, boolean managementSubsystemEndpoint, byte[] asAuthKey) {
+        assert holdsLock(lock); // Call under lock
         try {
             StreamUtils.writeUTFZBytes(stdin, hostName);
             StreamUtils.writeInt(stdin, port);

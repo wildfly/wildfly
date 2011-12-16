@@ -83,6 +83,7 @@ public class ServerInventoryImpl implements ServerInventory {
     private final Object shutdownCondition = new Object();
     private volatile CountDownLatch processInventoryLatch;
     private volatile Map<String, ProcessInfo> processInfos;
+    private volatile boolean stopped;
 
     ServerInventoryImpl(final DomainController domainController, final HostControllerEnvironment environment, final InetSocketAddress managementAddress, final ProcessControllerClient processControllerClient) {
         this.domainController = domainController;
@@ -283,11 +284,10 @@ public class ServerInventoryImpl implements ServerInventory {
 
             channel.addCloseHandler(new CloseHandler<Channel>() {
                 public void handleClose(final Channel closed, final IOException exception) {
-                    domainController.unregisterRunningServer(serverProcessName);
+                    domainController.unregisterRunningServer(server.getServerName());
                 }
             });
 
-            server.setServerManagementChannel(channel);
             if (!environment.isRestart()){
                 checkState(server, ServerState.STARTING);
             }
@@ -336,7 +336,7 @@ public class ServerInventoryImpl implements ServerInventory {
             return;
         }
         domainController.unregisterRunningServer(server.getServerName());
-        if (server.getState() != ServerState.STOPPING){
+        if (server.getState() != ServerState.STOPPING && ! stopped){
             //The server crashed, try to restart it
             // TODO: throttle policy
             try {
@@ -361,6 +361,7 @@ public class ServerInventoryImpl implements ServerInventory {
     }
 
     void stopServers(int gracefulTimeout, boolean blockUntilStopped) {
+        stopped = true;
         Map<String, ProcessInfo> processInfoMap = determineRunningProcesses();
         for (String serverProcessName : processInfoMap.keySet()) {
             if (ManagedServer.isServerProcess(serverProcessName)) {
