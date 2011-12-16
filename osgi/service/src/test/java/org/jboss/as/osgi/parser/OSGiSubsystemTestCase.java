@@ -193,7 +193,7 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
             "</subsystem>";
 
         ModelNode testModel = new ModelNode();
-        testModel.get(ModelDescriptionConstants.SUBSYSTEM).get(Namespace.CURRENT.getUriString()).setEmptyObject();
+        testModel.get(ModelDescriptionConstants.SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME).setEmptyObject();
         String triggered = outputModel(testModel);
         Assert.assertEquals(normalizeXML(subsystemXml), normalizeXML(triggered));
     }
@@ -278,6 +278,12 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
                 return OperationContext.Type.MANAGEMENT;
             }
         };
+    }
+
+
+    //TODO AS7-2421 remove this
+    protected boolean testRemoval() {
+        return false;
     }
 
 }

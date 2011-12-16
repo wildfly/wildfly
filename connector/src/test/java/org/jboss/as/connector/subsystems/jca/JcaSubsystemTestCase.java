@@ -23,10 +23,7 @@ package org.jboss.as.connector.subsystems.jca;
 
 import java.io.IOException;
 
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 
 /**
  *
@@ -63,5 +60,9 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
             "</subsystem>";
     }
 
+    //TODO AS7-2421 remove me
+    protected boolean testRemoval() {
+        return false;
+    }
 
 }

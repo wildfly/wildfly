@@ -134,6 +134,10 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
         final ModelNode modelC = servicesC.readWholeModel();
 
         super.compare(modelA, modelC);
+
+        if (testRemoval()) {
+            super.assertRemoveSubsystemResources(servicesA);
+        }
     }
 
     protected ModelNode createDescribeOperation() {
@@ -153,5 +157,13 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
                 return OperationContext.Type.MANAGEMENT;
             }
         };
+    }
+
+    /**
+     * @deprecated Anyone overriding this should fix their subsystem
+     */
+    @Deprecated
+    protected boolean testRemoval() {
+        return true;
     }
 }

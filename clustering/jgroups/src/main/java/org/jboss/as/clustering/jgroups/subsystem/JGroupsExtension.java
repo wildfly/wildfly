@@ -60,6 +60,7 @@ public class JGroupsExtension implements Extension, DescriptionProvider, XMLElem
 
     private static final PathElement stacksPath = PathElement.pathElement(ModelKeys.STACK);
     private static final JGroupsSubsystemAdd add = new JGroupsSubsystemAdd();
+    private static final JGroupsSubsystemRemove remove = new JGroupsSubsystemRemove();
     private static final JGroupsSubsystemDescribe describe = new JGroupsSubsystemDescribe();
     private static final ProtocolStackAdd stackAdd = new ProtocolStackAdd();
     private static final ProtocolStackRemove stackRemove = new ProtocolStackRemove();
@@ -81,6 +82,7 @@ public class JGroupsExtension implements Extension, DescriptionProvider, XMLElem
 
         ManagementResourceRegistration registration = subsystem.registerSubsystemModel(this);
         registration.registerOperationHandler(ModelDescriptionConstants.ADD, add, add, false);
+        registration.registerOperationHandler(ModelDescriptionConstants.REMOVE, remove, remove, false);
         registration.registerOperationHandler(ModelDescriptionConstants.DESCRIBE, describe, describe, false, EntryType.PRIVATE);
 
         ManagementResourceRegistration stacks = registration.registerSubModel(stacksPath, stackDescription);

@@ -23,10 +23,7 @@ package org.jboss.as.xts;
 
 import java.io.IOException;
 
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.junit.Ignore;
 
 /**
  *
@@ -44,6 +41,11 @@ public class XTSSubsystemTestCase extends AbstractSubsystemBaseTest {
             "<subsystem xmlns=\"urn:jboss:domain:xts:1.0\">" +
             "    <xts-environment url=\"http://localhost:8080/ws-c11/ActivationService\"/>" +
             "</subsystem>";
+    }
+
+    //TODO AS7-2421 remove this
+    protected boolean testRemoval() {
+        return false;
     }
 
 }

@@ -21,11 +21,11 @@
 */
 package org.jboss.as.logging;
 
+import java.io.IOException;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
-
-import java.io.IOException;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -55,4 +55,11 @@ public class LoggingSubsystemTestCase extends AbstractSubsystemBaseTest {
             }
         };
     }
+
+
+    //TODO AS7-2421 remove this
+    protected boolean testRemoval() {
+        return false;
+    }
+
 }

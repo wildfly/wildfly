@@ -60,4 +60,10 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         };
     }
 
+
+    //TODO AS7-2421 remove this
+    protected boolean testRemoval() {
+        return false;
+    }
+
 }

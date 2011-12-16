@@ -58,6 +58,13 @@ public class JGroupsDescriptions {
         return description;
     }
 
+    static ModelNode getSubsystemRemoveDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        ModelNode description = createSubsystemOperationDescription(ModelDescriptionConstants.ADD, resources);
+        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES).setEmptyObject();
+        return description;
+    }
+
     static ModelNode getSubsystemDescribeDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
         ModelNode description = createSubsystemOperationDescription(ModelDescriptionConstants.DESCRIBE, resources);
