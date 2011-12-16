@@ -34,13 +34,13 @@ public final class EJBEndpoint extends AbstractEndpoint {
 
    public static final String EJB_COMPONENT_VIEW_NAME = EJBEndpoint.class.getPackage().getName() + "EjbComponentViewName";
    private final SessionBeanComponentDescription ejbMD;
-   private final String viewName;
+   private final ServiceName viewName;
    private final Set<String> securityRoles;
    private final String authMethod;
    private final boolean secureWsdlAccess;
    private final String transportGuarantee;
 
-   public EJBEndpoint(final SessionBeanComponentDescription ejbMD, final String viewName, final Set<String> securityRoles, final String authMethod, final boolean secureWsdlAccess, final String transportGuarantee) {
+   public EJBEndpoint(final SessionBeanComponentDescription ejbMD, final ServiceName viewName, final Set<String> securityRoles, final String authMethod, final boolean secureWsdlAccess, final String transportGuarantee) {
        super(ejbMD.getComponentName(), ejbMD.getComponentClassName());
        this.ejbMD = ejbMD;
        this.viewName = viewName;
@@ -50,7 +50,7 @@ public final class EJBEndpoint extends AbstractEndpoint {
        this.transportGuarantee = transportGuarantee;
    }
 
-   public String getComponentViewName() {
+   public ServiceName getComponentViewName() {
        return viewName;
    }
 

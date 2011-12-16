@@ -21,6 +21,10 @@
  */
 package org.jboss.as.webservices.invocation;
 
+import static org.jboss.as.webservices.WSMessages.MESSAGES;
+import static org.jboss.as.webservices.metadata.model.EJBEndpoint.EJB_COMPONENT_VIEW_NAME;
+import static org.jboss.as.webservices.util.ASHelper.getMSCService;
+
 import java.lang.reflect.Method;
 import java.util.Collection;
 
@@ -28,16 +32,10 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.ws.common.invocation.AbstractInvocationHandler;
-import org.jboss.wsf.spi.SPIProvider;
-import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.invocation.Invocation;
-import org.jboss.wsf.spi.ioc.IoCContainerProxy;
-import org.jboss.wsf.spi.ioc.IoCContainerProxyFactory;
-
-import static org.jboss.as.webservices.WSMessages.MESSAGES;
-import static org.jboss.as.webservices.metadata.model.EJBEndpoint.EJB_COMPONENT_VIEW_NAME;
 
 /**
  * Invocation abstraction for both EJB3 and  EJB21 endpoints.
@@ -46,24 +44,12 @@ import static org.jboss.as.webservices.metadata.model.EJBEndpoint.EJB_COMPONENT_
  */
 abstract class AbstractInvocationHandlerEJB extends AbstractInvocationHandler {
 
-   /** MC kernel controller */
-   private final IoCContainerProxy iocContainer;
-
    /** EJB component view name */
-   private String ejbComponentViewName;
+   private ServiceName ejbComponentViewName;
 
    /** EJB component view */
    private volatile ComponentView ejbComponentView;
    private volatile ManagedReference reference;
-
-   /**
-    * Constructor.
-    */
-   AbstractInvocationHandlerEJB() {
-      final SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
-      final IoCContainerProxyFactory iocContainerFactory = spiProvider.getSPI(IoCContainerProxyFactory.class);
-      iocContainer = iocContainerFactory.getContainer();
-   }
 
    /**
     * Initializes EJB component name.
@@ -71,7 +57,7 @@ abstract class AbstractInvocationHandlerEJB extends AbstractInvocationHandler {
     * @param endpoint web service endpoint
     */
    public void init(final Endpoint endpoint) {
-       ejbComponentViewName = (String) endpoint.getProperty(EJB_COMPONENT_VIEW_NAME);
+       ejbComponentViewName = (ServiceName) endpoint.getProperty(EJB_COMPONENT_VIEW_NAME);
        if (ejbComponentViewName == null) throw MESSAGES.missingEjbComponentViewName();
    }
 
@@ -86,7 +72,7 @@ abstract class AbstractInvocationHandlerEJB extends AbstractInvocationHandler {
       if (ejbComponentView == null || reference == null) {
          synchronized(this) {
             if (ejbComponentView == null) {
-               ejbComponentView = iocContainer.getBean(ejbComponentViewName, ComponentView.class);
+               ejbComponentView = getMSCService(ejbComponentViewName, ComponentView.class);
                if (ejbComponentView == null) {
                   throw MESSAGES.cannotFindEjbView(ejbComponentViewName);
                }

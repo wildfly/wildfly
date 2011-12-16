@@ -21,12 +21,9 @@
  */
 package org.jboss.as.webservices.config;
 
+import static org.jboss.as.webservices.util.ASHelper.getMSCService;
+
 import org.jboss.as.webservices.util.WSServices;
-import org.jboss.wsf.spi.SPIProvider;
-import org.jboss.wsf.spi.SPIProviderResolver;
-import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
-import org.jboss.wsf.spi.ioc.IoCContainerProxy;
-import org.jboss.wsf.spi.ioc.IoCContainerProxyFactory;
 import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.management.ServerConfigFactory;
 
@@ -37,25 +34,9 @@ import org.jboss.wsf.spi.management.ServerConfigFactory;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class ServerConfigFactoryImpl extends ServerConfigFactory {
-    /**
-     * Constructor.
-     */
-    public ServerConfigFactoryImpl() {
-        super();
-    }
 
-    /**
-     * Returns config registered in MC kernel.
-     *
-     * @return config
-     */
     public ServerConfig getServerConfig() {
-        final ClassLoader cl = ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader();
-        final SPIProvider spiProvider = SPIProviderResolver.getInstance(cl).getProvider();
-        final IoCContainerProxyFactory iocContainerFactory = spiProvider.getSPI(IoCContainerProxyFactory.class, cl);
-        final IoCContainerProxy iocContainer = iocContainerFactory.getContainer();
-
-        // TODO review IoCContainer spi to avoid conversion to/from String/Service
-        return iocContainer.getBean(WSServices.CONFIG_SERVICE.getCanonicalName(), ServerConfig.class);
+        return getMSCService(WSServices.CONFIG_SERVICE, ServerConfig.class);
     }
+
 }

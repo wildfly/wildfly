@@ -48,6 +48,8 @@ import org.jboss.metadata.ear.spec.WebModuleMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ServletMetaData;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 
@@ -287,6 +289,12 @@ public final class ASHelper {
         }
 
         return contextRoot;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T getMSCService(final ServiceName serviceName, final Class<T> clazz) {
+        ServiceController<T> service = (ServiceController<T>)WSServices.getContainerRegistry().getService(serviceName);
+        return service != null ? service.getValue() : null;
     }
 
 }

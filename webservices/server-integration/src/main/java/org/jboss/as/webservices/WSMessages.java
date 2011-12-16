@@ -33,6 +33,7 @@ import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
 
@@ -96,7 +97,7 @@ public interface WSMessages {
     IllegalStateException missingEjbComponentViewName();
 
     @Message(id = 15520, value = "Cannot find ejb view: %s")
-    IllegalStateException cannotFindEjbView(String viewName);
+    IllegalStateException cannotFindEjbView(ServiceName viewName);
 
     @Message(id = 15521, value = "Null root url")
     IllegalArgumentException nullRootUrl();
