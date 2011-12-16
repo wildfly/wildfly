@@ -23,9 +23,13 @@ package org.jboss.as.cli.impl;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -34,8 +38,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -59,6 +66,7 @@ import org.jboss.as.cli.CommandHistory;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.CommandRegistry;
 import org.jboss.as.cli.OperationCommand;
+import org.jboss.as.cli.SSLConfig;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.batch.Batch;
 import org.jboss.as.cli.batch.BatchManager;
@@ -128,8 +136,7 @@ class CommandContextImpl implements CommandContext {
 
     static boolean isOperation(String line) {
         char firstChar = line.charAt(0);
-        return firstChar == '.' || firstChar == ':' || firstChar == '/'
-                || line.startsWith("..") || line.startsWith(".type");
+        return firstChar == '.' || firstChar == ':' || firstChar == '/' || line.startsWith("..") || line.startsWith(".type");
     }
 
     /** the cli configuration */
@@ -205,27 +212,25 @@ class CommandContextImpl implements CommandContext {
      * Default constructor used for both interactive and non-interactive mode.
      *
      */
-    CommandContextImpl(String defaultControllerHost, int defaultControllerPort, String username, char[] password, boolean initConsole)
-        throws CliInitializationException {
+    CommandContextImpl(String defaultControllerHost, int defaultControllerPort, String username, char[] password,
+            boolean initConsole) throws CliInitializationException {
         operationHandler = new OperationRequestHandler();
 
         this.username = username;
         this.password = password;
-        if(defaultControllerHost != null) {
+        if (defaultControllerHost != null) {
             this.defaultControllerHost = defaultControllerHost;
         }
-        if(defaultControllerPort != -1) {
+        if (defaultControllerPort != -1) {
             this.defaultControllerPort = defaultControllerPort;
         }
         initCommands();
 
         final String userHome = SecurityActions.getSystemProperty("user.home");
         config = CliConfigImpl.parse(this, new File(userHome, "jboss-cli.xml"));
-        // TODO - Create the SSLContext here based on the config - The SSLContext needs to
-        //        live as long as the process for temporarily cached certificates.
+        initSSLContext();
 
-
-        if(initConsole) {
+        if (initConsole) {
             cmdCompleter = new CommandCompleter(cmdRegistry);
             this.console = Console.Factory.getConsole(this);
             console.setUseHistory(true);
@@ -253,7 +258,7 @@ class CommandContextImpl implements CommandContext {
         cmdRegistry.registerHandler(new BatchHandler(), "batch");
         cmdRegistry.registerHandler(new BatchDiscardHandler(), "discard-batch");
         cmdRegistry.registerHandler(new BatchListHandler(), "list-batch");
-        cmdRegistry.registerHandler(new BatchHoldbackHandler(),  "holdback-batch");
+        cmdRegistry.registerHandler(new BatchHoldbackHandler(), "holdback-batch");
         cmdRegistry.registerHandler(new BatchRunHandler(), "run-batch");
         cmdRegistry.registerHandler(new BatchClearHandler(), "clear-batch");
         cmdRegistry.registerHandler(new BatchRemoveLineHandler(), "remove-batch-line");
@@ -267,8 +272,10 @@ class CommandContextImpl implements CommandContext {
         cmdRegistry.registerHandler(new ReadAttributeHandler(this), "read-attribute");
 
         // data-source
-        cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=datasources/data-source", "jndi-name"), "data-source");
-        cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=datasources/xa-data-source", "jndi-name"), "xa-data-source");
+        cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=datasources/data-source", "jndi-name"),
+                "data-source");
+        cmdRegistry.registerHandler(
+                new GenericTypeOperationHandler(this, "/subsystem=datasources/xa-data-source", "jndi-name"), "xa-data-source");
         // supported but hidden from the tab-completion
         cmdRegistry.registerHandler(new DataSourceAddHandler(this), false, "add-data-source");
         cmdRegistry.registerHandler(new DataSourceModifyHandler(this), false, "modify-data-source");
@@ -278,9 +285,12 @@ class CommandContextImpl implements CommandContext {
         cmdRegistry.registerHandler(new XADataSourceModifyHandler(this), false, "modify-xa-data-source");
 
         // JMS
-        cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=messaging/hornetq-server=default/jms-queue", "queue-address"), "jms-queue");
-        cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=messaging/hornetq-server=default/jms-topic", "topic-address"), "jms-topic");
-        cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=messaging/hornetq-server=default/connection-factory", null), "connection-factory");
+        cmdRegistry.registerHandler(new GenericTypeOperationHandler(this,
+                "/subsystem=messaging/hornetq-server=default/jms-queue", "queue-address"), "jms-queue");
+        cmdRegistry.registerHandler(new GenericTypeOperationHandler(this,
+                "/subsystem=messaging/hornetq-server=default/jms-topic", "topic-address"), "jms-topic");
+        cmdRegistry.registerHandler(new GenericTypeOperationHandler(this,
+                "/subsystem=messaging/hornetq-server=default/connection-factory", null), "connection-factory");
         // supported but hidden from the tab-completion
         cmdRegistry.registerHandler(new JmsQueueAddHandler(this), false, "add-jms-queue");
         cmdRegistry.registerHandler(new JmsQueueRemoveHandler(this), false, "remove-jms-queue");
@@ -292,9 +302,82 @@ class CommandContextImpl implements CommandContext {
         cmdRegistry.registerHandler(new CreateJmsResourceHandler(this), false, "create-jms-resource");
         cmdRegistry.registerHandler(new DeleteJmsResourceHandler(this), false, "delete-jms-resource");
 
-        final GenericTypeOperationHandler rolloutPlan = new GenericTypeOperationHandler(this, "/management-client-content=rollout-plans/rollout-plan", null);
+        final GenericTypeOperationHandler rolloutPlan = new GenericTypeOperationHandler(this,
+                "/management-client-content=rollout-plans/rollout-plan", null);
         rolloutPlan.addValueConverter("content", ArgumentValueConverter.ROLLOUT_PLAN);
         cmdRegistry.registerHandler(rolloutPlan, "rollout-plan");
+    }
+
+    /**
+     * Initialise the SSLContext and associated TrustManager for this CommandContext.
+     *
+     * If no configuration is specified the default mode of operation will be to use a lazily initialised TrustManager with no
+     * KeyManager.
+     */
+    private void initSSLContext() throws CliInitializationException {
+        // If the standard properties have been set don't enable and CLI specific stores.
+        if (SecurityActions.getSystemProperty("javax.net.ssl.keyStore") != null
+                || SecurityActions.getSystemProperty("javax.net.ssl.trustStore") != null) {
+            return;
+        }
+
+        KeyManager[] keyManagers = null;
+        TrustManager[] trustManagers = null;
+
+        String trustStore = null;
+        String trustStorePassword = null;
+        boolean modifyTrustStore = true;
+
+        SSLConfig sslConfig = config.getSslConfig();
+        if (sslConfig != null) {
+            String keyStoreLoc = sslConfig.getKeyStore();
+            if (keyStoreLoc != null) {
+                char[] keyStorePassword = sslConfig.getKeyStorePassword().toCharArray();
+
+                File keyStoreFile = new File(keyStoreLoc);
+
+                FileInputStream fis = null;
+                try {
+                    fis = new FileInputStream(keyStoreFile);
+                    KeyStore theKeyStore = KeyStore.getInstance("JKS");
+                    theKeyStore.load(fis, keyStorePassword);
+
+                    KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+                    keyManagerFactory.init(theKeyStore, keyStorePassword);
+                    keyManagers = keyManagerFactory.getKeyManagers();
+                } catch (IOException e) {
+                    throw new CliInitializationException(e);
+                } catch (GeneralSecurityException e) {
+                    throw new CliInitializationException(e);
+                } finally {
+                    StreamUtils.safeClose(fis);
+                }
+
+            }
+
+            trustStore = sslConfig.getTrustStore();
+            trustStorePassword = sslConfig.getTrustStorePassword();
+            modifyTrustStore = sslConfig.isModifyTrustStore();
+        }
+
+        if (trustStore == null) {
+            final String userHome = SecurityActions.getSystemProperty("user.home");
+            File trustStoreFile = new File(userHome, ".jboss-cli.truststore");
+            trustStore = trustStoreFile.getAbsolutePath();
+            trustStorePassword = "cli_truststore"; // Risk of modification but no private keys to be stored in the truststore.
+        }
+
+        trustManager = new LazyDelagatingTrustManager(trustStore, trustStorePassword, modifyTrustStore);
+        trustManagers = new TrustManager[] { trustManager };
+
+        try {
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(keyManagers, trustManagers, null);
+
+            this.sslContext = sslContext;
+        } catch (GeneralSecurityException e) {
+            throw new CliInitializationException(e);
+        }
     }
 
     @Override
@@ -324,8 +407,7 @@ class CommandContextImpl implements CommandContext {
                 StringBuilder op = new StringBuilder();
                 op.append(getPrefixFormatter().format(parsedCmd.getAddress()));
                 op.append(line.substring(line.indexOf(':')));
-                DefaultBatchedCommand batchedCmd = new DefaultBatchedCommand(
-                        op.toString(), request);
+                DefaultBatchedCommand batchedCmd = new DefaultBatchedCommand(op.toString(), request);
                 Batch batch = getBatchManager().getActiveBatch();
                 batch.add(batchedCmd);
                 printLine("#" + batch.size() + " " + batchedCmd.getCommand());
@@ -347,8 +429,7 @@ class CommandContextImpl implements CommandContext {
             }
 
             final String cmdName = parsedCmd.getOperationName();
-            CommandHandler handler = cmdRegistry.getCommandHandler(cmdName
-                    .toLowerCase());
+            CommandHandler handler = cmdRegistry.getCommandHandler(cmdName.toLowerCase());
             if (handler != null) {
                 if (isBatchMode() && handler.isBatchMode()) {
                     if (!(handler instanceof OperationCommand)) {
@@ -378,8 +459,7 @@ class CommandContextImpl implements CommandContext {
                 } catch (CommandFormatException e) {
                 }
             } else {
-                printLine("Unexpected command '" + line
-                        + "'. Type 'help' for the list of supported commands.");
+                printLine("Unexpected command '" + line + "'. Type 'help' for the list of supported commands.");
             }
         }
     }
@@ -410,8 +490,7 @@ class CommandContextImpl implements CommandContext {
                 outputTarget.newLine();
                 outputTarget.flush();
             } catch (IOException e) {
-                System.err.println("Failed to print '" + message
-                        + "' to the output target: " + e.getLocalizedMessage());
+                System.err.println("Failed to print '" + message + "' to the output target: " + e.getLocalizedMessage());
             }
             return;
         }
@@ -456,8 +535,7 @@ class CommandContextImpl implements CommandContext {
                     outputTarget.newLine();
                 }
             } catch (IOException e) {
-                System.err.println("Failed to print columns '" + col
-                        + "' to the console: " + e.getLocalizedMessage());
+                System.err.println("Failed to print columns '" + col + "' to the console: " + e.getLocalizedMessage());
             }
             return;
         }
@@ -509,11 +587,11 @@ class CommandContextImpl implements CommandContext {
 
     @Override
     public void connectController(String host, int port) {
-        if(host == null) {
+        if (host == null) {
             host = defaultControllerHost;
         }
 
-        if(port < 0) {
+        if (port < 0) {
             port = defaultControllerPort;
         }
 
@@ -632,8 +710,7 @@ class CommandContextImpl implements CommandContext {
                 } else {
                     buffer.append("standalone@");
                 }
-                buffer.append(controllerHost).append(':')
-                        .append(controllerPort).append(' ');
+                buffer.append(controllerHost).append(':').append(controllerPort).append(' ');
                 promptConnectPart = buffer.toString();
             } else {
                 buffer.append("disconnected ");
@@ -695,8 +772,7 @@ class CommandContextImpl implements CommandContext {
     private final DefaultCallbackHandler tmpBatched = new DefaultCallbackHandler();
 
     @Override
-    public BatchedCommand toBatchedCommand(String line)
-            throws CommandFormatException {
+    public BatchedCommand toBatchedCommand(String line) throws CommandFormatException {
 
         if (line.isEmpty()) {
             throw new IllegalArgumentException("Null command line.");
@@ -725,8 +801,7 @@ class CommandContextImpl implements CommandContext {
 
         CommandHandler handler = cmdRegistry.getCommandHandler(parsedCmd.getOperationName());
         if (handler == null) {
-            throw new OperationFormatException("No command handler for '"
-                    + parsedCmd.getOperationName() + "'.");
+            throw new OperationFormatException("No command handler for '" + parsedCmd.getOperationName() + "'.");
         }
         if (!(handler instanceof OperationCommand)) {
             throw new OperationFormatException("The command is not allowed in a batch.");
@@ -784,7 +859,7 @@ class CommandContextImpl implements CommandContext {
     }
 
     protected void notifyListeners(CliEvent event) {
-        for(CliEventListener listener : listeners) {
+        for (CliEventListener listener : listeners) {
             listener.cliEvent(event, this);
         }
     }
@@ -797,25 +872,24 @@ class CommandContextImpl implements CommandContext {
             }
         }));
 
-        if(connect) {
+        if (connect) {
             connectController(null, -1);
         } else {
-            printLine("You are disconnected at the moment." +
-                " Type 'connect' to connect to the server or" +
-                " 'help' for the list of supported commands.");
+            printLine("You are disconnected at the moment." + " Type 'connect' to connect to the server or"
+                    + " 'help' for the list of supported commands.");
         }
 
         try {
             while (!isTerminated()) {
                 final String line = console.readLine(getPrompt());
-                if(line == null) {
+                if (line == null) {
                     terminateSession();
                 } else {
                     processLine(line.trim());
                 }
             }
             printLine("");
-        } catch(Throwable t) {
+        } catch (Throwable t) {
             t.printStackTrace();
         } finally {
             disconnectController();
@@ -907,12 +981,43 @@ class CommandContextImpl implements CommandContext {
     }
 
     /**
-     * A trust manager that by default delegates to a lazily initialised TrustManager, this
-     * TrustManager also support both temporarily and permenantly accepting unknown server
-     * certificate chains.
+     * A trust manager that by default delegates to a lazily initialised TrustManager, this TrustManager also support both
+     * temporarily and permenantly accepting unknown server certificate chains.
+     *
+     * This class also acts as an agregation of the configuration related to TrustStore handling.
      */
     private class LazyDelagatingTrustManager implements X509TrustManager {
 
+        // Configuration based state set on initialisation.
+        
+        private final String trustStore;
+        private final String trustStorePassword;
+        private final boolean modifyTrustStore;
+        
+        private Certificate[] lastFailedCert;
+
+        LazyDelagatingTrustManager(String trustStore, String trustStorePassword, boolean modifyTrustStore) {
+            this.trustStore = trustStore;
+            this.trustStorePassword = trustStorePassword;
+            this.modifyTrustStore = modifyTrustStore;
+        }
+
+        /*
+         * Methods to allow client interaction for certificate verification.
+         */
+
+        Certificate[] getLastFailedCertificateChain() {
+            return lastFailedCert;
+        }
+
+        /*
+         * Internal Methods
+         */
+
+        /*
+         * X509TrustManager Methods
+         */
+        
         @Override
         public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
             // TODO Auto-generated method stub
