@@ -223,7 +223,7 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         try {
             lock.lock();
             final Map<String, TimerEntity> timers = getTimers(timedObjectId);
-            
+
             final List<TimerEntity> entities = new ArrayList<TimerEntity>();
             for(Map.Entry<String, TimerEntity> entry : timers.entrySet()) {
                 entities.add(mostRecentEntityVersion(entry.getValue()));
@@ -236,7 +236,7 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
 
 
     /**
-     * Returns either the loaded entity or the most recent version of the entity that has 
+     * Returns either the loaded entity or the most recent version of the entity that has
      * been persisted in this transaction.
      */
     private TimerEntity mostRecentEntityVersion(final TimerEntity timerEntity) {
