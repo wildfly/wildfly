@@ -30,3 +30,8 @@ To connect automatically after the launch, use '--connect' switch. E.g.
  jboss-admin.sh --connect
  jboss-admin.sh --connect controller=controller-host.net
  jboss-admin.sh --connect controller=controller-host.net:1234
+ 
+ The host may be any of these formats:
+-a host name, e.g. localhost
+-an ipv4 address, e.g. 127.0.0.1
+-an ipv6 address, e.g. [::1]
