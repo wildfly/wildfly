@@ -196,11 +196,13 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
                                             }
                                         });
                                     }
-                                    ManagementResourceRegistration subRegistration = overrideRegistration.registerSubModel(pe, statsResourceDescriptionProvider);
-                                    for (String statName : poolStats.getNames()) {
-                                        subRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
+                                    if (overrideRegistration.getSubModel(PathAddress.pathAddress(pe)) == null) {
+                                        ManagementResourceRegistration subRegistration = overrideRegistration.registerSubModel(pe, statsResourceDescriptionProvider);
+                                        for (String statName : poolStats.getNames()) {
+                                            subRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
+                                        }
+                                        subRegistration.registerOperationHandler("clear-statistics", new ClearStatisticsHandler(poolStats), ResourceAdaptersSubsystemProviders.CLEAR_STATISTICS_DESC, false);
                                     }
-                                    subRegistration.registerOperationHandler("clear-statistics", new ClearStatisticsHandler(poolStats), ResourceAdaptersSubsystemProviders.CLEAR_STATISTICS_DESC, false);
                                 }
                             }
                             break;
