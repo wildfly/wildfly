@@ -24,25 +24,30 @@ package org.jboss.as.cli.impl;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
+import java.security.MessageDigest;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -127,6 +132,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.sasl.callback.DigestHashCallback;
+import org.jboss.sasl.util.HexConverter;
 
 /**
  *
@@ -272,10 +278,8 @@ class CommandContextImpl implements CommandContext {
         cmdRegistry.registerHandler(new ReadAttributeHandler(this), "read-attribute");
 
         // data-source
-        cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=datasources/data-source", "jndi-name"),
-                "data-source");
-        cmdRegistry.registerHandler(
-                new GenericTypeOperationHandler(this, "/subsystem=datasources/xa-data-source", "jndi-name"), "xa-data-source");
+        cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=datasources/data-source", "jndi-name"), "data-source");
+        cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=datasources/xa-data-source", "jndi-name"), "xa-data-source");
         // supported but hidden from the tab-completion
         cmdRegistry.registerHandler(new DataSourceAddHandler(this), false, "add-data-source");
         cmdRegistry.registerHandler(new DataSourceModifyHandler(this), false, "modify-data-source");
@@ -285,12 +289,9 @@ class CommandContextImpl implements CommandContext {
         cmdRegistry.registerHandler(new XADataSourceModifyHandler(this), false, "modify-xa-data-source");
 
         // JMS
-        cmdRegistry.registerHandler(new GenericTypeOperationHandler(this,
-                "/subsystem=messaging/hornetq-server=default/jms-queue", "queue-address"), "jms-queue");
-        cmdRegistry.registerHandler(new GenericTypeOperationHandler(this,
-                "/subsystem=messaging/hornetq-server=default/jms-topic", "topic-address"), "jms-topic");
-        cmdRegistry.registerHandler(new GenericTypeOperationHandler(this,
-                "/subsystem=messaging/hornetq-server=default/connection-factory", null), "connection-factory");
+        cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=messaging/hornetq-server=default/jms-queue", "queue-address"), "jms-queue");
+        cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=messaging/hornetq-server=default/jms-topic", "topic-address"), "jms-topic");
+        cmdRegistry.registerHandler(new GenericTypeOperationHandler(this, "/subsystem=messaging/hornetq-server=default/connection-factory", null), "connection-factory");
         // supported but hidden from the tab-completion
         cmdRegistry.registerHandler(new JmsQueueAddHandler(this), false, "add-jms-queue");
         cmdRegistry.registerHandler(new JmsQueueRemoveHandler(this), false, "remove-jms-queue");
@@ -302,8 +303,7 @@ class CommandContextImpl implements CommandContext {
         cmdRegistry.registerHandler(new CreateJmsResourceHandler(this), false, "create-jms-resource");
         cmdRegistry.registerHandler(new DeleteJmsResourceHandler(this), false, "delete-jms-resource");
 
-        final GenericTypeOperationHandler rolloutPlan = new GenericTypeOperationHandler(this,
-                "/management-client-content=rollout-plans/rollout-plan", null);
+        final GenericTypeOperationHandler rolloutPlan = new GenericTypeOperationHandler(this, "/management-client-content=rollout-plans/rollout-plan", null);
         rolloutPlan.addValueConverter("content", ArgumentValueConverter.ROLLOUT_PLAN);
         cmdRegistry.registerHandler(rolloutPlan, "rollout-plan");
     }
@@ -595,8 +595,9 @@ class CommandContextImpl implements CommandContext {
             port = defaultControllerPort;
         }
 
-        boolean retry = false;
+        boolean retry;
         do {
+            retry = false;
             try {
                 ModelControllerClient newClient = null;
 
@@ -613,7 +614,13 @@ class CommandContextImpl implements CommandContext {
                         printLine("Unable to authenticate against controller at " + host + ":" + port);
                         break;
                     case SSL_FAILURE:
-                        printLine("Unable to negotiate SSL connection with controller at " + host + ":" + port);
+                        try {
+                            retry = handleSSLFailure();
+                        } catch (IOException ignored) {
+                        }
+                        if (retry == false) {
+                            printLine("Unable to negotiate SSL connection with controller at " + host + ":" + port);
+                        }
                         break;
                 }
 
@@ -633,6 +640,92 @@ class CommandContextImpl implements CommandContext {
                 printLine("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
             }
         } while (retry);
+    }
+
+    /**
+     * Handle the last SSL failure, prompting the user to accept or reject the certificate of the remote server.
+     *
+     * @return true if the connection should be retried.
+     */
+    private boolean handleSSLFailure() throws IOException {
+        Certificate[] lastChain;
+        if (trustManager == null || (lastChain = trustManager.getLastFailedCertificateChain()) == null) {
+            return false;
+        }
+        printLine("Unable to connect due to unrecognised server certificate");
+        for (Certificate current : lastChain) {
+            if (current instanceof X509Certificate) {
+                X509Certificate x509Current = (X509Certificate) current;
+                Map<String, String> fingerprints = generateFingerprints(x509Current);
+                printLine("Subject    - " + x509Current.getSubjectX500Principal().getName());
+                printLine("Issuer     - " + x509Current.getIssuerDN().getName());
+                printLine("Valid From - " + x509Current.getNotBefore());
+                printLine("Valid To   - " + x509Current.getNotAfter());
+                for (String alg : fingerprints.keySet()) {
+                    printLine(alg + " : " + fingerprints.get(alg));
+                }
+                printLine("");
+            }
+        }
+
+        for (;;) {
+            String response;
+            if (trustManager.isModifyTrustStore()) {
+                response = readLine("Accept certificate? [N]o, [T]emporarily, [P]ermenantly : ", false, true);
+            } else {
+                response = readLine("Accept certificate? [N]o, [T]emporarily : ", false, true);
+            }
+
+            if (response != null && response.length() == 1) {
+                switch (response.toLowerCase().charAt(0)) {
+                    case 'n':
+                        return false;
+                    case 't':
+                        trustManager.storeChainTemporarily(lastChain);
+                        return true;
+                    case 'p':
+                        if (trustManager.isModifyTrustStore()) {
+                            trustManager.storeChainPermenantly(lastChain);
+                            return true;
+                        }
+
+                }
+            }
+        }
+    }
+
+    private static final String[] FINGERPRINT_ALOGRITHMS = new String[] { "MD5", "SHA1" };
+
+    private Map<String, String> generateFingerprints(final X509Certificate cert) throws IOException  {
+        Map<String, String> fingerprints = new HashMap<String, String>(FINGERPRINT_ALOGRITHMS.length);
+        for (String current : FINGERPRINT_ALOGRITHMS) {
+            try {
+                fingerprints.put(current, generateFingerPrint(current, cert.getEncoded()));
+            } catch (GeneralSecurityException e) {
+                throw new IOException("Unable to generate fingerprint", e);
+            }
+        }
+
+        return fingerprints;
+    }
+
+    private String generateFingerPrint(final String algorithm, final byte[] cert) throws GeneralSecurityException {
+        StringBuilder sb = new StringBuilder();
+
+        MessageDigest md = MessageDigest.getInstance(algorithm);
+        byte[] digested = md.digest(cert);
+        String hex = HexConverter.convertToHexString(digested);
+        boolean started = false;
+        for (int i = 0; i < hex.length() - 1; i += 2) {
+            if (started) {
+                sb.append(":");
+            } else {
+                started = true;
+            }
+            sb.append(hex.substring(i, i + 2));
+        }
+
+        return sb.toString();
     }
 
     /**
@@ -988,6 +1081,9 @@ class CommandContextImpl implements CommandContext {
      * temporarily and permenantly accepting unknown server certificate chains.
      *
      * This class also acts as an agregation of the configuration related to TrustStore handling.
+     *
+     * It is not intended that Certificate management requests occur if this class is registered to a SSLContext
+     * with multiple concurrent clients.
      */
     private class LazyDelagatingTrustManager implements X509TrustManager {
 
@@ -997,7 +1093,9 @@ class CommandContextImpl implements CommandContext {
         private final String trustStorePassword;
         private final boolean modifyTrustStore;
 
+        private Set<X509Certificate> temporarilyTrusted = new HashSet<X509Certificate>();
         private Certificate[] lastFailedCert;
+        private X509TrustManager delegate;
 
         LazyDelagatingTrustManager(String trustStore, String trustStorePassword, boolean modifyTrustStore) {
             this.trustStore = trustStore;
@@ -1009,34 +1107,134 @@ class CommandContextImpl implements CommandContext {
          * Methods to allow client interaction for certificate verification.
          */
 
+        boolean isModifyTrustStore() {
+            return modifyTrustStore;
+        }
+
+        void setFailedCertChain(final Certificate[] chain) {
+            this.lastFailedCert = chain;
+        }
+
         Certificate[] getLastFailedCertificateChain() {
-            return lastFailedCert;
+            try {
+                return lastFailedCert;
+            } finally {
+                // Only one chance to accept it.
+                lastFailedCert = null;
+            }
+        }
+
+        synchronized void storeChainTemporarily(final Certificate[] chain) {
+            for (Certificate current : chain) {
+                if (current instanceof X509Certificate) {
+                    temporarilyTrusted.add((X509Certificate) current);
+                }
+            }
+            delegate = null; // Triggers a reload on next use.
+        }
+
+        synchronized void storeChainPermenantly(final Certificate[] chain) {
+            FileInputStream fis = null;
+            FileOutputStream fos = null;
+            try {
+                KeyStore theTrustStore = KeyStore.getInstance("JKS");
+                File trustStoreFile = new File(trustStore);
+                if (trustStoreFile.exists()) {
+                    fis = new FileInputStream(trustStoreFile);
+                    theTrustStore.load(fis, trustStorePassword.toCharArray());
+                    StreamUtils.safeClose(fis);
+                    fis = null;
+                } else {
+                    theTrustStore.load(null);
+                }
+                for (Certificate current : chain) {
+                    if (current instanceof X509Certificate) {
+                        X509Certificate x509Current = (X509Certificate) current;
+                        theTrustStore.setCertificateEntry(x509Current.getSubjectX500Principal().getName(), x509Current);
+                    }
+                }
+
+                fos = new FileOutputStream(trustStoreFile);
+                theTrustStore.store(fos, trustStorePassword.toCharArray());
+
+            } catch (GeneralSecurityException e) {
+                throw new IllegalStateException("Unable to operate on trust store.", e);
+            } catch (IOException e) {
+                throw new IllegalStateException("Unable to operate on trust store.", e);
+            } finally {
+                StreamUtils.safeClose(fis);
+                StreamUtils.safeClose(fos);
+            }
+
+            delegate = null; // Triggers a reload on next use.
         }
 
         /*
          * Internal Methods
          */
 
+        private synchronized X509TrustManager getDelegate() {
+            if (delegate == null) {
+                FileInputStream fis = null;
+                try {
+                    KeyStore theTrustStore = KeyStore.getInstance("JKS");
+                    File trustStoreFile = new File(trustStore);
+                    if (trustStoreFile.exists()) {
+                        fis = new FileInputStream(trustStoreFile);
+                        theTrustStore.load(fis, trustStorePassword.toCharArray());
+                    } else {
+                        theTrustStore.load(null);
+                    }
+                    for (X509Certificate current : temporarilyTrusted) {
+                        theTrustStore.setCertificateEntry(current.getSubjectX500Principal().getName(), current);
+                    }
+                    TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
+                    trustManagerFactory.init(theTrustStore);
+                    TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
+                    for (TrustManager current : trustManagers) {
+                        if (current instanceof X509TrustManager) {
+                            delegate = (X509TrustManager) current;
+                            break;
+                        }
+                    }
+                } catch (GeneralSecurityException e) {
+                    throw new IllegalStateException("Unable to operate on trust store.", e);
+                } catch (IOException e) {
+                    throw new IllegalStateException("Unable to operate on trust store.", e);
+                } finally {
+                    StreamUtils.safeClose(fis);
+                }
+            }
+            if (delegate == null) {
+                throw new IllegalStateException("Unable to create delegate trust manager.");
+            }
+
+            return delegate;
+        }
+
         /*
          * X509TrustManager Methods
          */
 
         @Override
-        public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
-            // TODO Auto-generated method stub
-
+        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            // The CLI is only verifying servers.
+            getDelegate().checkClientTrusted(chain, authType);
         }
 
         @Override
-        public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
-            // TODO Auto-generated method stub
-
+        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            try {
+                getDelegate().checkServerTrusted(chain, authType);
+            } catch (CertificateException ce) {
+                setFailedCertChain(chain);
+                throw ce;
+            }
         }
 
         @Override
         public X509Certificate[] getAcceptedIssuers() {
-            // TODO Auto-generated method stub
-            return null;
+            return getDelegate().getAcceptedIssuers();
         }
 
     }

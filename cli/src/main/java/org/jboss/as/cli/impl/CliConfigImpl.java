@@ -74,7 +74,8 @@ class CliConfigImpl implements CliConfig {
 
                     RolloutPlanHeader rolloutPlan = null;
                     boolean concurrent = false;
-                    while (reader.hasNext()) {
+                    boolean jbossCliEnded = false;
+                    while (reader.hasNext() && jbossCliEnded == false) {
                         int tag = reader.nextTag();
                         if(tag == XMLStreamConstants.START_ELEMENT) {
                             final String localName = reader.getLocalName();
@@ -121,6 +122,8 @@ class CliConfigImpl implements CliConfig {
                             final String localName = reader.getLocalName();
                             if(localName.equals("concurrent")) {
                                 concurrent = false;
+                            } else if (localName.equals("jboss-cli")) {
+                                jbossCliEnded = true;
                             }
                         }
                     }
