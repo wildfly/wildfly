@@ -373,6 +373,11 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
         }
     }
 
+    /** Gets whether this registration has an alternative wildcard registration */
+    boolean hasNoAlternativeWildcardRegistration() {
+        return parent == null || PathElement.WILDCARD_VALUE.equals(valueString) || !parent.getChildNames().contains(PathElement.WILDCARD_VALUE);
+    }
+
     abstract void getInheritedOperationEntries(final Map<String, OperationEntry> providers);
 
     private RootInvocation getRootInvocation() {
