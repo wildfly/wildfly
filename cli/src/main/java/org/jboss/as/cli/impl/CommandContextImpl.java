@@ -26,13 +26,17 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.X509TrustManager;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -159,6 +163,10 @@ class CommandContextImpl implements CommandContext {
     private String username;
     /** the command line specified password */
     private char[] password;
+    /** The SSLContext when managed by the CLI */
+    private SSLContext sslContext;
+    /** The TrustManager in use by the SSLContext, a reference is kept to rejected certificates can be captured. */
+    private LazyDelagatingTrustManager trustManager;
     /** various key/value pairs */
     private Map<String, Object> map = new HashMap<String, Object>();
     /** operation request address prefix */
@@ -180,7 +188,8 @@ class CommandContextImpl implements CommandContext {
     private List<CliEventListener> listeners = new ArrayList<CliEventListener>();
 
     /**
-     * Non-interactive mode
+     * Version mode - only used when --version is called from the command line.
+     *
      * @throws CliInitializationException
      */
     CommandContextImpl() throws CliInitializationException {
@@ -193,7 +202,8 @@ class CommandContextImpl implements CommandContext {
     }
 
     /**
-     * Non-interactive mode
+     * Default constructor used for both interactive and non-interactive mode.
+     *
      */
     CommandContextImpl(String defaultControllerHost, int defaultControllerPort, String username, char[] password, boolean initConsole)
         throws CliInitializationException {
@@ -211,6 +221,9 @@ class CommandContextImpl implements CommandContext {
 
         final String userHome = SecurityActions.getSystemProperty("user.home");
         config = CliConfigImpl.parse(this, new File(userHome, "jboss-cli.xml"));
+        // TODO - Create the SSLContext here based on the config - The SSLContext needs to
+        //        live as long as the process for temporarily cached certificates.
+
 
         if(initConsole) {
             cmdCompleter = new CommandCompleter(cmdRegistry);
@@ -892,4 +905,32 @@ class CommandContextImpl implements CommandContext {
             }
         }
     }
+
+    /**
+     * A trust manager that by default delegates to a lazily initialised TrustManager, this
+     * TrustManager also support both temporarily and permenantly accepting unknown server
+     * certificate chains.
+     */
+    private class LazyDelagatingTrustManager implements X509TrustManager {
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+    }
+
 }

@@ -19,31 +19,39 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.cli;
 
-import org.jboss.as.cli.operation.OperationRequestHeader;
-
 /**
- * This interface represents the JBoss CLI configuration.
+ * A representation of the SSL Configuration.
  *
- * @author Alexey Loubyansky
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public interface CliConfig {
+public interface SSLConfig {
 
     /**
-     * Returns pre-configured rollout plan stored under the id.
-     * If none of the plans matches the id, the method returns null.
-     *
-     * @param id  the id of the plan to return.
-     * @return  the plan matching the id or null if no such plan found.
+     * @return The location of the keyStore or null if not specified.
      */
-    OperationRequestHeader getRolloutPlan(String id);
+    String getKeyStore();
 
     /**
-     * The global SSL configuration if it has been defined.
-     *
-     * @return The SSLConfig
+     * @return The keyStorePassword or null if not specified.
      */
-    SSLConfig getSslConfig();
+    String getKeyStorePassword();
+
+    /**
+     * @return The location of the trustStore or null if not specified.
+     */
+    String getTrustStore();
+
+    /**
+     * @return The trustStorePassword or null if not specified.
+     */
+    String getTrustStorePassword();
+
+    /**
+     * @return true if the CLI should automatically update the trust store.
+     */
+    boolean isModifyTrustStore();
 
 }
