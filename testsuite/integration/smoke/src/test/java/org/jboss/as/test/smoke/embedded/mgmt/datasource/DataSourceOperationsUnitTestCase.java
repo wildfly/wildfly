@@ -32,7 +32,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.getChildren;
 import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.testConnection;
 import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.testConnectionXA;
+import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.findNodeWithProperty;
+import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.setOperationParams;
+import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.nonXaDsProperties;
+import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.xaDsProperties;
+import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.addExtensionProperties;
+import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.controlModelParams;
 
+import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -40,7 +47,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Hashtable;
+import java.util.Properties;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -73,7 +80,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriterFactory;
 import org.jboss.staxmapper.XMLMapper;
-import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -86,40 +93,19 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class DataSourceOperationsUnitTestCase {
-
-    private ModelControllerClient client;
-
-    private ModelNode execute(final ModelNode operation) throws IOException {
-        final ModelNode result = getModelControllerClient().execute(operation);
-        Assert.assertEquals(operation + "\n" + result, SUCCESS, result.get(OUTCOME).asString());
-        return result;
-    }
+public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
     @Deployment
     public static Archive<?> getDeployment() {
+    	initModelControllerClient("localhost",9999);
         //TODO Don't do this FakeJndi stuff once we have remote JNDI working
         return ShrinkWrapUtils.createJavaArchive("demos/fakejndi.sar", FakeJndi.class.getPackage());
     }
 
-    // [ARQ-458] @Before not called with @RunAsClient
-    private ModelControllerClient getModelControllerClient() throws UnknownHostException {
-        if (client == null) {
-            client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
-        }
-        return client;
-    }
-
-    private void remove(final ModelNode address) throws IOException {
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set("remove");
-        operation.get(OP_ADDR).set(address);
-        execute(operation);
-    }
-
-    @After
-    public void tearDown() {
-        StreamUtils.safeClose(client);
+    @AfterClass
+    public static void tearDown() throws IOException{
+       // StreamUtils.safeClose(client);
+    	closeModelControllerClient();
     }
 
     @Test
@@ -145,30 +131,23 @@ public class DataSourceOperationsUnitTestCase {
         operation.get("user-name").set("sa");
         operation.get("password").set("sa");
 
-        execute(operation);
+        executeOperation(operation);
 
         final ModelNode operation2 = new ModelNode();
         operation2.get(OP).set("enable");
         operation2.get(OP_ADDR).set(address);
 
-        execute(operation2);
+        executeOperation(operation2);
 
         testConnection("MyNewDs", getModelControllerClient());
 
         List<ModelNode> newList = marshalAndReparseDsResources("data-source");
 
-        Assert.assertNotNull(newList);
-
-        boolean containsRightJndiname = false;
-        for(ModelNode result : newList){
-            final Map<String, ModelNode> parseChildren = getChildren(result);
-            if (! parseChildren.isEmpty() && parseChildren.get("jndi-name")!= null && parseChildren.get("jndi-name").asString().equals("java:jboss/datasources/MyNewDs")) {
-                containsRightJndiname = true;
-            }
-        }
-        
         remove(address);
-        Assert.assertTrue(containsRightJndiname);
+
+        Assert.assertNotNull("Reparsing failed:",newList);
+
+        Assert.assertNotNull(findNodeWithProperty(newList,"jndi-name","java:jboss/datasources/MyNewDs"));
     }
 
     /**
@@ -198,30 +177,23 @@ public class DataSourceOperationsUnitTestCase {
         operation.get("user-name").set("sa");
         operation.get("password").set("sa");
 
-        execute(operation);
+        executeOperation(operation);
 
         final ModelNode operation2 = new ModelNode();
         operation2.get(OP).set("enable");
         operation2.get(OP_ADDR).set(address);
 
-        execute(operation2);
+        executeOperation(operation2);
 
         testConnection("MyNewDs", getModelControllerClient());
 
         List<ModelNode> newList = marshalAndReparseDsResources("data-source");
 
-        Assert.assertNotNull(newList);
-
-        boolean containsRightJndiname = false;
-        for (ModelNode result : newList) {
-            final Map<String, ModelNode> parseChildren = getChildren(result);
-            if (!parseChildren.isEmpty() && parseChildren.get("jndi-name") != null && parseChildren.get("jndi-name").asString().equals("java:jboss/datasources/MyNewDs")) {
-                containsRightJndiname = true;
-            }
-        }
         remove(address);
-        Assert.assertTrue(containsRightJndiname);
+
+        Assert.assertNotNull("Reparsing failed:",newList);
         
+        Assert.assertNotNull(findNodeWithProperty(newList,"jndi-name","java:jboss/datasources/MyNewDs"));
     }
 
     @Test
@@ -247,7 +219,7 @@ public class DataSourceOperationsUnitTestCase {
         operation.get("user-name").set("sa");
         operation.get("password").set("sa");
 
-        execute(operation);
+        executeOperation(operation);
 
 
         final ModelNode connectionPropertyAddress = address.clone();
@@ -262,28 +234,21 @@ public class DataSourceOperationsUnitTestCase {
         connectionPropertyOperation.get("value").set("MyValue");
 
 
-        execute(connectionPropertyOperation);
+        executeOperation(connectionPropertyOperation);
 
         final ModelNode operation2 = new ModelNode();
         operation2.get(OP).set("enable");
         operation2.get(OP_ADDR).set(address);
 
-        execute(operation2);
+        executeOperation(operation2);
 
         List<ModelNode> newList = marshalAndReparseDsResources("data-source");
 
-        Assert.assertNotNull(newList);
-
-       boolean containsRightJndiname = false;
-        for(ModelNode result : newList){
-            final Map<String, ModelNode> parseChildren = getChildren(result);
-            if (! parseChildren.isEmpty() && parseChildren.get("jndi-name")!= null && parseChildren.get("jndi-name").asString().equals("java:jboss/datasources/MyNewDs")) {
-                containsRightJndiname = true;
-            }
-        }
         remove(address);
-        Assert.assertTrue(containsRightJndiname);
+
+        Assert.assertNotNull("Reparsing failed:",newList);
         
+        Assert.assertNotNull(findNodeWithProperty(newList,"jndi-name","java:jboss/datasources/MyNewDs"));
     }
 
     @Test
@@ -310,7 +275,7 @@ public class DataSourceOperationsUnitTestCase {
 
         // do twice, test for AS7-720
         for (int i = 1; i <= 2; i++) {
-            execute(operation);
+            executeOperation(operation);
 
             remove(address);
         }
@@ -348,7 +313,7 @@ public class DataSourceOperationsUnitTestCase {
         operation.get("password").set("sa");
 
 
-        execute(operation);
+        executeOperation(operation);
         remove(address);
 
     }
@@ -378,7 +343,7 @@ public class DataSourceOperationsUnitTestCase {
         operation.get("password").set("sa");
 
 
-        execute(operation);
+        executeOperation(operation);
 
         final ModelNode xaDatasourcePropertiesAddress = address.clone();
         xaDatasourcePropertiesAddress.add("xa-datasource-properties", "URL");
@@ -388,14 +353,14 @@ public class DataSourceOperationsUnitTestCase {
         xaDatasourcePropertyOperation.get(OP_ADDR).set(xaDatasourcePropertiesAddress);
         xaDatasourcePropertyOperation.get("value").set("jdbc:h2:mem:test");
 
-        execute(xaDatasourcePropertyOperation);
+        executeOperation(xaDatasourcePropertyOperation);
 
 
         final ModelNode operation2 = new ModelNode();
         operation2.get(OP).set("enable");
         operation2.get(OP_ADDR).set(address);
 
-        execute(operation2);
+        executeOperation(operation2);
 
 
         testConnectionXA(dsName, getModelControllerClient());
@@ -432,7 +397,7 @@ public class DataSourceOperationsUnitTestCase {
         operation.get("user-name").set("sa");
         operation.get("password").set("sa");
 
-        execute(operation);
+        executeOperation(operation);
 
         final ModelNode xaDatasourcePropertiesAddress = address.clone();
         xaDatasourcePropertiesAddress.add("xa-datasource-properties", "URL");
@@ -442,26 +407,25 @@ public class DataSourceOperationsUnitTestCase {
         xaDatasourcePropertyOperation.get(OP_ADDR).set(xaDatasourcePropertiesAddress);
         xaDatasourcePropertyOperation.get("value").set("jdbc:h2:mem:test");
 
-        execute(xaDatasourcePropertyOperation);
+        executeOperation(xaDatasourcePropertyOperation);
 
         final ModelNode operation2 = new ModelNode();
         operation2.get(OP).set("enable");
         operation2.get(OP_ADDR).set(address);
 
-        execute(operation2);
+        executeOperation(operation2);
 
         List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source");
 
-        Assert.assertNotNull(newList);
-
-        final Map<String, ModelNode> parseChildren = getChildren(newList.get(1));
-        Assert.assertFalse(parseChildren.isEmpty());
-        Assert.assertEquals("java:jboss/datasources/XaJndiDsName2", parseChildren.get("jndi-name").asString());
-
         remove(address);
+
+        Assert.assertNotNull("Reparsing failed:",newList);
+        
         // remove from xml too
         marshalAndReparseDsResources("xa-data-source");
-
+        
+        Assert.assertNotNull(findNodeWithProperty(newList,"jndi-name","java:jboss/datasources/" + jndiDsName));
+ 
     }
 
     /**
@@ -501,7 +465,7 @@ public class DataSourceOperationsUnitTestCase {
         disableOperation.get(OP).set("disable");
         disableOperation.get(OP_ADDR).set(address);
 
-        execute(operation);
+        executeOperation(operation);
 
         final ModelNode xaDatasourcePropertiesAddress = address.clone();
         xaDatasourcePropertiesAddress.add("xa-datasource-properties", "URL");
@@ -511,14 +475,14 @@ public class DataSourceOperationsUnitTestCase {
         xaDatasourcePropertyOperation.get(OP_ADDR).set(xaDatasourcePropertiesAddress);
         xaDatasourcePropertyOperation.get("value").set("jdbc:h2:mem:test");
 
-        execute(xaDatasourcePropertyOperation);
+        executeOperation(xaDatasourcePropertyOperation);
 
-        execute(enableOperation);
+        executeOperation(enableOperation);
 
         testConnectionXA(dsName, getModelControllerClient());
 
-        execute(disableOperation);
-        execute(enableOperation);
+        executeOperation(disableOperation);
+        executeOperation(enableOperation);
 
         testConnectionXA(dsName, getModelControllerClient());
 
@@ -536,9 +500,9 @@ public class DataSourceOperationsUnitTestCase {
         operation.get(OP).set("installed-drivers-list");
         operation.get(OP_ADDR).set(address);
 
-        final ModelNode result = execute(operation);
+        final ModelNode result = executeOperation(operation);
 
-        final ModelNode result2 = result.get(RESULT).get(0);
+        final ModelNode result2 = result.get(0);
         Assert.assertTrue(result2 != null);
         Assert.assertTrue(result2.hasDefined("driver-module-name"));
         Assert.assertTrue(result2.hasDefined("module-slot"));
@@ -572,7 +536,7 @@ public class DataSourceOperationsUnitTestCase {
         operation.get("user-name").set("sa");
         operation.get("password").set("sa");
 
-        execute(operation);
+        executeOperation(operation);
 
         final ModelNode xaDatasourcePropertiesAddress = address.clone();
         xaDatasourcePropertiesAddress.add("xa-datasource-properties", "URL");
@@ -582,30 +546,27 @@ public class DataSourceOperationsUnitTestCase {
         xaDatasourcePropertyOperation.get(OP_ADDR).set(xaDatasourcePropertiesAddress);
         xaDatasourcePropertyOperation.get("value").set("jdbc:h2:mem:test");
 
-        execute(xaDatasourcePropertyOperation);
+        executeOperation(xaDatasourcePropertyOperation);
 
 
         final ModelNode operation2 = new ModelNode();
         operation2.get(OP).set("enable");
         operation2.get(OP_ADDR).set(address);
 
-        execute(operation2);
+        executeOperation(operation2);
 
 
 
         List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source");
 
-        Assert.assertNotNull(newList);
-
-        final Map<String, ModelNode> parseChildren = getChildren(newList.get(1));
-        Assert.assertFalse(parseChildren.isEmpty());
-        Assert.assertEquals(xaDsJndi, parseChildren.get("jndi-name").asString());
-
         remove(address);
 
+        Assert.assertNotNull("Reparsing failed:",newList);
+
         ModifiableXaDataSource jxaDS = null;
+        
         try{
-            jxaDS = lookup(client, xaDsJndi ,ModifiableXaDataSource .class);
+            jxaDS = lookup(getModelControllerClient(), xaDsJndi ,ModifiableXaDataSource .class);
 
             Assert.fail("found datasource after it was unbounded");
         }
@@ -613,6 +574,9 @@ public class DataSourceOperationsUnitTestCase {
             // must be thrown NameNotFound exception - datasource is unbounded
 
         }
+        
+        Assert.assertNotNull(findNodeWithProperty(newList,"jndi-name",xaDsJndi));
+
     }
     /**
      * AS7-2720 tests for parsing particular datasource in standalone mode
@@ -629,7 +593,7 @@ public class DataSourceOperationsUnitTestCase {
         address.add("data-source", complexDs);
         address.protect();
 
-        Hashtable<String,String> params=hashtableWithNonXaParameters(complexDs,complexDsJndi);
+        Properties params=nonXaDsProperties(complexDsJndi);
 
         final ModelNode operation = new ModelNode();
         operation.get(OP).set("add");
@@ -638,7 +602,7 @@ public class DataSourceOperationsUnitTestCase {
         setOperationParams(operation, params);
         addExtensionProperties(operation);
 
-        execute(operation);
+        executeOperation(operation);
 
         final ModelNode datasourcePropertiesAddress = address.clone();
         datasourcePropertiesAddress.add("connection-properties", "char.encoding");
@@ -648,26 +612,17 @@ public class DataSourceOperationsUnitTestCase {
         datasourcePropertyOperation.get(OP_ADDR).set(datasourcePropertiesAddress);
         datasourcePropertyOperation.get("value").set("UTF-8");
 
-        execute(datasourcePropertyOperation);
+        executeOperation(datasourcePropertyOperation);
 
         List<ModelNode> newList = marshalAndReparseDsResources("data-source");
 
-        Assert.assertNotNull(newList);
-
-
-        Map<String, ModelNode> rightChildren = Collections.emptyMap();
-        for(ModelNode result : newList){
-            final Map<String, ModelNode> parseChildren = getChildren(result);
-            if (! parseChildren.isEmpty() && parseChildren.get("jndi-name")!= null && parseChildren.get("jndi-name").asString().equals("java:jboss/datasources/complexDs")) {
-                rightChildren = parseChildren;
-            }
-        }
-        Assert.assertFalse(rightChildren.isEmpty());
-
-        controlParseChildrenParams(rightChildren, params);
-
         remove(address);
 
+        Assert.assertNotNull("Reparsing failed:",newList);
+
+        ModelNode rightChild=findNodeWithProperty(newList,"jndi-name",complexDsJndi);
+        
+        controlModelParams(rightChild, params);
     }
     /**
      * AS7-2720 tests for parsing particular XA-datasource in standalone mode
@@ -689,14 +644,14 @@ public class DataSourceOperationsUnitTestCase {
         operation.get(OP).set("add");
         operation.get(OP_ADDR).set(address);
 
-        Hashtable<String,String> params = hashtableWithXaParameters(complexXaDs, complexXaDsJndi) ;
+        Properties params=xaDsProperties(complexXaDsJndi);
         setOperationParams(operation, params);
         addExtensionProperties(operation);
 
         /* TODO: Properties for Extension type parameters not implemented in DRM
          * operation.get("recovery-plugin-properties","Property").set("A");
          */
-        execute(operation);
+        executeOperation(operation);
 
         final ModelNode xaDatasourcePropertiesAddress = address.clone();
         xaDatasourcePropertiesAddress.add("xa-datasource-properties", "URL");
@@ -706,181 +661,20 @@ public class DataSourceOperationsUnitTestCase {
         xaDatasourcePropertyOperation.get(OP_ADDR).set(xaDatasourcePropertiesAddress);
         xaDatasourcePropertyOperation.get("value").set("jdbc:h2:mem:test");
 
-        execute(xaDatasourcePropertyOperation);
+        executeOperation(xaDatasourcePropertyOperation);
 
         List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source");
 
-        Assert.assertNotNull(newList);
-
-        Map<String, ModelNode> parseChildren = null;
-        boolean containsRightJndiname = false;
-        for (ModelNode result : newList) {
-            parseChildren = getChildren(result);
-            if (!parseChildren.isEmpty() && parseChildren.get("jndi-name") != null && parseChildren.get("jndi-name").asString().equals(complexXaDsJndi)) {
-                containsRightJndiname = true;
-                break;
-            }
-        }
-
         remove(address);
 
-        Assert.assertTrue(containsRightJndiname);
-        controlParseChildrenParams(parseChildren, params);
+        Assert.assertNotNull("Reparsing failed:",newList);
+
+        ModelNode rightChild=findNodeWithProperty(newList,"jndi-name",complexXaDsJndi);
+        
+        controlModelParams(rightChild, params);
     }
-    /**
-     * Returns Hashtable with common parameters for both XA and Non-XA datasource
-     *
-     */
-    private  Hashtable<String,String> hashtableWithCommonParameters(){
-    	Hashtable<String,String> params=new Hashtable<String,String>();
-    	//attributes
-    	params.put("use-java-context","true");
-        params.put("spy","false");
-        params.put("use-ccm","true");
-        //common elements
-        params.put("driver-name","h2");
-        params.put("new-connection-sql","select 1");
-        params.put("transaction-isolation","TRANSACTION_READ_COMMITTED");
-        params.put("url-delimiter",":");
-        params.put("url-selector-strategy-class-name","someClass");
-        //pool
-        params.put("min-pool-size","1");
-        params.put("max-pool-size","5");
-        params.put("pool-prefill","true");
-        params.put("pool-use-strict-min","true");
-        params.put("flush-strategy","EntirePool");
-        //security
-        params.put("user-name","sa");
-        params.put("password","sa");
-        params.put("security-domain","HsqlDbRealm");
-        params.put("reauth-plugin-class-name","someClass1");
-        //validation
-        params.put("valid-connection-checker-class-name","someClass2");
-        params.put("check-valid-connection-sql","select 1");
-        params.put("validate-on-match","true");
-        params.put("background-validation","true");
-        params.put("background-validation-millis","2000");
-        params.put("use-fast-fail","true");
-        params.put("stale-connection-checker-class-name","someClass3");
-        params.put("exception-sorter-class-name","someClass4");
-        //time-out
-        params.put("blocking-timeout-wait-millis","20000");
-        params.put("idle-timeout-minutes","4");
-        params.put("set-tx-query-timeout","true");
-        params.put("query-timeout","120");
-        params.put("use-try-lock","100");
-        params.put("allocation-retry","2");
-        params.put("allocation-retry-wait-millis","3000");
-        //statement
-        params.put("track-statements","NOWARN");
-        params.put("prepared-statements-cache-size","30");
-        params.put("share-prepared-statements","true");
-
-    	return params;
-    }
-    /**
-     * Returns a Hashtable, containing parameters for XA datasource
-     * @param datasourceName
-     */
-    private Hashtable<String,String> hashtableWithXaParameters(String datasourceName,String jndiName){
-    	Hashtable<String,String> params=hashtableWithCommonParameters();
-    	//attributes
-    	params.put("jndi-name", jndiName);
-        //common
-        params.put("xa-datasource-class","org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource");
-        //xa-pool
-        params.put("same-rm-override","true");
-        params.put("interleaving","true");
-        params.put("no-tx-separate-pool","true");
-        params.put("pad-xid","true");
-        params.put("wrap-xa-resource","true");
-        //time-out
-        params.put("xa-resource-timeout","120");
-        //recovery
-        params.put("no-recovery","false");
-        params.put("recovery-plugin-class-name","someClass5");
-        params.put("recovery-username","sa");
-        params.put("recovery-password","sa");
-        params.put("recovery-security-domain","HsqlDbRealm");
-
-
-    	return params;
-    }
-    /**
-     * Returns a Hashtable, containing parameters for non XA datasource
-     * @param datasourceName
-     */
-    private Hashtable<String,String> hashtableWithNonXaParameters(String datasourceName,String jndiName){
-    	Hashtable<String,String> params=hashtableWithCommonParameters();
-    	//attributes
-        params.put("jndi-name",jndiName);
-        params.put("jta","false");
-        //common
-        params.put("driver-class","org.hsqldb.jdbcDriver");
-        params.put("datasource-class","org.jboss.as.connector.subsystems.datasources.ModifiableDataSource");
-        params.put("connection-url","jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
-
-        return params;
-    }
-    /**
-     * Sets parameters for DMR operation
-     * @param operation
-     * @param params
-     */
-    private void setOperationParams(ModelNode operation,Hashtable<String,String> params){
-    	String str;
-        Iterator it=params.keySet().iterator();
-        while(it.hasNext()){
-        	str=(String)it.next();
-        	operation.get(str).set(params.get(str));
-        }
-    }
-    /**
-     * Adds properties of Extension type to the operation
-     * TODO: not implemented jet in DRM
-     */
-    private void addExtensionProperties(ModelNode operation){
-    	/*
-
-        operation.get("reauth-plugin-properties","Property").set("A");
-        operation.get("valid-connection-checker-properties","Property").set("B");
-        operation.get("stale-connect,roperties","Property").set("C");
-        operation.get("exception-sorter-properties","Property").set("D");
-       */
-        /*final ModelNode sourcePropertiesAddress = address.clone();
-        sourcePropertiesAddress.add("reauth-plugin-properties", "Property");
-        sourcePropertiesAddress.protect();
-        final ModelNode sourcePropertyOperation = new ModelNode();
-        sourcePropertyOperation.get(OP).set("add");
-        sourcePropertyOperation.get(OP_ADDR).set(sourcePropertiesAddress);
-        sourcePropertyOperation.get("value").set("A");
-
-        execute(sourcePropertyOperation);*/
-
-    }
-    /**
-     * Controls if result of reparsing contains certain parameters
-     * @param parseChildren
-     * @param params
-     */
-    private void controlParseChildrenParams(Map<String,ModelNode> parseChildren,Hashtable<String,String> params){
-    	String str;
-        Iterator it=params.keySet().iterator();
-
-        StringBuffer sb = new StringBuffer();
-        String par,child;
-        while(it.hasNext()){
-        	str=(String)it.next();
-        	par=params.get(str);
-        	if (!parseChildren.containsKey(str)) sb.append("Parameter <"+str+"> is not set, but must be set to '"+par+"' \n");
-        	else{
-        		child= parseChildren.get(str).asString();
-        		if (!child.equals(par)) sb.append("Parameter <"+str+"> is set to '"+child+"', but must be set to '"+par+"' \n");
-        	}
-        }
-        if (sb.length()>0) Assert.fail("There are parsing errors:\n"+sb.toString()+"Parsed configuration:\n"+parseChildren);
-    }
-
+    
+    
     private static <T> T lookup(ModelControllerClient client, String name, Class<T> expected) throws Exception {
         //TODO Don't do this FakeJndi stuff once we have remote JNDI working
 
@@ -903,18 +697,17 @@ public class DataSourceOperationsUnitTestCase {
         operation.get(RECURSIVE).set(true);
         operation.get(OP_ADDR).set(address);
 
-        final ModelNode result = execute(operation);
-        Assert.assertTrue(result.hasDefined(RESULT));
-        final Map<String, ModelNode> children = getChildren(result.get(RESULT));
+        final ModelNode result = executeOperation(operation);
+        Assert.assertNotNull(result);
+        final Map<String, ModelNode> children = getChildren(result);
         for (final Entry<String, ModelNode> child : children.entrySet()) {
             Assert.assertTrue(child.getKey() != null);
-            // Assert.assertTrue(child.getValue().hasDefined("connection-url"));
             Assert.assertTrue(child.getValue().hasDefined("jndi-name"));
             Assert.assertTrue(child.getValue().hasDefined("driver-name"));
         }
 
         ModelNode dsNode = new ModelNode();
-        dsNode.get(childType).set(result.get("result"));
+        dsNode.get(childType).set(result);
 
         StringWriter strWriter = new StringWriter();
         XMLExtendedStreamWriter writer = XMLExtendedStreamWriterFactory.create(XMLOutputFactory.newFactory()
