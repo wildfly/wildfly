@@ -29,10 +29,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
+import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import junit.framework.Assert;
+import org.junit.AfterClass;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -50,36 +49,25 @@ import org.junit.runner.RunWith;
 /**
  * Datasource configuration and metrics unit test.
  * @author <a href="mailto:jeff.zhang@jboss.org">Jeff Zhang</a>
+ * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class DataSourceCfgMetricUnitTestCase {
 
-    private ModelControllerClient client;
+public class DataSourceCfgMetricUnitTestCase  extends AbstractMgmtTestBase{
 
     @Deployment
     public static Archive<?> getDeployment() {
+    	initModelControllerClient("localhost",9999);
         return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
     }
 
-    // [ARQ-458] @Before not called with @RunAsClient
-    private ModelControllerClient getModelControllerClient() throws UnknownHostException {
-        StreamUtils.safeClose(client);
-        client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
-        return client;
-    }
-
-    @After
-    public void tearDown() {
-        StreamUtils.safeClose(client);
+    @AfterClass
+    public static void tearDown()  throws IOException {
+    	closeModelControllerClient();
     }
 
     @Test
-    public void testRemoveThis() {
-    }
-
-    //@Test
-    @Ignore
     public void testReadAttribute() throws IOException {
 
         final ModelNode address = new ModelNode();
@@ -89,12 +77,10 @@ public class DataSourceCfgMetricUnitTestCase {
 
         final ModelNode operation = new ModelNode();
         operation.get(OP).set("read-attribute");
-        operation.get("name").set("background-validation");
+        operation.get("name").set("use-java-context");
         operation.get(OP_ADDR).set(address);
 
-        final ModelNode result = getModelControllerClient().execute(operation);
-        Assert.assertTrue(result.hasDefined(RESULT));
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertFalse(result.get(RESULT).asBoolean());
+        final ModelNode result = executeOperation(operation);
+        Assert.assertTrue(result.asBoolean());
     }
 }
