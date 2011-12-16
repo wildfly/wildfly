@@ -42,6 +42,31 @@
             </xs:sequence>
         </xs:complexType>
     </xs:element>
+    
+    <xs:element name="ssl">
+        <xs:annotation>
+            <xs:documentation>
+                This element contains the configuration for the Key and Trust stores
+                used for SSL.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="keyStore" type="xs:string" minOccurs="0" />
+                <xs:element name="keyStorePassword" type="xs:string" minOccurs="0" />
+                <xs:element name="trustStore" type="xs:string" minOccurs="0" />
+                <xs:element name="trustStorePassword" type="xs:string" minOccurs="0" />
+                <xs:element name="modifyTrustStore" type="xs:boolean" default="true" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Setting to true will cause the CLI to prompt when unrecognised certificates are received
+                            and allow them to be stored in the truststore.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
 
     <xs:element name="rollout">
         <xs:annotation>
