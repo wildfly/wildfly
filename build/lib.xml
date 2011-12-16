@@ -169,6 +169,17 @@
         </sequential>
     </macrodef>
 
+    <macrodef name="extract-native-jar" >
+        <attribute name="group"/>
+        <attribute name="artifact"/>
+        <sequential>
+        <unzip src="${@{group}:@{artifact}:jar}" dest="${module.repo.output.dir}/${current.module.path}">
+           <patternset>
+               <include name="lib/**"/>
+           </patternset>
+       </unzip>
+        </sequential>
+    </macrodef>
 
     <scriptdef name="define-resource-root" language="javascript">
         <attribute name="path"/>
