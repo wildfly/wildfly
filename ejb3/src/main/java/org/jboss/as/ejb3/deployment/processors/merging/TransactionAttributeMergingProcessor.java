@@ -21,7 +21,6 @@
  */
 package org.jboss.as.ejb3.deployment.processors.merging;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -107,8 +106,8 @@ public class TransactionAttributeMergingProcessor extends AbstractMergingProcess
     }
 
     private void processTransactionTimeoutAnnotation(final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, MethodIntf methodIntf, final EJBComponentDescription componentConfiguration) {
-        final RuntimeAnnotationInformation<TransactionTimeout> data = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, TransactionTimeout.class);
-        for (Map.Entry<String, List<TransactionTimeout>> entry : data.getClassAnnotations().entrySet()) {
+        final RuntimeAnnotationInformation<Integer> data = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, TransactionTimeout.class);
+        for (Map.Entry<String, List<Integer>> entry : data.getClassAnnotations().entrySet()) {
             if (!entry.getValue().isEmpty()) {
                 //we can't specify both methodIntf and class name
                 final String className = methodIntf == null ? entry.getKey() : null;
@@ -116,7 +115,7 @@ public class TransactionAttributeMergingProcessor extends AbstractMergingProcess
             }
         }
 
-        for (Map.Entry<Method, List<TransactionTimeout>> entry : data.getMethodAnnotations().entrySet()) {
+        for (Map.Entry<Method, List<Integer>> entry : data.getMethodAnnotations().entrySet()) {
             if (!entry.getValue().isEmpty()) {
                 final MethodIdentifier method = MethodIdentifier.getIdentifierForMethod(entry.getKey());
                 final String className = entry.getKey().getDeclaringClass().getName();
@@ -140,7 +139,7 @@ public class TransactionAttributeMergingProcessor extends AbstractMergingProcess
                 if (containerTransactions != null) {
                     for (final ContainerTransactionMetaData containerTx : containerTransactions) {
                         final TransactionAttributeType txAttr = containerTx.getTransAttribute();
-                        final TransactionTimeout timeout = timeout(containerTx);
+                        final Integer timeout = timeout(containerTx);
                         final MethodsMetaData methods = containerTx.getMethods();
                         for (final MethodMetaData method : methods) {
                             final String methodName = method.getMethodName();
@@ -174,27 +173,12 @@ public class TransactionAttributeMergingProcessor extends AbstractMergingProcess
 
     }
 
-    private static TransactionTimeout timeout(final ContainerTransactionMetaData containerTransaction) {
+    private static Integer timeout(final ContainerTransactionMetaData containerTransaction) {
         final List<TransactionTimeoutMetaData> transactionTimeouts = containerTransaction.getAny(TransactionTimeoutMetaData.class);
         if (transactionTimeouts == null || transactionTimeouts.isEmpty())
             return null;
         final TransactionTimeoutMetaData transactionTimeout = transactionTimeouts.get(0);
-        return new TransactionTimeout() {
-
-            @Override
-            public long value() {
-                return transactionTimeout.getTimeout();
-            }
-
-            @Override
-            public TimeUnit unit() {
-                return transactionTimeout.getUnit();
-            }
-
-            @Override
-            public Class<? extends Annotation> annotationType() {
-                return TransactionTimeout.class;
-            }
-        };
+        final TimeUnit unit = transactionTimeout.getUnit() == null ? TimeUnit.SECONDS : transactionTimeout.getUnit();
+        return (int)unit.toSeconds(transactionTimeout.getTimeout());
     }
 }

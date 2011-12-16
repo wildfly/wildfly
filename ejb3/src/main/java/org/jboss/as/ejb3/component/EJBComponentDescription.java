@@ -71,7 +71,6 @@ import org.jboss.as.ejb3.timerservice.NonFunctionalTimerService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.ejb3.annotation.TransactionTimeout;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -178,7 +177,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     /**
      * The transaction timeouts
      */
-    private final ApplicableMethodInformation<TransactionTimeout> transactionTimeouts;
+    private final ApplicableMethodInformation<Integer> transactionTimeouts;
 
     /**
      * Construct a new instance.
@@ -205,7 +204,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         // setup a dependency on EJB remote tx repository service, if this EJB exposes atleast one remote view
         this.addRemoteTransactionsRepositoryDependency();
         this.transactionAttributes = new ApplicableMethodInformation<TransactionAttributeType>(componentName, TransactionAttributeType.REQUIRED);
-        this.transactionTimeouts = new ApplicableMethodInformation<TransactionTimeout>(componentName, null);
+        this.transactionTimeouts = new ApplicableMethodInformation<Integer>(componentName, null);
         this.methodPermissions = new ApplicableMethodInformation<EJBMethodSecurityAttribute>(componentName, null);
         getConfigurators().add(new ComponentConfigurator() {
             @Override
@@ -667,7 +666,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         return transactionAttributes;
     }
 
-    public ApplicableMethodInformation<TransactionTimeout> getTransactionTimeouts() {
+    public ApplicableMethodInformation<Integer> getTransactionTimeouts() {
         return transactionTimeouts;
     }
 

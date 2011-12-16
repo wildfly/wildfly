@@ -72,7 +72,7 @@ public abstract class EJBComponent extends BasicComponent {
     private static final ApplicationExceptionDetails APPLICATION_EXCEPTION = new ApplicationExceptionDetails("java.lang.Exception", true, false);
 
     private final Map<MethodTransactionAttributeKey, TransactionAttributeType> txAttrs;
-    private final Map<MethodTransactionAttributeKey, TransactionTimeout> txTimeouts;
+    private final Map<MethodTransactionAttributeKey, Integer> txTimeouts;
 
     private final EJBUtilities utilities;
     private final boolean isBeanManagedTransaction;
@@ -112,7 +112,7 @@ public abstract class EJBComponent extends BasicComponent {
         } else {
             this.txAttrs = txAttrs;
         }
-        final Map<MethodTransactionAttributeKey, TransactionTimeout> txTimeouts = ejbComponentCreateService.getTxTimeouts();
+        final Map<MethodTransactionAttributeKey, Integer> txTimeouts = ejbComponentCreateService.getTxTimeouts();
         if (txTimeouts == null || txTimeouts.isEmpty()) {
             this.txTimeouts = Collections.emptyMap();
         } else {
@@ -310,14 +310,14 @@ public abstract class EJBComponent extends BasicComponent {
     }
 
     public int getTransactionTimeout(final MethodIntf methodIntf, final Method method) {
-        TransactionTimeout txTimeout = txTimeouts.get(new MethodTransactionAttributeKey(methodIntf, MethodIdentifier.getIdentifierForMethod(method)));
+        Integer txTimeout = txTimeouts.get(new MethodTransactionAttributeKey(methodIntf, MethodIdentifier.getIdentifierForMethod(method)));
         if(txTimeout == null && methodIntf != MethodIntf.BEAN) {
             txTimeout = txTimeouts.get(new MethodTransactionAttributeKey(MethodIntf.BEAN, MethodIdentifier.getIdentifierForMethod(method)));
         }
         if (txTimeout == null)
             return -1;
 
-        return (int) txTimeout.unit().toSeconds(txTimeout.value());
+        return txTimeout;
     }
 
     public UserTransaction getUserTransaction() throws IllegalStateException {

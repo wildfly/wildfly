@@ -42,7 +42,6 @@ import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.ejb3.annotation.TransactionTimeout;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
@@ -58,7 +57,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     private final Map<MethodTransactionAttributeKey, TransactionAttributeType> txAttrs;
 
-    private final Map<MethodTransactionAttributeKey, TransactionTimeout> txTimeouts;
+    private final Map<MethodTransactionAttributeKey, Integer> txTimeouts;
 
     private final TransactionManagementType transactionManagementType;
 
@@ -104,7 +103,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         // CMTTx
         if (transactionManagementType.equals(TransactionManagementType.CONTAINER)) {
             this.txAttrs = new HashMap<MethodTransactionAttributeKey, TransactionAttributeType>();
-            this.txTimeouts = new HashMap<MethodTransactionAttributeKey, TransactionTimeout>();
+            this.txTimeouts = new HashMap<MethodTransactionAttributeKey, Integer>();
         } else {
             this.txAttrs = null;
             this.txTimeouts = null;
@@ -192,7 +191,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         return txAttrs;
     }
 
-    Map<MethodTransactionAttributeKey, TransactionTimeout> getTxTimeouts() {
+    Map<MethodTransactionAttributeKey, Integer> getTxTimeouts() {
         return txTimeouts;
     }
 
@@ -216,7 +215,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         if (txAttr != TransactionAttributeType.REQUIRED) {
             txAttrs.put(new MethodTransactionAttributeKey(methodIntf, MethodIdentifier.getIdentifierForMethod(method)), txAttr);
         }
-        TransactionTimeout txTimeout = ejbComponentDescription.getTransactionTimeouts().getAttribute(methodIntf, className, methodName, toString(method.getParameterTypes()));
+        Integer txTimeout = ejbComponentDescription.getTransactionTimeouts().getAttribute(methodIntf, className, methodName, toString(method.getParameterTypes()));
         if (txTimeout != null) {
             txTimeouts.put(new MethodTransactionAttributeKey(methodIntf, MethodIdentifier.getIdentifierForMethod(method)), txTimeout);
         }

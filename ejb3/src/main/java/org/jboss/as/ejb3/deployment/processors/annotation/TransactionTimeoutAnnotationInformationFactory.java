@@ -21,7 +21,6 @@
  */
 package org.jboss.as.ejb3.deployment.processors.annotation;
 
-import java.lang.annotation.Annotation;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
@@ -29,32 +28,17 @@ import org.jboss.ejb3.annotation.TransactionTimeout;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 
-public class TransactionTimeoutAnnotationInformationFactory extends ClassAnnotationInformationFactory<TransactionTimeout, TransactionTimeout> {
+public class TransactionTimeoutAnnotationInformationFactory extends ClassAnnotationInformationFactory<TransactionTimeout, Integer> {
 
     protected TransactionTimeoutAnnotationInformationFactory() {
         super(TransactionTimeout.class, null);
     }
 
     @Override
-    protected TransactionTimeout fromAnnotation(final AnnotationInstance annotationInstance) {
+    protected Integer fromAnnotation(final AnnotationInstance annotationInstance) {
         final long timeout = annotationInstance.value().asLong();
         AnnotationValue unitAnnVal = annotationInstance.value("unit");
         final TimeUnit unit = unitAnnVal != null ? TimeUnit.valueOf(unitAnnVal.asEnum()) : TimeUnit.SECONDS;
-        return new TransactionTimeout() {
-            @Override
-            public long value() {
-                return timeout;
-            }
-
-            @Override
-            public TimeUnit unit() {
-                return unit;
-            }
-
-            @Override
-            public Class<? extends Annotation> annotationType() {
-                return TransactionTimeout.class;
-            }
-        };
+        return (int) unit.toSeconds(timeout);
     }
 }
