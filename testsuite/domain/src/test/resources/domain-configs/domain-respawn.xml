@@ -90,7 +90,6 @@
             <socket-binding name="https" port="8443"/>
          </socket-binding-group>
          <socket-binding-group name="standard-sockets" default-interface="public">
-            <include socket-binding-group="web-sockets"/>
             <socket-binding name="jmx-connector-registry" interface="management" port="1090"/>
             <socket-binding name="jmx-connector-server" interface="management" port="1091"/>
             <socket-binding name="jgroups-diagnostics" port="0" multicast-address="224.0.75.75" multicast-port="7500"/>
@@ -104,6 +103,8 @@
             <socket-binding name="txn-status-manager" port="4713"/>
             <socket-binding name="messaging" port="5445" />
             <socket-binding name="messaging-throughput" port="5455"/>
+             <socket-binding name="http" port="8080"/>
+             <socket-binding name="https" port="8443"/>
             <outbound-socket-binding name="mail-smtp">
                 <remote-destination host="localhost" port="25"/>
             </outbound-socket-binding>
