@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.client;
 
+import javax.net.ssl.SSLContext;
 import javax.security.auth.callback.CallbackHandler;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -67,6 +68,13 @@ public interface ModelControllerClientConfiguration {
      * @return the sasl options
      */
     Map<String, String> getSaslOptions();
+
+    /**
+     * Get the SSLContext.
+     *
+     * @return the SSLContext.
+     */
+    SSLContext getSSLContext();
 
     /**
      * Get the executor service used for the controller client.
