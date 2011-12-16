@@ -29,10 +29,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.getChildren;
 import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.testConnection;
 import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.testConnectionXA;
-import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.findNodeWithProperty;
+import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.marshalAndReparseDsResources;
 import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.setOperationParams;
 import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.nonXaDsProperties;
 import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.xaDsProperties;
@@ -41,8 +40,6 @@ import static org.jboss.as.test.integration.management.util.ComplexPropertiesPar
 
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -50,36 +47,22 @@ import java.util.Collections;
 import java.util.Properties;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
+import org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.transform.stream.StreamSource;
 
+import org.jboss.as.controller.client.ModelControllerClient;
 import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.container.TunneledMBeanServerConnection;
-import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension.NewDataSourceSubsystemParser;
-import org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource;
-import org.jboss.as.connector.subsystems.datasources.Namespace;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.test.smoke.embedded.demos.fakejndi.FakeJndi;
 import org.jboss.as.test.smoke.modular.utils.PollingUtils;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-import org.jboss.staxmapper.XMLExtendedStreamWriterFactory;
-import org.jboss.staxmapper.XMLMapper;
 import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -90,6 +73,7 @@ import org.junit.runner.RunWith;
  *
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author <a href="mailto:jeff.zhang@jboss.org">Jeff Zhang</a>
+ * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -104,7 +88,6 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
     @AfterClass
     public static void tearDown() throws IOException{
-       // StreamUtils.safeClose(client);
     	closeModelControllerClient();
     }
 
@@ -141,7 +124,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         testConnection("MyNewDs", getModelControllerClient());
 
-        List<ModelNode> newList = marshalAndReparseDsResources("data-source");
+        List<ModelNode> newList = marshalAndReparseDsResources("data-source",getModelControllerClient());
 
         remove(address);
 
@@ -187,7 +170,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         testConnection("MyNewDs", getModelControllerClient());
 
-        List<ModelNode> newList = marshalAndReparseDsResources("data-source");
+        List<ModelNode> newList = marshalAndReparseDsResources("data-source",getModelControllerClient());
 
         remove(address);
 
@@ -242,7 +225,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         executeOperation(operation2);
 
-        List<ModelNode> newList = marshalAndReparseDsResources("data-source");
+        List<ModelNode> newList = marshalAndReparseDsResources("data-source",getModelControllerClient());
 
         remove(address);
 
@@ -415,14 +398,14 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         executeOperation(operation2);
 
-        List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source");
+        List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source",getModelControllerClient());
 
         remove(address);
 
         Assert.assertNotNull("Reparsing failed:",newList);
         
         // remove from xml too
-        marshalAndReparseDsResources("xa-data-source");
+        marshalAndReparseDsResources("xa-data-source",getModelControllerClient());
         
         Assert.assertNotNull(findNodeWithProperty(newList,"jndi-name","java:jboss/datasources/" + jndiDsName));
  
@@ -557,7 +540,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
 
 
-        List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source");
+        List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source",getModelControllerClient());
 
         remove(address);
 
@@ -614,7 +597,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         executeOperation(datasourcePropertyOperation);
 
-        List<ModelNode> newList = marshalAndReparseDsResources("data-source");
+        List<ModelNode> newList = marshalAndReparseDsResources("data-source",getModelControllerClient());
 
         remove(address);
 
@@ -663,7 +646,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         executeOperation(xaDatasourcePropertyOperation);
 
-        List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source");
+        List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source",getModelControllerClient());
 
         remove(address);
 
@@ -685,46 +668,5 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
         return expected.cast(o);
     }
 
-    public List<ModelNode> marshalAndReparseDsResources(final String childType) throws Exception {
-
-        final ModelNode address = new ModelNode();
-        address.add("subsystem", "datasources");
-        address.protect();
-
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set("read-children-resources");
-        operation.get("child-type").set(childType);
-        operation.get(RECURSIVE).set(true);
-        operation.get(OP_ADDR).set(address);
-
-        final ModelNode result = executeOperation(operation);
-        Assert.assertNotNull(result);
-        final Map<String, ModelNode> children = getChildren(result);
-        for (final Entry<String, ModelNode> child : children.entrySet()) {
-            Assert.assertTrue(child.getKey() != null);
-            Assert.assertTrue(child.getValue().hasDefined("jndi-name"));
-            Assert.assertTrue(child.getValue().hasDefined("driver-name"));
-        }
-
-        ModelNode dsNode = new ModelNode();
-        dsNode.get(childType).set(result);
-
-        StringWriter strWriter = new StringWriter();
-        XMLExtendedStreamWriter writer = XMLExtendedStreamWriterFactory.create(XMLOutputFactory.newFactory()
-                .createXMLStreamWriter(strWriter));
-        NewDataSourceSubsystemParser parser = new NewDataSourceSubsystemParser();
-        parser.writeContent(writer, new SubsystemMarshallingContext(dsNode, writer));
-        writer.flush();
-
-        XMLMapper mapper = XMLMapper.Factory.create();
-        mapper.registerRootElement(new QName(Namespace.CURRENT.getUriString(), "subsystem"), parser);
-
-        StringReader strReader = new StringReader(strWriter.toString());
-
-        XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new StreamSource(strReader));
-        List<ModelNode> newList = new ArrayList<ModelNode>();
-        mapper.parseDocument(newList, reader);
-        return newList;
-    }
 
 }

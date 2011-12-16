@@ -37,7 +37,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import junit.framework.Assert;
-
+import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -46,7 +46,7 @@ import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -54,28 +54,21 @@ import org.junit.runner.RunWith;
  * Datasource resources unit test.
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author <a href="mailto:jeff.zhang@jboss.org">Jeff Zhang</a>
+ * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class DataSourceResourcesUnitTestCase {
-
-    private ModelControllerClient client;
+public class DataSourceResourcesUnitTestCase  extends AbstractMgmtTestBase{
 
     @Deployment
     public static Archive<?> getDeployment() {
+    	initModelControllerClient("localhost",9999);
         return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
     }
 
-    // [ARQ-458] @Before not called with @RunAsClient
-    private ModelControllerClient getModelControllerClient() throws UnknownHostException {
-        StreamUtils.safeClose(client);
-        client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
-        return client;
-    }
-
-    @After
-    public void tearDown() {
-        StreamUtils.safeClose(client);
+    @AfterClass
+    public static void tearDown()  throws IOException {
+    	closeModelControllerClient();
     }
 
     @Test
@@ -90,11 +83,8 @@ public class DataSourceResourcesUnitTestCase {
         operation.get("child-type").set("data-source");
         operation.get(OP_ADDR).set(address);
 
-        final ModelNode result = getModelControllerClient().execute(operation);
-        System.out.println(result);
-        //Assert.assertTrue(result.hasDefined(RESULT));
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        final Map<String, ModelNode> children = DataSourceOperationTestUtil.getChildren(result.get(RESULT));
+        final ModelNode result = executeOperation(operation);
+        final Map<String, ModelNode> children = getChildren(result);
         Assert.assertFalse(children.isEmpty());
         for (final Entry<String, ModelNode> child : children.entrySet()) {
             Assert.assertTrue(child.getKey() != null);
@@ -116,11 +106,9 @@ public class DataSourceResourcesUnitTestCase {
 
         operation.get(OP_ADDR).set(address);
 
-        final ModelNode result = getModelControllerClient().execute(operation);
-        Assert.assertTrue(result.hasDefined(RESULT));
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        final Map<String, ModelNode> children = DataSourceOperationTestUtil.getChildren(
-            result.get(RESULT).get("attributes").get("installed-drivers").get("value-type"));
+        final ModelNode result = executeOperation(operation);
+        final Map<String, ModelNode> children = getChildren(
+            result.get("attributes").get("installed-drivers").get("value-type"));
         Assert.assertFalse(children.isEmpty());
 
         HashSet<String> keys = new HashSet<String>();

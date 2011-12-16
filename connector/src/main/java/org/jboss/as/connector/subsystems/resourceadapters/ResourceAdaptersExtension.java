@@ -197,7 +197,7 @@ public class ResourceAdaptersExtension implements Extension {
         context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), ResourceAdapterSubsystemParser.INSTANCE);
     }
 
-    static final class ResourceAdapterSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
+    public static final class ResourceAdapterSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
             XMLElementWriter<SubsystemMarshallingContext> {
 
         static final ResourceAdapterSubsystemParser INSTANCE = new ResourceAdapterSubsystemParser();

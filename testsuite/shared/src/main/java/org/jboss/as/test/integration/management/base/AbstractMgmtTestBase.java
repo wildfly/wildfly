@@ -22,6 +22,8 @@
  */
 package org.jboss.as.test.integration.management.base;
 
+import org.jboss.dmr.Property;
+import java.util.List;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -54,7 +56,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-
+import java.util.Map;
+import java.util.HashMap;
 /**
  *
  * @author Dominik Pospisil <dpospisi@redhat.com>
@@ -186,4 +189,23 @@ public class AbstractMgmtTestBase {
         new ZipExporterImpl(war).exportTo(brokenWar, true);
         return brokenWar;
     }
+    protected Map<String, ModelNode> getChildren(final ModelNode result) {
+        assertTrue(result.isDefined());
+        final Map<String, ModelNode> steps = new HashMap<String, ModelNode>();
+        for (final Property property : result.asPropertyList()) {
+            steps.put(property.getName(), property.getValue());
+        }
+        return steps;
+    }
+    protected ModelNode findNodeWithProperty(List<ModelNode> newList,String propertyName,String setTo){
+    	ModelNode toReturn=null;
+    	for(ModelNode result : newList){
+            final Map<String, ModelNode> parseChildren = getChildren(result);
+            if (! parseChildren.isEmpty() && parseChildren.get(propertyName)!= null && parseChildren.get(propertyName).asString().equals(setTo)) {
+                toReturn=result;break;
+            }
+        }
+    	return toReturn;
+    }
+
 }
