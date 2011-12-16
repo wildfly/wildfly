@@ -342,7 +342,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case DEEP_COPY_SUBJECT_MODE: {
-                    SecuritySubsystemRootResourceDefinition.DEEP_COPY_SUBJECT_MODE.parseAndSetParameter(value, operation, reader.getLocation());
+                    SecuritySubsystemRootResourceDefinition.DEEP_COPY_SUBJECT_MODE.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 default:
@@ -411,7 +411,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                     break;
                 }
                 case CACHE_TYPE: {
-                    SecurityDomainResourceDefinition.CACHE_TYPE.parseAndSetParameter(value, op, reader.getLocation());
+                    SecurityDomainResourceDefinition.CACHE_TYPE.parseAndSetParameter(value, op, reader);
                     break;
                 }
                 default:
@@ -630,22 +630,22 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             required.remove(attribute);
             switch (attribute) {
                 case CODE: {
-                    ModelNode code = LoginModulesAttributeDefinition.parseField(CODE, value, reader.getLocation());
+                    ModelNode code = LoginModulesAttributeDefinition.parseField(CODE, value, reader);
                     node.get(CODE).set(code);
                     break;
                 }
                 case FLAG: {
-                    ModelNode flag = LoginModulesAttributeDefinition.parseField(FLAG, value, reader.getLocation());
+                    ModelNode flag = LoginModulesAttributeDefinition.parseField(FLAG, value, reader);
                     node.get(FLAG).set(flag);
                     break;
                 }
                 case TYPE: {
-                    ModelNode type = MappingModulesAttributeDefinition.parseField(TYPE, value, reader.getLocation());
+                    ModelNode type = MappingModulesAttributeDefinition.parseField(TYPE, value, reader);
                     node.get(TYPE).set(type);
                     break;
                 }
                 case MODULE: {
-                    ModelNode module = MappingModulesAttributeDefinition.parseField(MODULE, value, reader.getLocation());
+                    ModelNode module = MappingModulesAttributeDefinition.parseField(MODULE, value, reader);
                     node.get(MODULE).set(module);
                     break;
                 }
@@ -724,12 +724,12 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             required.remove(attribute);
             switch (attribute) {
                 case CODE: {
-                    ModelNode code = JASPIAuthenticationModulesAttributeDefinition.parseField(CODE, value, reader.getLocation());
+                    ModelNode code = JASPIAuthenticationModulesAttributeDefinition.parseField(CODE, value, reader);
                     op.get(CODE).set(code);
                     break;
                 }
                 case LOGIN_MODULE_STACK_REF: {
-                    ModelNode ref = JASPIAuthenticationModulesAttributeDefinition.parseField(LOGIN_MODULE_STACK_REF, value, reader.getLocation());
+                    ModelNode ref = JASPIAuthenticationModulesAttributeDefinition.parseField(LOGIN_MODULE_STACK_REF, value, reader);
                     op.get(LOGIN_MODULE_STACK_REF).set(ref);
                     break;
                 }
@@ -801,99 +801,99 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
 
             switch (attribute) {
                 case KEYSTORE_PASSWORD: {
-                    ModelNode password = KeyStoreAttributeDefinition.parseField(PASSWORD, value, reader.getLocation());
+                    ModelNode password = KeyStoreAttributeDefinition.parseField(PASSWORD, value, reader);
                     op.get(KEYSTORE, PASSWORD).set(password);
                     visited.add(attribute);
                     break;
                 }
                 case KEYSTORE_TYPE: {
-                    ModelNode type = KeyStoreAttributeDefinition.parseField(TYPE, value, reader.getLocation());
+                    ModelNode type = KeyStoreAttributeDefinition.parseField(TYPE, value, reader);
                     op.get(KEYSTORE, TYPE).set(type);
                     break;
                 }
                 case KEYSTORE_URL: {
-                    ModelNode url = KeyStoreAttributeDefinition.parseField(URL, value, reader.getLocation());
+                    ModelNode url = KeyStoreAttributeDefinition.parseField(URL, value, reader);
                     op.get(KEYSTORE, URL).set(url);
                     break;
                 }
                 case KEYSTORE_PROVIDER: {
-                    ModelNode provider = KeyStoreAttributeDefinition.parseField(PROVIDER, value, reader.getLocation());
+                    ModelNode provider = KeyStoreAttributeDefinition.parseField(PROVIDER, value, reader);
                     op.get(KEYSTORE, PROVIDER).set(provider);
                     break;
                 }
                 case KEYSTORE_PROVIDER_ARGUMENT: {
-                    ModelNode argument = KeyStoreAttributeDefinition.parseField(PROVIDER_ARGUMENT, value, reader.getLocation());
+                    ModelNode argument = KeyStoreAttributeDefinition.parseField(PROVIDER_ARGUMENT, value, reader);
                     op.get(KEYSTORE, PROVIDER_ARGUMENT).set(argument);
                     break;
                 }
                 case KEY_MANAGER_FACTORY_PROVIDER: {
-                    ModelNode provider = KeyManagerAttributeDefinition.parseField(PROVIDER, value, reader.getLocation());
+                    ModelNode provider = KeyManagerAttributeDefinition.parseField(PROVIDER, value, reader);
                     op.get(KEY_MANAGER, PROVIDER).set(provider);
                     break;
                 }
                 case KEY_MANAGER_FACTORY_ALGORITHM: {
-                    ModelNode provider = KeyManagerAttributeDefinition.parseField(ALGORITHM, value, reader.getLocation());
+                    ModelNode provider = KeyManagerAttributeDefinition.parseField(ALGORITHM, value, reader);
                     op.get(KEY_MANAGER, ALGORITHM).set(provider);
                     break;
                 }
                 case TRUSTSTORE_PASSWORD: {
-                    ModelNode password = KeyStoreAttributeDefinition.parseField(PASSWORD, value, reader.getLocation());
+                    ModelNode password = KeyStoreAttributeDefinition.parseField(PASSWORD, value, reader);
                     op.get(TRUSTSTORE, PASSWORD).set(password);
                     visited.add(attribute);
                     break;
                 }
                 case TRUSTSTORE_TYPE: {
-                    ModelNode type = KeyStoreAttributeDefinition.parseField(TYPE, value, reader.getLocation());
+                    ModelNode type = KeyStoreAttributeDefinition.parseField(TYPE, value, reader);
                     op.get(TRUSTSTORE, TYPE).set(type);
                     break;
                 }
                 case TRUSTSTORE_URL: {
-                    ModelNode url = KeyStoreAttributeDefinition.parseField(URL, value, reader.getLocation());
+                    ModelNode url = KeyStoreAttributeDefinition.parseField(URL, value, reader);
                     op.get(TRUSTSTORE, URL).set(url);
                     break;
                 }
                 case TRUSTSTORE_PROVIDER: {
-                    ModelNode provider = KeyStoreAttributeDefinition.parseField(PROVIDER, value, reader.getLocation());
+                    ModelNode provider = KeyStoreAttributeDefinition.parseField(PROVIDER, value, reader);
                     op.get(TRUSTSTORE, PROVIDER).set(provider);
                     break;
                 }
                 case TRUSTSTORE_PROVIDER_ARGUMENT: {
-                    ModelNode argument = KeyStoreAttributeDefinition.parseField(PROVIDER_ARGUMENT, value, reader.getLocation());
+                    ModelNode argument = KeyStoreAttributeDefinition.parseField(PROVIDER_ARGUMENT, value, reader);
                     op.get(TRUSTSTORE, PROVIDER_ARGUMENT).set(argument);
                     break;
                 }
                 case TRUST_MANAGER_FACTORY_PROVIDER: {
-                    ModelNode provider = KeyManagerAttributeDefinition.parseField(PROVIDER, value, reader.getLocation());
+                    ModelNode provider = KeyManagerAttributeDefinition.parseField(PROVIDER, value, reader);
                     op.get(TRUST_MANAGER, PROVIDER).set(provider);
                     break;
                 }
                 case TRUST_MANAGER_FACTORY_ALGORITHM: {
-                    ModelNode provider = KeyManagerAttributeDefinition.parseField(ALGORITHM, value, reader.getLocation());
+                    ModelNode provider = KeyManagerAttributeDefinition.parseField(ALGORITHM, value, reader);
                     op.get(TRUST_MANAGER, ALGORITHM).set(provider);
                     break;
                 }
                 case CLIENT_ALIAS: {
-                    JSSEResourceDefinition.CLIENT_ALIAS.parseAndSetParameter(value, op, reader.getLocation());
+                    JSSEResourceDefinition.CLIENT_ALIAS.parseAndSetParameter(value, op, reader);
                     break;
                 }
                 case SERVER_ALIAS: {
-                    JSSEResourceDefinition.SERVER_ALIAS.parseAndSetParameter(value, op, reader.getLocation());
+                    JSSEResourceDefinition.SERVER_ALIAS.parseAndSetParameter(value, op, reader);
                     break;
                 }
                 case CLIENT_AUTH: {
-                    JSSEResourceDefinition.CLIENT_AUTH.parseAndSetParameter(value, op, reader.getLocation());
+                    JSSEResourceDefinition.CLIENT_AUTH.parseAndSetParameter(value, op, reader);
                     break;
                 }
                 case SERVICE_AUTH_TOKEN: {
-                    JSSEResourceDefinition.SERVICE_AUTH_TOKEN.parseAndSetParameter(value, op, reader.getLocation());
+                    JSSEResourceDefinition.SERVICE_AUTH_TOKEN.parseAndSetParameter(value, op, reader);
                     break;
                 }
                 case CIPHER_SUITES: {
-                    JSSEResourceDefinition.CIPHER_SUITES.parseAndSetParameter(value, op, reader.getLocation());
+                    JSSEResourceDefinition.CIPHER_SUITES.parseAndSetParameter(value, op, reader);
                     break;
                 }
                 case PROTOCOLS: {
-                    JSSEResourceDefinition.PROTOCOLS.parseAndSetParameter(value, op, reader.getLocation());
+                    JSSEResourceDefinition.PROTOCOLS.parseAndSetParameter(value, op, reader);
                     break;
                 }
                 default:

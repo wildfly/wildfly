@@ -622,11 +622,10 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                 throw duplicateAttribute(reader, attribute.getLocalName());
             }
             requiredAttributes.remove(attribute);
-            JacORBSubsystemDefinitions.valueOf(attribute.getLocalName()).parseAndSetParameter(attrValue, node,
-                    reader.getLocation());
+            JacORBSubsystemDefinitions.valueOf(attribute.getLocalName()).parseAndSetParameter(attrValue, node, reader);
         }
 
-        // throw an exception if a required attribute wasn't found.
+      // throw an exception if a required attribute wasn't found.
         if (!requiredAttributes.isEmpty()) {
             throw missingRequired(reader, requiredAttributes);
         }

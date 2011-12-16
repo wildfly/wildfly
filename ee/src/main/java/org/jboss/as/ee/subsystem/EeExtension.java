@@ -40,7 +40,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 
-import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
@@ -163,10 +162,9 @@ public class EeExtension implements Extension {
                                 break;
                             }
                             case EAR_SUBDEPLOYMENTS_ISOLATED: {
-                                Location location = reader.getLocation();
                                 final String earSubDeploymentsIsolated = parseEarSubDeploymentsIsolatedElement(reader);
                                 // set the ear subdeployment isolation on the subsystem operation
-                                EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.parseAndSetParameter(earSubDeploymentsIsolated, eeSubSystem, location);
+                                EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.parseAndSetParameter(earSubDeploymentsIsolated, eeSubSystem, reader);
                                 break;
                             }
                             default: {

@@ -367,7 +367,7 @@ public class DomainXml extends CommonXml {
         bindingGroupUpdate.get(OP_ADDR).set(groupAddress);
         bindingGroupUpdate.get(OP).set(ADD);
 
-        SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.parseAndSetParameter(defaultInterface, bindingGroupUpdate, reader.getLocation());
+        SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.parseAndSetParameter(defaultInterface, bindingGroupUpdate, reader);
 
         final ModelNode includes = bindingGroupUpdate.get(INCLUDES);
         includes.setEmptyList();
@@ -422,7 +422,7 @@ public class DomainXml extends CommonXml {
         bindingGroupUpdate.get(OP_ADDR).set(groupAddress);
         bindingGroupUpdate.get(OP).set(ADD);
 
-        SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.parseAndSetParameter(defaultInterface, bindingGroupUpdate, reader.getLocation());
+        SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.parseAndSetParameter(defaultInterface, bindingGroupUpdate, reader);
 
         final ModelNode includes = bindingGroupUpdate.get(INCLUDES);
         includes.setEmptyList();

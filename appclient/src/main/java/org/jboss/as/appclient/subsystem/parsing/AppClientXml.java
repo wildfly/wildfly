@@ -326,12 +326,12 @@ public class AppClientXml extends CommonXml {
                     break;
                 }
                 case DEFAULT_INTERFACE: {
-                    SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.parseAndSetParameter(value, op, reader.getLocation());
+                    SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.parseAndSetParameter(value, op, reader);
                     required.remove(attribute);
                     break;
                 }
                 case PORT_OFFSET: {
-                    SocketBindingGroupResourceDefinition.PORT_OFFSET.parseAndSetParameter(value, op, reader.getLocation());
+                    SocketBindingGroupResourceDefinition.PORT_OFFSET.parseAndSetParameter(value, op, reader);
                     break;
                 }
                 default:

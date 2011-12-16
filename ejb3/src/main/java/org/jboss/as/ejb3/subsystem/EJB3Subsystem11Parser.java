@@ -51,9 +51,9 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
-import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -318,12 +318,12 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
             switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
                 case BEAN_INSTANCE_POOL_REF: {
                     final String poolName = readStringAttributeElement(reader, EJB3SubsystemXMLAttribute.POOL_NAME.getLocalName());
-                    EJB3SubsystemRootResourceDefinition.DEFAULT_MDB_INSTANCE_POOL.parseAndSetParameter(poolName, ejb3SubsystemAddOperation, reader.getLocation());
+                    EJB3SubsystemRootResourceDefinition.DEFAULT_MDB_INSTANCE_POOL.parseAndSetParameter(poolName, ejb3SubsystemAddOperation, reader);
                     break;
                 }
                 case RESOURCE_ADAPTER_REF: {
                     final String resourceAdapterName = readStringAttributeElement(reader, EJB3SubsystemXMLAttribute.RESOURCE_ADAPTER_NAME.getLocalName());
-                    EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME.parseAndSetParameter(resourceAdapterName, ejb3SubsystemAddOperation, reader.getLocation());
+                    EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME.parseAndSetParameter(resourceAdapterName, ejb3SubsystemAddOperation, reader);
                     break;
                 }
                 default: {
@@ -368,7 +368,7 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
             switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
                 case BEAN_INSTANCE_POOL_REF: {
                     final String poolName = readStringAttributeElement(reader, EJB3SubsystemXMLAttribute.POOL_NAME.getLocalName());
-                    EJB3SubsystemRootResourceDefinition.DEFAULT_SLSB_INSTANCE_POOL.parseAndSetParameter(poolName, ejb3SubsystemAddOperation, reader.getLocation());
+                    EJB3SubsystemRootResourceDefinition.DEFAULT_SLSB_INSTANCE_POOL.parseAndSetParameter(poolName, ejb3SubsystemAddOperation, reader);
                     break;
                 }
                 default: {
@@ -426,13 +426,13 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
                     poolName = value;
                     break;
                 case MAX_POOL_SIZE:
-                    maxPoolSize = StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.parse(value, reader.getLocation()).asInt();
+                    maxPoolSize = StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.parse(value, reader).asInt();
                     break;
                 case INSTANCE_AQUISITION_TIMEOUT:
-                    timeout = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.parse(value, reader.getLocation()).asLong();
+                    timeout = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.parse(value, reader).asLong();
                     break;
                 case INSTANCE_AQUISITION_TIMEOUT_UNIT:
-                    unit = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.parse(value, reader.getLocation()).asString();
+                    unit = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.parse(value, reader).asString();
                     break;
 
                 default:
@@ -468,7 +468,6 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
                     final int count = reader.getAttributeCount();
                     for (int i = 0; i < count; i++) {
                         requireNoNamespaceAttribute(reader, i);
-                        final Location location = reader.getLocation();
                         final String value = reader.getAttributeValue(i);
                         final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
                         switch (attribute) {
@@ -489,7 +488,6 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
                     final int count = reader.getAttributeCount();
                     for (int i = 0; i < count; i++) {
                         requireNoNamespaceAttribute(reader, i);
-                        final Location location = reader.getLocation();
                         final String value = reader.getAttributeValue(i);
                         final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
                         switch (attribute) {
@@ -497,13 +495,13 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
                                 if (dataStorePath != null) {
                                     throw unexpectedAttribute(reader, i);
                                 }
-                                dataStorePath = TimerServiceResourceDefinition.PATH.parse(value, location).asString();
+                                dataStorePath = TimerServiceResourceDefinition.PATH.parse(value, reader).asString();
                                 break;
                             case RELATIVE_TO:
                                 if (dataStorePathRelativeTo != null) {
                                     throw unexpectedAttribute(reader, i);
                                 }
-                                dataStorePathRelativeTo = TimerServiceResourceDefinition.RELATIVE_TO.parse(value, location).asString();
+                                dataStorePathRelativeTo = TimerServiceResourceDefinition.RELATIVE_TO.parse(value, reader).asString();
                                 break;
                             default:
                                 throw unexpectedAttribute(reader, i);
@@ -572,9 +570,9 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
     }
 
     private ModelNode createSetDefaultWriteAttributeOperation(final SimpleAttributeDefinition attributeDefinition,
-                                                              final String rawValue, final Location location) throws XMLStreamException {
+                                                              final String rawValue, final XMLStreamReader reader) throws XMLStreamException {
 
-        final ModelNode parsed = attributeDefinition.parse(rawValue, location);
+        final ModelNode parsed = attributeDefinition.parse(rawValue, reader);
         // create /subsystem=ejb3:write-attribute(name=default-mdb-instance-pool,value=poolName) operation
         final ModelNode setDefaultSLSBPoolOperation = new ModelNode();
         setDefaultSLSBPoolOperation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);

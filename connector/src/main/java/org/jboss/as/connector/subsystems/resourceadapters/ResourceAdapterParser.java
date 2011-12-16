@@ -39,7 +39,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.connector.util.ParserException;
@@ -235,15 +234,13 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                             break;
                         }
                         case BEAN_VALIDATION_GROUP: {
-                            final Location location = reader.getLocation();
                             String value = rawElementText(reader);
-                            BEANVALIDATIONGROUPS.parseAndSetParameter(value, operation, location);
+                            BEANVALIDATIONGROUPS.parseAndSetParameter(value, operation, reader);
                             break;
                         }
                         case BOOTSTRAP_CONTEXT: {
-                            final Location location = reader.getLocation();
                             String value = rawElementText(reader);
-                            BOOTSTRAPCONTEXT.parseAndSetParameter(value, operation, location);
+                            BOOTSTRAPCONTEXT.parseAndSetParameter(value, operation, reader);
                             break;
                         }
                         case CONFIG_PROPERTY: {
@@ -252,15 +249,13 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
 
                         }
                         case TRANSACTION_SUPPORT: {
-                            final Location location = reader.getLocation();
                             String value = rawElementText(reader);
-                            TRANSACTIONSUPPORT.parseAndSetParameter(value, operation, location);
+                            TRANSACTIONSUPPORT.parseAndSetParameter(value, operation, reader);
                             break;
                         }
                         case ARCHIVE: {
-                            final Location location = reader.getLocation();
                             archiveName = rawElementText(reader);
-                            ARCHIVE.parseAndSetParameter(archiveName, operation, location);
+                            ARCHIVE.parseAndSetParameter(archiveName, operation, reader);
                             break;
                         }
                         default:

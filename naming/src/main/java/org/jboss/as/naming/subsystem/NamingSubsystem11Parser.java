@@ -216,10 +216,10 @@ public class NamingSubsystem11Parser implements XMLElementReader<List<ModelNode>
                     name = value.trim();
                     break;
                 case VALUE:
-                    bindingValue = NamingBindingResourceDefinition.VALUE.parse(value, reader.getLocation()).asString();
+                    bindingValue = NamingBindingResourceDefinition.VALUE.parse(value, reader).asString();
                     break;
                 case TYPE:
-                    type = NamingBindingResourceDefinition.TYPE.parse(value, reader.getLocation()).asString();
+                    type = NamingBindingResourceDefinition.TYPE.parse(value, reader).asString();
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -262,10 +262,10 @@ public class NamingSubsystem11Parser implements XMLElementReader<List<ModelNode>
                     name = value.trim();
                     break;
                 case MODULE:
-                    module = NamingBindingResourceDefinition.MODULE.parse(value, reader.getLocation()).asString();
+                    module = NamingBindingResourceDefinition.MODULE.parse(value, reader).asString();
                     break;
                 case CLASS:
-                    factory = NamingBindingResourceDefinition.CLASS.parse(value, reader.getLocation()).asString();
+                    factory = NamingBindingResourceDefinition.CLASS.parse(value, reader).asString();
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -305,7 +305,7 @@ public class NamingSubsystem11Parser implements XMLElementReader<List<ModelNode>
                     name = value.trim();
                     break;
                 case LOOKUP:
-                    lookup = NamingBindingResourceDefinition.LOOKUP.parse(value, reader.getLocation()).asString();
+                    lookup = NamingBindingResourceDefinition.LOOKUP.parse(value, reader).asString();
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);

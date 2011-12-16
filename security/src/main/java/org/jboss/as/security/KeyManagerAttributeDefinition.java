@@ -5,8 +5,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -52,7 +52,7 @@ public class KeyManagerAttributeDefinition extends AttributeDefinition {
         }
     }
 
-   public static ModelNode parseField(String name, String value, Location location) throws XMLStreamException {
+   public static ModelNode parseField(String name, String value, XMLStreamReader reader) throws XMLStreamException {
         final String trimmed = value == null ? null : value.trim();
         ModelNode node;
         if (trimmed != null ) {
@@ -64,7 +64,7 @@ public class KeyManagerAttributeDefinition extends AttributeDefinition {
         try {
             fieldValidator.validateParameter(name, node);
         } catch (OperationFailedException e) {
-            throw new XMLStreamException(e.getFailureDescription().toString(), location);
+            throw new XMLStreamException(e.getFailureDescription().toString(), reader.getLocation());
         }
         return node;
     }

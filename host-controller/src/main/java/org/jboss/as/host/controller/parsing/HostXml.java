@@ -43,7 +43,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURE_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
@@ -71,7 +70,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.operations.common.Util;
@@ -452,19 +450,18 @@ public class HostXml extends CommonXml {
             } else {
                 final String value = reader.getAttributeValue(i);
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                final Location location = reader.getLocation();
                 switch (attribute) {
                     case INTERFACE: {
-                        HttpManagementResourceDefinition.INTERFACE.parseAndSetParameter(value, mgmtSocket, location);
+                        HttpManagementResourceDefinition.INTERFACE.parseAndSetParameter(value, mgmtSocket, reader);
                         hasInterfaceName = true;
                         break;
                     }
                     case PORT: {
-                        HttpManagementResourceDefinition.HTTP_PORT.parseAndSetParameter(value, mgmtSocket, location);
+                        HttpManagementResourceDefinition.HTTP_PORT.parseAndSetParameter(value, mgmtSocket, reader);
                         break;
                     }
                     case SECURE_PORT: {
-                        HttpManagementResourceDefinition.HTTPS_PORT.parseAndSetParameter(value, mgmtSocket, location);
+                        HttpManagementResourceDefinition.HTTPS_PORT.parseAndSetParameter(value, mgmtSocket, reader);
                         break;
                     }
                     case MAX_THREADS: {
@@ -472,7 +469,7 @@ public class HostXml extends CommonXml {
                         break;
                     }
                     case SECURITY_REALM: {
-                        HttpManagementResourceDefinition.SECURITY_REALM.parseAndSetParameter(value, mgmtSocket, location);
+                        HttpManagementResourceDefinition.SECURITY_REALM.parseAndSetParameter(value, mgmtSocket, reader);
                         break;
                     }
                     default:
@@ -511,19 +508,19 @@ public class HostXml extends CommonXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case INTERFACE: {
-                        NativeManagementResourceDefinition.INTERFACE.parseAndSetParameter(value, mgmtSocket, reader.getLocation());
+                        NativeManagementResourceDefinition.INTERFACE.parseAndSetParameter(value, mgmtSocket, reader);
                         hasInterface = true;
                         break;
                     }
                     case PORT: {
-                        NativeManagementResourceDefinition.NATIVE_PORT.parseAndSetParameter(value, mgmtSocket, reader.getLocation());
+                        NativeManagementResourceDefinition.NATIVE_PORT.parseAndSetParameter(value, mgmtSocket, reader);
                         break;
                     }
                     case SECURE_PORT:
                         // ignore -- this was a bug in the xsd
                         break;
                     case SECURITY_REALM: {
-                        NativeManagementResourceDefinition.SECURITY_REALM.parseAndSetParameter(value, mgmtSocket, reader.getLocation());
+                        NativeManagementResourceDefinition.SECURITY_REALM.parseAndSetParameter(value, mgmtSocket, reader);
                         break;
                     }
                     default:
@@ -559,9 +556,9 @@ public class HostXml extends CommonXml {
                 switch (attribute) {
                     case SECURITY_REALM: {
                         if (http) {
-                            HttpManagementResourceDefinition.SECURITY_REALM.parseAndSetParameter(value, addOp, reader.getLocation());
+                            HttpManagementResourceDefinition.SECURITY_REALM.parseAndSetParameter(value, addOp, reader);
                         } else {
-                            NativeManagementResourceDefinition.SECURITY_REALM.parseAndSetParameter(value, addOp, reader.getLocation());
+                            NativeManagementResourceDefinition.SECURITY_REALM.parseAndSetParameter(value, addOp, reader);
                         }
                         break;
                     }
@@ -604,12 +601,12 @@ public class HostXml extends CommonXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case INTERFACE: {
-                        NativeManagementResourceDefinition.INTERFACE.parseAndSetParameter(value, addOp, reader.getLocation());
+                        NativeManagementResourceDefinition.INTERFACE.parseAndSetParameter(value, addOp, reader);
                         hasInterface = true;
                         break;
                     }
                     case PORT: {
-                        NativeManagementResourceDefinition.NATIVE_PORT.parseAndSetParameter(value, addOp, reader.getLocation());
+                        NativeManagementResourceDefinition.NATIVE_PORT.parseAndSetParameter(value, addOp, reader);
                         break;
                     }
                     default:
@@ -638,16 +635,16 @@ public class HostXml extends CommonXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case INTERFACE: {
-                        HttpManagementResourceDefinition.INTERFACE.parseAndSetParameter(value, addOp, reader.getLocation());
+                        HttpManagementResourceDefinition.INTERFACE.parseAndSetParameter(value, addOp, reader);
                         hasInterface = true;
                         break;
                     }
                     case PORT: {
-                        HttpManagementResourceDefinition.HTTP_PORT.parseAndSetParameter(value, addOp, reader.getLocation());
+                        HttpManagementResourceDefinition.HTTP_PORT.parseAndSetParameter(value, addOp, reader);
                         break;
                     }
                     case SECURE_PORT: {
-                        HttpManagementResourceDefinition.HTTPS_PORT.parseAndSetParameter(value, addOp, reader.getLocation());
+                        HttpManagementResourceDefinition.HTTPS_PORT.parseAndSetParameter(value, addOp, reader);
                         break;
                     }
                     default:

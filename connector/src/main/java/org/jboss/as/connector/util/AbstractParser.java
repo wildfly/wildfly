@@ -23,14 +23,12 @@ package org.jboss.as.connector.util;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
-import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Map;
 
-import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
@@ -100,10 +98,9 @@ public abstract class AbstractParser {
         for (Extension.Attribute attribute : Extension.Attribute.values()) {
             switch (attribute) {
                 case CLASS_NAME: {
-                    final Location location = reader.getLocation();
                     requireSingleAttribute(reader, attribute.getLocalName());
                     final String value = reader.getAttributeValue(0);
-                    extensionclassname.parseAndSetParameter(value, operation, location);
+                    extensionclassname.parseAndSetParameter(value, operation, reader);
                     break;
 
                 }
@@ -128,11 +125,10 @@ public abstract class AbstractParser {
                 case START_ELEMENT: {
                     switch (Extension.Tag.forName(reader.getLocalName())) {
                         case CONFIG_PROPERTY: {
-                            final Location location = reader.getLocation();
                             requireSingleAttribute(reader, "name");
                             final String name = reader.getAttributeValue(0);
                             String value = rawElementText(reader);
-                            ModelNode node = extensionProperties.parse(value, location);
+                            ModelNode node = extensionProperties.parse(value, reader);
                             operation.get(extensionProperties.getName(), name).set(node);
                             break;
                         }
