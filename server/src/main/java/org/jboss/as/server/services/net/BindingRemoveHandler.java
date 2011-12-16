@@ -58,7 +58,7 @@ public class BindingRemoveHandler extends SocketBindingRemoveHandler {
         ServiceName svcName = SocketBinding.JBOSS_BINDING_NAME.append(name);
         ServiceRegistry registry = context.getServiceRegistry(true);
         ServiceController<?> controller = registry.getService(svcName);
-        if (controller != null && controller.getState() == ServiceController.State.UP) {
+        if (controller != null && controller.getState() == ServiceController.State.UP && controller.getSubstate().isRestState()) {
             context.reloadRequired();
         } else {
             context.removeService(SocketBinding.JBOSS_BINDING_NAME.append(name));
