@@ -98,12 +98,8 @@ public class InfinispanDescriptions {
         addNode(attributes, ModelKeys.LISTENER_EXECUTOR, resources.getString(keyPrefix+".listener-executor"), ModelType.STRING, false);
         addNode(attributes, ModelKeys.EVICTION_EXECUTOR, resources.getString(keyPrefix+".eviction-executor"), ModelType.STRING, false);
         addNode(attributes, ModelKeys.REPLICATION_QUEUE_EXECUTOR, resources.getString(keyPrefix+".replication-queue-executor"), ModelType.STRING, false);
+        addNode(attributes, ModelKeys.ALIAS, resources.getString(keyPrefix+".alias"), ModelType.LIST, false).get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
 
-        // information about its child "alias"
-        description.get(CHILDREN, ModelKeys.ALIAS, DESCRIPTION).set(resources.getString(keyPrefix+".alias"));
-        description.get(CHILDREN, ModelKeys.ALIAS, MIN_OCCURS).set(0);
-        description.get(CHILDREN, ModelKeys.ALIAS, MAX_OCCURS).set(Integer.MAX_VALUE);
-        description.get(CHILDREN, ModelKeys.ALIAS, MODEL_DESCRIPTION);
         // information about its child "singleton=transport"
         description.get(CHILDREN, ModelKeys.SINGLETON, DESCRIPTION).set(resources.getString(keyPrefix+".transport"));
         description.get(CHILDREN, ModelKeys.SINGLETON, MIN_OCCURS).set(0);
@@ -143,7 +139,24 @@ public class InfinispanDescriptions {
         addNode(requestProperties, ModelKeys.EVICTION_EXECUTOR, resources.getString("infinispan.container.eviction-executor"), ModelType.STRING, false);
         addNode(requestProperties, ModelKeys.REPLICATION_QUEUE_EXECUTOR, resources.getString("infinispan.container.replication-queue-executor"), ModelType.STRING, false);
         addNode(requestProperties, ModelKeys.JNDI_NAME, resources.getString("infinispan.container.jndi-name"), ModelType.STRING, false);
+        addNode(requestProperties, ModelKeys.ALIAS, resources.getString("infinispan.container.alias"), ModelType.LIST, false).get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
 
+        return description;
+    }
+
+    static ModelNode getAddAliasCommandDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        ModelNode description = createAddAliasCommandOperationDescription("add-alias", resources);
+        ModelNode requestProperties = description.get(REQUEST_PROPERTIES);
+        addNode(requestProperties, ModelKeys.NAME, resources.getString("infinispan.container.alias.name"), ModelType.STRING, true);
+        return description;
+    }
+
+    static ModelNode getRemoveAliasCommandDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        ModelNode description = createAddAliasCommandOperationDescription("remove-alias", resources);
+        ModelNode requestProperties = description.get(REQUEST_PROPERTIES);
+        addNode(requestProperties, ModelKeys.NAME, resources.getString("infinispan.container.alias.name"), ModelType.STRING, true);
         return description;
     }
 
@@ -316,27 +329,6 @@ public class InfinispanDescriptions {
         return description;
     }
 
-    // alias resource
-    static ModelNode getAliasDescription(Locale locale) {
-        ResourceBundle resources = getResources(locale);
-        String keyPrefix = "infinispan.container.alias" ;
-        ModelNode description = createDescription(resources, keyPrefix);
-        // this does not have attributes
-        return description ;
-    }
-    static ModelNode getAliasAddDescription(Locale locale) {
-        ResourceBundle resources = getResources(locale);
-        ModelNode description = createAliasOperationDescription(ADD, resources);
-        description.get(REQUEST_PROPERTIES).setEmptyObject();
-        return description;
-    }
-    static ModelNode getAliasRemoveDescription(Locale locale) {
-        ResourceBundle resources = getResources(locale);
-        ModelNode description = createAliasOperationDescription(REMOVE, resources);
-        description.get(REQUEST_PROPERTIES).setEmptyObject();
-        return description;
-    }
-
 
     private static ResourceBundle getResources(Locale locale) {
         return ResourceBundle.getBundle(RESOURCE_NAME, (locale == null) ? Locale.getDefault() : locale);
@@ -379,10 +371,6 @@ public class InfinispanDescriptions {
         return createOperationDescription(operation, resources, "infinispan.container.distributed-cache." + operation);
     }
 
-    private static ModelNode createAliasOperationDescription(String operation, ResourceBundle resources) {
-        return createOperationDescription(operation, resources, "infinispan.container.alias." + operation);
-    }
-
     private static ModelNode createTransportOperationDescription(String operation, ResourceBundle resources) {
         return createOperationDescription(operation, resources, "infinispan.container.transport." + operation);
     }
@@ -401,6 +389,10 @@ public class InfinispanDescriptions {
 
     private static ModelNode createExpirationOperationDescription(String operation, ResourceBundle resources) {
         return createOperationDescription(operation, resources, "infinispan.container.expiration." + operation);
+    }
+
+    private static ModelNode createAddAliasCommandOperationDescription(String operation, ResourceBundle resources) {
+        return createOperationDescription(operation, resources, "infinispan.container.alias." + operation);
     }
 
     private static ModelNode addNode(ModelNode parent, String attribute, String description, ModelType type, boolean required) {

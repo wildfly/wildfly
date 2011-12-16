@@ -113,6 +113,12 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
         if (source.hasDefined(ModelKeys.REPLICATION_QUEUE_EXECUTOR)) {
             target.get(ModelKeys.REPLICATION_QUEUE_EXECUTOR).set(source.get(ModelKeys.REPLICATION_QUEUE_EXECUTOR));
         }
+        if (source.hasDefined(ModelKeys.ALIAS)) {
+            ModelNode aliases = target.get(ModelKeys.ALIAS);
+            for (ModelNode alias : source.get(ModelKeys.ALIAS).asList()) {
+                aliases.add(alias);
+            }
+        }
     }
 
     @Override
@@ -129,16 +135,12 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
 
         EmbeddedCacheManager config = new EmbeddedCacheManager(name, defaultCache);
 
-        //
-        // aliases are stored as a child resource /subsystem=infinispan/cache-container=name/alias=name
-        // in the form of a property list, so we need to retrieve them from the model
-        //
         ServiceName[] aliases = null;
-        if (model.hasDefined(ModelKeys.ALIAS)) {
-            List<Property> list = model.get(ModelKeys.ALIAS).asPropertyList();
+        if (operation.hasDefined(ModelKeys.ALIAS)) {
+            List<ModelNode> list = operation.get(ModelKeys.ALIAS).asList();
             aliases = new ServiceName[list.size()];
             for (int i = 0; i < list.size(); i++) {
-                aliases[i] = EmbeddedCacheManagerService.getServiceName(list.get(i).getName());
+                aliases[i] = EmbeddedCacheManagerService.getServiceName(list.get(i).asString());
             }
         }
 
