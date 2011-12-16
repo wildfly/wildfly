@@ -88,7 +88,7 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
                 configuration.setEndpointName("management-client");
 
                 final ProtocolChannelClient setup = ProtocolChannelClient.create(configuration);
-                strategy = ManagementClientChannelStrategy.create(setup, this, clientConfiguration.getCallbackHandler(), clientConfiguration.getSaslOptions());
+                strategy = ManagementClientChannelStrategy.create(setup, this, clientConfiguration.getCallbackHandler(), clientConfiguration.getSaslOptions(), clientConfiguration.getSSLContext());
             } catch (IOException e) {
                 throw e;
             } catch (RuntimeException e) {

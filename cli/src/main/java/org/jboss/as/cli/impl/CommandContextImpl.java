@@ -595,41 +595,44 @@ class CommandContextImpl implements CommandContext {
             port = defaultControllerPort;
         }
 
-        try {
-            ModelControllerClient newClient = null;
+        boolean retry = false;
+        do {
+            try {
+                ModelControllerClient newClient = null;
 
-            CallbackHandler cbh = new AuthenticationCallbackHandler(username, password);
-            ModelControllerClient tempClient = ModelControllerClient.Factory.create(host, port, cbh);
-            switch (initialConnection(tempClient)) {
-                case SUCCESS:
-                    newClient = tempClient;
-                    break;
-                case CONNECTION_FAILURE:
-                    printLine("The controller is not available at " + host + ":" + port);
-                    break;
-                case AUTHENTICATION_FAILURE:
-                    printLine("Unable to authenticate against controller at " + host + ":" + port);
-                    break;
-                case SSL_FAILURE:
-                    printLine("Unable to negotiate SSL connection with controller at " + host + ":" + port);
-                    break;
-            }
-
-            if (newClient != null) {
-                if (this.client != null) {
-                    disconnectController();
+                CallbackHandler cbh = new AuthenticationCallbackHandler(username, password);
+                ModelControllerClient tempClient = ModelControllerClient.Factory.create(host, port, cbh, sslContext);
+                switch (initialConnection(tempClient)) {
+                    case SUCCESS:
+                        newClient = tempClient;
+                        break;
+                    case CONNECTION_FAILURE:
+                        printLine("The controller is not available at " + host + ":" + port);
+                        break;
+                    case AUTHENTICATION_FAILURE:
+                        printLine("Unable to authenticate against controller at " + host + ":" + port);
+                        break;
+                    case SSL_FAILURE:
+                        printLine("Unable to negotiate SSL connection with controller at " + host + ":" + port);
+                        break;
                 }
 
-                client = newClient;
-                this.controllerHost = host;
-                this.controllerPort = port;
+                if (newClient != null) {
+                    if (this.client != null) {
+                        disconnectController();
+                    }
 
-                List<String> nodeTypes = Util.getNodeTypes(newClient, new DefaultOperationRequestAddress());
-                domainMode = nodeTypes.contains("server-group");
+                    client = newClient;
+                    this.controllerHost = host;
+                    this.controllerPort = port;
+
+                    List<String> nodeTypes = Util.getNodeTypes(newClient, new DefaultOperationRequestAddress());
+                    domainMode = nodeTypes.contains("server-group");
+                }
+            } catch (UnknownHostException e) {
+                printLine("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
             }
-        } catch (UnknownHostException e) {
-            printLine("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
-        }
+        } while (retry);
     }
 
     /**
@@ -989,11 +992,11 @@ class CommandContextImpl implements CommandContext {
     private class LazyDelagatingTrustManager implements X509TrustManager {
 
         // Configuration based state set on initialisation.
-        
+
         private final String trustStore;
         private final String trustStorePassword;
         private final boolean modifyTrustStore;
-        
+
         private Certificate[] lastFailedCert;
 
         LazyDelagatingTrustManager(String trustStore, String trustStorePassword, boolean modifyTrustStore) {
@@ -1017,7 +1020,7 @@ class CommandContextImpl implements CommandContext {
         /*
          * X509TrustManager Methods
          */
-        
+
         @Override
         public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
             // TODO Auto-generated method stub

@@ -28,6 +28,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 
+import javax.net.ssl.SSLContext;
 import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.controller.client.impl.ClientConfigurationImpl;
@@ -170,6 +171,20 @@ public interface ModelControllerClient extends Closeable {
          */
         public static ModelControllerClient create(final String hostName, final int port, final CallbackHandler handler) throws UnknownHostException {
             return create(ClientConfigurationImpl.create(hostName,  port, handler));
+        }
+
+        /**
+         * Create a client instance for a remote address and port and CallbackHandler.
+         *
+         * @param hostName   the remote host
+         * @param port       the port
+         * @param handler    CallbackHandler to obtain authentication information for the call.
+         * @param sslContext a pre-initialised SSLContext
+         * @return A model controller client
+         * @throws UnknownHostException if the host cannot be found
+         */
+        public static ModelControllerClient create(final String hostName, final int port, final CallbackHandler handler, final SSLContext sslContext) throws UnknownHostException {
+            return create(ClientConfigurationImpl.create(hostName,  port, handler, sslContext));
         }
 
         /**
