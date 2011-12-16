@@ -52,6 +52,7 @@ import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBHomeLocator;
+import org.jboss.ejb3.annotation.TransactionTimeout;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.proxy.MethodIdentifier;
@@ -71,6 +72,7 @@ public abstract class EJBComponent extends BasicComponent {
     private static final ApplicationExceptionDetails APPLICATION_EXCEPTION = new ApplicationExceptionDetails("java.lang.Exception", true, false);
 
     private final Map<MethodTransactionAttributeKey, TransactionAttributeType> txAttrs;
+    private final Map<MethodTransactionAttributeKey, TransactionTimeout> txTimeouts;
 
     private final EJBUtilities utilities;
     private final boolean isBeanManagedTransaction;
@@ -109,6 +111,12 @@ public abstract class EJBComponent extends BasicComponent {
             this.txAttrs = Collections.emptyMap();
         } else {
             this.txAttrs = txAttrs;
+        }
+        final Map<MethodTransactionAttributeKey, TransactionTimeout> txTimeouts = ejbComponentCreateService.getTxTimeouts();
+        if (txTimeouts == null || txTimeouts.isEmpty()) {
+            this.txTimeouts = Collections.emptyMap();
+        } else {
+            this.txTimeouts = txTimeouts;
         }
         isBeanManagedTransaction = TransactionManagementType.BEAN.equals(ejbComponentCreateService.getTransactionManagementType());
 
@@ -201,18 +209,7 @@ public abstract class EJBComponent extends BasicComponent {
     protected TransactionAttributeType getCurrentTransactionAttribute() {
 
         final InterceptorContext invocation = CurrentInvocationContext.get();
-        //for timer invocations there is no view, so the methodInf is attached directly
-        //to the context. Otherwise we retrive it from the invoked view
-        MethodIntf methodIntf = invocation.getPrivateData(MethodIntf.class);
-        if (methodIntf == null) {
-            final ComponentView componentView = invocation.getPrivateData(ComponentView.class);
-            if (componentView != null) {
-                methodIntf = componentView.getPrivateData(MethodIntf.class);
-            } else {
-                methodIntf = MethodIntf.BEAN;
-            }
-        }
-
+        final MethodIntf methodIntf = MethodIntfHelper.of(invocation);
         return getTransactionAttributeType(methodIntf, invocation.getMethod());
     }
 
@@ -312,8 +309,15 @@ public abstract class EJBComponent extends BasicComponent {
         return utilities.getTransactionSynchronizationRegistry();
     }
 
-    public int getTransactionTimeout(Method method) {
-        return -1; // un-configured
+    public int getTransactionTimeout(final MethodIntf methodIntf, final Method method) {
+        TransactionTimeout txTimeout = txTimeouts.get(new MethodTransactionAttributeKey(methodIntf, MethodIdentifier.getIdentifierForMethod(method)));
+        if(txTimeout == null && methodIntf != MethodIntf.BEAN) {
+            txTimeout = txTimeouts.get(new MethodTransactionAttributeKey(MethodIntf.BEAN, MethodIdentifier.getIdentifierForMethod(method)));
+        }
+        if (txTimeout == null)
+            return -1;
+
+        return (int) txTimeout.unit().toSeconds(txTimeout.value());
     }
 
     public UserTransaction getUserTransaction() throws IllegalStateException {
