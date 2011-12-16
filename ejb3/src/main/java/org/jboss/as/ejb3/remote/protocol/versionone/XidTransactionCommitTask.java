@@ -33,10 +33,6 @@ import javax.transaction.xa.Xid;
 
 import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinateTransaction;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinationManager;
-import com.arjuna.ats.internal.jta.transaction.jts.TransactionImple;
-import com.arjuna.ats.internal.jts.ControlWrapper;
-import com.arjuna.ats.internal.jts.orbspecific.ControlImple;
-import com.arjuna.ats.internal.jts.orbspecific.coordinator.ArjunaTransactionImple;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.ejb.client.XidTransactionID;
 import org.jboss.logging.Logger;
@@ -76,10 +72,6 @@ class XidTransactionCommitTask extends XidTransactionManagementTask {
             }
 
             if (subordinateTransaction.activated()) {
-                // We have a bug in JBoss TS. Till that is fixed, we need this call.
-                // See the comments on the hackJTS method for more details
-                this.hackJTS(subordinateTransaction);
-
                 if (this.onePhaseCommit) {
                     subordinateTransaction.doOnePhaseCommit();
                 } else {
@@ -143,60 +135,6 @@ class XidTransactionCommitTask extends XidTransactionManagementTask {
             // This needs to be done explicitly because the SubOrdinationManager isn't responsible
             // for clearing the tx context from the thread
             this.transactionsRepository.getTransactionManager().suspend();
-        }
-    }
-
-    // This is a hack (obviously!) to workaround a bug in JBoss TS which leads to a NullPointerException in
-    // com.arjuna.ats.internal.jts.orbspecific.coordinator.ArjunaTransactionImple.propagationContext() at the
-    // following line (controlHandle is null)
-    // Control currentControl = controlHandle.getControl();
-    //
-    // The bug appears to be in com.arjuna.ats.internal.jts.orbspecific.interposition.ServerControl constructor:
-    // public ServerControl (ServerTransaction stx)
-    // {
-    //  super();
-    //
-    //  _realCoordinator = null;
-    //  _realTerminator = null;
-    //  _isWrapper = false;
-    //
-    // _transactionHandle = stx;
-    // _theUid = stx.get_uid();
-    //
-    // createTransactionHandle();
-    //
-    // addControl();
-    //
-    // }
-    // com.arjuna.ats.internal.jts.orbspecific.ControlImple from which the ServerControl extends
-    // says this (in its protected no-arg constructor which the ServerControl calls above):
-    // /**
-    //  * Protected constructor for inheritance. The derived classes are
-    //  * responsible for setting everything up, including adding the control to
-    //  * the list of controls and assigning the Uid variable.
-    //  */
-    //
-    // So the public ServerControl (ServerTransaction stx) is expected to call _transactionHandle.setControlHandle(this);
-    // in that construct.
-    //
-    // This hack method does that job to workaround that bug
-    private void hackJTS(final SubordinateTransaction subordinateTransaction) {
-        if (subordinateTransaction instanceof TransactionImple) {
-            final TransactionImple txImple = (TransactionImple) subordinateTransaction;
-            final ControlWrapper controlWrapper = txImple.getControlWrapper();
-            if (controlWrapper == null) {
-                return;
-            }
-            final ControlImple controlImple = controlWrapper.getImple();
-            if (controlImple == null) {
-                return;
-            }
-            final ArjunaTransactionImple arjunaTransactionImple = controlImple.getImplHandle();
-            if (arjunaTransactionImple == null) {
-                return;
-            }
-            logger.debug("Applying a JTS hack to setControlHandle " + controlImple + " on subordinate tx " + subordinateTransaction);
-            arjunaTransactionImple.setControlHandle(controlImple);
         }
     }
 }
