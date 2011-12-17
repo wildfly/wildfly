@@ -68,7 +68,7 @@ import org.jboss.msc.value.InjectedValue;
  * @author Brian Stansberry
  */
 public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V extends Cacheable<K>, G extends Serializable> extends AbstractBackingCacheEntryStoreSource<K, V, G> implements ClusteredBackingCacheEntryStoreSource<K, V, G> {
-    public static final Short SCOPE_ID = Short.valueOf((short) 223);
+    public static final short SCOPE_ID = 223;
 
     private String cacheName = DEFAULT_BACKING_CACHE;
     private int maxSize = ClusteredBackingCacheEntryStoreConfig.DEFAULT_MAX_SIZE;
@@ -91,7 +91,7 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
             serviceName = serviceName.append(CacheContainer.DEFAULT_CACHE_NAME);
         }
         String container = serviceName.getParent().getSimpleName();
-        new CoreGroupCommunicationServiceService(SCOPE_ID).build(target, container, container).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        new CoreGroupCommunicationServiceService(SCOPE_ID).build(target, container).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         new SharedLocalYieldingClusterLockManagerService(container).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         builder.addDependency(serviceName, Cache.class, this.groupCache);
         builder.addDependency(SharedLocalYieldingClusterLockManagerService.getServiceName(container), SharedLocalYieldingClusterLockManager.class, this.lockManager);

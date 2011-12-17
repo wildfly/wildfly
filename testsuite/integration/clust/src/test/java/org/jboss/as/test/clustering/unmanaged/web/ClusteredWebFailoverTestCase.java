@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.clustering.unmanaged;
+package org.jboss.as.test.clustering.unmanaged.web;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -46,7 +46,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.jboss.logging.Logger;
 import org.junit.runner.RunWith;
 
 /**
@@ -58,11 +57,9 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class ClusteredWebFailoverTestCase {
 
-    /** Logger **/
-    private static final Logger log = Logger.getLogger(ClusteredWebFailoverTestCase.class);
     /** Constants **/
-    public static final long GRACE_TIME_TO_REPLICATE = 3000; // 3 seconds should be more then enough
-    public static final long GRACE_TIME_TO_MEMBERSHIP_CHANGE = 10000;
+    public static final long GRACE_TIME_TO_REPLICATE = 1000; // 3 seconds should be more then enough
+    public static final long GRACE_TIME_TO_MEMBERSHIP_CHANGE = 3000;
     public static final String CONTAINER1 = "clustering-udp-0-unmanaged";
     public static final String CONTAINER2 = "clustering-udp-1-unmanaged";
     public static final String DEPLOYMENT1 = "deployment-0-unmanaged";
@@ -101,6 +98,7 @@ public class ClusteredWebFailoverTestCase {
         return war;
     }
 
+    
     /**
      * Test simple graceful shutdown failover:
      * 
@@ -192,7 +190,9 @@ public class ClusteredWebFailoverTestCase {
         }
 
         // Is would be done automatically, keep for 2nd test is added
+        deployer.undeploy(DEPLOYMENT1);
         controller.stop(CONTAINER1);
+        deployer.undeploy(DEPLOYMENT2);
         controller.stop(CONTAINER2);
 
         // Assert.fail("Show me the logs please!");
@@ -289,7 +289,9 @@ public class ClusteredWebFailoverTestCase {
         }
 
         // Is would be done automatically, keep for when 3nd test is added
+        deployer.undeploy(DEPLOYMENT1);
         controller.stop(CONTAINER1);
+        deployer.undeploy(DEPLOYMENT2);
         controller.stop(CONTAINER2);
 
         // Assert.fail("Show me the logs please!");

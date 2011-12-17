@@ -27,7 +27,6 @@ import javax.transaction.TransactionSynchronizationRegistry;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.infinispan.config.Configuration;
 import org.jboss.msc.value.Value;
@@ -51,5 +50,4 @@ public interface EmbeddedCacheManagerConfiguration {
     Executor getListenerExecutor();
     ScheduledExecutorService getEvictionExecutor();
     ScheduledExecutorService getReplicationQueueExecutor();
-    AtomicBoolean getTransportRequired();
 }
