@@ -266,20 +266,9 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
         }
     }
 
-    private void parseClusteredCacheAttribute(XMLExtendedStreamReader reader, int index, Attribute attribute, String value, ModelNode cache, Configuration.CacheMode cacheMode) throws XMLStreamException {
+    private void parseClusteredCacheAttribute(XMLExtendedStreamReader reader, int index, Attribute attribute, String value, ModelNode cache) throws XMLStreamException {
         switch (attribute) {
             case MODE: {
-                /*
-                // move MODE processing into ADD handlers
-                // it is now based on cache type (based on path address) and so
-                // must apply to both CLI and parsing operation ModelNodes
-                try {
-                    Mode mode = Mode.valueOf(value);
-                    cache.get(ModelKeys.MODE).set(mode.apply(cacheMode).name());
-                } catch (IllegalArgumentException e) {
-                    throw ParseUtils.invalidAttributeValue(reader, index);
-                }
-                */
                 cache.get(ModelKeys.MODE).set(value);
                 break;
             }
@@ -359,13 +348,16 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
                     break;
                 }
                 default: {
-                    this.parseClusteredCacheAttribute(reader, i, attribute, value, cache, Configuration.CacheMode.DIST_SYNC);
+                    this.parseClusteredCacheAttribute(reader, i, attribute, value, cache);
                 }
             }
         }
 
         if (!cache.hasDefined(ModelKeys.NAME)) {
             throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.NAME));
+        }
+        if (!cache.hasDefined(ModelKeys.MODE)) {
+            throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.MODE));
         }
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
@@ -402,11 +394,14 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            this.parseClusteredCacheAttribute(reader, i, attribute, value, cache, Configuration.CacheMode.REPL_SYNC);
+            this.parseClusteredCacheAttribute(reader, i, attribute, value, cache);
         }
 
         if (!cache.hasDefined(ModelKeys.NAME)) {
             throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.NAME));
+        }
+        if (!cache.hasDefined(ModelKeys.MODE)) {
+            throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.MODE));
         }
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
@@ -442,11 +437,14 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            this.parseClusteredCacheAttribute(reader, i, attribute, value, cache, Configuration.CacheMode.INVALIDATION_SYNC);
+            this.parseClusteredCacheAttribute(reader, i, attribute, value, cache);
         }
 
         if (!cache.hasDefined(ModelKeys.NAME)) {
             throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.NAME));
+        }
+        if (!cache.hasDefined(ModelKeys.MODE)) {
+            throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.MODE));
         }
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {

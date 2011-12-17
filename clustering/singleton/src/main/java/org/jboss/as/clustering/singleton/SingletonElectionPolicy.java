@@ -19,16 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.staxmapper;
 
-import javax.xml.stream.XMLStreamWriter;
+package org.jboss.as.clustering.singleton;
+
+import java.util.List;
+
+import org.jboss.as.clustering.ClusterNode;
 
 /**
- * Expose the package protected {@link FormattingXMLStreamWriter} to tests.
+ * Used by {@link SingletonService} to elect a singleton master node
+ * from the list of nodes providing that service.
  * @author Paul Ferraro
  */
-public class XMLExtendedStreamWriterFactory {
-    public static XMLExtendedStreamWriter create(XMLStreamWriter writer) {
-        return new FormattingXMLStreamWriter(writer);
-    }
+public interface SingletonElectionPolicy {
+    /**
+     * Elect a single node from the specified list of candidate nodes.
+     * @param nodes a list of candidate nodes.
+     * @return the elected node
+     */
+    ClusterNode elect(List<ClusterNode> nodes);
 }

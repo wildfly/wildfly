@@ -24,7 +24,14 @@
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
     </properties>
-    
+
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jboss-as-clustering-singleton</artifactId>
+        </dependency>
+    </dependencies>
+
     <!--  TODO move this to parent? -->
     <build>
         <testResources>

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.clustering;
 
+import java.util.List;
+
 /**
  * Abstraction of a server that provides group communication services to a set of nodes that share a common group communication
  * infrastructure. This is a base interface that provides common methods expected to be used by subinterfaces that provide more
@@ -61,7 +63,7 @@ public interface GroupCommunicationService {
      * @return An array of ClusterNode listing the current members of the group. This array will be in the same order in all
      *         nodes in the cluster that have received the current membership view.
      */
-    ClusterNode[] getClusterNodes();
+    List<ClusterNode> getClusterNodes();
 
     /**
      * Identifier for the current group topology. Each time the group topology changes, a new view is computed. A view is a list
@@ -81,4 +83,10 @@ public interface GroupCommunicationService {
      *         same set of nodes.
      */
     boolean isConsistentWith(GroupCommunicationService other);
+
+    /**
+     * Indicates whether this node is the group coordinator.
+     * @return true if this node is the coordinator, false otherwise
+     */
+    boolean isCoordinator();
 }

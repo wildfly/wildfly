@@ -502,7 +502,7 @@ public class InfinispanDescriptions {
     private static void addCommonClusteredCacheRequestProperties(String keyPrefix, ModelNode operation, ResourceBundle resources) {
 
         ModelNode requestProperties = operation.get(ModelDescriptionConstants.REQUEST_PROPERTIES);
-        addNode(requestProperties, ModelKeys.MODE, resources.getString(keyPrefix+".mode"), ModelType.STRING, false);
+        addNode(requestProperties, ModelKeys.MODE, resources.getString(keyPrefix+".mode"), ModelType.STRING, true);
         addNode(requestProperties, ModelKeys.QUEUE_SIZE, resources.getString(keyPrefix+".queue-size"), ModelType.INT, false);
         addNode(requestProperties, ModelKeys.QUEUE_FLUSH_INTERVAL, resources.getString(keyPrefix+".queue-flush-interval"), ModelType.LONG, false);
         addNode(requestProperties, ModelKeys.REMOTE_TIMEOUT, resources.getString(keyPrefix+".remote-timeout"), ModelType.LONG, false);

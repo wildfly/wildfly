@@ -22,16 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-
 import org.infinispan.Cache;
-import org.infinispan.config.Configuration;
-import org.infinispan.config.FluentConfiguration;
 import org.infinispan.manager.CacheContainer;
-import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.as.clustering.infinispan.TransactionManagerProvider;
-import org.jboss.as.clustering.infinispan.TransactionSynchronizationRegistryProvider;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -40,7 +32,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 
 /**
  * @author Paul Ferraro
