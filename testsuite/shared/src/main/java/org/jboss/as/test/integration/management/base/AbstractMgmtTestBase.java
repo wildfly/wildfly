@@ -145,7 +145,7 @@ public class AbstractMgmtTestBase {
         return brokenWar;
     }
     protected Map<String, ModelNode> getChildren(final ModelNode result) {
-        assertTrue(result.isDefined());
+        assert result.isDefined();
         final Map<String, ModelNode> steps = new HashMap<String, ModelNode>();
         for (final Property property : result.asPropertyList()) {
             steps.put(property.getName(), property.getValue());
