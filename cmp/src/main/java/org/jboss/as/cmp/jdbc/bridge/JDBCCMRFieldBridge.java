@@ -36,10 +36,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.ejb.EJBException;
 import javax.ejb.EJBLocalObject;
 import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.RemoveException;
+import javax.ejb.TransactionRolledbackLocalException;
 import javax.sql.DataSource;
 import javax.transaction.RollbackException;
 import javax.transaction.Status;
@@ -47,6 +49,7 @@ import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+
 import org.jboss.as.cmp.bridge.EntityBridge;
 import org.jboss.as.cmp.bridge.FieldBridge;
 import org.jboss.as.cmp.component.CmpEntityBeanComponent;
@@ -731,14 +734,20 @@ public final class JDBCCMRFieldBridge extends JDBCAbstractCMRFieldBridge {
                 for (Iterator iter = col.iterator(); iter.hasNext(); ) {
                     Object localObject = iter.next();
                     if (localObject != null) {
-                        Object relatedId = getRelatedPrimaryKey(localObject);
-
+                        Object relatedId;
+                        try {
+                            relatedId = getRelatedPrimaryKey(localObject);
+                        } catch (TransactionRolledbackLocalException e) {
+                            //if the instance has been removed we need to throw IllegalArgumentException
+                            throw new IllegalArgumentException(e);
+                        }
                         // check whether new value modifies the primary key if there are FK fields mapped to PK fields
                         if (relatedPKFieldsByMyPKFields.size() > 0) {
                             checkSetForeignKey(myCtx, relatedId);
                         }
 
                         newPks.add(relatedId);
+
                     }
                 }
             } else {
@@ -746,7 +755,12 @@ public final class JDBCCMRFieldBridge extends JDBCAbstractCMRFieldBridge {
             }
         } else {
             if (newValue != null) {
-                newPks = Collections.singletonList(getRelatedPrimaryKey(newValue));
+                try {
+                    //if the instance has been removed we need to throw IllegalArgumentException
+                    newPks = Collections.singletonList(getRelatedPrimaryKey(newValue));
+                } catch (TransactionRolledbackLocalException e) {
+                    throw new IllegalArgumentException(e);
+                }
             } else {
                 newPks = Collections.EMPTY_LIST;
             }

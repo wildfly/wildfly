@@ -28,9 +28,12 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
 import javax.ejb.EJBException;
 import javax.ejb.EJBLocalObject;
 import javax.ejb.NoSuchObjectLocalException;
+import javax.ejb.TransactionRolledbackLocalException;
+
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 
 /**
@@ -117,13 +120,18 @@ public class RelationSet implements Set {
             msg += "]";
             throw new IllegalArgumentException(msg);
         }
-
-        Object id = getPrimaryKey((EJBLocalObject) o);
-        if (idList.contains(id)) {
-            return false;
+        try {
+            Object id = getPrimaryKey((EJBLocalObject) o);
+            if (idList.contains(id)) {
+                return false;
+            }
+            cmrField.createRelationLinks(ctx, id);
+            return true;
+        } catch (TransactionRolledbackLocalException e) {
+            //handle the case where the entity has already been removed
+            //TODO: there is probably a better way to handle this
+            throw new IllegalArgumentException(e);
         }
-        cmrField.createRelationLinks(ctx, id);
-        return true;
     }
 
     public boolean addAll(Collection c) {
