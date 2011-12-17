@@ -211,14 +211,18 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         try {
             lock.lock();
             final Map<String, TimerEntity> timers = getTimers(timedObjectId);
-            return mostRecentEntityVersion(timers.get(id));
+            final TimerEntity timer = timers.get(id);
+            if(timer == null) {
+                return null;
+            }
+            return mostRecentEntityVersion(timer);
         } finally {
             lock.unlock();
         }
     }
 
     @Override
-    public List<TimerEntity> loadActiveTimers(final String timedObjectId) {
+    public List<TimerEntity> loadActiveTimers(final String timedObjectId, Object primaryKey) {
         final Lock lock = getLock(timedObjectId);
         try {
             lock.lock();
@@ -226,7 +230,9 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
 
             final List<TimerEntity> entities = new ArrayList<TimerEntity>();
             for(Map.Entry<String, TimerEntity> entry : timers.entrySet()) {
-                entities.add(mostRecentEntityVersion(entry.getValue()));
+                if(primaryKey == null || primaryKey.equals(entry.getValue().getPrimaryKey())) {
+                    entities.add(mostRecentEntityVersion(entry.getValue()));
+                }
             }
             return entities;
         } finally {
@@ -234,6 +240,11 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         }
     }
 
+
+    @Override
+    public List<TimerEntity> loadActiveTimers(final String timedObjectId) {
+        return loadActiveTimers(timedObjectId, null);
+    }
 
     /**
      * Returns either the loaded entity or the most recent version of the entity that has

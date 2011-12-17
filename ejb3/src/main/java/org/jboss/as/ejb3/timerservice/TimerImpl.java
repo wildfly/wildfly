@@ -127,8 +127,8 @@ public class TimerImpl implements Timer {
      * @param persistent       True if this timer is persistent. False otherwise
      */
     public TimerImpl(String id, TimerServiceImpl service, Date initialExpiry, long intervalDuration, Serializable info,
-                     boolean persistent, Object primaryKey) {
-        this(id, service, initialExpiry, intervalDuration, initialExpiry, info, persistent, primaryKey);
+                     boolean persistent, Object primaryKey, final TimerState timerState) {
+        this(id, service, initialExpiry, intervalDuration, initialExpiry, info, persistent, primaryKey, timerState);
     }
 
     /**
@@ -143,7 +143,7 @@ public class TimerImpl implements Timer {
      * @param persistent       True if this timer is persistent. False otherwise
      */
     public TimerImpl(String id, TimerServiceImpl service, Date initialExpiry, long intervalDuration, Date nextEpiry,
-                     Serializable info, boolean persistent, Object primaryKey) {
+                     Serializable info, boolean persistent, Object primaryKey, final TimerState timerState) {
         assert service != null : "service is null";
         assert id != null : "id is null";
 
@@ -161,9 +161,7 @@ public class TimerImpl implements Timer {
 
         // create a timer handle for this timer
         this.handle = new TimerHandleImpl(this.id, this.timedObjectInvoker.getTimedObjectId(), service);
-
-        setTimerState(TimerState.CREATED);
-
+        this.timerState = timerState;
     }
 
     /**
@@ -174,9 +172,8 @@ public class TimerImpl implements Timer {
      */
     public TimerImpl(TimerEntity persistedTimer, TimerServiceImpl service) {
         this(persistedTimer.getId(), service, persistedTimer.getInitialDate(), persistedTimer.getInterval(),
-                persistedTimer.getNextDate(), persistedTimer.getInfo(), true, persistedTimer.getPrimaryKey());
+                persistedTimer.getNextDate(), persistedTimer.getInfo(), true, persistedTimer.getPrimaryKey(), persistedTimer.getTimerState());
         this.previousRun = persistedTimer.getPreviousRun();
-        this.timerState = persistedTimer.getTimerState();
     }
 
     /**

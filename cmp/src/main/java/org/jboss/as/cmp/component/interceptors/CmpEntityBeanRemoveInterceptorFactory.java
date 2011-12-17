@@ -23,13 +23,15 @@
 package org.jboss.as.cmp.component.interceptors;
 
 import java.lang.reflect.Method;
+
 import javax.ejb.NoSuchEJBException;
+
 import org.jboss.as.cmp.component.CmpEntityBeanComponent;
 import org.jboss.as.cmp.component.CmpEntityBeanComponentInstance;
 import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanAssociatingInterceptorFactory;
+import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
@@ -78,6 +80,7 @@ public class CmpEntityBeanRemoveInterceptorFactory implements InterceptorFactory
                 // Invoke CMP remove
                 component.getStoreManager().removeEntity(instance.getEjbContext());
                 instance.setRemoved(true);
+                instance.removeAllTimers();
                 return null;
             }
         };

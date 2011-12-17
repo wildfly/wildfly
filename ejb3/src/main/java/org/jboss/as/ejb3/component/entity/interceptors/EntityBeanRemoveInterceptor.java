@@ -48,6 +48,7 @@ public class EntityBeanRemoveInterceptor implements Interceptor {
             return context.proceed();
         } finally {
             instance.setRemoved(true);
+            instance.removeAllTimers();
         }
     }
 }

@@ -29,10 +29,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.ejb.EntityBean;
+import javax.ejb.Timer;
 
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ejb3.component.EjbComponentInstance;
 import org.jboss.as.ejb3.context.EntityContextImpl;
+import org.jboss.as.ejb3.timerservice.TimerImpl;
 import org.jboss.as.ejb3.timerservice.TimerServiceDisabledTacker;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
@@ -236,5 +238,22 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
 
     public synchronized boolean isSynchronizeRegistered() {
         return synchronizeRegistered;
+    }
+
+
+    /**
+     * Remove all timers for this entity bean. This method is transactional, so if the current TX is rolled back
+     * the timers will not be removed
+     */
+    public void removeAllTimers() {
+        //cancel all timers for this entity
+        for (final Timer timer : getComponent().getTimerService().getTimers()) {
+            if (timer instanceof TimerImpl) {
+                TimerImpl timerImpl = (TimerImpl) timer;
+                if (timerImpl.getPrimaryKey() != null && timerImpl.getPrimaryKey().equals(getPrimaryKey())) {
+                    timer.cancel();
+                }
+            }
+        }
     }
 }

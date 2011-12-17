@@ -85,7 +85,8 @@ public class CalendarTimerTask extends TimerTask<CalendarTimer> {
     protected void postTimeoutProcessing() {
         final CalendarTimer calendarTimer = this.getTimer();
         final TimerState timerState = calendarTimer.getState();
-        if (timerState == TimerState.IN_TIMEOUT || timerState == TimerState.RETRY_TIMEOUT) {
+        if (timerState != TimerState.CANCELED
+                && timerState != TimerState.EXPIRED) {
             if (calendarTimer.getNextExpiration() == null) {
                 calendarTimer.expireTimer();
             } else {

@@ -99,7 +99,7 @@ public class CalendarTimer extends TimerImpl {
     public CalendarTimer(String id, TimerServiceImpl timerService, CalendarBasedTimeout calendarTimeout,
                          Serializable info, boolean persistent, Method timeoutMethod, Object primaryKey) {
         super(id, timerService, calendarTimeout.getFirstTimeout() == null ? null : calendarTimeout.getFirstTimeout()
-                .getTime(), 0, info, persistent, primaryKey);
+                .getTime(), 0, info, persistent, primaryKey, TimerState.CREATED);
         this.calendarTimeout = calendarTimeout;
 
         // compute the next timeout (from "now")

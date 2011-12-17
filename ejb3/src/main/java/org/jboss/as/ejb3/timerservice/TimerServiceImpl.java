@@ -366,7 +366,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             if (ineligibleTimerStates.contains(timer.getState())) {
                 continue;
             } else if (timer.isActive()) {
-                if (timer.getPrimaryKey() == pk) {
+                if (timer.getPrimaryKey() == null || timer.getPrimaryKey().equals(pk)) {
                     activeTimers.add(timer);
                 }
             }
@@ -377,17 +377,15 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             if (ineligibleTimerStates.contains(timer.getState())) {
                 continue;
             } else if (timer.isActive()) {
-                if (timer.getPrimaryKey() == pk) {
+                if (timer.getPrimaryKey() == null || timer.getPrimaryKey().equals(pk)) {
                     activeTimers.add(timer);
                 }
             }
         }
 
         // now get all active persistent timers for this timerservice
-        for (final TimerImpl timer : this.getActivePersistentTimers()) {
-            if (timer.getPrimaryKey() == pk) {
-                activeTimers.add(timer);
-            }
+        for (final TimerImpl timer : this.getActivePersistentTimers(pk)) {
+            activeTimers.add(timer);
         }
         return activeTimers;
     }
@@ -421,7 +419,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         UUID uuid = UUID.randomUUID();
         // create the timer
 
-        TimerImpl timer = new TimerImpl(uuid.toString(), this, initialExpiration, intervalDuration, info, persistent, currentPrimaryKey());
+        TimerImpl timer = new TimerImpl(uuid.toString(), this, initialExpiration, intervalDuration, info, persistent, currentPrimaryKey(), TimerState.CREATED);
         // now "start" the timer. This involves, moving the timer to an ACTIVE state
         // and scheduling the timer task
         this.startTimer(timer);
@@ -621,7 +619,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      */
     public void restoreTimers(final List<ScheduleTimer> autoTimers) {
         // get the persisted timers which are considered active
-        List<TimerImpl> restorableTimers = this.getActivePersistentTimers();
+        List<TimerImpl> restorableTimers = this.getActivePersistentTimers(null);
 
         //timers are removed from the list as they are loaded
         final List<ScheduleTimer> newAutoTimers = new LinkedList<ScheduleTimer>(autoTimers);
@@ -662,7 +660,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                     ROOT_LOGGER.debug("Started timer: " + activeTimer);
                 }
                 this.persistTimer(activeTimer);
-            } else if(!ineligibleTimerStates.contains(activeTimer.getState())) {
+            } else if (!ineligibleTimerStates.contains(activeTimer.getState())) {
                 this.startTimer(activeTimer);
             }
             ROOT_LOGGER.debug("Started timer: " + activeTimer);
@@ -858,7 +856,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
     }
 
-    private List<TimerImpl> getActivePersistentTimers() {
+    private List<TimerImpl> getActivePersistentTimers(final Object primaryKey) {
         // we need only those timers which correspond to the
         // timed object invoker to which this timer service belongs. So
         // first get hold of the timed object id
@@ -872,16 +870,20 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         }
 
 
-        final List<TimerEntity> persistedTimers = timerPersistence.getValue().loadActiveTimers(timedObjectId);
+        final List<TimerEntity> persistedTimers;
+        if(primaryKey == null) {
+            persistedTimers = timerPersistence.getValue().loadActiveTimers(timedObjectId);
+        } else {
+            persistedTimers = timerPersistence.getValue().loadActiveTimers(timedObjectId, primaryKey);
+        }
         final List<TimerImpl> activeTimers = new ArrayList<TimerImpl>();
         for (final TimerEntity persistedTimer : persistedTimers) {
             if (ineligibleTimerStates.contains(persistedTimer.getTimerState())) {
                 continue;
             }
-            TimerImpl activeTimer = null;
+            TimerImpl activeTimer;
             if (persistedTimer.isCalendarTimer()) {
                 final CalendarTimerEntity calendarTimerEntity = (CalendarTimerEntity) persistedTimer;
-
                 // create a timer instance from the persisted calendar timer
                 activeTimer = new CalendarTimer(calendarTimerEntity, this);
             } else {
