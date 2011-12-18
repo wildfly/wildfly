@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import java.io.IOException;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import junit.framework.Assert;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.junit.AfterClass;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -68,7 +69,7 @@ public class DataSourceCfgMetricUnitTestCase  extends AbstractMgmtTestBase{
     }
 
     @Test
-    public void testReadAttribute() throws IOException {
+    public void testReadAttribute() throws IOException, MgmtOperationException {
 
         final ModelNode address = new ModelNode();
         address.add("subsystem", "datasources");

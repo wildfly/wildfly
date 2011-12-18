@@ -43,6 +43,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
@@ -72,7 +73,7 @@ public class DataSourceResourcesUnitTestCase  extends AbstractMgmtTestBase{
     }
 
     @Test
-    public void testReadChildrenResources() throws IOException {
+    public void testReadChildrenResources() throws IOException, MgmtOperationException {
 
         final ModelNode address = new ModelNode();
         address.add("subsystem", "datasources");
@@ -95,7 +96,7 @@ public class DataSourceResourcesUnitTestCase  extends AbstractMgmtTestBase{
     }
 
     @Test
-    public void testReadResourceResources() throws IOException {
+    public void testReadResourceResources() throws IOException, MgmtOperationException {
 
         final ModelNode address = new ModelNode();
         address.add("subsystem", "datasources");
