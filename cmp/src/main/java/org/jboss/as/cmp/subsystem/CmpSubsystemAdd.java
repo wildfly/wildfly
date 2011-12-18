@@ -27,7 +27,6 @@ import java.util.Locale;
 
 import org.jboss.as.cmp.component.CmpEntityBeanComponentDescription;
 import org.jboss.as.cmp.keygenerator.KeyGeneratorFactoryRegistry;
-import org.jboss.as.cmp.keygenerator.uuid.UUIDKeyGeneratorFactory;
 import org.jboss.as.cmp.processors.CmpDependencyProcessor;
 import org.jboss.as.cmp.processors.CmpEntityBeanComponentDescriptionFactory;
 import org.jboss.as.cmp.processors.CmpEntityMetaDataProcessor;
@@ -80,7 +79,7 @@ public class CmpSubsystemAdd extends AbstractBoottimeAddStepHandler implements D
     }
 
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-
+        model.setEmptyObject();
     }
 
     public ModelNode getModelDescription(final Locale locale) {
