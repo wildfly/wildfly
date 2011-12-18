@@ -161,6 +161,20 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
     }
 
     @Test
+    public void testHttpOtherConnector() throws Exception {
+        if (isNative) {
+            /* test the standard JIO connector too */
+            addConnector(Connector.HTTPJIO);
+
+            // check that the connector is live
+            String cURL = "http://" + url.getHost() + ":8181";
+            String response = HttpRequest.get(cURL, 10, TimeUnit.SECONDS);
+            assertTrue("Invalid response: " + response, response.indexOf("JBoss") >= 0);
+            removeConnector(Connector.HTTPJIO);
+        }
+    }
+
+    @Test
     public void testHttpsConnector() throws Exception {
 
         FileUtils.copyURLToFile(ConnectorTestCase.class.getResource("test.keystore"), keyStoreFile);
@@ -192,6 +206,11 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
     public void testAjpConnector() throws Exception {
         addConnector(Connector.AJP);
         removeConnector(Connector.AJP);
+        if (isNative) {
+            /* Test the JIO connector too */
+            addConnector(Connector.AJPJIO);
+            removeConnector(Connector.AJPJIO);
+        }
     }
 
     @Test
