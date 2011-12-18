@@ -43,7 +43,7 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author Stuart Douglas
  */
-public class InitalizeInOrderProcessor implements DeploymentUnitProcessor {
+public class InitializeInOrderProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -94,6 +94,9 @@ public class InitalizeInOrderProcessor implements DeploymentUnitProcessor {
                                 for (final ComponentDescription component : eeModuleDescription.getComponentDescriptions()) {
                                     phaseContext.addToAttachmentList(org.jboss.as.server.deployment.Attachments.NEXT_PHASE_DEPS, component.getStartServiceName());
                                 }
+                            }
+                            for(final ServiceName name : prevDeployment.getAttachmentList(Attachments.INITIALISE_IN_ORDER_SERVICES)) {
+                                phaseContext.addToAttachmentList(org.jboss.as.server.deployment.Attachments.NEXT_PHASE_DEPS, name);
                             }
 
                         }

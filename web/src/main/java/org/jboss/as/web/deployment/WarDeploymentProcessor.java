@@ -100,6 +100,11 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         if (metaData == null) {
             return;
         }
+        String hostName = hostNameOfDeployment(metaData, defaultHost);
+        processDeployment(hostName, metaData, deploymentUnit, phaseContext.getServiceTarget());
+    }
+
+    public static String hostNameOfDeployment(final WarMetaData metaData, final String defaultHost) {
         Collection<String> hostNames = null;
         if (metaData.getMergedJBossWebMetaData() != null) {
             hostNames = metaData.getMergedJBossWebMetaData().getVirtualHosts();
@@ -111,7 +116,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         if (hostName == null) {
             throw new IllegalStateException("null host name");
         }
-        processDeployment(hostName, metaData, deploymentUnit, phaseContext.getServiceTarget());
+        return hostName;
     }
 
     @Override
@@ -152,26 +157,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         }
         webContext.addLifecycleListener(config);
 
-        String pathName;
-        if (metaData.getContextRoot() == null) {
-
-
-            final EEModuleDescription description = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-            if(description != null) {
-                //if there is a EEModuleDescription we need to take into account that the module name
-                //may have been overriden
-                pathName = "/" + description.getModuleName();
-            } else {
-                pathName = "/" + deploymentUnit.getName().substring(0, deploymentUnit.getName().length() - 4);
-            }
-        } else {
-            pathName = metaData.getContextRoot();
-            if ("/".equals(pathName)) {
-                pathName = "";
-            } else if (pathName.length() > 0 && pathName.charAt(0) != '/') {
-                pathName = "/" + pathName;
-            }
-        }
+        final String pathName = pathNameOfDeployment(deploymentUnit, metaData);
         webContext.setPath(pathName);
         webContext.setIgnoreAnnotations(true);
         webContext.setCrossContext(!metaData.isDisableCrossContext());
@@ -288,6 +274,30 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         node.get("context-root").set("".equals(pathName) ? "/" : pathName);
         node.get("virtual-host").set(hostName);
         processManagement(deploymentUnit, metaData);
+    }
+
+    public static String pathNameOfDeployment(final DeploymentUnit deploymentUnit, final JBossWebMetaData metaData) {
+        String pathName;
+        if (metaData.getContextRoot() == null) {
+
+
+            final EEModuleDescription description = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+            if(description != null) {
+                //if there is a EEModuleDescription we need to take into account that the module name
+                //may have been overriden
+                pathName = "/" + description.getModuleName();
+            } else {
+                pathName = "/" + deploymentUnit.getName().substring(0, deploymentUnit.getName().length() - 4);
+            }
+        } else {
+            pathName = metaData.getContextRoot();
+            if ("/".equals(pathName)) {
+                pathName = "";
+            } else if (pathName.length() > 0 && pathName.charAt(0) != '/') {
+                pathName = "/" + pathName;
+            }
+        }
+        return pathName;
     }
 
     void processManagement(final DeploymentUnit unit, JBossWebMetaData metaData) {
