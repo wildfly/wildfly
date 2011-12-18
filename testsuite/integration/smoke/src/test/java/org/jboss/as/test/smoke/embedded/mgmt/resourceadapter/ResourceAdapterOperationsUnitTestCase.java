@@ -35,7 +35,7 @@ import static org.jboss.as.test.integration.management.util.ComplexPropertiesPar
 import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.raConnectionProperties;
 import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.raAdminProperties;
 import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.addExtensionProperties;
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.controlModelParams;
+import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.checkModelParams;
 
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 
@@ -197,15 +197,15 @@ public class ResourceAdapterOperationsUnitTestCase extends AbstractMgmtTestBase 
 
          ModelNode node=findNodeWithProperty(newList,"archive","some.rar");
          Assert.assertNotNull("There is no archive element:"+newList,node);
-         controlModelParams(node,params);
+         checkModelParams(node,params);
          
          node=findNodeWithProperty(newList,"jndi-name","java:jboss/name1");
          Assert.assertNotNull("There is no connection jndi-name element:"+newList,node);
-         controlModelParams(node,conParams);
+         checkModelParams(node,conParams);
          
          node=findNodeWithProperty(newList,"jndi-name","java:jboss/Name3");
          Assert.assertNotNull("There is no admin jndi-name element:"+newList,node);
-         controlModelParams(node,admParams);
+         checkModelParams(node,admParams);
          
          node=findNodeWithProperty(newList,"value","D");
          Assert.assertNotNull("There is no admin-object config-property element:"+newList,node);
