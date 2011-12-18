@@ -42,10 +42,4 @@ public class JPASubsystemTestCase extends AbstractSubsystemBaseTest {
                 "</subsystem>";
     }
 
-
-    //TODO AS7-2421 remove this
-    protected boolean testRemoval() {
-        return false;
-    }
-
 }

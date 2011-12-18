@@ -53,7 +53,6 @@ public class PersistenceUnitXmlParserTestCase {
                 "  </persistence-unit>" +
                 "</persistence>";
         XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new StringReader(persistence_xml));
-        assertEquals("http://woodstox.codehaus.org", reader.getClass().getPackage().getImplementationVendor());
         PersistenceUnitMetadataHolder metadataHolder = PersistenceUnitXmlParser.parse(reader);
         PersistenceUnitMetadata metadata = metadataHolder.getPersistenceUnits().get(0);
         String version = metadata.getPersistenceXMLSchemaVersion();
