@@ -21,63 +21,66 @@
  */
 package org.jboss.as.test.integration.management.api.web;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
-import org.apache.http.conn.ClientConnectionManager;
+import java.net.URL;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
-import java.util.HashSet;
-import java.util.List;
-import java.net.URL;
-import java.util.concurrent.TimeUnit;
-import org.apache.commons.io.FileUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.cli.GlobalOpsTestCase;
+import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.WebUtil;
-import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import static org.junit.Assert.*;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
-
 /**
- *
+ * 
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
 @RunWith(Arquillian.class)
 @RunAsClient
 public class ConnectorTestCase extends AbstractMgmtTestBase {
 
-    private final File keyStoreFile = new File( System.getProperty("java.io.tmpdir"), "test.keystore");
+    private final File keyStoreFile = new File(System.getProperty("java.io.tmpdir"), "test.keystore");
+    private boolean isNative = false;
 
     public enum Connector {
 
-        HTTP("http", "http", "HTTP/1.1", false),
-        HTTPS("http", "https", "HTTP/1.1", true),
-        AJP("ajp", "http", "AJP/1.3", false);
+        HTTP("http", "http", "HTTP/1.1", false), HTTPS("http", "https", "HTTP/1.1", true), AJP("ajp", "http", "AJP/1.3", false), HTTPJIO(
+                "http", "http", "org.apache.coyote.http11.Http11Protocol", false), HTTPSJIO("http", "https",
+                "org.apache.coyote.http11.Http11Protocol", true), AJPJIO("ajp", "http", "org.apache.coyote.ajp.AjpProtocol",
+                false), HTTPNATIVE("http", "http", "org.apache.coyote.http11.Http11AprProtocol", false), ;
         private final String name;
         private final String scheme;
         private final String protocol;
@@ -106,6 +109,7 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
             return secure;
         }
     }
+
     @ArquillianResource
     URL url;
 
@@ -119,6 +123,13 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
     @Before
     public void before() throws IOException {
         initModelControllerClient(url.getHost(), MGMT_PORT);
+        try {
+            addConnector(Connector.HTTPNATIVE);
+            isNative = true;
+            removeConnector(Connector.HTTPNATIVE);
+        } catch (Exception ex) {
+            // Assume native not enable on installed.
+        }
     }
 
     @AfterClass
@@ -146,17 +157,18 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
         String cURL = "http://" + url.getHost() + ":8181";
         String response = HttpRequest.get(cURL, 10, TimeUnit.SECONDS);
         assertTrue("Invalid response: " + response, response.indexOf("JBoss") >= 0);
-
         removeConnector(Connector.HTTP);
     }
 
     @Test
     public void testHttpsConnector() throws Exception {
 
-
         FileUtils.copyURLToFile(ConnectorTestCase.class.getResource("test.keystore"), keyStoreFile);
 
-        addConnector(Connector.HTTPS);
+        if (isNative)
+            addConnector(Connector.HTTPSJIO);
+        else
+            addConnector(Connector.HTTPS);
 
         // check that the connector is live
         String cURL = "https://" + url.getHost() + ":8181";
@@ -167,9 +179,13 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
         String response = EntityUtils.toString(hr.getEntity());
         assertTrue("Invalid response: " + response, response.indexOf("JBoss") >= 0);
 
-        removeConnector(Connector.HTTPS);
+        if (isNative)
+            removeConnector(Connector.HTTPSJIO);
+        else
+            removeConnector(Connector.HTTPS);
 
-        if (keyStoreFile.exists()) keyStoreFile.delete();
+        if (keyStoreFile.exists())
+            keyStoreFile.delete();
     }
 
     @Test
@@ -259,13 +275,11 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
         return op;
     }
 
-
     private void removeConnector(Connector conn) throws Exception {
 
         // remove connector
         ModelNode op = getRemoveConnectorOp(conn);
         executeOperation(op);
-
 
         Thread.sleep(5000);
         // check that the connector is not live
@@ -318,7 +332,7 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
                     return null;
                 }
             };
-            ctx.init(null, new TrustManager[]{tm}, null);
+            ctx.init(null, new TrustManager[] { tm }, null);
             SSLSocketFactory ssf = new SSLSocketFactory(ctx);
             ssf.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
             ClientConnectionManager ccm = base.getConnectionManager();
