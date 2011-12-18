@@ -22,6 +22,9 @@
 
 package org.jboss.as.remoting;
 
+import static org.xnio.Options.SSL_ENABLED;
+import static org.xnio.Options.SSL_STARTTLS;
+
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -71,9 +74,12 @@ public abstract class AbstractOutboundConnectionService<T extends AbstractOutbou
     }
 
     void setConnectionCreationOptions(final OptionMap connectionCreationOptions) {
-        this.connectionCreationOptions = connectionCreationOptions == null ? OptionMap.EMPTY : connectionCreationOptions;
+        this.connectionCreationOptions = connectionCreationOptions == null ? getDefaultOptionMap() : connectionCreationOptions;
     }
 
+    private OptionMap getDefaultOptionMap() {
+        return OptionMap.create(SSL_ENABLED, true, SSL_STARTTLS, true);
+    }
 
     public String getConnectionName() {
         return this.connectionName;

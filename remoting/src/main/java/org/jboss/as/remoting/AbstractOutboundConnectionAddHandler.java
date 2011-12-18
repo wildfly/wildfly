@@ -23,12 +23,13 @@
 package org.jboss.as.remoting;
 
 
+import static org.xnio.Options.SSL_ENABLED;
+import static org.xnio.Options.SSL_STARTTLS;
+
 import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.xnio.Option;
@@ -56,7 +57,7 @@ abstract class AbstractOutboundConnectionAddHandler extends AbstractAddStepHandl
      */
     protected static OptionMap getConnectionCreationOptions(final ModelNode model) {
         if (!model.hasDefined(CommonAttributes.CONNECTION_CREATION_OPTIONS)) {
-            return OptionMap.EMPTY;
+            return OptionMap.create(SSL_ENABLED, true, SSL_STARTTLS, true);
         }
         final OptionMap.Builder optionMapBuilder = OptionMap.builder();
         final List<Property> connectionCreationProps = model.get(CommonAttributes.CONNECTION_CREATION_OPTIONS).asPropertyList();

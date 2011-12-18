@@ -231,7 +231,7 @@ public class EJBRemoteManagementUtil {
                 for (final Map.Entry<String, String> entry : connectionCreationOptions.entrySet()) {
                     final String optionName = entry.getKey();
                     final String optionValue = entry.getValue();
-                    connectionCreationOptionsModel.set(optionName, optionValue);
+                    connectionCreationOptionsModel.get(optionName).set(optionValue);
                 }
             }
 
