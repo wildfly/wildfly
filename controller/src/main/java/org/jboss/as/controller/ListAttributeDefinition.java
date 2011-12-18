@@ -25,6 +25,7 @@ package org.jboss.as.controller;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
@@ -66,42 +67,121 @@ public abstract class ListAttributeDefinition extends AttributeDefinition {
     }
 
     /**
+     * The validator used to validate elements in the list.
+     * @return  the element validator
+     */
+    public ParameterValidator getElementValidator() {
+        return elementValidator;
+    }
+
+    /**
      * Creates and returns a {@link org.jboss.dmr.ModelNode} using the given {@code value} after first validating the node
-     * against {@link #getValidator() this object's validator}.
+     * against {@link #getElementValidator() this object's element validator}.
      * <p>
-     * If {@code value} is {@code null} and a {@link #getDefaultValue() default value} is available, the value of that
-     * default value will be used.
+     * If {@code value} is {@code null} an {@link ModelType#UNDEFINED undefined} node will be returned.
      * </p>
      *
      * @param value the value. Will be {@link String#trim() trimmed} before use if not {@code null}.
-     * @param reader current location of the parser's {@link javax.xml.stream.XMLStreamReader}. Used for any exception
+     * @param reader {@link XMLStreamReader} from which the {@link XMLStreamReader#getLocation() location} from which
+     *               the attribute value was read can be obtained and used in any {@code XMLStreamException}, in case
+     *               the given value is invalid.
+     *
+     * @return {@code ModelNode} representing the parsed value
+     *
+     * @throws javax.xml.stream.XMLStreamException if {@code value} is not valid
+     *
+     * @see #parseAndAddParameterElement(String, ModelNode, XMLStreamReader)
+     */
+    public ModelNode parse(final String value, final XMLStreamReader reader) throws XMLStreamException {
+
+        try {
+            return parse(value);
+        } catch (OperationFailedException e) {
+            throw new XMLStreamException(e.getFailureDescription().toString(), reader.getLocation());
+        }
+    }
+
+    /**
+     * Creates and returns a {@link org.jboss.dmr.ModelNode} using the given {@code value} after first validating the node
+     * against {@link #getElementValidator() this object's element validator}.
+     * <p>
+     * If {@code value} is {@code null} an {@link ModelType#UNDEFINED undefined} node will be returned.
+     * </p>
+     *
+     * @param value the value. Will be {@link String#trim() trimmed} before use if not {@code null}.
+     * @param location current location of the parser's {@link javax.xml.stream.XMLStreamReader}. Used for any exception
      *                 message
      *
      * @return {@code ModelNode} representing the parsed value
      *
      * @throws javax.xml.stream.XMLStreamException if {@code value} is not valid
+     *
+     * @deprecated use {@link #parse(String, XMLStreamReader)}
+     *
+     * @see #parseAndAddParameterElement(String, ModelNode, Location)
      */
-    public ModelNode parse(final String value, final XMLStreamReader reader) throws XMLStreamException {
-
-        final String trimmed = value == null ? null : value.trim();
-        ModelNode node;
-        if (trimmed != null ) {
-            node = new ModelNode().set(trimmed);
-        } else {
-            node = new ModelNode();
-        }
+    @Deprecated
+    public ModelNode parse(final String value, final Location location) throws XMLStreamException {
 
         try {
-            elementValidator.validateParameter(getXmlName(), node);
+            return parse(value);
         } catch (OperationFailedException e) {
-            throw new XMLStreamException(e.getFailureDescription().toString(), reader.getLocation());
+            throw new XMLStreamException(e.getFailureDescription().toString(), location);
         }
-
-        return node;
     }
 
+    /**
+     * Creates a {@link ModelNode} using the given {@code value} after first validating the node
+     * against {@link #getValidator() this object's validator}, and then stores it in the given {@code operation}
+     * model node as an element in a {@link ModelType#LIST} value in a key/value pair whose key is this attribute's
+     * {@link #getName() name}.
+     * <p>
+     * If {@code value} is {@code null} an {@link ModelType#UNDEFINED undefined} node will be stored if such a value
+     * is acceptable to the validator.
+     * </p>
+     * <p>
+     * The expected usage of this method is in parsers seeking to build up an operation to store their parsed data
+     * into the configuration.
+     * </p>
+     *
+     * @param value the value. Will be {@link String#trim() trimmed} before use if not {@code null}.
+     * @param operation model node of type {@link ModelType#OBJECT} into which the parsed value should be stored
+     * @param reader {@link XMLStreamReader} from which the {@link XMLStreamReader#getLocation() location} from which
+     *               the attribute value was read can be obtained and used in any {@code XMLStreamException}, in case
+     *               the given value is invalid.
+     * @throws XMLStreamException if {@code value} is not valid
+     */
     public void parseAndAddParameterElement(final String value, final ModelNode operation, final XMLStreamReader reader) throws XMLStreamException {
         ModelNode paramVal = parse(value, reader);
+        operation.get(getName()).add(paramVal);
+    }
+
+    /**
+     * Creates a {@link ModelNode} using the given {@code value} after first validating the node
+     * against {@link #getValidator() this object's validator}, and then stores it in the given {@code operation}
+     * model node as an element in a {@link ModelType#LIST} value in a key/value pair whose key is this attribute's
+     * {@link #getName() name}.
+     * <p>
+     * If {@code value} is {@code null} an {@link ModelType#UNDEFINED undefined} node will be stored if such a value
+     * is acceptable to the validator.
+     * </p>
+     * <p>
+     * The expected usage of this method is in parsers seeking to build up an operation to store their parsed data
+     * into the configuration.
+     * </p>
+     *
+     * @param value the value. Will be {@link String#trim() trimmed} before use if not {@code null}.
+     * @param operation model node of type {@link ModelType#OBJECT} into which the parsed value should be stored
+     * @param location current location of the parser's {@link javax.xml.stream.XMLStreamReader}. Used for any exception
+     *                 message
+     * @throws XMLStreamException if {@code value} is not valid
+     *
+     * @deprecated use {@link #parseAndAddParameterElement(String, ModelNode, XMLStreamReader)}
+     */
+    @Deprecated
+    public void parseAndAddParameterElement(final String value, final ModelNode operation, final Location location) throws XMLStreamException {
+        @SuppressWarnings("deprecation")
+        ModelNode paramVal = parse(value, location);
         operation.get(getName()).add(paramVal);
     }
 
@@ -143,4 +223,19 @@ public abstract class ListAttributeDefinition extends AttributeDefinition {
     protected abstract void addOperationParameterValueTypeDescription(final ModelNode node, final String operationName,
                                                                       final ResourceDescriptionResolver resolver,
                                                                       final Locale locale, final ResourceBundle bundle);
+
+    private ModelNode parse(final String value) throws OperationFailedException  {
+
+        final String trimmed = value == null ? null : value.trim();
+        ModelNode node;
+        if (trimmed != null ) {
+            node = new ModelNode().set(trimmed);
+        } else {
+            node = new ModelNode();
+        }
+
+        elementValidator.validateParameter(getXmlName(), node);
+
+        return node;
+    }
 }

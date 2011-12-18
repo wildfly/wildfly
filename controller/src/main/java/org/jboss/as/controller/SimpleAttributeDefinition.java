@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller;
 
+import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
@@ -133,72 +134,108 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
      * Creates and returns a {@link org.jboss.dmr.ModelNode} using the given {@code value} after first validating the node
      * against {@link #getValidator() this object's validator}.
      * <p>
-     * If {@code value} is {@code null} and a {@link #getDefaultValue() default value} is available, the value of that
-     * default value will be used.
+     * If {@code value} is {@code null} an {@link ModelType#UNDEFINED undefined} node will be returned.
      * </p>
      *
-     *
      * @param value the value. Will be {@link String#trim() trimmed} before use if not {@code null}.
-     * @param reader
+     * @param reader {@link XMLStreamReader} from which the {@link XMLStreamReader#getLocation() location} from which
+     *               the attribute value was read can be obtained and used in any {@code XMLStreamException}, in case
+     *               the given value is invalid.
      * @return {@code ModelNode} representing the parsed value
      *
      * @throws javax.xml.stream.XMLStreamException if {@code value} is not valid
+     *
+     * @see #parseAndSetParameter(String, ModelNode, XMLStreamReader)
      */
     public ModelNode parse(final String value, final XMLStreamReader reader) throws XMLStreamException {
-
-        final String trimmed = value == null ? null : value.trim();
-        ModelNode node;
-        if (trimmed != null ) {
-            if (isAllowExpression()) {
-                node = ParseUtils.parsePossibleExpression(trimmed);
-            } else {
-                node = new ModelNode().set(trimmed);
-            }
-            if (node.getType() != ModelType.EXPRESSION) {
-                // Convert the string to the expected type
-                switch (getType()) {
-                    case BIG_DECIMAL:
-                        node.set(node.asBigDecimal());
-                        break;
-                    case BIG_INTEGER:
-                        node.set(node.asBigInteger());
-                        break;
-                    case BOOLEAN:
-                        node.set(node.asBoolean());
-                        break;
-                    case BYTES:
-                        node.set(node.asBytes());
-                        break;
-                    case DOUBLE:
-                        node.set(node.asDouble());
-                        break;
-                    case INT:
-                        node.set(node.asInt());
-                        break;
-                    case LONG:
-                        node.set(node.asLong());
-                        break;
-                }
-            }
-        } else if (getDefaultValue()!= null && getDefaultValue().isDefined()) {
-            node = new ModelNode().set(getDefaultValue());
-        } else {
-            node = new ModelNode();
-        }
-
         try {
-            getValidator().validateParameter(getXmlName(), node);
+            return parse(value);
         } catch (OperationFailedException e) {
             throw new XMLStreamException(e.getFailureDescription().toString(), reader.getLocation());
         }
-
-        return node;
     }
 
+    /**
+     * Creates and returns a {@link org.jboss.dmr.ModelNode} using the given {@code value} after first validating the node
+     * against {@link #getValidator() this object's validator}.
+     * <p>
+     * If {@code value} is {@code null} an {@link ModelType#UNDEFINED undefined} node will be returned.
+     * </p>
+     *
+     * @param value the value. Will be {@link String#trim() trimmed} before use if not {@code null}.
+     * @param location current location of the parser's {@link javax.xml.stream.XMLStreamReader}. Used for any exception
+     *                 message
+     *
+     * @return {@code ModelNode} representing the parsed value
+     *
+     * @throws javax.xml.stream.XMLStreamException if {@code value} is not valid
+     *
+     * @deprecated use {@link #parse(String, XMLStreamReader)}
+     *
+     * @see #parseAndSetParameter(String, ModelNode, Location)
+     */
+    @Deprecated
+    public ModelNode parse(final String value, final Location location) throws XMLStreamException {
+        try {
+            return parse(value);
+        } catch (OperationFailedException e) {
+            throw new XMLStreamException(e.getFailureDescription().toString(), location);
+        }
+    }
+
+    /**
+     * Creates a {@link ModelNode} using the given {@code value} after first validating the node
+     * against {@link #getValidator() this object's validator}, and then stores it in the given {@code operation}
+     * model node as a key/value pair whose key is this attribute's {@link #getName() name}.
+     * <p>
+     * If {@code value} is {@code null} an {@link ModelType#UNDEFINED undefined} node will be stored if such a value
+     * is acceptable to the validator.
+     * </p>
+     * <p>
+     * The expected usage of this method is in parsers seeking to build up an operation to store their parsed data
+     * into the configuration.
+     * </p>
+     *
+     * @param value the value. Will be {@link String#trim() trimmed} before use if not {@code null}.
+     * @param operation model node of type {@link ModelType#OBJECT} into which the parsed value should be stored
+     * @param reader {@link XMLStreamReader} from which the {@link XMLStreamReader#getLocation() location} from which
+     *               the attribute value was read can be obtained and used in any {@code XMLStreamException}, in case
+     *               the given value is invalid.
+     * @throws XMLStreamException if {@code value} is not valid
+     */
     public void parseAndSetParameter(final String value, final ModelNode operation, final XMLStreamReader reader) throws XMLStreamException {
         ModelNode paramVal = parse(value, reader);
         operation.get(getName()).set(paramVal);
     }
+
+    /**
+     * Creates a {@link ModelNode} using the given {@code value} after first validating the node
+     * against {@link #getValidator() this object's validator}, and then stores it in the given {@code operation}
+     * model node as a key/value pair whose key is this attribute's {@link #getName() name}.
+     * <p>
+     * If {@code value} is {@code null} an {@link ModelType#UNDEFINED undefined} node will be stored if such a value
+     * is acceptable to the validator.
+     * </p>
+     * <p>
+     * The expected usage of this method is in parsers seeking to build up an operation to store their parsed data
+     * into the configuration.
+     * </p>
+     *
+     * @param value the value. Will be {@link String#trim() trimmed} before use if not {@code null}.
+     * @param operation model node of type {@link ModelType#OBJECT} into which the parsed value should be stored
+     * @param location current location of the parser's {@link javax.xml.stream.XMLStreamReader}. Used for any exception
+     *                 message
+     * @throws XMLStreamException if {@code value} is not valid
+     *
+     * @deprecated use {@link #parseAndSetParameter(String, ModelNode, XMLStreamReader)}
+     */
+    @Deprecated
+    public void parseAndSetParameter(final String value, final ModelNode operation, final Location location) throws XMLStreamException {
+        @SuppressWarnings("deprecation")
+        ModelNode paramVal = parse(value, location);
+        operation.get(getName()).set(paramVal);
+    }
+
 
     /**
      * Marshalls the value from the given {@code resourceModel} as an xml attribute, if it
@@ -249,5 +286,54 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
             writer.writeCharacters(resourceModel.get(getName()).asString());
             writer.writeEndElement();
         }
+    }
+
+    private ModelNode parse(final String value) throws OperationFailedException  {
+
+        final String trimmed = value == null ? null : value.trim();
+        ModelNode node;
+        if (trimmed != null ) {
+            if (isAllowExpression()) {
+                node = ParseUtils.parsePossibleExpression(trimmed);
+            } else {
+                node = new ModelNode().set(trimmed);
+            }
+            if (node.getType() != ModelType.EXPRESSION) {
+                // Convert the string to the expected type
+                switch (getType()) {
+                    case BIG_DECIMAL:
+                        node.set(node.asBigDecimal());
+                        break;
+                    case BIG_INTEGER:
+                        node.set(node.asBigInteger());
+                        break;
+                    case BOOLEAN:
+                        node.set(node.asBoolean());
+                        break;
+                    case BYTES:
+                        node.set(node.asBytes());
+                        break;
+                    case DOUBLE:
+                        node.set(node.asDouble());
+                        break;
+                    case INT:
+                        node.set(node.asInt());
+                        break;
+                    case LONG:
+                        node.set(node.asLong());
+                        break;
+                }
+            }
+        }
+//        else if (getDefaultValue()!= null && getDefaultValue().isDefined()) {
+//            node = new ModelNode().set(getDefaultValue());
+//        }
+        else {
+            node = new ModelNode();
+        }
+
+        getValidator().validateParameter(getXmlName(), node);
+
+        return node;
     }
 }
