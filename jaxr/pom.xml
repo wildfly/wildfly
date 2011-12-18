@@ -47,5 +47,10 @@
             <groupId>org.jboss.spec.javax.xml.registry</groupId>
             <artifactId>jboss-jaxr-api_1.0_spec</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-subsystem-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

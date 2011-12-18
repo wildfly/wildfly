@@ -16,6 +16,7 @@ import java.net.URL;
 import java.util.List;
 
 import junit.framework.Assert;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
@@ -71,6 +72,9 @@ public class SubsystemParsingTestCase extends AbstractSubsystemTest {
 
         // use some assertions here to check the correctness of the model
         Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(InfinispanExtension.SUBSYSTEM_NAME));
+
+        assertRemoveSubsystemResources(services);
+
     }
 
     @Test

@@ -394,11 +394,11 @@ public abstract class AbstractSubsystemTest {
         }
 
 
-        System.out.println(composite);
-        System.out.println(kernelServices.readWholeModel());
+        //System.out.println(composite);
+        //System.out.println(kernelServices.readWholeModel());
 
         ModelNode result = kernelServices.executeOperation(composite);
-        System.out.println(result);
+        //System.out.println(result);
 
         ModelNode model = kernelServices.readWholeModel().get(SUBSYSTEM, mainSubsystemName);
         Assert.assertFalse("Subsystem resources were not removed " + model, model.isDefined());

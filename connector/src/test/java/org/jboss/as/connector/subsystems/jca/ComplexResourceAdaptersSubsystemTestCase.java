@@ -21,34 +21,23 @@
 */
 package org.jboss.as.connector.subsystems.jca;
 
-import static org.jboss.as.connector.subsystems.jca.ParseUtils.commonDsProperties;
+import static org.jboss.as.connector.subsystems.jca.ParseUtils.controlModelParams;
+import static org.jboss.as.connector.subsystems.jca.ParseUtils.raAdminProperties;
 import static org.jboss.as.connector.subsystems.jca.ParseUtils.raCommonProperties;
 import static org.jboss.as.connector.subsystems.jca.ParseUtils.raConnectionProperties;
-import static org.jboss.as.connector.subsystems.jca.ParseUtils.raAdminProperties;
 
-import static org.jboss.as.connector.subsystems.jca.ParseUtils.controlModelParams;
-
-import java.util.List;
 import java.util.Properties;
-
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
-import javax.xml.stream.XMLStreamException;
 
 import junit.framework.Assert;
 
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
+import org.jboss.as.controller.OperationContext.Type;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
-import org.junit.Test;
 import org.junit.Ignore;
-import org.jboss.as.controller.OperationContext.Type;
+import org.junit.Test;
 
 /**
  *
@@ -65,21 +54,21 @@ public class ComplexResourceAdaptersSubsystemTestCase extends AbstractSubsystemT
     @Ignore("AS7-3007")
 
     public void testResourceAdapters() throws Exception{
-        
+
         String xml = readResource("ra.xml");
- 
+
         KernelServices services = super.installInController(new AdditionalInitialization() {
- 
+
             @Override
             protected Type getType() {
                 //This override makes it only install in the model, not create the services
                 return Type.MANAGEMENT;
             }
- 
+
         }, xml);
- 
+
         ModelNode model = services.readWholeModel();
- 
+
         // Check model..
         Properties params=raCommonProperties();
         ModelNode raCommonModel=model.get("subsystem", "resource-adapters","resource-adapter","some.rar");
@@ -100,19 +89,21 @@ public class ComplexResourceAdaptersSubsystemTestCase extends AbstractSubsystemT
         //Marshal the xml to see that it is the same as before
         String marshalled = services.getPersistedSubsystemXml();
         Assert.assertEquals(normalizeXML(xml), normalizeXML(marshalled));
- 
+
         services = super.installInController(new AdditionalInitialization() {
- 
+
             @Override
             protected Type getType() {
                 //This override makes it only install in the model, not create the services
                 return Type.MANAGEMENT;
             }
- 
+
         }, marshalled);
- 
+
         //Check that the model looks the same
         ModelNode modelReloaded = services.readWholeModel();
         compare(model, modelReloaded);
+
+        assertRemoveSubsystemResources(services);
     }
 }
