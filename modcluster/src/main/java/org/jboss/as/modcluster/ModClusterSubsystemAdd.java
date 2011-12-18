@@ -57,10 +57,11 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler implements Descripti
     protected void populateModel(final ModelNode operation, final Resource resource) {
          if (operation.hasDefined(CommonAttributes.MOD_CLUSTER_CONFIG)) {
             ModelNode configuration;
-            if (operation.get(CommonAttributes.MOD_CLUSTER_CONFIG).hasDefined(CommonAttributes.CONFIGURATION))
+            if (operation.get(CommonAttributes.MOD_CLUSTER_CONFIG).hasDefined(CommonAttributes.CONFIGURATION)) {
                 configuration = operation.get(CommonAttributes.MOD_CLUSTER_CONFIG).get(CommonAttributes.CONFIGURATION);
-            else
+            }else {
                 configuration = operation.get(CommonAttributes.MOD_CLUSTER_CONFIG);
+            }
             resource.registerChild(confPath, Resource.Factory.create());
             final Resource conf = resource.getChild(confPath);
             for(final String attribute : configuration.keys()) {
