@@ -52,9 +52,9 @@ public class CoreGroupCommunicationServiceService implements Service<CoreGroupCo
         this.scope = scope;
     }
 
-    public ServiceBuilder<CoreGroupCommunicationService> build(ServiceTarget target, String name, String channel) {
+    public ServiceBuilder<CoreGroupCommunicationService> build(ServiceTarget target, String name) {
         return target.addService(getServiceName(name), this)
-            .addDependency(ChannelService.getServiceName(channel), Channel.class, this.channel)
+            .addDependency(ChannelService.getServiceName(name), Channel.class, this.channel)
         ;
     }
 

@@ -6,62 +6,48 @@ import java.util.List;
 import java.util.Locale;
 
 import org.infinispan.config.Configuration;
+import org.infinispan.config.Configuration.CacheMode;
 import org.infinispan.config.FluentConfiguration;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceController;
 
 /**
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 public class DistributedCacheAdd extends ClusteredCacheAdd implements DescriptionProvider {
 
-    private static final Logger log = Logger.getLogger(DistributedCacheAdd.class.getPackage().getName());
     static final DistributedCacheAdd INSTANCE = new DistributedCacheAdd();
 
     // used to create subsystem description
-    static ModelNode createOperation(ModelNode address, ModelNode existing) {
+    static ModelNode createOperation(ModelNode address, ModelNode model) {
         ModelNode operation = Util.getEmptyOperation(ADD, address);
-        CacheAdd.populate(existing, operation);
-        ClusteredCacheAdd.populate(existing, operation);
-        populate(existing, operation) ;
+        INSTANCE.populateMode(model, operation);
+        INSTANCE.populate(model, operation);
         return operation;
     }
 
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        // transfer the model data from operation to model
-        populateClusteredCacheModelNode(operation, model);
-        // process additional attributes
-        populate(operation, model);
+    private DistributedCacheAdd() {
+        super(CacheMode.DIST_SYNC);
     }
 
-    protected static void populate(ModelNode operation, ModelNode model) {
+    @Override
+    void populate(ModelNode fromModel, ModelNode toModel) {
+        super.populate(fromModel, toModel);
 
-        if (operation.hasDefined(ModelKeys.OWNERS)) {
-            model.get(ModelKeys.OWNERS).set(operation.get(ModelKeys.OWNERS)) ;
+        if (fromModel.hasDefined(ModelKeys.OWNERS)) {
+            toModel.get(ModelKeys.OWNERS).set(fromModel.get(ModelKeys.OWNERS));
         }
-        if (operation.hasDefined(ModelKeys.VIRTUAL_NODES)) {
-            model.get(ModelKeys.VIRTUAL_NODES).set(operation.get(ModelKeys.VIRTUAL_NODES)) ;
+        if (fromModel.hasDefined(ModelKeys.VIRTUAL_NODES)) {
+            toModel.get(ModelKeys.VIRTUAL_NODES).set(fromModel.get(ModelKeys.VIRTUAL_NODES));
         }
-        if (operation.hasDefined(ModelKeys.L1_LIFESPAN)) {
-            model.get(ModelKeys.L1_LIFESPAN).set(operation.get(ModelKeys.L1_LIFESPAN)) ;
+        if (fromModel.hasDefined(ModelKeys.L1_LIFESPAN)) {
+            toModel.get(ModelKeys.L1_LIFESPAN).set(fromModel.get(ModelKeys.L1_LIFESPAN));
         }
         // child node
-        if (operation.hasDefined(ModelKeys.REHASHING)) {
-            model.get(ModelKeys.REHASHING).set(operation.get(ModelKeys.REHASHING)) ;
+        if (fromModel.hasDefined(ModelKeys.REHASHING)) {
+            toModel.get(ModelKeys.REHASHING).set(fromModel.get(ModelKeys.REHASHING));
         }
-    }
-
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        // use the clustered cache version
-        performClusteredCacheRuntime(context, operation, model, verificationHandler, newControllers) ;
     }
 
     /**
@@ -73,10 +59,9 @@ public class DistributedCacheAdd extends ClusteredCacheAdd implements Descriptio
      * @return
      */
     @Override
-    Configuration processModelNode(ModelNode cache, Configuration configuration, List<AdditionalDependency> additionalDeps) {
-
+    void processModelNode(ModelNode cache, Configuration configuration, List<AdditionalDependency<?>> additionalDeps) {
         // process the basic clustered configuration
-        processClusteredCacheModelNode(cache, configuration, additionalDeps) ;
+        super.processModelNode(cache, configuration, additionalDeps);
 
         // process the additional distributed attributes and elements
         FluentConfiguration fluent = configuration.fluent();
@@ -108,12 +93,10 @@ public class DistributedCacheAdd extends ClusteredCacheAdd implements Descriptio
                 fluentHash.rehashWait(rehashing.get(ModelKeys.WAIT).asLong());
             }
         }
-        return configuration;
     }
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return InfinispanDescriptions.getDistributedCacheAddDescription(locale);
     }
-
 }

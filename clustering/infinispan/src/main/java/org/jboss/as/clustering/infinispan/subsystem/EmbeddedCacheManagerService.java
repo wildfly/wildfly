@@ -28,7 +28,6 @@ import javax.transaction.xa.XAResource;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.infinispan.config.Configuration;
 import org.infinispan.config.FluentConfiguration;
@@ -51,6 +50,7 @@ import org.jboss.as.clustering.infinispan.TransactionManagerProvider;
 import org.jboss.as.clustering.infinispan.TransactionSynchronizationRegistryProvider;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -69,6 +69,14 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
 
     public static ServiceName getServiceName(String name) {
         return (name != null) ? SERVICE_NAME.append(name) : SERVICE_NAME;
+    }
+
+    public static ServiceName getTransportServiceName(String name) {
+        return getServiceName(name).append("transport");
+    }
+
+    public static ServiceName getTransportRequiredServiceName(String name) {
+        return getTransportServiceName(name).append("required");
     }
 
     private final EmbeddedCacheManagerConfiguration configuration;
@@ -98,15 +106,14 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
         EmbeddedCacheManagerDefaults defaults = this.configuration.getDefaults();
         GlobalConfiguration global = defaults.getGlobalConfiguration().clone();
 
+        String name = this.configuration.getName();
         // set up transport only if transport is required by some cache in the cache manager
         TransportConfiguration transport = this.configuration.getTransportConfiguration();
         FluentGlobalConfiguration.TransportConfig fluentTransport = global.fluent().transport();
 
-        // check if we need a transport
-        AtomicBoolean transportRequired = this.configuration.getTransportRequired();
-
-        if ((transportRequired.get() == true) && transport != null) {
-            log.debug("initializing transport for cache manager") ;
+        // If our transport service is running, configure Infinispan to use it
+        if (context.getController().getServiceContainer().getRequiredService(getTransportServiceName(name)).getState() == ServiceController.State.UP) {
+            log.debugf("Initializing %s cache container transport", name) ;
 
             fluentTransport.transportClass(JGroupsTransport.class);
             Long timeout = transport.getLockTimeout();
@@ -153,7 +160,6 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
         FluentGlobalConfiguration.GlobalJmxStatisticsConfig globalJmx = fluentTransport.globalJmxStatistics();
         globalJmx.cacheManagerName(this.configuration.getName());
 
-
         // setup default cache configuration
         Configuration defaultConfig = new Configuration();
         FluentConfiguration fluent = defaultConfig.fluent();
@@ -181,8 +187,7 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
         }
         this.container = new DefaultEmbeddedCacheManager(manager, this.configuration.getDefaultCache());
         this.container.start();
-        log.debug("cache manager started");
-
+        log.debugf("%s cache container started", name);
     }
 
     private void configureTransactions(Configuration config) {

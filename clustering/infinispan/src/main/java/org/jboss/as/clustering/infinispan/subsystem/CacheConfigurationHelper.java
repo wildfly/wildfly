@@ -24,7 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 
-import org.infinispan.manager.CacheContainer;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.msc.value.Value;
 
 /**
@@ -34,7 +34,7 @@ import org.jboss.msc.value.Value;
  */
 public interface CacheConfigurationHelper {
     String getName();
-    CacheContainer getCacheContainer();
+    EmbeddedCacheManager getCacheContainer();
     EmbeddedCacheManagerDefaults getEmbeddedCacheManagerDefaults();
     Value<TransactionManager> getTransactionManager();
     Value<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistry();

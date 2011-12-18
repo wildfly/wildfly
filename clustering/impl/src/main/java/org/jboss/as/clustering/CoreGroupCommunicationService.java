@@ -219,8 +219,8 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
     }
 
     @Override
-    public ClusterNode[] getClusterNodes() {
-        return this.groupView.allMembers.toArray(new ClusterNode[0]);
+    public List<ClusterNode> getClusterNodes() {
+        return new ArrayList<ClusterNode>(this.groupView.allMembers);
     }
 
     @Override
@@ -228,7 +228,8 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
         return this.me;
     }
 
-    public boolean isCurrentNodeCoordinator() {
+    @Override
+    public boolean isCoordinator() {
         GroupView curView = this.groupView;
         if (curView.allMembers.isEmpty() || this.me == null) {
             return false;
@@ -369,7 +370,7 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
 
         // the first cluster view member is the coordinator
         // If we are the coordinator, only call ourself if 'excludeSelf' is false
-        if (this.isCurrentNodeCoordinator()) {
+        if (this.isCoordinator()) {
             if (excludeSelf) {
                 return null;
             } else if (this.directlyInvokeLocal) {
@@ -552,7 +553,7 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
 
         // the first cluster view member is the coordinator
         // If we are the coordinator, only call ourself if 'excludeSelf' is false
-        if (this.isCurrentNodeCoordinator()) {
+        if (this.isCoordinator()) {
             if (!excludeSelf) {
                 // TODO: always do it this way?
                 if (this.directlyInvokeLocal) {
@@ -1127,7 +1128,7 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
             int difference = newGroupView.allMembers.size() - oldMembers.allMembers.size();
 
             boolean merge = newView instanceof MergeView;
-            if (this.isCurrentNodeCoordinator()) {
+            if (this.isCoordinator()) {
                 this.clusterLifeCycleLog.newClusterCurrentView(this.groupName, newGroupView.viewId, difference, merge, newGroupView.allMembers);
             } else {
                 this.log.newClusterView(this.getGroupName(), newGroupView.viewId, this.groupView, difference, merge);
@@ -1626,7 +1627,7 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
         @Override
         public void suspect(org.jgroups.Address suspected_mbr) {
             CoreGroupCommunicationService.this.logHistory(MESSAGES.nodeSuspected(suspected_mbr));
-            if (CoreGroupCommunicationService.this.isCurrentNodeCoordinator()) {
+            if (CoreGroupCommunicationService.this.isCoordinator()) {
                 CoreGroupCommunicationService.this.clusterLifeCycleLog.suspectedMember(suspected_mbr);
             } else {
                 CoreGroupCommunicationService.this.log.suspectedMember(suspected_mbr);
@@ -1777,7 +1778,7 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
                             }
                         }
 
-                        if (CoreGroupCommunicationService.this.isCurrentNodeCoordinator()) {
+                        if (CoreGroupCommunicationService.this.isCoordinator()) {
                             CoreGroupCommunicationService.this.log.debugf("State could not be retrieved for service %s (we are the first member in group)", serviceName);
                         } else {
                             throw MESSAGES.initialTransferFailed("serviceState");

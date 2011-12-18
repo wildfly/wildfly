@@ -6,52 +6,38 @@ import java.util.List;
 import java.util.Locale;
 
 import org.infinispan.config.Configuration;
+import org.infinispan.config.Configuration.CacheMode;
 import org.infinispan.config.FluentConfiguration;
-import org.jboss.as.clustering.infinispan.subsystem.CacheAdd.AdditionalDependency;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceController;
 
 /**
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 public class InvalidationCacheAdd extends ClusteredCacheAdd implements DescriptionProvider {
 
-    private static final Logger log = Logger.getLogger(InvalidationCacheAdd.class.getPackage().getName()) ;
     static final InvalidationCacheAdd INSTANCE = new InvalidationCacheAdd();
 
     // used to create subsystem description
-    static ModelNode createOperation(ModelNode address, ModelNode existing) {
+    static ModelNode createOperation(ModelNode address, ModelNode model) {
         ModelNode operation = Util.getEmptyOperation(ADD, address);
-        CacheAdd.populate(existing, operation);
-        ClusteredCacheAdd.populate(existing, operation);
-        populate(existing, operation);
+        INSTANCE.populateMode(model, operation);
+        INSTANCE.populate(model, operation);
         return operation;
     }
 
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        // transfer the model data from operation to model
-        populateClusteredCacheModelNode(operation, model);
-        populate(operation, model);
+    private InvalidationCacheAdd() {
+        super(CacheMode.INVALIDATION_SYNC);
     }
 
-    protected static void populate(ModelNode operation, ModelNode model) {
+    @Override
+    void populate(ModelNode fromModel, ModelNode toModel) {
+        super.populate(fromModel, toModel);
         // additional child node
-        if (operation.hasDefined(ModelKeys.STATE_TRANSFER)) {
-            model.get(ModelKeys.STATE_TRANSFER).set(operation.get(ModelKeys.STATE_TRANSFER)) ;
+        if (fromModel.hasDefined(ModelKeys.STATE_TRANSFER)) {
+            toModel.get(ModelKeys.STATE_TRANSFER).set(fromModel.get(ModelKeys.STATE_TRANSFER)) ;
         }
-    }
-
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        // use the clustered cache version
-        performClusteredCacheRuntime(context, operation, model, verificationHandler, newControllers) ;
     }
 
     /**
@@ -63,9 +49,9 @@ public class InvalidationCacheAdd extends ClusteredCacheAdd implements Descripti
      * @return
      */
     @Override
-    Configuration processModelNode(ModelNode cache, Configuration configuration, List<AdditionalDependency> additionalDeps) {
+    void processModelNode(ModelNode cache, Configuration configuration, List<AdditionalDependency<?>> additionalDeps) {
         // process the basic clustered configuration
-        processClusteredCacheModelNode(cache, configuration, additionalDeps);
+        super.processModelNode(cache, configuration, additionalDeps);
 
         // process the invalidation-cache attributes and elements
         FluentConfiguration fluent = configuration.fluent();
@@ -82,12 +68,10 @@ public class InvalidationCacheAdd extends ClusteredCacheAdd implements Descripti
                 fluentStateTransfer.logFlushTimeout(stateTransfer.get(ModelKeys.FLUSH_TIMEOUT).asLong());
             }
         }
-        return configuration;
     }
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return InfinispanDescriptions.getInvalidationCacheAddDescription(locale);
     }
-
 }

@@ -101,7 +101,7 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
     }
 
     private ServiceName getCacheConfigServiceName(String container, String cache) {
-        return ServiceName.JBOSS.append("infinispan", container, "config", cache);
+        return ServiceName.JBOSS.append("infinispan", container, cache, "config");
     }
 
     private void putPropertyIfAbsent(Map properties, String property, Object value) {

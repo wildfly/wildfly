@@ -35,7 +35,6 @@ import org.mockito.ArgumentCaptor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Vector;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -301,8 +300,8 @@ public class SharedLocalYieldingClusterLockManagerUnitTestCase {
         when(rpcDispatcher.isConsistentWith(notifier)).thenReturn(true);
         when(rpcDispatcher.getClusterNode()).thenReturn(node);
 
-        Vector<ClusterNode> view = getView(node, viewPos, viewSize);
-        when(rpcDispatcher.getClusterNodes()).thenReturn(view.toArray(new ClusterNode[view.size()]));
+        List<ClusterNode> view = getView(node, viewPos, viewSize);
+        when(rpcDispatcher.getClusterNodes()).thenReturn(view);
 
         SharedLocalYieldingClusterLockManager testee = new SharedLocalYieldingClusterLockManager("test", rpcDispatcher, notifier);
 
@@ -314,8 +313,8 @@ public class SharedLocalYieldingClusterLockManagerUnitTestCase {
         return new TesteeSet(testee, rpcDispatcher, c.getValue());
     }
 
-    private Vector<ClusterNode> getView(ClusterNode member, int viewPos, int numMembers) {
-        Vector<ClusterNode> all = new Vector<ClusterNode>(Arrays.asList(new ClusterNode[] { node1, node2, node3 }));
+    private List<ClusterNode> getView(ClusterNode member, int viewPos, int numMembers) {
+        List<ClusterNode> all = new ArrayList<ClusterNode>(Arrays.asList(node1, node2, node3));
         all.remove(member);
         while (all.size() > numMembers - 1) // -1 'cause we'll add one in a sec
         {

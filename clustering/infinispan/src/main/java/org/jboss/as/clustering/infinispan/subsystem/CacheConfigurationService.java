@@ -50,18 +50,15 @@ import org.jboss.msc.value.Value;
 public class CacheConfigurationService implements Service<Configuration> {
 
     private static final Logger log = Logger.getLogger(CacheConfigurationService.class.getPackage().getName()) ;
-    private static final String SERVICE_NAME_ELEMENT = "config" ;
 
     private final String name;
     private final String template;
-    private final Configuration overrides ;
+    private final Configuration overrides;
     private final CacheConfigurationHelper configurationHelper;
-    private Configuration configuration ;
+    private Configuration configuration;
 
     public static ServiceName getServiceName(String container, String cache) {
-        return EmbeddedCacheManagerService.getServiceName(container)
-               .append(CacheConfigurationService.SERVICE_NAME_ELEMENT)
-               .append((cache != null) ? cache : CacheContainer.DEFAULT_CACHE_NAME);
+        return EmbeddedCacheManagerService.getServiceName(container).append((cache != null) ? cache : CacheContainer.DEFAULT_CACHE_NAME, "config");
     }
 
     public CacheConfigurationService(String name, Configuration overrides, CacheConfigurationHelper configurationHelper) {
@@ -91,7 +88,7 @@ public class CacheConfigurationService implements Service<Configuration> {
     @Override
     public void start(StartContext context) throws StartException {
 
-        CacheContainer container = this.configurationHelper.getCacheContainer();
+        EmbeddedCacheManager container = this.configurationHelper.getCacheContainer();
         EmbeddedCacheManagerDefaults defaults = this.configurationHelper.getEmbeddedCacheManagerDefaults();
 
         // set up the cache configuration
@@ -129,9 +126,9 @@ public class CacheConfigurationService implements Service<Configuration> {
 
         // if template != null, a cache named template is used as the base; otherwise default
         if (this.template != null) {
-            ((EmbeddedCacheManager) container).defineConfiguration(this.name, this.template, configuration);
+            container.defineConfiguration(this.name, this.template, configuration);
         } else {
-            ((EmbeddedCacheManager) container).defineConfiguration(this.name, configuration);
+            container.defineConfiguration(this.name, configuration);
         }
 
         // advertise
@@ -147,7 +144,6 @@ public class CacheConfigurationService implements Service<Configuration> {
      */
     @Override
     public void stop(StopContext context) {
-        // TODO should we try to nullify the configuration in the cache manager?
     }
 
     private String dumpCacheConfiguration(String name, Configuration c) {
@@ -165,7 +161,7 @@ public class CacheConfigurationService implements Service<Configuration> {
     }
 
     static class CacheConfigurationHelperImpl implements CacheConfigurationHelper {
-        private final InjectedValue<CacheContainer> container = new InjectedValue<CacheContainer>();
+        private final InjectedValue<EmbeddedCacheManager> container = new InjectedValue<EmbeddedCacheManager>();
         private final InjectedValue<EmbeddedCacheManagerDefaults> defaults = new InjectedValue<EmbeddedCacheManagerDefaults>();
         private final InjectedValue<TransactionManager> transactionManager = new InjectedValue<TransactionManager>();
         private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistry = new InjectedValue<TransactionSynchronizationRegistry>();
@@ -180,7 +176,7 @@ public class CacheConfigurationService implements Service<Configuration> {
             return this.name;
         }
 
-        Injector<CacheContainer> getCacheContainerInjector() {
+        Injector<EmbeddedCacheManager> getCacheContainerInjector() {
             return this.container;
         }
 
@@ -196,7 +192,7 @@ public class CacheConfigurationService implements Service<Configuration> {
         }
 
         @Override
-        public CacheContainer getCacheContainer() {
+        public EmbeddedCacheManager getCacheContainer() {
             return this.container.getValue();
         }
 
