@@ -22,36 +22,36 @@
 
 package org.jboss.as.xts;
 
-import java.util.Locale;
-
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.webservices.util.WSServices;
+import org.jboss.as.xts.XTSSubsystemAdd.ContextInfo;
 import org.jboss.dmr.ModelNode;
 
+
 /**
+ * Adds the transaction management subsystem.
+ *
  * @author <a href="mailto:adinn@redhat.com">Andrew Dinn</a>
  */
-class XTSSubsystemProviders {
+class XTSSubsystemRemove extends AbstractRemoveStepHandler {
+
+    static final XTSSubsystemRemove INSTANCE = new XTSSubsystemRemove();
+
+    private XTSSubsystemRemove() {
+    }
 
 
-    static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return Descriptions.getSubsystem(locale);
+    @Override
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        for (ContextInfo contextInfo : XTSSubsystemAdd.getContextDefinitions()) {
+            String contextName = contextInfo.contextPath;
+            context.removeService(WSServices.ENDPOINT_PUBLISH_SERVICE.append(contextName));
         }
-    };
 
-    static final DescriptionProvider SUBSYSTEM_ADD = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return Descriptions.getSubsystemAdd(locale);
-        }
-    };
-
-    static final DescriptionProvider SUBSYSTEM_REMOVE = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return Descriptions.getSubsystemRemove(locale);
-        }
-    };
-
+        context.removeService(XTSServices.JBOSS_XTS_MAIN);
+        context.removeService(XTSServices.JBOSS_XTS_TXBRIDGE_INBOUND_RECOVERY);
+        context.removeService(XTSServices.JBOSS_XTS_TXBRIDGE_OUTBOUND_RECOVERY);
+    }
 }

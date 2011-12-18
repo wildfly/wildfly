@@ -57,6 +57,7 @@ import junit.framework.AssertionFailedError;
 
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.Extension;
@@ -378,14 +379,26 @@ public abstract class AbstractSubsystemTest {
 
         getAllChildAddressesForRemove(pathAddress, addresses, subsystemResource);
 
+        ModelNode composite = new ModelNode();
+        composite.get(OP).set(CompositeOperationHandler.NAME);
+        composite.get(OP_ADDR).setEmptyList();
+        composite.get("rollback-on-runtime-failure").set(true);
+
+
         for (ListIterator<PathAddress> iterator = addresses.listIterator(addresses.size()) ; iterator.hasPrevious() ; ) {
             PathAddress cur = iterator.previous();
             ModelNode remove = new ModelNode();
             remove.get(OP).set(REMOVE);
             remove.get(OP_ADDR).set(cur.toModelNode());
-            ModelNode result = kernelServices.executeOperation(remove);
-            Assert.assertEquals("Error removing " + cur + ": " + result.get(FAILURE_DESCRIPTION).asString(), SUCCESS, result.get(OUTCOME).asString());
+            composite.get("steps").add(remove);
         }
+
+
+        System.out.println(composite);
+        System.out.println(kernelServices.readWholeModel());
+
+        ModelNode result = kernelServices.executeOperation(composite);
+        System.out.println(result);
 
         ModelNode model = kernelServices.readWholeModel().get(SUBSYSTEM, mainSubsystemName);
         Assert.assertFalse("Subsystem resources were not removed " + model, model.isDefined());
@@ -656,6 +669,7 @@ public abstract class AbstractSubsystemTest {
             rootRegistration.registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true);
             rootRegistration.registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
             rootRegistration.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
+            rootRegistration.registerOperationHandler(CompositeOperationHandler.NAME, CompositeOperationHandler.INSTANCE, CompositeOperationHandler.INSTANCE, false, EntryType.PRIVATE);
 
             //Handler to be able to get hold of the root resource
             rootRegistration.registerOperationHandler(RootResourceGrabber.NAME, RootResourceGrabber.INSTANCE, RootResourceGrabber.INSTANCE, false);

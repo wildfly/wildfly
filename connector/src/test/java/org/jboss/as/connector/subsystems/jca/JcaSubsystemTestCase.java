@@ -59,10 +59,4 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
             "    </default-workmanager>" +
             "</subsystem>";
     }
-
-    //TODO AS7-2421 remove me
-    protected boolean testRemoval() {
-        return false;
-    }
-
 }

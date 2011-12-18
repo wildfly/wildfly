@@ -42,10 +42,4 @@ public class XTSSubsystemTestCase extends AbstractSubsystemBaseTest {
             "    <xts-environment url=\"http://localhost:8080/ws-c11/ActivationService\"/>" +
             "</subsystem>";
     }
-
-    //TODO AS7-2421 remove this
-    protected boolean testRemoval() {
-        return false;
-    }
-
 }
