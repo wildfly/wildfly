@@ -118,7 +118,7 @@ public class LoggingExtension implements Extension {
 
         // Root logger
         final ManagementResourceRegistration rootLogger = registration.registerSubModel(rootLoggerPath, LoggingSubsystemProviders.ROOT_LOGGER);
-        rootLogger.registerOperationHandler(RootLoggerAdd.OPERATION_NAME, RootLoggerAdd.INSTANCE, LoggingSubsystemProviders.SET_ROOT_LOGGER, false);
+        rootLogger.registerOperationHandler(RootLoggerAdd.OPERATION_NAME, RootLoggerAdd.INSTANCE, LoggingSubsystemProviders.ADD_ROOT_LOGGER, false);
         rootLogger.registerOperationHandler(RootLoggerRemove.OPERATION_NAME, RootLoggerRemove.INSTANCE, LoggingSubsystemProviders.REMOVE_ROOT_LOGGER, false);
         rootLogger.registerOperationHandler(RootLoggerLevelChange.OPERATION_NAME, RootLoggerLevelChange.INSTANCE, LoggingSubsystemProviders.ROOT_LOGGER_CHANGE_LEVEL, false);
         rootLogger.registerOperationHandler(RootLoggerAssignHandler.OPERATION_NAME, RootLoggerAssignHandler.INSTANCE, LoggingSubsystemProviders.ROOT_LOGGER_ASSIGN_HANDLER, false);

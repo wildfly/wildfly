@@ -55,11 +55,11 @@ public class LoggingSubsystemTestCase extends AbstractSubsystemBaseTest {
             }
         };
     }
-
-
-    //TODO AS7-2421 remove this
-    protected boolean testRemoval() {
-        return false;
-    }
+//
+//
+//    //TODO AS7-2421 remove this
+//    protected boolean testRemoval() {
+//        return false;
+//    }
 
 }
