@@ -27,15 +27,12 @@ import java.util.List;
 import org.jboss.as.cli.ArgumentValueConverter;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.Util;
-import org.jboss.as.cli.completion.mock.MockCliConfig;
 import org.jboss.as.cli.completion.mock.MockCommandContext;
 import org.jboss.as.cli.operation.CommandLineParser;
 import org.jboss.as.cli.operation.OperationRequestHeader;
-import org.jboss.as.cli.operation.impl.ConcurrentRolloutPlanGroup;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.jboss.as.cli.operation.impl.RolloutPlanHeader;
-import org.jboss.as.cli.operation.impl.SingleRolloutPlanGroup;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
