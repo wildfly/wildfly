@@ -35,6 +35,7 @@ import java.util.concurrent.ExecutorService;
 import javax.xml.namespace.QName;
 
 import org.jboss.as.appclient.subsystem.parsing.AppClientXml;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.process.CommandLineConstants;
@@ -118,17 +119,19 @@ public final class Main {
                     throw MESSAGES.cannotFindAppClient(realFile.getAbsoluteFile());
                 }
 
-                final AppClientXml parser = new AppClientXml(Module.getBootModuleLoader());
                 final Bootstrap bootstrap = Bootstrap.Factory.newInstance();
-                final Bootstrap.Configuration configuration = new Bootstrap.Configuration();
-                configuration.setServerEnvironment(serverEnvironment);
+                final Bootstrap.Configuration configuration = new Bootstrap.Configuration(serverEnvironment);
                 configuration.setModuleLoader(Module.getBootModuleLoader());
+                final ExtensionRegistry extensionRegistry = configuration.getExtensionRegistry();
+                final AppClientXml parser = new AppClientXml(Module.getBootModuleLoader(), extensionRegistry);
                 final Bootstrap.ConfigurationPersisterFactory configurationPersisterFactory = new Bootstrap.ConfigurationPersisterFactory() {
 
                     @Override
                     public ExtensibleConfigurationPersister createConfigurationPersister(ServerEnvironment serverEnvironment, ExecutorService executorService) {
-                        return new ApplicationClientConfigurationPersister(earPath, deploymentName, options.hostUrl, params,
+                        ExtensibleConfigurationPersister persister = new ApplicationClientConfigurationPersister(earPath, deploymentName, options.hostUrl, params,
                                 serverEnvironment.getServerConfigurationFile().getBootFile(), rootElement, parser);
+                        extensionRegistry.setWriterRegistry(persister);
+                        return persister;
                     }
                 };
                 configuration.setConfigurationPersisterFactory(configurationPersisterFactory);

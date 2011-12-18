@@ -37,7 +37,7 @@ public interface Extension {
 
     /**
      * Initialize this extension by registering its operation handlers and configuration
-     * parsers.
+     * marshaller with the given {@link ExtensionContext}.
      * <p>When this method is invoked the {@link Thread#getContextClassLoader() thread context classloader} will
      * be set to be the defining class loader of the class that implements this interface.</p>
      *
@@ -46,7 +46,7 @@ public interface Extension {
     void initialize(ExtensionContext context);
 
     /**
-     * Initialize the XML parsers for this extension.
+     * Initialize the XML parsers for this extension and register them with the given {@link ExtensionParsingContext}.
      * <p>When this method is invoked the {@link Thread#getContextClassLoader() thread context classloader} will
      * be set to be the defining class loader of the class that implements this interface.</p>
      *

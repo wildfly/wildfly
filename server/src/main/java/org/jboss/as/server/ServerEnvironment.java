@@ -22,6 +22,7 @@
 package org.jboss.as.server;
 
 import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.version.ProductConfig;
@@ -52,7 +53,23 @@ public class ServerEnvironment implements Serializable {
         DOMAIN,
         STANDALONE,
         EMBEDDED,
-        APPCLIENT,
+        APPCLIENT;
+
+        public ProcessType getProcessType() {
+            switch (this) {
+                case DOMAIN:
+                    return ProcessType.DOMAIN_SERVER;
+                case STANDALONE:
+                    return ProcessType.STANDALONE_SERVER;
+                case EMBEDDED:
+                    return  ProcessType.EMBEDDED_SERVER;
+                case APPCLIENT:
+                    return ProcessType.APPLICATION_CLIENT;
+                default:
+                    // programming error
+                    throw new RuntimeException("unimplemented LaunchType");
+            }
+        }
     }
 
     // Provide logging

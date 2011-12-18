@@ -54,6 +54,7 @@ import javax.security.auth.callback.CallbackHandler;
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.BootContext;
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -136,6 +137,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final ExecutorService proxyExecutor = Executors.newCachedThreadPool(threadFactory);
     private final AbstractVaultReader vaultReader;
     private final ContentRepository contentRepository;
+    private final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER);
 
     private volatile ServerInventory serverInventory;
 
@@ -277,7 +279,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     @Override
     public void start(StartContext context) throws StartException {
         final ExecutorService executorService = getExecutorServiceInjector().getValue();
-        this.hostControllerConfigurationPersister = new HostControllerConfigurationPersister(environment, hostControllerInfo, executorService);
+        this.hostControllerConfigurationPersister = new HostControllerConfigurationPersister(environment, hostControllerInfo, executorService, extensionRegistry);
         setConfigurationPersister(hostControllerConfigurationPersister);
         prepareStepHandler.setExecutorService(executorService);
         super.start(context);
@@ -287,7 +289,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
     protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
         DomainModelUtil.updateCoreModel(rootResource, environment);
         HostModelUtil.createHostRegistry(rootRegistration, hostControllerConfigurationPersister, environment, runningModeControl,
-                localFileRepository, hostControllerInfo, new DelegatingServerInventory(), remoteFileRepository, contentRepository, this, this, vaultReader);
+                localFileRepository, hostControllerInfo, new DelegatingServerInventory(), remoteFileRepository, contentRepository,
+                this, this, extensionRegistry,vaultReader);
         this.modelNodeRegistration = rootRegistration;
     }
 

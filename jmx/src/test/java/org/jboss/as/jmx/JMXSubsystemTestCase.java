@@ -35,8 +35,7 @@ import javax.management.remote.JMXServiceURL;
 import javax.xml.stream.XMLStreamException;
 
 import junit.framework.Assert;
-
-import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -272,7 +271,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         AdditionalInitialization additionalInit = new AdditionalInitialization(){
 
             @Override
-            protected void initializeExtraSubystemsAndModel(ExtensionContext extensionContext, Resource rootResource,
+            protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource,
                     ManagementResourceRegistration rootRegistration) {
                 rootResource.getModel().get(LAUNCH_TYPE).set(TYPE_STANDALONE);
             }
@@ -312,7 +311,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
 
         AdditionalInitialization additionalInit = new AdditionalInitialization(){
             @Override
-            protected void initializeExtraSubystemsAndModel(ExtensionContext extensionContext, Resource rootResource,
+            protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource,
                     ManagementResourceRegistration rootRegistration) {
                 rootResource.getModel().get(LAUNCH_TYPE).set(TYPE_STANDALONE);
             }
@@ -356,7 +355,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         describeOp.get(OP_ADDR).set(
                 PathAddress.pathAddress(
                         PathElement.pathElement(SUBSYSTEM, JMXExtension.SUBSYSTEM_NAME)).toModelNode());
-        List<ModelNode> operations = super.checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList();
+        List<ModelNode> operations = checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList();
         servicesA.shutdown();
 
         Assert.assertEquals(2, operations.size());

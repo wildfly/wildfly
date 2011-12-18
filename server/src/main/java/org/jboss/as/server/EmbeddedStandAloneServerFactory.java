@@ -45,6 +45,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
@@ -144,20 +145,21 @@ public class EmbeddedStandAloneServerFactory {
 
                     Bootstrap bootstrap = Bootstrap.Factory.newInstance();
 
-                    Bootstrap.Configuration configuration = new Bootstrap.Configuration();
+                    Bootstrap.Configuration configuration = new Bootstrap.Configuration(serverEnvironment);
 
+                    final ExtensionRegistry extensionRegistry = configuration.getExtensionRegistry();
                     // do not persist anything in embedded mode
                     final Bootstrap.ConfigurationPersisterFactory configurationPersisterFactory = new Bootstrap.ConfigurationPersisterFactory() {
                         @Override
                         public ExtensibleConfigurationPersister createConfigurationPersister(ServerEnvironment serverEnvironment, ExecutorService executorService) {
                             final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
-                            final StandaloneXml parser = new StandaloneXml(Module.getBootModuleLoader(), executorService);
-                            return new TransientConfigurationPersister(serverEnvironment.getServerConfigurationFile(), rootElement, parser, parser);
+                            final StandaloneXml parser = new StandaloneXml(Module.getBootModuleLoader(), executorService, extensionRegistry);
+                            ExtensibleConfigurationPersister persister = new TransientConfigurationPersister(serverEnvironment.getServerConfigurationFile(), rootElement, parser, parser);
+                            extensionRegistry.setWriterRegistry(persister);
+                            return persister;
                         }
                     };
                     configuration.setConfigurationPersisterFactory(configurationPersisterFactory);
-
-                    configuration.setServerEnvironment(serverEnvironment);
 
                     configuration.setModuleLoader(moduleLoader);
 

@@ -66,6 +66,7 @@ import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -87,7 +88,8 @@ import org.junit.Test;
  */
 public class ApplyRemoteMasterDomainModelHandlerTestCase {
 
-    private final ApplyRemoteMasterDomainModelHandler handler = new ApplyRemoteMasterDomainModelHandler(null, null, null, HOST_INFO) {
+    private final ApplyRemoteMasterDomainModelHandler handler =
+            new ApplyRemoteMasterDomainModelHandler(new ExtensionRegistry(ProcessType.HOST_CONTROLLER), null, null, HOST_INFO) {
         protected void initializeExtension(String module) {
         }
     };

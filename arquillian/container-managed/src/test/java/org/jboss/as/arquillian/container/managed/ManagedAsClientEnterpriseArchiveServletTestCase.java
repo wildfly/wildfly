@@ -48,14 +48,14 @@ public class ManagedAsClientEnterpriseArchiveServletTestCase {
 
     @ArquillianResource
     URL deploymentUrl;
-    
+
     @Test
     public void shouldBeAbleToInvokeServlet() throws Exception {
         Assert.assertNotNull(deploymentUrl);
         String result = getContent(new URL(deploymentUrl.toString() + HelloWorldServlet.URL_PATTERN.substring(1)));
         Assert.assertEquals(HelloWorldServlet.GREETING, result);
     }
-    
+
     private String getContent(URL url) throws Exception {
         InputStream is = url.openStream();
         ByteArrayOutputStream out = new ByteArrayOutputStream();

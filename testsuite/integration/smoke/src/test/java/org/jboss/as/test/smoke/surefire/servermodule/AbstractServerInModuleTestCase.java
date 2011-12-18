@@ -58,8 +58,7 @@ public abstract class AbstractServerInModuleTestCase {
 
         Assert.assertNotNull(serverEnvironment);
         final Bootstrap bootstrap = Bootstrap.Factory.newInstance();
-        final Bootstrap.Configuration configuration = new Bootstrap.Configuration();
-        configuration.setServerEnvironment(serverEnvironment);
+        final Bootstrap.Configuration configuration = new Bootstrap.Configuration(serverEnvironment);
         configuration.setModuleLoader(Module.getBootModuleLoader());
         configuration.setPortOffset(0);
 

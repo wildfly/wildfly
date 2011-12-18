@@ -40,34 +40,40 @@ public interface ExtensionContext {
      * extension registration is complete, the subsystem registration will be ignored, and an
      * error message will be logged.
      * <p>
-     * The new subsystem registration <em>should</em> register a handler and description for the
-     * {@code add} operation at its root address.  The new subsystem registration <em>may</em> register a
-     * {@code remove} operation at its root address.  If either of these operations are not registered, a
-     * simple generic version of the missing operation will be produced.
+     * The new subsystem registration <em>must</em> register a handler and description for the
+     * {@code add} operation at its root address.  The new subsystem registration <em>must</em> register a
+     * {@code remove} operation at its root address.
      *
      * @param name the name of the subsystem
-     * @throws IllegalArgumentException if the subsystem name has already been registered
+     *
+     * @return the {@link SubsystemRegistration}
+     * @throws IllegalStateException if the subsystem name has already been registered
+     *
+     * @deprecated use {@link #registerSubsystem(String, int, int)}
      */
-    SubsystemRegistration registerSubsystem(String name) throws IllegalArgumentException, IllegalStateException;
+    @Deprecated
+    SubsystemRegistration registerSubsystem(String name);
 
     /**
-     * Used internally by the application server to create a tracking wrapper to record what subsystems
-     * are created by the extension to be able to clean up when the extension is removed.
+     * Register a new subsystem type.  The returned registration object should be used
+     * to configure XML parsers, operation handlers, and other subsystem-specific constructs
+     * for the new subsystem.  If the subsystem registration is deemed invalid by the time the
+     * extension registration is complete, the subsystem registration will be ignored, and an
+     * error message will be logged.
+     * <p>
+     * The new subsystem registration <em>must</em> register a handler and description for the
+     * {@code add} operation at its root address.  The new subsystem registration <em>must</em> register a
+     * {@code remove} operation at its root address.
      *
-     * @param moduleName the name of the module
-     * @return a tracking extension context or the current extension context if we already are a tracking extension context
-     */
-    ExtensionContext createTracking(String moduleName);
-
-    /**
-     * Cleans up a module's subsystems from the resource registration model. This is for internal use by the application
-     * server.
+     * @param name the name of the subsystem
+     * @param majorVersion the major version of the subsystem's management interface
+     * @param minorVersion the minor version of the subsystem's management interface
      *
-     * @param the model root resource
-     * @param moduleName the name of the extension module
-     * @throws IllegalStateException if the extension still has subsystems registered
+     * @return the {@link SubsystemRegistration}
+     *
+     * @throws IllegalStateException if the subsystem name has already been registered
      */
-    void cleanup(Resource rootResource, String moduleName) throws IllegalStateException;
+    SubsystemRegistration registerSubsystem(String name, int majorVersion, int minorVersion);
 
     /**
      * Provide the current Process Type.

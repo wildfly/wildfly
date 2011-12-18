@@ -59,6 +59,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import java.util.EnumSet;
 
 import org.jboss.as.controller.CompositeOperationHandler;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
@@ -183,7 +184,9 @@ public class HostModelUtil {
                                           final RemoteFileRepository remoteFileRepository,
                                           final ContentRepository contentRepository,
                                           final DomainController domainController,
-                                          final UnregisteredHostChannelRegistry registry, AbstractVaultReader vaultReader) {
+                                          final UnregisteredHostChannelRegistry channelRegistry,
+                                          final ExtensionRegistry extensionRegistry,
+                                          final AbstractVaultReader vaultReader) {
         // Add of the host itself
         ManagementResourceRegistration hostRegistration = root.registerSubModel(PathElement.pathElement(HOST), HostDescriptionProviders.HOST_ROOT_PROVIDER);
         LocalHostAddHandler handler = LocalHostAddHandler.getInstance(hostControllerInfo);
@@ -270,11 +273,11 @@ public class HostModelUtil {
         PlatformMBeanResourceRegistrar.registerPlatformMBeanResources(hostRegistration);
 
         LocalDomainControllerAddHandler localDcAddHandler = LocalDomainControllerAddHandler.getInstance(root, hostControllerInfo,
-                configurationPersister, localFileRepository, contentRepository, domainController, registry);
+                configurationPersister, localFileRepository, contentRepository, domainController, channelRegistry, extensionRegistry);
         hostRegistration.registerOperationHandler(LocalDomainControllerAddHandler.OPERATION_NAME, localDcAddHandler, localDcAddHandler, false);
         hostRegistration.registerOperationHandler(LocalDomainControllerRemoveHandler.OPERATION_NAME, LocalDomainControllerRemoveHandler.INSTANCE, LocalDomainControllerRemoveHandler.INSTANCE, false);
         RemoteDomainControllerAddHandler remoteDcAddHandler = RemoteDomainControllerAddHandler.getInstance(root, hostControllerInfo,
-                configurationPersister, contentRepository, remoteFileRepository);
+                configurationPersister, contentRepository, remoteFileRepository, extensionRegistry);
         hostRegistration.registerOperationHandler(RemoteDomainControllerAddHandler.OPERATION_NAME, remoteDcAddHandler, remoteDcAddHandler, false);
         hostRegistration.registerOperationHandler(RemoteDomainControllerRemoveHandler.OPERATION_NAME, RemoteDomainControllerRemoveHandler.INSTANCE, RemoteDomainControllerRemoveHandler.INSTANCE, false);
         SnapshotDeleteHandler snapshotDelete = new SnapshotDeleteHandler(configurationPersister.getHostPersister());

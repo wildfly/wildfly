@@ -24,10 +24,15 @@ package org.jboss.as.controller.parsing;
 
 import java.util.List;
 
+import org.jboss.as.controller.Extension;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 
 /**
+ * Context in effect when the {@code extension} element for a given {@link Extension} is being parsed. Allows the
+ * extension to {@link Extension#initializeParsers(ExtensionParsingContext) initialize the XML parsers} that can
+ * be used for parsing the {@code subsystem} elements that contain the configuration for its subsystems.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public interface ExtensionParsingContext {
@@ -38,17 +43,61 @@ public interface ExtensionParsingContext {
      * "subsystem add" update, without the address or operation name as that information will be automatically
      * populated.
      *
-     * @param reader the element reader
+     * @param namespaceUri the URI of the susbsystem's XML namespace, in string form. Cannot be {@code null}
+     * @param reader the element reader. Cannot be {@code null}
+     *
+     * @deprecated use {@link #setSubsystemXmlMapping(String, String, XMLElementReader)}
      */
+    @Deprecated
     void setSubsystemXmlMapping(String namespaceUri, XMLElementReader<List<ModelNode>> reader);
+
+    /**
+     * Set the parser for the profile-wide subsystem configuration XML element.  The element is always
+     * called {@code "subsystem"}.  The reader should populate the given model node with the appropriate
+     * "subsystem add" update, without the address or operation name as that information will be automatically
+     * populated.
+     *
+     * @param subsystemName the name of the subsystem. Cannot be {@code null}
+     * @param namespaceUri the URI of the susbsystem's XML namespace, in string form. Cannot be {@code null}
+     * @param reader the element reader. Cannot be {@code null}
+     *
+     * @throws IllegalStateException if another {@link Extension} has already registered a subsystem with the given
+     *                               {@code subsystemName}
+     */
+    void setSubsystemXmlMapping(String subsystemName, String namespaceUri, XMLElementReader<List<ModelNode>> reader);
 
     /**
      * Set the parser for the per-deployment configuration for this element, if any.
      *
-     * (TODO: round this out.)
+     * @param namespaceUri the URI of the susbsystem's XML namespace, in string form. Cannot be {@code null}
+     * @param reader the element reader. Cannot be {@code null}
      *
-     * @param reader the element reader
+     * @throws IllegalStateException if another {@link Extension} has already registered a subsystem with the given
+     *                               {@code subsystemName}
+     *
+     * @deprecated use {@link #setSubsystemXmlMapping(String, String, XMLElementReader)}
      */
+    @Deprecated
     void setDeploymentXmlMapping(String namespaceUri, XMLElementReader<ModelNode> reader);
+
+    /**
+     * Set the parser for the per-deployment configuration for this element, if any.
+     * <p>
+     * <strong>Note that this method is not currently implemented.</strong>
+     * </p>
+     *
+     * (TODO: round this out or remove it.)
+     *
+     * @param subsystemName the name of the subsystem. Cannot be {@code null}
+     * @param namespaceUri the URI of the susbsystem's XML namespace, in string form. Cannot be {@code null}
+     * @param reader the element reader. Cannot be {@code null}
+     *
+     * @throws IllegalStateException if another {@link Extension} has already registered a subsystem with the given
+     *                               {@code subsystemName}
+     *
+     * @deprecated currently not used and will be removed in a future release if not used.
+     */
+    @Deprecated
+    void setDeploymentXmlMapping(String subsystemName, String namespaceUri, XMLElementReader<ModelNode> reader);
 
 }

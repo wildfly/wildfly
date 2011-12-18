@@ -57,15 +57,13 @@ import java.util.EnumSet;
 
 import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ExtensionContextImpl;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
-import org.jboss.as.controller.operations.common.ExtensionAddHandler;
-import org.jboss.as.controller.operations.common.ExtensionRemoveHandler;
+import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.extension.ExtensionResourceDefinition;
 import org.jboss.as.controller.operations.common.InterfaceCriteriaWriteHandler;
 import org.jboss.as.controller.operations.common.InterfaceLegacyCriteriaReadHandler;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
@@ -186,6 +184,7 @@ public class ServerControllerModelUtil {
                                       final ControlledProcessState processState,
                                       final RunningModeControl runningModeControl,
                                       final AbstractVaultReader vaultReader,
+                                      ExtensionRegistry extensionRegistry,
                                       final boolean parallelBoot) {
         // Build up the core model registry
         root.registerReadWriteAttribute(NAME, null, new StringLengthValidatingHandler(1), AttributeAccess.Storage.CONFIGURATION);
@@ -327,12 +326,9 @@ public class ServerControllerModelUtil {
         deployments.registerSubModel(PathElement.pathElement(SUBDEPLOYMENT), ServerDescriptionProviders.SUBDEPLOYMENT_PROVIDER);
 
         // Extensions
-        ManagementResourceRegistration extensions = root.registerSubModel(PathElement.pathElement(EXTENSION), CommonProviders.EXTENSION_PROVIDER);
-        ExtensionContext extensionContext = new ExtensionContextImpl(root, deployments, extensibleConfigurationPersister, getProcessType(serverEnvironment));
-        ExtensionAddHandler addExtensionHandler = new ExtensionAddHandler(extensionContext, parallelBoot);
-        extensions.registerOperationHandler(ExtensionAddHandler.OPERATION_NAME, addExtensionHandler, addExtensionHandler, false);
-        final ExtensionRemoveHandler removeExtensionHandler = new ExtensionRemoveHandler(extensionContext);
-        extensions.registerOperationHandler(ExtensionRemoveHandler.OPERATION_NAME, removeExtensionHandler, removeExtensionHandler, false);
+        root.registerSubModel(new ExtensionResourceDefinition(extensionRegistry, parallelBoot));
+        extensionRegistry.setProfileResourceRegistration(root);
+        extensionRegistry.setDeploymentsResourceRegistration(deployments);
 
         // Util
         root.registerOperationHandler(DeployerChainAddHandler.NAME, DeployerChainAddHandler.INSTANCE, DeployerChainAddHandler.INSTANCE, false, EntryType.PRIVATE);

@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutorService;
 
 import javax.xml.namespace.QName;
 
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.host.controller.parsing.DomainXml;
 import org.jboss.as.host.controller.parsing.HostXml;
 import org.jboss.as.controller.parsing.Namespace;
@@ -37,34 +38,39 @@ import org.jboss.as.controller.persistence.XmlConfigurationPersister;
 import org.jboss.modules.Module;
 
 /**
+ * Factory methods to produce an {@link ExtensibleConfigurationPersister} for different Host Controller use cases.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
 public class ConfigurationPersisterFactory {
 
-    public static ExtensibleConfigurationPersister createHostXmlConfigurationPersister(final File configDir, final ConfigurationFile file, ExecutorService executorService) {
+    public static ExtensibleConfigurationPersister createHostXmlConfigurationPersister(final ConfigurationFile file, ExecutorService executorService) {
         HostXml hostXml = new HostXml(Module.getBootModuleLoader(), executorService);
         BackupXmlConfigurationPersister persister =  new BackupXmlConfigurationPersister(file, new QName(Namespace.CURRENT.getUriString(), "host"), hostXml, hostXml);
         persister.registerAdditionalRootElement(new QName(Namespace.DOMAIN_1_0.getUriString(), "host"), hostXml);
         return persister;
     }
 
-    public static ExtensibleConfigurationPersister createDomainXmlConfigurationPersister(final File configDir, final ConfigurationFile file, ExecutorService executorService) {
-        DomainXml domainXml = new DomainXml(Module.getBootModuleLoader(), executorService);
+    public static ExtensibleConfigurationPersister createDomainXmlConfigurationPersister(final ConfigurationFile file, ExecutorService executorService, ExtensionRegistry extensionRegistry) {
+        DomainXml domainXml = new DomainXml(Module.getBootModuleLoader(), executorService, extensionRegistry);
         BackupXmlConfigurationPersister persister = new BackupXmlConfigurationPersister(file, new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
         persister.registerAdditionalRootElement(new QName(Namespace.DOMAIN_1_0.getUriString(), "domain"), domainXml);
+        extensionRegistry.setWriterRegistry(persister);
         return persister;
     }
 
-    public static ExtensibleConfigurationPersister createCachedRemoteDomainXmlConfigurationPersister(final File configDir, ExecutorService executorService) {
-        DomainXml domainXml = new DomainXml(Module.getBootModuleLoader(), executorService);
+    public static ExtensibleConfigurationPersister createCachedRemoteDomainXmlConfigurationPersister(final File configDir, ExecutorService executorService, ExtensionRegistry extensionRegistry) {
+        DomainXml domainXml = new DomainXml(Module.getBootModuleLoader(), executorService, extensionRegistry);
         File file = new File(configDir, "domain.cached-remote.xml");
-        return new XmlConfigurationPersister(file, new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
+        ExtensibleConfigurationPersister persister = new XmlConfigurationPersister(file, new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
+        extensionRegistry.setWriterRegistry(persister);
+        return persister;
     }
 
-    public static ExtensibleConfigurationPersister createTransientDomainXmlConfigurationPersister(ExecutorService executorService) {
-        DomainXml domainXml = new DomainXml(Module.getBootModuleLoader(), executorService);
-        return new NullConfigurationPersister(domainXml);
+    public static ExtensibleConfigurationPersister createTransientDomainXmlConfigurationPersister(ExecutorService executorService, ExtensionRegistry extensionRegistry) {
+        DomainXml domainXml = new DomainXml(Module.getBootModuleLoader(), executorService, extensionRegistry);
+        ExtensibleConfigurationPersister persister =  new NullConfigurationPersister(domainXml);
+        extensionRegistry.setWriterRegistry(persister);
+        return persister;
     }
 }

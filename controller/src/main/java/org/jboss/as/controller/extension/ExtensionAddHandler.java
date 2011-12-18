@@ -16,25 +16,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.jboss.as.controller.operations.common;
+package org.jboss.as.controller.extension;
 
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import java.util.Locale;
-
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.ExtensionDescription;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -45,7 +37,7 @@ import org.jboss.modules.ModuleLoadException;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ExtensionAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
+public class ExtensionAddHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = ADD;
 
@@ -56,37 +48,31 @@ public class ExtensionAddHandler extends AbstractAddStepHandler implements Descr
         return op;
     }
 
-    private final ExtensionContext extensionContext;
+    private final ExtensionRegistry extensionRegistry;
     private final boolean parallelBoot;
 
     /**
      * Create the AbstractAddExtensionHandler
+     * @param extensionRegistry registry for extensions
+     * @param parallelBoot {@code true} is parallel initialization of extensions is in progress; {@code false} if not
      */
-    public ExtensionAddHandler(final ExtensionContext extensionContext, final boolean parallelBoot) {
-        if (extensionContext == null) {
-            throw MESSAGES.nullVar("extensionContext");
-        }
-        this.extensionContext = extensionContext;
+    public ExtensionAddHandler(final ExtensionRegistry extensionRegistry, final boolean parallelBoot) {
+        assert extensionRegistry != null : "extensionRegistry is null";
+        this.extensionRegistry = extensionRegistry;
         this.parallelBoot = parallelBoot;
     }
 
-    protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        String module = address.getLastElement().getValue();
-        resource.getModel().get(ExtensionDescription.MODULE).set(module);
+    @Override
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        final String moduleName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
+        ExtensionResource resource = new ExtensionResource(moduleName, extensionRegistry);
+        context.addResource(PathAddress.EMPTY_ADDRESS, resource);
 
         if (!parallelBoot || !context.isBooting()) {
-            initializeExtension(module);
+            initializeExtension(moduleName);
         }
-    }
 
-    protected void populateModel(final ModelNode operation, ModelNode model) throws OperationFailedException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return ExtensionDescription.getExtensionAddOperation(locale);
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
     void initializeExtension(String module) throws OperationFailedException {
@@ -94,7 +80,12 @@ public class ExtensionAddHandler extends AbstractAddStepHandler implements Descr
             for (Extension extension : Module.loadServiceFromCallerModuleLoader(ModuleIdentifier.fromString(module), Extension.class)) {
                 ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(extension.getClass());
                 try {
-                    extension.initialize(extensionContext.createTracking(module));
+                    if (!extensionRegistry.getExtensionModuleNames().contains(module)) {
+                        // This extension wasn't handled by the standalone.xml or domain.xml parsing logic, so we
+                        // need to initialize its parsers so we can display what XML namespaces it supports
+                        extension.initializeParsers(extensionRegistry.getExtensionParsingContext(module, null));
+                    }
+                    extension.initialize(extensionRegistry.getExtensionContext(module));
                 } finally {
                     SecurityActions.setThreadContextClassLoader(oldTccl);
                 }
@@ -102,9 +93,5 @@ public class ExtensionAddHandler extends AbstractAddStepHandler implements Descr
         } catch (ModuleLoadException e) {
             throw new OperationFailedException(new ModelNode().set(e.toString()));
         }
-    }
-
-    protected boolean requiresRuntime(OperationContext context) {
-        return false;
     }
 }

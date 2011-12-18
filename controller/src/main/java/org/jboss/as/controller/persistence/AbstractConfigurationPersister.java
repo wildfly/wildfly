@@ -64,9 +64,23 @@ public abstract class AbstractConfigurationPersister implements ExtensibleConfig
     }
 
     @Override
+    public void unregisterSubsystemWriter(String name) {
+        synchronized (subsystemWriters) {
+            subsystemWriters.remove(name);
+        }
+    }
+
+    @Override
     public void registerSubsystemDeploymentWriter(String name, XMLElementWriter<SubsystemMarshallingContext> deparser) {
         synchronized (subsystemDeploymentWriters) {
             subsystemDeploymentWriters.put(name, deparser);
+        }
+    }
+
+    @Override
+    public void unregisterSubsystemDeploymentWriter(String name) {
+        synchronized (subsystemDeploymentWriters) {
+            subsystemDeploymentWriters.remove(name);
         }
     }
 

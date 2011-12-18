@@ -38,6 +38,7 @@ import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
@@ -83,7 +84,9 @@ public class ServerControllerUnitTestCase {
     @Before
     public void beforeClass() throws Exception {
         final ServiceTarget target = container.subTarget();
-        final StringConfigurationPersister persister = new StringConfigurationPersister(Collections.<ModelNode>emptyList(), new StandaloneXml(null, null));
+        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER);
+        final StringConfigurationPersister persister = new StringConfigurationPersister(Collections.<ModelNode>emptyList(), new StandaloneXml(null, null, extensionRegistry));
+        extensionRegistry.setWriterRegistry(persister);
         final ControlledProcessState processState = new ControlledProcessState(true);
         final ModelControllerService svc = new ModelControllerService(processState, persister);
         final ServiceBuilder<ModelController> builder = target.addService(Services.JBOSS_SERVER_CONTROLLER, svc);
@@ -246,7 +249,8 @@ public class ServerControllerUnitTestCase {
 
             final String hostControllerName = "hostControllerName"; // Host Controller name may not be null when in a managed domain
             final ServerEnvironment environment = new ServerEnvironment(hostControllerName, properties, new HashMap<String, String>(), null, ServerEnvironment.LaunchType.DOMAIN, null, new ProductConfig(Module.getBootModuleLoader(), "."));
-            ServerControllerModelUtil.initOperations(rootRegistration, null, persister, environment, processState, null, null, false);
+            final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER);
+            ServerControllerModelUtil.initOperations(rootRegistration, null, persister, environment, processState, null, null, extensionRegistry, false);
         }
 
         @Override

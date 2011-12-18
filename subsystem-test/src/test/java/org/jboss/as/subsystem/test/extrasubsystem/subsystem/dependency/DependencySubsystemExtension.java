@@ -38,6 +38,8 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class DependencySubsystemExtension implements Extension {
 
+    public static final String EXTENSION_NAME = "org.jboss.as.dependency.extension";
+
     /** The name space used for the {@code substystem} element */
     public static final String NAMESPACE = "urn:mycompany:dependency:1.0";
 

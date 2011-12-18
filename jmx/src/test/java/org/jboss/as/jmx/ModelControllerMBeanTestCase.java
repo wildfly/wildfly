@@ -72,11 +72,11 @@ import javax.management.remote.JMXServiceURL;
 import javax.xml.stream.XMLStreamException;
 
 import junit.framework.Assert;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -102,6 +102,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLMapper;
 import org.junit.Test;
 
 /**
@@ -932,7 +933,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         }
 
         @Override
-        protected void initializeExtraSubystemsAndModel(ExtensionContext extensionContext, Resource rootResource,
+        protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource,
                 ManagementResourceRegistration rootRegistration) {
             rootResource.getModel().get(LAUNCH_TYPE).set(launchType);
         }
@@ -959,15 +960,15 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         }
 
         @Override
-        protected void addParsers(ExtensionParsingContext context) {
-            extension.initializeParsers(context);
+        protected void addParsers(ExtensionRegistry extensionRegistry, XMLMapper xmlMapper) {
+            extension.initializeParsers(extensionRegistry.getExtensionParsingContext("additional", xmlMapper));
         }
 
         @Override
-        protected void initializeExtraSubystemsAndModel(ExtensionContext extensionContext, Resource rootResource,
+        protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource,
                 ManagementResourceRegistration rootRegistration) {
-            super.initializeExtraSubystemsAndModel(extensionContext, rootResource, rootRegistration);
-            extension.initialize(extensionContext);
+            super.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration);
+            extension.initialize(extensionRegistry.getExtensionContext("additional"));
         }
 
         String getExtraXml() {

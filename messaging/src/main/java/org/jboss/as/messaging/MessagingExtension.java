@@ -302,6 +302,9 @@ public class MessagingExtension implements Extension {
 
     public void initializeParsers(ExtensionParsingContext context) {
         for(Namespace namespace : Namespace.values()) {
+            if (namespace == Namespace.UNKNOWN) {
+                continue;
+            }
             context.setSubsystemXmlMapping(namespace.getUriString(), MessagingSubsystemParser.getInstance());
         }
     }

@@ -24,6 +24,7 @@ package org.jboss.as.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODULE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
@@ -46,11 +47,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.controller.descriptions.common.CommonProviders;
-import org.jboss.as.controller.descriptions.common.ExtensionDescription;
-import org.jboss.as.controller.operations.common.ExtensionAddHandler;
+import org.jboss.as.controller.extension.ExtensionAddHandler;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.AbstractConfigurationPersister;
@@ -75,14 +75,6 @@ import org.junit.Test;
 public class InterleavedSubsystemTestCase {
 
     private ServiceContainer container;
-    private ModelController controller;
-
-    public static final void toggleRuntimeState(AtomicBoolean state) {
-        boolean runtimeVal = false;
-        while (!state.compareAndSet(runtimeVal, !runtimeVal)) {
-            runtimeVal = !runtimeVal;
-        }
-    }
 
     @Before
     public void setupController() throws InterruptedException {
@@ -113,7 +105,7 @@ public class InterleavedSubsystemTestCase {
         ServiceBuilder<ModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
         builder.install();
         svc.latch.await();
-        controller = svc.getValue();
+        ModelController controller = svc.getValue();
         processState.setRunning();
 
         final ModelNode op = Util.getEmptyOperation(READ_RESOURCE_OPERATION, new ModelNode());
@@ -125,14 +117,14 @@ public class InterleavedSubsystemTestCase {
         assertTrue(result.hasDefined(RESULT));
         assertTrue(result.get(RESULT).hasDefined(EXTENSION));
         assertTrue(result.get(RESULT, EXTENSION).hasDefined("a"));
-        assertTrue(result.get(RESULT, EXTENSION, "a").hasDefined(ExtensionDescription.MODULE));
-        assertEquals("a", result.get(RESULT, EXTENSION, "a", ExtensionDescription.MODULE).asString());
+        assertTrue(result.get(RESULT, EXTENSION, "a").hasDefined(MODULE));
+        assertEquals("a", result.get(RESULT, EXTENSION, "a", MODULE).asString());
         assertTrue(result.get(RESULT, EXTENSION).hasDefined("b"));
-        assertTrue(result.get(RESULT, EXTENSION, "b").hasDefined(ExtensionDescription.MODULE));
-        assertEquals("b", result.get(RESULT, EXTENSION, "b", ExtensionDescription.MODULE).asString());
+        assertTrue(result.get(RESULT, EXTENSION, "b").hasDefined(MODULE));
+        assertEquals("b", result.get(RESULT, EXTENSION, "b", MODULE).asString());
         assertTrue(result.get(RESULT, EXTENSION).hasDefined("c"));
-        assertTrue(result.get(RESULT, EXTENSION, "c").hasDefined(ExtensionDescription.MODULE));
-        assertEquals("c", result.get(RESULT, EXTENSION, "c", ExtensionDescription.MODULE).asString());
+        assertTrue(result.get(RESULT, EXTENSION, "c").hasDefined(MODULE));
+        assertEquals("c", result.get(RESULT, EXTENSION, "c", MODULE).asString());
         assertTrue(result.get(RESULT).hasDefined(SUBSYSTEM));
         assertTrue(result.get(RESULT, SUBSYSTEM).hasDefined("a"));
         assertTrue(result.get(RESULT, SUBSYSTEM, "a").hasDefined("attribute"));
@@ -178,38 +170,22 @@ public class InterleavedSubsystemTestCase {
         private final ManagementResourceRegistration rootRegistration;
 
         private FakeExtensionAddHandler(ManagementResourceRegistration rootRegistration) {
-            super(new ExtensionContext() {
-
-                @Override
-                public SubsystemRegistration registerSubsystem(String name) throws IllegalArgumentException {
-                    throw new UnsupportedOperationException("Test should not invoke this");
-                }
-
-                @Override
-                public ProcessType getProcessType() {
-                    throw new UnsupportedOperationException("Test should not invoke this");
-                }
-
-                @Override
-                public ExtensionContext createTracking(String moduleName) {
-                    return this;
-                }
-
-                @Override
-                public void cleanup(Resource resource, String moduleName) {
-                }
-            }, false);
+            super(new ExtensionRegistry(ProcessType.EMBEDDED_SERVER), false);
             this.rootRegistration = rootRegistration;
         }
 
         @Override
-        protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
+
             final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
             String module = address.getLastElement().getValue();
-            resource.getModel().get(ExtensionDescription.MODULE).set(module);
+            resource.getModel().get(MODULE).set(module);
 
             ManagementResourceRegistration subsystem = rootRegistration.registerSubModel(PathElement.pathElement(SUBSYSTEM, module), ModelControllerImplUnitTestCase.DESC_PROVIDER);
             subsystem.registerOperationHandler("add", new FakeSubsystemAddHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER);
+
+            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }
     }
 
