@@ -112,8 +112,7 @@ public final class Main {
                 abort(null);
             } else {
                 final Bootstrap bootstrap = Bootstrap.Factory.newInstance();
-                final Bootstrap.Configuration configuration = new Bootstrap.Configuration();
-                configuration.setServerEnvironment(serverEnvironment);
+                final Bootstrap.Configuration configuration = new Bootstrap.Configuration(serverEnvironment);
                 configuration.setModuleLoader(Module.getBootModuleLoader());
                 bootstrap.bootstrap(configuration, Collections.<ServiceActivator>emptyList()).get();
                 return;

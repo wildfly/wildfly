@@ -16,21 +16,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.jboss.as.controller.operations.common;
+package org.jboss.as.controller.extension;
 
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.ExtensionDescription;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -38,21 +33,18 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ExtensionRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
+public class ExtensionRemoveHandler extends AbstractRemoveStepHandler {
 
     public static final String OPERATION_NAME = REMOVE;
-    private final ExtensionContext extensionContext;
+    private final ExtensionRegistry extensionRegistry;
 
     /**
      * Create the ExtensionRemoveHandler
+     *
+     * @param extensionRegistry the registry for extensions
      */
-    public ExtensionRemoveHandler(final ExtensionContext extensionContext) {
-        this.extensionContext = extensionContext;
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return ExtensionDescription.getExtensionRemoveOperation(locale);
+    public ExtensionRemoveHandler(final ExtensionRegistry extensionRegistry) {
+        this.extensionRegistry = extensionRegistry;
     }
 
     @Override
@@ -60,8 +52,7 @@ public class ExtensionRemoveHandler extends AbstractRemoveStepHandler implements
         super.performRemove(context, operation, model);
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         String module = address.getLastElement().getValue();
-        //TODO Still root resource for host model?
-        extensionContext.cleanup(context.getRootResource(), module);
+        extensionRegistry.removeExtension(context.getRootResource(), module);
     }
 
     @Override

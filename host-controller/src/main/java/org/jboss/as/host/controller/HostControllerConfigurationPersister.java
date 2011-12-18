@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
@@ -52,15 +53,18 @@ public class HostControllerConfigurationPersister implements ExtensibleConfigura
     private final ExtensibleConfigurationPersister hostPersister;
     private final LocalHostControllerInfo hostControllerInfo;
     private final ExecutorService executorService;
+    private final ExtensionRegistry extensionRegistry;
     private Boolean slave;
 
-    public HostControllerConfigurationPersister(final HostControllerEnvironment environment, LocalHostControllerInfo localHostControllerInfo, ExecutorService executorService) {
+    public HostControllerConfigurationPersister(final HostControllerEnvironment environment, final LocalHostControllerInfo localHostControllerInfo,
+                                                final ExecutorService executorService, final ExtensionRegistry extensionRegistry) {
         this.environment = environment;
         this.hostControllerInfo = localHostControllerInfo;
         this.executorService = executorService;
+        this.extensionRegistry = extensionRegistry;
         final File configDir = environment.getDomainConfigurationDir();
         final ConfigurationFile configurationFile = environment.getHostConfigurationFile();
-        this.hostPersister = ConfigurationPersisterFactory.createHostXmlConfigurationPersister(configDir, configurationFile, executorService);
+        this.hostPersister = ConfigurationPersisterFactory.createHostXmlConfigurationPersister(configurationFile, executorService);
     }
 
     public void initializeDomainConfigurationPersister(boolean slave) {
@@ -71,13 +75,13 @@ public class HostControllerConfigurationPersister implements ExtensibleConfigura
         final File configDir = environment.getDomainConfigurationDir();
         if (slave) {
             if (environment.isBackupDomainFiles() || environment.isUseCachedDc()) {
-                domainPersister = ConfigurationPersisterFactory.createCachedRemoteDomainXmlConfigurationPersister(configDir, executorService);
+                domainPersister = ConfigurationPersisterFactory.createCachedRemoteDomainXmlConfigurationPersister(configDir, executorService, extensionRegistry);
             } else {
-                domainPersister = ConfigurationPersisterFactory.createTransientDomainXmlConfigurationPersister(executorService);
+                domainPersister = ConfigurationPersisterFactory.createTransientDomainXmlConfigurationPersister(executorService, extensionRegistry);
             }
         } else {
             final ConfigurationFile configurationFile = environment.getDomainConfigurationFile();
-            domainPersister = ConfigurationPersisterFactory.createDomainXmlConfigurationPersister(configDir, configurationFile, executorService);
+            domainPersister = ConfigurationPersisterFactory.createDomainXmlConfigurationPersister(configurationFile, executorService, extensionRegistry);
         }
 
         this.slave = Boolean.valueOf(slave);
@@ -180,7 +184,19 @@ public class HostControllerConfigurationPersister implements ExtensibleConfigura
     }
 
     @Override
+    public void unregisterSubsystemWriter(String name) {
+        domainPersister.unregisterSubsystemWriter(name);
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
     public void registerSubsystemDeploymentWriter(String name, XMLElementWriter<SubsystemMarshallingContext> writer) {
         domainPersister.registerSubsystemDeploymentWriter(name, writer);
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public void unregisterSubsystemDeploymentWriter(String name) {
+        domainPersister.unregisterSubsystemDeploymentWriter(name);
     }
 }

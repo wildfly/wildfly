@@ -2152,4 +2152,15 @@ public interface ControllerMessages {
      */
     @Message(id = 14816, value = "Failed to recover services during operation rollback")
     RuntimeException failedToRecoverServices(@Param OperationFailedException cause);
+
+
+    /**
+     * Creates an IllegalStateException indicating a subsystem with the given name has already been registered by
+     * a different extension.
+     *
+     * @param subsystemName the cause of the failure
+     * @return the runtime exception.
+     */
+    @Message(id = 14817, value = "A subsystem named '%s' cannot be registered by extension '%s' -- a subsystem with that name has already been registered by extension '%s'.")
+    IllegalStateException duplicateSubsystem(String subsystemName, String duplicatingModule, String existingModule);
 }

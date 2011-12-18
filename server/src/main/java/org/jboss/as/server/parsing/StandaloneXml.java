@@ -69,10 +69,12 @@ import java.util.concurrent.ExecutorService;
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.parsing.CommonXml;
 import org.jboss.as.controller.parsing.Element;
+import org.jboss.as.controller.parsing.ExtensionXml;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
@@ -96,8 +98,11 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
 
-    public StandaloneXml(final ModuleLoader loader, final ExecutorService executorService) {
-        super(loader, executorService);
+    private final ExtensionXml extensionXml;
+
+    public StandaloneXml(final ModuleLoader loader, final ExecutorService executorService, final ExtensionRegistry extensionRegistry) {
+        super();
+        extensionXml = new ExtensionXml(loader, executorService, extensionRegistry);
     }
 
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> operationList)
@@ -133,6 +138,11 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
 
     /**
      * Read the <server/> element based on version 1.0 of the schema.
+     *
+     * @param reader  the xml stream reader
+     * @param address address of the parent resource of any resources this method will add
+     * @param list the list of boot operations to which any new operations should be added
+     * @throws XMLStreamException if a parsing error occurs
      */
     private void readServerElement_1_0(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
             throws XMLStreamException {
@@ -188,7 +198,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
 
         Element element = nextElement(reader, DOMAIN_1_0);
         if (element == Element.EXTENSIONS) {
-            parseExtensions(reader, address, DOMAIN_1_0, list);
+            extensionXml.parseExtensions(reader, address, DOMAIN_1_0, list);
             element = nextElement(reader, DOMAIN_1_0);
         }
         // System properties
@@ -236,6 +246,11 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
 
     /**
      * Read the <server/> element based on version 1.1 of the schema.
+     *
+     * @param reader  the xml stream reader
+     * @param address address of the parent resource of any resources this method will add
+     * @param list the list of boot operations to which any new operations should be added
+     * @throws XMLStreamException if a parsing error occurs
      */
     private void readServerElement_1_1(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
             throws XMLStreamException {
@@ -291,7 +306,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
 
         Element element = nextElement(reader, DOMAIN_1_1);
         if (element == Element.EXTENSIONS) {
-            parseExtensions(reader, address, DOMAIN_1_1, list);
+            extensionXml.parseExtensions(reader, address, DOMAIN_1_1, list);
             element = nextElement(reader, DOMAIN_1_1);
         }
         // System properties
@@ -340,26 +355,6 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
             throw unexpectedElement(reader);
         }
     }
-
-
-        // for (;;) {
-        // switch (reader.nextTag()) {
-        // case START_ELEMENT: {
-        // readHeadComment(reader, address, list);
-        // if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {
-        // throw unexpectedElement(reader);
-        // }
-        // switch (Element.forName(reader.getLocalName())) {
-        // default: throw unexpectedElement(reader);
-        // }
-        // }
-        // case END_ELEMENT: {
-        // readTailComment(reader, address, list);
-        // return;
-        // }
-        // default: throw new IllegalStateException();
-        // }
-        // }
 
     @Override
     public void parseManagementInterfaces(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
@@ -934,7 +929,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
         writeNewLine(writer);
 
         if (modelNode.hasDefined(EXTENSION)) {
-            writeExtensions(writer, modelNode.get(EXTENSION));
+            extensionXml.writeExtensions(writer, modelNode.get(EXTENSION));
             writeNewLine(writer);
         }
 

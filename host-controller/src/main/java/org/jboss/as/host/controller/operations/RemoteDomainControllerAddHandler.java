@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEC
 
 import java.util.Locale;
 
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -66,13 +67,15 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler, D
     private final ContentRepository contentRepository;
     private final FileRepository fileRepository;
     private final LocalHostControllerInfoImpl hostControllerInfo;
+    private final ExtensionRegistry extensionRegistry;
 
     public static RemoteDomainControllerAddHandler getInstance(final ManagementResourceRegistration rootRegistration,
                                                                  final LocalHostControllerInfoImpl hostControllerInfo,
                                                                  final HostControllerConfigurationPersister overallConfigPersister,
                                                                  final ContentRepository contentRepository,
-                                                                 final FileRepository fileRepository) {
-        return new RemoteDomainControllerAddHandler(rootRegistration, hostControllerInfo, overallConfigPersister, contentRepository, fileRepository);
+                                                                 final FileRepository fileRepository,
+                                                                 final ExtensionRegistry extensionRegistry) {
+        return new RemoteDomainControllerAddHandler(rootRegistration, hostControllerInfo, overallConfigPersister, contentRepository, fileRepository, extensionRegistry);
     }
 
     /**
@@ -82,12 +85,14 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler, D
                                      final LocalHostControllerInfoImpl hostControllerInfo,
                                      final HostControllerConfigurationPersister overallConfigPersister,
                                      final ContentRepository contentRepository,
-                                     final FileRepository fileRepository) {
+                                     final FileRepository fileRepository,
+                                     final ExtensionRegistry extensionRegistry) {
         this.rootRegistration = rootRegistration;
         this.overallConfigPersister = overallConfigPersister;
         this.contentRepository = contentRepository;
         this.fileRepository = fileRepository;
         this.hostControllerInfo = hostControllerInfo;
+        this.extensionRegistry = extensionRegistry;
     }
 
     @Override
@@ -121,7 +126,8 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler, D
 
         overallConfigPersister.initializeDomainConfigurationPersister(true);
 
-        DomainModelUtil.initializeSlaveDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(), contentRepository, fileRepository, hostControllerInfo);
+        DomainModelUtil.initializeSlaveDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(),
+                contentRepository, fileRepository, hostControllerInfo, extensionRegistry);
     }
 
     //Done by DomainModelControllerService

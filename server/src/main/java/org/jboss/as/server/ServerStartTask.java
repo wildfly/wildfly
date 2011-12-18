@@ -33,6 +33,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.persistence.AbstractConfigurationPersister;
@@ -91,12 +92,12 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
     @Override
     public AsyncFuture<ServiceContainer> run(final List<ServiceActivator> runServices) {
         final Bootstrap bootstrap = Bootstrap.Factory.newInstance();
-        final Bootstrap.Configuration configuration = new Bootstrap.Configuration();
-        configuration.setServerEnvironment(providedEnvironment);
+        final Bootstrap.Configuration configuration = new Bootstrap.Configuration(providedEnvironment);
+        final ExtensionRegistry extensionRegistry = configuration.getExtensionRegistry();
         final Bootstrap.ConfigurationPersisterFactory configurationPersisterFactory = new Bootstrap.ConfigurationPersisterFactory() {
             @Override
             public ExtensibleConfigurationPersister createConfigurationPersister(ServerEnvironment serverEnvironment, ExecutorService executorService) {
-                return new AbstractConfigurationPersister(new StandaloneXml(configuration.getModuleLoader(), executorService)) {
+                ExtensibleConfigurationPersister persister = new AbstractConfigurationPersister(new StandaloneXml(configuration.getModuleLoader(), executorService, extensionRegistry)) {
 
                     private final PersistenceResource pr = new PersistenceResource() {
 
@@ -119,6 +120,8 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
                         return updates;
                     }
                 };
+                extensionRegistry.setWriterRegistry(persister);
+                return persister;
             }
         };
         configuration.setConfigurationPersisterFactory(configurationPersisterFactory);

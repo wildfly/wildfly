@@ -27,11 +27,11 @@ import java.util.concurrent.ExecutorService;
 
 import javax.xml.namespace.QName;
 
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.server.parsing.StandaloneXml;
 import org.jboss.as.controller.persistence.BackupXmlConfigurationPersister;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
-import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceActivator;
@@ -73,10 +73,17 @@ public interface Bootstrap {
      */
     final class Configuration {
 
-        private ServerEnvironment serverEnvironment;
+        private final ServerEnvironment serverEnvironment;
+        private final ExtensionRegistry extensionRegistry;
         private ModuleLoader moduleLoader = Module.getBootModuleLoader();
         private ConfigurationPersisterFactory configurationPersisterFactory;
         private long startTime = Module.getStartTime();
+
+        public Configuration(final ServerEnvironment serverEnvironment) {
+            assert serverEnvironment == null : "serverEnvironment is null";
+            this.serverEnvironment = serverEnvironment;
+            this.extensionRegistry = new ExtensionRegistry(serverEnvironment.getLaunchType().getProcessType());
+        }
 
         /**
          * Set the port offset.
@@ -92,19 +99,19 @@ public interface Bootstrap {
         /**
          * Get the server environment.
          *
-         * @return the server environment
+         * @return the server environment. Will not be {@code null}
          */
         public ServerEnvironment getServerEnvironment() {
             return serverEnvironment;
         }
 
         /**
-         * Set the server environment.
+         * Get the extension registry.
          *
-         * @param serverEnvironment the server environment
+         * @return the extension registry. Will not be {@code null}
          */
-        public synchronized void setServerEnvironment(final ServerEnvironment serverEnvironment) {
-            this.serverEnvironment = serverEnvironment;
+        public ExtensionRegistry getExtensionRegistry() {
+            return extensionRegistry;
         }
 
         /**
@@ -132,27 +139,29 @@ public interface Bootstrap {
          */
         public synchronized ConfigurationPersisterFactory getConfigurationPersisterFactory() {
             if (configurationPersisterFactory == null) {
-                if (serverEnvironment == null) {
-                    final ModuleLoader localModuleLoader = this.moduleLoader;
-                    configurationPersisterFactory = new ConfigurationPersisterFactory() {
-                        @Override
-                        public ExtensibleConfigurationPersister createConfigurationPersister(ServerEnvironment serverEnvironment, ExecutorService executorService) {
-                            return new NullConfigurationPersister(new StandaloneXml(localModuleLoader, executorService));
-                        }
-                    };
-                }
-                else {
+//                if (serverEnvironment == null) {
+//                    final ModuleLoader localModuleLoader = this.moduleLoader;
+//                    configurationPersisterFactory = new ConfigurationPersisterFactory() {
+//                        @Override
+//                        public ExtensibleConfigurationPersister createConfigurationPersister(ServerEnvironment serverEnvironment, ExecutorService executorService) {
+//                            return new NullConfigurationPersister(new StandaloneXml(localModuleLoader, executorService));
+//                        }
+//                    };
+//                }
+//                else {
                     configurationPersisterFactory = new ConfigurationPersisterFactory() {
                         @Override
                         public ExtensibleConfigurationPersister createConfigurationPersister(ServerEnvironment serverEnvironment, ExecutorService executorService) {
                             QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
-                            StandaloneXml parser = new StandaloneXml(Module.getBootModuleLoader(), executorService);
+                            StandaloneXml parser = new StandaloneXml(Module.getBootModuleLoader(), executorService, extensionRegistry);
                             BackupXmlConfigurationPersister persister = new BackupXmlConfigurationPersister(serverEnvironment.getServerConfigurationFile(), rootElement, parser, parser);
                             persister.registerAdditionalRootElement(new QName(Namespace.DOMAIN_1_0.getUriString(), "server"), parser);
+                            extensionRegistry.setWriterRegistry(persister);
                             return persister;
                         }
                     };
-                }
+
+//                }
             }
             return configurationPersisterFactory;
         }

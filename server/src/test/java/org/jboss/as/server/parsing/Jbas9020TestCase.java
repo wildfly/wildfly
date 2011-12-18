@@ -53,7 +53,7 @@ public class Jbas9020TestCase {
                 "    </deployments>" +
                 "</server>";
         final XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new StringReader(xml));
-        final StandaloneXml parser = new StandaloneXml(null, null);
+        final StandaloneXml parser = new StandaloneXml(null, null, null);
         final List<ModelNode> operationList = new ArrayList<ModelNode>();
         final XMLMapper mapper = XMLMapper.Factory.create();
         mapper.registerRootElement(new QName(namespace, "server"), parser);
@@ -73,7 +73,7 @@ public class Jbas9020TestCase {
                 "    </deployments>" +
                 "</server>";
         final XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new StringReader(xml));
-        final StandaloneXml parser = new StandaloneXml(null, null);
+        final StandaloneXml parser = new StandaloneXml(null, null, null);
         final List<ModelNode> operationList = new ArrayList<ModelNode>();
         final XMLMapper mapper = XMLMapper.Factory.create();
         mapper.registerRootElement(new QName(namespace, "server"), parser);
@@ -95,7 +95,7 @@ public class Jbas9020TestCase {
                 "    </deployments>" +
                 "</server>";
         final XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new StringReader(xml));
-        final StandaloneXml parser = new StandaloneXml(null, null);
+        final StandaloneXml parser = new StandaloneXml(null, null, null);
         final List<ModelNode> operationList = new ArrayList<ModelNode>();
         final XMLMapper mapper = XMLMapper.Factory.create();
         mapper.registerRootElement(new QName(namespace, "server"), parser);

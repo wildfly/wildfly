@@ -70,12 +70,14 @@ import java.util.concurrent.ExecutorService;
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.parsing.CommonXml;
 import org.jboss.as.controller.parsing.Element;
+import org.jboss.as.controller.parsing.ExtensionXml;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
@@ -96,8 +98,11 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class DomainXml extends CommonXml {
 
-    public DomainXml(final ModuleLoader loader, ExecutorService executorService) {
-        super(loader, executorService);
+    private final ExtensionXml extensionXml;
+
+    public DomainXml(final ModuleLoader loader, ExecutorService executorService, ExtensionRegistry extensionRegistry) {
+        super();
+        extensionXml = new ExtensionXml(loader, executorService, extensionRegistry);
     }
 
     @Override
@@ -135,7 +140,7 @@ public class DomainXml extends CommonXml {
         writeNewLine(writer);
 
         if (modelNode.hasDefined(EXTENSION)) {
-            writeExtensions(writer, modelNode.get(EXTENSION));
+            extensionXml.writeExtensions(writer, modelNode.get(EXTENSION));
             writeNewLine(writer);
         }
         if(modelNode.hasDefined(SYSTEM_PROPERTY)) {
@@ -200,7 +205,7 @@ public class DomainXml extends CommonXml {
 
         Element element = nextElement(reader, expectedNs);
         if (element == Element.EXTENSIONS) {
-            parseExtensions(reader, address, expectedNs, list);
+            extensionXml.parseExtensions(reader, address, expectedNs, list);
             element = nextElement(reader, expectedNs);
         }
         if (element == Element.SYSTEM_PROPERTIES) {
@@ -251,7 +256,7 @@ public class DomainXml extends CommonXml {
 
         Element element = nextElement(reader, expectedNs);
         if (element == Element.EXTENSIONS) {
-            parseExtensions(reader, address, expectedNs, list);
+            extensionXml.parseExtensions(reader, address, expectedNs, list);
             element = nextElement(reader, expectedNs);
         }
         if (element == Element.SYSTEM_PROPERTIES) {

@@ -131,6 +131,7 @@ public class ModelDescriptionConstants {
     public static final String MIN_LENGTH = "min-length";
     public static final String MIN_OCCURS = "min-occurs";
     public static final String MODEL_DESCRIPTION = "model-description";
+    public static final String MODULE = "module";
     public static final String MULTICAST_ADDRESS = "multicast-address";
     public static final String MULTICAST_PORT = "multicast-port";
     public static final String NAME = "name";

@@ -31,11 +31,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.Assert;
-
-import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
@@ -46,6 +44,7 @@ import org.jboss.as.subsystem.test.extrasubsystem.subsystem.dependency.Dependenc
 import org.jboss.as.subsystem.test.extrasubsystem.subsystem.main.MainService;
 import org.jboss.as.subsystem.test.extrasubsystem.subsystem.main.MainSubsystemExtension;
 import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLMapper;
 import org.junit.Test;
 
 /**
@@ -186,14 +185,14 @@ public class ExtraSubsystemTestCase extends AbstractSubsystemTest {
         DependencySubsystemExtension dependency = new DependencySubsystemExtension();
 
         @Override
-        public void addParsers(ExtensionParsingContext context) {
-            dependency.initializeParsers(context);
+        public void addParsers(ExtensionRegistry extensionRegistry, XMLMapper xmlMapper) {
+            dependency.initializeParsers(extensionRegistry.getExtensionParsingContext(DependencySubsystemExtension.EXTENSION_NAME, xmlMapper));
         }
 
         @Override
-        public void initializeExtraSubystemsAndModel(ExtensionContext context, Resource rootResource,
+        public void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource,
                 ManagementResourceRegistration rootRegistration) {
-            dependency.initialize(context);
+            dependency.initialize(extensionRegistry.getExtensionContext(DependencySubsystemExtension.EXTENSION_NAME));
         }
 
     }

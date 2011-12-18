@@ -73,6 +73,7 @@ import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.BootContext;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -470,21 +471,23 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     private ModelNode loadServerModel(final File file) throws Exception {
+        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER);
         final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
-        final StandaloneXml parser = new StandaloneXml(Module.getBootModuleLoader(), null);
+        final StandaloneXml parser = new StandaloneXml(Module.getBootModuleLoader(), null, extensionRegistry);
         final XmlConfigurationPersister persister = new XmlConfigurationPersister(file, rootElement, parser, parser);
         for (Namespace namespace : Namespace.values()) {
             if (namespace != Namespace.CURRENT) {
                 persister.registerAdditionalRootElement(new QName(namespace.getUriString(), "server"), parser);
             }
         }
+        extensionRegistry.setWriterRegistry(persister);
         final List<ModelNode> ops = persister.load();
 
         final ModelNode model = new ModelNode();
         final ModelController controller = createController(ProcessType.STANDALONE_SERVER, model, new Setup() {
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
                 ServerControllerModelUtil.updateCoreModel(model, null);
-                ServerControllerModelUtil.initOperations(rootRegistration, null, persister, null, null, null, null, false);
+                ServerControllerModelUtil.initOperations(rootRegistration, null, persister, null, null, null, null, extensionRegistry, false);
             }
         });
 
@@ -620,14 +623,16 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     private ModelNode loadDomainModel(File file) throws Exception {
+        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER);
         final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "domain");
-        final DomainXml parser = new DomainXml(Module.getBootModuleLoader(), null);
+        final DomainXml parser = new DomainXml(Module.getBootModuleLoader(), null, extensionRegistry);
         final XmlConfigurationPersister persister = new XmlConfigurationPersister(file, rootElement, parser, parser);
         for (Namespace namespace : Namespace.values()) {
             if (namespace != Namespace.CURRENT) {
                 persister.registerAdditionalRootElement(new QName(namespace.getUriString(), "domain"), parser);
             }
         }
+        extensionRegistry.setWriterRegistry(persister);
         final List<ModelNode> ops = persister.load();
 
 
@@ -635,7 +640,8 @@ public class ParseAndMarshalModelsTestCase {
         final ModelController controller = createController(ProcessType.HOST_CONTROLLER, model, new Setup() {
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
                 DomainModelUtil.updateCoreModel(resource, null);
-                DomainModelUtil.initializeMasterDomainRegistry(rootRegistration, persister, null, new MockFileRepository(), new MockDomainController(), null);
+                DomainModelUtil.initializeMasterDomainRegistry(rootRegistration, persister, null, new MockFileRepository(),
+                        new MockDomainController(), null, extensionRegistry);
             }
         });
 
@@ -873,7 +879,7 @@ public class ParseAndMarshalModelsTestCase {
          * Create the ServerAddHandler
          */
         protected MockLocalDomainControllerAddHandler() {
-            super(null, null, null, null, null, null, null);
+            super(null, null, null, null, null, null, null, null);
         }
 
         @Override
@@ -888,7 +894,7 @@ public class ParseAndMarshalModelsTestCase {
          * Create the ServerAddHandler
          */
         protected MockRemoteDomainControllerAddHandler() {
-            super(null, null, null, null, null);
+            super(null, null, null, null, null, null);
         }
 
         @Override

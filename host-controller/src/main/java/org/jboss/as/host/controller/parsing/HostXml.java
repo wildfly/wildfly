@@ -97,7 +97,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 public class HostXml extends CommonXml implements ManagementXml.Delegate {
 
     public HostXml(final ModuleLoader loader, ExecutorService executorService) {
-        super(loader, executorService);
+        super();
     }
 
     @Override

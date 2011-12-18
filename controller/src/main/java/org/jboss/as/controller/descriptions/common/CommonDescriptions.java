@@ -65,7 +65,11 @@ public class CommonDescriptions {
     private static final String RESOURCE_NAME = CommonDescriptions.class.getPackage().getName() + ".LocalDescriptions";
 
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
-        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, CommonDescriptions.class.getClassLoader(), true, true);
+        return getResourceDescriptionResolver(keyPrefix, true);
+    }
+
+    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix, boolean useUnprefixedChildTypes) {
+        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, CommonDescriptions.class.getClassLoader(), true, useUnprefixedChildTypes);
     }
 
     public static ModelNode getNamespacePrefixAttribute(final Locale locale) {

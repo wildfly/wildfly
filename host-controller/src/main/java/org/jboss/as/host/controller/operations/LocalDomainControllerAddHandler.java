@@ -19,6 +19,7 @@
 package org.jboss.as.host.controller.operations;
 
 
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -29,17 +30,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 
 import java.util.Locale;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.controller.DomainContentRepository;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
-import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.descriptions.HostRootDescription;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
@@ -59,7 +57,8 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
     private final LocalHostControllerInfoImpl hostControllerInfo;
     private final ContentRepository contentRepository;
     private final DomainController domainController;
-    private final UnregisteredHostChannelRegistry registry;
+    private final UnregisteredHostChannelRegistry channelRegistry;
+    private final ExtensionRegistry extensionRegistry;
 
     public static LocalDomainControllerAddHandler getInstance(final ManagementResourceRegistration rootRegistration,
                                                                  final LocalHostControllerInfoImpl hostControllerInfo,
@@ -67,28 +66,28 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
                                                                  final FileRepository fileRepository,
                                                                  final ContentRepository contentRepository,
                                                                  final DomainController domainController,
-                                                                 final UnregisteredHostChannelRegistry registry) {
+                                                                 final UnregisteredHostChannelRegistry channelRegistry,
+                                                                 final ExtensionRegistry extensionRegistry) {
         return new LocalDomainControllerAddHandler(rootRegistration, hostControllerInfo, overallConfigPersister,
-                fileRepository, contentRepository, domainController, registry);
+                fileRepository, contentRepository, domainController, channelRegistry, extensionRegistry);
     }
 
-    /**
-     * Create the ServerAddHandler
-     */
     protected LocalDomainControllerAddHandler(final ManagementResourceRegistration rootRegistration,
                                     final LocalHostControllerInfoImpl hostControllerInfo,
                                     final HostControllerConfigurationPersister overallConfigPersister,
                                     final FileRepository fileRepository,
                                     final ContentRepository contentRepository,
                                     final DomainController domainController,
-                                    final UnregisteredHostChannelRegistry registry) {
+                                    final UnregisteredHostChannelRegistry channelRegistry,
+                                    final ExtensionRegistry extensionRegistry) {
         this.rootRegistration = rootRegistration;
         this.overallConfigPersister = overallConfigPersister;
         this.fileRepository = fileRepository;
         this.hostControllerInfo = hostControllerInfo;
         this.contentRepository = contentRepository;
         this.domainController = domainController;
-        this.registry = registry;
+        this.channelRegistry = channelRegistry;
+        this.extensionRegistry = extensionRegistry;
     }
 
     @Override
@@ -113,7 +112,7 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
         overallConfigPersister.initializeDomainConfigurationPersister(false);
 
         DomainModelUtil.initializeMasterDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(),
-                contentRepository, fileRepository, domainController, registry);
+                contentRepository, fileRepository, domainController, channelRegistry, extensionRegistry);
     }
 
 

@@ -28,45 +28,31 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.parsing.CommonXml;
 import org.jboss.as.controller.parsing.Element;
+import org.jboss.as.controller.parsing.ExtensionXml;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 import static org.jboss.as.controller.parsing.Namespace.DOMAIN_1_0;
 import static org.jboss.as.controller.parsing.Namespace.DOMAIN_1_1;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
@@ -84,8 +70,11 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
  */
 public class AppClientXml extends CommonXml {
 
-    public AppClientXml(final ModuleLoader loader) {
-        super(loader, null);
+    private final ExtensionXml extensionXml;
+
+    public AppClientXml(final ModuleLoader loader, final ExtensionRegistry extensionRegistry) {
+        super();
+        extensionXml = new ExtensionXml(loader, null, extensionRegistry);
     }
 
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> operationList)
@@ -114,6 +103,11 @@ public class AppClientXml extends CommonXml {
 
     /**
      * Read the <server/> element based on version 1.0 of the schema.
+     *
+     * @param reader  the xml stream reader
+     * @param address address of the parent resource of any resources this method will add
+     * @param list the list of boot operations to which any new operations should be added
+     * @throws XMLStreamException if a parsing error occurs
      */
     private void readServerElement_1_0(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
             throws XMLStreamException {
@@ -169,7 +163,7 @@ public class AppClientXml extends CommonXml {
 
         Element element = nextElement(reader, DOMAIN_1_0);
         if (element == Element.EXTENSIONS) {
-            parseExtensions(reader, address, DOMAIN_1_0, list);
+            extensionXml.parseExtensions(reader, address, DOMAIN_1_0, list);
             element = nextElement(reader, DOMAIN_1_0);
         }
         // System properties
@@ -206,6 +200,11 @@ public class AppClientXml extends CommonXml {
 
     /**
      * Read the <server/> element based on version 1.1 of the schema.
+     *
+     * @param reader  the xml stream reader
+     * @param address address of the parent resource of any resources this method will add
+     * @param list the list of boot operations to which any new operations should be added
+     * @throws XMLStreamException if a parsing error occurs
      */
     private void readServerElement_1_1(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
             throws XMLStreamException {
@@ -261,7 +260,7 @@ public class AppClientXml extends CommonXml {
 
         Element element = nextElement(reader, DOMAIN_1_1);
         if (element == Element.EXTENSIONS) {
-            parseExtensions(reader, address, DOMAIN_1_1, list);
+            extensionXml.parseExtensions(reader, address, DOMAIN_1_1, list);
             element = nextElement(reader, DOMAIN_1_1);
         }
         // System properties

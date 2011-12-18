@@ -42,10 +42,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.domain.controller.DomainControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getRelatedElements;
 import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getServersForGroup;
 import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getServersForType;
-import static org.jboss.as.domain.controller.DomainControllerLogger.ROOT_LOGGER;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -57,7 +57,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -66,6 +66,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.extension.ExtensionResource;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
@@ -76,7 +77,6 @@ import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.as.server.operations.ServerRestartRequiredHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -92,15 +92,15 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
     private final Set<String> appliedExensions = new HashSet<String>();
     private final FileRepository fileRepository;
     private final ContentRepository contentRepository;
-    private final ExtensionContext extensionContext;
+    private final ExtensionRegistry extensionRegistry;
 
     private final LocalHostControllerInfo localHostInfo;
 
-    public ApplyRemoteMasterDomainModelHandler(final ExtensionContext extensionContext,
+    public ApplyRemoteMasterDomainModelHandler(final ExtensionRegistry extensionRegistry,
                                                final FileRepository fileRepository,
                                                final ContentRepository contentRepository,
                                                final LocalHostControllerInfo localHostInfo) {
-        this.extensionContext = extensionContext;
+        this.extensionRegistry = extensionRegistry;
         this.fileRepository = fileRepository;
         this.contentRepository = contentRepository;
         this.localHostInfo = localHostInfo;
@@ -352,7 +352,8 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
             for (final Extension extension : Module.loadServiceFromCallerModuleLoader(ModuleIdentifier.fromString(module), Extension.class)) {
                 ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(extension.getClass());
                 try {
-                    extension.initialize(extensionContext.createTracking(module));
+                    extension.initializeParsers(extensionRegistry.getExtensionParsingContext(module, null));
+                    extension.initialize(extensionRegistry.getExtensionContext(module));
                 } finally {
                     SecurityActions.setThreadContextClassLoader(oldTccl);
                 }
@@ -398,11 +399,19 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
         for(PathElement element : resourceAddress) {
             temp = temp.getChild(element);
             if(temp == null) {
-                if (idx == 0 && element.getKey().equals(MANAGEMENT_CLIENT_CONTENT) && element.getValue().equals(ROLLOUT_PLANS)) {
-                    // Needs a specialized resource type
-                    temp = new ManagedDMRContentTypeResource(element, ROLLOUT_PLAN, null, contentRepository);
-                    context.addResource(resourceAddress, temp);
-                } else {
+                if (idx == 0) {
+                    String type = element.getKey();
+                    if (type.equals(EXTENSION)) {
+                        // Needs a specialized resource type
+                        temp = new ExtensionResource(element.getValue(), extensionRegistry);
+                        context.addResource(resourceAddress, temp);
+                    } else if (type.equals(MANAGEMENT_CLIENT_CONTENT) && element.getValue().equals(ROLLOUT_PLANS)) {
+                        // Needs a specialized resource type
+                        temp = new ManagedDMRContentTypeResource(element, ROLLOUT_PLAN, null, contentRepository);
+                        context.addResource(resourceAddress, temp);
+                    }
+                }
+                if (temp == null) {
                     temp = context.createResource(resourceAddress);
                 }
                 break;

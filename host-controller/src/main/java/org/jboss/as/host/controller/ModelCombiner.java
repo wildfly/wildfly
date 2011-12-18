@@ -65,7 +65,7 @@ import java.util.Set;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.ExtensionAddHandler;
+import org.jboss.as.controller.extension.ExtensionAddHandler;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.PathAddHandler;
