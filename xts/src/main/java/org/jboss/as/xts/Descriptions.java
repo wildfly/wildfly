@@ -53,6 +53,20 @@ public class Descriptions {
         return op;
     }
 
+    static ModelNode getSubsystemRemove(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+
+        op.get(ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("xts.remove"));
+        op.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.REMOVE);
+        // xts-environment
+        op.get(ModelDescriptionConstants.REQUEST_PROPERTIES).setEmptyObject();
+        op.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
+
+        return op;
+    }
+
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {
             locale = Locale.getDefault();

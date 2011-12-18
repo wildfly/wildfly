@@ -22,12 +22,18 @@
 
 package org.jboss.as.xts;
 
-import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.txn.service.TxnServices;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.txn.service.TxnServices;
 import org.jboss.as.webservices.service.EndpointPublishService;
-import org.jboss.as.webservices.service.ServerConfigService;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jbossts.XTSService;
@@ -36,17 +42,8 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
-
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.publish.Context;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -86,7 +83,7 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
      * path. this groups together all the paired servlet:servletName and* servlet-mapping:url-pattern
      * fields in the web.xml
      */
-    private static class ContextInfo {
+    static class ContextInfo {
         String contextPath;
         EndpointInfo[] endpointInfo;
         ContextInfo(String contextPath, EndpointInfo[] endpointInfo) {
@@ -137,6 +134,10 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
     private static final Logger log = Logger.getLogger("org.jboss.as.transactions");
 
     private XTSSubsystemAdd() {
+    }
+
+    static ContextInfo[] getContextDefinitions() {
+        return contextDefinitions;
     }
 
     @Override
