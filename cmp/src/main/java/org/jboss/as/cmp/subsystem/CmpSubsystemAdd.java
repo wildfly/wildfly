@@ -22,14 +22,12 @@
 
 package org.jboss.as.cmp.subsystem;
 
-import org.jboss.as.cmp.keygenerator.KeyGeneratorFactoryRegistry;
-import org.jboss.as.cmp.keygenerator.uuid.UUIDKeyGeneratorFactory;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.APPCLIENT;
-
 import java.util.List;
 import java.util.Locale;
 
 import org.jboss.as.cmp.component.CmpEntityBeanComponentDescription;
+import org.jboss.as.cmp.keygenerator.KeyGeneratorFactoryRegistry;
+import org.jboss.as.cmp.keygenerator.uuid.UUIDKeyGeneratorFactory;
 import org.jboss.as.cmp.processors.CmpDependencyProcessor;
 import org.jboss.as.cmp.processors.CmpEntityBeanComponentDescriptionFactory;
 import org.jboss.as.cmp.processors.CmpEntityMetaDataProcessor;
@@ -38,6 +36,7 @@ import org.jboss.as.cmp.processors.CmpStoreManagerProcessor;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.server.AbstractDeploymentChainStep;
@@ -57,7 +56,7 @@ public class CmpSubsystemAdd extends AbstractBoottimeAddStepHandler implements D
 
     protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         logger.info("Activating EJB CMP Subsystem");
-        final boolean appclient = operation.hasDefined(APPCLIENT) && model.get(APPCLIENT).asBoolean();
+        final boolean appclient = context.getProcessType() == ProcessType.APPLICATION_CLIENT;
 
         final KeyGeneratorFactoryRegistry keyGeneratorFactoryRegistry = new KeyGeneratorFactoryRegistry();
         newControllers.add(context.getServiceTarget().addService(KeyGeneratorFactoryRegistry.SERVICE_NAME, keyGeneratorFactoryRegistry)
@@ -87,9 +86,7 @@ public class CmpSubsystemAdd extends AbstractBoottimeAddStepHandler implements D
     }
 
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        if (operation.hasDefined(APPCLIENT)) {
-            model.get(APPCLIENT).set(operation.get(APPCLIENT));
-        }
+
     }
 
     public ModelNode getModelDescription(final Locale locale) {

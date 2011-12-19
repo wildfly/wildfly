@@ -21,15 +21,13 @@
  */
 package org.jboss.as.jpa.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.APPCLIENT;
-
 import java.util.List;
 import java.util.Locale;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
@@ -51,6 +49,8 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 
 
 /**
@@ -86,9 +86,6 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler implements Descript
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         modelValidator.validate(operation);
         final ModelNode defaultDSNode = operation.require(CommonAttributes.DEFAULT_DATASOURCE);
-        if (operation.hasDefined(APPCLIENT)) {
-            model.get(APPCLIENT).set(operation.get(APPCLIENT));
-        }
         model.get(CommonAttributes.DEFAULT_DATASOURCE).set(defaultDSNode);
     }
 
@@ -96,7 +93,7 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler implements Descript
         OperationFailedException {
 
         runtimeValidator.validate(operation.resolve());
-        final boolean appclient = model.hasDefined(APPCLIENT) && model.get(APPCLIENT).asBoolean();
+        final boolean appclient = context.getProcessType() == ProcessType.APPLICATION_CLIENT;
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
 

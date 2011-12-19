@@ -21,24 +21,17 @@
  */
 package org.jboss.as.webservices.dmr;
 
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
-import static org.jboss.as.webservices.dmr.Constants.APPCLIENT;
-import static org.jboss.as.webservices.dmr.Constants.ENDPOINT;
-import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
-import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
-import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
-import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
-import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
-
 import java.net.UnknownHostException;
 import java.util.List;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.webservices.config.ServerConfigImpl;
@@ -51,6 +44,14 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+
+import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
+import static org.jboss.as.webservices.dmr.Constants.ENDPOINT;
+import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
+import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
+import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
+import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
+import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
 
 /**
  * @author alessio.soldano@jboss.com
@@ -71,24 +72,22 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         configValidator.registerValidator(WSDL_SECURE_PORT, new ModelTypeValidator(ModelType.INT, true, true));
     }
 
-    protected void populateModel(final ModelNode operation, final ModelNode submodel) throws OperationFailedException {
+    protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws  OperationFailedException {
 
-        final boolean appclient;
-        if (operation.has(APPCLIENT)) {
-            submodel.get(APPCLIENT).set(operation.require(APPCLIENT));
-            appclient = operation.require(APPCLIENT).asBoolean();
-        } else {
-            appclient = false;
-        }
-        if (appclient && operation.hasDefined(WSDL_HOST)) {
-            submodel.get(WSDL_HOST).setExpression(operation.require(WSDL_HOST).asString());
-        }
+        final boolean appclient = context.getProcessType() == ProcessType.APPLICATION_CLIENT;
+        final ModelNode submodel = resource.getModel();
+
         if (operation.hasDefined(WSDL_PORT)) {
             submodel.get(WSDL_PORT).set(operation.require(WSDL_PORT));
         }
         if (operation.hasDefined(WSDL_SECURE_PORT)) {
             submodel.get(WSDL_SECURE_PORT).set(operation.require(WSDL_SECURE_PORT));
         }
+
+        if (appclient && operation.hasDefined(WSDL_HOST)) {
+            submodel.get(WSDL_HOST).setExpression(operation.require(WSDL_HOST).asString());
+        }
+
         if (!appclient) {
             submodel.get(WSDL_HOST).setExpression(operation.require(WSDL_HOST).asString());
             configValidator.validate(operation);
@@ -96,19 +95,19 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
             submodel.get(ENDPOINT_CONFIG).setEmptyObject();
             submodel.get(ENDPOINT).setEmptyObject();
         }
-
     }
+
+    @Override
+    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        //NOOP this is not actually used
+    }
+
 
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         ROOT_LOGGER.activatingWebservicesExtension();
         ModuleClassLoaderProvider.register();
 
-        final boolean appclient;
-        if (model.has(APPCLIENT)) {
-            appclient = model.get(APPCLIENT).asBoolean(false);
-        } else {
-            appclient = false;
-        }
+        final boolean appclient = context.getProcessType() == ProcessType.APPLICATION_CLIENT;
 
 
         context.addStep(new AbstractDeploymentChainStep() {

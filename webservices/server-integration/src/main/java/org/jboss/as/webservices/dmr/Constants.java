@@ -29,7 +29,6 @@ public final class Constants {
     private Constants() {
         // forbidden inheritance
     }
-    public static final String APPCLIENT = "appclient";
     public static final String MODIFY_WSDL_ADDRESS = "modify-wsdl-address";
     public static final String WSDL_HOST = "wsdl-host";
     public static final String WSDL_PORT = "wsdl-port";

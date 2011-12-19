@@ -32,9 +32,6 @@ public interface EJB3SubsystemModel {
     String NAME = "name";
     String ALIASES = "aliases";
 
-    //only set if this is a cut-down app client boot
-    String APPCLIENT = "appclient";
-
     String ASYNC = "async";
     String IIOP = "iiop";
 

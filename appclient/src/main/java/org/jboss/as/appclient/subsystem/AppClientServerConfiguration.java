@@ -21,19 +21,17 @@
  */
 package org.jboss.as.appclient.subsystem;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.jboss.dmr.ModelNode;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APPCLIENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Class that contains the static application client server configuration
@@ -48,17 +46,7 @@ class AppClientServerConfiguration {
     public static List<ModelNode> serverConfiguration(final String filePath, final String deploymentName, final String hostUrl, final List<String> parameters, List<ModelNode> xmlNodes) {
         List<ModelNode> ret = new ArrayList<ModelNode>();
 
-        //we add APPCLIENT=true to the subsystem add operations, so the subsystems know to start in
-        //appclient mode
-        for (ModelNode node : xmlNodes) {
-            if (node.getType() == ModelType.OBJECT) {
-                if (node.get(OP).asString().equals(ADD)) {
-                    final List<ModelNode> address = node.get(ADDRESS).asList();
-                    if (address.size() == 1 && address.get(0).asProperty().getName().equals(SUBSYSTEM)) {
-                        node.get(APPCLIENT).set(true);
-                    }
-                }
-            }
+        for (final ModelNode node : xmlNodes) {
             ret.add(node);
         }
         appclient(ret, filePath, deploymentName, hostUrl, parameters);

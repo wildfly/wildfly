@@ -32,6 +32,7 @@ import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.ejb3.component.EJBUtilities;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
@@ -113,7 +114,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.omg.PortableServer.POA;
 
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.APPCLIENT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_CLUSTERED_SFSB_CACHE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_MDB_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME;
@@ -137,9 +137,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) {
-        if (operation.hasDefined(APPCLIENT)) {
-            model.get(APPCLIENT).set(operation.get(APPCLIENT));
-        }
         model.get(DEFAULT_MDB_INSTANCE_POOL).set(operation.get(DEFAULT_MDB_INSTANCE_POOL));
         model.get(DEFAULT_SLSB_INSTANCE_POOL).set(operation.get(DEFAULT_SLSB_INSTANCE_POOL));
         model.get(DEFAULT_SFSB_CACHE).set(operation.get(DEFAULT_SFSB_CACHE));
@@ -170,7 +167,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         EjbNamingContextSetup.setupEjbNamespace();
         //TODO: this is a bit of a hack
         InitialContext.addUrlContextFactory("ejb", new ejbURLContextFactory());
-        final boolean appclient = model.hasDefined(APPCLIENT) && model.get(APPCLIENT).asBoolean();
+        final boolean appclient = context.getProcessType() == ProcessType.APPLICATION_CLIENT;
 
         context.addStep(new AbstractDeploymentChainStep() {
             @Override

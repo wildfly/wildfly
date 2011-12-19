@@ -31,7 +31,8 @@ public enum ProcessType {
     DOMAIN_SERVER,
     EMBEDDED_SERVER,
     STANDALONE_SERVER,
-    HOST_CONTROLLER;
+    HOST_CONTROLLER,
+    APPLICATION_CLIENT;
 
     /**
      * Returns true if the process is one of the 3 server variants.
@@ -43,6 +44,7 @@ public enum ProcessType {
         case DOMAIN_SERVER:
         case EMBEDDED_SERVER:
         case STANDALONE_SERVER:
+        case APPLICATION_CLIENT:
             return true;
         }
         return false;
