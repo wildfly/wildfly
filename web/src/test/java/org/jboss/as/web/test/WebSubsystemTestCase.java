@@ -22,8 +22,11 @@
 package org.jboss.as.web.test;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.web.WebExtension;
@@ -58,9 +61,10 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         };
     }
 
-    //TODO AS7-2421 remove this
-    protected boolean testRemoval() {
-        return false;
+    @Override
+    protected Set<PathAddress> getIgnoredChildResourcesForRemovalTest() {
+        Set<PathAddress> ignored = new HashSet<PathAddress>();
+        return ignored;
     }
 
 }

@@ -22,8 +22,13 @@
 package org.jboss.as.modcluster.test;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Set;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.modcluster.ModClusterExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -60,10 +65,10 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         };
     }
 
-
-    //TODO AS7-2421 remove this
-    protected boolean testRemoval() {
-        return false;
+    protected Set<PathAddress> getIgnoredChildResourcesForRemovalTest() {
+        return Collections.singleton(
+                PathAddress.pathAddress(
+                        PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, mainSubsystemName),
+                        PathElement.pathElement("mod-cluster-config","configuration")));
     }
-
 }

@@ -140,7 +140,7 @@ public abstract class AbstractSubsystemTest {
 
     private final AtomicInteger counter = new AtomicInteger();
 
-    private final String mainSubsystemName;
+    protected final String mainSubsystemName;
     private final Extension mainExtension;
     private TestParser testParser;
     private boolean addedExtraParsers;
@@ -369,6 +369,26 @@ public abstract class AbstractSubsystemTest {
      * @param kernelServices the kernel services used to access the controller
      */
     protected void assertRemoveSubsystemResources(KernelServices kernelServices) {
+        assertRemoveSubsystemResources(kernelServices, null);
+    }
+
+    /**
+     * Checks that the subystem resources can be removed, i.e. that people have registered
+     * working 'remove' operations for every 'add' level.
+     *
+     * @param kernelServices the kernel services used to access the controller
+     * @param ignoredChildAddresses child addresses that should not be removed, they are managed by one of the parent resources.
+     * This set cannot contain the subsystem resource itself
+     */
+    protected void assertRemoveSubsystemResources(KernelServices kernelServices, Set<PathAddress> ignoredChildAddresses) {
+
+        if (ignoredChildAddresses == null) {
+            ignoredChildAddresses = Collections.<PathAddress>emptySet();
+        } else {
+            PathAddress subsystem = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, mainSubsystemName));
+            Assert.assertFalse("Cannot exclude removal of subsystem itself", ignoredChildAddresses.contains(subsystem));
+        }
+
         Resource rootResource = grabRootResource(kernelServices);
 
         List<PathAddress> addresses = new ArrayList<PathAddress>();
@@ -387,10 +407,12 @@ public abstract class AbstractSubsystemTest {
 
         for (ListIterator<PathAddress> iterator = addresses.listIterator(addresses.size()) ; iterator.hasPrevious() ; ) {
             PathAddress cur = iterator.previous();
-            ModelNode remove = new ModelNode();
-            remove.get(OP).set(REMOVE);
-            remove.get(OP_ADDR).set(cur.toModelNode());
-            composite.get("steps").add(remove);
+            if (!ignoredChildAddresses.contains(cur)) {
+                ModelNode remove = new ModelNode();
+                remove.get(OP).set(REMOVE);
+                remove.get(OP_ADDR).set(cur.toModelNode());
+                composite.get("steps").add(remove);
+            }
         }
 
 
