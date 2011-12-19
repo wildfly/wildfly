@@ -67,6 +67,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xnio.IoUtils;
 
@@ -75,6 +76,7 @@ import org.xnio.IoUtils;
  *
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
+@Ignore("AS7-3093")
 public class RespawnTestCase {
 
     private static final int TIMEOUT = 15000;
