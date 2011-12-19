@@ -42,7 +42,7 @@ interface Constants {
     String CONFIGURATION = "configuration";
     String CONNECTOR = "connector";
     String CONTAINER = "container";
-    String CONTAINER_CONFIG = "configuration";
+    String CONTAINER_CONFIG = CONFIGURATION;
     String DEFAULT_VIRTUAL_SERVER = "default-virtual-server";
     String DEFAULT_WEB_MODULE = "default-web-module";
     String DEVELOPMENT = "development";
