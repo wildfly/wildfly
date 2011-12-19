@@ -45,7 +45,6 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.as.logging.handlers.AbstractLogHandlerWriteAttributeHandler;
 import org.jboss.as.logging.handlers.HandlerDisable;
 import org.jboss.as.logging.handlers.HandlerEnable;
@@ -121,8 +120,8 @@ public class LoggingExtension implements Extension {
         final ManagementResourceRegistration rootLogger = registration.registerSubModel(rootLoggerPath, LoggingSubsystemProviders.ROOT_LOGGER);
         rootLogger.registerOperationHandler(RootLoggerAdd.OPERATION_NAME, RootLoggerAdd.INSTANCE, LoggingSubsystemProviders.ADD_ROOT_LOGGER, false);
         rootLogger.registerOperationHandler(RootLoggerRemove.OPERATION_NAME, RootLoggerRemove.INSTANCE, LoggingSubsystemProviders.REMOVE_ROOT_LOGGER, false);
-        rootLogger.registerOperationHandler(RootLoggerAdd.LEGACY_OPERATION_NAME, RootLoggerAdd.INSTANCE, LoggingSubsystemProviders.ADD_ROOT_LOGGER, false, EntryType.PRIVATE);
-        rootLogger.registerOperationHandler(RootLoggerRemove.LEGACY_OPERATION_NAME, RootLoggerRemove.INSTANCE, LoggingSubsystemProviders.REMOVE_ROOT_LOGGER, false, EntryType.PRIVATE);
+        rootLogger.registerOperationHandler(RootLoggerAdd.LEGACY_OPERATION_NAME, RootLoggerAdd.INSTANCE, LoggingSubsystemProviders.LEGACY_ADD_ROOT_LOGGER, false);
+        rootLogger.registerOperationHandler(RootLoggerRemove.LEGACY_OPERATION_NAME, RootLoggerRemove.INSTANCE, LoggingSubsystemProviders.LEGACY_REMOVE_ROOT_LOGGER, false);
         rootLogger.registerOperationHandler(RootLoggerLevelChange.OPERATION_NAME, RootLoggerLevelChange.INSTANCE, LoggingSubsystemProviders.ROOT_LOGGER_CHANGE_LEVEL, false);
         rootLogger.registerOperationHandler(RootLoggerAssignHandler.OPERATION_NAME, RootLoggerAssignHandler.INSTANCE, LoggingSubsystemProviders.ROOT_LOGGER_ASSIGN_HANDLER, false);
         rootLogger.registerOperationHandler(RootLoggerUnassignHandler.OPERATION_NAME, RootLoggerUnassignHandler.INSTANCE, LoggingSubsystemProviders.ROOT_LOGGER_UNASSIGN_HANDLER, false);

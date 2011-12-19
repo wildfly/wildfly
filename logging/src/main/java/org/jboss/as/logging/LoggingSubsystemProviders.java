@@ -84,8 +84,10 @@ import org.jboss.as.logging.handlers.file.SizeRotatingHandlerUpdateProperties;
 import org.jboss.as.logging.loggers.LoggerAssignHandler;
 import org.jboss.as.logging.loggers.LoggerLevelChange;
 import org.jboss.as.logging.loggers.LoggerUnassignHandler;
+import org.jboss.as.logging.loggers.RootLoggerAdd;
 import org.jboss.as.logging.loggers.RootLoggerAssignHandler;
 import org.jboss.as.logging.loggers.RootLoggerLevelChange;
+import org.jboss.as.logging.loggers.RootLoggerRemove;
 import org.jboss.as.logging.loggers.RootLoggerUnassignHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -181,6 +183,21 @@ class LoggingSubsystemProviders {
         }
     };
 
+    static final DescriptionProvider LEGACY_ADD_ROOT_LOGGER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode node = new ModelNode();
+            node.get(OPERATION_NAME).set(RootLoggerAdd.LEGACY_OPERATION_NAME);
+            node.get(DESCRIPTION).set(bundle.getString("root.logger.set"));
+
+            addCommonLoggerRequestProperties(node, bundle);
+
+            node.get(REPLY_PROPERTIES).setEmptyObject();
+            return node;
+        }
+    };
+
     static final DescriptionProvider REMOVE_ROOT_LOGGER = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
@@ -196,6 +213,23 @@ class LoggingSubsystemProviders {
             return operation;
         }
     };
+
+    static final DescriptionProvider LEGACY_REMOVE_ROOT_LOGGER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode operation = new ModelNode();
+
+            operation.get(OPERATION_NAME).set(RootLoggerRemove.LEGACY_OPERATION_NAME);
+            operation.get(DESCRIPTION).set(bundle.getString("root.logger.remove"));
+            operation.get(REQUEST_PROPERTIES).setEmptyObject();
+            operation.get(REPLY_PROPERTIES).setEmptyObject();
+
+            return operation;
+        }
+    };
+
 
     static final DescriptionProvider ROOT_LOGGER_CHANGE_LEVEL = new DescriptionProvider() {
         @Override
