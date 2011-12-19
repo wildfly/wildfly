@@ -22,19 +22,14 @@
 
 package org.jboss.as.test.smoke.embedded.mgmt.resourceadapter;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.setOperationParams;
 import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.raCommonProperties;
 import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.raConnectionProperties;
 import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.raAdminProperties;
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.addExtensionProperties;
 import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.checkModelParams;
 
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
@@ -42,19 +37,10 @@ import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Properties;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Enumeration;
-
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
@@ -65,14 +51,9 @@ import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.container.TunneledMBeanServerConnection;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.ResourceAdapterSubsystemParser;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.test.shared.util.fakejndi.FakeJndi;
-import org.jboss.as.test.smoke.modular.utils.PollingUtils;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
