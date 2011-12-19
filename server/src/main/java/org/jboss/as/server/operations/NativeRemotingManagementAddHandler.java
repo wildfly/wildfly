@@ -47,7 +47,7 @@ import org.jboss.msc.service.ServiceTarget;
  *
  * @author Kabir Khan
  */
-public class NativeRemotingManagementAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
+public class NativeRemotingManagementAddHandler extends AbstractAddStepHandler {
 
     public static final NativeRemotingManagementAddHandler INSTANCE = new NativeRemotingManagementAddHandler();
     public static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
@@ -75,13 +75,6 @@ public class NativeRemotingManagementAddHandler extends AbstractAddStepHandler i
                 ManagementRemotingServices.MANAGEMENT_CHANNEL,
                 verificationHandler,
                 newControllers);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ModelNode getModelDescription(Locale locale) {
-        return ManagementDescription.getAddNativeRemotingManagementDescription(locale);
     }
 
 }

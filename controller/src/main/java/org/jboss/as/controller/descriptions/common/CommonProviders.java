@@ -87,16 +87,6 @@ public final class CommonProviders {
     };
 
     /**
-     * Provider for a sub-model that defines the management configuration.
-     */
-    public static final DescriptionProvider NATIVE_REMOTING_MANAGEMENT_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(final Locale locale) {
-            return ManagementDescription.getNativeRemotingManagementDescription(locale);
-        }
-    };
-
-    /**
      * Provider for a sub-model that names a "path" and specifies the actual path.
      */
     public static final DescriptionProvider SPECIFIED_PATH_PROVIDER = new DescriptionProvider() {
