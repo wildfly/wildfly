@@ -31,7 +31,7 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
 
     private String javaHome = System.getenv("JAVA_HOME");
 
-    private String modulePath = System.getProperty("module.path");
+    private String modulesDir = System.getProperty("modules.dir", System.getProperty("module.path"));
 
     private String javaVmArguments = "-Xmx512m -XX:MaxPermSize=128m";
 
@@ -199,11 +199,21 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
         this.hostName = hostName;
     }
 
-    public String getModulePath() {
-        return modulePath;
+    public String getModulesDir() {
+        return modulesDir;
     }
 
-    public void setModulePath(final String modulePath) {
-        this.modulePath = modulePath;
+    public void setModulesDir( final String modulesDir ) {
+        this.modulesDir = modulesDir;
+    }
+
+    @Deprecated
+    public String getModulePath() {
+        return modulesDir;
+    }
+
+    @Deprecated
+    public void setModulePath(final String modulesDir) {
+        this.modulesDir = modulesDir;
     }
 }
