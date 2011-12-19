@@ -50,6 +50,7 @@ public class RootLoggerAdd extends AbstractAddStepHandler {
     public static final RootLoggerAdd INSTANCE = new RootLoggerAdd();
 
     public static final String OPERATION_NAME = "add";
+    public static final String LEGACY_OPERATION_NAME = "set-root-logger";
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
