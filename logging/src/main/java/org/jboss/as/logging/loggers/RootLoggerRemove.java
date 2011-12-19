@@ -41,6 +41,7 @@ public class RootLoggerRemove extends AbstractRemoveStepHandler {
     public static final RootLoggerRemove INSTANCE = new RootLoggerRemove();
 
     public static final String OPERATION_NAME = "remove";
+    public static final String LEGACY_OPERATION_NAME = "remove-root-logger";
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
