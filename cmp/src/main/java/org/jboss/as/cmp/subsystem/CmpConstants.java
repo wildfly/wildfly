@@ -22,40 +22,22 @@
 
 package org.jboss.as.cmp.subsystem;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * @author John Bailey
  */
-enum Namespace {
-    // must be first
-    UNKNOWN(null),
-    CMP_1_0("urn:jboss:domain:cmp:1.0");
+public class CmpConstants {
+    public static String HILO_KEY_GENERATOR = "hilo-keygenerator";
+    public static String UUID_KEY_GENERATOR = "uuid-keygenerator";
 
-    private final String name;
+    public static String BLOCK_SIZE = "block-size";
+    public static String CREATE_TABLE = "create-table";
+    public static String CREATE_TABLE_DDL = "create-table-ddl";
+    public static String DATA_SOURCE = "data-source";
+    public static String DROP_TABLE = "drop-table";
+    public static String ID_COLUMN = "id-column";
+    public static String SELECT_HI_DDL = "select-hi-ddl";
+    public static String SEQUENCE_COLUMN = "sequence-column";
+    public static String SEQUENCE_NAME = "sequence-name";
+    public static String TABLE_NAME = "table-name";
 
-    Namespace(final String name) {
-        this.name = name;
-    }
-
-    public String getUriString() {
-        return name;
-    }
-
-    private static final Map<String, Namespace> MAP;
-
-    static {
-        final Map<String, Namespace> map = new HashMap<String, Namespace>();
-        for (Namespace namespace : values()) {
-            final String name = namespace.getUriString();
-            if (name != null) map.put(name, namespace);
-        }
-        MAP = map;
-    }
-
-    public static Namespace forUri(String uri) {
-        final Namespace element = MAP.get(uri);
-        return element == null ? UNKNOWN : element;
-    }
 }

@@ -31,6 +31,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.Value;
 
 /**
  * @author John Bailey
@@ -63,13 +64,13 @@ public class KeyGeneratorFactoryRegistry implements Service<KeyGeneratorFactoryR
         return factories.get(name);
     }
 
-    public static Injector<KeyGeneratorFactoryRegistry> getRegistryInjector(final String name, final KeyGeneratorFactory factory) {
+    public static Injector<KeyGeneratorFactoryRegistry> getRegistryInjector(final String name, final Value<KeyGeneratorFactory> factory) {
         return new Injector<KeyGeneratorFactoryRegistry>() {
             private KeyGeneratorFactoryRegistry registry;
 
             public synchronized void inject(final KeyGeneratorFactoryRegistry value) throws InjectionException {
                 registry = value;
-                registry.addKeyGeneratorFactory(name, factory);
+                registry.addKeyGeneratorFactory(name, factory.getValue());
             }
 
             public synchronized void uninject() {

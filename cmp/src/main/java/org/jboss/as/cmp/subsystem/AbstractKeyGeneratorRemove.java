@@ -22,38 +22,23 @@
 
 package org.jboss.as.cmp.subsystem;
 
-import java.util.Locale;
-import java.util.ResourceBundle;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author John Bailey
  */
-public class CmpSubsystemProviders {
-    static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
+public abstract class AbstractKeyGeneratorRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
+    protected void performRemove(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
+        context.removeService(getServiceName(name));
+    }
 
-        public ModelNode getModelDescription(final Locale locale) {
-            return CmpSubsystemDescriptions.getSubystemDescription(locale);
-        }
-    };
-
-    static final DescriptionProvider SUBSYSTEM_REMOVE = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return CmpSubsystemDescriptions.getSubsystemRemoveDescription(locale);
-        }
-    };
-
-    public static DescriptionProvider HILO_KEY_GENERATOR_DESC = new DescriptionProvider() {
-        public ModelNode getModelDescription(Locale locale) {
-            return CmpSubsystemDescriptions.getHiLoKeyGeneratorDescription(locale);
-        }
-    };
-
-    public static DescriptionProvider UUID_KEY_GENERATOR_DESC = new DescriptionProvider() {
-        public ModelNode getModelDescription(Locale locale) {
-            return CmpSubsystemDescriptions.getUuidKeyGeneratorDescription(locale);
-        }
-    };
+    protected abstract ServiceName getServiceName(final String name);
 }
