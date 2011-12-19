@@ -25,9 +25,14 @@ package org.jboss.as.ejb3.remote.protocol.versionone;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
+import org.jboss.as.clustering.ClusterNode;
+import org.jboss.as.clustering.GroupMembershipListener;
 import org.jboss.as.clustering.GroupMembershipNotifier;
 import org.jboss.as.clustering.GroupMembershipNotifierRegistry;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
@@ -45,7 +50,8 @@ import org.xnio.IoUtils;
 /**
  * @author Jaikiran Pai
  */
-public class VersionOneProtocolChannelReceiver implements Channel.Receiver, DeploymentRepositoryListener, GroupMembershipNotifierRegistry.Listener {
+public class VersionOneProtocolChannelReceiver implements Channel.Receiver, DeploymentRepositoryListener,
+        GroupMembershipNotifierRegistry.Listener {
 
     /**
      * Logger
@@ -86,10 +92,20 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         this.deploymentRepository.addListener(this);
         // listen to new clusters (a.k.a groups) being started/stopped
         this.groupMembershipNotifierRegistry.addListener(this);
-        // TODO: Send the cluster topology for existing clusters in the registry
-        // and for each of these clusters added ourselves as a listener for cluster topology changes (members added/removed
-        // events in the cluster)
+        // Send the cluster topology for existing clusters in the registry
+        // and for each of these clusters added ourselves as a listener for cluster
+        // topology changes (members added/removed events in the cluster)
         final Iterable<GroupMembershipNotifier> clusters = this.groupMembershipNotifierRegistry.getGroupMembershipNotifiers();
+        try {
+            this.sendNewClusterFormedMessage(clusters);
+        } catch (IOException ioe) {
+            // just log and don't throw an error
+            logger.warn("Could not send cluster formation message to the client on channel " + channel, ioe);
+        }
+        for (final GroupMembershipNotifier cluster : clusters) {
+            // add the listener
+            cluster.registerGroupMembershipListener(new ClusterTopologyUpdateListener(cluster.getGroupName(), this));
+        }
     }
 
     @Override
@@ -100,8 +116,8 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             throw new RuntimeException(e);
         } finally {
             this.deploymentRepository.removeListener(this);
+            this.groupMembershipNotifierRegistry.removeListener(this);
         }
-        throw new RuntimeException("NYI: .handleError");
     }
 
     @Override
@@ -112,6 +128,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             // ignore
         } finally {
             this.deploymentRepository.removeListener(this);
+            this.groupMembershipNotifierRegistry.removeListener(this);
         }
     }
 
@@ -193,8 +210,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         try {
             this.sendModuleUnAvailability(new DeploymentModuleIdentifier[]{deploymentModuleIdentifier});
         } catch (IOException e) {
-            // TODO: Change this to WARN once https://issues.jboss.org/browse/REM3-123 is fixed
-            logger.debug("Could not send module un-availability notification of module " + deploymentModuleIdentifier + " to channel " + this.channel, e);
+            logger.warn("Could not send module un-availability notification of module " + deploymentModuleIdentifier + " to channel " + this.channel, e);
         }
     }
 
@@ -219,22 +235,102 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
     }
 
     @Override
-    public void newGroupMembershipNotifierRegistered(GroupMembershipNotifier groupMembershipNotifier) {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public void newGroupMembershipNotifierRegistered(final GroupMembershipNotifier groupMembershipNotifier) {
+        try {
+            logger.debug("Received new cluster formation notification for cluster " + groupMembershipNotifier.getGroupName());
+            this.sendNewClusterFormedMessage(groupMembershipNotifier);
+        } catch (IOException ioe) {
+            logger.warn("Could not send a cluster formation message for cluster: " + groupMembershipNotifier.getGroupName()
+                    + " to the client on channel " + channel, ioe);
+        }
     }
 
     @Override
-    public void groupMembershipNotifierUnregistered(GroupMembershipNotifier groupMembershipNotifier) {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public void groupMembershipNotifierUnregistered(final GroupMembershipNotifier groupMembershipNotifier) {
+        try {
+            logger.debug("Received cluster removal notification for cluster " + groupMembershipNotifier.getGroupName());
+            this.sendClusterRemovedMessage(groupMembershipNotifier);
+        } catch (IOException ioe) {
+            logger.warn("Could not send a cluster removal message for cluster: " + groupMembershipNotifier.getGroupName()
+                    + " to the client on channel " + channel, ioe);
+        }
+    }
+
+    private void sendNewClusterFormedMessage(final Iterable<GroupMembershipNotifier> groupMembershipNotifiers) throws IOException {
+        final Collection<GroupMembershipNotifier> clusters = new ArrayList<GroupMembershipNotifier>();
+        for (final GroupMembershipNotifier cluster : groupMembershipNotifiers) {
+            clusters.add(cluster);
+        }
+        this.sendNewClusterFormedMessage(clusters.toArray(new GroupMembershipNotifier[clusters.size()]));
+    }
+
+
+    /**
+     * Sends a cluster formation message for the passed clusters, over the remoting channel
+     *
+     * @param clusters The new clusters
+     * @throws IOException If any exception occurs while sending the message over the channel
+     */
+    private void sendNewClusterFormedMessage(final GroupMembershipNotifier... clusters) throws IOException {
+        final DataOutputStream outputStream = new DataOutputStream(this.channel.writeMessage());
+        final ClusterTopologyWriter clusterTopologyWriter = new ClusterTopologyWriter();
+        try {
+            logger.debug("Writing out cluster formation message for " + clusters.length + " clusters, to channel " + this.channel);
+            clusterTopologyWriter.writeClusterTopology(outputStream, clusters);
+        } finally {
+            outputStream.close();
+        }
+    }
+
+    /**
+     * Sends out a cluster removal message for the passed cluster, over the remoting channel
+     *
+     * @param cluster The cluster which was removed
+     * @throws IOException If any exception occurs while sending the message over the channel
+     */
+    private void sendClusterRemovedMessage(final GroupMembershipNotifier cluster) throws IOException {
+        final DataOutputStream outputStream = new DataOutputStream(this.channel.writeMessage());
+        final ClusterTopologyWriter clusterTopologyWriter = new ClusterTopologyWriter();
+        try {
+            logger.debug("Cluster " + cluster.getGroupName() + " removed, writing cluster removal message to channel " + this.channel);
+            clusterTopologyWriter.writeClusterRemoved(outputStream, cluster);
+        } finally {
+            outputStream.close();
+        }
     }
 
     private class ChannelCloseHandler implements CloseHandler<Channel> {
 
         @Override
         public void handleClose(Channel closedChannel, IOException exception) {
-            logger.debug("Channel " + closedChannel + " closed. removing deployment listener " + this);
+            logger.debug("Channel " + closedChannel + " closed");
             VersionOneProtocolChannelReceiver.this.deploymentRepository.removeListener(VersionOneProtocolChannelReceiver.this);
+            VersionOneProtocolChannelReceiver.this.groupMembershipNotifierRegistry.removeListener(VersionOneProtocolChannelReceiver.this);
         }
 
+    }
+
+    /**
+     * A {@link GroupMembershipListener} which writes out messages to the client, over a {@link Channel remoting channel}
+     * upon cluster topology updates
+     */
+    private class ClusterTopologyUpdateListener implements GroupMembershipListener {
+        private final String clusterName;
+        private final VersionOneProtocolChannelReceiver channelReceiver;
+
+        ClusterTopologyUpdateListener(final String clusterName, final VersionOneProtocolChannelReceiver channelReceiver) {
+            this.channelReceiver = channelReceiver;
+            this.clusterName = clusterName;
+        }
+
+        @Override
+        public void membershipChanged(List<ClusterNode> deadMembers, List<ClusterNode> newMembers, List<ClusterNode> allMembers) {
+            //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        @Override
+        public void membershipChangedDuringMerge(List<ClusterNode> deadMembers, List<ClusterNode> newMembers, List<ClusterNode> allMembers, List<List<ClusterNode>> originatingGroups) {
+            //To change body of implemented methods use File | Settings | File Templates.
+        }
     }
 }
