@@ -86,6 +86,18 @@ class ModClusterSubsystemDescriptions {
         return node;
     }
 
+    static ModelNode getSubsystemRemoveDescription(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(REMOVE);
+        node.get(DESCRIPTION).set(bundle.getString("modcluster.remove"));
+        node.get(REQUEST_PROPERTIES).setEmptyObject();
+        node.get(REPLY_PROPERTIES).setEmptyObject();
+
+        return node;
+    }
+
     static ModelNode getListProxiesDescription(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
 

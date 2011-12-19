@@ -23,12 +23,15 @@
 package org.jboss.as.subsystem.test;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import junit.framework.Assert;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
@@ -135,9 +138,7 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
 
         super.compare(modelA, modelC);
 
-        if (testRemoval()) {
-            super.assertRemoveSubsystemResources(servicesA);
-        }
+        super.assertRemoveSubsystemResources(servicesA, getIgnoredChildResourcesForRemovalTest());
     }
 
     protected ModelNode createDescribeOperation() {
@@ -160,10 +161,13 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
     }
 
     /**
-     * @deprecated Anyone overriding this should fix their subsystem
+     * Returns a set of child resources addresses that should not be removed directly. Rather they should be managed
+     * by their parent resource
+     *
+     * @return the set of child resource addresses
+     * @see AbstractSubsystemTest#assertRemoveSubsystemResources(KernelServices, Set)
      */
-    @Deprecated
-    protected boolean testRemoval() {
-        return true;
+    protected Set<PathAddress> getIgnoredChildResourcesForRemovalTest() {
+        return Collections.<PathAddress>emptySet();
     }
 }
