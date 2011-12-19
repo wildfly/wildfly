@@ -25,10 +25,12 @@ package org.jboss.as.domain.management.security;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.io.BufferedWriter;
+import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.Console;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.FileReader;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -49,7 +51,7 @@ public class AddPropertiesUser {
     private static final String DEFAULT_REALM = "ManagementRealm";
     private static final String NEW_LINE = "\n";
     private static final String SPACE = " ";
-
+    private static final String COMMENT = "#";
     private Console theConsole = System.console();
 
     private List<File> propertiesFiles;
@@ -373,9 +375,15 @@ public class AddPropertiesUser {
             }
 
             for (File current : propertiesFiles) {
+
+
                 try {
-                    append(entry, current);
-                    theConsole.printf(MESSAGES.addedUser(values.userName, current.getCanonicalPath()));
+                    if (!checkExistingUser(values, current)) {
+                        append(entry, current);
+                        theConsole.printf(MESSAGES.addedUser(values.userName, current.getCanonicalPath()));
+                    } else {
+                        theConsole.printf(MESSAGES.userAlreadyExists(values.userName, current.getCanonicalPath()));
+                    }
                     theConsole.printf(NEW_LINE);
                 } catch (IOException e) {
                     return new ErrorState(MESSAGES.unableToAddUser(current.getAbsolutePath(), e.getMessage()));
@@ -414,6 +422,35 @@ public class AddPropertiesUser {
             }
         }
 
+        private boolean checkExistingUser(final Values values, final File current) throws IOException {
+            FileReader fr = null;
+            BufferedReader br = null;
+
+            String temp = null;
+
+            boolean existingUser = false;
+
+            try {
+                fr = new FileReader(current);
+                br = new BufferedReader(fr);
+
+                while ((temp = br.readLine()) != null) {
+                    temp = temp.trim();
+                    // ignore comments
+                    if (temp.startsWith(COMMENT)) {
+                        continue;
+
+                    } else if (( temp.split("=") )[0].equals(values.userName)) {
+                        existingUser = true;
+                        break;
+                    }
+                }
+                return existingUser;
+            } finally {
+                safeClose(br);
+                safeClose(fr);
+            }
+        }
     }
 
     /**
