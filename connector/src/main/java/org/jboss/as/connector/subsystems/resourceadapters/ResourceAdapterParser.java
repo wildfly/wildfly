@@ -194,13 +194,16 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                                 entry.getValue().get(OP_ADDR).set(env);
                                 list.add(entry.getValue());
 
-                                for (Map.Entry<String, ModelNode> configEntry : aoConfigPropertiesOperations.get(entry.getKey()).entrySet()) {
-                                    final ModelNode configEnv = env.clone();
-                                    configEnv.add(CONFIG_PROPERTIES.getName(), configEntry.getKey());
-                                    configEnv.protect();
+                                final HashMap<String, ModelNode> aoProperties = aoConfigPropertiesOperations.get(entry.getKey());
+                                if (aoProperties != null) {
+                                    for (Map.Entry<String, ModelNode> configEntry : aoProperties.entrySet()) {
+                                        final ModelNode configEnv = env.clone();
+                                        configEnv.add(CONFIG_PROPERTIES.getName(), configEntry.getKey());
+                                        configEnv.protect();
 
-                                    configEntry.getValue().get(OP_ADDR).set(configEnv);
-                                    list.add(configEntry.getValue());
+                                        configEntry.getValue().get(OP_ADDR).set(configEnv);
+                                        list.add(configEntry.getValue());
+                                    }
                                 }
                             }
 
