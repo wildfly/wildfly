@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.management.api.web;
 
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -53,16 +55,15 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.cli.GlobalOpsTestCase;
+import org.jboss.as.test.integration.management.util.WebUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.as.test.integration.management.util.WebUtil;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
 /**
  * 
