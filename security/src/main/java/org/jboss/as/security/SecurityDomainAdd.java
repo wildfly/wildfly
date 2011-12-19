@@ -328,10 +328,10 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
 
         JASPIAuthenticationInfo authenticationInfo = new JASPIAuthenticationInfo(securityDomain);
         Map<String, LoginModuleStackHolder> holders = new HashMap<String, LoginModuleStackHolder>();
-        List <ModelNode> stacks = node.get(LOGIN_MODULE_STACK).asList();
-        for (ModelNode stack : stacks) {
-            String name = stack.require(NAME).asString();
-            List<ModelNode> nodes = stack.get(LOGIN_MODULES).asList();
+        List<Property> stacks = node.get(LOGIN_MODULE_STACK).asPropertyList();
+        for (Property stack : stacks) {
+            String name = stack.getName();
+            List<ModelNode> nodes = stack.getValue().get(LOGIN_MODULES).asList();
 
             final LoginModuleStackHolder holder = new LoginModuleStackHolder(name, null);
             holders.put(name, holder);
