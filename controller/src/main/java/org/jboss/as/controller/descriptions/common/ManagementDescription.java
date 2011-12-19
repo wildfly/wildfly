@@ -119,22 +119,4 @@ public class ManagementDescription {
         // TODO attributes
         return root;
     }
-
-    public static ModelNode getNativeRemotingManagementDescription(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("core.management.native-remoting-interface"));
-        root.get(HEAD_COMMENT_ALLOWED).set(true);
-        root.get(TAIL_COMMENT_ALLOWED).set(false);
-        return root;
-    }
-
-    public static ModelNode getAddNativeRemotingManagementDescription(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode op = new ModelNode();
-        op.get(DESCRIPTION).set(bundle.getString("core.management.native-remoting-interface.add"));
-        op.get(OPERATION_NAME).set(ADD);
-
-        return op;
-    }
 }
