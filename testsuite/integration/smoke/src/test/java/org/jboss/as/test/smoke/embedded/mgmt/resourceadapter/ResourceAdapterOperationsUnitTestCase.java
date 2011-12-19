@@ -71,7 +71,7 @@ import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.test.smoke.embedded.demos.fakejndi.FakeJndi;
+import org.jboss.as.test.shared.util.fakejndi.FakeJndi;
 import org.jboss.as.test.smoke.modular.utils.PollingUtils;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
