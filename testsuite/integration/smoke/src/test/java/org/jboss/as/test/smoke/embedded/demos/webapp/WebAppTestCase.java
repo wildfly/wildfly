@@ -49,7 +49,7 @@ import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
 import org.jboss.as.arquillian.container.TunneledMBeanServerConnection;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.demos.webapp.archive.SimpleServlet;
-import org.jboss.as.test.smoke.embedded.demos.fakejndi.FakeJndi;
+import org.jboss.as.test.shared.util.fakejndi.FakeJndi;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Ignore;
