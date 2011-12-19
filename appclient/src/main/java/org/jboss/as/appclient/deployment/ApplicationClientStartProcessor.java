@@ -23,9 +23,13 @@ package org.jboss.as.appclient.deployment;
 
 import java.lang.reflect.Method;
 
+import javax.security.auth.callback.CallbackHandler;
+
 import org.jboss.as.appclient.component.ApplicationClientComponentDescription;
+import org.jboss.as.appclient.logging.AppClientMessages;
 import org.jboss.as.appclient.service.ApplicationClientDeploymentService;
 import org.jboss.as.appclient.service.ApplicationClientStartService;
+import org.jboss.as.appclient.service.DefaultApplicationClientCallbackHandler;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.server.deployment.Attachments;
@@ -34,7 +38,9 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
+import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.metadata.appclient.spec.ApplicationClientMetaData;
 import org.jboss.modules.Module;
 
 import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
@@ -58,8 +64,10 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-
+        final ApplicationClientMetaData appClientData = deploymentUnit.getAttachment(AppClientAttachments.APPLICATION_CLIENT_META_DATA);
         final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(Attachments.REFLECTION_INDEX);
+        final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(Attachments.CLASS_INDEX);
+
 
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         Boolean activate = deploymentUnit.getAttachment(AppClientAttachments.START_APP_CLIENT);
@@ -77,7 +85,23 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
         if (method == null) {
             throw MESSAGES.cannotStartAppClient(deploymentUnit.getName(), mainClass);
         }
-        final ApplicationClientStartService startService = new ApplicationClientStartService(method, parameters, hostUrl, moduleDescription.getNamespaceContextSelector(), module.getClassLoader());
+
+        //setup the callback handler
+        final CallbackHandler callbackHandler;
+        if (appClientData != null && appClientData.getCallbackHandler() != null && !appClientData.getCallbackHandler().isEmpty()) {
+            try {
+                final Class<?> callbackClass = classIndex.classIndex(appClientData.getCallbackHandler()).getModuleClass();
+                callbackHandler = (CallbackHandler) callbackClass.newInstance();
+            } catch (ClassNotFoundException e) {
+                throw AppClientMessages.MESSAGES.couldNotLoadCallbackClass(appClientData.getCallbackHandler());
+            } catch (Exception e) {
+                throw AppClientMessages.MESSAGES.couldNotCreateCallbackHandler(appClientData.getCallbackHandler());
+            }
+        } else {
+            callbackHandler = new DefaultApplicationClientCallbackHandler();
+        }
+
+        final ApplicationClientStartService startService = new ApplicationClientStartService(method, parameters, hostUrl, moduleDescription.getNamespaceContextSelector(), module.getClassLoader(), callbackHandler);
         phaseContext.getServiceTarget()
                 .addService(deploymentUnit.getServiceName().append(ApplicationClientStartService.SERVICE_NAME), startService)
                 .addDependency(ApplicationClientDeploymentService.SERVICE_NAME, ApplicationClientDeploymentService.class, startService.getApplicationClientDeploymentServiceInjectedValue())

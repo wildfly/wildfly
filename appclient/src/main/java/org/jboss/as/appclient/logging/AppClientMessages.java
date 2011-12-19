@@ -284,4 +284,19 @@ public interface AppClientMessages {
      */
     @Message(id = 14436, value = "Unknown option %s")
     String unknownOption(String option);
+
+    /**
+     * A message indicating the callback handler could not be loaded
+     *
+     */
+    @Message(id = 14437, value = "Could not load callback-handler class %s")
+    DeploymentUnitProcessingException couldNotLoadCallbackClass(String clazz);
+
+    /**
+     * A message indicating the callback handler could not be instantiated
+     *
+     */
+    @Message(id = 14438, value = "Could not create instance of callback-handler class %s")
+    DeploymentUnitProcessingException couldNotCreateCallbackHandler(String clazz);
 }
+

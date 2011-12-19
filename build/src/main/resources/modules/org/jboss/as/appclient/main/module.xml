@@ -59,6 +59,8 @@
         <module name="org.jboss.as.process-controller"/>
         <module name="org.jboss.as.protocol"/>
         <module name="org.jboss.as.remoting"/>
+        <module name="org.jboss.as.security"/>
+        <module name="org.picketbox"/>
         <module name="org.jboss.metadata"/>
     </dependencies>
 </module>

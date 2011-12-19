@@ -21,38 +21,22 @@
  */
 package org.jboss.as.appclient.service;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.concurrent.TimeUnit;
 
-import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.CurrentServiceContainer;
-import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
-import org.jboss.ejb.client.remoting.IoFutureHelper;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.remoting3.Connection;
-import org.jboss.remoting3.Endpoint;
-import org.jboss.remoting3.Remoting;
-import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
-import org.xnio.IoFuture;
-import org.xnio.OptionMap;
-import org.xnio.Options;
 
 import static org.jboss.as.appclient.logging.AppClientLogger.ROOT_LOGGER;
 
@@ -74,17 +58,21 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
     private final Method mainMethod;
     private final String[] parameters;
     private final ClassLoader classLoader;
+    private final LazyConnectionContextSelector lazyConnectionContextSelector;
+    private final CallbackHandler callbackHandler;
     final String hostUrl;
 
     private Thread thread;
     private ComponentInstance instance;
 
-    public ApplicationClientStartService(final Method mainMethod, final String[] parameters, final String hostUrl, final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue, final ClassLoader classLoader) {
+    public ApplicationClientStartService(final Method mainMethod, final String[] parameters, final String hostUrl, final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue, final ClassLoader classLoader, final CallbackHandler callbackHandler) {
         this.mainMethod = mainMethod;
         this.parameters = parameters;
         this.namespaceContextSelectorInjectedValue = namespaceContextSelectorInjectedValue;
         this.classLoader = classLoader;
         this.hostUrl = hostUrl;
+        this.callbackHandler = callbackHandler;
+        this.lazyConnectionContextSelector = new LazyConnectionContextSelector(hostUrl, callbackHandler);
     }
 
     @Override
@@ -92,66 +80,32 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
 
         thread = new Thread(new Runnable() {
 
-
             @Override
             public void run() {
                 try {
-                    final Endpoint endpoint = Remoting.createEndpoint("endpoint", OptionMap.EMPTY);
-                    endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
-
-                    // open a connection
-                    final IoFuture<Connection> futureConnection = endpoint.connect(new URI(hostUrl), OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE), new AnonymousCallbackHandler());
-                    final Connection connection = IoFutureHelper.get(futureConnection, 5L, TimeUnit.SECONDS);
+                    final ClassLoader oldTccl = SecurityActions.getContextClassLoader();
                     try {
                         try {
+                            SecurityActions.setContextClassLoader(classLoader);
+                            EJBClientContext.setSelector(lazyConnectionContextSelector);
+                            applicationClientDeploymentServiceInjectedValue.getValue().getDeploymentCompleteLatch().await();
+                            NamespaceContextSelector.setDefault(namespaceContextSelectorInjectedValue);
 
-                            final ClassLoader oldTccl = SecurityActions.getContextClassLoader();
-                            try {
-                                try {
-                                    SecurityActions.setContextClassLoader(classLoader);
+                            //do static injection etc
+                            instance = applicationClientComponent.getValue().createInstance();
 
-                                    final EJBClientContext ejbClientContext = EJBClientContext.create();
-                                    ejbClientContext.registerConnection(connection);
-                                    final ContextSelector<EJBClientContext> previousSelector = EJBClientContext.setConstantContext(ejbClientContext);
-                                    applicationClientDeploymentServiceInjectedValue.getValue().getDeploymentCompleteLatch().await();
-
-                                    try {
-                                        NamespaceContextSelector.setDefault(namespaceContextSelectorInjectedValue);
-                                        //do static injection etc
-                                        //TODO: this should be better
-                                        instance = applicationClientComponent.getValue().createInstance();
-                                        mainMethod.invoke(null, new Object[]{parameters});
-                                    } finally {
-                                        if (previousSelector != null) {
-                                            EJBClientContext.setSelector(previousSelector);
-                                        }
-                                    }
-                                } catch (Exception e) {
-                                    ROOT_LOGGER.exceptionRunningAppClient(e, e.getClass().getSimpleName());
-                                } finally {
-                                    SecurityActions.setContextClassLoader(oldTccl);
-                                }
-                            } finally {
-                                CurrentServiceContainer.getServiceContainer().shutdown();
-                            }
+                            mainMethod.invoke(null, new Object[]{parameters});
+                        } catch (Exception e) {
+                            ROOT_LOGGER.exceptionRunningAppClient(e, e.getClass().getSimpleName());
                         } finally {
-                            try {
-                                connection.close();
-                            } catch (Throwable e) {
-                                ROOT_LOGGER.exceptionClosingConnection(e);
-                            }
+                            SecurityActions.setContextClassLoader(oldTccl);
                         }
                     } finally {
-                        try {
-                            endpoint.close();
-                        } catch (Throwable e) {
-                            ROOT_LOGGER.exceptionClosingConnection(e);
-                        }
+                        CurrentServiceContainer.getServiceContainer().shutdown();
                     }
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                } catch (URISyntaxException e) {
-                    throw new RuntimeException(e);
+
+                } finally {
+                    lazyConnectionContextSelector.close();
                 }
             }
         });
@@ -180,23 +134,4 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
     public InjectedValue<Component> getApplicationClientComponent() {
         return applicationClientComponent;
     }
-
-    /**
-     * User: jpai
-     */
-    public class AnonymousCallbackHandler implements CallbackHandler {
-
-        @Override
-        public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-            for (Callback current : callbacks) {
-                if (current instanceof NameCallback) {
-                    NameCallback ncb = (NameCallback) current;
-                    ncb.setName("anonymous");
-                } else {
-                    throw new UnsupportedCallbackException(current);
-                }
-            }
-        }
-    }
-
 }
