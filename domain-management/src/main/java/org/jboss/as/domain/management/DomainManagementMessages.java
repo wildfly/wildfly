@@ -353,6 +353,16 @@ public interface DomainManagementMessages {
     String unableToAddUser(String file, String error);
 
     /**
+     * Message to inform user that the new user is already in the file identified
+     *
+     * @param username - The new username
+     * @param fileName - The file the user was supposed to be added to
+     * @return a {@link String} for the message.
+     */
+    @Message(value = "User %s was already added to file %s, skipping...")
+    String userAlreadyExists(String username, String fileName);
+
+    /**
      * The error message header.
      *
      * @return a {@link String} for the message.
