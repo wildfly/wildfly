@@ -33,6 +33,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
@@ -62,7 +63,8 @@ public class RaRemove extends RaOperationUtil implements OperationStepHandler {
 
         context.addStep(new OperationStepHandler() {
             public void execute(OperationContext context, ModelNode operation) {
-                context.removeService(ConnectorServices.RESOURCEADAPTERS_SERVICE);
+                ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, archive);
+                context.removeService(raServiceName);
 
                 if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                     // TODO:  RE-ADD SERVICES
