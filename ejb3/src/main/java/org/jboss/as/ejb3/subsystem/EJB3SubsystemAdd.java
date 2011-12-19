@@ -44,7 +44,6 @@ import org.jboss.as.ejb3.deployment.processors.EjbClientContextParsingProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbClientContextSetupProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbContextJndiBindingProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbDependencyDeploymentUnitProcessor;
-import org.jboss.as.ejb3.deployment.processors.EjbInjectionResolutionProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbJarParsingDeploymentUnitProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbJndiBindingsDeploymentUnitProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbManagementDeploymentUnitProcessor;
@@ -195,7 +194,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_ORB_BIND, new IIOPJndiBindingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_JNDI_BINDINGS, new EjbJndiBindingsDeploymentUnitProcessor(appclient));
 
-                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_RESOLVE_EJB_INJECTIONS, new EjbInjectionResolutionProcessor());
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EJB_JACC_PROCESSING, new JaccEjbDeploymentProcessor());
 
                 processorTarget.addDeploymentProcessor(Phase.CLEANUP, Phase.CLEANUP_EJB, new EjbCleanUpProcessor());

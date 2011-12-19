@@ -226,4 +226,9 @@ public class ViewDescription {
     public void setUseWriteReplace(final boolean useWriteReplace) {
         this.useWriteReplace = useWriteReplace;
     }
+
+    @Override
+    public String toString() {
+        return "View of type " + viewClassName + " for " + componentDescription;
+    }
 }

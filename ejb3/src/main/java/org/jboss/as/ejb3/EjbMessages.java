@@ -30,8 +30,10 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentCreateServiceFactory;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponent;
 import org.jboss.as.ejb3.concurrency.LockableComponent;
@@ -1911,4 +1913,16 @@ public interface EjbMessages {
 
     @Message(id = 14542, value = "Group creation context already exists")
     IllegalStateException groupCreationContextAlreadyExists();
+    
+    @Message(id = 14543, value = "No EJB found with interface of type '%s' and name '%s' for binding %s")
+    String ejbNotFound(String typeName, String beanName, String binding);
+
+    @Message(id = 14544, value = "No EJB found with interface of type '%s' for binding %s")
+    String ejbNotFound(String typeName, String binding);
+    
+    @Message(id = 14545, value = "More than one EJB found with interface of type '%s' and name '%s' for binding %s. Found: %s")
+    String moreThanOneEjbFound(String typeName, String beanName, String binding, Set<EJBViewDescription> componentViews);
+
+    @Message(id = 14546, value = "More than one EJB found with interface of type '%s' for binding %s. Found: %s")
+    String moreThanOneEjbFound(String typeName, String binding, Set<EJBViewDescription> componentViews);
 }
