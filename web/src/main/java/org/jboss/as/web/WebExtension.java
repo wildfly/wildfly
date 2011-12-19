@@ -53,18 +53,17 @@ public class WebExtension implements Extension {
     public static final String SUBSYSTEM_NAME = "web";
     private static final PathElement connectorPath =  PathElement.pathElement(Constants.CONNECTOR);
     private static final PathElement hostPath = PathElement.pathElement(Constants.VIRTUAL_SERVER);
-    private static final PathElement sslPath = PathElement.pathElement(Constants.SSL);
+    private static final PathElement sslPath = PathElement.pathElement(Constants.SSL, Constants.CONFIGURATION);
 
-    private static final PathElement confPath = PathElement.pathElement(Constants.CONTAINER_CONFIG);
     private static final PathElement jspconfigurationPath = PathElement.pathElement(Constants.CONTAINER_CONFIG, Constants.JSP_CONFIGURATION);
     private static final PathElement resourcesPath = PathElement.pathElement(Constants.CONTAINER_CONFIG, Constants.STATIC_RESOURCES);
     private static final PathElement containerPath = PathElement.pathElement(Constants.CONTAINER_CONFIG, Constants.CONTAINER);
 
-    private static final PathElement accesslogPath = PathElement.pathElement(Constants.ACCESS_LOG, "configuration");
+    private static final PathElement accesslogPath = PathElement.pathElement(Constants.ACCESS_LOG, Constants.CONFIGURATION);
     private static final PathElement rewritePath = PathElement.pathElement(Constants.REWRITE);
-    private static final PathElement ssoPath = PathElement.pathElement(Constants.SSO, "configuration");
+    private static final PathElement ssoPath = PathElement.pathElement(Constants.SSO, Constants.CONFIGURATION);
 
-    private static final PathElement directoryPath = PathElement.pathElement(Constants.DIRECTORY, "configuration");
+    private static final PathElement directoryPath = PathElement.pathElement(Constants.DIRECTORY, Constants.CONFIGURATION);
     private static final PathElement rewritecondPath = PathElement.pathElement(Constants.CONDITION);
 
 
@@ -169,14 +168,13 @@ public class WebExtension implements Extension {
         rewrite.registerReadWriteAttribute(Constants.SUBSTITUTION, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
         rewrite.registerReadWriteAttribute(Constants.FLAGS, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
 
-        // Configuration...
-        final ManagementResourceRegistration conf = registration.registerSubModel(confPath, WebSubsystemDescriptionProviders.CONFIGURATION);
-
+        // configuration=jsp
         final ManagementResourceRegistration jsp = registration.registerSubModel(jspconfigurationPath, WebSubsystemDescriptionProviders.JSP_CONFIGURATION);
         WebConfigurationHandlerUtils.initJSPAttributes(jsp); // Register write attributes
+        // configuration=resources
         final ManagementResourceRegistration resources = registration.registerSubModel(resourcesPath, WebSubsystemDescriptionProviders.STATIC_RESOURCES);
         WebConfigurationHandlerUtils.initResourcesAttribtues(resources); // Register write attributes
-
+        // configuration=container
         final ManagementResourceRegistration container = registration.registerSubModel(containerPath, WebSubsystemDescriptionProviders.CONTAINER);
         container.registerOperationHandler("add-mime", MimeMappingAdd.INSTANCE, MimeMappingAdd.INSTANCE, false);
         container.registerOperationHandler("remove-mime", MimeMappingRemove.INSTANCE, MimeMappingRemove.INSTANCE, false);
