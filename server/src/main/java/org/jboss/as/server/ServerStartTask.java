@@ -76,7 +76,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
 
         final Properties properties = new Properties();
         properties.setProperty(ServerEnvironment.SERVER_NAME, serverName);
-        properties.setProperty(ServerEnvironment.HOME_DIR, ServerEnvironment.HOME_DIR);
+        properties.setProperty(ServerEnvironment.HOME_DIR, SecurityActions.getSystemProperty("jboss.home.dir"));
         properties.setProperty(ServerEnvironment.SERVER_DEPLOY_DIR, SecurityActions.getSystemProperty("jboss.domain.deployment.dir"));
         properties.setProperty(ServerEnvironment.SERVER_BASE_DIR, SecurityActions.getSystemProperty("jboss.domain.servers.dir") + File.separatorChar + serverName);
         properties.setProperty(ServerEnvironment.CONTROLLER_TEMP_DIR, SecurityActions.getSystemProperty("jboss.domain.temp.dir"));
