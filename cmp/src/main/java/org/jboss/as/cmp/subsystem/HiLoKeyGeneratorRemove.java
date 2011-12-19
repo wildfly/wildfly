@@ -23,37 +23,24 @@
 package org.jboss.as.cmp.subsystem;
 
 import java.util.Locale;
-import java.util.ResourceBundle;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.cmp.keygenerator.hilo.HiLoKeyGeneratorFactory;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author John Bailey
  */
-public class CmpSubsystemProviders {
-    static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
+public class HiLoKeyGeneratorRemove extends AbstractKeyGeneratorRemove {
+    static HiLoKeyGeneratorRemove INSTANCE = new HiLoKeyGeneratorRemove();
 
-        public ModelNode getModelDescription(final Locale locale) {
-            return CmpSubsystemDescriptions.getSubystemDescription(locale);
-        }
-    };
+    private HiLoKeyGeneratorRemove() {
+    }
 
-    static final DescriptionProvider SUBSYSTEM_REMOVE = new DescriptionProvider() {
+    protected ServiceName getServiceName(final String name) {
+        return HiLoKeyGeneratorFactory.SERVICE_NAME.append(name);
+    }
 
-        public ModelNode getModelDescription(final Locale locale) {
-            return CmpSubsystemDescriptions.getSubsystemRemoveDescription(locale);
-        }
-    };
-
-    public static DescriptionProvider HILO_KEY_GENERATOR_DESC = new DescriptionProvider() {
-        public ModelNode getModelDescription(Locale locale) {
-            return CmpSubsystemDescriptions.getHiLoKeyGeneratorDescription(locale);
-        }
-    };
-
-    public static DescriptionProvider UUID_KEY_GENERATOR_DESC = new DescriptionProvider() {
-        public ModelNode getModelDescription(Locale locale) {
-            return CmpSubsystemDescriptions.getUuidKeyGeneratorDescription(locale);
-        }
-    };
+    public ModelNode getModelDescription(final Locale locale) {
+        return CmpSubsystemDescriptions.getHiLoRemoveDescription(locale);
+    }
 }

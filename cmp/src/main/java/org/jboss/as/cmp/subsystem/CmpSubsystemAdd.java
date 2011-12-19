@@ -63,12 +63,6 @@ public class CmpSubsystemAdd extends AbstractBoottimeAddStepHandler implements D
             .addListener(verificationHandler)
             .install());
 
-        final UUIDKeyGeneratorFactory uuidKeyGeneratorFactory = new UUIDKeyGeneratorFactory();
-        newControllers.add(context.getServiceTarget().addService(UUIDKeyGeneratorFactory.SERVICE_NAME, uuidKeyGeneratorFactory)
-            .addDependency(KeyGeneratorFactoryRegistry.SERVICE_NAME, KeyGeneratorFactoryRegistry.class, KeyGeneratorFactoryRegistry.getRegistryInjector(UUIDKeyGeneratorFactory.class.getSimpleName(), uuidKeyGeneratorFactory))
-            .addListener(verificationHandler)
-            .install());
-
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
 

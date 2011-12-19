@@ -28,34 +28,50 @@ import java.util.Map;
 /**
  * @author John Bailey
  */
-enum Namespace {
-    // must be first
+public enum Element {
     UNKNOWN(null),
-    CMP_1_0("urn:jboss:domain:cmp:1.0");
+    BLOCK_SIZE("block-size"),
+    CREATE_TABLE("create-table"),
+    CREATE_TABLE_DDL("create-table-ddl"),
+    DATA_SOURCE("data-source"),
+    DROP_TABLE("drop-table"),
+    HILO("hilo"),
+    ID_COLUMN("id-column"),
+    KEY_GENERATORS("key-generators"),
+    SELECT_HI_DDL("select-hi-ddl"),
+    SEQUENCE_COLUMN("sequence-column"),
+    SEQUENCE_NAME("sequence-name"),
+    TABLE_NAME("table-name"),
+    UUID("uuid");
 
     private final String name;
 
-    Namespace(final String name) {
+    Element(final String name) {
         this.name = name;
     }
 
-    public String getUriString() {
+    /**
+     * Get the local name of this element.
+     *
+     * @return the local name
+     */
+    public String getLocalName() {
         return name;
     }
 
-    private static final Map<String, Namespace> MAP;
+    private static final Map<String, Element> MAP;
 
     static {
-        final Map<String, Namespace> map = new HashMap<String, Namespace>();
-        for (Namespace namespace : values()) {
-            final String name = namespace.getUriString();
-            if (name != null) map.put(name, namespace);
+        final Map<String, Element> map = new HashMap<String, Element>();
+        for (Element element : values()) {
+            final String name = element.getLocalName();
+            if (name != null) map.put(name, element);
         }
         MAP = map;
     }
 
-    public static Namespace forUri(String uri) {
-        final Namespace element = MAP.get(uri);
+    public static Element forName(String localName) {
+        final Element element = MAP.get(localName);
         return element == null ? UNKNOWN : element;
     }
 }

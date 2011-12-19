@@ -23,37 +23,34 @@
 package org.jboss.as.cmp.subsystem;
 
 import java.util.Locale;
-import java.util.ResourceBundle;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.cmp.keygenerator.KeyGeneratorFactory;
+import org.jboss.as.cmp.keygenerator.uuid.UUIDKeyGeneratorFactory;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author John Bailey
  */
-public class CmpSubsystemProviders {
-    static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
+public class UUIDKeyGeneratorAdd extends AbstractKeyGeneratorAdd {
+    static UUIDKeyGeneratorAdd INSTANCE = new UUIDKeyGeneratorAdd();
 
-        public ModelNode getModelDescription(final Locale locale) {
-            return CmpSubsystemDescriptions.getSubystemDescription(locale);
-        }
-    };
+    private UUIDKeyGeneratorAdd() {
+    }
 
-    static final DescriptionProvider SUBSYSTEM_REMOVE = new DescriptionProvider() {
+    protected Service<KeyGeneratorFactory> getKeyGeneratorFactory(final ModelNode operation) {
+        return new UUIDKeyGeneratorFactory();
+    }
 
-        public ModelNode getModelDescription(final Locale locale) {
-            return CmpSubsystemDescriptions.getSubsystemRemoveDescription(locale);
-        }
-    };
+    protected ServiceName getServiceName(final String name) {
+        return UUIDKeyGeneratorFactory.SERVICE_NAME.append(name);
+    }
 
-    public static DescriptionProvider HILO_KEY_GENERATOR_DESC = new DescriptionProvider() {
-        public ModelNode getModelDescription(Locale locale) {
-            return CmpSubsystemDescriptions.getHiLoKeyGeneratorDescription(locale);
-        }
-    };
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+    }
 
-    public static DescriptionProvider UUID_KEY_GENERATOR_DESC = new DescriptionProvider() {
-        public ModelNode getModelDescription(Locale locale) {
-            return CmpSubsystemDescriptions.getUuidKeyGeneratorDescription(locale);
-        }
-    };
+    public ModelNode getModelDescription(final Locale locale) {
+        return CmpSubsystemDescriptions.getUuidAddDescription(locale);
+    }
 }
