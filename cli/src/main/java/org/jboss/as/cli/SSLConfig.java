@@ -19,42 +19,39 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.completion.mock;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.jboss.as.cli.CliConfig;
-import org.jboss.as.cli.SSLConfig;
-import org.jboss.as.cli.operation.OperationRequestHeader;
-import org.jboss.as.cli.operation.impl.RolloutPlanHeader;
+package org.jboss.as.cli;
 
 /**
+ * A representation of the SSL Configuration.
  *
- * @author Alexey Loubyansky
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class MockCliConfig implements CliConfig {
+public interface SSLConfig {
 
-    private Map<String,RolloutPlanHeader> rolloutPlans;
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.cli.CliConfig#getRolloutPlan(java.lang.String)
+    /**
+     * @return The location of the keyStore or null if not specified.
      */
-    @Override
-    public OperationRequestHeader getRolloutPlan(String id) {
-        return rolloutPlans == null ? null : rolloutPlans.get(id);
-    }
+    String getKeyStore();
 
-    public void addRolloutPlan(RolloutPlanHeader rolloutPlan) {
-        if(rolloutPlans == null) {
-            rolloutPlans = new HashMap<String,RolloutPlanHeader>();
-        }
-        rolloutPlans.put(rolloutPlan.getPlanId(), rolloutPlan);
-    }
+    /**
+     * @return The keyStorePassword or null if not specified.
+     */
+    String getKeyStorePassword();
 
-    @Override
-    public SSLConfig getSslConfig() {
-        return null;
-    }
+    /**
+     * @return The location of the trustStore or null if not specified.
+     */
+    String getTrustStore();
+
+    /**
+     * @return The trustStorePassword or null if not specified.
+     */
+    String getTrustStorePassword();
+
+    /**
+     * @return true if the CLI should automatically update the trust store.
+     */
+    boolean isModifyTrustStore();
 
 }

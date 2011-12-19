@@ -25,6 +25,10 @@ import static org.xnio.Options.SASL_MECHANISMS;
 import static org.xnio.Options.SASL_POLICY_NOANONYMOUS;
 import static org.xnio.Options.SASL_POLICY_NOPLAINTEXT;
 import static org.xnio.Options.SASL_PROPERTIES;
+import static org.xnio.Options.SSL_ENABLED;
+import static org.xnio.Options.SSL_STARTTLS;
+import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
+import static org.xnio.SslClientAuthMode.REQUESTED;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -32,6 +36,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import javax.net.ssl.SSLContext;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -42,6 +47,7 @@ import javax.security.sasl.RealmCallback;
 import javax.security.sasl.SaslException;
 
 import org.jboss.as.domain.management.SecurityRealm;
+import org.jboss.remoting3.Remoting;
 import org.jboss.remoting3.security.ServerAuthenticationProvider;
 import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
@@ -49,6 +55,9 @@ import org.xnio.OptionMap;
 import org.xnio.OptionMap.Builder;
 import org.xnio.Property;
 import org.xnio.Sequence;
+import org.xnio.Xnio;
+import org.xnio.ssl.JsseXnioSsl;
+import org.xnio.ssl.XnioSsl;
 
 /**
  * A Remoting ServerAuthenticationProvider that wraps a management domain security realm.
@@ -60,7 +69,7 @@ import org.xnio.Sequence;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class RealmAuthenticationProvider implements ServerAuthenticationProvider {
+public class RealmSecurityProvider implements RemotingSecurityProvider {
 
     static final String REALM_PROPERTY = "com.sun.security.sasl.digest.realm";
     static final String PRE_DIGESTED_PROPERTY = "org.jboss.sasl.digest.pre_digested";
@@ -69,6 +78,7 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
 
     static final String ANONYMOUS = "ANONYMOUS";
     static final String DIGEST_MD5 = "DIGEST-MD5";
+    static final String EXTERNAL = "EXTERNAL";
     static final String JBOSS_LOCAL_USER = "JBOSS-LOCAL-USER";
     static final String PLAIN = "PLAIN";
 
@@ -78,13 +88,18 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
     private final CallbackHandler serverCallbackHandler;
     private final String tokensDir;
 
-    public RealmAuthenticationProvider(final SecurityRealm realm, final CallbackHandler serverCallbackHandler, final String tokensDir) {
+    public RealmSecurityProvider(final SecurityRealm realm, final CallbackHandler serverCallbackHandler, final String tokensDir) {
         this.realm = realm;
         this.serverCallbackHandler = serverCallbackHandler;
         this.tokensDir = tokensDir;
     }
 
-    OptionMap getSaslOptionMap() {
+    /*
+     * RemotingSecurityProvider methods.
+     */
+
+    @Override
+    public OptionMap getOptionMap() {
         List<String> mechanisms = new LinkedList<String>();
         Set<Property> properties = new HashSet<Property>();
         Builder builder = OptionMap.builder();
@@ -102,10 +117,6 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
                 properties.add(Property.of(PRE_DIGESTED_PROPERTY, Boolean.TRUE.toString()));
             }
         } else if (plainSupported()) {
-            int i = 1;
-            if (i + i == 2)
-                throw new IllegalStateException("PLAIN not enabled until SSL supported for Native Interface");
-
             mechanisms.add(PLAIN);
         } else if (realm == null) {
             mechanisms.add(ANONYMOUS);
@@ -114,11 +125,55 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
             throw new IllegalStateException("A security realm has been specified but no supported mechanism identified.");
         }
 
+        SslMode sslMode = getSslMode();
+        switch (sslMode) {
+            case OFF:
+                builder.set(SSL_ENABLED, false);
+                break;
+            case TRANSPORT_ONLY:
+                builder.set(SSL_ENABLED, true);
+                builder.set(SSL_STARTTLS, true);
+                break;
+            case CLIENT_AUTH_REQUESTED:
+                builder.set(SSL_ENABLED, true);
+                builder.set(SSL_STARTTLS, true);
+                mechanisms.add(0, EXTERNAL);
+                builder.set(SSL_CLIENT_AUTH_MODE, REQUESTED);
+                break;
+        // We do not currently support the SSL_CLIENT_AUTH_MODE of REQUIRED as there is always
+        // the possibility that the local mechanism will still be needed.
+        }
+
         builder.set(SASL_MECHANISMS, Sequence.of(mechanisms));
         builder.set(SASL_PROPERTIES, Sequence.of(properties));
 
         return builder.getMap();
     }
+
+    @Override
+    public ServerAuthenticationProvider getServerAuthenticationProvider() {
+        return new ServerAuthenticationProvider() {
+
+            @Override
+            public CallbackHandler getCallbackHandler(String mechanismName) {
+                return RealmSecurityProvider.this.getCallbackHandler(mechanismName);
+            }
+        };
+    }
+
+    @Override
+    public XnioSsl getXnioSsl() {
+        final SSLContext sslContext;
+        if (realm == null || (sslContext = realm.getSSLContext()) == null) {
+            return null;
+        }
+
+        return new JsseXnioSsl(Xnio.getInstance(Remoting.class.getClassLoader()), OptionMap.EMPTY, sslContext);
+    }
+
+    /*
+     * Internal methods.
+     */
 
     public CallbackHandler getCallbackHandler(String mechanismName) {
         // TODO - Once authorization is in place we may be able to relax the realm check to
@@ -150,6 +205,26 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
                                 throw new SaslException("Only " + DOLLAR_LOCAL + " user is acceptable.");
                             }
                         } else if (current instanceof AuthorizeCallback) {
+                            AuthorizeCallback acb = (AuthorizeCallback) current;
+                            acb.setAuthorized(acb.getAuthenticationID().equals(acb.getAuthorizationID()));
+                        } else {
+                            throw new UnsupportedCallbackException(current);
+                        }
+                    }
+
+                }
+            };
+        }
+
+        // In this calls only the AuthorizeCallback is needed, we are not making use if an authorization ID just yet
+        // so don't need to be linked back to the realms.
+        if (EXTERNAL.equals(mechanismName)) {
+            return new CallbackHandler() {
+
+                @Override
+                public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+                    for (Callback current : callbacks) {
+                        if (current instanceof AuthorizeCallback) {
                             AuthorizeCallback acb = (AuthorizeCallback) current;
                             acb.setAuthorized(acb.getAuthenticationID().equals(acb.getAuthorizationID()));
                         } else {
@@ -209,6 +284,23 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
         };
     }
 
+    private SslMode getSslMode() {
+        if (realm == null || realm.getSSLContext() == null) {
+            // No SSL Context to no way can we enable SSL.
+            return SslMode.OFF;
+        }
+
+        if (realm.hasTrustStore()) {
+            return SslMode.CLIENT_AUTH_REQUESTED;
+        }
+
+        return SslMode.TRANSPORT_ONLY;
+    }
+
+    private enum SslMode {
+        OFF, TRANSPORT_ONLY, CLIENT_AUTH_REQUESTED
+    }
+
     private boolean digestMd5Supported() {
         if (realm == null) {
             return false;
@@ -259,6 +351,5 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
         }
         return false;
     }
-
 
 }

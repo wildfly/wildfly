@@ -29,23 +29,19 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.net.ssl.SSLContext;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
-import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.Registration;
@@ -57,13 +53,13 @@ import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Property;
 import org.xnio.Sequence;
-import org.xnio.OptionMap.Builder;
 
 /**
  * This class is not thread safe and should only be used by one thread
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Emanuel Muckenhuber
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class ProtocolChannelClient implements Closeable {
 
@@ -96,16 +92,16 @@ public class ProtocolChannelClient implements Closeable {
             return new ProtocolChannelClient(false, endpoint, null, configuration);
         } else {
             endpoint = Remoting.createEndpoint(configuration.getEndpointName(), configuration.getOptionMap());
-            Registration providerRegistration = endpoint.addConnectionProvider(configuration.getUri().getScheme(), new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
+            Registration providerRegistration = endpoint.addConnectionProvider(configuration.getUri().getScheme(), new RemoteConnectionProviderFactory(), OptionMap.EMPTY);
             return new ProtocolChannelClient(true, endpoint, providerRegistration, configuration);
         }
     }
 
     public IoFuture<Connection> connect(CallbackHandler handler) throws IOException {
-        return connect(handler, null);
+        return connect(handler, null, null);
     }
 
-    public IoFuture<Connection> connect(CallbackHandler handler, Map<String, String> saslOptions) throws IOException {
+    public IoFuture<Connection> connect(CallbackHandler handler, Map<String, String> saslOptions, SSLContext sslContext) throws IOException {
 
         OptionMap.Builder builder = OptionMap.builder();
         builder.set(SASL_POLICY_NOANONYMOUS, Boolean.FALSE);
@@ -122,20 +118,50 @@ public class ProtocolChannelClient implements Closeable {
         }
         builder.set(Options.SASL_PROPERTIES, Sequence.of(tempProperties));
 
+        builder.set(Options.SSL_ENABLED, true);
+        builder.set(Options.SSL_STARTTLS, true);
+
         CallbackHandler actualHandler = handler != null ? handler : new AnonymousCallbackHandler();
-        WrapperCallbackHandler wrapperHandler = new WrapperCallbackHandler(actualHandler);
-        return endpoint.connect(uri, builder.getMap(), wrapperHandler);
+        return endpoint.connect(uri, builder.getMap(), actualHandler, sslContext);
     }
 
     public Connection connectSync(CallbackHandler handler) throws IOException {
-        return connectSync(handler, null);
+        return connectSync(handler, null, null);
     }
 
-    public Connection connectSync(CallbackHandler handler, Map<String, String> saslOptions) throws IOException {
-        final IoFuture<Connection> future = connect(handler, saslOptions);
-        final IoFuture.Status status = future.await(configuration.getConnectionTimeout(), TimeUnit.MILLISECONDS);
-        if(status == IoFuture.Status.DONE) {
+    public Connection connectSync(CallbackHandler handler, Map<String, String> saslOptions, SSLContext sslContext) throws IOException {
+        WrapperCallbackHandler wrapperHandler = new WrapperCallbackHandler(handler);
+        final IoFuture<Connection> future = connect(wrapperHandler, saslOptions, sslContext);
+        long timeoutMillis = configuration.getConnectionTimeout();
+        IoFuture.Status status = future.await(timeoutMillis, TimeUnit.MILLISECONDS);
+        while (status == IoFuture.Status.WAITING) {
+            if (wrapperHandler.isInCall()) {
+                // If there is currently an interaction with the user just wait again.
+                status = future.await(timeoutMillis, TimeUnit.MILLISECONDS);
+            } else {
+                long lastInteraction = wrapperHandler.getCallFinished();
+                if (lastInteraction > 0) {
+                    long now = System.currentTimeMillis();
+                    long timeSinceLast = now - lastInteraction;
+                    if (timeSinceLast < timeoutMillis) {
+                        // As this point we are setting the timeout based on the time of the last interaction
+                        // with the user, if there is any time left we will wait for that time but dont wait for
+                        // a full timeout.
+                        status = future.await(timeoutMillis - timeSinceLast, TimeUnit.MILLISECONDS);
+                    } else {
+                        status = null;
+                    }
+                } else {
+                    status = null; // Just terminate status processing.
+                }
+            }
+        }
+
+        if (status == IoFuture.Status.DONE) {
             return future.get();
+        }
+        if (status == IoFuture.Status.FAILED) {
+            throw ProtocolMessages.MESSAGES.failedToConnect(uri, future.getException());
         }
         throw ProtocolMessages.MESSAGES.couldNotConnect(uri);
     }

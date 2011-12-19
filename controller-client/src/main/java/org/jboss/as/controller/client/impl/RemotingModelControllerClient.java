@@ -82,13 +82,13 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
 
                 // TODO move the endpoint creation somewhere else?
                 endpoint = Remoting.createEndpoint("management-client", OptionMap.EMPTY);
-                endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
+                endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.EMPTY);
 
                 configuration.setEndpoint(endpoint);
                 configuration.setEndpointName("management-client");
 
                 final ProtocolChannelClient setup = ProtocolChannelClient.create(configuration);
-                strategy = ManagementClientChannelStrategy.create(setup, this, clientConfiguration.getCallbackHandler(), clientConfiguration.getSaslOptions());
+                strategy = ManagementClientChannelStrategy.create(setup, this, clientConfiguration.getCallbackHandler(), clientConfiguration.getSaslOptions(), clientConfiguration.getSSLContext());
             } catch (IOException e) {
                 throw e;
             } catch (RuntimeException e) {

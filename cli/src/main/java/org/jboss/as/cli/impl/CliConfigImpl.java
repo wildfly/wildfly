@@ -21,6 +21,8 @@
  */
 package org.jboss.as.cli.impl;
 
+import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,6 +38,7 @@ import javax.xml.stream.XMLStreamReader;
 import org.jboss.as.cli.CliConfig;
 import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.SSLConfig;
 import org.jboss.as.cli.operation.impl.ConcurrentRolloutPlanGroup;
 import org.jboss.as.cli.operation.impl.RolloutPlanHeader;
 import org.jboss.as.cli.operation.impl.SingleRolloutPlanGroup;
@@ -71,7 +74,8 @@ class CliConfigImpl implements CliConfig {
 
                     RolloutPlanHeader rolloutPlan = null;
                     boolean concurrent = false;
-                    while (reader.hasNext()) {
+                    boolean jbossCliEnded = false;
+                    while (reader.hasNext() && jbossCliEnded == false) {
                         int tag = reader.nextTag();
                         if(tag == XMLStreamConstants.START_ELEMENT) {
                             final String localName = reader.getLocalName();
@@ -109,15 +113,39 @@ class CliConfigImpl implements CliConfig {
                                 } else {
                                     rolloutPlan.addGroup(group);
                                 }
+                            } else if (localName.equals("ssl")) {
+                                SslConfig sslConfig = new SslConfig();
+                                readSSLElement(reader, sslConfig);
+                                config.sslConfig = sslConfig;
                             }
                         } else if(tag == XMLStreamConstants.END_ELEMENT) {
                             final String localName = reader.getLocalName();
                             if(localName.equals("concurrent")) {
                                 concurrent = false;
+                            } else if (localName.equals("jboss-cli")) {
+                                jbossCliEnded = true;
                             }
                         }
                     }
-                }});
+                }
+
+                public void readSSLElement(XMLExtendedStreamReader reader, SslConfig config) throws XMLStreamException {
+                    while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                        final String localName = reader.getLocalName();
+                        if ("keyStore".equals(localName)) {
+                            config.setKeyStore(reader.getElementText());
+                        } else if ("keyStorePassword".equals(localName)) {
+                            config.setKeyStorePassword(reader.getElementText());
+                        } else if ("trustStore".equals(localName)) {
+                            config.setTrustStore(reader.getElementText());
+                        } else if ("trustStorePassword".equals(localName)) {
+                            config.setTrustStorePassword(reader.getElementText());
+                        } else if ("modifyTrustStore".equals(localName)) {
+                            config.setModifyTrustStore(Boolean.getBoolean(reader.getElementText()));
+                        }
+                    }
+                }
+            });
 
             FileInputStream is = new FileInputStream(f);
             input = new BufferedInputStream(is);
@@ -135,9 +163,14 @@ class CliConfigImpl implements CliConfig {
     private CliConfigImpl() {}
 
     private Map<String, RolloutPlanHeader> rolloutPlans;
+    private SSLConfig sslConfig;
 
     public RolloutPlanHeader getRolloutPlan(String name) {
         return rolloutPlans == null ? null : rolloutPlans.get(name);
+    }
+
+    public SSLConfig getSslConfig() {
+        return sslConfig;
     }
 
     public void addRolloutPlan(RolloutPlanHeader rolloutPlan) {
@@ -154,4 +187,55 @@ class CliConfigImpl implements CliConfig {
             throw new IllegalArgumentException("Duplicate rollout plan name: '" + rolloutPlan.getName() + "'");
         }
     }
+
+    static class SslConfig implements SSLConfig {
+
+        private String keyStore = null;
+        private String keyStorePassword = null;
+        private String trustStore = null;
+        private String trustStorePassword = null;
+        private boolean modifyTrustStore = true;
+
+        public String getKeyStore() {
+            return keyStore;
+        }
+
+        void setKeyStore(final String keyStore) {
+            this.keyStore = keyStore;
+        }
+
+        public String getKeyStorePassword() {
+            return keyStorePassword;
+        }
+
+        void setKeyStorePassword(final String keyStorePassword) {
+            this.keyStorePassword = keyStorePassword;
+        }
+
+        public String getTrustStore() {
+            return trustStore;
+        }
+
+        void setTrustStore(final String trustStore) {
+            this.trustStore = trustStore;
+        }
+
+        public String getTrustStorePassword() {
+            return trustStorePassword;
+        }
+
+        void setTrustStorePassword(final String trustStorePassword) {
+            this.trustStorePassword = trustStorePassword;
+        }
+
+        public boolean isModifyTrustStore() {
+            return modifyTrustStore;
+        }
+
+        void setModifyTrustStore(final boolean modifyTrustStore) {
+            this.modifyTrustStore = modifyTrustStore;
+        }
+
+    }
+
 }

@@ -38,4 +38,12 @@ public interface CliConfig {
      * @return  the plan matching the id or null if no such plan found.
      */
     OperationRequestHeader getRolloutPlan(String id);
+
+    /**
+     * The global SSL configuration if it has been defined.
+     *
+     * @return The SSLConfig
+     */
+    SSLConfig getSslConfig();
+
 }

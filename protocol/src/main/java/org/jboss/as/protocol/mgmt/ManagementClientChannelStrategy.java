@@ -26,6 +26,7 @@ import java.io.DataInput;
 import java.io.IOException;
 import java.util.Map;
 
+import javax.net.ssl.SSLContext;
 import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.protocol.ProtocolChannelClient;
@@ -77,8 +78,9 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
     public static ManagementClientChannelStrategy create(final ProtocolChannelClient setup,
                                                    final ManagementMessageHandler handler,
                                                    final CallbackHandler cbHandler,
-                                                   final Map<String, String> saslOptions) throws IOException {
-        return new Establishing(DEFAULT_CHANNEL_SERVICE_TYPE, setup, saslOptions, cbHandler, handler);
+                                                   final Map<String, String> saslOptions,
+                                                   final SSLContext sslContext) throws IOException {
+        return new Establishing(DEFAULT_CHANNEL_SERVICE_TYPE, setup, saslOptions, cbHandler, sslContext, handler);
     }
 
     /**
@@ -112,6 +114,7 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
         private final String channelName;
         private final Map<String,String> saslOptions;
         private final CallbackHandler callbackHandler;
+        private final SSLContext sslContext;
         private final Channel.Receiver receiver;
         private final ProtocolChannelClient setup;
 
@@ -119,9 +122,10 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
         volatile Channel channel;
 
         public Establishing(final String channelName, final ProtocolChannelClient setup, final Map<String, String> saslOptions,
-                            final CallbackHandler callbackHandler, final ManagementMessageHandler handler) {
+                            final CallbackHandler callbackHandler, final SSLContext sslContext, final ManagementMessageHandler handler) {
             this.channelName = channelName;
             this.saslOptions = saslOptions;
+            this.sslContext = sslContext;
             this.setup = setup;
             this.callbackHandler = callbackHandler;
             // Basic management channel receiver, which delegates messages to a {@code ManagementMessageHandler}
@@ -148,7 +152,7 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
                 synchronized (this) {
                     if (connection == null) {
                         // Connect with the configured timeout
-                        this.connection = setup.connectSync(callbackHandler, saslOptions);
+                        this.connection = setup.connectSync(callbackHandler, saslOptions, sslContext);
                         this.connection.addCloseHandler(new CloseHandler<Connection>() {
                             @Override
                             public void handleClose(Connection closed, IOException exception) {

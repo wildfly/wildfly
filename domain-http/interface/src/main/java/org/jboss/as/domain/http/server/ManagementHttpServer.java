@@ -33,12 +33,18 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.domain.http.server.security.BasicAuthenticator;
+import org.jboss.as.domain.http.server.security.ClientCertAuthenticator;
+import org.jboss.as.domain.http.server.security.DigestAuthenticator;
 import org.jboss.as.domain.management.SecurityRealm;
+import org.jboss.as.domain.management.security.DomainCallbackHandler;
+import org.jboss.com.sun.net.httpserver.Authenticator;
 import org.jboss.com.sun.net.httpserver.HttpServer;
 import org.jboss.com.sun.net.httpserver.HttpsConfigurator;
 import org.jboss.com.sun.net.httpserver.HttpsParameters;
 import org.jboss.com.sun.net.httpserver.HttpsServer;
 import org.jboss.modules.ModuleLoadException;
+import org.jboss.sasl.callback.DigestHashCallback;
 
 /**
  * The general HTTP server for handling management API requests.
@@ -100,61 +106,63 @@ public class ManagementHttpServer {
         Map<String, String> configuration = new HashMap<String, String>(1);
         configuration.put("sun.net.httpserver.maxReqTime", "15"); // HTTP Server to close connections if initial request not received within 15 seconds.
 
+        Authenticator auth = null;
+        final CertAuth certAuthMode;
+
+        if (securityRealm != null) {
+            DomainCallbackHandler callbackHandler = securityRealm.getCallbackHandler();
+            Class[] supportedCallbacks = callbackHandler.getSupportedCallbacks();
+            if (DigestAuthenticator.requiredCallbacksSupported(supportedCallbacks)) {
+                auth = new DigestAuthenticator(callbackHandler, securityRealm.getName(), contains(DigestHashCallback.class,
+                        supportedCallbacks));
+            } else if (BasicAuthenticator.requiredCallbacksSupported(supportedCallbacks)) {
+                auth = new BasicAuthenticator(callbackHandler, securityRealm.getName());
+            }
+
+            if (securityRealm.hasTrustStore()) {
+                // For this to return true we know we have a trust store to use to verify client certificates.
+                if (auth == null) {
+                    certAuthMode = CertAuth.NEED;
+                    auth = new ClientCertAuthenticator(securityRealm.getName());
+                } else {
+                    // We have the possibility to use Client Cert but also Username/Password authentication so don't
+                    // need to force clients into presenting a Cert.
+                    certAuthMode = CertAuth.WANT;
+                }
+            } else {
+                certAuthMode = CertAuth.NONE;
+            }
+        } else {
+            certAuthMode = CertAuth.NONE;
+        }
+
         HttpServer httpServer = null;
         if (bindAddress != null) {
             httpServer = HttpServer.create(bindAddress, backlog, configuration);
             httpServer.setExecutor(executor);
         }
 
-        HttpServer secureHttpServer = null;
+        HttpsServer secureHttpServer = null;
         if (secureBindAddress != null) {
             secureHttpServer = HttpsServer.create(secureBindAddress, backlog, configuration);
-            SSLContext context = securityRealm.getSSLContext();
-            ((HttpsServer) secureHttpServer).setHttpsConfigurator(new HttpsConfigurator(context) {
+            final SSLContext context = securityRealm.getSSLContext();
+            secureHttpServer.setHttpsConfigurator(new HttpsConfigurator(context) {
 
                 @Override
                 public void configure(HttpsParameters params) {
-                    super.configure(params);
-                    {
-                        if (true)
-                            return;
+                    SSLParameters sslparams = context.getDefaultSSLParameters();
 
-                        // TODO - Add propper capture of these values.
-
-                        System.out.println(" * SSLContext * ");
-
-                        SSLContext sslContext = getSSLContext();
-                        SSLParameters sslParams = sslContext.getDefaultSSLParameters();
-                        String[] cipherSuites = sslParams.getCipherSuites();
-                        for (String current : cipherSuites) {
-                            System.out.println("Cipher Suite - " + current);
-                        }
-                        System.out.println("Need Client Auth " + sslParams.getNeedClientAuth());
-                        String[] protocols = sslParams.getProtocols();
-                        for (String current : protocols) {
-                            System.out.println("Protocol " + current);
-                        }
-                        System.out.println("Want Client Auth " + sslParams.getWantClientAuth());
+                    switch (certAuthMode) {
+                        case NEED:
+                            sslparams.setNeedClientAuth(true);
+                            break;
+                        case WANT:
+                            sslparams.setWantClientAuth(true);
+                            break;
                     }
 
-                    System.out.println(" * HTTPSParameters * ");
-                    {
-                        System.out.println("Client Address " + params.getClientAddress());
-                        String[] cipherSuites = params.getCipherSuites();
-                        if (cipherSuites != null) {
-                            for (String current : cipherSuites) {
-                                System.out.println("Cipher Suite - " + current);
-                            }
-                        }
-                        System.out.println("Need Client Auth " + params.getNeedClientAuth());
-                        String[] protocols = params.getProtocols();
-                        if (protocols != null) {
-                            for (String current : protocols) {
-                                System.out.println("Protocol " + current);
-                            }
-                        }
-                        System.out.println("Want Client Auth " + params.getWantClientAuth());
-                    }
+                    params.setSSLParameters(sslparams);
+
                 }
             });
 
@@ -169,10 +177,11 @@ public class ManagementHttpServer {
             throw new IOException("Unable to load resource handler", e);
         }
         managementHttpServer.addHandler(new RootHandler(consoleHandler));
-        managementHttpServer.addHandler(new DomainApiHandler(modelControllerClient));
+        managementHttpServer.addHandler(new DomainApiHandler(modelControllerClient, auth));
         if (consoleHandler != null) {
             managementHttpServer.addHandler(consoleHandler);
         }
+
         try {
             managementHttpServer.addHandler(new ErrorHandler());
         } catch (ModuleLoadException e) {
@@ -180,6 +189,20 @@ public class ManagementHttpServer {
         }
 
         return managementHttpServer;
+    }
+
+    // TODO - This still needs cleaning up to use collections so we can remove the array iteration.
+    private static boolean contains(Class clazz, Class[] classes) {
+        for (Class current : classes) {
+            if (current.equals(clazz)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private enum CertAuth {
+        NONE, WANT, NEED
     }
 
 }

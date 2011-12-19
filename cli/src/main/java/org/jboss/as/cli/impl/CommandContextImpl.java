@@ -23,15 +23,32 @@ package org.jboss.as.cli.impl;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
+import java.security.MessageDigest;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -54,6 +71,7 @@ import org.jboss.as.cli.CommandHistory;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.CommandRegistry;
 import org.jboss.as.cli.OperationCommand;
+import org.jboss.as.cli.SSLConfig;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.batch.Batch;
 import org.jboss.as.cli.batch.BatchManager;
@@ -114,6 +132,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.sasl.callback.DigestHashCallback;
+import org.jboss.sasl.util.HexConverter;
 
 /**
  *
@@ -123,8 +142,7 @@ class CommandContextImpl implements CommandContext {
 
     static boolean isOperation(String line) {
         char firstChar = line.charAt(0);
-        return firstChar == '.' || firstChar == ':' || firstChar == '/'
-                || line.startsWith("..") || line.startsWith(".type");
+        return firstChar == '.' || firstChar == ':' || firstChar == '/' || line.startsWith("..") || line.startsWith(".type");
     }
 
     /** the cli configuration */
@@ -158,6 +176,10 @@ class CommandContextImpl implements CommandContext {
     private String username;
     /** the command line specified password */
     private char[] password;
+    /** The SSLContext when managed by the CLI */
+    private SSLContext sslContext;
+    /** The TrustManager in use by the SSLContext, a reference is kept to rejected certificates can be captured. */
+    private LazyDelagatingTrustManager trustManager;
     /** various key/value pairs */
     private Map<String, Object> map = new HashMap<String, Object>();
     /** operation request address prefix */
@@ -179,7 +201,8 @@ class CommandContextImpl implements CommandContext {
     private List<CliEventListener> listeners = new ArrayList<CliEventListener>();
 
     /**
-     * Non-interactive mode
+     * Version mode - only used when --version is called from the command line.
+     *
      * @throws CliInitializationException
      */
     CommandContextImpl() throws CliInitializationException {
@@ -192,26 +215,28 @@ class CommandContextImpl implements CommandContext {
     }
 
     /**
-     * Non-interactive mode
+     * Default constructor used for both interactive and non-interactive mode.
+     *
      */
-    CommandContextImpl(String defaultControllerHost, int defaultControllerPort, String username, char[] password, boolean initConsole)
-        throws CliInitializationException {
+    CommandContextImpl(String defaultControllerHost, int defaultControllerPort, String username, char[] password,
+            boolean initConsole) throws CliInitializationException {
         operationHandler = new OperationRequestHandler();
 
         this.username = username;
         this.password = password;
-        if(defaultControllerHost != null) {
+        if (defaultControllerHost != null) {
             this.defaultControllerHost = defaultControllerHost;
         }
-        if(defaultControllerPort != -1) {
+        if (defaultControllerPort != -1) {
             this.defaultControllerPort = defaultControllerPort;
         }
         initCommands();
 
         final String userHome = SecurityActions.getSystemProperty("user.home");
         config = CliConfigImpl.parse(this, new File(userHome, "jboss-cli.xml"));
+        initSSLContext();
 
-        if(initConsole) {
+        if (initConsole) {
             cmdCompleter = new CommandCompleter(cmdRegistry);
             this.console = Console.Factory.getConsole(this);
             console.setUseHistory(true);
@@ -239,7 +264,7 @@ class CommandContextImpl implements CommandContext {
         cmdRegistry.registerHandler(new BatchHandler(), "batch");
         cmdRegistry.registerHandler(new BatchDiscardHandler(), "discard-batch");
         cmdRegistry.registerHandler(new BatchListHandler(), "list-batch");
-        cmdRegistry.registerHandler(new BatchHoldbackHandler(),  "holdback-batch");
+        cmdRegistry.registerHandler(new BatchHoldbackHandler(), "holdback-batch");
         cmdRegistry.registerHandler(new BatchRunHandler(), "run-batch");
         cmdRegistry.registerHandler(new BatchClearHandler(), "clear-batch");
         cmdRegistry.registerHandler(new BatchRemoveLineHandler(), "remove-batch-line");
@@ -283,6 +308,78 @@ class CommandContextImpl implements CommandContext {
         cmdRegistry.registerHandler(rolloutPlan, "rollout-plan");
     }
 
+    /**
+     * Initialise the SSLContext and associated TrustManager for this CommandContext.
+     *
+     * If no configuration is specified the default mode of operation will be to use a lazily initialised TrustManager with no
+     * KeyManager.
+     */
+    private void initSSLContext() throws CliInitializationException {
+        // If the standard properties have been set don't enable and CLI specific stores.
+        if (SecurityActions.getSystemProperty("javax.net.ssl.keyStore") != null
+                || SecurityActions.getSystemProperty("javax.net.ssl.trustStore") != null) {
+            return;
+        }
+
+        KeyManager[] keyManagers = null;
+        TrustManager[] trustManagers = null;
+
+        String trustStore = null;
+        String trustStorePassword = null;
+        boolean modifyTrustStore = true;
+
+        SSLConfig sslConfig = config.getSslConfig();
+        if (sslConfig != null) {
+            String keyStoreLoc = sslConfig.getKeyStore();
+            if (keyStoreLoc != null) {
+                char[] keyStorePassword = sslConfig.getKeyStorePassword().toCharArray();
+
+                File keyStoreFile = new File(keyStoreLoc);
+
+                FileInputStream fis = null;
+                try {
+                    fis = new FileInputStream(keyStoreFile);
+                    KeyStore theKeyStore = KeyStore.getInstance("JKS");
+                    theKeyStore.load(fis, keyStorePassword);
+
+                    KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+                    keyManagerFactory.init(theKeyStore, keyStorePassword);
+                    keyManagers = keyManagerFactory.getKeyManagers();
+                } catch (IOException e) {
+                    throw new CliInitializationException(e);
+                } catch (GeneralSecurityException e) {
+                    throw new CliInitializationException(e);
+                } finally {
+                    StreamUtils.safeClose(fis);
+                }
+
+            }
+
+            trustStore = sslConfig.getTrustStore();
+            trustStorePassword = sslConfig.getTrustStorePassword();
+            modifyTrustStore = sslConfig.isModifyTrustStore();
+        }
+
+        if (trustStore == null) {
+            final String userHome = SecurityActions.getSystemProperty("user.home");
+            File trustStoreFile = new File(userHome, ".jboss-cli.truststore");
+            trustStore = trustStoreFile.getAbsolutePath();
+            trustStorePassword = "cli_truststore"; // Risk of modification but no private keys to be stored in the truststore.
+        }
+
+        trustManager = new LazyDelagatingTrustManager(trustStore, trustStorePassword, modifyTrustStore);
+        trustManagers = new TrustManager[] { trustManager };
+
+        try {
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(keyManagers, trustManagers, null);
+
+            this.sslContext = sslContext;
+        } catch (GeneralSecurityException e) {
+            throw new CliInitializationException(e);
+        }
+    }
+
     @Override
     public boolean isTerminated() {
         return terminate;
@@ -310,8 +407,7 @@ class CommandContextImpl implements CommandContext {
                 StringBuilder op = new StringBuilder();
                 op.append(getPrefixFormatter().format(parsedCmd.getAddress()));
                 op.append(line.substring(line.indexOf(':')));
-                DefaultBatchedCommand batchedCmd = new DefaultBatchedCommand(
-                        op.toString(), request);
+                DefaultBatchedCommand batchedCmd = new DefaultBatchedCommand(op.toString(), request);
                 Batch batch = getBatchManager().getActiveBatch();
                 batch.add(batchedCmd);
                 printLine("#" + batch.size() + " " + batchedCmd.getCommand());
@@ -333,8 +429,7 @@ class CommandContextImpl implements CommandContext {
             }
 
             final String cmdName = parsedCmd.getOperationName();
-            CommandHandler handler = cmdRegistry.getCommandHandler(cmdName
-                    .toLowerCase());
+            CommandHandler handler = cmdRegistry.getCommandHandler(cmdName.toLowerCase());
             if (handler != null) {
                 if (isBatchMode() && handler.isBatchMode()) {
                     if (!(handler instanceof OperationCommand)) {
@@ -364,8 +459,7 @@ class CommandContextImpl implements CommandContext {
                 } catch (CommandFormatException e) {
                 }
             } else {
-                printLine("Unexpected command '" + line
-                        + "'. Type 'help' for the list of supported commands.");
+                printLine("Unexpected command '" + line + "'. Type 'help' for the list of supported commands.");
             }
         }
     }
@@ -396,8 +490,7 @@ class CommandContextImpl implements CommandContext {
                 outputTarget.newLine();
                 outputTarget.flush();
             } catch (IOException e) {
-                System.err.println("Failed to print '" + message
-                        + "' to the output target: " + e.getLocalizedMessage());
+                System.err.println("Failed to print '" + message + "' to the output target: " + e.getLocalizedMessage());
             }
             return;
         }
@@ -442,8 +535,7 @@ class CommandContextImpl implements CommandContext {
                     outputTarget.newLine();
                 }
             } catch (IOException e) {
-                System.err.println("Failed to print columns '" + col
-                        + "' to the console: " + e.getLocalizedMessage());
+                System.err.println("Failed to print columns '" + col + "' to the console: " + e.getLocalizedMessage());
             }
             return;
         }
@@ -495,46 +587,145 @@ class CommandContextImpl implements CommandContext {
 
     @Override
     public void connectController(String host, int port) {
-        if(host == null) {
+        if (host == null) {
             host = defaultControllerHost;
         }
 
-        if(port < 0) {
+        if (port < 0) {
             port = defaultControllerPort;
         }
 
-        try {
-            ModelControllerClient newClient = null;
+        boolean retry;
+        do {
+            retry = false;
+            try {
+                ModelControllerClient newClient = null;
 
-            CallbackHandler cbh = new AuthenticationCallbackHandler(username, password);
-            ModelControllerClient tempClient = ModelControllerClient.Factory.create(host, port, cbh);
-            switch (initialConnection(tempClient)) {
-                case SUCCESS:
-                    newClient = tempClient;
-                    break;
-                case CONNECTION_FAILURE:
-                    printLine("The controller is not available at " + host + ":" + port);
-                    break;
-                case AUTHENTICATION_FAILURE:
-                    printLine("Unable to authenticate against controller at " + host + ":" + port);
-                    break;
-            }
-
-            if (newClient != null) {
-                if (this.client != null) {
-                    disconnectController();
+                CallbackHandler cbh = new AuthenticationCallbackHandler(username, password);
+                ModelControllerClient tempClient = ModelControllerClient.Factory.create(host, port, cbh, sslContext);
+                switch (initialConnection(tempClient)) {
+                    case SUCCESS:
+                        newClient = tempClient;
+                        break;
+                    case CONNECTION_FAILURE:
+                        printLine("The controller is not available at " + host + ":" + port);
+                        break;
+                    case AUTHENTICATION_FAILURE:
+                        printLine("Unable to authenticate against controller at " + host + ":" + port);
+                        break;
+                    case SSL_FAILURE:
+                        try {
+                            retry = handleSSLFailure();
+                        } catch (IOException ignored) {
+                        }
+                        if (retry == false) {
+                            printLine("Unable to negotiate SSL connection with controller at " + host + ":" + port);
+                        }
+                        break;
                 }
 
-                client = newClient;
-                this.controllerHost = host;
-                this.controllerPort = port;
+                if (newClient != null) {
+                    if (this.client != null) {
+                        disconnectController();
+                    }
 
-                List<String> nodeTypes = Util.getNodeTypes(newClient, new DefaultOperationRequestAddress());
-                domainMode = nodeTypes.contains("server-group");
+                    client = newClient;
+                    this.controllerHost = host;
+                    this.controllerPort = port;
+
+                    List<String> nodeTypes = Util.getNodeTypes(newClient, new DefaultOperationRequestAddress());
+                    domainMode = nodeTypes.contains("server-group");
+                }
+            } catch (UnknownHostException e) {
+                printLine("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
             }
-        } catch (UnknownHostException e) {
-            printLine("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
+        } while (retry);
+    }
+
+    /**
+     * Handle the last SSL failure, prompting the user to accept or reject the certificate of the remote server.
+     *
+     * @return true if the connection should be retried.
+     */
+    private boolean handleSSLFailure() throws IOException {
+        Certificate[] lastChain;
+        if (trustManager == null || (lastChain = trustManager.getLastFailedCertificateChain()) == null) {
+            return false;
         }
+        printLine("Unable to connect due to unrecognised server certificate");
+        for (Certificate current : lastChain) {
+            if (current instanceof X509Certificate) {
+                X509Certificate x509Current = (X509Certificate) current;
+                Map<String, String> fingerprints = generateFingerprints(x509Current);
+                printLine("Subject    - " + x509Current.getSubjectX500Principal().getName());
+                printLine("Issuer     - " + x509Current.getIssuerDN().getName());
+                printLine("Valid From - " + x509Current.getNotBefore());
+                printLine("Valid To   - " + x509Current.getNotAfter());
+                for (String alg : fingerprints.keySet()) {
+                    printLine(alg + " : " + fingerprints.get(alg));
+                }
+                printLine("");
+            }
+        }
+
+        for (;;) {
+            String response;
+            if (trustManager.isModifyTrustStore()) {
+                response = readLine("Accept certificate? [N]o, [T]emporarily, [P]ermenantly : ", false, true);
+            } else {
+                response = readLine("Accept certificate? [N]o, [T]emporarily : ", false, true);
+            }
+
+            if (response != null && response.length() == 1) {
+                switch (response.toLowerCase().charAt(0)) {
+                    case 'n':
+                        return false;
+                    case 't':
+                        trustManager.storeChainTemporarily(lastChain);
+                        return true;
+                    case 'p':
+                        if (trustManager.isModifyTrustStore()) {
+                            trustManager.storeChainPermenantly(lastChain);
+                            return true;
+                        }
+
+                }
+            }
+        }
+    }
+
+    private static final String[] FINGERPRINT_ALOGRITHMS = new String[] { "MD5", "SHA1" };
+
+    private Map<String, String> generateFingerprints(final X509Certificate cert) throws IOException  {
+        Map<String, String> fingerprints = new HashMap<String, String>(FINGERPRINT_ALOGRITHMS.length);
+        for (String current : FINGERPRINT_ALOGRITHMS) {
+            try {
+                fingerprints.put(current, generateFingerPrint(current, cert.getEncoded()));
+            } catch (GeneralSecurityException e) {
+                throw new IOException("Unable to generate fingerprint", e);
+            }
+        }
+
+        return fingerprints;
+    }
+
+    private String generateFingerPrint(final String algorithm, final byte[] cert) throws GeneralSecurityException {
+        StringBuilder sb = new StringBuilder();
+
+        MessageDigest md = MessageDigest.getInstance(algorithm);
+        byte[] digested = md.digest(cert);
+        String hex = HexConverter.convertToHexString(digested);
+        boolean started = false;
+        for (int i = 0; i < hex.length() - 1; i += 2) {
+            if (started) {
+                sb.append(":");
+            } else {
+                started = true;
+            }
+            sb.append(hex.substring(i, i + 2));
+        }
+
+        return sb.toString();
     }
 
     /**
@@ -551,18 +742,23 @@ class CommandContextImpl implements CommandContext {
             // does not throw an Exception.
             return ConnectStatus.SUCCESS;
         } catch (Exception e) {
-            boolean authenticationFailure = false;
-
-            Throwable current = e;
-            while (current != null && authenticationFailure == false) {
-                if (current instanceof SaslException) {
-                    authenticationFailure = true;
+            try {
+                Throwable current = e;
+                while (current != null) {
+                    if (current instanceof SaslException) {
+                        return ConnectStatus.AUTHENTICATION_FAILURE;
+                    }
+                    if (current instanceof SSLException) {
+                        return ConnectStatus.SSL_FAILURE;
+                    }
+                    current = current.getCause();
                 }
-                current = current.getCause();
-            }
 
-            StreamUtils.safeClose(client);
-            return authenticationFailure ? ConnectStatus.AUTHENTICATION_FAILURE : ConnectStatus.CONNECTION_FAILURE;
+                // We don't know what happened, most likely a timeout.
+                return ConnectStatus.CONNECTION_FAILURE;
+            } finally {
+                StreamUtils.safeClose(client);
+            }
         }
     }
 
@@ -610,8 +806,7 @@ class CommandContextImpl implements CommandContext {
                 } else {
                     buffer.append("standalone@");
                 }
-                buffer.append(controllerHost).append(':')
-                        .append(controllerPort).append(' ');
+                buffer.append(controllerHost).append(':').append(controllerPort).append(' ');
                 promptConnectPart = buffer.toString();
             } else {
                 buffer.append("disconnected ");
@@ -673,8 +868,7 @@ class CommandContextImpl implements CommandContext {
     private final DefaultCallbackHandler tmpBatched = new DefaultCallbackHandler();
 
     @Override
-    public BatchedCommand toBatchedCommand(String line)
-            throws CommandFormatException {
+    public BatchedCommand toBatchedCommand(String line) throws CommandFormatException {
 
         if (line.isEmpty()) {
             throw new IllegalArgumentException("Null command line.");
@@ -703,8 +897,7 @@ class CommandContextImpl implements CommandContext {
 
         CommandHandler handler = cmdRegistry.getCommandHandler(parsedCmd.getOperationName());
         if (handler == null) {
-            throw new OperationFormatException("No command handler for '"
-                    + parsedCmd.getOperationName() + "'.");
+            throw new OperationFormatException("No command handler for '" + parsedCmd.getOperationName() + "'.");
         }
         if (!(handler instanceof OperationCommand)) {
             throw new OperationFormatException("The command is not allowed in a batch.");
@@ -762,7 +955,7 @@ class CommandContextImpl implements CommandContext {
     }
 
     protected void notifyListeners(CliEvent event) {
-        for(CliEventListener listener : listeners) {
+        for (CliEventListener listener : listeners) {
             listener.cliEvent(event, this);
         }
     }
@@ -775,24 +968,24 @@ class CommandContextImpl implements CommandContext {
             }
         }));
 
-        if(connect) {
+        if (connect) {
             connectController(null, -1);
         } else {
-            printLine("You are disconnected at the moment." +
-                " Type 'connect' to connect to the server or" +
-                " 'help' for the list of supported commands.");
+            printLine("You are disconnected at the moment." + " Type 'connect' to connect to the server or"
+                    + " 'help' for the list of supported commands.");
         }
 
         try {
             while (!isTerminated()) {
                 final String line = console.readLine(getPrompt());
-                if(line == null) {
+                if (line == null) {
                     terminateSession();
                 } else {
                     processLine(line.trim());
                 }
             }
-        } catch(Throwable t) {
+            printLine("");
+        } catch (Throwable t) {
             t.printStackTrace();
         } finally {
             disconnectController();
@@ -800,7 +993,7 @@ class CommandContextImpl implements CommandContext {
     }
 
     private enum ConnectStatus {
-        SUCCESS, AUTHENTICATION_FAILURE, CONNECTION_FAILURE
+        SUCCESS, AUTHENTICATION_FAILURE, SSL_FAILURE, CONNECTION_FAILURE
     }
 
     private class AuthenticationCallbackHandler implements CallbackHandler {
@@ -882,4 +1075,168 @@ class CommandContextImpl implements CommandContext {
             }
         }
     }
+
+    /**
+     * A trust manager that by default delegates to a lazily initialised TrustManager, this TrustManager also support both
+     * temporarily and permenantly accepting unknown server certificate chains.
+     *
+     * This class also acts as an agregation of the configuration related to TrustStore handling.
+     *
+     * It is not intended that Certificate management requests occur if this class is registered to a SSLContext
+     * with multiple concurrent clients.
+     */
+    private class LazyDelagatingTrustManager implements X509TrustManager {
+
+        // Configuration based state set on initialisation.
+
+        private final String trustStore;
+        private final String trustStorePassword;
+        private final boolean modifyTrustStore;
+
+        private Set<X509Certificate> temporarilyTrusted = new HashSet<X509Certificate>();
+        private Certificate[] lastFailedCert;
+        private X509TrustManager delegate;
+
+        LazyDelagatingTrustManager(String trustStore, String trustStorePassword, boolean modifyTrustStore) {
+            this.trustStore = trustStore;
+            this.trustStorePassword = trustStorePassword;
+            this.modifyTrustStore = modifyTrustStore;
+        }
+
+        /*
+         * Methods to allow client interaction for certificate verification.
+         */
+
+        boolean isModifyTrustStore() {
+            return modifyTrustStore;
+        }
+
+        void setFailedCertChain(final Certificate[] chain) {
+            this.lastFailedCert = chain;
+        }
+
+        Certificate[] getLastFailedCertificateChain() {
+            try {
+                return lastFailedCert;
+            } finally {
+                // Only one chance to accept it.
+                lastFailedCert = null;
+            }
+        }
+
+        synchronized void storeChainTemporarily(final Certificate[] chain) {
+            for (Certificate current : chain) {
+                if (current instanceof X509Certificate) {
+                    temporarilyTrusted.add((X509Certificate) current);
+                }
+            }
+            delegate = null; // Triggers a reload on next use.
+        }
+
+        synchronized void storeChainPermenantly(final Certificate[] chain) {
+            FileInputStream fis = null;
+            FileOutputStream fos = null;
+            try {
+                KeyStore theTrustStore = KeyStore.getInstance("JKS");
+                File trustStoreFile = new File(trustStore);
+                if (trustStoreFile.exists()) {
+                    fis = new FileInputStream(trustStoreFile);
+                    theTrustStore.load(fis, trustStorePassword.toCharArray());
+                    StreamUtils.safeClose(fis);
+                    fis = null;
+                } else {
+                    theTrustStore.load(null);
+                }
+                for (Certificate current : chain) {
+                    if (current instanceof X509Certificate) {
+                        X509Certificate x509Current = (X509Certificate) current;
+                        theTrustStore.setCertificateEntry(x509Current.getSubjectX500Principal().getName(), x509Current);
+                    }
+                }
+
+                fos = new FileOutputStream(trustStoreFile);
+                theTrustStore.store(fos, trustStorePassword.toCharArray());
+
+            } catch (GeneralSecurityException e) {
+                throw new IllegalStateException("Unable to operate on trust store.", e);
+            } catch (IOException e) {
+                throw new IllegalStateException("Unable to operate on trust store.", e);
+            } finally {
+                StreamUtils.safeClose(fis);
+                StreamUtils.safeClose(fos);
+            }
+
+            delegate = null; // Triggers a reload on next use.
+        }
+
+        /*
+         * Internal Methods
+         */
+
+        private synchronized X509TrustManager getDelegate() {
+            if (delegate == null) {
+                FileInputStream fis = null;
+                try {
+                    KeyStore theTrustStore = KeyStore.getInstance("JKS");
+                    File trustStoreFile = new File(trustStore);
+                    if (trustStoreFile.exists()) {
+                        fis = new FileInputStream(trustStoreFile);
+                        theTrustStore.load(fis, trustStorePassword.toCharArray());
+                    } else {
+                        theTrustStore.load(null);
+                    }
+                    for (X509Certificate current : temporarilyTrusted) {
+                        theTrustStore.setCertificateEntry(current.getSubjectX500Principal().getName(), current);
+                    }
+                    TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
+                    trustManagerFactory.init(theTrustStore);
+                    TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
+                    for (TrustManager current : trustManagers) {
+                        if (current instanceof X509TrustManager) {
+                            delegate = (X509TrustManager) current;
+                            break;
+                        }
+                    }
+                } catch (GeneralSecurityException e) {
+                    throw new IllegalStateException("Unable to operate on trust store.", e);
+                } catch (IOException e) {
+                    throw new IllegalStateException("Unable to operate on trust store.", e);
+                } finally {
+                    StreamUtils.safeClose(fis);
+                }
+            }
+            if (delegate == null) {
+                throw new IllegalStateException("Unable to create delegate trust manager.");
+            }
+
+            return delegate;
+        }
+
+        /*
+         * X509TrustManager Methods
+         */
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            // The CLI is only verifying servers.
+            getDelegate().checkClientTrusted(chain, authType);
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            try {
+                getDelegate().checkServerTrusted(chain, authType);
+            } catch (CertificateException ce) {
+                setFailedCertChain(chain);
+                throw ce;
+            }
+        }
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return getDelegate().getAcceptedIssuers();
+        }
+
+    }
+
 }

@@ -37,13 +37,13 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class RealmAuthenticationProviderService implements Service<RealmAuthenticationProvider> {
+public class RealmSecurityProviderService implements Service<RemotingSecurityProvider> {
 
     private final InjectedValue<SecurityRealm> securityRealmInjectedValue = new InjectedValue<SecurityRealm>();
     private final InjectedValue<CallbackHandler> serverCallbackValue = new InjectedValue<CallbackHandler>();
     private final InjectedValue<String> tmpDirValue = new InjectedValue<String>();
 
-    private volatile RealmAuthenticationProvider realmAuthenticationProvider = null;
+    private volatile RemotingSecurityProvider securityProvider = null;
     /** The base name of the AuthenticationProvider service */
     private static final ServiceName BASE_NAME = RemotingServices.REMOTING_BASE.append("authentication_provider");
 
@@ -70,15 +70,15 @@ public class RealmAuthenticationProviderService implements Service<RealmAuthenti
             authDir.setExecutable(true, true);
         }
 
-        realmAuthenticationProvider = new RealmAuthenticationProvider(securityRealmInjectedValue.getOptionalValue(), serverCallbackValue.getOptionalValue(), authDir.getAbsolutePath());
+        securityProvider = new RealmSecurityProvider(securityRealmInjectedValue.getOptionalValue(), serverCallbackValue.getOptionalValue(), authDir.getAbsolutePath());
     }
 
     public void stop(StopContext stopContext) {
-        realmAuthenticationProvider = null;
+        securityProvider = null;
     }
 
-    public RealmAuthenticationProvider getValue() throws IllegalStateException, IllegalArgumentException {
-        return realmAuthenticationProvider;
+    public RemotingSecurityProvider getValue() throws IllegalStateException, IllegalArgumentException {
+        return securityProvider;
     }
 
     public InjectedValue<SecurityRealm> getSecurityRealmInjectedValue() {

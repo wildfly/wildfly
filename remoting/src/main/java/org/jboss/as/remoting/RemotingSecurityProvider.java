@@ -19,48 +19,46 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.domain.management;
 
-import javax.net.ssl.SSLContext;
+package org.jboss.as.remoting;
 
-import org.jboss.as.domain.management.security.DomainCallbackHandler;
+import org.jboss.remoting3.security.ServerAuthenticationProvider;
+import org.xnio.OptionMap;
+import org.xnio.ssl.XnioSsl;
 
 /**
- * Interface to the security realm.
+ * Securing the Remoting connection requires three items, the OptionMap for configuration,
+ * the ServerAuthenticationProvider to provide CallbackHandler instances and the XnioSsl instance
+ * to wrap the SSLContext.
+ *
+ * This interface defines how a Provider will make these three items available.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public interface SecurityRealm {
+interface RemotingSecurityProvider {
 
     /**
-     * @return The name of this SecurityRealm
-     */
-    String getName();
-
-    /**
-     * @return The CallbackHandler for the realm
-     */
-    DomainCallbackHandler getCallbackHandler();
-
-    /**
-     * Used to obtain the SSLContext as configured for this security realm.
+     * Obtain the OptionMap containing the configuration for this security
+     * provider.
      *
-     * @return the SSLContext server identity for this realm.
-     * @throws IllegalStateException - If no SSL server-identity has been defined.
+     * @return the generated OptionMap.
      */
-    SSLContext getSSLContext();
+    OptionMap getOptionMap();
 
     /**
-     * Identify if a trust store has been configured for authentication, if defined
-     * it means CLIENT-CERT type authentication can occur.
+     * Obtain the ServerAuthenticationProvider to be used during authentication
+     * to obtain mechanism specific CallbackHanler instances.
      *
-     * @return true if a trust store has been configured for authentication.
+     * @return the ServerAuthenticationProvier.
      */
-    boolean hasTrustStore();
+    ServerAuthenticationProvider getServerAuthenticationProvider();
 
     /**
-     * @return A CallbackHandlerFactory for a pre-configured secret.
+     * Obtain a pre-configured XnioSsl instance to be used when SSL is enabled
+     * for the connection.
+     *
+     * @return the XnioSsl instance.
      */
-    CallbackHandlerFactory getSecretCallbackHandlerFactory();
+    XnioSsl getXnioSsl();
 
 }
