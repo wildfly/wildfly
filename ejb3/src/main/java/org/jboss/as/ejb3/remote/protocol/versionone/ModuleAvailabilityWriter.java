@@ -29,7 +29,7 @@ import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.ejb.client.remoting.PackedInteger;
 
 /**
- * User: jpai
+ * @author Jaikiran Pai
  */
 class ModuleAvailabilityWriter {
 
