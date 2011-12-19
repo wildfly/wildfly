@@ -27,6 +27,8 @@ import java.util.Set;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.web.WebExtension;
@@ -63,8 +65,17 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected Set<PathAddress> getIgnoredChildResourcesForRemovalTest() {
-        Set<PathAddress> ignored = new HashSet<PathAddress>();
-        return ignored;
-    }
+        Set<PathAddress> ignore = new HashSet<PathAddress>();
+        ignore.add(PathAddress.pathAddress(
+                PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, mainSubsystemName),
+                PathElement.pathElement("configuration","container")));
+        ignore.add(PathAddress.pathAddress(
+                PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, mainSubsystemName),
+                PathElement.pathElement("configuration","static-resources")));
+        ignore.add(PathAddress.pathAddress(
+                PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, mainSubsystemName),
+                PathElement.pathElement("configuration","jsp-configuration")));
 
+        return ignore;
+    }
 }

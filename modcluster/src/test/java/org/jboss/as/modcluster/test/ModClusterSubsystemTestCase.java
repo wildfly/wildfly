@@ -65,6 +65,7 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         };
     }
 
+    @Override
     protected Set<PathAddress> getIgnoredChildResourcesForRemovalTest() {
         return Collections.singleton(
                 PathAddress.pathAddress(
