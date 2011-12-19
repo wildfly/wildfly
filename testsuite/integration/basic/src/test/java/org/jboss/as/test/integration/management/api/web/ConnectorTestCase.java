@@ -73,6 +73,8 @@ import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNo
 public class ConnectorTestCase extends AbstractMgmtTestBase {
 
     private final File keyStoreFile = new File(System.getProperty("java.io.tmpdir"), "test.keystore");
+    private final File keyPEMFile = new File(System.getProperty("java.io.tmpdir"), "newkey.pem");
+    private final File certPEMFile = new File(System.getProperty("java.io.tmpdir"), "newcert.pem");
     private boolean isNative = false;
 
     public enum Connector {
@@ -80,7 +82,8 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
         HTTP("http", "http", "HTTP/1.1", false), HTTPS("http", "https", "HTTP/1.1", true), AJP("ajp", "http", "AJP/1.3", false), HTTPJIO(
                 "http", "http", "org.apache.coyote.http11.Http11Protocol", false), HTTPSJIO("http", "https",
                 "org.apache.coyote.http11.Http11Protocol", true), AJPJIO("ajp", "http", "org.apache.coyote.ajp.AjpProtocol",
-                false), HTTPNATIVE("http", "http", "org.apache.coyote.http11.Http11AprProtocol", false), ;
+                false), HTTPNATIVE("http", "http", "org.apache.coyote.http11.Http11AprProtocol", false), HTTPSNATIVE("http",
+                "https", "org.apache.coyote.http11.Http11AprProtocol", true);
         private final String name;
         private final String scheme;
         private final String protocol;
@@ -203,6 +206,29 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
     }
 
     @Test
+    public void testHttpsNativeConnector() throws Exception {
+        if (isNative) {
+            FileUtils.copyURLToFile(ConnectorTestCase.class.getResource("newkey.pem"), keyPEMFile);
+            FileUtils.copyURLToFile(ConnectorTestCase.class.getResource("newcert.pem"), certPEMFile);
+            addConnector(Connector.HTTPSNATIVE);
+            // check that the connector is live
+            String cURL = "https://" + url.getHost() + ":8181";
+            HttpClient httpClient = wrapClient(new DefaultHttpClient());
+            HttpGet get = new HttpGet(cURL);
+
+            HttpResponse hr = httpClient.execute(get);
+            String response = EntityUtils.toString(hr.getEntity());
+            assertTrue("Invalid response: " + response, response.indexOf("JBoss") >= 0);
+            removeConnector(Connector.HTTPSNATIVE);
+
+            if (keyPEMFile.exists())
+                keyPEMFile.delete();
+            if (certPEMFile.exists())
+                certPEMFile.delete();
+        }
+    }
+
+    @Test
     public void testAjpConnector() throws Exception {
         addConnector(Connector.AJP);
         removeConnector(Connector.AJP);
@@ -287,7 +313,12 @@ public class ConnectorTestCase extends AbstractMgmtTestBase {
         op.get("enabled").set(true);
         if (conn.isSecure()) {
             ModelNode ssl = new ModelNode();
-            ssl.get("certificate-key-file").set(keyStoreFile.getAbsolutePath());
+            if (conn.equals(Connector.HTTPSNATIVE)) {
+                ssl.get("certificate-key-file").set(keyPEMFile.getAbsolutePath());
+                ssl.get("certificate-file").set(certPEMFile.getAbsolutePath());
+            } else {
+                ssl.get("certificate-key-file").set(keyStoreFile.getAbsolutePath());
+            }
             ssl.get("password").set("test123");
             op.get("ssl").set(ssl);
         }
