@@ -136,7 +136,7 @@ class DataSourcesSubsystemProviders {
             Constants.SPY, Constants.USE_CCM,
             Constants.RECOVERY_USERNAME, Constants.RECOVERY_PASSWORD,
             Constants.RECOVERY_SECURITY_DOMAIN, Constants.RECOVERLUGIN_CLASSNAME,
-            Constants.RECOVERLUGIN_PROPERTIES, Constants.NO_RECOVERY};
+            Constants.RECOVERLUGIN_PROPERTIES, Constants.NO_RECOVERY, Constants.JTA};
 
     static final SimpleAttributeDefinition[] READONLY_DATASOURCE_ATTRIBUTE = new SimpleAttributeDefinition[] {Constants.ENABLED };
 
@@ -802,6 +802,11 @@ class DataSourcesSubsystemProviders {
             final ModelNode operation = new ModelNode();
             operation.get(OPERATION_NAME).set(ENABLE);
             operation.get(DESCRIPTION).set(bundle.getString("xa-data-source.enable"));
+            operation.get(REQUEST_PROPERTIES, PERSISTENT, DESCRIPTION).set(
+                    bundle.getString(PERSISTENT));
+            operation.get(REQUEST_PROPERTIES, PERSISTENT, TYPE).set(ModelType.BOOLEAN);
+            operation.get(REQUEST_PROPERTIES, PERSISTENT, REQUIRED).set(false);
+            operation.get(REQUEST_PROPERTIES, PERSISTENT, DEFAULT).set(true);
             return operation;
         }
     };

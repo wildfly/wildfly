@@ -238,7 +238,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                         }
                         case BEAN_VALIDATION_GROUP: {
                             String value = rawElementText(reader);
-                            BEANVALIDATIONGROUPS.parseAndSetParameter(value, operation, reader);
+                            operation.get(BEANVALIDATIONGROUPS.getName()).add(BEANVALIDATIONGROUPS.parse(value, reader));
                             break;
                         }
                         case BOOTSTRAP_CONTEXT: {

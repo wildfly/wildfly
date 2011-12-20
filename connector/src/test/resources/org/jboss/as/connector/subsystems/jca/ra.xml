@@ -3,7 +3,7 @@
                 <resource-adapter>
                     <archive>some.rar</archive>
 		    <bootstrap-context>someContext</bootstrap-context>
-                    
+
 		    <bean-validation-groups>
 		      <bean-validation-group>Class0</bean-validation-group>
 		      <bean-validation-group>Class00</bean-validation-group>
@@ -50,18 +50,18 @@
 			    </validation>
 			  <recovery no-recovery="false">
 			    <recover-credential>
-			      <user-name>sa</user-name> 
-			       <password>sa-pass</password> 
-			        <security-domain>HsqlDbRealm</security-domain> 
+			      <user-name>sa</user-name>
+			       <password>sa-pass</password>
+			        <security-domain>HsqlDbRealm</security-domain>
 			     </recover-credential>
-			        <recover-plugin class-name="Class2">
+			        <recover-plugin class-name="someClass2">
 				<config-property name="Property">C</config-property>
 			      </recover-plugin>
 			    </recovery>
-			    
+
 		      </connection-definition>
                     </connection-definitions>
-		    
+
                     <admin-objects>
                         <admin-object
                                 class-name="Class3"

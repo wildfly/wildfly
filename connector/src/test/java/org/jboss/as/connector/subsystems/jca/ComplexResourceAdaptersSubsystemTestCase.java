@@ -51,7 +51,6 @@ public class ComplexResourceAdaptersSubsystemTestCase extends AbstractSubsystemT
     }
 
     @Test
-    @Ignore("AS7-3007")
 
     public void testResourceAdapters() throws Exception{
 
@@ -84,7 +83,7 @@ public class ComplexResourceAdaptersSubsystemTestCase extends AbstractSubsystemT
         ModelNode raConnModel=raCommonModel.get("connection-definitions", "Pool1");
         controlModelParams(raConnModel,params);
         Assert.assertEquals(raConnModel.asString(),"B",raConnModel.get("config-properties","Property","value").asString());
-        Assert.assertEquals(raConnModel.asString(),"C",raConnModel.get("recover-plugin-config-properties","Property","value").asString());
+        Assert.assertEquals(raConnModel.asString(),"C",raConnModel.get("recovery-plugin-properties","Property").asString());
 
         //Marshal the xml to see that it is the same as before
         String marshalled = services.getPersistedSubsystemXml();

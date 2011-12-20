@@ -122,7 +122,7 @@
                         <track-statements>nowarn</track-statements>
                     </statement>
                 </datasource>
-                <xa-datasource jndi-name="java:jboss/xa-datasources/complexXaDs" pool-name="complexXaDs_Pool" use-java-context="true" spy="false" use-ccm="true">
+                <xa-datasource jndi-name="java:jboss/xa-datasources/complexXaDs" pool-name="complexXaDs_Pool" use-java-context="true" spy="false" use-ccm="true" jta="false">
                     <xa-datasource-property name="URL">
                         jdbc:h2:mem:test
                     </xa-datasource-property>
@@ -198,7 +198,7 @@
                             </security-domain>
                         </recover-credential>
                         <recover-plugin class-name="someClass5">
-			</recover-plugin>  
+			</recover-plugin>
                     </recovery>
                     <validation>
                         <valid-connection-checker class-name="someClass2">
