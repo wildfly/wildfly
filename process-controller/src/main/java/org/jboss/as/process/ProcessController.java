@@ -202,7 +202,7 @@ public final class ProcessController {
 
             // In order to do a controlled shutdown we stop the host controller first
             // it will stop all managed servers and wait until they shutdown
-            final ManagedProcess hc = processesByKey.get(Main.HOST_CONTROLLER_PROCESS_NAME);
+            final ManagedProcess hc = processes.get(Main.HOST_CONTROLLER_PROCESS_NAME);
             if(hc != null && hc.isRunning()) {
                 hc.shutdown();
                 while(processes.containsKey(Main.HOST_CONTROLLER_PROCESS_NAME)) {
