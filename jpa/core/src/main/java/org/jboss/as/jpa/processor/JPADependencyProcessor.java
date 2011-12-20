@@ -71,6 +71,7 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
     private static final ModuleIdentifier HIBERNATE_ENVERS_ID = ModuleIdentifier.create("org.hibernate.envers");
     // module dependencies for hibernate3
     private static final ModuleIdentifier JBOSS_AS_NAMING_ID = ModuleIdentifier.create("org.jboss.as.naming");
+    private static final ModuleIdentifier JBOSS_MSC_ID = ModuleIdentifier.create("org.jboss.msc");
     private static final ModuleIdentifier JBOSS_JANDEX_ID = ModuleIdentifier.create("org.jboss.jandex");
 
     /**
@@ -214,6 +215,7 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
             // hack in the dependencies which are part of hibernate3integration
             // TODO:  do this automatically (adding dependencies found in HIBERNATE_3_PROVIDER).
             addDependency(moduleSpecification, moduleLoader, JBOSS_AS_NAMING_ID);
+            addDependency(moduleSpecification, moduleLoader, JBOSS_MSC_ID);
             addDependency(moduleSpecification, moduleLoader, JBOSS_JANDEX_ID);
         } catch (ModuleLoadException e) {
             throw MESSAGES.cannotLoadModule(e, HIBERNATE_3_PROVIDER, "hibernate 3");

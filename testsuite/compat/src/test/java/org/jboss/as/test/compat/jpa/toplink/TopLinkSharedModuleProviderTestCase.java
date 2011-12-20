@@ -23,13 +23,16 @@
 package org.jboss.as.test.compat.jpa.toplink;
 
 import javax.naming.InitialContext;
-import javax.naming.NameClassPair;
-import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.compat.common.EmployeeBean;
+import org.jboss.as.test.compat.common.JndiUtil;
+import org.jboss.as.test.compat.common.Employee;
+import org.jboss.as.test.compat.jpa.JpaEmployeeBean;
+import org.jboss.as.test.compat.common.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -53,14 +56,13 @@ public class TopLinkSharedModuleProviderTestCase {
     private static final String persistence_xml =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
             "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
-            "  <persistence-unit name=\"hibernate3_pc\">" +
-            "<provider>oracle.toplink.essentials.PersistenceProvider</provider>"+
-            "    <description>TopLink Persistence Unit." +
-            "    </description>" +
-            "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
+            "    <persistence-unit name=\"test-compat-persistence-context\">" +
+            "        <provider>oracle.toplink.essentials.PersistenceProvider</provider>"+
+            "        <description>TopLink Persistence Unit</description>" +
+            "        <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
 // uncomment after AS7-886 is fixed
-//            "<class>org.jboss.as.test.compat.jpa.toplink.Employee</class>" +
-            "  </persistence-unit>" +
+//            "        <class>org.jboss.as.test.compat.common.Employee</class>" +
+            "    </persistence-unit>" +
             "</persistence>";
 
     @ArquillianResource
@@ -77,7 +79,7 @@ public class TopLinkSharedModuleProviderTestCase {
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, ARCHIVE_NAME + ".ear");
 
         JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "beans.jar");
-        lib.addClasses(SFSB1.class);
+        lib.addClasses(EmployeeBean.class, JpaEmployeeBean.class);
         ear.addAsModule(lib);
 
         lib = ShrinkWrap.create(JavaArchive.class, "entities.jar");
@@ -86,55 +88,22 @@ public class TopLinkSharedModuleProviderTestCase {
         ear.addAsLibraries(lib);
 
         final WebArchive main = ShrinkWrap.create(WebArchive.class, "main.war");
-        main.addClasses(TopLinkSharedModuleProviderTestCase.class);
+        main.addClasses(TopLinkSharedModuleProviderTestCase.class, JndiUtil.class, TestUtil.class);
         ear.addAsModule(main);
 
         return ear;
     }
 
-    protected static <T> T lookup(String beanName, Class<T> interfaceType) throws NamingException {
-        try {
-            return interfaceType.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + "beans/" + beanName + "!" + interfaceType.getName()));
-        } catch (NamingException e) {
-            dumpJndi("");
-            throw e;
-        }
-    }
-
-    // TODO: move this logic to a common base class (might be helpful for writing new tests)
-    private static void dumpJndi(String s) {
-        try {
-            dumpTreeEntry(iniCtx.list(s), s);
-        } catch (NamingException ignore) {
-        }
-    }
-
-    private static void dumpTreeEntry(NamingEnumeration<NameClassPair> list, String s) throws NamingException {
-        System.out.println("\ndump " + s);
-        while (list.hasMore()) {
-            NameClassPair ncp = list.next();
-            System.out.println(ncp.toString());
-            if (s.length() == 0) {
-                dumpJndi(ncp.getName());
-            } else {
-                dumpJndi(s + "/" + ncp.getName());
-            }
-        }
-    }
-
     @Test
     public void testLoadTSJavaLogClassInTopLinkProviderJar() throws Exception {
-        Class toplinkClass = Employee.class.getClassLoader().loadClass("com.sun.jpalog.TSJavaLog");
+        Employee.class.getClassLoader().loadClass("com.sun.jpalog.TSJavaLog");
         // success is when loadClass() didn't throw an exception
     }
 
     @Test
     public void testSimpleCreateAndLoadEntities() throws Exception {
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
-        sfsb1.createEmployee("Kelly Smith", "Watford, England", 10);
-        sfsb1.createEmployee("Alex Scott", "London, England", 20);
-        sfsb1.getEmployeeNoTX(10);
-        sfsb1.getEmployeeNoTX(20);
+        final EmployeeBean employeeBean = JndiUtil.lookup(iniCtx, ARCHIVE_NAME, JpaEmployeeBean.class, EmployeeBean.class);
+        TestUtil.testSimpleCreateAndLoadEntities(employeeBean);
     }
 
 }

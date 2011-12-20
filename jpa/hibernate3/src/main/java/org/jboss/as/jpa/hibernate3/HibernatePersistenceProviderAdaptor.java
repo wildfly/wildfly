@@ -33,6 +33,8 @@ import org.jboss.as.jpa.spi.JtaManager;
 import org.jboss.as.jpa.spi.ManagementAdaptor;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
+import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -42,14 +44,16 @@ import org.jboss.msc.service.ServiceName;
  */
 public class HibernatePersistenceProviderAdaptor implements PersistenceProviderAdaptor {
 
-    private static final String DEFAULT_REGION_FACTORY = "org.jboss.as.jpa.hibernate.cache.infinispan.InfinispanRegionFactory";
+    private static final String DEFAULT_REGION_FACTORY = "org.hibernate.cache.infinispan.JndiInfinispanRegionFactory";
+    private static final String DEFAULT_CACHE_MANAGER = "java:jboss/infinispan/container/hibernate";
     private static final String DEFAULT_CACHE_CONTAINER = "hibernate";
     private static final String DEFAULT_ENTITY_CACHE = "entity";
     private static final String DEFAULT_COLLECTION_CACHE = "entity";
     private static final String DEFAULT_QUERY_CACHE = "local-query";
     private static final String DEFAULT_TIMESTAMPS_CACHE = "timestamps";
-    public static final String SCANNER = "hibernate.ejb.resource_scanner";
+    private static final String SCANNER = "hibernate.ejb.resource_scanner";
     private static final String HIBERNATE_ANNOTATION_SCANNER_CLASS = "org.jboss.as.jpa.hibernate3.HibernateAnnotationScanner";
+
 
     @Override
     public void injectJtaManager(JtaManager jtaManager) {
@@ -79,38 +83,46 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
     }
 
     @Override
-    public Iterable<ServiceName> getProviderDependencies(PersistenceUnitMetadata pu) {
-        Properties properties = pu.getProperties();
+    public Iterable<ServiceName> getProviderDependencies(final PersistenceUnitMetadata pu) {
+        final Properties properties = pu.getProperties();
         if (Boolean.parseBoolean(properties.getProperty("hibernate.cache.use_second_level_cache"))) {
-            if (properties.getProperty("hibernate.cache.region_prefix") == null) {
-                // cache entries for this PU will be identified by scoped pu name + Entity class name
-                properties.put("hibernate.cache.region_prefix", pu.getScopedPersistenceUnitName());
-            }
-            String regionFactory = properties.getProperty("hibernate.cache.region.factory_class");
-            if (regionFactory == null) {
-                regionFactory = DEFAULT_REGION_FACTORY;
-                properties.setProperty("hibernate.cache.region.factory_class", regionFactory);
-            }
+
+            setIfAbsentAndGet(properties, "hibernate.cache.region_prefix", pu.getScopedPersistenceUnitName());
+            final String regionFactory = setIfAbsentAndGet(properties, "hibernate.cache.region.factory_class", DEFAULT_REGION_FACTORY);
+            final String cacheManager = setIfAbsentAndGet(properties, "hibernate.cache.infinispan.cachemanager", DEFAULT_CACHE_MANAGER);
+
             if (regionFactory.equals(DEFAULT_REGION_FACTORY)) {
                 // Set infinispan defaults
-                String container = properties.getProperty("hibernate.cache.infinispan.container");
-                if (container == null) {
-                    container = DEFAULT_CACHE_CONTAINER;
-                    properties.setProperty("hibernate.cache.infinispan.container", container);
-                }
-                String entity = properties.getProperty("hibernate.cache.infinispan.entity.cfg", DEFAULT_ENTITY_CACHE);
-                String collection = properties.getProperty("hibernate.cache.infinispan.collection.cfg", DEFAULT_COLLECTION_CACHE);
-                String query = properties.getProperty("hibernate.cache.infinispan.query.cfg", DEFAULT_QUERY_CACHE);
-                String timestamps = properties.getProperty("hibernate.cache.infinispan.timestamps.cfg", DEFAULT_TIMESTAMPS_CACHE);
-                Set<ServiceName> result = new HashSet<ServiceName>();
+                final String container = setIfAbsentAndGet(properties, "hibernate.cache.infinispan.container", DEFAULT_CACHE_CONTAINER);
+
+                final String entity = properties.getProperty("hibernate.cache.infinispan.entity.cfg", DEFAULT_ENTITY_CACHE);
+                final String collection = properties.getProperty("hibernate.cache.infinispan.collection.cfg", DEFAULT_COLLECTION_CACHE);
+                final String query = properties.getProperty("hibernate.cache.infinispan.query.cfg", DEFAULT_QUERY_CACHE);
+                final String timestamps = properties.getProperty("hibernate.cache.infinispan.timestamps.cfg", DEFAULT_TIMESTAMPS_CACHE);
+
+                final Set<ServiceName> result = new HashSet<ServiceName>();
                 result.add(this.getCacheConfigServiceName(container, entity));
                 result.add(this.getCacheConfigServiceName(container, collection));
                 result.add(this.getCacheConfigServiceName(container, timestamps));
                 result.add(this.getCacheConfigServiceName(container, query));
+                result.add(ContextNames.bindInfoFor(toJndiName(cacheManager).toString()).getBinderServiceName());
                 return result;
             }
         }
         return null;
+    }
+
+    private String setIfAbsentAndGet(final Properties properties, final String property, final String defaultValue) {
+        final String value = properties.getProperty(property);
+        if (value == null) {
+            properties.setProperty(property, defaultValue);
+            return defaultValue;
+        }
+        return value;
+    }
+
+    private static JndiName toJndiName(final String value) {
+        return value.startsWith("java:") ? JndiName.of(value) : JndiName.of("java:jboss").append(value.startsWith("/") ? value.substring(1) : value);
     }
 
     private ServiceName getCacheConfigServiceName(String container, String cache) {

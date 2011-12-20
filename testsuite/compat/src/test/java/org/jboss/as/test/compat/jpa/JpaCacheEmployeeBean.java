@@ -20,48 +20,39 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.compat.jpa.toplink;
+package org.jboss.as.test.compat.jpa;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import org.jboss.as.test.compat.common.Employee;
+import org.jboss.as.test.compat.common.EmployeeBean;
+
+import javax.annotation.Resource;
+import javax.ejb.Stateful;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 /**
- * weblink entity class
+ * stateful session bean
  *
  * @author Scott Marlow
  */
-@Entity
-public class WebLink {
+@Stateful
+public class JpaCacheEmployeeBean implements EmployeeBean {
+    @PersistenceContext(unitName = "test-compat-persistence-context")
+    private EntityManager entityManager;
 
-    @Id
-    private int id;
+    @Resource(mappedName = "java:jboss/infinispan/container/hibernate")
+    private Object container;
 
-    private String name;
-
-    private String address;
-
-    public String getName() {
-        return name;
+    public void createEmployee(final int id, final String name, final String address) {
+        final Employee employee = new Employee();
+        employee.setId(id);
+        employee.setAddress(address);
+        employee.setName(name);
+        entityManager.persist(employee);
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public Employee getEmployee(final int id) {
+        return entityManager.find(Employee.class, id);
     }
 
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public int getId() {
-
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
 }

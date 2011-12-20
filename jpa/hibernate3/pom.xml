@@ -44,13 +44,13 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
-            <version>3.6.6.Final</version>
+            <version>${version.org.hibernate3}</version>
         </dependency>
 
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-entitymanager</artifactId>
-            <version>3.6.6.Final</version>
+            <version>${version.org.hibernate3}</version>
         </dependency>
 
         <!-- Internal -->
@@ -78,6 +78,11 @@
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-jpa-spi</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-naming</artifactId>
         </dependency>
 
         <dependency>
@@ -137,7 +142,7 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-commons-annotations</artifactId>
-            <version>3.2.0.Final</version>
+            <version>${version.org.hibernate3.commons.annotations}</version>
         </dependency>
 
         <dependency>

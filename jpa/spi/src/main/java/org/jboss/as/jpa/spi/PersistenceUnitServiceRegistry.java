@@ -33,7 +33,7 @@ public interface PersistenceUnitServiceRegistry {
      * Get the persistence unit service associated with the given management resource name.
      *
      * @param persistenceUnitResourceName the name of the management resource representing persistence unit, as was previously
-     *                                    provided to {@link ManagementAdaptor#createPersistenceUnitResource(String)}
+     *                            provided to {@link ManagementAdaptor#createPersistenceUnitResource(String, String)}
      * @return a PersistenceUnitService or {@code null} if the persistence unit service has not been started or has been stopped
      */
     PersistenceUnitService getPersistenceUnitService(String persistenceUnitResourceName);

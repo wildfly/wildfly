@@ -22,19 +22,17 @@
 
 package org.jboss.as.test.compat.jpa.hibernate;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.Assert.assertEquals;
-
-import java.io.File;
-
-import javax.naming.InitialContext;
-import javax.naming.NameClassPair;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.compat.common.Employee;
+import org.jboss.as.test.compat.common.EmployeeBean;
+import org.jboss.as.test.compat.common.HttpRequest;
+import org.jboss.as.test.compat.common.JndiUtil;
+import org.jboss.as.test.compat.jpa.JpaEmployeeBean;
+import org.jboss.as.test.compat.common.SimpleServlet;
+import org.jboss.as.test.compat.common.TestUtil;
+import org.jboss.as.test.compat.common.WebLink;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -43,6 +41,9 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.naming.InitialContext;
+import java.io.File;
 
 /**
  * @author Scott Marlow
@@ -55,7 +56,7 @@ public class Hibernate3EmbeddedProviderTestCase {
     private static final String persistence_xml =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
             "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
-            "  <persistence-unit name=\"hibernate3_pc\">" +
+            "  <persistence-unit name=\"test-compat-persistence-context\">" +
             "    <description>Persistence Unit." +
             "    </description>" +
             "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
@@ -86,16 +87,10 @@ public class Hibernate3EmbeddedProviderTestCase {
         File hibernatecore = new File(testdir, "hibernate3-core.jar");
         File hibernateannotations = new File(testdir, "hibernate3-commons-annotations.jar");
         File hibernateentitymanager = new File(testdir, "hibernate3-entitymanager.jar");
-        File dom4j = new File(testdir, "dom4j.jar");
-        File commonCollections = new File(testdir, "commons-collections.jar");
-        File antlr = new File(testdir, "antlr.jar");
         ear.addAsLibraries(
             hibernatecore,
             hibernateannotations,
-            hibernateentitymanager,
-            dom4j,
-            commonCollections,
-            antlr
+            hibernateentitymanager
         );
 
     }
@@ -103,41 +98,41 @@ public class Hibernate3EmbeddedProviderTestCase {
     @Deployment
     public static Archive<?> deploy() throws Exception {
 
-        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, ARCHIVE_NAME + ".ear");
+        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, ARCHIVE_NAME + ".ear");
         addHibernate3JarsToEar(ear);
 
-        JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "beans.jar");
-        lib.addClasses(SFSB1.class, HttpRequest.class);
+        final JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "beans.jar");
+        lib.addClasses(EmployeeBean.class, JpaEmployeeBean.class, HttpRequest.class);
         ear.addAsModule(lib);
 
-        lib = ShrinkWrap.create(JavaArchive.class, "entities.jar");
-        lib.addClasses(Employee.class);
-        lib.addAsManifestResource(new StringAsset(persistence_xml), "persistence.xml");
-        ear.addAsLibraries(lib);
+        final JavaArchive entities = ShrinkWrap.create(JavaArchive.class, "entities.jar");
+        entities.addClasses(Employee.class);
+        entities.addAsManifestResource(new StringAsset(persistence_xml), "persistence.xml");
+        ear.addAsLibraries(entities);
 
         final WebArchive main = ShrinkWrap.create(WebArchive.class, "main.war");
-        main.addClasses(Hibernate3EmbeddedProviderTestCase.class);
+        main.addClasses(Hibernate3EmbeddedProviderTestCase.class, JndiUtil.class, TestUtil.class);
         ear.addAsModule(main);
 
         // add war that contains its own pu
-        WebArchive war = ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME + ".war");
+        final WebArchive war = ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME + ".war");
         war.addClasses(SimpleServlet.class, WebLink.class);
         war.addAsResource(new StringAsset(web_persistence_xml), "META-INF/persistence.xml");
 
         war.addAsWebInfResource(
-            new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "\n" +
-                "<web-app version=\"3.0\"\n" +
-                "         xmlns=\"http://java.sun.com/xml/ns/javaee\"\n" +
-                "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-                "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd\"\n" +
-                "         metadata-complete=\"false\">\n" +
-                "<servlet-mapping>\n" +
-                "        <servlet-name>SimpleServlet</servlet-name>\n" +
-                "        <url-pattern>/simple/*</url-pattern>\n" +
-                "    </servlet-mapping>\n" +
-                "</web-app>"),
-            "web.xml");
+                new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                        "\n" +
+                        "<web-app version=\"3.0\"\n" +
+                        "         xmlns=\"http://java.sun.com/xml/ns/javaee\"\n" +
+                        "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+                        "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd\"\n" +
+                        "         metadata-complete=\"false\">\n" +
+                        "<servlet-mapping>\n" +
+                        "        <servlet-name>SimpleServlet</servlet-name>\n" +
+                        "        <url-pattern>/simple/*</url-pattern>\n" +
+                        "    </servlet-mapping>\n" +
+                        "</web-app>"),
+                "web.xml");
 
         ear.addAsModule(war);
 
@@ -151,6 +146,9 @@ public class Hibernate3EmbeddedProviderTestCase {
             " <deployment>" +
             "  <dependencies>" +
             "   <module name=\"com.h2database.h2\" />" +
+            "   <module name=\"org.antlr\" />" +
+            "   <module name=\"org.apache.commons.collections\" />" +
+            "   <module name=\"org.dom4j\" />" +
             "   <module name=\"org.slf4j\"/>" +
             "  </dependencies>" +
             " </deployment>" +
@@ -163,56 +161,15 @@ public class Hibernate3EmbeddedProviderTestCase {
     @ArquillianResource
     private InitialContext iniCtx;
 
-    protected <T> T lookup(String beanName, Class<T> interfaceType) throws NamingException {
-        try {
-            return interfaceType.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + "beans/" + beanName + "!" + interfaceType.getName()));
-        } catch (NamingException e) {
-            dumpJndi("");
-            throw e;
-        }
-    }
-
-    // TODO: move this logic to a common base class (might be helpful for writing new tests)
-    private void dumpJndi(String s) {
-        try {
-            dumpTreeEntry(iniCtx.list(s), s);
-        } catch (NamingException ignore) {
-        }
-    }
-
-    private void dumpTreeEntry(NamingEnumeration<NameClassPair> list, String s) throws NamingException {
-        System.out.println("\ndump " + s);
-        while (list.hasMore()) {
-            NameClassPair ncp = list.next();
-            System.out.println(ncp.toString());
-            if (s.length() == 0) {
-                dumpJndi(ncp.getName());
-            } else {
-                dumpJndi(s + "/" + ncp.getName());
-            }
-        }
-    }
-
     @Test
     public void testSimpleCreateAndLoadEntities() throws Exception {
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
-        sfsb1.createEmployee("Kelly Smith", "Watford, England", 10);
-        sfsb1.createEmployee("Alex Scott", "London, England", 20);
-        sfsb1.getEmployeeNoTX(10);
-        sfsb1.getEmployeeNoTX(20);
-    }
-
-    private static String performCall(String urlPattern, String param) throws Exception {
-        return HttpRequest.get("http://localhost:8080/hibernate3_test/" + urlPattern + "?input=" + param, 10, SECONDS);
+        final EmployeeBean employeeBean = JndiUtil.lookup(iniCtx, ARCHIVE_NAME, JpaEmployeeBean.class, EmployeeBean.class);
+        TestUtil.testSimpleCreateAndLoadEntities(employeeBean);
     }
 
     @Test
     public void testServletSubDeploymentRead() throws Exception {
-        String result = performCall("simple", "Hello+world");
-        assertEquals("0", result);
-
-        result = performCall("simple", "Hello+world");
-        assertEquals("0", result);
+        TestUtil.testServletSubDeploymentRead(ARCHIVE_NAME, "Hello+world");
     }
 
 

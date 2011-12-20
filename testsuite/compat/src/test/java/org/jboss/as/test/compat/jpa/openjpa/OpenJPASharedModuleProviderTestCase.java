@@ -24,6 +24,11 @@ package org.jboss.as.test.compat.jpa.openjpa;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.compat.common.EmployeeBean;
+import org.jboss.as.test.compat.common.JndiUtil;
+import org.jboss.as.test.compat.common.Employee;
+import org.jboss.as.test.compat.jpa.JpaEmployeeBean;
+import org.jboss.as.test.compat.common.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -39,7 +44,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Create org.apache.openjpa:main module before running this test. The module
- * must depend on javaee.api and org.jboss.as.jpa.openjpa. 
+ * must depend on javaee.api and org.jboss.as.jpa.openjpa.
  *
  * @author Antti Laisi
  */
@@ -52,7 +57,7 @@ public class OpenJPASharedModuleProviderTestCase {
     private static final String persistence_xml =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
         "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
-        "   <persistence-unit name=\"openjpa_pc\">" +
+        "   <persistence-unit name=\"test-compat-persistence-context\">" +
         "       <provider>org.apache.openjpa.persistence.PersistenceProviderImpl</provider>"+
         "       <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
         "       <properties>" +
@@ -71,7 +76,7 @@ public class OpenJPASharedModuleProviderTestCase {
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, ARCHIVE_NAME + ".ear");
 
         JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "beans.jar");
-        lib.addClasses(SFSB1.class);
+        lib.addClasses(EmployeeBean.class, JpaEmployeeBean.class);
         ear.addAsModule(lib);
 
         lib = ShrinkWrap.create(JavaArchive.class, "entities.jar");
@@ -80,19 +85,16 @@ public class OpenJPASharedModuleProviderTestCase {
         ear.addAsLibraries(lib);
 
         WebArchive main = ShrinkWrap.create(WebArchive.class, "main.war");
-        main.addClasses(OpenJPASharedModuleProviderTestCase.class);
+        main.addClasses(OpenJPASharedModuleProviderTestCase.class, JndiUtil.class, TestUtil.class);
         ear.addAsModule(main);
-        
+
         return ear;
     }
 
     @Test
     public void testSimpleCreateAndLoadEntities() throws Exception {
-        SFSB1 sfsb1 = InitialContext.doLookup("java:global/" + ARCHIVE_NAME + "/beans/SFSB1");
-        sfsb1.createEmployee("Kelly Smith", "Watford, England", 10);
-        sfsb1.createEmployee("Alex Scott", "London, England", 20);
-        sfsb1.getEmployeeNoTX(10);
-        sfsb1.getEmployeeNoTX(20);
+        final JpaEmployeeBean employeeBean = InitialContext.doLookup("java:global/" + ARCHIVE_NAME + "/beans/JpaEmployeeBean");
+        TestUtil.testSimpleCreateAndLoadEntities(employeeBean);
     }
 
 }
