@@ -29,19 +29,15 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-clustering</artifactId>
-        <version>7.1.0.Final-SNAPSHOT</version>
+        <version>7.1.0.CR1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-as-clustering-service</artifactId>
+    <artifactId>jboss-as-clustering-registry</artifactId>
     <packaging>jar</packaging>
 
-    <name>JBoss Application Server: Clustered service provider registry services</name>
+    <name>JBoss Application Server: Clustered registry service</name>
 
     <dependencies>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-clustering-impl</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-clustering-infinispan</artifactId>
