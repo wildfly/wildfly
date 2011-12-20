@@ -21,7 +21,7 @@ import org.jboss.logging.Logger;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class AddAliasCommand implements OperationStepHandler, DescriptionProvider {
+public class AddAliasCommand implements OperationStepHandler {
 
     private static final Logger log = Logger.getLogger(AddAliasCommand.class.getPackage().getName());
     public static final AddAliasCommand INSTANCE = new AddAliasCommand();
@@ -101,16 +101,6 @@ public class AddAliasCommand implements OperationStepHandler, DescriptionProvide
             newList.add().set(alias);
         }
         return newList ;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.jboss.as.controller.descriptions.DescriptionProvider#getModelDescription(java.util.Locale)
-     */
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return InfinispanDescriptions.getAddAliasCommandDescription(locale);
     }
 
 }

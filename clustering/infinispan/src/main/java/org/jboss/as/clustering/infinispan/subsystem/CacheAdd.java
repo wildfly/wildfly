@@ -1,5 +1,6 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.net.UnknownHostException;
@@ -7,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
+import javax.sound.sampled.Line;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 
@@ -185,18 +187,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             toModel.get(ModelKeys.INDEXING).set(fromModel.get(ModelKeys.INDEXING));
         }
         // child elements
-        if (fromModel.hasDefined(ModelKeys.LOCKING)) {
-            toModel.get(ModelKeys.LOCKING).set(fromModel.get(ModelKeys.LOCKING));
-        }
-        if (fromModel.hasDefined(ModelKeys.TRANSACTION)) {
-            toModel.get(ModelKeys.TRANSACTION).set(fromModel.get(ModelKeys.TRANSACTION));
-        }
-        if (fromModel.hasDefined(ModelKeys.EVICTION)) {
-            toModel.get(ModelKeys.EVICTION).set(fromModel.get(ModelKeys.EVICTION));
-        }
-        if (fromModel.hasDefined(ModelKeys.EXPIRATION)) {
-            toModel.get(ModelKeys.EXPIRATION).set(fromModel.get(ModelKeys.EXPIRATION));
-        }
+
         if (fromModel.hasDefined(ModelKeys.STORE)) {
             toModel.get(ModelKeys.STORE).set(fromModel.get(ModelKeys.STORE));
         }
@@ -263,8 +254,10 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
                 fluent.l1().disable();
             }
         }
-        if (cache.hasDefined(ModelKeys.LOCKING)) {
-            ModelNode locking = cache.get(ModelKeys.LOCKING);
+
+        // locking is a child resource
+        if (cache.hasDefined(ModelKeys.SINGLETON) && cache.get(ModelKeys.SINGLETON, ModelKeys.LOCKING).isDefined()) {
+            ModelNode locking = cache.get(ModelKeys.SINGLETON, ModelKeys.LOCKING);
             FluentConfiguration.LockingConfig fluentLocking = fluent.locking();
             if (locking.hasDefined(ModelKeys.ISOLATION)) {
                 fluentLocking.isolationLevel(IsolationLevel.valueOf(locking.get(ModelKeys.ISOLATION).asString()));
@@ -279,11 +272,13 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
                 fluentLocking.concurrencyLevel(locking.get(ModelKeys.CONCURRENCY_LEVEL).asInt());
             }
         }
+
         FluentConfiguration.TransactionConfig fluentTx = fluent.transaction();
         TransactionMode txMode = TransactionMode.NON_XA;
         LockingMode lockingMode = LockingMode.OPTIMISTIC;
-        if (cache.hasDefined(ModelKeys.TRANSACTION)) {
-            ModelNode transaction = cache.get(ModelKeys.TRANSACTION);
+        // locking is a child resource
+        if (cache.hasDefined(ModelKeys.SINGLETON) && cache.get(ModelKeys.SINGLETON, ModelKeys.TRANSACTION).isDefined()) {
+            ModelNode transaction = cache.get(ModelKeys.SINGLETON, ModelKeys.TRANSACTION);
             if (transaction.hasDefined(ModelKeys.STOP_TIMEOUT)) {
                 fluentTx.cacheStopTimeout(transaction.get(ModelKeys.STOP_TIMEOUT).asInt());
             }
@@ -302,8 +297,10 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         } else {
             recovery.disable();
         }
-        if (cache.hasDefined(ModelKeys.EVICTION)) {
-            ModelNode eviction = cache.get(ModelKeys.EVICTION);
+        // eviction is a child resource
+        if (cache.hasDefined(ModelKeys.SINGLETON) && cache.get(ModelKeys.SINGLETON, ModelKeys.EVICTION).isDefined()) {
+            ModelNode eviction = cache.get(ModelKeys.SINGLETON, ModelKeys.EVICTION);
+
             FluentConfiguration.EvictionConfig fluentEviction = fluent.eviction();
             if (eviction.hasDefined(ModelKeys.STRATEGY)) {
                 fluentEviction.strategy(EvictionStrategy.valueOf(eviction.get(ModelKeys.STRATEGY).asString()));
@@ -312,8 +309,9 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
                 fluentEviction.maxEntries(eviction.get(ModelKeys.MAX_ENTRIES).asInt());
             }
         }
-        if (cache.hasDefined(ModelKeys.EXPIRATION)) {
-            ModelNode expiration = cache.get(ModelKeys.EXPIRATION);
+        // expiration is a child resource
+        if (cache.hasDefined(ModelKeys.SINGLETON) && cache.get(ModelKeys.SINGLETON, ModelKeys.EXPIRATION).isDefined()) {
+            ModelNode expiration = cache.get(ModelKeys.SINGLETON, ModelKeys.EXPIRATION);
             FluentConfiguration.ExpirationConfig fluentExpiration = fluent.expiration();
             if (expiration.hasDefined(ModelKeys.MAX_IDLE)) {
                 fluentExpiration.maxIdle(expiration.get(ModelKeys.MAX_IDLE).asLong());
@@ -325,8 +323,9 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
                 fluentExpiration.wakeUpInterval(expiration.get(ModelKeys.INTERVAL).asLong());
             }
         }
-        if (cache.hasDefined(ModelKeys.STATE_TRANSFER)) {
-            ModelNode stateTransfer = cache.get(ModelKeys.STATE_TRANSFER);
+        // state transfer is a child resource
+        if (cache.hasDefined(ModelKeys.SINGLETON) && cache.get(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER).isDefined()) {
+            ModelNode stateTransfer = cache.get(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER);
             FluentConfiguration.StateRetrievalConfig fluentStateTransfer = fluent.stateRetrieval();
             if (stateTransfer.hasDefined(ModelKeys.ENABLED)) {
                 fluentStateTransfer.fetchInMemoryState(stateTransfer.get(ModelKeys.ENABLED).asBoolean());
@@ -338,8 +337,9 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
                 fluentStateTransfer.logFlushTimeout(stateTransfer.get(ModelKeys.FLUSH_TIMEOUT).asLong());
             }
         }
-        if (cache.hasDefined(ModelKeys.REHASHING)) {
-            ModelNode rehashing = cache.get(ModelKeys.REHASHING);
+        // rehashing is a child resource
+        if (cache.hasDefined(ModelKeys.SINGLETON) && cache.get(ModelKeys.SINGLETON, ModelKeys.REHASHING).isDefined()) {
+            ModelNode rehashing = cache.get(ModelKeys.SINGLETON, ModelKeys.REHASHING);
             FluentConfiguration.HashConfig fluentHash = fluent.hash();
             if (rehashing.hasDefined(ModelKeys.ENABLED)) {
                 fluentHash.rehashEnabled(rehashing.get(ModelKeys.ENABLED).asBoolean());
@@ -348,6 +348,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
                 fluentHash.rehashRpcTimeout(rehashing.get(ModelKeys.TIMEOUT).asLong());
             }
         }
+
         String storeKey = this.findStoreKey(cache);
         if (storeKey != null) {
             ModelNode store = cache.get(storeKey);

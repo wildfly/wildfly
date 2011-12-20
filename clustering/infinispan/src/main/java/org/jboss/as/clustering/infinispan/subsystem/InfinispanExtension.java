@@ -25,6 +25,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
+import java.util.EnumSet;
 import java.util.Locale;
 
 import org.jboss.as.controller.Extension;
@@ -35,6 +36,7 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.dmr.ModelNode;
@@ -45,7 +47,7 @@ import org.jboss.dmr.ModelNode;
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public class InfinispanExtension implements Extension, DescriptionProvider {
+public class InfinispanExtension implements Extension {
 
     static final String SUBSYSTEM_NAME = "infinispan";
 
@@ -56,49 +58,14 @@ public class InfinispanExtension implements Extension, DescriptionProvider {
     private static final PathElement distributedCachePath = PathElement.pathElement(ModelKeys.DISTRIBUTED_CACHE);
     private static final PathElement transportPath = PathElement.pathElement(ModelKeys.SINGLETON, ModelKeys.TRANSPORT);
 
-    private static final DescriptionProvider remove = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return InfinispanDescriptions.getSubsystemRemoveDescription(locale);
-        }
-    };
+    private static final PathElement lockingPath = PathElement.pathElement(ModelKeys.SINGLETON, ModelKeys.LOCKING);
+    private static final PathElement transactionPath = PathElement.pathElement(ModelKeys.SINGLETON, ModelKeys.TRANSACTION);
+    private static final PathElement evictionPath = PathElement.pathElement(ModelKeys.SINGLETON, ModelKeys.EVICTION);
+    private static final PathElement expirationPath = PathElement.pathElement(ModelKeys.SINGLETON, ModelKeys.EXPIRATION);
+    private static final PathElement stateTransferPath = PathElement.pathElement(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER);
+    private static final PathElement rehashingPath = PathElement.pathElement(ModelKeys.SINGLETON, ModelKeys.REHASHING);
+    private static final PathElement storePropertyPath = PathElement.pathElement(ModelKeys.PROPERTY);
 
-    private static final DescriptionProvider containerDescription = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return InfinispanDescriptions.getCacheContainerDescription(locale);
-        }
-    };
-    private static final DescriptionProvider localCacheDescription = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return InfinispanDescriptions.getLocalCacheDescription(locale);
-        }
-    };
-    private static final DescriptionProvider invalidationCacheDescription = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return InfinispanDescriptions.getInvalidationCacheDescription(locale);
-        }
-    };
-    private static final DescriptionProvider replicatedCacheDescription = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return InfinispanDescriptions.getReplicatedCacheDescription(locale);
-        }
-    };
-    private static final DescriptionProvider distributedCacheDescription = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return InfinispanDescriptions.getDistributedCacheDescription(locale);
-        }
-    };
-    private static final DescriptionProvider transportDescription = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return InfinispanDescriptions.getTransportDescription(locale);
-        }
-    };
 
     /**
      * {@inheritDoc}
@@ -109,45 +76,46 @@ public class InfinispanExtension implements Extension, DescriptionProvider {
         SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         subsystem.registerXMLElementWriter(InfinispanSubsystemParser_1_0.getInstance());
 
-        ManagementResourceRegistration registration = subsystem.registerSubsystemModel(this);
-        registration.registerOperationHandler(ADD, InfinispanSubsystemAdd.INSTANCE, InfinispanSubsystemAdd.INSTANCE, false);
-        registration.registerOperationHandler(DESCRIBE, InfinispanSubsystemDescribe.INSTANCE, InfinispanSubsystemDescribe.INSTANCE, false, EntryType.PRIVATE);
-        registration.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, remove, false);
+        ManagementResourceRegistration registration = subsystem.registerSubsystemModel(InfinispanSubsystemProviders.SUBSYSTEM);
+        registration.registerOperationHandler(ADD, InfinispanSubsystemAdd.INSTANCE, InfinispanSubsystemProviders.SUBSYSTEM_ADD, false);
+        registration.registerOperationHandler(DESCRIBE, InfinispanSubsystemDescribe.INSTANCE, InfinispanSubsystemProviders.SUBSYSTEM_DESCRIBE, false, EntryType.PRIVATE);
+        registration.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, InfinispanSubsystemProviders.SUBSYSTEM_REMOVE, false);
 
-        ManagementResourceRegistration container = registration.registerSubModel(containerPath, containerDescription);
-        container.registerOperationHandler(ADD, CacheContainerAdd.INSTANCE, CacheContainerAdd.INSTANCE, false);
-        container.registerOperationHandler(REMOVE, CacheContainerRemove.INSTANCE, CacheContainerRemove.INSTANCE, false);
-        container.registerOperationHandler("add-alias", AddAliasCommand.INSTANCE, AddAliasCommand.INSTANCE, false);
-        container.registerOperationHandler("remove-alias", RemoveAliasCommand.INSTANCE, RemoveAliasCommand.INSTANCE, false);
+        ManagementResourceRegistration container = registration.registerSubModel(containerPath, InfinispanSubsystemProviders.CACHE_CONTAINER);
+        container.registerOperationHandler(ADD, CacheContainerAdd.INSTANCE, InfinispanSubsystemProviders.CACHE_CONTAINER_ADD, false);
+        container.registerOperationHandler(REMOVE, CacheContainerRemove.INSTANCE, InfinispanSubsystemProviders.CACHE_CONTAINER_REMOVE, false);
+        container.registerOperationHandler("add-alias", AddAliasCommand.INSTANCE, InfinispanSubsystemProviders.ADD_ALIAS, false);
+        container.registerOperationHandler("remove-alias", RemoveAliasCommand.INSTANCE, InfinispanSubsystemProviders.REMOVE_ALIAS, false);
         CacheContainerWriteAttributeHandler.INSTANCE.registerAttributes(container);
 
         // add /subsystem=infinispan/cache-container=*/singleton=transport:write-attribute
-        final ManagementResourceRegistration transport = container.registerSubModel(transportPath, transportDescription);
-        transport.registerOperationHandler(ADD, TransportAdd.INSTANCE, TransportAdd.INSTANCE, false);
-        transport.registerOperationHandler(REMOVE, TransportRemove.INSTANCE, TransportRemove.INSTANCE, false);
+        final ManagementResourceRegistration transport = container.registerSubModel(transportPath,InfinispanSubsystemProviders.TRANSPORT);
+        transport.registerOperationHandler(ADD, TransportAdd.INSTANCE, InfinispanSubsystemProviders.TRANSPORT_ADD, false);
+        transport.registerOperationHandler(REMOVE, TransportRemove.INSTANCE, InfinispanSubsystemProviders.TRANSPORT_REMOVE, false);
         TransportWriteAttributeHandler.INSTANCE.registerAttributes(transport);
 
         // add /subsystem=infinispan/cache-container=*/local-cache=*
-        ManagementResourceRegistration local = container.registerSubModel(localCachePath, localCacheDescription);
-        local.registerOperationHandler(ADD, LocalCacheAdd.INSTANCE, LocalCacheAdd.INSTANCE, false);
-        local.registerOperationHandler(REMOVE, CacheRemove.INSTANCE, CacheRemove.INSTANCE, false);
+        ManagementResourceRegistration local = container.registerSubModel(localCachePath, InfinispanSubsystemProviders.LOCAL_CACHE);
+        local.registerOperationHandler(ADD, LocalCacheAdd.INSTANCE, InfinispanSubsystemProviders.LOCAL_CACHE_ADD, false);
+        local.registerOperationHandler(REMOVE, CacheRemove.INSTANCE, InfinispanSubsystemProviders.CACHE_REMOVE, false);
+        registerCommonCacheAttributeHandlers(local);
 
         // add /subsystem=infinispan/cache-container=*/invalidation-cache=*
-        ManagementResourceRegistration invalidation = container.registerSubModel(invalidationCachePath, invalidationCacheDescription);
-        invalidation.registerOperationHandler(ADD, InvalidationCacheAdd.INSTANCE, InvalidationCacheAdd.INSTANCE, false);
-        invalidation.registerOperationHandler(REMOVE, CacheRemove.INSTANCE, CacheRemove.INSTANCE, false);
+        ManagementResourceRegistration invalidation = container.registerSubModel(invalidationCachePath, InfinispanSubsystemProviders.INVALIDATION_CACHE);
+        invalidation.registerOperationHandler(ADD, InvalidationCacheAdd.INSTANCE, InfinispanSubsystemProviders.INVALIDATION_CACHE_ADD, false);
+        invalidation.registerOperationHandler(REMOVE, CacheRemove.INSTANCE, InfinispanSubsystemProviders.CACHE_REMOVE, false);
         registerCommonCacheAttributeHandlers(invalidation);
 
         // add /subsystem=infinispan/cache-container=*/replicated-cache=*
-        ManagementResourceRegistration replicated = container.registerSubModel(replicatedCachePath, replicatedCacheDescription);
-        replicated.registerOperationHandler(ADD, ReplicatedCacheAdd.INSTANCE, ReplicatedCacheAdd.INSTANCE, false);
-        replicated.registerOperationHandler(REMOVE, CacheRemove.INSTANCE, CacheRemove.INSTANCE, false);
+        ManagementResourceRegistration replicated = container.registerSubModel(replicatedCachePath, InfinispanSubsystemProviders.REPLICATED_CACHE);
+        replicated.registerOperationHandler(ADD, ReplicatedCacheAdd.INSTANCE, InfinispanSubsystemProviders.REPLICATED_CACHE_ADD, false);
+        replicated.registerOperationHandler(REMOVE, CacheRemove.INSTANCE, InfinispanSubsystemProviders.CACHE_REMOVE, false);
         registerCommonCacheAttributeHandlers(replicated);
 
         // add /subsystem=infinispan/cache-container=*/distributed-cache=*
-        ManagementResourceRegistration distributed = container.registerSubModel(distributedCachePath, distributedCacheDescription);
-        distributed.registerOperationHandler(ADD, DistributedCacheAdd.INSTANCE, DistributedCacheAdd.INSTANCE, false);
-        distributed.registerOperationHandler(REMOVE, CacheRemove.INSTANCE, CacheRemove.INSTANCE, false);
+        ManagementResourceRegistration distributed = container.registerSubModel(distributedCachePath, InfinispanSubsystemProviders.DISTRIBUTED_CACHE);
+        distributed.registerOperationHandler(ADD, DistributedCacheAdd.INSTANCE, InfinispanSubsystemProviders.DISTRIBUTED_CACHE_ADD, false);
+        distributed.registerOperationHandler(REMOVE, CacheRemove.INSTANCE, InfinispanSubsystemProviders.CACHE_REMOVE, false);
         registerCommonCacheAttributeHandlers(distributed);
     }
 
@@ -161,17 +129,51 @@ public class InfinispanExtension implements Extension, DescriptionProvider {
         context.setSubsystemXmlMapping(Namespace.INFINISPAN_1_1.getUri(),InfinispanSubsystemParser_1_0.getInstance());
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.jboss.as.controller.descriptions.DescriptionProvider#getModelDescription(java.util.Locale)
-     */
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return InfinispanDescriptions.getSubsystemDescription(locale);
-    }
 
     private void registerCommonCacheAttributeHandlers(ManagementResourceRegistration resource) {
+        // register the singleton=locking handlers
+        final ManagementResourceRegistration locking = resource.registerSubModel(lockingPath, InfinispanSubsystemProviders.LOCKING);
+        locking.registerOperationHandler(ADD, CacheConfigOperationHandlers.LOCKING_ADD, InfinispanSubsystemProviders.LOCKING_ADD);
+        locking.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.LOCKING_REMOVE);
+        CacheConfigOperationHandlers.LOCKING_ATTR.registerAttributes(locking);
 
+        // register the singleton=transaction handlers
+        final ManagementResourceRegistration transaction = resource.registerSubModel(transactionPath, InfinispanSubsystemProviders.TRANSACTION);
+        transaction.registerOperationHandler(ADD, CacheConfigOperationHandlers.TRANSACTION_ADD, InfinispanSubsystemProviders.TRANSACTION_ADD);
+        transaction.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.TRANSACTION_REMOVE);
+        CacheConfigOperationHandlers.TRANSACTION_ATTR.registerAttributes(transaction);
+
+        // register the singleton=eviction handlers
+        final ManagementResourceRegistration eviction = resource.registerSubModel(evictionPath, InfinispanSubsystemProviders.EVICTION);
+        eviction.registerOperationHandler(ADD, CacheConfigOperationHandlers.EVICTION_ADD, InfinispanSubsystemProviders.EVICTION_ADD);
+        eviction.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.EVICTION_REMOVE);
+        CacheConfigOperationHandlers.EVICTION_ATTR.registerAttributes(eviction);
+
+        // register the singleton=expiration handlers
+        final ManagementResourceRegistration expiration = resource.registerSubModel(expirationPath, InfinispanSubsystemProviders.EXPIRATION);
+        expiration.registerOperationHandler(ADD, CacheConfigOperationHandlers.EXPIRATION_ADD, InfinispanSubsystemProviders.EXPIRATION_ADD);
+        expiration.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.EXPIRATION_REMOVE);
+        CacheConfigOperationHandlers.LOCKING_ATTR.registerAttributes(expiration);
+
+        // register the singleton=state-transfer handlers
+        final ManagementResourceRegistration stateTransfer = resource.registerSubModel(stateTransferPath, InfinispanSubsystemProviders.STATE_TRANSFER);
+        stateTransfer.registerOperationHandler(ADD, CacheConfigOperationHandlers.STATE_TRANSFER_ADD, InfinispanSubsystemProviders.STATE_TRANSFER_ADD);
+        stateTransfer.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STATE_TRANSFER_REMOVE);
+        CacheConfigOperationHandlers.STATE_TRANSFER_ATTR.registerAttributes(stateTransfer);
+
+        // register the singleton=rehashing handlers
+        final ManagementResourceRegistration rehashing = resource.registerSubModel(rehashingPath, InfinispanSubsystemProviders.REHASHING);
+        rehashing.registerOperationHandler(ADD, CacheConfigOperationHandlers.REHASHING_ADD, InfinispanSubsystemProviders.REHASHING_ADD);
+        rehashing.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.REHASHING_REMOVE);
+        CacheConfigOperationHandlers.STATE_TRANSFER_ATTR.registerAttributes(rehashing);
+
+    }
+
+    static void createPropertyRegistration(final ManagementResourceRegistration parent) {
+        final ManagementResourceRegistration registration = parent.registerSubModel(storePropertyPath, InfinispanSubsystemProviders.STORE_PROPERTY);
+        registration.registerOperationHandler(ADD, CacheConfigOperationHandlers.STORE_PROPERTY_ADD, InfinispanSubsystemProviders.STORE_PROPERTY_ADD);
+        registration.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STORE_PROPERTY_REMOVE);
+        registration.registerReadWriteAttribute("value", null, CacheConfigOperationHandlers.STORE_PROPERTY_ATTR, EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES));
     }
 
 }

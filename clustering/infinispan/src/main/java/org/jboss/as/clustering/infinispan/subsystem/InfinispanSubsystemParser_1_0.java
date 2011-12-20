@@ -294,6 +294,7 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
 
         // ModelNode for the cache add operation
         ModelNode cache = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
 
         // set the cache mode to local
         // cache.get(ModelKeys.MODE).set(Configuration.CacheMode.LOCAL.name());
@@ -308,28 +309,27 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
             throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.NAME));
         }
 
+        // update the cache address with the cache name
+        addCacheNameToAddress(cache, containerAddress, ModelKeys.LOCAL_CACHE) ;
+
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             Element element = Element.forName(reader.getLocalName());
-            this.parseCacheElement(reader, element, cache);
+            this.parseCacheElement(reader, element, cache, additionalConfigurationOperations);
         }
 
-        String name = cache.get(ModelKeys.NAME).asString();
-        // setup the cache address
-        ModelNode cacheAddress = containerAddress.clone() ;
-        cacheAddress.add(ModelKeys.LOCAL_CACHE, name);
-        cacheAddress.protect() ;
-        cache.get(ModelDescriptionConstants.OP_ADDR).set(cacheAddress);
-
-        // get rid of NAME now that we are finished with it
-        cache.remove(ModelKeys.NAME);
-
         operations.add(cache);
+        // add operations to create configuration resources
+        for (ModelNode additionalOperation : additionalConfigurationOperations) {
+            operations.add(additionalOperation);
+        }
+
     }
 
     private void parseDistributedCache(XMLExtendedStreamReader reader, ModelNode containerAddress, List<ModelNode> operations) throws XMLStreamException {
 
         // ModelNode for the cache add operation
         ModelNode cache = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -360,36 +360,34 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
             throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.MODE));
         }
 
+        // update the cache address with the cache name
+        addCacheNameToAddress(cache, containerAddress, ModelKeys.DISTRIBUTED_CACHE) ;
+
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case REHASHING: {
-                    this.parseRehashing(reader, cache.get(ModelKeys.REHASHING).setEmptyObject());
+                    this.parseRehashing(reader, cache, additionalConfigurationOperations);
                     break;
                 }
                 default: {
-                    this.parseCacheElement(reader, element, cache);
+                    this.parseCacheElement(reader, element, cache, additionalConfigurationOperations);
                 }
             }
         }
 
-        String name = cache.get(ModelKeys.NAME).asString();
-        // setup the cache address
-        ModelNode cacheAddress = containerAddress.clone() ;
-        cacheAddress.add(ModelKeys.DISTRIBUTED_CACHE, name);
-        cacheAddress.protect() ;
-        cache.get(ModelDescriptionConstants.OP_ADDR).set(cacheAddress);
-
-        // get rid of NAME now that we are finished with it
-        cache.remove(ModelKeys.NAME);
-
         operations.add(cache);
+        // add operations to create configuration resources
+        for (ModelNode additionalOperation : additionalConfigurationOperations) {
+            operations.add(additionalOperation);
+        }
     }
 
     private void parseReplicatedCache(XMLExtendedStreamReader reader, ModelNode containerAddress, List<ModelNode> operations) throws XMLStreamException {
 
         // ModelNode for the cache add operation
         ModelNode cache = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -404,35 +402,34 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
             throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.MODE));
         }
 
+        // update the cache address with the cache name
+        addCacheNameToAddress(cache, containerAddress, ModelKeys.REPLICATED_CACHE) ;
+
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case STATE_TRANSFER: {
-                    this.parseStateTransfer(reader, cache.get(ModelKeys.STATE_TRANSFER).setEmptyObject());
+                    this.parseStateTransfer(reader, cache, additionalConfigurationOperations);
                     break;
                 }
                 default: {
-                    this.parseCacheElement(reader, element, cache);
+                    this.parseCacheElement(reader, element, cache, additionalConfigurationOperations);
                 }
             }
         }
-        String name = cache.get(ModelKeys.NAME).asString();
-        // setup the cache address
-        ModelNode cacheAddress = containerAddress.clone() ;
-        cacheAddress.add(ModelKeys.REPLICATED_CACHE, name);
-        cacheAddress.protect() ;
-        cache.get(ModelDescriptionConstants.OP_ADDR).set(cacheAddress);
-
-        // get rid of NAME now that we are finished with it
-        cache.remove(ModelKeys.NAME);
 
         operations.add(cache);
+        // add operations to create configuration resources
+        for (ModelNode additionalOperation : additionalConfigurationOperations) {
+            operations.add(additionalOperation);
+        }
     }
 
     private void parseInvalidationCache(XMLExtendedStreamReader reader, ModelNode containerAddress, List<ModelNode> operations) throws XMLStreamException {
 
         // ModelNode for the cache add operation
         ModelNode cache = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -447,47 +444,59 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
             throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.MODE));
         }
 
+        // update the cache address with the cache name
+        addCacheNameToAddress(cache, containerAddress, ModelKeys.INVALIDATION_CACHE) ;
+
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case STATE_TRANSFER: {
-                    this.parseStateTransfer(reader, cache.get(ModelKeys.STATE_TRANSFER).setEmptyObject());
+                    this.parseStateTransfer(reader, cache, additionalConfigurationOperations);
                     break;
                 }
                 default: {
-                    this.parseCacheElement(reader, element, cache);
+                    this.parseCacheElement(reader, element, cache, additionalConfigurationOperations);
                 }
             }
         }
+
+        operations.add(cache);
+        // add operations to create configuration resources
+        for (ModelNode additionalOperation : additionalConfigurationOperations) {
+            operations.add(additionalOperation);
+        }
+    }
+
+    private void addCacheNameToAddress(ModelNode cache, ModelNode containerAddress, String cacheType) {
+
         String name = cache.get(ModelKeys.NAME).asString();
         // setup the cache address
         ModelNode cacheAddress = containerAddress.clone() ;
-        cacheAddress.add(ModelKeys.INVALIDATION_CACHE, name);
+        cacheAddress.add(cacheType, name);
         cacheAddress.protect() ;
         cache.get(ModelDescriptionConstants.OP_ADDR).set(cacheAddress);
 
         // get rid of NAME now that we are finished with it
         cache.remove(ModelKeys.NAME);
-
-        operations.add(cache);
     }
 
-    private void parseCacheElement(XMLExtendedStreamReader reader, Element element, ModelNode cache) throws XMLStreamException {
+
+    private void parseCacheElement(XMLExtendedStreamReader reader, Element element, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
         switch (element) {
             case LOCKING: {
-                this.parseLocking(reader, cache.get(ModelKeys.LOCKING).setEmptyObject());
+                this.parseLocking(reader, cache, operations);
                 break;
             }
             case TRANSACTION: {
-                this.parseTransaction(reader, cache.get(ModelKeys.TRANSACTION).setEmptyObject());
+                this.parseTransaction(reader, cache, operations);
                 break;
             }
             case EVICTION: {
-                this.parseEviction(reader, cache.get(ModelKeys.EVICTION).setEmptyObject());
+                this.parseEviction(reader, cache, operations);
                 break;
             }
             case EXPIRATION: {
-                this.parseExpiration(reader, cache.get(ModelKeys.EXPIRATION).setEmptyObject());
+                this.parseExpiration(reader, cache, operations);
                 break;
             }
             case STORE: {
@@ -512,7 +521,14 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
         }
     }
 
-    private void parseRehashing(XMLExtendedStreamReader reader, ModelNode rehashing) throws XMLStreamException {
+    private void parseRehashing(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
+
+        // ModelNode for the rehashing add operation
+        ModelNode rehashingAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone() ;
+        rehashingAddress.add(ModelKeys.SINGLETON,ModelKeys.REHASHING) ;
+        rehashingAddress.protect();
+        ModelNode rehashing = Util.getEmptyOperation(ModelDescriptionConstants.ADD, rehashingAddress);
+
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -535,9 +551,16 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
             }
         }
         ParseUtils.requireNoContent(reader);
+        operations.add(rehashing);
     }
 
-    private void parseStateTransfer(XMLExtendedStreamReader reader, ModelNode stateTransfer) throws XMLStreamException {
+    private void parseStateTransfer(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
+        // ModelNode for the state transfer add operation
+        ModelNode stateTransferAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone() ;
+        stateTransferAddress.add(ModelKeys.SINGLETON,ModelKeys.STATE_TRANSFER) ;
+        stateTransferAddress.protect();
+        ModelNode stateTransfer = Util.getEmptyOperation(ModelDescriptionConstants.ADD, stateTransferAddress);
+
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -560,9 +583,17 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
             }
         }
         ParseUtils.requireNoContent(reader);
+        operations.add(stateTransfer);
     }
 
-    private void parseLocking(XMLExtendedStreamReader reader, ModelNode locking) throws XMLStreamException {
+    private void parseLocking(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
+
+        // ModelNode for the cache add operation
+        ModelNode lockingAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone() ;
+        lockingAddress.add(ModelKeys.SINGLETON,ModelKeys.LOCKING) ;
+        lockingAddress.protect();
+        ModelNode locking = Util.getEmptyOperation(ModelDescriptionConstants.ADD, lockingAddress);
+
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -594,9 +625,17 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
             }
         }
         ParseUtils.requireNoContent(reader);
+        operations.add(locking);
     }
 
-    private void parseTransaction(XMLExtendedStreamReader reader, ModelNode transaction) throws XMLStreamException {
+    private void parseTransaction(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
+
+        // ModelNode for the transaction add operation
+        ModelNode transactionAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone() ;
+        transactionAddress.add(ModelKeys.SINGLETON,ModelKeys.TRANSACTION) ;
+        transactionAddress.protect();
+        ModelNode transaction = Util.getEmptyOperation(ModelDescriptionConstants.ADD, transactionAddress);
+
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -631,9 +670,16 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
             }
         }
         ParseUtils.requireNoContent(reader);
+        operations.add(transaction);
     }
 
-    private void parseEviction(XMLExtendedStreamReader reader, ModelNode eviction) throws XMLStreamException {
+    private void parseEviction(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
+        // ModelNode for the eviction add operation
+        ModelNode evictionAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone() ;
+        evictionAddress.add(ModelKeys.SINGLETON,ModelKeys.EVICTION) ;
+        evictionAddress.protect();
+        ModelNode eviction = Util.getEmptyOperation(ModelDescriptionConstants.ADD, evictionAddress);
+
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -661,9 +707,17 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
             }
         }
         ParseUtils.requireNoContent(reader);
+        operations.add(eviction);
     }
 
-    private void parseExpiration(XMLExtendedStreamReader reader, ModelNode expiration) throws XMLStreamException {
+    private void parseExpiration(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
+
+        // ModelNode for the expiration add operation
+        ModelNode expirationAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone() ;
+        expirationAddress.add(ModelKeys.SINGLETON,ModelKeys.EXPIRATION) ;
+        expirationAddress.protect();
+        ModelNode expiration = Util.getEmptyOperation(ModelDescriptionConstants.ADD, expirationAddress);
+
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -686,6 +740,7 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
             }
         }
         ParseUtils.requireNoContent(reader);
+        operations.add(expiration);
     }
 
     private void parseCustomStore(XMLExtendedStreamReader reader, ModelNode store) throws XMLStreamException {
@@ -1046,40 +1101,64 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
                     this.writeOptional(writer, Attribute.START, cache, ModelKeys.START);
                     this.writeOptional(writer, Attribute.BATCHING, cache, ModelKeys.BATCHING);
                     this.writeOptional(writer, Attribute.INDEXING, cache, ModelKeys.INDEXING);
-                    if (cache.hasDefined(ModelKeys.LOCKING)) {
-                        writer.writeStartElement(Element.LOCKING.getLocalName());
-                        ModelNode locking = cache.get(ModelKeys.LOCKING);
-                        this.writeOptional(writer, Attribute.ISOLATION, locking, ModelKeys.ISOLATION);
-                        this.writeOptional(writer, Attribute.STRIPING, locking, ModelKeys.STRIPING);
-                        this.writeOptional(writer, Attribute.ACQUIRE_TIMEOUT, locking, ModelKeys.ACQUIRE_TIMEOUT);
-                        this.writeOptional(writer, Attribute.CONCURRENCY_LEVEL, locking, ModelKeys.CONCURRENCY_LEVEL);
-                        writer.writeEndElement();
-                    }
 
-                    if (cache.hasDefined(ModelKeys.TRANSACTION)) {
-                        writer.writeStartElement(Element.TRANSACTION.getLocalName());
-                        ModelNode transaction = cache.get(ModelKeys.TRANSACTION);
-                        this.writeOptional(writer, Attribute.STOP_TIMEOUT, transaction, ModelKeys.STOP_TIMEOUT);
-                        this.writeOptional(writer, Attribute.MODE, transaction, ModelKeys.MODE);
-                        this.writeOptional(writer, Attribute.LOCKING, transaction, ModelKeys.LOCKING);
-                        writer.writeEndElement();
-                    }
 
-                    if (cache.hasDefined(ModelKeys.EVICTION)) {
-                        writer.writeStartElement(Element.EVICTION.getLocalName());
-                        ModelNode eviction = cache.get(ModelKeys.EVICTION);
-                        this.writeOptional(writer, Attribute.STRATEGY, eviction, ModelKeys.STRATEGY);
-                        this.writeOptional(writer, Attribute.MAX_ENTRIES, eviction, ModelKeys.MAX_ENTRIES);
-                        writer.writeEndElement();
-                    }
+                    // all child elements can be governed by this
+                    if (cache.hasDefined(ModelKeys.SINGLETON)) {
 
-                    if (cache.hasDefined(ModelKeys.EXPIRATION)) {
-                        writer.writeStartElement(Element.EXPIRATION.getLocalName());
-                        ModelNode expiration = cache.get(ModelKeys.EXPIRATION);
-                        this.writeOptional(writer, Attribute.MAX_IDLE, expiration, ModelKeys.MAX_IDLE);
-                        this.writeOptional(writer, Attribute.LIFESPAN, expiration, ModelKeys.LIFESPAN);
-                        this.writeOptional(writer, Attribute.INTERVAL, expiration, ModelKeys.INTERVAL);
-                        writer.writeEndElement();
+                        if (cache.get(ModelKeys.SINGLETON, ModelKeys.LOCKING).isDefined()) {
+                            writer.writeStartElement(Element.LOCKING.getLocalName());
+                            ModelNode locking = cache.get(ModelKeys.SINGLETON, ModelKeys.LOCKING);
+                            this.writeOptional(writer, Attribute.ISOLATION, locking, ModelKeys.ISOLATION);
+                            this.writeOptional(writer, Attribute.STRIPING, locking, ModelKeys.STRIPING);
+                            this.writeOptional(writer, Attribute.ACQUIRE_TIMEOUT, locking, ModelKeys.ACQUIRE_TIMEOUT);
+                            this.writeOptional(writer, Attribute.CONCURRENCY_LEVEL, locking, ModelKeys.CONCURRENCY_LEVEL);
+                            writer.writeEndElement();
+                        }
+
+                        if (cache.get(ModelKeys.SINGLETON, ModelKeys.TRANSACTION).isDefined()) {
+                            writer.writeStartElement(Element.TRANSACTION.getLocalName());
+                            ModelNode transaction = cache.get(ModelKeys.SINGLETON, ModelKeys.TRANSACTION);
+                            this.writeOptional(writer, Attribute.STOP_TIMEOUT, transaction, ModelKeys.STOP_TIMEOUT);
+                            this.writeOptional(writer, Attribute.MODE, transaction, ModelKeys.MODE);
+                            this.writeOptional(writer, Attribute.LOCKING, transaction, ModelKeys.LOCKING);
+                            writer.writeEndElement();
+                        }
+
+                        if (cache.get(ModelKeys.SINGLETON, ModelKeys.EVICTION).isDefined()) {
+                            writer.writeStartElement(Element.EVICTION.getLocalName());
+                            ModelNode eviction = cache.get(ModelKeys.SINGLETON, ModelKeys.EVICTION);
+                            this.writeOptional(writer, Attribute.STRATEGY, eviction, ModelKeys.STRATEGY);
+                            this.writeOptional(writer, Attribute.MAX_ENTRIES, eviction, ModelKeys.MAX_ENTRIES);
+                            writer.writeEndElement();
+                        }
+
+                        if (cache.get(ModelKeys.SINGLETON, ModelKeys.EXPIRATION).isDefined()) {
+                            writer.writeStartElement(Element.EXPIRATION.getLocalName());
+                            ModelNode expiration = cache.get(ModelKeys.SINGLETON, ModelKeys.EXPIRATION);
+                            this.writeOptional(writer, Attribute.MAX_IDLE, expiration, ModelKeys.MAX_IDLE);
+                            this.writeOptional(writer, Attribute.LIFESPAN, expiration, ModelKeys.LIFESPAN);
+                            this.writeOptional(writer, Attribute.INTERVAL, expiration, ModelKeys.INTERVAL);
+                            writer.writeEndElement();
+                        }
+
+                        if (cache.get(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER).isDefined()) {
+                            ModelNode stateTransfer = cache.get(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER);
+                            writer.writeStartElement(Element.STATE_TRANSFER.getLocalName());
+                            this.writeOptional(writer, Attribute.ENABLED, stateTransfer, ModelKeys.ENABLED);
+                            this.writeOptional(writer, Attribute.TIMEOUT, stateTransfer, ModelKeys.TIMEOUT);
+                            this.writeOptional(writer, Attribute.FLUSH_TIMEOUT, stateTransfer, ModelKeys.FLUSH_TIMEOUT);
+                            writer.writeEndElement();
+                        }
+
+                        if (cache.get(ModelKeys.SINGLETON, ModelKeys.REHASHING).isDefined()) {
+                            ModelNode rehashing = cache.get(ModelKeys.SINGLETON, ModelKeys.REHASHING);
+                            writer.writeStartElement(Element.REHASHING.getLocalName());
+                            this.writeOptional(writer, Attribute.ENABLED, rehashing, ModelKeys.ENABLED);
+                            this.writeOptional(writer, Attribute.TIMEOUT, rehashing, ModelKeys.TIMEOUT);
+                            this.writeOptional(writer, Attribute.WAIT, rehashing, ModelKeys.WAIT);
+                            writer.writeEndElement();
+                        }
                     }
 
                     if (cache.hasDefined(ModelKeys.STORE)) {
@@ -1125,24 +1204,6 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
                             writer.writeEndElement();
                         }
                         this.writeStoreProperties(writer, store);
-                        writer.writeEndElement();
-                    }
-
-                    if (cache.hasDefined(ModelKeys.STATE_TRANSFER)) {
-                        ModelNode stateTransfer = cache.get(ModelKeys.STATE_TRANSFER);
-                        writer.writeStartElement(Element.STATE_TRANSFER.getLocalName());
-                        this.writeOptional(writer, Attribute.ENABLED, stateTransfer, ModelKeys.ENABLED);
-                        this.writeOptional(writer, Attribute.TIMEOUT, stateTransfer, ModelKeys.TIMEOUT);
-                        this.writeOptional(writer, Attribute.FLUSH_TIMEOUT, stateTransfer, ModelKeys.FLUSH_TIMEOUT);
-                        writer.writeEndElement();
-                    }
-
-                    if (cache.hasDefined(ModelKeys.REHASHING)) {
-                        ModelNode rehashing = cache.get(ModelKeys.REHASHING);
-                        writer.writeStartElement(Element.REHASHING.getLocalName());
-                        this.writeOptional(writer, Attribute.ENABLED, rehashing, ModelKeys.ENABLED);
-                        this.writeOptional(writer, Attribute.TIMEOUT, rehashing, ModelKeys.TIMEOUT);
-                        this.writeOptional(writer, Attribute.WAIT, rehashing, ModelKeys.WAIT);
                         writer.writeEndElement();
                     }
 

@@ -47,7 +47,7 @@ public abstract class ClusteredCacheAdd extends CacheAdd {
     /**
      * Create a Configuration object initialized from the data in the operation.
      *
-     * @param model data representing cache configuration
+     * @param cache data representing cache configuration
      * @param configuration Configuration to add the data to
      * @return initialised Configuration object
      */

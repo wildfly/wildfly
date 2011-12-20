@@ -4,14 +4,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -20,7 +18,7 @@ import org.jboss.msc.service.ServiceController;
 /**
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class TransportAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class TransportAdd extends AbstractAddStepHandler {
 
     private static final Logger log = Logger.getLogger(TransportAdd.class.getPackage().getName());
     public static final TransportAdd INSTANCE = new TransportAdd();
@@ -55,10 +53,6 @@ public class TransportAdd extends AbstractAddStepHandler implements DescriptionP
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         //
         context.reloadRequired();
-    }
-
-    public ModelNode getModelDescription(Locale locale) {
-        return InfinispanDescriptions.getTransportAddDescription(locale) ;
     }
 
     private static void populate(ModelNode operation, ModelNode model) {

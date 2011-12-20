@@ -62,16 +62,16 @@ public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest {
        // Parse the subsystem xml into operations
        List<ModelNode> operations = super.parse(getSubsystemXml());
 
-        /*
+       /*
        // print the operations
        System.out.println("List of operations");
        for (ModelNode op : operations) {
            System.out.println("operation = " + op.toString());
        }
        */
-
        // Check that we have the expected number of operations
-       Assert.assertEquals(9, operations.size());
+       // one for each resource instance
+       Assert.assertEquals(28, operations.size());
 
        // Check that each operation has the correct content
        ModelNode addSubsystem = operations.get(0);
