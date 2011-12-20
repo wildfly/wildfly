@@ -144,7 +144,7 @@
         <version.org.jdom>1.1.2</version.org.jdom>
         <version.org.jboss.arquillian.core>1.0.0.CR7</version.org.jboss.arquillian.core>
         <version.org.jboss.arquillian.osgi>1.0.0.CR4</version.org.jboss.arquillian.osgi>
-        <version.org.jboss.as.console>1.0.0.Beta25</version.org.jboss.as.console>
+        <version.org.jboss.as.console>1.0.0.RC1</version.org.jboss.as.console>
         <version.org.jboss.as.jbossweb-native>2.0.10.Beta1</version.org.jboss.as.jbossweb-native>
         <version.org.jboss.classfilewriter>1.0.0.Final</version.org.jboss.classfilewriter>
         <version.org.jboss.common-core>2.2.17.GA</version.org.jboss.common-core>
