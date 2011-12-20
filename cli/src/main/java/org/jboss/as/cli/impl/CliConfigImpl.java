@@ -26,8 +26,6 @@ import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
@@ -39,9 +37,6 @@ import org.jboss.as.cli.CliConfig;
 import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.SSLConfig;
-import org.jboss.as.cli.operation.impl.ConcurrentRolloutPlanGroup;
-import org.jboss.as.cli.operation.impl.RolloutPlanHeader;
-import org.jboss.as.cli.operation.impl.SingleRolloutPlanGroup;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -53,6 +48,15 @@ import org.jboss.staxmapper.XMLMapper;
  * @author Alexey Loubyansky
  */
 class CliConfigImpl implements CliConfig {
+
+    static CliConfig load(final CommandContext ctx) throws CliInitializationException {
+        final String jbossHome = SecurityActions.getEnvironmentVariable("JBOSS_HOME");
+        if(jbossHome == null) {
+            System.err.println("WARN: can't load the config file because JBOSS_HOME environment variable is not set.");
+            return new CliConfigImpl();
+        }
+        return parse(ctx, new File(jbossHome + File.separatorChar + "bin", "jboss-cli.xml"));
+    }
 
     static CliConfig parse(final CommandContext ctx, File f) throws CliInitializationException {
         if(f == null) {
@@ -72,57 +76,19 @@ class CliConfigImpl implements CliConfig {
                 @Override
                 public void readElement(XMLExtendedStreamReader reader, CliConfigImpl config) throws XMLStreamException {
 
-                    RolloutPlanHeader rolloutPlan = null;
-                    boolean concurrent = false;
                     boolean jbossCliEnded = false;
                     while (reader.hasNext() && jbossCliEnded == false) {
                         int tag = reader.nextTag();
                         if(tag == XMLStreamConstants.START_ELEMENT) {
                             final String localName = reader.getLocalName();
-                            if(localName.equals("plan")) {
-                                final String planName = reader.getAttributeValue(null, "id");
-                                if(planName == null) {
-                                    throw new IllegalStateException("Rollout plan is missing required attribute 'id' @" + reader.getLocation().getColumnNumber() + "," + reader.getLocation().getLineNumber());
-                                }
-                                rolloutPlan = new RolloutPlanHeader(planName);
-                                config.addRolloutPlan(rolloutPlan);
-                            } else if(localName.equals("concurrent")) {
-                                concurrent = true;
-                                rolloutPlan.addGroup(new ConcurrentRolloutPlanGroup());
-                            } else if(localName.equals("server-group")) {
-                                final String name = reader.getAttributeValue(null, "name");
-                                if(name == null) {
-                                    throw new IllegalStateException("Server group is missing required attribute 'name' @" + reader.getLocation().getColumnNumber() + "," + reader.getLocation().getLineNumber());
-                                }
-                                final SingleRolloutPlanGroup group = new SingleRolloutPlanGroup();
-                                group.setGroupName(name);
-                                String value = reader.getAttributeValue(null, "rolling-to-servers");
-                                if(value != null) {
-                                    group.addProperty("rolling-to-servers", value);
-                                }
-                                value = reader.getAttributeValue(null, "max-failure-percentage");
-                                if(value != null) {
-                                    group.addProperty("max-failure-percentage", value);
-                                }
-                                value = reader.getAttributeValue(null, "max-failed-servers");
-                                if(value != null) {
-                                    group.addProperty("max-failed-servers", value);
-                                }
-                                if(concurrent) {
-                                    rolloutPlan.addConcurrentGroup(group);
-                                } else {
-                                    rolloutPlan.addGroup(group);
-                                }
-                            } else if (localName.equals("ssl")) {
+                            if (localName.equals("ssl")) {
                                 SslConfig sslConfig = new SslConfig();
                                 readSSLElement(reader, sslConfig);
                                 config.sslConfig = sslConfig;
                             }
                         } else if(tag == XMLStreamConstants.END_ELEMENT) {
                             final String localName = reader.getLocalName();
-                            if(localName.equals("concurrent")) {
-                                concurrent = false;
-                            } else if (localName.equals("jboss-cli")) {
+                            if (localName.equals("jboss-cli")) {
                                 jbossCliEnded = true;
                             }
                         }
@@ -162,30 +128,10 @@ class CliConfigImpl implements CliConfig {
 
     private CliConfigImpl() {}
 
-    private Map<String, RolloutPlanHeader> rolloutPlans;
     private SSLConfig sslConfig;
-
-    public RolloutPlanHeader getRolloutPlan(String name) {
-        return rolloutPlans == null ? null : rolloutPlans.get(name);
-    }
 
     public SSLConfig getSslConfig() {
         return sslConfig;
-    }
-
-    public void addRolloutPlan(RolloutPlanHeader rolloutPlan) {
-        if(rolloutPlan == null) {
-            throw new IllegalArgumentException();
-        }
-        if(rolloutPlan.getPlanId() == null) {
-            throw new IllegalArgumentException("Rollout plan is missing the name.");
-        }
-        if(rolloutPlans == null) {
-            rolloutPlans = new HashMap<String, RolloutPlanHeader>();
-        }
-        if(rolloutPlans.put(rolloutPlan.getPlanId(), rolloutPlan) != null) {
-            throw new IllegalArgumentException("Duplicate rollout plan name: '" + rolloutPlan.getName() + "'");
-        }
     }
 
     static class SslConfig implements SSLConfig {

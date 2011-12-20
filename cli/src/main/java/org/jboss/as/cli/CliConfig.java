@@ -21,7 +21,6 @@
  */
 package org.jboss.as.cli;
 
-import org.jboss.as.cli.operation.OperationRequestHeader;
 
 /**
  * This interface represents the JBoss CLI configuration.
@@ -29,15 +28,6 @@ import org.jboss.as.cli.operation.OperationRequestHeader;
  * @author Alexey Loubyansky
  */
 public interface CliConfig {
-
-    /**
-     * Returns pre-configured rollout plan stored under the id.
-     * If none of the plans matches the id, the method returns null.
-     *
-     * @param id  the id of the plan to return.
-     * @return  the plan matching the id or null if no such plan found.
-     */
-    OperationRequestHeader getRolloutPlan(String id);
 
     /**
      * The global SSL configuration if it has been defined.

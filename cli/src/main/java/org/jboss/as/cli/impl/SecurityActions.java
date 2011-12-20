@@ -49,6 +49,10 @@ class SecurityActions {
             public static ClassLoader getClassLoader(Class<?> cls) {
                 return getTCLAction().getClassLoader(cls);
             }
+
+            public static String getEnvironmentVariable(String name) {
+                return getTCLAction().getEnvironmentVariable(name);
+            }
         }
 
         TCLAction NON_PRIVILEGED = new TCLAction() {
@@ -66,6 +70,11 @@ class SecurityActions {
             @Override
             public ClassLoader getClassLoader(Class<?> cls) {
                 return cls.getClassLoader();
+            }
+
+            @Override
+            public String getEnvironmentVariable(String name) {
+                return System.getenv(name);
             }
         };
 
@@ -97,6 +106,15 @@ class SecurityActions {
                     }
                 });
             }
+
+            @Override
+            public String getEnvironmentVariable(final String name) {
+                return (String) AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                    public Object run() {
+                        return System.getenv(name);
+                    }
+                });
+            }
         };
 
         void addShutdownHook(Thread t);
@@ -104,6 +122,8 @@ class SecurityActions {
         ClassLoader getClassLoader(Class<?> cls);
 
         String getSystemProperty(String name);
+
+        String getEnvironmentVariable(String name);
     }
 
     protected static void addShutdownHook(Thread hook) {
@@ -116,5 +136,9 @@ class SecurityActions {
 
     protected static ClassLoader getClassLoader(Class<?> cls) {
         return TCLAction.UTIL.getClassLoader(cls);
+    }
+
+    protected static String getEnvironmentVariable(String name) {
+        return TCLAction.UTIL.getEnvironmentVariable(name);
     }
 }
