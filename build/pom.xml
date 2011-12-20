@@ -260,7 +260,7 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>jacorb</groupId>
+                    <groupId>org.jacorb</groupId>
                     <artifactId>jacorb</artifactId>
                 </dependency>
 
