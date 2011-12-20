@@ -1,0 +1,87 @@
+body {
+    background: url("images/org_bg.png") repeat-x scroll 0 0 #F3F3F3;
+    color: #555555;
+    font: 12px "Lucida Sans Unicode","Lucida Grande",sans-serif;
+    margin: 0;
+}
+
+
+#container {
+    max-width: 860px;
+    background: #BEBEBE;
+    border-right: 1px solid #A7ABB4;
+    border-left: 1px solid #A7ABB4;
+    margin-left:auto;
+    margin-right:auto;
+}
+
+#content {
+    background-color: #ffffff;
+    border-bottom:1px solid #A7ABB4;
+    margin:4px 0px 0px 0px;
+    bottom: 25px;
+    left: 0;
+    overflow: hidden;
+    position: absolute;
+    right: 0;
+    top: 58px;
+}
+
+#header {
+	height: 58px;
+    left: 0;
+    overflow: hidden;
+    position: absolute;
+    right: 0;
+    top: 0;
+    min-height:58px;
+    width:100%;
+    background: url("images/org_header.png") repeat-x scroll 0 0 #3B4D64;
+    color:#ffffff;
+}
+
+#footer {
+	bottom: 0;
+    height: 25px;
+    left: 0;
+    overflow: hidden;
+    position: absolute;
+    right: 0;
+    min-height:25px;
+    width:100%;
+}
+
+.section {
+	width:520px;
+	max-width:520px;
+	margin-left:auto;
+    margin-right:auto;
+	padding-top:20px;
+}
+
+a {
+	color:#4a6882;
+    outline : none;
+    text-decoration: none;
+}
+
+a:active {
+    outline : none;
+}
+
+a:link {
+    outline : none;
+}
+
+
+H1 {
+	color:#3B4D64;	
+}
+
+H2 {
+	color:#000000;	
+}
+
+sub {
+	color:#a3a7aa;	
+}

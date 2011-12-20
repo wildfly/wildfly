@@ -1,41 +1,48 @@
-<!--
-  ~ JBoss, Home of Professional Open Source.
-  ~ Copyright (c) 2011, Red Hat, Inc., and individual contributors
-  ~ as indicated by the @author tags. See the copyright.txt file in the
-  ~ distribution for a full listing of individual contributors.
-  ~
-  ~ This is free software; you can redistribute it and/or modify it
-  ~ under the terms of the GNU Lesser General Public License as
-  ~ published by the Free Software Foundation; either version 2.1 of
-  ~ the License, or (at your option) any later version.
-  ~
-  ~ This software is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  ~ Lesser General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU Lesser General Public
-  ~ License along with this software; if not, write to the Free
-  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-  -->
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-
+<!DOCTYPE html>
 <html>
 <head>
-  <title>Welcome to JBoss Application Server 7</title>
-  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-  <link rel="StyleSheet" href="as7_style.css" type="text/css">
+
+    <title>JBoss 7</title>
+    <!-- proper charset -->
+    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+
+	
+	<link rel="stylesheet" type="text/css" href="jboss.css">
+	    
+    <!--link rel="shortcut icon" href="/console/images/favicon.ico" /-->
+
+
 </head>
-
 <body>
-  <div class="wrapper">
-    <div class="as7">
-      <img src="as7_logo.png" alt="JBoss Application Server 7... it's here." width="195" height="228" border="0">
-    </div>
 
-    <div class="content">
-      <h1>Welcome to AS 7</h1>
+<div id="container" style="position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px;">
+
+
+<!-- header -->
+<div id="header">
+
+	<!-- logo section -->
+	<table border=0 width="100%" style="height:100%">
+	<tr style="vertical-align:middle">
+		<td width="221" style="padding-left:15px;">
+			<img src="images/prod_name.png"/>
+		</td>
+		<td style="color:#ffffff; font-size:12pt;font-weight:BOLD;vertical-align:middle; padding-bottom:4px">
+					7.1
+		</td>
+		<td width="100%">
+			&nbsp;
+		</td>
+	</tr>
+	</table>
+</div>
+
+<!-- main content -->
+<div id="content">
+
+<div class="section">
+
+ 	 <h1>Welcome to AS 7</h1>
 
       <h3>Your JBoss Application Server 7 is running.</h3>
 
@@ -49,9 +56,17 @@
       <p class="logos"><a href="http://jboss.org"><img src="jboss_community.png" alt="JBoss and JBoss Community" width=
       "254" height="31" border="0"></a></p>
 
-      <p class="note">To replace this page set "enable-welcome-root" to false in your server configuration and deploy
-      your own war with / as its context path.</p>
-    </div>
-  </div>
-</body>
+      <sub>To replace this page set "enable-welcome-root" to false in your server configuration and deploy
+      your own war with / as its context path.</sub>
+
+</div>
+
+<!-- footer -->
+<div id="footer">
+&nbsp;
+</div>
+
+</div>
+
+</body >
 </html>
