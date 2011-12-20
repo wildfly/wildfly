@@ -1,15 +1,6 @@
 package org.jboss.as.capedwarf.extension;
 
 
-import static junit.framework.Assert.*;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-
-import java.util.List;
-
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
@@ -17,6 +8,11 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import java.util.List;
+
+import static junit.framework.Assert.assertEquals;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -61,7 +57,8 @@ public class SubsystemParsingTestCase extends AbstractSubsystemTest {
         String subsystemXml =
                 "<subsystem xmlns=\"" + CapedwarfExtension.NAMESPACE + "\">" +
                 "</subsystem>";
-        KernelServices services = super.installInController(subsystemXml);
+
+        // TODO - KernelServices services = super.installInController(subsystemXml);
 
         //Read the whole model and make sure it looks as expected
 //        ModelNode model = services.readWholeModel();

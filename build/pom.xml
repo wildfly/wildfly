@@ -773,6 +773,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.infinispan</groupId>
+                    <artifactId>infinispan-query</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.javassist</groupId>
                     <artifactId>javassist</artifactId>
                 </dependency>
@@ -805,6 +810,11 @@
                 <dependency>
                     <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-config-assembly</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-capedwarf</artifactId>
                 </dependency>
 
                 <dependency>

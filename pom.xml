@@ -137,7 +137,7 @@
         <version.org.hibernate>4.1.2.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>4.0.1.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.1.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
-        <version.org.hibernate.search>4.0.0.CR1</version.org.hibernate.search>
+        <version.org.hibernate.search>4.0.0.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>4.2.0.Final</version.org.hibernate.validator>
         <version.org.hibernate3>3.6.6.Final</version.org.hibernate3>
         <version.org.hibernate3.commons.annotations>3.2.0.Final</version.org.hibernate3.commons.annotations>
@@ -249,6 +249,7 @@
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
         <version.org.picketlink>2.1.1.Final</version.org.picketlink>
         <version.org.powermock>1.4.11</version.org.powermock>
+        <version.org.openid4java>0.9.5</version.org.openid4java>
         <version.org.projectodd.stilts>0.1.26</version.org.projectodd.stilts>
         <version.org.python.jython.standalone>2.5.2</version.org.python.jython.standalone>
         <version.org.rhq.helpers>3.0.4</version.org.rhq.helpers>
@@ -282,7 +283,6 @@
     <modules>
         <module>build</module>
         <module>build-config</module>
-        <module>capedwarf</module>
         <module>controller</module>
         <module>controller-client</module>
         <module>deployment-repository</module>
@@ -5820,6 +5820,18 @@
                 <version>${version.org.picketlink}</version>
                 <exclusions>
                     <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.servlet</groupId>
+                        <artifactId>servlet-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.persistence</groupId>
+                        <artifactId>persistence-api</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.picketlink</groupId>
                         <artifactId>picketlink-xmlsec-model</artifactId>
                     </exclusion>
@@ -5838,6 +5850,10 @@
                     <exclusion>
                         <groupId>sun-jaxws</groupId>
                         <artifactId>jaxws-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.security</groupId>
+                        <artifactId>jbosssx</artifactId>
                     </exclusion>
                 </exclusions>
 >>>>>>> Add picketlink-fed & openid4java modules
@@ -6129,6 +6145,7 @@
                 <module>build</module>
                 <module>build-config</module>
                 <module>arquillian</module>
+                <module>capedwarf</module>
                 <module>cli</module>
                 <module>client/ejb</module>
                 <module>client/jms</module>
