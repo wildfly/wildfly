@@ -374,23 +374,33 @@ public class ServerInventoryImpl implements ServerInventory {
             synchronized (shutdownCondition) {
                 for (;;) {
                     int count = 0;
+                    try {
+                        processInfoMap = determineRunningProcesses();
+                    } catch(RuntimeException e) {
+                        // In case the process-controller connection is broken, the PC most likely got killed
+                        // and we won't receive any further notifications
+                        return;
+                    }
                     for (ManagedServer server : servers.values()) {
+                        final ProcessInfo info = processInfoMap.get(server.getServerProcessName());
                         switch (server.getState()) {
                             case FAILED:
                             case MAX_FAILED:
                             case STOPPED:
                                 break;
                             default:
-                                count++;
+                                // Only in case there is still a process registered and running
+                                if(info != null && info.isRunning()) {
+                                    count++;
+                                }
                         }
                     }
 
                     if (count == 0) {
                         break;
                     }
-
                     try {
-                        shutdownCondition.wait();
+                        shutdownCondition.wait(500);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                         break;
