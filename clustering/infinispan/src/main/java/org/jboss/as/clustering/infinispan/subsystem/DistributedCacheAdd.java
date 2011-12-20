@@ -3,19 +3,17 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.infinispan.config.Configuration;
 import org.infinispan.config.Configuration.CacheMode;
 import org.infinispan.config.FluentConfiguration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class DistributedCacheAdd extends ClusteredCacheAdd implements DescriptionProvider {
+public class DistributedCacheAdd extends ClusteredCacheAdd {
 
     static final DistributedCacheAdd INSTANCE = new DistributedCacheAdd();
 
@@ -43,10 +41,6 @@ public class DistributedCacheAdd extends ClusteredCacheAdd implements Descriptio
         }
         if (fromModel.hasDefined(ModelKeys.L1_LIFESPAN)) {
             toModel.get(ModelKeys.L1_LIFESPAN).set(fromModel.get(ModelKeys.L1_LIFESPAN));
-        }
-        // child node
-        if (fromModel.hasDefined(ModelKeys.REHASHING)) {
-            toModel.get(ModelKeys.REHASHING).set(fromModel.get(ModelKeys.REHASHING));
         }
     }
 
@@ -79,9 +73,11 @@ public class DistributedCacheAdd extends ClusteredCacheAdd implements Descriptio
                 fluent.l1().disable();
             }
         }
-        // process child node
-        if (cache.hasDefined(ModelKeys.REHASHING)) {
-            ModelNode rehashing = cache.get(ModelKeys.REHASHING);
+
+        // rehashing is a child resource
+        if (cache.hasDefined(ModelKeys.SINGLETON) && cache.get(ModelKeys.SINGLETON, ModelKeys.REHASHING).isDefined()) {
+            ModelNode rehashing = cache.get(ModelKeys.SINGLETON, ModelKeys.REHASHING);
+
             FluentConfiguration.HashConfig fluentHash = fluent.hash();
             if (rehashing.hasDefined(ModelKeys.ENABLED)) {
                 fluentHash.rehashEnabled(rehashing.get(ModelKeys.ENABLED).asBoolean());
@@ -93,10 +89,5 @@ public class DistributedCacheAdd extends ClusteredCacheAdd implements Descriptio
                 fluentHash.rehashWait(rehashing.get(ModelKeys.WAIT).asLong());
             }
         }
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return InfinispanDescriptions.getDistributedCacheAddDescription(locale);
     }
 }

@@ -3,19 +3,17 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.infinispan.config.Configuration;
 import org.infinispan.config.Configuration.CacheMode;
 import org.infinispan.config.FluentConfiguration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class ReplicatedCacheAdd extends ClusteredCacheAdd implements DescriptionProvider {
+public class ReplicatedCacheAdd extends ClusteredCacheAdd {
 
     static final ReplicatedCacheAdd INSTANCE = new ReplicatedCacheAdd();
 
@@ -35,9 +33,11 @@ public class ReplicatedCacheAdd extends ClusteredCacheAdd implements Description
     void populate(ModelNode fromModel, ModelNode toModel) {
         super.populate(fromModel, toModel);
         // additional child node
+        /*
         if (fromModel.hasDefined(ModelKeys.STATE_TRANSFER)) {
             toModel.get(ModelKeys.STATE_TRANSFER).set(fromModel.get(ModelKeys.STATE_TRANSFER)) ;
         }
+        */
     }
 
     /**
@@ -55,8 +55,11 @@ public class ReplicatedCacheAdd extends ClusteredCacheAdd implements Description
 
         // process the replicated-cache attributes and elements
         FluentConfiguration fluent = configuration.fluent();
-        if (cache.hasDefined(ModelKeys.STATE_TRANSFER)) {
-            ModelNode stateTransfer = cache.get(ModelKeys.STATE_TRANSFER) ;
+
+        // state transfer is a child resource
+        if (cache.hasDefined(ModelKeys.SINGLETON) && cache.get(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER).isDefined()) {
+            ModelNode stateTransfer = cache.get(ModelKeys.SINGLETON, ModelKeys.STATE_TRANSFER);
+
             FluentConfiguration.StateRetrievalConfig fluentStateTransfer = fluent.stateRetrieval();
             if (stateTransfer.hasDefined(ModelKeys.ENABLED)) {
                 fluentStateTransfer.fetchInMemoryState(stateTransfer.get(ModelKeys.ENABLED).asBoolean());
@@ -68,10 +71,5 @@ public class ReplicatedCacheAdd extends ClusteredCacheAdd implements Description
                 fluentStateTransfer.logFlushTimeout(stateTransfer.get(ModelKeys.FLUSH_TIMEOUT).asLong());
             }
         }
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return InfinispanDescriptions.getReplicatedCacheAddDescription(locale);
     }
 }

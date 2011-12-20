@@ -9,6 +9,8 @@ import org.jboss.dmr.ModelType;
 /**
  * Attributes used in setting up Infinispan configurations
  *
+ * To mark an attribute as required, mark it as not allowing null.
+ *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 public interface CommonAttributes {
@@ -28,8 +30,8 @@ public interface CommonAttributes {
     SimpleAttributeDefinition CONCURRENCY_LEVEL = new SimpleAttributeDefinition(ModelKeys.CONCURRENCY_LEVEL,
             new ModelNode().set(intDefault), ModelType.INT, true);
     SimpleAttributeDefinition DATA_SOURCE = new SimpleAttributeDefinition(ModelKeys.DATASOURCE, ModelType.STRING, true);
-    SimpleAttributeDefinition DEFAULT_CACHE = new SimpleAttributeDefinition(ModelKeys.DEFAULT_CACHE, ModelType.STRING, true);
-    SimpleAttributeDefinition DEFAULT_CACHE_CONTAINER = new SimpleAttributeDefinition(ModelKeys.DEFAULT_CACHE_CONTAINER, ModelType.STRING, true);
+    SimpleAttributeDefinition DEFAULT_CACHE = new SimpleAttributeDefinition(ModelKeys.DEFAULT_CACHE, ModelType.STRING, false);
+    SimpleAttributeDefinition DEFAULT_CACHE_CONTAINER = new SimpleAttributeDefinition(ModelKeys.DEFAULT_CACHE_CONTAINER, ModelType.STRING, false);
     SimpleAttributeDefinition EAGER_LOCKING = new SimpleAttributeDefinition(ModelKeys.EAGER_LOCKING,
             new ModelNode().set(booleanDefault), ModelType.BOOLEAN,  true);
     // enabled (used in state transfer, rehashing)
@@ -91,7 +93,7 @@ public interface CommonAttributes {
     SimpleAttributeDefinition SITE = new SimpleAttributeDefinition(ModelKeys.SITE, ModelType.STRING, true);
     SimpleAttributeDefinition SOCKET_TIMEOUT = new SimpleAttributeDefinition(ModelKeys.SOCKET_TIMEOUT,
             new ModelNode().set(longDefault), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
-    SimpleAttributeDefinition STACK = new SimpleAttributeDefinition(ModelKeys.STACK, ModelType.STRING, true);
+    SimpleAttributeDefinition STACK = new SimpleAttributeDefinition(ModelKeys.STACK, ModelType.STRING, false);
     SimpleAttributeDefinition START = new SimpleAttributeDefinition(ModelKeys.START, ModelType.STRING, true);
     SimpleAttributeDefinition STOP_TIMEOUT = new SimpleAttributeDefinition(ModelKeys.STOP_TIMEOUT,
             new ModelNode().set(longDefault), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
@@ -104,24 +106,29 @@ public interface CommonAttributes {
     SimpleAttributeDefinition TIMEOUT = new SimpleAttributeDefinition(ModelKeys.TIMEOUT,
             new ModelNode().set(longDefault), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
     SimpleAttributeDefinition TYPE = new SimpleAttributeDefinition(ModelKeys.TYPE, ModelType.STRING, true);
+    SimpleAttributeDefinition VALUE = new SimpleAttributeDefinition("value", ModelType.STRING, false);
     SimpleAttributeDefinition VIRTUAL_NODES = new SimpleAttributeDefinition(ModelKeys.VIRTUAL_NODES,
             new ModelNode().set(intDefault), ModelType.INT, true);
+    SimpleAttributeDefinition WAIT = new SimpleAttributeDefinition(ModelKeys.WAIT,
+            new ModelNode().set(longDefault), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
 
     AttributeDefinition[] CACHE_CONTAINER_ATTRIBUTES = { DEFAULT_CACHE, JNDI_NAME, LISTENER_EXECUTOR, EVICTION_EXECUTOR, REPLICATION_QUEUE_EXECUTOR, ALIAS };
     AttributeDefinition[] TRANSPORT_ATTRIBUTES = { STACK, EXECUTOR, LOCK_TIMEOUT, SITE, RACK, MACHINE  };
 
-    AttributeDefinition[] CACHE_ATTRIBUTES = { STACK, EXECUTOR, LOCK_TIMEOUT, SITE, RACK, MACHINE  };
+    AttributeDefinition[] CACHE_ATTRIBUTES = { /* NAME, */ START, BATCHING, INDEXING };
+    AttributeDefinition[] CLUSTERED_CACHE_ATTRIBUTES = { MODE,  QUEUE_SIZE, QUEUE_FLUSH_INTERVAL, REMOTE_TIMEOUT };
+    AttributeDefinition[] DISTRIBUTED_CACHE_ATTRIBUTES = { OWNERS, VIRTUAL_NODES, L1_LIFESPAN };
+
     AttributeDefinition[] LOCKING_ATTRIBUTES = { ISOLATION, STRIPING, ACQUIRE_TIMEOUT, CONCURRENCY_LEVEL  };
     AttributeDefinition[] TRANSACTION_ATTRIBUTES = { MODE, STOP_TIMEOUT, EAGER_LOCKING  };
     AttributeDefinition[] EVICTION_ATTRIBUTES = { STRATEGY, MAX_ENTRIES };
     AttributeDefinition[] EXPIRATION_ATTRIBUTES = { MAX_IDLE, LIFESPAN, INTERVAL };
-
     AttributeDefinition[] STORE_ATTRIBUTES = { SHARED, PRELOAD, PASSIVATION, FETCH_STATE, PURGE, SINGLETON /* PROPERTY */};
     AttributeDefinition[] FILESTORE_ATTRIBUTES = { RELATIVE_TO, PATH };
     AttributeDefinition[] JDBC_STORE_ATTRIBUTES = { DATA_SOURCE };
     AttributeDefinition[] REMOTE_ATTRIBUTES = { /* REMOTE_SERVER */ };
 
     AttributeDefinition[] STATE_TRANSFER_ATTRIBUTES = { ENABLED, TIMEOUT, FLUSH_TIMEOUT };
-    AttributeDefinition[] REHASHING_ATTRIBUTES = { ENABLED, TIMEOUT };
+    AttributeDefinition[] REHASHING_ATTRIBUTES = { ENABLED, TIMEOUT, WAIT };
 
 }

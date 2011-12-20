@@ -22,13 +22,14 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.clustering.infinispan.InfinispanLogger.ROOT_LOGGER;
+
 import java.util.List;
-import java.util.Locale;
+
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
@@ -38,12 +39,10 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
 
-import static org.jboss.as.clustering.infinispan.InfinispanLogger.ROOT_LOGGER;
-
 /**
  * @author Paul Ferraro
  */
-public class InfinispanSubsystemAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class InfinispanSubsystemAdd extends AbstractAddStepHandler {
 
     private static final Logger log = Logger.getLogger(InfinispanSubsystemAdd.class.getPackage().getName());
 
@@ -58,16 +57,6 @@ public class InfinispanSubsystemAdd extends AbstractAddStepHandler implements De
     private static void populate(ModelNode source, ModelNode target) {
         target.get(ModelKeys.DEFAULT_CACHE_CONTAINER).set(source.require(ModelKeys.DEFAULT_CACHE_CONTAINER));
         target.get(ModelKeys.CACHE_CONTAINER).setEmptyObject();
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.jboss.as.controller.descriptions.DescriptionProvider#getModelDescription(java.util.Locale)
-     */
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return InfinispanDescriptions.getSubsystemAddDescription(locale);
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) {

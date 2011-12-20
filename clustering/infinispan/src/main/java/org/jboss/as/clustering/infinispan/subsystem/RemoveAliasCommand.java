@@ -21,7 +21,7 @@ import org.jboss.logging.Logger;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class RemoveAliasCommand implements OperationStepHandler, DescriptionProvider {
+public class RemoveAliasCommand implements OperationStepHandler {
 
     private static final Logger log = Logger.getLogger(RemoveAliasCommand.class.getPackage().getName());
     public static final RemoveAliasCommand INSTANCE = new RemoveAliasCommand();
@@ -98,15 +98,4 @@ public class RemoveAliasCommand implements OperationStepHandler, DescriptionProv
         }
         return newList ;
     }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.jboss.as.controller.descriptions.DescriptionProvider#getModelDescription(java.util.Locale)
-     */
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return InfinispanDescriptions.getRemoveAliasCommandDescription(locale);
-    }
-
 }

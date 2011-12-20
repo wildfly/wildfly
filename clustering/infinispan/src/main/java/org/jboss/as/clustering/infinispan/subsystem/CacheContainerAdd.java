@@ -30,7 +30,6 @@ import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
@@ -44,7 +43,6 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -73,7 +71,7 @@ import org.jgroups.Channel;
  * @author Tristan Tarrant
  * @author Richard Achmatowicz
  */
-public class CacheContainerAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class CacheContainerAdd extends AbstractAddStepHandler {
 
     private static final Logger log = Logger.getLogger(CacheContainerAdd.class.getPackage().getName());
 
@@ -222,16 +220,6 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
 
         log.debugf("Cache container %s installed", name);
      }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.jboss.as.controller.descriptions.DescriptionProvider#getModelDescription(java.util.Locale)
-     */
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return InfinispanDescriptions.getCacheContainerAddDescription(locale);
-    }
 
     private void addExecutorDependency(ServiceBuilder<CacheContainer> builder, ModelNode model, String key, Injector<Executor> injector) {
         if (model.hasDefined(key)) {
