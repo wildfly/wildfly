@@ -175,7 +175,7 @@ public class NonPassivatingBackingCacheImpl<K extends Serializable, V extends Ca
     }
 
     private void scheduleExpiration(K id, boolean cancel) {
-        if (this.timeout != null) {
+        if (this.timeout != null && timeout.getValue() != -1) {
             Future<?> future = cancel ? this.expirationFutures.remove(id) : this.expirationFutures.put(id, this.executor.schedule(new RemoveTask<K>(this, id), this.timeout.getValue(), this.timeout.getTimeUnit()));
             if (future != null) {
                 future.cancel(false);
