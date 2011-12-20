@@ -35,5 +35,4 @@ public interface CliConfig {
      * @return The SSLConfig
      */
     SSLConfig getSslConfig();
-
 }

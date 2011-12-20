@@ -29,14 +29,14 @@ import java.util.Map;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.Util;
-import org.jboss.as.cli.operation.OperationRequestHeader;
+import org.jboss.as.cli.operation.ParsedOperationRequestHeader;
 import org.jboss.dmr.ModelNode;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class RolloutPlanHeader implements OperationRequestHeader {
+public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
 
     private static final String HEADER_NAME = "rollout-plan";
 
@@ -45,11 +45,11 @@ public class RolloutPlanHeader implements OperationRequestHeader {
     private List<RolloutPlanGroup> groups;
     private Map<String,String> props;
 
-    public RolloutPlanHeader() {
+    public ParsedRolloutPlanHeader() {
         this(null);
     }
 
-    public RolloutPlanHeader(String planId) {
+    public ParsedRolloutPlanHeader(String planId) {
         this.planId = planId;
     }
 

@@ -23,6 +23,7 @@ package org.jboss.as.cli.completion.mock;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Map;
 
 import java.util.List;
 
@@ -32,6 +33,7 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationRequestAddress;
+import org.jboss.as.cli.operation.OperationRequestHeader;
 import org.jboss.as.cli.operation.ParsedCommandLine;
 
 /**
@@ -181,5 +183,10 @@ public class MockOperationCandidatesProvider implements OperationCandidatesProvi
                 }});
         }
         return result;
+    }
+
+    @Override
+    public Map<String, OperationRequestHeader> getHeaders(CommandContext ctx) {
+        return null;
     }
 }

@@ -24,6 +24,7 @@ package org.jboss.as.cli.operation.impl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
@@ -33,6 +34,7 @@ import org.jboss.as.cli.Util;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
+import org.jboss.as.cli.operation.OperationRequestHeader;
 import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
@@ -42,6 +44,8 @@ import org.jboss.dmr.ModelNode;
  * @author Alexey Loubyansky
  */
 public class DefaultOperationCandidatesProvider implements OperationCandidatesProvider {
+
+    private static final Map<String, OperationRequestHeader> HEADERS = Collections.<String, OperationRequestHeader>singletonMap(RolloutPlanRequestHeader.INSTANCE.getName(), RolloutPlanRequestHeader.INSTANCE);
 
     /* (non-Javadoc)
      * @see org.jboss.as.cli.CandidatesProvider#getNodeNames(org.jboss.as.cli.Prefix)
@@ -229,5 +233,10 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
             result = Collections.emptyList();
         }
         return result;
+    }
+
+    @Override
+    public Map<String, OperationRequestHeader> getHeaders(CommandContext ctx) {
+        return HEADERS;
     }
 }

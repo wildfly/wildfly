@@ -24,6 +24,7 @@ package org.jboss.as.cli.operation;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
@@ -75,6 +76,27 @@ public class OperationRequestCompleter implements CommandLineCompleter {
 
         if(parsedCmd.isRequestComplete()) {
             return -1;
+        }
+
+        if(parsedCmd.endsOnHeaderListStart() || parsedCmd.hasHeaders()) {
+            final Map<String, OperationRequestHeader> headers = candidatesProvider.getHeaders(ctx);
+            if(headers.isEmpty()) {
+                return -1;
+            }
+
+            int result = buffer.length();
+            if(parsedCmd.getLastHeaderName() != null) {
+                result = parsedCmd.getLastChunkIndex();
+                for(String name : headers.keySet()) {
+                    if(name.startsWith(parsedCmd.getLastHeaderName())) {
+                        candidates.add(name);
+                    }
+                }
+            } else {
+                candidates.addAll(headers.keySet());
+            }
+            Collections.sort(candidates);
+            return result;
         }
 
         if (parsedCmd.hasProperties() || parsedCmd.endsOnPropertyListStart()) {

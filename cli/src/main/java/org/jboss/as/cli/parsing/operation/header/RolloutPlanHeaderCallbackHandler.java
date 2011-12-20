@@ -25,7 +25,7 @@ package org.jboss.as.cli.parsing.operation.header;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.RolloutPlanGroup;
-import org.jboss.as.cli.operation.impl.RolloutPlanHeader;
+import org.jboss.as.cli.operation.impl.ParsedRolloutPlanHeader;
 import org.jboss.as.cli.operation.impl.SingleRolloutPlanGroup;
 import org.jboss.as.cli.parsing.ParsingContext;
 import org.jboss.as.cli.parsing.ParsingStateCallbackHandler;
@@ -39,7 +39,7 @@ import org.jboss.as.cli.parsing.operation.PropertyValueState;
  */
 public class RolloutPlanHeaderCallbackHandler implements ParsingStateCallbackHandler {
 
-    private final RolloutPlanHeader header = new RolloutPlanHeader();
+    private final ParsedRolloutPlanHeader header = new ParsedRolloutPlanHeader();
     private final DefaultCallbackHandler handler;
 
     final StringBuilder buffer = new StringBuilder();

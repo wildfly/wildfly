@@ -23,19 +23,19 @@ package org.jboss.as.cli.operation.impl;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.operation.OperationRequestHeader;
+import org.jboss.as.cli.operation.ParsedOperationRequestHeader;
 import org.jboss.dmr.ModelNode;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class SimpleOperationRequestHeader implements OperationRequestHeader {
+public class SimpleParsedOperationRequestHeader implements ParsedOperationRequestHeader {
 
     private final String name;
     private final String value;
 
-    public SimpleOperationRequestHeader(String name, String value) throws CommandFormatException {
+    public SimpleParsedOperationRequestHeader(String name, String value) throws CommandFormatException {
         if(name == null) {
             throw new CommandFormatException("Header name is null.");
         }

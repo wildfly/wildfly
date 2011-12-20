@@ -24,7 +24,7 @@ package org.jboss.as.cli;
 
 import java.util.List;
 
-import org.jboss.as.cli.operation.OperationRequestHeader;
+import org.jboss.as.cli.operation.ParsedOperationRequestHeader;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
 import org.jboss.as.cli.parsing.ParserUtil;
@@ -147,14 +147,14 @@ public interface ArgumentValueConverter {
         protected ModelNode fromNonDMRString(String value) throws CommandFormatException {
             callback.reset();
             ParserUtil.parse(value, callback, initialState);
-            final List<OperationRequestHeader> headers = callback.getHeaders();
+            final List<ParsedOperationRequestHeader> headers = callback.getHeaders();
             if(headers.isEmpty()) {
                 return null;
             }
             if(headers.size() > 1) {
                 throw new CommandFormatException("Too many headers: " + headers);
             }
-            final OperationRequestHeader header = headers.get(0);
+            final ParsedOperationRequestHeader header = headers.get(0);
             final ModelNode node = new ModelNode();
             header.addTo(null, node);
             return node;
