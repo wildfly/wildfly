@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
@@ -32,6 +33,7 @@ import org.jboss.as.cli.CommandHandler;
 import org.jboss.as.cli.CommandRegistry;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationRequestAddress;
+import org.jboss.as.cli.operation.OperationRequestHeader;
 
 
 /**
@@ -78,5 +80,10 @@ public class CommandCandidatesProvider implements OperationCandidatesProvider {
             return Collections.emptyList();
         }
         return handler.getArguments(ctx);
+    }
+
+    @Override
+    public Map<String, OperationRequestHeader> getHeaders(CommandContext ctx) {
+        return Collections.emptyMap(); // TODO need to implement this for commands
     }
 }

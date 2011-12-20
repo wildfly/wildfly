@@ -22,6 +22,7 @@
 package org.jboss.as.cli.operation;
 
 import java.util.Collection;
+import java.util.Map;
 
 import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
@@ -41,4 +42,6 @@ public interface OperationCandidatesProvider {
     Collection<String> getOperationNames(CommandContext ctx, OperationRequestAddress prefix);
 
     Collection<CommandArgument> getProperties(CommandContext ctx, String operationName, OperationRequestAddress address);
+
+    Map<String, OperationRequestHeader> getHeaders(CommandContext ctx);
 }

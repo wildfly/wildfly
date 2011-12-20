@@ -29,10 +29,10 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.completion.mock.MockCommandContext;
 import org.jboss.as.cli.operation.CommandLineParser;
-import org.jboss.as.cli.operation.OperationRequestHeader;
+import org.jboss.as.cli.operation.ParsedOperationRequestHeader;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
-import org.jboss.as.cli.operation.impl.RolloutPlanHeader;
+import org.jboss.as.cli.operation.impl.ParsedRolloutPlanHeader;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
@@ -107,9 +107,9 @@ public class RolloutPlanParsingTestCase extends TestCase {
         assertFalse(handler.isRequestComplete());
         assertTrue(handler.hasHeaders());
 
-        final List<OperationRequestHeader> headers = handler.getHeaders();
+        final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
         assertEquals(1, headers.size());
-        final OperationRequestHeader header = headers.get(0);
+        final ParsedOperationRequestHeader header = headers.get(0);
 
         assertEquals("name", header.getName());
         final ModelNode node = new ModelNode();
@@ -139,11 +139,11 @@ public class RolloutPlanParsingTestCase extends TestCase {
         assertFalse(handler.isRequestComplete());
         assertTrue(handler.hasHeaders());
 
-        final List<OperationRequestHeader> headers = handler.getHeaders();
+        final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
         assertEquals(2, headers.size());
 
 
-        OperationRequestHeader header = headers.get(0);
+        ParsedOperationRequestHeader header = headers.get(0);
         assertEquals("name1", header.getName());
         ModelNode node = new ModelNode();
         node.get("name1").set("value1");
@@ -237,10 +237,10 @@ public class RolloutPlanParsingTestCase extends TestCase {
         assertFalse(handler.isRequestComplete());
         assertTrue(handler.hasHeaders());
 
-        final List<OperationRequestHeader> headers = handler.getHeaders();
+        final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
         assertEquals(1, headers.size());
-        final OperationRequestHeader header = headers.get(0);
-        assertTrue(header instanceof RolloutPlanHeader);
+        final ParsedOperationRequestHeader header = headers.get(0);
+        assertTrue(header instanceof ParsedRolloutPlanHeader);
 
         final ModelNode node = new ModelNode();
         final ModelNode inSeries = node.get(Util.ROLLOUT_PLAN).get(Util.IN_SERIES);
@@ -268,16 +268,16 @@ public class RolloutPlanParsingTestCase extends TestCase {
         assertFalse(handler.endsOnPropertyValueSeparator());
         assertFalse(handler.endsOnNodeSeparator());
         assertFalse(handler.endsOnNodeTypeNameSeparator());
-        assertTrue(handler.endsOnSeparator());
-        assertTrue(handler.endsOnHeaderListStart()); // TODO this is kind of strange but ok...
+        assertFalse(handler.endsOnSeparator());
+        assertFalse(handler.endsOnHeaderListStart());
         assertFalse(handler.isRequestComplete());
 
         assertTrue(handler.hasHeaders());
 
-        final List<OperationRequestHeader> headers = handler.getHeaders();
+        final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
         assertEquals(1, headers.size());
-        final OperationRequestHeader header = headers.get(0);
-        assertTrue(header instanceof RolloutPlanHeader);
+        final ParsedOperationRequestHeader header = headers.get(0);
+        assertTrue(header instanceof ParsedRolloutPlanHeader);
 
         final ModelNode node = new ModelNode();
         final ModelNode inSeries = node.get(Util.ROLLOUT_PLAN).get(Util.IN_SERIES);
@@ -307,16 +307,16 @@ public class RolloutPlanParsingTestCase extends TestCase {
         assertFalse(handler.endsOnPropertyValueSeparator());
         assertFalse(handler.endsOnNodeSeparator());
         assertFalse(handler.endsOnNodeTypeNameSeparator());
-        assertTrue(handler.endsOnSeparator());
-        assertTrue(handler.endsOnHeaderListStart()); // TODO this is kind of strange but ok...
+        assertFalse(handler.endsOnSeparator());
+        assertFalse(handler.endsOnHeaderListStart());
         assertFalse(handler.isRequestComplete());
 
         assertTrue(handler.hasHeaders());
 
-        final List<OperationRequestHeader> headers = handler.getHeaders();
+        final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
         assertEquals(1, headers.size());
-        final OperationRequestHeader header = headers.get(0);
-        assertTrue(header instanceof RolloutPlanHeader);
+        final ParsedOperationRequestHeader header = headers.get(0);
+        assertTrue(header instanceof ParsedRolloutPlanHeader);
 
         final ModelNode node = new ModelNode();
         final ModelNode inSeries = node.get(Util.ROLLOUT_PLAN).get(Util.IN_SERIES);
@@ -349,16 +349,16 @@ public class RolloutPlanParsingTestCase extends TestCase {
         assertFalse(handler.endsOnPropertyValueSeparator());
         assertFalse(handler.endsOnNodeSeparator());
         assertFalse(handler.endsOnNodeTypeNameSeparator());
-        assertTrue(handler.endsOnSeparator());
-        assertTrue(handler.endsOnHeaderListStart()); // TODO this is kind of strange but ok...
+        assertFalse(handler.endsOnSeparator());
+        assertFalse(handler.endsOnHeaderListStart());
         assertFalse(handler.isRequestComplete());
 
         assertTrue(handler.hasHeaders());
 
-        final List<OperationRequestHeader> headers = handler.getHeaders();
+        final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
         assertEquals(1, headers.size());
-        final OperationRequestHeader header = headers.get(0);
-        assertTrue(header instanceof RolloutPlanHeader);
+        final ParsedOperationRequestHeader header = headers.get(0);
+        assertTrue(header instanceof ParsedRolloutPlanHeader);
 
         final ModelNode node = new ModelNode();
         final ModelNode inSeries = node.get(Util.ROLLOUT_PLAN).get(Util.IN_SERIES);
@@ -390,16 +390,16 @@ public class RolloutPlanParsingTestCase extends TestCase {
         assertFalse(handler.endsOnPropertyValueSeparator());
         assertFalse(handler.endsOnNodeSeparator());
         assertFalse(handler.endsOnNodeTypeNameSeparator());
-        assertTrue(handler.endsOnSeparator());
-        assertTrue(handler.endsOnHeaderListStart()); // TODO this is kind of strange but ok...
+        assertFalse(handler.endsOnSeparator());
+        assertFalse(handler.endsOnHeaderListStart());
         assertFalse(handler.isRequestComplete());
 
         assertTrue(handler.hasHeaders());
 
-        final List<OperationRequestHeader> headers = handler.getHeaders();
+        final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
         assertEquals(1, headers.size());
-        final OperationRequestHeader header = headers.get(0);
-        assertTrue(header instanceof RolloutPlanHeader);
+        final ParsedOperationRequestHeader header = headers.get(0);
+        assertTrue(header instanceof ParsedRolloutPlanHeader);
 
         final ModelNode node = new ModelNode();
         final ModelNode inSeries = node.get(Util.ROLLOUT_PLAN).get(Util.IN_SERIES);
@@ -434,16 +434,16 @@ public class RolloutPlanParsingTestCase extends TestCase {
         assertFalse(handler.endsOnPropertyValueSeparator());
         assertFalse(handler.endsOnNodeSeparator());
         assertFalse(handler.endsOnNodeTypeNameSeparator());
-        assertTrue(handler.endsOnSeparator());
-        assertTrue(handler.endsOnHeaderListStart()); // TODO this is kind of strange but ok...
+        assertFalse(handler.endsOnSeparator());
+        assertFalse(handler.endsOnHeaderListStart());
         assertFalse(handler.isRequestComplete());
 
         assertTrue(handler.hasHeaders());
 
-        final List<OperationRequestHeader> headers = handler.getHeaders();
+        final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
         assertEquals(1, headers.size());
-        final OperationRequestHeader header = headers.get(0);
-        assertTrue(header instanceof RolloutPlanHeader);
+        final ParsedOperationRequestHeader header = headers.get(0);
+        assertTrue(header instanceof ParsedRolloutPlanHeader);
 
         final ModelNode node = new ModelNode();
         final ModelNode inSeries = node.get(Util.ROLLOUT_PLAN).get(Util.IN_SERIES);
@@ -476,16 +476,16 @@ public class RolloutPlanParsingTestCase extends TestCase {
         assertFalse(handler.endsOnPropertyValueSeparator());
         assertFalse(handler.endsOnNodeSeparator());
         assertFalse(handler.endsOnNodeTypeNameSeparator());
-        assertTrue(handler.endsOnSeparator());
-        assertTrue(handler.endsOnHeaderListStart()); // TODO this is kind of strange but ok...
+        assertFalse(handler.endsOnSeparator());
+        assertFalse(handler.endsOnHeaderListStart());
         assertFalse(handler.isRequestComplete());
 
         assertTrue(handler.hasHeaders());
 
-        final List<OperationRequestHeader> headers = handler.getHeaders();
+        final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
         assertEquals(1, headers.size());
-        final OperationRequestHeader header = headers.get(0);
-        assertTrue(header instanceof RolloutPlanHeader);
+        final ParsedOperationRequestHeader header = headers.get(0);
+        assertTrue(header instanceof ParsedRolloutPlanHeader);
 
         final ModelNode node = new ModelNode();
         final ModelNode inSeries = node.get(Util.ROLLOUT_PLAN).get(Util.IN_SERIES);
@@ -544,7 +544,7 @@ public class RolloutPlanParsingTestCase extends TestCase {
 
         assertTrue(handler.hasHeaders());
 
-        final List<OperationRequestHeader> headers = handler.getHeaders();
+        final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
         assertEquals(1, headers.size());
 
         final ModelNode op = handler.toOperationRequest(ctx);
@@ -632,12 +632,12 @@ public class RolloutPlanParsingTestCase extends TestCase {
         assertFalse(handler.isRequestComplete());
         assertTrue(handler.hasHeaders());
 
-        final List<OperationRequestHeader> headers = handler.getHeaders();
+        final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
         assertEquals(1, headers.size());
-        final OperationRequestHeader header = headers.get(0);
-        assertTrue(header instanceof RolloutPlanHeader);
+        final ParsedOperationRequestHeader header = headers.get(0);
+        assertTrue(header instanceof ParsedRolloutPlanHeader);
 
-        final RolloutPlanHeader rollout = (RolloutPlanHeader) header;
+        final ParsedRolloutPlanHeader rollout = (ParsedRolloutPlanHeader) header;
         assertEquals("myplan", rollout.getPlanRef());
 
 /*        final ModelNode op = handler.toOperationRequest(ctx);
@@ -712,6 +712,31 @@ public class RolloutPlanParsingTestCase extends TestCase {
         rolloutPlan.get("rollback-across-groups").set("true");
 
         assertEquals(expectedHeaders, node);
+    }
+
+    @Test
+    public void testRollout() throws Exception {
+
+        //parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout in-series = groupA}");
+        parse(":do{rollout");
+
+        assertFalse(handler.hasAddress());
+        assertTrue(handler.hasOperationName());
+        assertFalse(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnPropertyListStart());
+        assertFalse(handler.endsOnPropertySeparator());
+        assertFalse(handler.endsOnPropertyValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertFalse(handler.endsOnSeparator());
+        assertFalse(handler.endsOnHeaderListStart());
+        assertFalse(handler.isRequestComplete());
+        assertTrue(handler.hasHeaders());
+
+        final List<ParsedOperationRequestHeader> headers = handler.getHeaders();
+        assertEquals(0, headers.size());
+        assertEquals("rollout", handler.getLastHeaderName());
     }
 
     protected void parse(String opReq) throws CommandFormatException {

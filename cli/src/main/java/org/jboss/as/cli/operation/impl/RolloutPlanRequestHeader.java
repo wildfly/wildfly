@@ -19,20 +19,32 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.completion.mock;
+package org.jboss.as.cli.operation.impl;
 
-
-import org.jboss.as.cli.CliConfig;
-import org.jboss.as.cli.SSLConfig;
+import org.jboss.as.cli.CommandLineCompleter;
+import org.jboss.as.cli.operation.OperationRequestHeader;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class MockCliConfig implements CliConfig {
+public class RolloutPlanRequestHeader implements OperationRequestHeader {
 
+    public static final RolloutPlanRequestHeader INSTANCE = new RolloutPlanRequestHeader();
+
+    /* (non-Javadoc)
+     * @see org.jboss.as.cli.operation.OperationRequestHeader#getName()
+     */
     @Override
-    public SSLConfig getSslConfig() {
-        return null;
+    public String getName() {
+        return "rollout-plan";
+    }
+
+    /* (non-Javadoc)
+     * @see org.jboss.as.cli.operation.OperationRequestHeader#getCompleter()
+     */
+    @Override
+    public CommandLineCompleter getCompleter() {
+        return RolloutPlanCompleter.INSTANCE;
     }
 }

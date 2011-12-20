@@ -75,6 +75,8 @@ public interface CommandLineParser {
 
         void header(String name, String value, int nameValueSeparator) throws CommandFormatException;
 
+        void headerSeparator(int index);
+
         void headerListEnd(int index);
 
         void outputTarget(int index, String outputTarget) throws CommandFormatException;
