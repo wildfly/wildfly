@@ -211,7 +211,7 @@ class CommandContextImpl implements CommandContext {
         this.cmdCompleter = null;
         operationHandler = new OperationRequestHandler();
         initCommands();
-        config = CliConfigImpl.parse(this, new File(SecurityActions.getSystemProperty("user.home"), "jboss-cli.xml"));
+        config = CliConfigImpl.load(this);
     }
 
     /**
@@ -232,15 +232,14 @@ class CommandContextImpl implements CommandContext {
         }
         initCommands();
 
-        final String userHome = SecurityActions.getSystemProperty("user.home");
-        config = CliConfigImpl.parse(this, new File(userHome, "jboss-cli.xml"));
+        config = CliConfigImpl.load(this);
         initSSLContext();
 
         if (initConsole) {
             cmdCompleter = new CommandCompleter(cmdRegistry);
             this.console = Console.Factory.getConsole(this);
             console.setUseHistory(true);
-            console.setHistoryFile(new File(userHome, ".jboss-cli-history"));
+            console.setHistoryFile(new File(SecurityActions.getSystemProperty("user.home"), ".jboss-cli-history"));
             console.addCompleter(cmdCompleter);
             this.operationCandidatesProvider = new DefaultOperationCandidatesProvider();
         } else {
