@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE ejb-jar PUBLIC
+      "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN"
+      "http://java.sun.com/dtd/ejb-jar_2_0.dtd">
+
+<ejb-jar>
+   <display-name>SecurityTests</display-name>
+   <enterprise-beans>
+
+      <session>
+         <description>A secured echo session bean that calls a StatelessSessionLocal
+            when its invokeEcho method is called, and calls another CalledSession
+            invokeEcho when its callEcho method is called. This uses a run-as
+            role of InternalRole to test propagation of this role.
+            Level1CallerBean.callEcho()
+              + Level2CallerBean.invokeEcho()
+                + Level3CalleeBean.echo()
+         </description>
+         <ejb-name>Level1CallerBean</ejb-name>
+         <home>org.jboss.test.security.interfaces.CalledSessionHome</home>
+         <remote>org.jboss.test.security.interfaces.CalledSession</remote>
+         <ejb-class>org.jboss.test.security.ejb.CallerBean</ejb-class>
+         <session-type>Stateless</session-type>
+         <transaction-type>Container</transaction-type>
+         <ejb-ref>
+            <description>Another CallerBean used to test run-as propagation</description>
+            <ejb-ref-name>ejb/CallerHome</ejb-ref-name>
+            <ejb-ref-type>Session</ejb-ref-type>
+            <home>org.jboss.test.security.interfaces.CalledSessionHome</home>
+            <remote>org.jboss.test.security.interfaces.CalledSession</remote>
+            <ejb-link>Level2CallerBean</ejb-link>
+         </ejb-ref>
+         <ejb-local-ref>
+            <description></description>
+            <ejb-ref-name>ejb/local/CalleeHome</ejb-ref-name>
+            <ejb-ref-type>Session</ejb-ref-type>
+            <local-home>org.jboss.test.security.interfaces.StatelessSessionLocalHome</local-home>
+            <local>org.jboss.test.security.interfaces.StatelessSessionLocal</local>
+            <ejb-link>CalleeBean</ejb-link>
+         </ejb-local-ref>
+         <security-role-ref>
+            <role-name>EchoCaller</role-name>
+            <role-link>Echo</role-link>
+         </security-role-ref>
+         <security-role-ref>
+            <role-name>InternalRole</role-name>
+            <role-link>InternalRole</role-link>
+         </security-role-ref>
+         <security-identity>
+            <run-as>
+               <role-name>InternalRole</role-name>
+            </run-as>
+         </security-identity>
+      </session>
+      <session>
+         <description>A secured echo session bean that calls a StatelessSessionLocal
+            when its invokeEcho method is called, and calls another CalledSession
+            invokeEcho when its callEcho method is called. This uses a run-as
+            role of InternalRole to test propagation of this role.
+            DeepRunAsMDB
+              + Level1CallerBean.callEcho()
+                + Level2CallerBean.invokeEcho()
+                  + Level3CalleeBean.echo()
+         </description>
+         <ejb-name>Level1MDBCallerBean</ejb-name>
+         <local-home>org.jboss.test.security.interfaces.CalledSessionLocalHome</local-home>
+         <local>org.jboss.test.security.interfaces.CalledSessionLocal</local>
+         <ejb-class>org.jboss.test.security.ejb.CallerBean</ejb-class>
+         <session-type>Stateless</session-type>
+         <transaction-type>Container</transaction-type>
+         <ejb-local-ref>
+            <description>Another CallerBean used to test run-as propagation</description>
+            <ejb-ref-name>ejb/CallerHome</ejb-ref-name>
+            <ejb-ref-type>Session</ejb-ref-type>
+            <local-home>org.jboss.test.security.interfaces.CalledSessionLocalHome</local-home>
+            <local>org.jboss.test.security.interfaces.CalledSessionLocal</local>
+            <ejb-link>Level2CallerBean</ejb-link>
+         </ejb-local-ref>
+         <ejb-local-ref>
+            <description></description>
+            <ejb-ref-name>ejb/local/CalleeHome</ejb-ref-name>
+            <ejb-ref-type>Session</ejb-ref-type>
+            <local-home>org.jboss.test.security.interfaces.StatelessSessionLocalHome</local-home>
+            <local>org.jboss.test.security.interfaces.StatelessSessionLocal</local>
+            <ejb-link>CalleeBean</ejb-link>
+         </ejb-local-ref>
+         <security-role-ref>
+            <role-name>EchoCaller</role-name>
+            <role-link>Echo</role-link>
+         </security-role-ref>
+         <security-role-ref>
+            <role-name>InternalRole</role-name>
+            <role-link>InternalRole</role-link>
+         </security-role-ref> 
+         <security-identity>
+            <use-caller-identity />
+         </security-identity>
+      </session>
+      <session>
+         <description>A caller bean that is called by the </description>
+         <ejb-name>Level2CallerBean</ejb-name>
+         <home>org.jboss.test.security.interfaces.CalledSessionHome</home>
+         <remote>org.jboss.test.security.interfaces.CalledSession</remote>
+         <local-home>org.jboss.test.security.interfaces.CalledSessionLocalHome</local-home>
+         <local>org.jboss.test.security.interfaces.CalledSessionLocal</local>
+         <ejb-class>org.jboss.test.security.ejb.CallerBean</ejb-class>
+         <session-type>Stateless</session-type>
+         <transaction-type>Container</transaction-type>
+         <ejb-local-ref>
+            <description></description>
+            <ejb-ref-name>ejb/local/CalleeHome</ejb-ref-name>
+            <ejb-ref-type>Session</ejb-ref-type>
+            <local-home>org.jboss.test.security.interfaces.StatelessSessionLocalHome</local-home>
+            <local>org.jboss.test.security.interfaces.StatelessSessionLocal</local>
+            <ejb-link>Level3CalleeBean</ejb-link>
+         </ejb-local-ref>
+         <security-role-ref>
+            <role-name>EchoCaller</role-name>
+            <role-link>Echo</role-link>
+         </security-role-ref>
+         <security-role-ref>
+            <role-name>InternalRole</role-name>
+            <role-link>InternalRole</role-link>
+         </security-role-ref>
+         <security-identity>
+            <use-caller-identity />
+         </security-identity>
+      </session>
+      <session>
+         <description>A secured echo session bean that is called by CallerBean
+         </description>
+         <ejb-name>CalleeBean</ejb-name>
+         <local-home>org.jboss.test.security.interfaces.StatelessSessionLocalHome</local-home>
+         <local>org.jboss.test.security.interfaces.StatelessSessionLocal</local>
+         <ejb-class>org.jboss.test.security.ejb.CalleeBean</ejb-class>
+         <session-type>Stateless</session-type>
+         <transaction-type>Container</transaction-type>
+         <security-role-ref>
+            <role-name>EchoCaller</role-name>
+            <role-link>Echo</role-link>
+         </security-role-ref>
+      </session>
+      <session>
+         <description>A secured echo session bean that is called by CallerBean
+         </description>
+         <ejb-name>Level3CalleeBean</ejb-name>
+         <local-home>org.jboss.test.security.interfaces.StatelessSessionLocalHome</local-home>
+         <local>org.jboss.test.security.interfaces.StatelessSessionLocal</local>
+         <ejb-class>org.jboss.test.security.ejb.CalleeBean</ejb-class>
+         <session-type>Stateless</session-type>
+         <transaction-type>Container</transaction-type>
+         <security-role-ref>
+            <role-name>EchoCaller</role-name>
+            <role-link>Echo</role-link>
+         </security-role-ref>
+      </session>
+      
+	</enterprise-beans>       
+</ejb-jar>
