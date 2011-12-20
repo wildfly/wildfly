@@ -161,6 +161,14 @@
 
         <module-def name="org.jboss.as.standalone"/>
 
+        <module-def name="org.jboss.as.threads">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-threads"/>
+        </module-def>
+
+        <module-def name="org.jboss.com.sun.httpserver">
+            <maven-resource group="org.jboss.com.sun.httpserver" artifact="httpserver"/>
+        </module-def>
+
         <module-def name="org.jboss.common-core">
             <maven-resource group="org.jboss" artifact="jboss-common-core"/>
         </module-def>
@@ -855,16 +863,8 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-xts"/>
         </module-def>
 
-        <module-def name="org.jboss.as.threads">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-threads"/>
-        </module-def>
-
         <module-def name="org.jboss.classfilewriter">
             <maven-resource group="org.jboss.classfilewriter" artifact="jboss-classfilewriter"/>
-        </module-def>
-
-        <module-def name="org.jboss.com.sun.httpserver">
-            <maven-resource group="org.jboss.com.sun.httpserver" artifact="httpserver"/>
         </module-def>
 
         <module-def name="org.jboss.ejb-client">
