@@ -353,14 +353,25 @@ public interface DomainManagementMessages {
     String unableToAddUser(String file, String error);
 
     /**
-     * Message to inform user that the new user is already in the file identified
+     * The error message if loading the known users from file fails.
      *
-     * @param username - The new username
-     * @param fileName - The file the user was supposed to be added to
+     * @param file - The name of the file the load failed for.
+     * @param error - The failure message.
+     *
      * @return a {@link String} for the message.
      */
-    @Message(value = "User %s was already added to file %s, skipping...")
-    String userAlreadyExists(String username, String fileName);
+    @Message(id = 15242, value = "Unable to add load users from %s due to error %s")
+    String unableToLoadUsers(String file, String error);
+
+    /**
+     * The error message if the user is already in at least one file.
+     *
+     * @param user - The name of the user.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(id = 15243, value = "The user '%s' already exists in at least one properties file.")
+    String duplicateUser(String user);
 
     /**
      * The error message header.

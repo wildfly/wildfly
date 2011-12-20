@@ -25,17 +25,19 @@ package org.jboss.as.domain.management.security;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.io.BufferedWriter;
-import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.Console;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
-import java.io.FileReader;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
 
@@ -55,6 +57,7 @@ public class AddPropertiesUser {
     private Console theConsole = System.console();
 
     private List<File> propertiesFiles;
+    private Set<String> knownUsers;
     private State nextState;
 
     private AddPropertiesUser() {
@@ -137,11 +140,36 @@ public class AddPropertiesUser {
 
             propertiesFiles = foundFiles;
 
+            Set<String> foundUsers = new HashSet<String>();
+            for (File current : propertiesFiles) {
+                try {
+                    foundUsers.addAll(loadUserNames(current));
+                } catch (IOException e) {
+                    return new ErrorState(MESSAGES.unableToLoadUsers(current.getAbsolutePath(), e.getMessage()));
+                }
+            }
+            knownUsers = foundUsers;
+
             if (values == null) {
                 return new PromptNewUserState();
             } else {
                 return new PromptNewUserState(values);
             }
+        }
+
+        private Set<String> loadUserNames(final File file) throws IOException {
+
+            FileInputStream fis = null;
+            try {
+                fis = new FileInputStream(file);
+                Properties tempProps = new Properties();
+                tempProps.load(fis);
+
+                return tempProps.stringPropertyNames();
+            } finally {
+                safeClose(fis);
+            }
+
         }
 
     }
@@ -266,6 +294,40 @@ public class AddPropertiesUser {
                 }
             }
 
+            State continuingState = new DuplicateUserCheckState(values);
+            if (weakUserName && values.nonInteractive == false) {
+                String message = MESSAGES.usernameEasyToGuess(values.userName);
+                String prompt = MESSAGES.sureToAddUser(values.userName);
+                State noState = new PromptNewUserState(values);
+
+                return new ConfirmationChoice(message, prompt, continuingState, noState);
+            }
+
+            return continuingState;
+        }
+
+    }
+
+    /**
+     * State to check that the user is not already defined in any of the resolved
+     * properties files.
+     */
+    private class DuplicateUserCheckState implements State {
+
+        private Values values;
+
+        private DuplicateUserCheckState(final Values values) {
+            this.values = values;
+        }
+
+        @Override
+        public State execute() {
+            if (knownUsers.contains(values.userName)) {
+                State continuing = values.nonInteractive ? null : new PromptNewUserState(values);
+
+                return new ErrorState(MESSAGES.duplicateUser(values.userName), continuing);
+            }
+
             State addState = new AddUser(values);
             final State continuingState;
             if (values.nonInteractive) {
@@ -277,16 +339,10 @@ public class AddPropertiesUser {
                 continuingState = new ConfirmationChoice(message, prompt, addState, new PromptNewUserState(values));
             }
 
-            if (weakUserName && values.nonInteractive == false) {
-                String message = MESSAGES.usernameEasyToGuess(values.userName);
-                String prompt = MESSAGES.sureToAddUser(values.userName);
-                State noState = new PromptNewUserState(values);
-
-                return new ConfirmationChoice(message, prompt, continuingState, noState);
-            }
-
             return continuingState;
         }
+
+
 
     }
 
@@ -353,6 +409,9 @@ public class AddPropertiesUser {
 
     /**
      * State to perform the actual addition to the discovered properties files.
+     *
+     * By this time ALL validation should be complete, this State will only fail for IOExceptions encountered
+     * performing the actual writes.
      */
     private class AddUser implements State {
 
@@ -375,15 +434,9 @@ public class AddPropertiesUser {
             }
 
             for (File current : propertiesFiles) {
-
-
                 try {
-                    if (!checkExistingUser(values, current)) {
-                        append(entry, current);
-                        theConsole.printf(MESSAGES.addedUser(values.userName, current.getCanonicalPath()));
-                    } else {
-                        theConsole.printf(MESSAGES.userAlreadyExists(values.userName, current.getCanonicalPath()));
-                    }
+                    append(entry, current);
+                    theConsole.printf(MESSAGES.addedUser(values.userName, current.getCanonicalPath()));
                     theConsole.printf(NEW_LINE);
                 } catch (IOException e) {
                     return new ErrorState(MESSAGES.unableToAddUser(current.getAbsolutePath(), e.getMessage()));
@@ -411,45 +464,6 @@ public class AddPropertiesUser {
                 safeClose(fw);
             }
 
-        }
-
-        private void safeClose(Closeable c) {
-            if (c != null) {
-                try {
-                    c.close();
-                } catch (IOException e) {
-                }
-            }
-        }
-
-        private boolean checkExistingUser(final Values values, final File current) throws IOException {
-            FileReader fr = null;
-            BufferedReader br = null;
-
-            String temp = null;
-
-            boolean existingUser = false;
-
-            try {
-                fr = new FileReader(current);
-                br = new BufferedReader(fr);
-
-                while ((temp = br.readLine()) != null) {
-                    temp = temp.trim();
-                    // ignore comments
-                    if (temp.startsWith(COMMENT)) {
-                        continue;
-
-                    } else if (( temp.split("=") )[0].equals(values.userName)) {
-                        existingUser = true;
-                        break;
-                    }
-                }
-                return existingUser;
-            } finally {
-                safeClose(br);
-                safeClose(fr);
-            }
         }
     }
 
@@ -486,6 +500,15 @@ public class AddPropertiesUser {
             return nextState;
         }
 
+    }
+
+    private static void safeClose(Closeable c) {
+        if (c != null) {
+            try {
+                c.close();
+            } catch (IOException e) {
+            }
+        }
     }
 
     private class Values {
