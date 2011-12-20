@@ -91,7 +91,7 @@ public class ParseUtils {
     public static  Properties xaDsProperties(String jndiName){
     	Properties params=commonDsProperties(jndiName);
     	//attributes
-    
+
         //common
         params.put("xa-datasource-class","org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource");
         //xa-pool
@@ -128,19 +128,19 @@ public class ParseUtils {
     }
     /**
      * Returns common properties for resource-adapter element
-    
+
      */
     public static  Properties raCommonProperties(){
     	Properties params=new Properties();
     	 params.put("archive","some.rar");
          params.put("transaction-support","XATransaction");
-         params.put("bootstrap-context","someContext");
-         
+         params.put("bootstrapcontext","someContext");
+
     	return params;
     }
     /**
      * Returns properties for RA connection-definition element
-     
+
      */
     public static  Properties raConnectionProperties(){
     	Properties params=new Properties();
@@ -163,7 +163,7 @@ public class ParseUtils {
         params.put("pad-xid","true");
         params.put("wrap-xa-resource","true");
         //security
-        params.put("application","true");
+        params.put("security-application","true");
         params.put("security-domain-and-application","HsqlDbRealm1");
         params.put("security-domain","HsqlDbRealm");
         //validation
@@ -187,7 +187,7 @@ public class ParseUtils {
     }
     /**
      * Returns properties for RA admin-object element
-     
+
      */
     public static  Properties raAdminProperties(){
     	Properties params=new Properties();
@@ -244,7 +244,7 @@ public class ParseUtils {
      */
     public static void controlModelParams(ModelNode node,Properties params){
     	String str;
-        
+
         StringBuffer sb = new StringBuffer();
         String par,child;
         Enumeration e = params.propertyNames();
@@ -260,5 +260,5 @@ public class ParseUtils {
         }
         if (sb.length()>0) Assert.fail("There are parsing errors:\n"+sb.toString()+"Parsed configuration:\n"+node);
     }
-    
+
 }

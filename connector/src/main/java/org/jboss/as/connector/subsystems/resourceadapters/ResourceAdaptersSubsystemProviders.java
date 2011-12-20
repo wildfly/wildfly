@@ -29,6 +29,7 @@ import static org.jboss.as.connector.pool.Constants.IDLETIMEOUTMINUTES;
 import static org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE;
 import static org.jboss.as.connector.pool.Constants.POOL_FLUSH_STRATEGY;
+import static org.jboss.as.connector.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ADMIN_OBJECTS_NAME;
@@ -43,14 +44,25 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFI
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTY_VALUE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLEAVING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_PROPERTIES;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_PASSWORD;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_SECURITY_DOMAIN;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_USERNAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SAME_RM_OVERRIDE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTIONSUPPORT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USETRYLOCK;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_XA_RESOURCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
@@ -58,6 +70,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
@@ -65,6 +78,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQ
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -100,7 +114,12 @@ public class ResourceAdaptersSubsystemProviders {
             USETRYLOCK,
             BACKGROUNDVALIDATIONMILLIS,
             BACKGROUNDVALIDATION,
-            USE_FAST_FAIL, USE_CCM};
+            USE_FAST_FAIL, USE_CCM,
+            RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES,
+            RECOVERY_PASSWORD, RECOVERY_SECURITY_DOMAIN,
+            RECOVERY_USERNAME, NO_RECOVERY,
+            WRAP_XA_RESOURCE, SAME_RM_OVERRIDE,
+            PAD_XID, POOL_PREFILL, INTERLEAVING, NOTXSEPARATEPOOL};
 
     static final SimpleAttributeDefinition[] ADMIN_OBJECTS_NODEATTRIBUTE = new SimpleAttributeDefinition[]{
             CLASS_NAME, JNDINAME,
@@ -192,7 +211,14 @@ public class ResourceAdaptersSubsystemProviders {
 
 
             for (SimpleAttributeDefinition attribute : CONNECTIONDEFINITIONS_NODEATTRIBUTE) {
-                attribute.addResourceAttributeDescription(bundle, null, connectionDefinitionNode);
+                if (attribute == RECOVERLUGIN_PROPERTIES) {
+                    connectionDefinitionNode.get(ATTRIBUTES, RECOVERLUGIN_PROPERTIES.getName(), DESCRIPTION).set(bundle.getString(RECOVERLUGIN_PROPERTIES.getName()));
+                    connectionDefinitionNode.get(ATTRIBUTES, RECOVERLUGIN_PROPERTIES.getName(), TYPE).set(RECOVERLUGIN_PROPERTIES.getType());
+                    connectionDefinitionNode.get(ATTRIBUTES, RECOVERLUGIN_PROPERTIES.getName(), VALUE_TYPE).set(ModelType.STRING);
+                    connectionDefinitionNode.get(ATTRIBUTES, RECOVERLUGIN_PROPERTIES.getName(), REQUIRED).set(false);
+                } else {
+                    attribute.addResourceAttributeDescription(bundle, null, connectionDefinitionNode);
+                }
             }
 
             connectionDefinitionNode.get(CHILDREN, Constants.CONFIG_PROPERTIES.getName(), DESCRIPTION).set(bundle.getString(Constants.CONFIG_PROPERTIES.getName()));
@@ -234,12 +260,21 @@ public class ResourceAdaptersSubsystemProviders {
             raNode.get(TAIL_COMMENT_ALLOWED).set(true);
             raNode.get(DESCRIPTION).set(RESOURCEADAPTER_NAME);
 
+
+
             raNode.get(ATTRIBUTES, ARCHIVE.getName(), DESCRIPTION).set(bundle.getString(ARCHIVE.getName()));
             raNode.get(ATTRIBUTES, ARCHIVE.getName(), TYPE).set(ModelType.STRING);
             raNode.get(ATTRIBUTES, ARCHIVE.getName(), REQUIRED).set(true);
             raNode.get(ATTRIBUTES, TRANSACTIONSUPPORT.getName(), DESCRIPTION).set(bundle.getString(TRANSACTIONSUPPORT.getName()));
             raNode.get(ATTRIBUTES, TRANSACTIONSUPPORT.getName(), TYPE).set(ModelType.STRING);
             raNode.get(ATTRIBUTES, TRANSACTIONSUPPORT.getName(), REQUIRED).set(true);
+            raNode.get(ATTRIBUTES, BOOTSTRAPCONTEXT.getName(), DESCRIPTION).set(bundle.getString(BOOTSTRAPCONTEXT.getName()));
+            raNode.get(ATTRIBUTES, BOOTSTRAPCONTEXT.getName(), TYPE).set(ModelType.STRING);
+            raNode.get(ATTRIBUTES, BOOTSTRAPCONTEXT.getName(), REQUIRED).set(false);
+            raNode.get(ATTRIBUTES, BEANVALIDATIONGROUPS.getName(), DESCRIPTION).set(bundle.getString(BEANVALIDATIONGROUPS.getName()));
+            raNode.get(ATTRIBUTES, BEANVALIDATIONGROUPS.getName(), TYPE).set(ModelType.STRING);
+            raNode.get(ATTRIBUTES, BEANVALIDATIONGROUPS.getName(), REQUIRED).set(false);
+
 
             raNode.get(CHILDREN, Constants.CONNECTIONDEFINITIONS_NAME, DESCRIPTION).set(bundle.getString(Constants.CONNECTIONDEFINITIONS_NAME));
             raNode.get(CHILDREN, Constants.ADMIN_OBJECTS_NAME, DESCRIPTION).set(bundle.getString(Constants.ADMIN_OBJECTS_NAME));
@@ -271,6 +306,14 @@ public class ResourceAdaptersSubsystemProviders {
             operation.get(REQUEST_PROPERTIES, TRANSACTIONSUPPORT.getName(), DESCRIPTION).set(bundle.getString(TRANSACTIONSUPPORT.getName()));
             operation.get(REQUEST_PROPERTIES, TRANSACTIONSUPPORT.getName(), TYPE).set(ModelType.STRING);
             operation.get(REQUEST_PROPERTIES, TRANSACTIONSUPPORT.getName(), REQUIRED).set(true);
+            operation.get(REQUEST_PROPERTIES, BOOTSTRAPCONTEXT.getName(), DESCRIPTION).set(bundle.getString(BOOTSTRAPCONTEXT.getName()));
+            operation.get(REQUEST_PROPERTIES, BOOTSTRAPCONTEXT.getName(), TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, BOOTSTRAPCONTEXT.getName(), REQUIRED).set(false);
+            operation.get(REQUEST_PROPERTIES, BEANVALIDATIONGROUPS.getName(), DESCRIPTION).set(bundle.getString(BEANVALIDATIONGROUPS.getName()));
+            operation.get(REQUEST_PROPERTIES, BEANVALIDATIONGROUPS.getName(), TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, BEANVALIDATIONGROUPS.getName(), REQUIRED).set(false);
+
+
 
             return operation;
         }
@@ -308,7 +351,14 @@ public class ResourceAdaptersSubsystemProviders {
             op.get(OPERATION_NAME).set(ADD);
 
             for (SimpleAttributeDefinition attribute : CONNECTIONDEFINITIONS_NODEATTRIBUTE) {
-                attribute.addOperationParameterDescription(bundle, null, op);
+                if (attribute == RECOVERLUGIN_PROPERTIES) {
+                    op.get(REQUEST_PROPERTIES, RECOVERLUGIN_PROPERTIES.getName(), DESCRIPTION).set(bundle.getString(RECOVERLUGIN_PROPERTIES.getName()));
+                    op.get(REQUEST_PROPERTIES, RECOVERLUGIN_PROPERTIES.getName(), TYPE).set(RECOVERLUGIN_PROPERTIES.getType());
+                    op.get(REQUEST_PROPERTIES, RECOVERLUGIN_PROPERTIES.getName(), VALUE_TYPE).set(ModelType.STRING);
+                    op.get(REQUEST_PROPERTIES, RECOVERLUGIN_PROPERTIES.getName(), REQUIRED).set(false);
+                } else {
+                    attribute.addOperationParameterDescription(bundle, null, op);
+                }
             }
 
             return op;

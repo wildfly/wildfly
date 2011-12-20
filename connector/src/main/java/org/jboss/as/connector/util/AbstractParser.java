@@ -33,6 +33,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.CommonBundle;
 import org.jboss.jca.common.CommonLogger;
@@ -128,7 +129,15 @@ public abstract class AbstractParser {
                             requireSingleAttribute(reader, "name");
                             final String name = reader.getAttributeValue(0);
                             String value = rawElementText(reader);
-                            ModelNode node = extensionProperties.parse(value, reader);
+                            final String trimmed = value == null ? null : value.trim();
+                            ModelNode node = new ModelNode();
+                            if (trimmed != null ) {
+                                if (extensionProperties.isAllowExpression()) {
+                                    node = ParseUtils.parsePossibleExpression(trimmed);
+                                } else {
+                                    node = new ModelNode().set(trimmed);
+                                }
+                            }
                             operation.get(extensionProperties.getName(), name).set(node);
                             break;
                         }

@@ -21,21 +21,20 @@
 */
 package org.jboss.as.connector.subsystems.jca;
 
-import static org.jboss.as.connector.subsystems.jca.ParseUtils.controlModelParams;
-import static org.jboss.as.connector.subsystems.jca.ParseUtils.nonXaDsProperties;
-
-import java.util.Properties;
-
 import junit.framework.Assert;
-
 import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
 import org.jboss.as.controller.OperationContext.Type;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
-import org.junit.Ignore;
 import org.junit.Test;
+
+import java.util.Properties;
+
+import static org.jboss.as.connector.subsystems.jca.ParseUtils.controlModelParams;
+import static org.jboss.as.connector.subsystems.jca.ParseUtils.nonXaDsProperties;
+import static org.jboss.as.connector.subsystems.jca.ParseUtils.xaDsProperties;
 
 /**
  *
@@ -51,7 +50,6 @@ public class ComplexDatasourceSubsystemTestCase extends AbstractSubsystemTest {
     }
 
     @Test
-    @Ignore("AS7-3008")
     public void testDatasource() throws Exception{
         // Only contain the subsystem xml, e.g.
         //  <subsystem xmlns="urn:jboss:domain:datasources:1.0"> ... </subsystem>
@@ -79,7 +77,7 @@ public class ComplexDatasourceSubsystemTestCase extends AbstractSubsystemTest {
 
         final String complexXaDs = "complexXaDs";
         final String complexXaDsJndi = "java:jboss/xa-datasources/" + complexXaDs;
-        params=nonXaDsProperties(complexXaDsJndi);
+        params=xaDsProperties(complexXaDsJndi);
         ModelNode modelXaDs=model.get("subsystem", "datasources","xa-data-source",complexXaDs+"_Pool");
         controlModelParams(modelXaDs,params);
         Assert.assertEquals(modelXaDs.asString(),"jdbc:h2:mem:test",modelXaDs.get("xa-datasource-properties","URL","value").asString());

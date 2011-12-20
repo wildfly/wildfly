@@ -227,14 +227,18 @@ public class ResourceAdaptersExtension implements Extension {
             streamWriter.writeStartElement(ResourceAdapters.Tag.RESOURCE_ADAPTER.getLocalName());
 
             ARCHIVE.marshallAsElement(ra, streamWriter);
+            BOOTSTRAPCONTEXT.marshallAsElement(ra, streamWriter);
 
             if (ra.hasDefined(BEANVALIDATIONGROUPS.getName())) {
+                streamWriter.writeStartElement(ResourceAdapter.Tag.BEAN_VALIDATION_GROUPS.getLocalName());
                 for (ModelNode bvg : ra.get(BEANVALIDATIONGROUPS.getName()).asList()) {
-                    BEANVALIDATIONGROUPS.marshallAsElement(bvg, streamWriter);
+                    streamWriter.writeStartElement(BEANVALIDATIONGROUPS.getXmlName());
+                    streamWriter.writeCharacters(bvg.asString());
+                    streamWriter.writeEndElement();
                 }
+                streamWriter.writeEndElement();
             }
 
-            BOOTSTRAPCONTEXT.marshallAsElement(ra, streamWriter);
             TRANSACTIONSUPPORT.marshallAsElement(ra, streamWriter);
             writeNewConfigProperties(streamWriter, ra);
             TransactionSupportEnum transactionSupport = ra.hasDefined(TRANSACTIONSUPPORT.getName()) ? TransactionSupportEnum
@@ -332,8 +336,16 @@ public class ResourceAdaptersExtension implements Extension {
                     POOL_FLUSH_STRATEGY.marshallAsElement(conDef, streamWriter);
 
                     SAME_RM_OVERRIDE.marshallAsElement(conDef, streamWriter);
-                    INTERLEAVING.marshallAsElement(conDef, streamWriter);
-                    NOTXSEPARATEPOOL.marshallAsElement(conDef, streamWriter);
+                    if (conDef.get(INTERLEAVING.getName()).asBoolean()) {
+                        streamWriter.writeEmptyElement(INTERLEAVING.getXmlName());
+                    } else {
+                        INTERLEAVING.marshallAsElement(conDef, streamWriter);
+                    }
+                    if (conDef.get(NOTXSEPARATEPOOL.getName()).asBoolean()) {
+                        streamWriter.writeEmptyElement(NOTXSEPARATEPOOL.getXmlName());
+                    } else {
+                        NOTXSEPARATEPOOL.marshallAsElement(conDef, streamWriter);
+                    }
                     PAD_XID.marshallAsElement(conDef, streamWriter);
                     WRAP_XA_RESOURCE.marshallAsElement(conDef, streamWriter);
 
@@ -352,7 +364,11 @@ public class ResourceAdaptersExtension implements Extension {
             if (conDef.hasDefined(APPLICATION.getName()) || conDef.hasDefined(SECURITY_DOMAIN.getName())
                     || conDef.hasDefined(SECURITY_DOMAIN_AND_APPLICATION.getName())) {
                 streamWriter.writeStartElement(CommonConnDef.Tag.SECURITY.getLocalName());
-                APPLICATION.marshallAsElement(conDef, streamWriter);
+                if (conDef.get(APPLICATION.getName()).asBoolean()) {
+                    streamWriter.writeEmptyElement(APPLICATION.getXmlName());
+                } else {
+                    APPLICATION.marshallAsElement(conDef, streamWriter);
+                }
                 SECURITY_DOMAIN.marshallAsElement(conDef, streamWriter);
                 SECURITY_DOMAIN_AND_APPLICATION.marshallAsElement(conDef, streamWriter);
 
@@ -383,6 +399,8 @@ public class ResourceAdaptersExtension implements Extension {
                     || conDef.hasDefined(RECOVERLUGIN_PROPERTIES.getName()) || conDef.hasDefined(NO_RECOVERY.getName())) {
 
                 streamWriter.writeStartElement(CommonConnDef.Tag.RECOVERY.getLocalName());
+                NO_RECOVERY.marshallAsAttribute(conDef, streamWriter);
+
                 if (conDef.hasDefined(RECOVERY_USERNAME.getName()) || conDef.hasDefined(RECOVERY_PASSWORD.getName())
                         || conDef.hasDefined(RECOVERY_SECURITY_DOMAIN.getName())) {
                     streamWriter.writeStartElement(Recovery.Tag.RECOVER_CREDENTIAL.getLocalName());
@@ -402,7 +420,7 @@ public class ResourceAdaptersExtension implements Extension {
                     }
                     streamWriter.writeEndElement();
                 }
-                NO_RECOVERY.marshallAsAttribute(conDef, streamWriter);
+                streamWriter.writeEndElement();
 
             }
 

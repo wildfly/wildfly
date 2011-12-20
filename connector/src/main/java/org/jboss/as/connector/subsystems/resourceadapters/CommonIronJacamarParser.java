@@ -514,6 +514,8 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                         }
                         case INTERLEAVING: {
                             String value = rawElementText(reader);
+                            //just presence means true
+                            value = value == null ? "true" : value;
                             INTERLEAVING.parseAndSetParameter(value, node, reader);
                             break;
                         }
@@ -524,6 +526,8 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                         }
                         case NO_TX_SEPARATE_POOLS: {
                             String value = rawElementText(reader);
+                            //just presence means true
+                            value = value == null ? "true" : value;
                             NOTXSEPARATEPOOL.parseAndSetParameter(value, node, reader);
                             break;
                         }
@@ -687,6 +691,8 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                         }
                         case APPLICATION: {
                             String value = rawElementText(reader);
+                            //just presence means true
+                            value = value == null ? "true" : value;
                             APPLICATION.parseAndSetParameter(value, node, reader);
                             break;
                         }
