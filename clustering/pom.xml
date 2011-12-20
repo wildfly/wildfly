@@ -43,6 +43,7 @@
         <module>impl</module>
         <module>jgroups</module>
         <module>infinispan</module>
+        <module>registry</module>
         <module>service</module>
         <module>singleton</module>
         <module>web-spi</module>
