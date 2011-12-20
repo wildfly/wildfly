@@ -74,6 +74,9 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        // Because we use child resources in a read-only manner to configure the cache, replace the local model with the full model
+        model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+
         // Configuration to hold the operation data
         Configuration overrides = new Configuration();
 
@@ -98,7 +101,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
 
         // get default cache of the container and start mode
         String defaultCache = container.require(ModelKeys.DEFAULT_CACHE).asString();
-        StartMode startMode = operation.hasDefined(ModelKeys.START) ? StartMode.valueOf(operation.get(ModelKeys.START).asString()) : StartMode.LAZY;
+        StartMode startMode = model.hasDefined(ModelKeys.START) ? StartMode.valueOf(model.get(ModelKeys.START).asString()) : StartMode.LAZY;
 
         // setup configuration helper
         CacheConfigurationService.CacheConfigurationHelperImpl helper = new CacheConfigurationService.CacheConfigurationHelperImpl(cacheName);
