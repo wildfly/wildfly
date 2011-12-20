@@ -1,7 +1,5 @@
 package org.jboss.as.jaxrs.deployment;
 
-import static org.jboss.as.jaxrs.JaxrsLogger.JAXRS_LOGGER;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -30,6 +28,8 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 
+import static org.jboss.as.jaxrs.JaxrsLogger.JAXRS_LOGGER;
+
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @author Stuart Douglas
@@ -37,6 +37,8 @@ import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
     private static final String JAX_RS_SERVLET_NAME = "javax.ws.rs.core.Application";
     private static final String SERVLET_INIT_PARAM = "javax.ws.rs.Application";
+    public static final String RESTEASY_SCAN = "resteasy.scan";
+    public static final String RESTEASY_SCAN_RESOURCES = "resteasy.scan.resources";
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -64,13 +66,16 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         //remove the resteasy.scan parameter
         //because it is not needed
         final List<ParamValueMetaData> params = webdata.getContextParams();
-        if(params != null) {
+        if (params != null) {
             Iterator<ParamValueMetaData> it = params.iterator();
-            while(it.hasNext()) {
+            while (it.hasNext()) {
                 final ParamValueMetaData param = it.next();
-                if(param.getParamName().equals("resteasy.scan")) {
+                if (param.getParamName().equals(RESTEASY_SCAN)) {
                     it.remove();
-                    JAXRS_LOGGER.resteasyScanWarning();
+                    JAXRS_LOGGER.resteasyScanWarning(RESTEASY_SCAN);
+                } else if (param.getParamName().equals(RESTEASY_SCAN_RESOURCES)) {
+                    it.remove();
+                    JAXRS_LOGGER.resteasyScanWarning(RESTEASY_SCAN_RESOURCES);
                 }
             }
         }

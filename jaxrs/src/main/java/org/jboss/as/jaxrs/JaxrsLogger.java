@@ -22,15 +22,15 @@
 
 package org.jboss.as.jaxrs;
 
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.WARN;
-
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
+
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * Date: 05.11.2011
@@ -94,6 +94,6 @@ public interface JaxrsLogger extends BasicLogger {
      * necessary.
      */
     @LogMessage(level = WARN)
-    @Message(id = 11204, value = "resteasy.scan found in web.xml. This is not necessary, as Resteasy will use the container integration in the JAX-RS 1.1 specification in section 2.3.2")
-    void resteasyScanWarning();
+    @Message(id = 11204, value = "%s found and ignored in web.xml. This is not necessary, as Resteasy will use the container integration in the JAX-RS 1.1 specification in section 2.3.2")
+    void resteasyScanWarning(String param);
 }
