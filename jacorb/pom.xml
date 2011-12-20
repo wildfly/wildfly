@@ -65,7 +65,7 @@
                    <configuration>
                       <artifactItems>
                          <artifactItem>
-                            <groupId>jacorb</groupId>
+                            <groupId>org.jacorb</groupId>
                             <artifactId>jacorb</artifactId>
                             <type>jar</type>
                             <overWrite>true</overWrite>
@@ -82,7 +82,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>jacorb</groupId>
+            <groupId>org.jacorb</groupId>
             <artifactId>jacorb</artifactId>
         </dependency>
 

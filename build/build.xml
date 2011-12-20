@@ -612,7 +612,7 @@
         </module-def>
 
         <module-def name="org.jacorb">
-            <maven-resource group="jacorb" artifact="jacorb"/>
+            <maven-resource group="org.jacorb" artifact="jacorb"/>
         </module-def>
 
         <module-def name="org.javassist">
