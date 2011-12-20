@@ -22,10 +22,11 @@
 package org.jboss.as.jacorb.csiv2;
 
 import java.io.UnsupportedEncodingException;
-import java.net.InetAddress;
 
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.Oid;
+import org.jboss.as.jacorb.JacORBSubsystemConstants;
+import org.jboss.as.jacorb.service.CorbaORBService;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.jboss.IORASContextMetaData;
 import org.jboss.metadata.ejb.jboss.IORSASContextMetaData;
@@ -357,12 +358,7 @@ public final class CSIv2Util {
             tc = new TaggedComponent(TAG_NULL_TAG.value, new byte[0]);
         } else {
             // my ip address.
-            String host;
-            try {
-                host = InetAddress.getLocalHost().getHostAddress();
-            } catch (java.net.UnknownHostException e) {
-                host = "127.0.0.1";
-            }
+            String host = CorbaORBService.getORBProperty(JacORBSubsystemConstants.ORB_ADDRESS);
 
             // this will create only one transport address.
             TransportAddress[] taList = createTransportAddress(host, sslPort);
