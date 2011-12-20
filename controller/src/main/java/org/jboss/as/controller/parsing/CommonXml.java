@@ -47,6 +47,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.KEYSTORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
@@ -610,9 +611,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         requireNoContent(reader);
 
         final ModelNode add = new ModelNode();
-        add.get(OP_ADDR).set(address).add(OUTBOUND_CONNECTION, name);
+        add.get(OP_ADDR).set(address).add(LDAP_CONNECTION, name);
         add.get(OP).set(ADD);
-        add.get(TYPE).set(LDAP);
         add.get(URL).set(url);
         add.get(SEARCH_DN).set(searchDN);
         add.get(SEARCH_CREDENTIAL).set(searchCredential);
@@ -2804,7 +2804,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     protected void writeManagement(final XMLExtendedStreamWriter writer, final ModelNode management, boolean allowInterfaces)
             throws XMLStreamException {
         boolean hasSecurityRealm = management.hasDefined(SECURITY_REALM);
-        boolean hasConnection = management.hasDefined(OUTBOUND_CONNECTION);
+        boolean hasConnection = management.hasDefined(LDAP_CONNECTION);
         boolean hasInterface = allowInterfaces && management.hasDefined(MANAGEMENT_INTERFACE);
 
         if ((hasSecurityRealm == false) && (hasConnection == false) && (hasInterface == false)) {
@@ -2933,25 +2933,21 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
         if (hasConnection) {
             writer.writeStartElement(Element.OUTBOUND_CONNECTIONS.getLocalName());
-            ModelNode connections = management.get(OUTBOUND_CONNECTION);
+            ModelNode ldapConnections = management.get(LDAP_CONNECTION);
 
-            for (Property variable : connections.asPropertyList()) {
+            for (Property variable : ldapConnections.asPropertyList()) {
                 ModelNode connection = variable.getValue();
-                String type = connection.require(TYPE).asString();
-                if (LDAP.equals(type)) {
-                    writer.writeStartElement(Element.LDAP.getLocalName());
-                    writer.writeAttribute(Attribute.NAME.getLocalName(), variable.getName());
-                    writer.writeAttribute(Attribute.URL.getLocalName(), connection.require(URL).asString());
-                    writer.writeAttribute(Attribute.SEARCH_DN.getLocalName(), connection.require(SEARCH_DN).asString());
-                    writer.writeAttribute(Attribute.SEARCH_CREDENTIAL.getLocalName(), connection.require(SEARCH_CREDENTIAL)
-                            .asString());
-                    if (connection.has(INITIAL_CONTEXT_FACTORY)) {
-                        writer.writeAttribute(Attribute.INITIAL_CONTEXT_FACTORY.getLocalName(),
-                                connection.require(INITIAL_CONTEXT_FACTORY).asString());
-                    }
-                    writer.writeEndElement();
+                writer.writeStartElement(Element.LDAP.getLocalName());
+                writer.writeAttribute(Attribute.NAME.getLocalName(), variable.getName());
+                writer.writeAttribute(Attribute.URL.getLocalName(), connection.require(URL).asString());
+                writer.writeAttribute(Attribute.SEARCH_DN.getLocalName(), connection.require(SEARCH_DN).asString());
+                writer.writeAttribute(Attribute.SEARCH_CREDENTIAL.getLocalName(), connection.require(SEARCH_CREDENTIAL)
+                        .asString());
+                if (connection.has(INITIAL_CONTEXT_FACTORY)) {
+                    writer.writeAttribute(Attribute.INITIAL_CONTEXT_FACTORY.getLocalName(),
+                            connection.require(INITIAL_CONTEXT_FACTORY).asString());
                 }
-
+                writer.writeEndElement();
             }
             writer.writeEndElement();
         }

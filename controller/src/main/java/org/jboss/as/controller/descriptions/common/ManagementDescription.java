@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
@@ -70,9 +71,9 @@ public class ManagementDescription {
         root.get(CHILDREN, SECURITY_REALM, MIN_OCCURS).set(0);
         root.get(CHILDREN, SECURITY_REALM, MODEL_DESCRIPTION);
 
-        root.get(CHILDREN, OUTBOUND_CONNECTION, DESCRIPTION).set(bundle.getString("core.management.outbound-connections"));
-        root.get(CHILDREN, OUTBOUND_CONNECTION, MIN_OCCURS).set(0);
-        root.get(CHILDREN, OUTBOUND_CONNECTION, MODEL_DESCRIPTION);
+        root.get(CHILDREN, LDAP_CONNECTION, DESCRIPTION).set(bundle.getString("core.management.ldap-connections"));
+        root.get(CHILDREN, LDAP_CONNECTION, MIN_OCCURS).set(0);
+        root.get(CHILDREN, LDAP_CONNECTION, MODEL_DESCRIPTION);
 
         if (interfaces) {
             root.get(CHILDREN, MANAGEMENT_INTERFACE, DESCRIPTION).set(bundle.getString("core.management.management-interfaces"));

@@ -111,6 +111,7 @@ public class ModelDescriptionConstants {
     public static final String JVM_TYPE = "type";
     public static final String KEYSTORE = "keystore";
     public static final String LDAP = "ldap";
+    public static final String LDAP_CONNECTION = "ldap-connection";
     public static final String LOCAL = "local";
     public static final String LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING = "local-destination-outbound-socket-binding";
     public static final String LOCALE = "locale";

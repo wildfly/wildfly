@@ -59,7 +59,8 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
-import org.jboss.as.domain.management.operations.ConnectionAddHandler;
+import org.jboss.as.domain.management.connections.ldap.LdapConnectionAddHandler;
+import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
 import org.jboss.as.domain.management.operations.SecurityRealmAddHandler;
 import org.jboss.as.platform.mbean.PlatformMBeanResourceRegistrar;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionConstants;
@@ -265,9 +266,7 @@ public class ServerControllerModelUtil {
         securityRealm.registerOperationHandler(SecurityRealmAddHandler.OPERATION_NAME, SecurityRealmAddHandler.INSTANCE, SecurityRealmAddHandler.INSTANCE, false);
         // TODO remove, attribute changes
 
-        ManagementResourceRegistration connection = management.registerSubModel(PathElement.pathElement(OUTBOUND_CONNECTION), CommonProviders.MANAGEMENT_OUTBOUND_CONNECTION_PROVIDER);
-        connection.registerOperationHandler(ConnectionAddHandler.OPERATION_NAME, ConnectionAddHandler.INSTANCE, ConnectionAddHandler.INSTANCE, false);
-        // TODO remove, attribute changes
+        management.registerSubModel(LdapConnectionResourceDefinition.INSTANCE);
 
         // Management Interface protocols
         management.registerSubModel(NativeManagementResourceDefinition.INSTANCE);

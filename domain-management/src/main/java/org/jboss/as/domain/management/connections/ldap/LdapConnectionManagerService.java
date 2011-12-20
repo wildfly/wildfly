@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.domain.management.security;
+package org.jboss.as.domain.management.connections.ldap;
 
 import org.jboss.as.domain.management.connections.ConnectionManager;
 import org.jboss.dmr.ModelNode;
@@ -47,17 +47,20 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
 
     public static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("server", "controller", "management", "connection_manager");
 
-    private static final String DEFAULT_INITIAL_CONTEXT = "com.sun.jndi.ldap.LdapCtxFactory";
+    private volatile ModelNode resolvedConfiguration;
 
-    /* Contains connection information only with no principal or credentials. */
-    private Properties connectionOnlyProperties;
-    /* As connectionOnlyProperties but with added principal and credential. */
-    private Properties fullProperties;
+    public LdapConnectionManagerService(final ModelNode resolvedConfiguration) {
+        setResolvedConfiguration(resolvedConfiguration);
+    }
 
-    private final ModelNode ldapConnection;
-
-    public LdapConnectionManagerService(final ModelNode ldapConnection) {
-        this.ldapConnection = ldapConnection;
+    void setResolvedConfiguration(final ModelNode resolvedConfiguration) {
+        // Validate
+        resolvedConfiguration.require(LdapConnectionResourceDefinition.URL.getName());
+        resolvedConfiguration.require(LdapConnectionResourceDefinition.SEARCH_DN.getName());
+        resolvedConfiguration.require(LdapConnectionResourceDefinition.SEARCH_CREDENTIAL.getName());
+        resolvedConfiguration.require(LdapConnectionResourceDefinition.INITIAL_CONTEXT_FACTORY.getName());
+        // Store
+        this.resolvedConfiguration = resolvedConfiguration;
     }
 
     /*
@@ -65,31 +68,9 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
     */
 
     public synchronized void start(StartContext context) throws StartException {
-        connectionOnlyProperties = new Properties();
-
-        connectionOnlyProperties.put(Context.SECURITY_AUTHENTICATION,"simple");
-
-        String initialContextFactory = DEFAULT_INITIAL_CONTEXT;
-        if (ldapConnection.has(INITIAL_CONTEXT_FACTORY)) {
-            initialContextFactory = ldapConnection.require(INITIAL_CONTEXT_FACTORY).asString();
-        }
-        connectionOnlyProperties.put(Context.INITIAL_CONTEXT_FACTORY,initialContextFactory);
-
-        String url = ldapConnection.require(URL).asString();
-        connectionOnlyProperties.put(Context.PROVIDER_URL,url);
-
-        fullProperties = (Properties)connectionOnlyProperties.clone();
-
-        String searchDN = ldapConnection.require(SEARCH_DN).asString();
-        String searchCredential = ldapConnection.require(SEARCH_CREDENTIAL).asString();
-
-        fullProperties.put(Context.SECURITY_PRINCIPAL,searchDN);
-        fullProperties.put(Context.SECURITY_CREDENTIALS,searchCredential);
     }
 
     public synchronized void stop(StopContext context) {
-        connectionOnlyProperties = null;
-        fullProperties = null;
     }
 
     public synchronized LdapConnectionManagerService getValue() throws IllegalStateException, IllegalArgumentException {
@@ -101,11 +82,13 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
      */
 
     public Object getConnection() throws Exception {
-        return getConnection(fullProperties);
+        final ModelNode config = resolvedConfiguration;
+        return getConnection(getFullProperties(config));
     }
 
     public Object getConnection(String principal, String credential) throws Exception {
-        Properties connectionProperties = (Properties) connectionOnlyProperties.clone();
+        final ModelNode config = resolvedConfiguration;
+        Properties connectionProperties = getConnectionOnlyProperties(config);
         connectionProperties.put(Context.SECURITY_PRINCIPAL, principal);
         connectionProperties.put(Context.SECURITY_CREDENTIALS, credential);
 
@@ -126,6 +109,24 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
                 Thread.currentThread().setContextClassLoader(original);
             }
         }
+    }
+
+    private Properties getConnectionOnlyProperties(final ModelNode config) {
+        final Properties result = new Properties();
+        String initialContextFactory = config.require(INITIAL_CONTEXT_FACTORY).asString();
+        result.put(Context.INITIAL_CONTEXT_FACTORY,initialContextFactory);
+        String url = config.require(URL).asString();
+        result.put(Context.PROVIDER_URL,url);
+        return result;
+    }
+
+    private Properties getFullProperties(final ModelNode config) {
+        final Properties result = getConnectionOnlyProperties(config);
+        String searchDN = config.require(SEARCH_DN).asString();
+        String searchCredential = config.require(SEARCH_CREDENTIAL).asString();
+        result.put(Context.SECURITY_PRINCIPAL,searchDN);
+        result.put(Context.SECURITY_CREDENTIALS,searchCredential);
+        return result;
     }
 
 }

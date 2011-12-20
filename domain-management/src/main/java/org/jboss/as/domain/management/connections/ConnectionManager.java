@@ -45,9 +45,9 @@ public interface ConnectionManager {
      * This allows for verification that the principal and credential work
      * to connect to the resource.
      *
-     * @param pricipal - The principal to use when connecting.
+     * @param principal - The principal to use when connecting.
      * @param credential - The credential to use when connecting.
      * @return the ready connected connection.
      */
-    Object getConnection(String pricipal, String credential) throws Exception;
+    Object getConnection(String principal, String credential) throws Exception;
 }
