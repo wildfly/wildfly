@@ -67,6 +67,8 @@ class ClusterTopologyWriter {
             PackedInteger.writePackedInteger(output, memberCount);
             // write out the member info for each member
             for (final ClusterNode clusterMember : cluster.getClusterNodes()) {
+                // write the node name
+                output.writeUTF(clusterMember.getName());
                 // TODO: This should be configurable. Right now we just write out the textual form
                 // of the IP address, but the configuration should allow sending back a hostname or an
                 // IP address
