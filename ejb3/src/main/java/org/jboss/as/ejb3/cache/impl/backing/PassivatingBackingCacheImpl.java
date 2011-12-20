@@ -250,7 +250,7 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
     private void scheduleExpirationPassivation(K id) {
         if (this.executor != null) {
             StatefulTimeoutInfo timeout = this.store.getTimeout();
-            if (timeout != null) {
+            if (timeout != null && timeout.getValue() != -1) {
                 this.schedule(this.expirationFutures, id, this.removeTaskFactory, timeout.getValue(), timeout.getTimeUnit());
             }
             BackingCacheEntryStoreConfig config = this.store.getConfig();
