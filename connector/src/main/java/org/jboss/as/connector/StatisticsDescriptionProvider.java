@@ -55,7 +55,7 @@
      *
      * @author Brian Stansberry (c) 2011 Red Hat Inc.
      */
-    public class StatisticsDescriptionProvider implements DescriptionProvider, OverrideDescriptionProvider {
+    public class StatisticsDescriptionProvider implements DescriptionProvider {
 
         private final String bundleName;
         private final String resourceDescriptionKey;
@@ -103,13 +103,12 @@
             return subsystem;
         }
 
-        @Override
         public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
             Map<String, ModelNode> attributes = new HashMap<String, ModelNode>();
             for (StatisticsPlugin plugin : plugins) {
                 for (String name : plugin.getNames()) {
                     ModelNode node = new ModelNode();
-                    node.get(ATTRIBUTES, name, DESCRIPTION).set(plugin.getDescription(name));
+                    node.get(DESCRIPTION).set(plugin.getDescription(name));
                     ModelType modelType = ModelType.STRING;
                     if (plugin.getType(name) == int.class) {
                         modelType = ModelType.INT;
@@ -117,18 +116,13 @@
                     if (plugin.getType(name) == long.class) {
                         modelType = ModelType.LONG;
                     }
-                    node.get(ATTRIBUTES, name, TYPE).set(modelType);
-                    node.get(ATTRIBUTES, name, REQUIRED).set(false);
-                    node.get(ATTRIBUTES, name, READ_ONLY).set(true);
+                    node.get(TYPE).set(modelType);
+                    node.get(REQUIRED).set(false);
+                    node.get(READ_ONLY).set(true);
                     attributes.put(name, node);
                 }
             }
             return attributes;
-        }
-
-        @Override
-        public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
-            return Collections.emptyMap();
         }
 
         private ResourceBundle getResourceBundle(Locale locale) {
