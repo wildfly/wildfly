@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ejb.security;
+package org.jboss.as.test.integration.ejb.security.runas;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -32,13 +32,20 @@ import java.util.logging.Logger;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBAccessException;
+import javax.naming.InitialContext;
 import javax.security.auth.login.LoginContext;
+
+import junit.framework.Assert;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.integration.ejb.security.Entry;
+import org.jboss.as.test.integration.ejb.security.SecurityTest;
+import org.jboss.as.test.integration.ejb.security.Util;
+import org.jboss.as.test.integration.ejb.security.WhoAmI;
 import org.jboss.as.test.integration.ejb.security.base.WhoAmIBean;
-import org.jboss.as.test.integration.ejb.security.runas.EntryBean;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -55,6 +62,9 @@ import org.junit.runner.RunWith;
 public class RunAsTestCase extends SecurityTest {
 
     private static final Logger log = Logger.getLogger(RunAsTestCase.class.getName());
+    
+    @ArquillianResource
+    InitialContext ctx;
 
     @EJB(mappedName = "java:global/ejb3security/WhoAmIBean!org.jboss.as.test.integration.ejb.security.WhoAmI")
     private WhoAmI whoAmIBean;
@@ -68,7 +78,6 @@ public class RunAsTestCase extends SecurityTest {
      * EJB 3.1 FR 17.2.5.2 isCallerInRole tests the principal that represents the caller of the enterprise bean, not the
      * principal that corresponds to the run-as security identity for the bean.
      */
-
     @Deployment
     public static Archive<?> runAsDeployment() {
         // FIXME hack to get things prepared before the deployment happens
@@ -165,5 +174,27 @@ public class RunAsTestCase extends SecurityTest {
         } catch (EJBAccessException e) {
             // good
         }
+    }
+    
+    /**
+     * Migration test from EJB Testsuite (security/TimerRunAs) to AS7 [JBQA-5483].
+     */
+    @Test
+    public void testTimerNoSecurityAssociationPrincipal() throws Exception
+    {         
+       LoginContext lc = Util.getCLMLoginContext("user1", "password1");
+       lc.login();
+       
+       try {
+           TimerTester test = (TimerTester) ctx.lookup("java:module/" + TimerTesterBean.class.getSimpleName());
+    
+           assertNotNull(test);
+           test.startTimer(150);
+           Assert.assertTrue(TimerTesterBean.awaitTimerCall());
+           
+           Assert.assertEquals("user2", TimerTesterBean.calleeCallerPrincipal.iterator().next().getName());
+       } finally {       
+           lc.logout();
+       }
     }
 }
