@@ -103,7 +103,8 @@ public class CalendarTimerEntity extends TimerEntity {
         if (this.scheduleExpression == null) {
             this.scheduleExpression = new ScheduleExpression();
             this.scheduleExpression.second(this.scheduleExprSecond).minute(this.scheduleExprMinute).hour(this.scheduleExprHour).dayOfWeek(this.scheduleExprDayOfWeek)
-                    .dayOfMonth(this.scheduleExprDayOfMonth).month(this.scheduleExprMonth).year(this.scheduleExprYear).timezone(this.scheduleExprTimezone);
+                    .dayOfMonth(this.scheduleExprDayOfMonth).month(this.scheduleExprMonth).year(this.scheduleExprYear).timezone(this.scheduleExprTimezone)
+                    .start(this.scheduleExprStartDate).end(this.scheduleExprEndDate);
 
         }
         return scheduleExpression;
