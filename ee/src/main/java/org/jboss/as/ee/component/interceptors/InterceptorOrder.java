@@ -38,7 +38,6 @@ public class
 
 
         public static final int INITIAL_INTERCEPTOR                                         = 0x100;
-        public static final int TCCL_INTERCEPTOR                                            = 0x200;
         public static final int CDI_REQUEST_SCOPE                                           = 0x320;
         public static final int SYNCHRONIZATION_INTERCEPTOR                                 = 0x500;
         public static final int REENTRANCY_INTERCEPTOR                                      = 0x501;
