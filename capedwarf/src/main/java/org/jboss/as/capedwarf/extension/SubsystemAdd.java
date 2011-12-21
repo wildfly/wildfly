@@ -25,6 +25,7 @@ package org.jboss.as.capedwarf.extension;
 import org.jboss.as.capedwarf.deployment.CapedwarfDeploymentProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfFiltersDeploymentProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfInitializationProcessor;
+import org.jboss.as.capedwarf.deployment.CapedwarfJPAProcessor;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -68,6 +69,7 @@ class SubsystemAdd extends AbstractBoottimeAddStepHandler {
             public void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(Phase.PARSE, CapedwarfInitializationProcessor.PRIORITY, new CapedwarfInitializationProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, CapedwarfFiltersDeploymentProcessor.PRIORITY, new CapedwarfFiltersDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JPA - 10, new CapedwarfJPAProcessor()); // before default JPA processor
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, CapedwarfDeploymentProcessor.PRIORITY, new CapedwarfDeploymentProcessor(appengineAPI));
             }
         }, OperationContext.Stage.RUNTIME);
