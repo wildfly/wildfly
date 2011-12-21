@@ -277,8 +277,8 @@ public class RemotingSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Override
-    protected void validateXml(String configId, String original, String marshalled) throws Exception {
-        super.validateXml(configId, original, marshalled, true);
+    protected void compareXml(String configId, String original, String marshalled) throws Exception {
+        super.compareXml(configId, original, marshalled, true);
     }
 
     private static class CurrentConnectorAndController {

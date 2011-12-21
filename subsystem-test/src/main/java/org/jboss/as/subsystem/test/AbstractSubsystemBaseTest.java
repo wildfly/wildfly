@@ -72,46 +72,6 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
         return readResource(configId);
     }
 
-    /**
-     * Validate the marshalled xml without adjusting the namespaces for the original and marshalled xml.
-     * @param configId the id of the xml configuration
-     * @param original the original subsystem xml
-     * @param marshalled the marshalled subsystem xml
-     *
-     * @throws Exception
-     */
-    protected void validateXml(String configId, final String original, final String marshalled) throws Exception {
-        validateXml(configId, original, marshalled, false);
-    }
-
-    /**
-     * Validate the marshalled xml without adjusting the namespaces for the original and marshalled xml.
-     * @param configId TODO
-     * @param original the original subsystem xml
-     * @param marshalled the marshalled subsystem xml
-     * @param ignoreNamespace if {@code true} the subsystem's namespace is ignored, otherwise it is taken into account when comparing the normalized xml.
-     *
-     * @throws Exception
-     */
-    protected void validateXml(String configId, final String original, final String marshalled, final boolean ignoreNamespace) throws Exception {
-        final String xmlOriginal;
-        final String xmlMarshalled;
-        if (ignoreNamespace) {
-            xmlOriginal = removeNamespace(original);
-            xmlMarshalled = removeNamespace(marshalled);
-        } else {
-            xmlOriginal = original;
-            xmlMarshalled = marshalled;
-        }
-
-
-        Assert.assertEquals(normalizeXML(xmlOriginal), normalizeXML(xmlMarshalled));
-    }
-
-    private String removeNamespace(String xml) {
-        return xml.replaceFirst(" xmlns=\".*\"", "");
-    }
-
     @Test
     public void testSubsystem() throws Exception {
         standardSubsystemTest(null);
@@ -146,7 +106,7 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
 
         // validate the the normalized xmls
         String normalizedSubsystem = normalizeXML(subsystemXml);
-        validateXml(configId, normalizedSubsystem, normalizeXML(marshalled));
+        compareXml(configId, normalizedSubsystem, normalizeXML(marshalled));
 
         //Install the persisted xml from the first controller into a second controller
         final KernelServices servicesB = super.installInController(additionalInit, marshalled);

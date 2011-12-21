@@ -55,8 +55,8 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Override
-    protected void validateXml(String configId, String original, String marshalled) throws Exception {
-        super.validateXml(configId, original, marshalled, true);
+    protected void compareXml(String configId, String original, String marshalled) throws Exception {
+        super.compareXml(configId, original, marshalled, true);
     }
 
     protected AdditionalInitialization createAdditionalInitialization() {
