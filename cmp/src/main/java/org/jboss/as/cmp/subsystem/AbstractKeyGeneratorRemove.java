@@ -35,7 +35,7 @@ import org.jboss.msc.service.ServiceName;
  * @author John Bailey
  */
 public abstract class AbstractKeyGeneratorRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
-    protected void performRemove(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
         context.removeService(getServiceName(name));
     }
