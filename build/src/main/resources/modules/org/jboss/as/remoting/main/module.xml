@@ -35,6 +35,7 @@
         <module name="org.jboss.as.network"/>
         <module name="org.jboss.as.protocol"/>
         <module name="org.jboss.as.server"/>
+        <module name="org.jboss.as.security"/>
         <module name="org.jboss.as.threads"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.modules"/>
@@ -43,5 +44,6 @@
         <module name="org.jboss.sasl"/>
         <module name="org.jboss.threads"/>
         <module name="javax.api" />
+        <module name="org.picketbox"/>
     </dependencies>
 </module>

@@ -39,6 +39,7 @@ import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
+import org.jboss.as.security.remoting.RemotingContext;
 import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.EntityEJBLocator;
 import org.jboss.ejb.client.SessionID;
@@ -185,6 +186,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
 
                     // invoke the method
                     Object result = null;
+                    RemotingContext.setConnection(channel.getConnection());
                     try {
                         result = invokeMethod(componentView, invokedMethod, methodParams, locator, attachments);
                     } catch (Throwable throwable) {
@@ -203,6 +205,8 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                             IoUtils.safeClose(channel);
                             return;
                         }
+                    } finally {
+                        RemotingContext.clear();
                     }
                     // write out the (successful) method invocation result to the channel output stream
                     try {

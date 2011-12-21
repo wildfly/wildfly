@@ -33,9 +33,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.security.auth.Subject;
 
+import org.jboss.as.security.remoting.RemotingContext;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;
@@ -45,6 +47,7 @@ import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SecurityContextFactory;
 import org.jboss.security.SecurityContextUtil;
+import org.jboss.security.SimplePrincipal;
 import org.jboss.security.SubjectInfo;
 import org.jboss.security.callbacks.SecurityContextCallbackHandler;
 import org.jboss.security.identity.Identity;
@@ -147,7 +150,6 @@ public class SimpleSecurityManager {
             RunAsIdentity runAsIdentity = (RunAsIdentity) runAs;
             roleGroup = runAsIdentity.getRunAsRolesAsRoleGroup();
         } else {
-
             AuthorizationManager am = securityContext.getAuthorizationManager();
             SecurityContextCallbackHandler scb = new SecurityContextCallbackHandler(securityContext);
 
@@ -218,6 +220,16 @@ public class SimpleSecurityManager {
 
         // TODO - Set unauthenticated identity if no auth to occur
         if (trusted == false) {
+            if (RemotingContext.isSet()) {
+                // In this case the principal and credential will not have been set to set some random values.
+                SecurityContextUtil util = current.getUtil();
+
+                Principal p = new SimplePrincipal(UUID.randomUUID().toString());
+                String credential = UUID.randomUUID().toString();
+
+                util.createSubjectInfo(p, credential, null);
+            }
+
             // If we have a trusted identity no need for a re-auth.
             boolean authenticated = authenticate(current);
             if (authenticated == false) {

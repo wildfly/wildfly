@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.security.remoting.RemotingLoginModule;
 import org.jboss.security.ClientLoginModule;
 import org.jboss.security.auth.spi.BaseCertLoginModule;
 import org.jboss.security.auth.spi.CertRolesLoginModule;
@@ -100,6 +101,8 @@ public interface ModulesMap {
             // Datasource related modules
             put("SecureIdentity", SecureIdentityLoginModule.class.getName());
             put("ConfiguredIdentity", ConfiguredIdentityLoginModule.class.getName());
+            // Remoting Integration
+            put("Remoting", RemotingLoginModule.class.getName());
         }
     });
 
