@@ -1924,4 +1924,53 @@ public interface EjbMessages {
 
     @Message(id = 14546, value = "More than one EJB found with interface of type '%s' for binding %s. Found: %s")
     String moreThanOneEjbFound(String typeName, String binding, Set<EJBViewDescription> componentViews);
+
+    /**
+     * Returns a {@link DeploymentUnitProcessingException} to indicate that the {@link org.jboss.ejb3.annotation.Clustered}
+     * annotation cannot be used on a message driven bean
+     *
+     * @param unit               The deployment unit
+     * @param componentName      The MDB component name
+     * @param componentClassName The MDB component class name
+     * @return
+     */
+    @Message(id = 14547, value = "@Clustered annotation cannot be used with message driven beans. %s failed since %s bean is marked with @Clustered on class %s")
+    DeploymentUnitProcessingException clusteredAnnotationIsNotApplicableForMDB(final DeploymentUnit unit, final String componentName, final String componentClassName);
+
+    /**
+     * Returns a {@link DeploymentUnitProcessingException} to indicate that the {@link org.jboss.ejb3.annotation.Clustered}
+     * annotation cannot be used on a entity bean
+     *
+     * @param unit               The deployment unit
+     * @param componentName      The entity bean component name
+     * @param componentClassName The entity bean component class name
+     * @return
+     */
+    @Message(id = 14548, value = "@Clustered annotation cannot be used with entity beans. %s failed since %s bean is marked with @Clustered on class %s")
+    DeploymentUnitProcessingException clusteredAnnotationIsNotApplicableForEntityBean(final DeploymentUnit unit, final String componentName, final String componentClassName);
+
+    /**
+     * Returns a {@link DeploymentUnitProcessingException} to indicate that the {@link org.jboss.ejb3.annotation.Clustered}
+     * annotation is <b>currently</b> not supported on singleton EJB.
+     *
+     * @param unit               The deployment unit
+     * @param componentName      The singleton bean component name
+     * @param componentClassName The singleton bean component class name
+     * @return
+     */
+    @Message(id = 14549, value = "@Clustered annotation is currently not supported for singleton EJB. %s failed since %s bean is marked with @Clustered on class %s")
+    DeploymentUnitProcessingException clusteredAnnotationNotYetImplementedForSingletonBean(final DeploymentUnit unit, final String componentName, final String componentClassName);
+
+    /**
+     * Returns a {@link DeploymentUnitProcessingException} to indicate that the {@link org.jboss.ejb3.annotation.Clustered}
+     * annotation cannot be used on the EJB component represented by <code>componentName</code>
+     *
+     * @param unit               The deployment unit
+     * @param componentName      The component name
+     * @param componentClassName The component class name
+     * @return
+     */
+    @Message(id = 14550, value = "%s failed since @Clustered annotation cannot be used for %s bean on class %s")
+    DeploymentUnitProcessingException clusteredAnnotationIsNotApplicableForBean(final DeploymentUnit unit, final String componentName, final String componentClassName);
+
 }

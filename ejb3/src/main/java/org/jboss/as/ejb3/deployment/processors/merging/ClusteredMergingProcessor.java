@@ -25,8 +25,13 @@ package org.jboss.as.ejb3.deployment.processors.merging;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.metadata.ClassAnnotationInformation;
+import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.component.entity.EntityBeanComponentDescription;
+import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.component.session.ClusteringInfo;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
+import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -34,35 +39,50 @@ import org.jboss.ejb3.annotation.Clustered;
 
 /**
  * @author paul
- *
+ * @author Jaikiran Pai
  */
-public class ClusteredMergingProcessor extends AbstractMergingProcessor<SessionBeanComponentDescription> {
+public class ClusteredMergingProcessor extends AbstractMergingProcessor<EJBComponentDescription> {
 
     public ClusteredMergingProcessor() {
-        super(SessionBeanComponentDescription.class);
+        super(EJBComponentDescription.class);
     }
 
     @Override
     protected void handleAnnotations(DeploymentUnit deploymentUnit, EEApplicationClasses applicationClasses,
-            DeploymentReflectionIndex deploymentReflectionIndex, Class<?> componentClass,
-            SessionBeanComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
+                                     DeploymentReflectionIndex deploymentReflectionIndex, Class<?> componentClass,
+                                     EJBComponentDescription ejbComponentDescription) throws DeploymentUnitProcessingException {
         final EEModuleClassDescription clazz = applicationClasses.getClassByName(componentClass.getName());
         //we only care about annotations on the bean class itself
         if (clazz == null) {
             return;
         }
         final ClassAnnotationInformation<Clustered, ClusteringInfo> clustering = clazz.getAnnotationInformation(Clustered.class);
-        if (clustering == null) {
+        if (clustering == null || clustering.getClassLevelAnnotations().isEmpty()) {
             return;
         }
-        if (!clustering.getClassLevelAnnotations().isEmpty()) {
-            componentConfiguration.setClustering(clustering.getClassLevelAnnotations().get(0));
+        // https://issues.jboss.org/browse/AS7-2887 Disallow @Clustered on certain EJB types
+        if (ejbComponentDescription instanceof MessageDrivenComponentDescription) {
+            throw EjbMessages.MESSAGES.clusteredAnnotationIsNotApplicableForMDB(deploymentUnit, ejbComponentDescription.getComponentName(), ejbComponentDescription.getComponentClassName());
         }
+        if (ejbComponentDescription instanceof EntityBeanComponentDescription) {
+            throw EjbMessages.MESSAGES.clusteredAnnotationIsNotApplicableForEntityBean(deploymentUnit, ejbComponentDescription.getComponentName(), ejbComponentDescription.getComponentClassName());
+        }
+        if (ejbComponentDescription instanceof SingletonComponentDescription) {
+            throw EjbMessages.MESSAGES.clusteredAnnotationNotYetImplementedForSingletonBean(deploymentUnit, ejbComponentDescription.getComponentName(), ejbComponentDescription.getComponentClassName());
+        }
+        // make sure it's a session bean
+        if (!(ejbComponentDescription instanceof SessionBeanComponentDescription)) {
+            throw EjbMessages.MESSAGES.clusteredAnnotationIsNotApplicableForBean(deploymentUnit, ejbComponentDescription.getComponentName(), ejbComponentDescription.getComponentClassName());
+        }
+
+        // set the annotation information on the session bean description
+        final ClusteringInfo clusteringInfo = clustering.getClassLevelAnnotations().get(0);
+        ((SessionBeanComponentDescription) ejbComponentDescription).setClustering(clusteringInfo);
     }
 
     @Override
     protected void handleDeploymentDescriptor(DeploymentUnit deploymentUnit,
-            DeploymentReflectionIndex deploymentReflectionIndex, Class<?> componentClass,
-            SessionBeanComponentDescription description) throws DeploymentUnitProcessingException {
+                                              DeploymentReflectionIndex deploymentReflectionIndex, Class<?> componentClass,
+                                              EJBComponentDescription ejbComponentDescription) throws DeploymentUnitProcessingException {
     }
 }
