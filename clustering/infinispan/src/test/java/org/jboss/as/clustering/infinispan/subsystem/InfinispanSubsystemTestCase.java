@@ -53,7 +53,7 @@ public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest {
         //TODO fix validation https://issues.jboss.org/browse/AS7-1788
         return null;
     }
-    
+
     /**
      * Tests that the xml is parsed into the correct operations
      */
