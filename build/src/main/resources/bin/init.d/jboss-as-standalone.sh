@@ -144,9 +144,13 @@ status() {
     if [ `ps --pid $ppid 2> /dev/null | grep -c $ppid 2> /dev/null` -eq '1' ]; then
       echo "$prog is running (pid $ppid)"
       return 0
+    else
+      echo "$prog dead but pid file exists"
+      return 1
     fi
   fi
   echo "$prog is not running"
+  return 3
 }
 
 case "$1" in
