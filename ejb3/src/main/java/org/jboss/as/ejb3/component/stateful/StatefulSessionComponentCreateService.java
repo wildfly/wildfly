@@ -90,7 +90,7 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         this.postActivate = createInterceptorFactories(componentDescription.getPostActivateMethods(), tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY);
         this.statefulTimeout = componentDescription.getStatefulTimeout();
         //the interceptor chain for EJB e.x remove methods
-        this.ejb2XRemoveMethod = Interceptors.getChainedInterceptorFactory(StatefulSessionSynchronizationInterceptor.FACTORY, new ImmediateInterceptorFactory(new StatefulRemoveInterceptor(false)), Interceptors.getTerminalInterceptorFactory());
+        this.ejb2XRemoveMethod = Interceptors.getChainedInterceptorFactory(StatefulSessionSynchronizationInterceptor.factory(componentDescription.getTransactionManagementType()), new ImmediateInterceptorFactory(new StatefulRemoveInterceptor(false)), Interceptors.getTerminalInterceptorFactory());
         this.cache = componentDescription.getCache();
         this.marshallingConfiguration = new MarshallingConfiguration();
         this.marshallingConfiguration.setClassResolver(new SimpleClassResolver(componentConfiguration.getModuleClassLoder()));

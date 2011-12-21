@@ -22,6 +22,7 @@
 package org.jboss.as.ejb3.component.stateful;
 
 import javax.ejb.EJBException;
+import javax.ejb.TransactionManagementType;
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.TransactionSynchronizationRegistry;
@@ -50,18 +51,26 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
 
     private final Object threadLock = new Object();
     private final OwnableReentrantLock lock = new OwnableReentrantLock();
+    private final boolean containerManagedTransactions;
     private boolean synchronizationRegistered = false;
 
-    public static final InterceptorFactory FACTORY = new ComponentInstanceInterceptorFactory() {
 
-        @Override
-        protected Interceptor create(final Component component, final InterceptorFactoryContext context) {
-            return new StatefulSessionSynchronizationInterceptor();
-        }
-    };
+    public static InterceptorFactory factory(final TransactionManagementType type) {
+        return new ComponentInstanceInterceptorFactory() {
+            @Override
+            protected Interceptor create(final Component component, final InterceptorFactoryContext context) {
+                return new StatefulSessionSynchronizationInterceptor(type == TransactionManagementType.CONTAINER );
+            }
+        };
+    }
+
+
+    public StatefulSessionSynchronizationInterceptor(final boolean containerManagedTransactions) {
+        this.containerManagedTransactions = containerManagedTransactions;
+    }
 
     /**
-     * Handles the exception that occured during a {@link StatefulSessionSynchronization transaction synchronization} callback
+     * Handles the exception that occured during a {@link StatefulSessionSynchronization} transaction synchronization callback
      * invocations.
      * <p/>
      * This method discards the <code>statefulSessionComponentInstance</code> before
@@ -116,28 +125,33 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
                 Object currentTransactionKey = null;
                 boolean wasTxSyncRegistered = false;
                 try {
-                    if (!synchronizationRegistered) {
-                        // get the key to current transaction associated with this thread
-                        currentTransactionKey = transactionSynchronizationRegistry.getTransactionKey();
-                        final int status = transactionSynchronizationRegistry.getTransactionStatus();
-                        // if this SFSB instance is already associated with a different transaction, then it's an error
-                        // if the thread is currently associated with a tx, then register a tx synchronization
-                        if (currentTransactionKey != null && status != Status.STATUS_COMMITTED) {
-                            // register a tx synchronization for this SFSB instance
-                            final Synchronization statefulSessionSync = new StatefulSessionSynchronization(instance, lockOwner);
-                            transactionSynchronizationRegistry.registerInterposedSynchronization(statefulSessionSync);
-                            wasTxSyncRegistered = true;
-                            if (ROOT_LOGGER.isTraceEnabled()) {
-                                ROOT_LOGGER.trace("Registered tx synchronization: " + statefulSessionSync + " for tx: " + currentTransactionKey +
-                                        " associated with stateful component instance: " + instance);
+                    //we never register a sync for bean managed transactions
+                    //the inner BMT interceptor is going to setup the correct transaction anyway
+                    //so enrolling in an existing transaction is not correct
+                    if(containerManagedTransactions) {
+                        if (!synchronizationRegistered) {
+                            // get the key to current transaction associated with this thread
+                            currentTransactionKey = transactionSynchronizationRegistry.getTransactionKey();
+                            final int status = transactionSynchronizationRegistry.getTransactionStatus();
+                            // if this SFSB instance is already associated with a different transaction, then it's an error
+                            // if the thread is currently associated with a tx, then register a tx synchronization
+                            if (currentTransactionKey != null && status != Status.STATUS_COMMITTED) {
+                                // register a tx synchronization for this SFSB instance
+                                final Synchronization statefulSessionSync = new StatefulSessionSynchronization(instance, lockOwner);
+                                transactionSynchronizationRegistry.registerInterposedSynchronization(statefulSessionSync);
+                                wasTxSyncRegistered = true;
+                                if (ROOT_LOGGER.isTraceEnabled()) {
+                                    ROOT_LOGGER.trace("Registered tx synchronization: " + statefulSessionSync + " for tx: " + currentTransactionKey +
+                                            " associated with stateful component instance: " + instance);
+                                }
+                                // invoke the afterBegin callback on the SFSB
+                                instance.afterBegin();
+                                synchronizationRegistered = true;
+                                context.putPrivateData(StatefulTransactionMarker.class, StatefulTransactionMarker.of(true));
                             }
-                            // invoke the afterBegin callback on the SFSB
-                            instance.afterBegin();
-                            synchronizationRegistered = true;
-                            context.putPrivateData(StatefulTransactionMarker.class, StatefulTransactionMarker.of(true));
+                        } else {
+                            context.putPrivateData(StatefulTransactionMarker.class, StatefulTransactionMarker.of(false));
                         }
-                    } else {
-                        context.putPrivateData(StatefulTransactionMarker.class, StatefulTransactionMarker.of(false));
                     }
                     // proceed with the invocation
                     return context.proceed();

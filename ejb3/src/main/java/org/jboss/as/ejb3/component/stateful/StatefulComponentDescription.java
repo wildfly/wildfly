@@ -23,8 +23,6 @@
 package org.jboss.as.ejb3.component.stateful;
 
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
@@ -65,6 +63,8 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.msc.service.ServiceName;
+
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * User: jpai
@@ -134,7 +134,6 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                                         final ServiceName deploymentUnitServiceName) {
         super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName);
 
-        addStatefulSessionSynchronizationInterceptor();
         addInitMethodInvokingInterceptor();
     }
 
@@ -152,7 +151,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
         getConfigurators().addFirst(new ComponentConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                final InterceptorFactory interceptorFactory = StatefulSessionSynchronizationInterceptor.FACTORY;
+                final InterceptorFactory interceptorFactory = StatefulSessionSynchronizationInterceptor.factory(getTransactionManagementType());
                 configuration.addComponentInterceptor(interceptorFactory, InterceptorOrder.Component.SYNCHRONIZATION_INTERCEPTOR, false);
             }
         });
@@ -183,6 +182,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                 }
             });
         }
+        addStatefulSessionSynchronizationInterceptor();
 
         return statefulComponentConfiguration;
     }
