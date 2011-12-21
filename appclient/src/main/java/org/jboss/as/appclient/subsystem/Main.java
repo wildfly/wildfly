@@ -21,9 +21,6 @@
  */
 package org.jboss.as.appclient.subsystem;
 
-import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
-import static org.jboss.as.process.Main.getVersionString;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -50,6 +47,9 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.stdio.StdioContext;
+
+import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
+import static org.jboss.as.process.Main.getVersionString;
 
 /**
  * The application client entry point
@@ -189,13 +189,16 @@ public final class Main {
                     if (urlSpec == null || !processProperties(arg, urlSpec)) {
                         return null;
                     }
+                } else if (arg.equals(CommandLineConstants.SHORT_HOST) || arg.equals(CommandLineConstants.HOST)) {
+                    String urlSpec = args[++i];
+                    ret.hostUrl = urlSpec;
                 } else if (arg.startsWith(CommandLineConstants.SHORT_HOST)) {
                     String urlSpec = parseValue(arg, CommandLineConstants.SHORT_HOST);
                     ret.hostUrl = urlSpec;
                 } else if (arg.startsWith(CommandLineConstants.HOST)) {
                     String urlSpec = parseValue(arg, CommandLineConstants.HOST);
                     ret.hostUrl = urlSpec;
-                }else if (arg.startsWith(CommandLineConstants.SYS_PROP)) {
+                } else if (arg.startsWith(CommandLineConstants.SYS_PROP)) {
 
                     // set a system property
                     String name, value;
@@ -212,7 +215,7 @@ public final class Main {
                 } else if (arg.startsWith(CommandLineConstants.APPCLIENT_CONFIG)) {
                     appClientConfig = parseValue(arg, CommandLineConstants.APPCLIENT_CONFIG);
                 } else {
-                    if(arg.startsWith("-")) {
+                    if (arg.startsWith("-")) {
                         System.out.println(MESSAGES.unknownOption(arg));
                         usage();
 
