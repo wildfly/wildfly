@@ -13,9 +13,7 @@ import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.network.OutboundSocketBinding;
-import org.jboss.as.server.services.net.OutboundSocketBindingService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -39,25 +37,28 @@ public class MailSessionAdd extends AbstractAddStepHandler {
      * {@inheritDoc}
      */
     @Override
-    protected void populateModel(ModelNode existingModel, ModelNode newModel) throws OperationFailedException {
-        copyModel(existingModel, newModel, ModelKeys.JNDI_NAME, ModelKeys.DEBUG);
-        if (existingModel.hasDefined(ModelKeys.SMTP_SERVER)) {
-            newModel.get(ModelKeys.SMTP_SERVER).set(existingModel.get(ModelKeys.SMTP_SERVER));
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        model.get(ModelKeys.JNDI_NAME).set(operation.require(ModelKeys.JNDI_NAME).asString());
+        if (operation.hasDefined(ModelKeys.DEBUG)) {
+            model.get(ModelKeys.DEBUG).set(operation.get(ModelKeys.DEBUG).asBoolean());
         }
-        if (existingModel.hasDefined(ModelKeys.POP3_SERVER)) {
-            newModel.get(ModelKeys.POP3_SERVER).set(existingModel.get(ModelKeys.POP3_SERVER));
+        if (operation.hasDefined(ModelKeys.SMTP_SERVER)) {
+            model.get(ModelKeys.SMTP_SERVER).set(operation.get(ModelKeys.SMTP_SERVER));
         }
-        if (existingModel.hasDefined(ModelKeys.IMAP_SERVER)) {
-            newModel.get(ModelKeys.IMAP_SERVER).set(existingModel.get(ModelKeys.IMAP_SERVER));
+        if (operation.hasDefined(ModelKeys.POP3_SERVER)) {
+            model.get(ModelKeys.POP3_SERVER).set(operation.get(ModelKeys.POP3_SERVER));
+        }
+        if (operation.hasDefined(ModelKeys.IMAP_SERVER)) {
+            model.get(ModelKeys.IMAP_SERVER).set(operation.get(ModelKeys.IMAP_SERVER));
         }
 
     }
-
-    static void copyModel(ModelNode src, ModelNode target, String... params) {
-        for (String p : params) {
-            target.get(p).set(src.get(p).asString());
-        }
-    }
+//
+//    static void copyModel(ModelNode src, ModelNode target, String... params) {
+//        for (String p : params) {
+//            target.get(p).set(src.get(p).asString());
+//        }
+//    }
 
 
     /**

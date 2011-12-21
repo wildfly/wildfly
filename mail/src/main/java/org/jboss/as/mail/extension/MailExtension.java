@@ -1,5 +1,13 @@
 package org.jboss.as.mail.extension;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+
+import java.util.Locale;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
@@ -10,20 +18,12 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-
-import java.util.Locale;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 
 /**
@@ -91,7 +91,9 @@ public class MailExtension implements Extension {
                     final ModelNode addOperation = org.jboss.as.controller.operations.common.Util.getEmptyOperation(ADD, address);
 
                     addOperation.get(ModelKeys.JNDI_NAME).set(session.getValue().get(ModelKeys.JNDI_NAME).asString());
-                    addOperation.get(ModelKeys.DEBUG).set(session.getValue().get(ModelKeys.DEBUG).asString());
+                    if (session.getValue().hasDefined(ModelKeys.DEBUG)) {
+                        addOperation.get(ModelKeys.DEBUG).set(session.getValue().get(ModelKeys.DEBUG).asString());
+                    }
                     addOperation.get(ModelKeys.SMTP_SERVER).set(session.getValue().get(ModelKeys.SMTP_SERVER));
                     addOperation.get(ModelKeys.IMAP_SERVER).set(session.getValue().get(ModelKeys.IMAP_SERVER));
                     addOperation.get(ModelKeys.POP3_SERVER).set(session.getValue().get(ModelKeys.POP3_SERVER));
