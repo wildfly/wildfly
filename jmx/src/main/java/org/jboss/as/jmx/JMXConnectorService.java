@@ -195,6 +195,13 @@ public class JMXConnectorService implements Service<Void> {
     }
 
     private void setRmiServerProperty(final String address) {
+        // if the RMI server hostname is already set, don't change it
+        // So that AS 7 do support the -Djava.rmi.server.hostname system property
+        // Really useful behind a firewall, with NAT
+        if (System.getProperty(SERVER_HOSTNAME) != null) {
+            return ;
+        }
+
         SecurityManager sm = System.getSecurityManager();
         if(sm != null) {
             AccessController.doPrivileged(new PrivilegedAction<Void>() {
