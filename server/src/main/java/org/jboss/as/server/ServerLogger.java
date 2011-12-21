@@ -113,4 +113,55 @@ public interface ServerLogger extends BasicLogger {
     @Message(id = 15852, value = "Could not index class %s at %s")
     void cannotIndexClass(String className, String resourceRoot, @Cause Throwable throwable);
 
+    @LogMessage(level = WARN)
+    @Message(id = 15853, value = "More than two unique criteria addresses were seen: %s")
+    void moreThanTwoUniqueCriteria(String addresses);
+
+    @LogMessage(level = WARN)
+    @Message(id = 15854, value = "Checking two unique criteria addresses were seen: %s")
+    void checkingTwoUniqueCriteria(String addresses);
+
+    @LogMessage(level = WARN)
+    @Message(id = 15855, value = "Two unique criteria addresses were seen: %s")
+    void twoUniqueCriteriaAddresses(String addresses);
+
+    @LogMessage(level = INFO)
+    @Message(id = 15856, value = "Undeploy of deployment \"%s\" was rolled back with failure message %s")
+    void undeploymentRolledBack(String deployment, String message);
+
+    @LogMessage(level = INFO)
+    @Message(id = 15857, value = "Undeploy of deployment \"%s\" was rolled back with no failure message")
+    void undeploymentRolledBackWithNoMessage(String deployment);
+
+    @LogMessage(level = INFO)
+    @Message(id = 18558, value = "Undeployed \"%s\"")
+    void deploymentUndeployed(String deploymentName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 18559, value = "Deployed \"%s\"")
+    void deploymentDeployed(String deploymentUnitName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 15860, value = "Redeploy of deployment \"%s\" was rolled back with failure message %s")
+    void redeployRolledBack(String deployment, String message);
+
+    @LogMessage(level = INFO)
+    @Message(id = 15861, value = "Redeploy of deployment \"%s\" was rolled back with no failure message")
+    void redeployRolledBackWithNoMessage(String deployment);
+
+    @LogMessage(level = INFO)
+    @Message(id = 18562, value = "Redeployed \"%s\"")
+    void deploymentRedeployed(String deploymentName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 15863, value = "Replacement of deployment \"%s\" by deployment \"%s\" was rolled back with failure message %s")
+    void replaceRolledBack(String replaced, String deployment, String message);
+
+    @LogMessage(level = INFO)
+    @Message(id = 15864, value = "Replacement of deployment \"%s\" by deployment \"%s\" was rolled back with no failure message")
+    void replaceRolledBackWithNoMessage(String replaced, String deployment);
+
+    @LogMessage(level = INFO)
+    @Message(id = 18565, value = "Replaced deployment \"%s\" with deployment \"%s\"")
+    void deploymentReplaced(String replaced, String deployment);
 }

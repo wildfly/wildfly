@@ -390,7 +390,7 @@ public class ServerInventoryImpl implements ServerInventory {
                                 break;
                             default:
                                 // Only in case there is still a process registered and running
-                                if(info != null && info.isRunning()) {
+                                if(info != null) {
                                     count++;
                                 }
                         }

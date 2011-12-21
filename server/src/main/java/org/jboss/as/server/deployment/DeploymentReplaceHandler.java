@@ -28,6 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PAT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
+import org.jboss.as.server.ServerMessages;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.createFailureException;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getContents;
 
@@ -84,10 +85,8 @@ public class DeploymentReplaceHandler implements OperationStepHandler, Descripti
         String toReplace = operation.require(TO_REPLACE).asString();
 
         if (name.equals(toReplace)) {
-            throw operationFailed(String.format("Cannot use %s with the same value for parameters %s and %s. " +
-                    "Use %s to redeploy the same content or %s to replace content with a new version with the same name.",
-                    OPERATION_NAME, NAME, TO_REPLACE, DeploymentRedeployHandler.OPERATION_NAME,
-                    DeploymentFullReplaceHandler.OPERATION_NAME));
+            throw ServerMessages.MESSAGES.cannotReplaceDeployment(OPERATION_NAME, NAME, TO_REPLACE,
+                    DeploymentRedeployHandler.OPERATION_NAME, DeploymentFullReplaceHandler.OPERATION_NAME);
         }
 
         final PathElement deployPath = PathElement.pathElement(DEPLOYMENT, name);
@@ -95,7 +94,7 @@ public class DeploymentReplaceHandler implements OperationStepHandler, Descripti
 
         final Resource root = context.readResource(PathAddress.EMPTY_ADDRESS);
         if (! root.hasChild(replacePath)) {
-            throw operationFailed(String.format("No deployment with name %s found", toReplace));
+            throw ServerMessages.MESSAGES.noSuchDeployment(toReplace);
         }
 
         final ModelNode replaceNode = context.readResourceForUpdate(PathAddress.pathAddress(replacePath)).getModel();
@@ -105,7 +104,7 @@ public class DeploymentReplaceHandler implements OperationStepHandler, Descripti
         String runtimeName;
         if (!root.hasChild(deployPath)) {
             if (!operation.hasDefined(CONTENT)) {
-                throw operationFailed(String.format("No deployment with name %s found", name));
+                throw ServerMessages.MESSAGES.noSuchDeployment(name);
             }
             // else -- the HostController handles a server group replace-deployment like an add, so we do too
 
@@ -116,8 +115,9 @@ public class DeploymentReplaceHandler implements OperationStepHandler, Descripti
             if (contentItemNode.hasDefined(HASH)) {
                 managedContentValidator.validate(contentItemNode);
                 byte[] hash = contentItemNode.require(HASH).asBytes();
-                if (!contentRepository.hasContent(hash))
-                    throw createFailureException("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash));
+                if (!contentRepository.hasContent(hash)) {
+                    ServerMessages.MESSAGES.noSuchDeploymentContent(HashUtil.bytesToHexString(hash));
+                }
             } else {
                 unmanagedContentValidator.validate(contentItemNode);
             }
@@ -132,7 +132,7 @@ public class DeploymentReplaceHandler implements OperationStepHandler, Descripti
         } else {
             deployNode = context.readResourceForUpdate(PathAddress.pathAddress(deployPath)).getModel();
             if (deployNode.get(ENABLED).asBoolean()) {
-                throw operationFailed(String.format("Deployment %s is already started", toReplace));
+                throw ServerMessages.MESSAGES.deploymentAlreadyStarted(toReplace);
             }
             runtimeName = deployNode.require(RUNTIME_NAME).asString();
         }
@@ -146,7 +146,4 @@ public class DeploymentReplaceHandler implements OperationStepHandler, Descripti
         context.completeStep();
     }
 
-    private static OperationFailedException operationFailed(String msg) {
-        return new OperationFailedException(new ModelNode().set(msg));
-    }
 }

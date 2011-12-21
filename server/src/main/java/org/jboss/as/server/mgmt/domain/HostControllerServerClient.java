@@ -95,7 +95,7 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         try {
             handler.executeRegistrationRequest(channel, new ServerRegisterRequest(), context);
         } catch (Exception e) {
-            throw new StartException("Failed to send registration message to host controller", e);
+            throw ServerMessages.MESSAGES.failedToConnectToHC(e);
         }
         this.handler = handler;
         channel.receiveMessage(ManagementChannelReceiver.createDelegating(handler));
@@ -107,7 +107,9 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         if(handler != null) {
             handler.shutdown();
             try {
-                handler.awaitCompletion(100, TimeUnit.MILLISECONDS);
+                if(! handler.awaitCompletion(100, TimeUnit.MILLISECONDS)) {
+                    ControllerLogger.ROOT_LOGGER.debugf("HostController server client did not complete shutdown within timeout");
+                }
             } catch (Exception e) {
                 ControllerLogger.ROOT_LOGGER.warnf(e , "service shutdown did not complete");
             } finally {
