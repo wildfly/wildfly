@@ -90,6 +90,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
@@ -1229,7 +1230,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         }
         if (OVERFLOW_ACTION.isMarshallable(node)) {
             writer.writeStartElement(Element.OVERFLOW_ACTION.getLocalName());
-            writeAttribute(writer, Attribute.VALUE, node.get(OVERFLOW_ACTION.getName()));
+            writer.writeAttribute(Attribute.VALUE.getLocalName(), node.get(OVERFLOW_ACTION.getName()).asString().toLowerCase());
             writer.writeEndElement();
         }
         if (SUBHANDLERS.isMarshallable(node)) {

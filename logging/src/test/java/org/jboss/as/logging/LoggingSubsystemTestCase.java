@@ -62,4 +62,8 @@ public class LoggingSubsystemTestCase extends AbstractSubsystemBaseTest {
 //        return false;
 //    }
 
+    @Override
+    protected void validateXml(String configId, String original, String marshalled) throws Exception {
+        super.validateXml(configId, original, marshalled, true);
+    }
 }

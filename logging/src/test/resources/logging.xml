@@ -21,60 +21,6 @@
   -->
 
 <subsystem xmlns="urn:jboss:domain:logging:1.1">
-    <console-handler name="CONSOLE">
-        <level name="INFO"/>
-        <formatter>
-            <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
-        </formatter>
-        <filter>
-            <level-range min-level="TRACE" max-level="WARN" />
-        </filter>
-    </console-handler>
-
-    <periodic-rotating-file-handler name="FILE">
-        <encoding value="UTF-8" />
-        <formatter>
-            <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
-        </formatter>
-        <file relative-to="jboss.server.log.dir" path="server.log"/>
-        <suffix value=".yyyy-MM-dd"/>
-        <filter>
-            <any>
-                <level name="INFO" />
-                <not>
-                    <level name="TRACE" />
-                </not>
-            </any>
-        </filter>
-    </periodic-rotating-file-handler>
-
-    <size-rotating-file-handler name="sizeLogger">
-        <append value="false" />
-        <encoding value="UTF-8" />
-        <file relative-to="jboss.server.log.dir" path="sizeLogger.log"/>
-        <formatter>
-            <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
-        </formatter>
-        <level name="DEBUG" />
-        <max-backup-index value="1024" />
-        <rotate-size value="64m" />
-        <filter>
-            <all>
-                <match pattern=".*" />
-                <change-level new-level="DEBUG"/>
-            </all>
-        </filter>
-    </size-rotating-file-handler>
-
-    <file-handler name="simpleFile">
-        <append value="true" />
-        <level name="INFO" />
-        <file relative-to="jboss.server.log.dir" path="fileHandler.log"/>
-        <filter>
-            <deny />
-        </filter>
-    </file-handler>
-
     <async-handler name="async">
         <queue-length value="10"/>
         <overflow-action value="block" />
@@ -84,15 +30,70 @@
         </subhandlers>
     </async-handler>
 
+    <console-handler name="CONSOLE">
+        <level name="INFO"/>
+        <filter>
+            <level-range min-level="TRACE" max-level="WARN" />
+        </filter>
+        <formatter>
+            <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+        </formatter>
+    </console-handler>
+
+    <file-handler name="simpleFile">
+        <level name="INFO" />
+        <filter>
+            <deny />
+        </filter>
+        <file relative-to="jboss.server.log.dir" path="fileHandler.log"/>
+        <append value="true" />
+    </file-handler>
+
     <custom-handler name="customHandler" module="org.jboss.logmanager" class="org.jboss.logmanager.handler.ConsoleHandler">
+        <filter>
+            <replace pattern="\b(Name)|\b(name)" replacement="user" replace-all="true"/>
+        </filter>
         <properties>
             <property name="autoFlush" value="true" />
             <property name="target" value="SYSTEM_OUT" />
         </properties>
-        <filter>
-            <replace pattern="\b(Name)|\b(name)" replacement="user" replace-all="true"/>
-        </filter>
     </custom-handler>
+
+    <periodic-rotating-file-handler name="FILE">
+        <encoding value="UTF-8" />
+        <filter>
+            <any>
+                <level name="INFO" />
+                <not>
+                    <level name="TRACE" />
+                </not>
+            </any>
+        </filter>
+        <formatter>
+            <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+        </formatter>
+        <file relative-to="jboss.server.log.dir" path="server.log"/>
+        <suffix value=".yyyy-MM-dd"/>
+    </periodic-rotating-file-handler>
+
+    <size-rotating-file-handler name="sizeLogger">
+        <level name="DEBUG" />
+        <encoding value="UTF-8" />
+        <filter>
+            <all>
+                <change-level new-level="DEBUG"/>
+                <match pattern=".*" />
+            </all>
+        </filter>
+        <formatter>
+            <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+        </formatter>
+        <file relative-to="jboss.server.log.dir" path="sizeLogger.log"/>
+        <rotate-size value="64m" />
+        <max-backup-index value="1024" />
+        <append value="false" />
+    </size-rotating-file-handler>
+
 
     <logger category="com.arjuna">
         <level name="WARN"/>

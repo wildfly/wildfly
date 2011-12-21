@@ -43,15 +43,20 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         //This is just copied from standalone.xml testing more combinations would be good
         return
             "<subsystem xmlns=\"urn:jboss:domain:transactions:1.1\" >" +
-            "    <recovery-environment socket-binding=\"txn-recovery-environment\" status-socket-binding=\"txn-status-manager\"/>" +
             "    <core-environment>" +
             "        <process-id>" +
             "            <uuid />" +
             "        </process-id>" +
             "    </core-environment>" +
+            "    <recovery-environment socket-binding=\"txn-recovery-environment\" status-socket-binding=\"txn-status-manager\"/>" +
             "    <coordinator-environment default-timeout=\"300\"/>" +
             "    <jts/>"+
             "</subsystem>";
+    }
+
+    @Override
+    protected void validateXml(String configId, String original, String marshalled) throws Exception {
+        super.validateXml(configId, original, marshalled, true);
     }
 
     protected AdditionalInitialization createAdditionalInitialization() {

@@ -1,4 +1,11 @@
         <subsystem xmlns="urn:jboss:domain:web:1.1" default-virtual-server="default-host">
+            <configuration>
+               <jsp-configuration development="true" />
+               <mime-mapping name="ogx" value="application/ogg" />
+               <mime-mapping name="ogg" value="audio/ogg" />
+               <welcome-file>toto</welcome-file>
+               <welcome-file>titi</welcome-file>
+            </configuration>
             <connector name="http" scheme="http" protocol="HTTP/1.1" socket-binding="http"/>
             <connector name="https" scheme="https" protocol="HTTP/1.1" secure="true" socket-binding="https">
                <ssl password="changeit" key-alias="tomcat"
@@ -14,18 +21,11 @@
                <access-log resolve-hosts="true">
                  <directory relative-to="jboss.server.base.dir" path="toto" />
                </access-log>
-               <sso domain="mydomain" reauthenticate="true" />
                <rewrite pattern="^/helloworld(.*)" substitution="/helloworld/test.jsp" flags="L" />
                <rewrite pattern="^/hellomonde(.*)" substitution="/hellomonde/test.jsp" flags="L">
                   <condition test="%{HTTPS}" pattern="off" flags="NC"/>
                   <condition test="%{USER}" pattern="toto" flags="NC"/>
                </rewrite>
+               <sso domain="mydomain" reauthenticate="true" />
             </virtual-server>
-            <configuration>
-               <jsp-configuration development="true" />
-               <mime-mapping name="ogx" value="application/ogg" />
-               <mime-mapping name="ogg" value="audio/ogg" />
-               <welcome-file>toto</welcome-file>
-               <welcome-file>titi</welcome-file>
-            </configuration>
         </subsystem>
