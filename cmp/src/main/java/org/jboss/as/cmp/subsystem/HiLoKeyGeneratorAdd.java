@@ -100,6 +100,7 @@ public class HiLoKeyGeneratorAdd extends AbstractKeyGeneratorAdd {
         setOnModel(operation, model, BLOCK_SIZE);
         setOnModel(operation, model, CREATE_TABLE);
         setOnModel(operation, model, CREATE_TABLE_DDL);
+        setOnModel(operation, model, DATA_SOURCE);
         setOnModel(operation, model, DROP_TABLE);
         setOnModel(operation, model, ID_COLUMN);
         setOnModel(operation, model, SELECT_HI_DDL);
