@@ -1,55 +1,41 @@
 
     <subsystem xmlns="urn:jboss:domain:messaging:1.1">
         <hornetq-server>
-            <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
-            <journal-file-size>102400</journal-file-size>
-            <journal-min-files>2</journal-min-files>
-            <journal-type>NIO</journal-type>
-
-            <bindings-directory path="test" relative-to="test" />
-            <journal-directory path="test" relative-to="test" />
-            <large-messages-directory path="test" relative-to="test" />
-            <paging-directory path="test" relative-to="test" />
-
             <!-- disable messaging persistence -->
             <persistence-enabled>false</persistence-enabled>
-            <grouping-handler name="grouping-handler">
-                <type>LOCAL</type>
-                <address>handler-address</address>
-                <timeout>5000</timeout>
-            </grouping-handler>
             <remoting-interceptors>
                 <class-name>foo.bar</class-name>
                 <class-name>bar.foo</class-name>
             </remoting-interceptors>
             <live-connector-ref connector-name="in-vm"/>
-
+            <journal-type>NIO</journal-type>
+            <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
+            <journal-file-size>102400</journal-file-size>
+            <journal-min-files>2</journal-min-files>
             <connectors>
-               <in-vm-connector name="in-vm" server-id="0" />
                <netty-connector name="netty" socket-binding="messaging" />
                <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
                   <param key="batch-delay" value="50"/>
                </netty-connector>
+               <in-vm-connector name="in-vm" server-id="0" />
             </connectors>
-
             <acceptors>
-               <in-vm-acceptor name="in-vm" server-id="0" />
                <netty-acceptor name="netty" socket-binding="messaging" />
                <netty-acceptor name="netty-throughput" socket-binding="messaging-throughput">
                   <param key="batch-delay" value="50"/>
                   <param key="direct-deliver" value="false"/>
                </netty-acceptor>
+               <in-vm-acceptor name="in-vm" server-id="0" />
             </acceptors>
-
             <broadcast-groups>
                 <broadcast-group name="groupA">
+                    <broadcast-period>2500</broadcast-period>
+                    <connector-ref>netty</connector-ref>
+                    <connector-ref>netty-throughput</connector-ref>
                     <local-bind-address>localhost</local-bind-address>
                     <local-bind-port>12345</local-bind-port>
                     <group-address>224.0.1.105</group-address>
                     <group-port>23456</group-port>
-                    <broadcast-period>2500</broadcast-period>
-                    <connector-ref>netty</connector-ref>
-                    <connector-ref>netty-throughput</connector-ref>
                 </broadcast-group>
                 <broadcast-group name="groupB">
                     <group-address>224.0.1.105</group-address>
@@ -59,14 +45,13 @@
                     <socket-binding>group-s-binding</socket-binding>
                 </broadcast-group>
             </broadcast-groups>
-
             <discovery-groups>
                 <discovery-group name="groupC">
+                    <refresh-timeout>3500</refresh-timeout>
+                    <initial-wait-timeout>7500</initial-wait-timeout>
                     <local-bind-address>localhost</local-bind-address>
                     <group-address>224.0.1.105</group-address>
                     <group-port>45678</group-port>
-                    <refresh-timeout>3500</refresh-timeout>
-                    <initial-wait-timeout>7500</initial-wait-timeout>
                 </discovery-group>
                 <discovery-group name="groupD">
                     <group-address>224.0.1.105</group-address>
@@ -76,7 +61,30 @@
                     <socket-binding>group-t-binding</socket-binding>
                 </discovery-group>
             </discovery-groups>
-
+            <diverts>
+                <divert name="testDivert1">
+                    <routing-name>routing</routing-name>
+                    <address>address1</address>
+                    <forwarding-address>forwardingaddress1</forwarding-address>
+                    <filter string="afilter"/>
+                    <transformer-class-name>org.jboss.test.Transformer</transformer-class-name>
+                    <exclusive>true</exclusive>
+                </divert>
+                <divert name="testDivert2">
+                    <address>address2</address>
+                    <forwarding-address>forwardingaddress2</forwarding-address>
+                </divert>
+            </diverts>
+            <core-queues>
+                <queue name="coreQueueA">
+                    <address>addressA</address>
+                    <filter string="afilter"/>
+                    <durable>true</durable>
+                </queue>
+                <queue name="coreQueueB">
+                    <address>addressB</address>
+                </queue>
+            </core-queues>
             <bridges>
                 <bridge name="bridge1">
                     <queue-name>coreQueueA</queue-name>
@@ -102,7 +110,6 @@
                     <discovery-group-ref discovery-group-name="groupC"/>
                 </bridge>
             </bridges>
-
             <cluster-connections>
                 <cluster-connection name="cc1">
                     <address>cc1-address</address>
@@ -135,43 +142,24 @@
                     <connector-ref>netty-throughput</connector-ref>
                 </cluster-connection>
             </cluster-connections>
-
-            <diverts>
-                <divert name="testDivert1">
-                    <routing-name>routing</routing-name>
-                    <address>address1</address>
-                    <forwarding-address>forwardingaddress1</forwarding-address>
-                    <filter string="afilter"/>
-                    <exclusive>true</exclusive>
-                    <transformer-class-name>org.jboss.test.Transformer</transformer-class-name>
-                </divert>
-                <divert name="testDivert2">
-                    <address>address2</address>
-                    <forwarding-address>forwardingaddress2</forwarding-address>
-                </divert>
-            </diverts>
-
-            <core-queues>
-                <queue name="coreQueueA">
-                    <address>addressA</address>
-                    <filter string="afilter"/>
-                    <durable>true</durable>
-                </queue>
-                <queue name="coreQueueB">
-                    <address>addressB</address>
-                </queue>
-            </core-queues>
-
+            <grouping-handler name="grouping-handler">
+                <type>LOCAL</type>
+                <address>handler-address</address>
+                <timeout>5000</timeout>
+            </grouping-handler>
+            <paging-directory path="test" relative-to="test" />
+            <bindings-directory path="test" relative-to="test" />
+            <journal-directory path="test" relative-to="test" />
+            <large-messages-directory path="test" relative-to="test" />
             <security-settings>
                <security-setting match="#">
-                   <permission type="createNonDurableQueue" roles="guest"/>
-                   <permission type="deleteNonDurableQueue" roles="guest"/>
-                   <permission type="consume" roles="guest"/>
-                   <permission type="send" roles="guest"/>
-                   <permission type="manage" roles="admin"/>
+                   <permission roles="guest" type="send"/>
+                   <permission roles="guest" type="consume"/>
+                   <permission roles="guest" type="createNonDurableQueue"/>
+                   <permission roles="guest" type="deleteNonDurableQueue"/>
+                   <permission roles="adming" type="manage"/>
                </security-setting>
             </security-settings>
-
             <address-settings>
                <!--default for catch all-->
                <address-setting match="#">

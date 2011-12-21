@@ -61,4 +61,12 @@ public class SubsystemParsingUnitTestCase extends AbstractSubsystemBaseTest {
         return new MessagingAdditionalInitialization(Type.MANAGEMENT);
     }
 
+    @Override
+    protected void validateXml(String configId, String original, String marshalled) throws Exception {
+        if (configId != null && configId.equals("xsd10.xml")) {
+            return;
+        }
+
+        super.validateXml(configId, original, marshalled, true);
+    }
 }

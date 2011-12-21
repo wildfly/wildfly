@@ -51,6 +51,7 @@ import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
 import static org.jboss.as.messaging.CommonAttributes.FACTORY_CLASS;
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
 import static org.jboss.as.messaging.CommonAttributes.GROUPING_HANDLER;
+import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.INBOUND_CONFIG;
 import static org.jboss.as.messaging.CommonAttributes.IN_VM_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.IN_VM_CONNECTOR;
@@ -72,7 +73,6 @@ import static org.jboss.as.messaging.CommonAttributes.REMOTING_INTERCEPTORS;
 import static org.jboss.as.messaging.CommonAttributes.ROLE;
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
-import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.SERVER_ID;
 import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING;
 import static org.jboss.as.messaging.CommonAttributes.STATIC_CONNECTORS;
@@ -1456,26 +1456,38 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             writeConnectorServices(writer, node.get(CommonAttributes.CONNECTOR_SERVICE));
         }
 
-        if (node.has(CONNECTION_FACTORY) || node.has(POOLED_CONNECTION_FACTORY)) {
-           writer.writeStartElement(JMS_CONNECTION_FACTORIES);
-           if (node.has(CONNECTION_FACTORY)) {
-               writeConnectionFactories(writer, node.get(CONNECTION_FACTORY));
+        if (node.hasDefined(CONNECTION_FACTORY) || node.hasDefined(POOLED_CONNECTION_FACTORY)) {
+           ModelNode cf = node.get(CONNECTION_FACTORY);
+           ModelNode pcf = node.get(POOLED_CONNECTION_FACTORY);
+           boolean hasCf = cf.isDefined() && cf.keys().size() > 0;
+           boolean hasPcf = cf.isDefined() && cf.keys().size() > 0;
+           if (hasCf || hasPcf) {
+               writer.writeStartElement(JMS_CONNECTION_FACTORIES);
+               if (hasCf) {
+                   writeConnectionFactories(writer, cf);
+               }
+               if (hasPcf) {
+                   writePooledConnectionFactories(writer, pcf);
+               }
+               writer.writeEndElement();
            }
-           if (node.has(POOLED_CONNECTION_FACTORY)) {
-               writePooledConnectionFactories(writer, node.get(POOLED_CONNECTION_FACTORY));
-           }
-           writer.writeEndElement();
         }
 
         if (node.has(JMS_QUEUE) || node.has(JMS_TOPIC)) {
-           writer.writeStartElement(JMS_DESTINATIONS);
-           if(node.has(JMS_QUEUE)) {
-            writeJmsQueues(writer, node.get(JMS_QUEUE));
+           ModelNode queue = node.get(JMS_QUEUE);
+           ModelNode topic = node.get(JMS_TOPIC);
+           boolean hasQueue = queue.isDefined() && queue.keys().size() > 0;
+           boolean hasTopic = topic.isDefined() && topic.keys().size() > 0;
+           if (hasQueue && hasTopic) {
+               writer.writeStartElement(JMS_DESTINATIONS);
+               if (hasQueue) {
+                   writeJmsQueues(writer, node.get(JMS_QUEUE));
+               }
+               if (hasTopic) {
+                   writeTopics(writer, node.get(JMS_TOPIC));
+               }
+               writer.writeEndElement();
            }
-           if (node.has(JMS_TOPIC)) {
-               writeTopics(writer, node.get(JMS_TOPIC));
-           }
-           writer.writeEndElement();
         }
 
         writer.writeEndElement();
@@ -1590,55 +1602,59 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
     }
 
     static void writeAcceptors(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        writer.writeStartElement(Element.ACCEPTORS.getLocalName());
-        if(node.hasDefined(ACCEPTOR)) {
-            for(final Property property : node.get(ACCEPTOR).asPropertyList()) {
-                writer.writeStartElement(Element.ACCEPTOR.getLocalName());
-                writeAcceptorAndConnectorContent(writer, property);
-                writer.writeEndElement();
+        if (node.hasDefined(ACCEPTOR) || node.hasDefined(REMOTE_ACCEPTOR) || node.hasDefined(IN_VM_ACCEPTOR)) {
+            writer.writeStartElement(Element.ACCEPTORS.getLocalName());
+            if(node.hasDefined(ACCEPTOR)) {
+                for(final Property property : node.get(ACCEPTOR).asPropertyList()) {
+                    writer.writeStartElement(Element.ACCEPTOR.getLocalName());
+                    writeAcceptorAndConnectorContent(writer, property);
+                    writer.writeEndElement();
+                }
             }
-        }
-        if(node.hasDefined(REMOTE_ACCEPTOR)) {
-            for(final Property property : node.get(REMOTE_ACCEPTOR).asPropertyList()) {
-                writer.writeStartElement(Element.NETTY_ACCEPTOR.getLocalName());
-                writeAcceptorAndConnectorContent(writer, property);
-                writer.writeEndElement();
+            if(node.hasDefined(REMOTE_ACCEPTOR)) {
+                for(final Property property : node.get(REMOTE_ACCEPTOR).asPropertyList()) {
+                    writer.writeStartElement(Element.NETTY_ACCEPTOR.getLocalName());
+                    writeAcceptorAndConnectorContent(writer, property);
+                    writer.writeEndElement();
+                }
             }
-        }
-        if(node.hasDefined(IN_VM_ACCEPTOR)) {
-            for(final Property property : node.get(IN_VM_ACCEPTOR).asPropertyList()) {
-                writer.writeStartElement(Element.IN_VM_ACCEPTOR.getLocalName());
-                writeAcceptorAndConnectorContent(writer, property);
-                writer.writeEndElement();
+            if(node.hasDefined(IN_VM_ACCEPTOR)) {
+                for(final Property property : node.get(IN_VM_ACCEPTOR).asPropertyList()) {
+                    writer.writeStartElement(Element.IN_VM_ACCEPTOR.getLocalName());
+                    writeAcceptorAndConnectorContent(writer, property);
+                    writer.writeEndElement();
+                }
             }
+            writer.writeEndElement();
         }
-        writer.writeEndElement();
     }
 
     static void writeConnectors(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        writer.writeStartElement(Element.CONNECTORS.getLocalName());
-        if(node.hasDefined(CONNECTOR)) {
-            for(final Property property : node.get(CONNECTOR).asPropertyList()) {
-                writer.writeStartElement(Element.CONNECTOR.getLocalName());
-                writeAcceptorAndConnectorContent(writer, property);
-                writer.writeEndElement();
+        if (node.hasDefined(CONNECTOR) || node.hasDefined(REMOTE_CONNECTOR) || node.hasDefined(IN_VM_CONNECTOR)) {
+            writer.writeStartElement(Element.CONNECTORS.getLocalName());
+            if(node.hasDefined(CONNECTOR)) {
+                for(final Property property : node.get(CONNECTOR).asPropertyList()) {
+                    writer.writeStartElement(Element.CONNECTOR.getLocalName());
+                    writeAcceptorAndConnectorContent(writer, property);
+                    writer.writeEndElement();
+                }
             }
-        }
-        if(node.hasDefined(REMOTE_CONNECTOR)) {
-            for(final Property property : node.get(REMOTE_CONNECTOR).asPropertyList()) {
-                writer.writeStartElement(Element.NETTY_CONNECTOR.getLocalName());
-                writeAcceptorAndConnectorContent(writer, property);
-                writer.writeEndElement();
+            if(node.hasDefined(REMOTE_CONNECTOR)) {
+                for(final Property property : node.get(REMOTE_CONNECTOR).asPropertyList()) {
+                    writer.writeStartElement(Element.NETTY_CONNECTOR.getLocalName());
+                    writeAcceptorAndConnectorContent(writer, property);
+                    writer.writeEndElement();
+                }
             }
-        }
-        if(node.hasDefined(IN_VM_CONNECTOR)) {
-            for(final Property property : node.get(IN_VM_CONNECTOR).asPropertyList()) {
-                writer.writeStartElement(Element.IN_VM_CONNECTOR.getLocalName());
-                writeAcceptorAndConnectorContent(writer, property);
-                writer.writeEndElement();
+            if(node.hasDefined(IN_VM_CONNECTOR)) {
+                for(final Property property : node.get(IN_VM_CONNECTOR).asPropertyList()) {
+                    writer.writeStartElement(Element.IN_VM_CONNECTOR.getLocalName());
+                    writeAcceptorAndConnectorContent(writer, property);
+                    writer.writeEndElement();
+                }
             }
+            writer.writeEndElement();
         }
-        writer.writeEndElement();
     }
 
     static void writeAcceptorAndConnectorContent(final XMLExtendedStreamWriter writer, final Property property) throws XMLStreamException {

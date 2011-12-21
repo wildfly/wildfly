@@ -277,13 +277,8 @@ public class RemotingSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Override
-    protected void validateXml(String original, String marshalled) throws Exception {
-        // TODO: Can't and shouldn't rely on string equality check because if the original subsystem xml had a
-        // namespace of 1.0 and the current is 1.1, then the marshalled subsystem xml will have the current == 1.1
-        // value. So string equality won't work out here
-        //assertEquals(original, marshalled);
-        // let's just delegate it to the base class
-        super.validateXml(original, marshalled);
+    protected void validateXml(String configId, String original, String marshalled) throws Exception {
+        super.validateXml(configId, original, marshalled, true);
     }
 
     private static class CurrentConnectorAndController {

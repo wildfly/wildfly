@@ -78,4 +78,9 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         return ignore;
     }
+
+    @Override
+    protected void validateXml(String configId, String original, String marshalled) throws Exception {
+        super.validateXml(configId, original, marshalled, true);
+    }
 }
