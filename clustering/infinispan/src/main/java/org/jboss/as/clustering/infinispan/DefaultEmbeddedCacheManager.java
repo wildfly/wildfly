@@ -37,7 +37,11 @@ import java.util.Set;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
+import org.infinispan.commands.VisitableCommand;
 import org.infinispan.config.Configuration;
+import org.infinispan.config.ConfigurationException;
+import org.infinispan.context.InvocationContext;
+import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.manager.AbstractDelegatingEmbeddedCacheManager;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -223,6 +227,25 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
         }
 
         @Override
+        public AdvancedCache<K, V> with(ClassLoader classLoader) {
+            AdvancedCache<K, V> cache = super.with(classLoader);
+            CommandInterceptor interceptor = new ClassLoaderAwareCommandInterceptor(cache);
+            try {
+                this.cache.addInterceptor(interceptor, 0);
+            } catch (ConfigurationException e) {
+                this.cache.removeInterceptor(interceptor.getClass());
+                this.cache.addInterceptor(interceptor, 0);
+            }
+            return cache;
+        }
+
+        @Override
+        public void addInterceptor(CommandInterceptor interceptor, int position) {
+            // Don't let some other interceptor step in front of the ClassLoaderAwareCommandInterceptor
+            super.addInterceptor(interceptor, (position > 0) ? position : 1);
+        }
+
+        @Override
         public boolean equals(Object object) {
             return (object == this) || (object == this.cache);
         }
@@ -314,6 +337,30 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
                 return this.listener.equals(listener.listener);
             }
             return this.listener.equals(object);
+        }
+    }
+
+    private class ClassLoaderAwareCommandInterceptor extends CommandInterceptor {
+        private final AdvancedCache<?, ?> cache;
+
+        ClassLoaderAwareCommandInterceptor(AdvancedCache<?, ?> cache) {
+            this.cache = cache;
+        }
+
+        @Override
+        protected Object handleDefault(InvocationContext ctx, VisitableCommand command) throws Throwable {
+            ClassLoader classLoader = this.cache.getClassLoader();
+            ClassLoader contextLoader = getContextClassLoader();
+            if (classLoader != null) {
+                setContextClassLoader(classLoader);
+            }
+            try {
+                return super.handleDefault(ctx, command);
+            } finally {
+                if (classLoader != null) {
+                    setContextClassLoader(contextLoader);
+                }
+            }
         }
     }
 

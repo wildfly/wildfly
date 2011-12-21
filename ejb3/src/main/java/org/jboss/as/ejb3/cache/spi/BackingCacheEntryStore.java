@@ -57,7 +57,7 @@ public interface BackingCacheEntryStore<K extends Serializable, V extends Cachea
      * @param key {@link Identifiable#getId() id} of the entry. Cannot be <code>null</code>.
      * @return the object store under <code>id</code>. May return <code>null</code>.
      */
-    E get(K key);
+    E get(K key, boolean lock);
 
     /**
      * Update an already cached item.
