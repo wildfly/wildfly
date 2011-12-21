@@ -22,6 +22,16 @@
 
 package org.jboss.as.test.integration.ejb.security;
 
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.security.Constants;
+import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
+
 import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
@@ -34,16 +44,6 @@ import static org.jboss.as.security.Constants.AUTHENTICATION;
 import static org.jboss.as.security.Constants.CODE;
 import static org.jboss.as.security.Constants.FLAG;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
-
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.security.Constants;
-import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 
 /**
  * Utility methods to create/remove simple security domains
@@ -68,6 +68,10 @@ public class SecurityTest {
     }
 
     public static void createSecurityDomain(final String securityDomainName) throws Exception {
+        createSecurityDomain(securityDomainName, true);
+    }
+
+    public static void createSecurityDomain(final String securityDomainName, boolean usersRolesRequired) throws Exception {
         final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, getCallbackHandler());
         try {
             final List<ModelNode> updates = new ArrayList<ModelNode>();
@@ -84,8 +88,20 @@ public class SecurityTest {
             op.get(OP_ADDR).add(AUTHENTICATION, Constants.CLASSIC);
 
             ModelNode loginModule = op.get(Constants.LOGIN_MODULES).add();
-            loginModule.get(CODE).set("UsersRoles");
-            loginModule.get(FLAG).set("required");
+            loginModule.get(CODE).set("Remoting");
+            if(usersRolesRequired) {
+                loginModule.get(FLAG).set("optional");
+            } else {
+                loginModule.get(FLAG).set("required");
+            }
+            loginModule.get(Constants.MODULE_OPTIONS).add("password-stacking", "useFirstPass");
+
+            if (usersRolesRequired) {
+                loginModule = op.get(Constants.LOGIN_MODULES).add();
+                loginModule.get(CODE).set("UsersRoles");
+                loginModule.get(FLAG).set("required");
+                loginModule.get(Constants.MODULE_OPTIONS).add("password-stacking", "useFirstPass");
+            }
             op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             updates.add(op);
 

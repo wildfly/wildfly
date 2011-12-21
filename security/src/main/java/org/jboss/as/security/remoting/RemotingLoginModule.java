@@ -74,6 +74,7 @@ public class RemotingLoginModule extends AbstractServerLoginModule {
                     sharedState.put("javax.security.auth.login.name", identity);
                     sharedState.put("javax.security.auth.login.password", "");
                 }
+                loginOk = true;
                 return true;
             } else {
                 // Don't know of scenarios where we would have a connection but no UserPrinicpal so

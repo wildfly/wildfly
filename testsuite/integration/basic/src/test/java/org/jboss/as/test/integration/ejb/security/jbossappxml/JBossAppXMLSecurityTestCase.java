@@ -21,10 +21,6 @@
  */
 package org.jboss.as.test.integration.ejb.security.jbossappxml;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.util.Hashtable;
 
 import javax.naming.Context;
@@ -33,6 +29,7 @@ import javax.naming.InitialContext;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.integration.ejb.security.SecurityTest;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -41,6 +38,10 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit test the security mappings from jboss-app.xml
@@ -61,6 +62,14 @@ public class JBossAppXMLSecurityTestCase {
     // it should add Arquillian specific metadata to the archive (which ultimately transforms it to a WebArchive).
     // We don't want that, so set that flag to false
     public static Archive createDeployment() {
+
+        // FIXME hack to get things prepared before the deployment happens
+        try {
+            // create required security domains
+            SecurityTest.createSecurityDomain("mydomain", false);
+        } catch (Exception e) {
+            // ignore
+        }
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, APP_NAME + ".ear");
         ear.addAsManifestResource(JBossAppXMLSecurityTestCase.class.getPackage(), 
                 "jboss-app.xml", "jboss-app.xml");
