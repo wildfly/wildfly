@@ -50,6 +50,7 @@ interface CommonAttributes {
     String SASL = "sasl";
     String SASL_POLICY = "sasl-policy";
     String SECURITY = "security";
+    String SECURITY_REALM = "security-realm";
     String SERVER_AUTH = "server-auth";
     String SOCKET_BINDING = "socket-binding";
     String STRENGTH = "strength";

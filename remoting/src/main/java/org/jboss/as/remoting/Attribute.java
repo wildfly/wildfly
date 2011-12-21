@@ -33,6 +33,7 @@ public enum Attribute {
     /* Remoting 1.0 attributes, in alpha order */
     NAME("name"),
     OUTBOUND_SOCKET_BINDING_REF("outbound-socket-binding-ref"),
+    SECURITY_REALM(CommonAttributes.SECURITY_REALM),
     SOCKET_BINDING(CommonAttributes.SOCKET_BINDING),
     URI("uri"),
     VALUE(CommonAttributes.VALUE),

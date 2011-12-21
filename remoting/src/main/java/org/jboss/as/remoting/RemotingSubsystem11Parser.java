@@ -59,6 +59,7 @@ import static org.jboss.as.remoting.CommonAttributes.REUSE_SESSION;
 import static org.jboss.as.remoting.CommonAttributes.SASL;
 import static org.jboss.as.remoting.CommonAttributes.SASL_POLICY;
 import static org.jboss.as.remoting.CommonAttributes.SECURITY;
+import static org.jboss.as.remoting.CommonAttributes.SECURITY_REALM;
 import static org.jboss.as.remoting.CommonAttributes.SERVER_AUTH;
 import static org.jboss.as.remoting.CommonAttributes.SOCKET_BINDING;
 import static org.jboss.as.remoting.CommonAttributes.STRENGTH;
@@ -192,6 +193,7 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
     void parseConnector(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
 
         String name = null;
+        String securityRealm = null;
         String socketBinding = null;
         final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.SOCKET_BINDING);
         final int count = reader.getAttributeCount();
@@ -203,6 +205,10 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
             switch (attribute) {
                 case NAME: {
                     name = value;
+                    break;
+                }
+                case SECURITY_REALM: {
+                    securityRealm = value;
                     break;
                 }
                 case SOCKET_BINDING: {
@@ -224,6 +230,9 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
         connector.get(OP_ADDR).set(address).add(CONNECTOR, name);
         // requestProperties.get(NAME).set(name); // Name is part of the address
         connector.get(SOCKET_BINDING).set(socketBinding);
+        if (securityRealm != null) {
+            connector.get(SECURITY_REALM).set(securityRealm);
+        }
         list.add(connector);
 
         // Handle nested elements.
@@ -709,7 +718,11 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
         writer.writeAttribute(Attribute.NAME.getLocalName(), name);
 
         ConnectorResource.SOCKET_BINDING.marshallAsAttribute(node, writer);
+        if (node.hasDefined(SECURITY_REALM)) {
+            writer.writeAttribute(Attribute.SECURITY_REALM.getLocalName(), node.require(SECURITY_REALM).asString());
+        }
         ConnectorResource.AUTHENTICATION_PROVIDER.marshallAsElement(node, writer);
+
 
         if (node.hasDefined(PROPERTY)) {
             writeProperties(writer, node.get(PROPERTY));

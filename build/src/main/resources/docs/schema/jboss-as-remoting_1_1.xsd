@@ -92,6 +92,7 @@
         </xs:all>
         <xs:attribute name="socket-binding" type="name-list" use="required"/>
         <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="security-realm" type="xs:string" use="optional"/>        
     </xs:complexType>
 
     <xs:complexType name="sasl">

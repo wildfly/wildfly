@@ -33,6 +33,7 @@ import static org.jboss.as.remoting.CommonAttributes.PASS_CREDENTIALS;
 import static org.jboss.as.remoting.CommonAttributes.POLICY;
 import static org.jboss.as.remoting.CommonAttributes.QOP;
 import static org.jboss.as.remoting.CommonAttributes.SASL;
+import static org.jboss.as.remoting.CommonAttributes.SECURITY_REALM;
 import static org.jboss.as.remoting.CommonAttributes.SERVER_AUTH;
 import static org.jboss.as.remoting.CommonAttributes.STRENGTH;
 
@@ -50,6 +51,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.Resource.ResourceEntry;
+import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -76,13 +78,18 @@ public class ConnectorAdd extends AbstractAddStepHandler {
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException{
         ConnectorResource.SOCKET_BINDING.validateAndSet(operation, model);
         ConnectorResource.AUTHENTICATION_PROVIDER.validateAndSet(operation, model);
+        if (operation.hasDefined(SECURITY_REALM)) {
+            model.get(SECURITY_REALM).set(operation.get(SECURITY_REALM).asString());
+        }
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String connectorName = address.getLastElement().getValue();
         ServiceName tmpDirPath = ServiceName.JBOSS.append("server", "path", "jboss.controller.temp.dir");
-        RemotingServices.installSecurityServices(context.getServiceTarget(), connectorName, null, null, tmpDirPath, verificationHandler, newControllers);
+        final ServiceName securityRealm = model.hasDefined(SECURITY_REALM) ? SecurityRealmService.BASE_SERVICE_NAME
+                .append(model.require(SECURITY_REALM).asString()) : null;
+        RemotingServices.installSecurityServices(context.getServiceTarget(), connectorName, securityRealm, null, tmpDirPath, verificationHandler, newControllers);
         launchServices(context, address, connectorName, model, verificationHandler, newControllers);
     }
 
