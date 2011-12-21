@@ -37,6 +37,7 @@ import org.jboss.as.network.ManagedBindingRegistry;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
+import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -201,7 +202,7 @@ public class HttpManagementService implements Service<HttpManagement> {
                 sb.append(" ").append(secureBindAddress);
             throw new StartException(sb.toString(), e);
         } catch (Exception e) {
-            throw new StartException("Failed to start serverManagement socket", e);
+            throw ServerMessages.MESSAGES.failedToStartHttpManagementService(e);
         }
     }
 

@@ -37,6 +37,8 @@ import java.util.Set;
 import org.jboss.as.controller.interfaces.InterfaceCriteria;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.network.NetworkInterfaceBinding;
+import org.jboss.as.server.ServerLogger;
+import org.jboss.as.server.ServerMessages;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -92,7 +94,7 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
             throw new StartException(e);
         }
         if (this.interfaceBinding == null) {
-            throw new StartException("failed to resolve interface " + name);
+            throw ServerMessages.MESSAGES.failedToResolveInterface(name);
         }
         log.debugf("NetworkInterfaceService matched interface binding: %s\n", interfaceBinding);
     }
@@ -221,14 +223,14 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
                 else {
                     // Remove the input address and see if non-unique addresses exist
                     if (addresses.size() > 2)
-                        log.warnf("More than two unique criteria addresses were seen: %s\n", addresses.toString());
+                        ServerLogger.ROOT_LOGGER.moreThanTwoUniqueCriteria(addresses.toString());
                     else {
-                        log.warnf("Checking two unique criteria addresses were seen: %s\n", addresses.toString());
+                        ServerLogger.ROOT_LOGGER.checkingTwoUniqueCriteria(addresses.toString());
                         addresses.remove(address);
                         if (addresses.size() == 1)
                             bindAddress = addresses.iterator().next();
                         else
-                            log.warnf("Two unique criteria addresses were seen: %s\n", addresses.toString());
+                            ServerLogger.ROOT_LOGGER.twoUniqueCriteriaAddresses(addresses.toString());
                     }
                 }
             }

@@ -35,6 +35,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL
 import static org.jboss.as.controller.operations.validation.ChainedParameterValidator.chain;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.server.ServerMessages;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.asString;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.createFailureException;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getInputStream;
@@ -140,8 +141,9 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
         if (contentItemNode.hasDefined(HASH)) {
             managedContentValidator.validate(contentItemNode);
             hash = contentItemNode.require(HASH).asBytes();
-            if (!contentRepository.hasContent(hash))
-                throw createFailureException("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash));
+            if (!contentRepository.hasContent(hash)) {
+                ServerMessages.MESSAGES.noSuchDeploymentContent(HashUtil.bytesToHexString(hash));
+            }
             contentItem = new DeploymentHandlerUtil.ContentItem(hash);
         } else if (hasValidContentAdditionParameterDefined(contentItemNode)) {
             InputStream in = getInputStream(context, contentItemNode);

@@ -28,10 +28,10 @@ import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.ServerLogger;
+import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
@@ -121,12 +121,12 @@ public class DeploymentHandlerUtil {
                                 context.removeService(controller.getName());
                             }
                             if (context.hasFailureDescription()) {
-                                log.infof("Deployment of \"%s\" was rolled back with failure message %s", deploymentUnitName, context.getFailureDescription().asString());
+                                ServerLogger.ROOT_LOGGER.undeploymentRolledBack(deploymentUnitName, context.getFailureDescription().asString());
                             } else {
-                                log.infof("Deployment of \"%s\" was rolled back with no failure message", deploymentUnitName);
+                                ServerLogger.ROOT_LOGGER.undeploymentRolledBackWithNoMessage(deploymentUnitName);
                             }
                         } else {
-                            log.infof("Deployed \"%s\"", deploymentUnitName);
+                            ServerLogger.ROOT_LOGGER.deploymentDeployed(deploymentUnitName);
                         }
                     }
                 }
@@ -199,28 +199,24 @@ public class DeploymentHandlerUtil {
                             doDeploy(context, deploymentUnitName, managementName, verificationHandler, deployment, registration, mutableRegistration,  contents);
                             if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                                 if (context.hasFailureDescription()) {
-                                    log.infof("Redeploy of deployment \"%s\" was rolled back with failure message %s",
-                                            deploymentUnitName, context.getFailureDescription().asString());
+                                    ServerLogger.ROOT_LOGGER.redeployRolledBack(deploymentUnitName, context.getFailureDescription().asString());
                                 } else {
-                                    log.infof("Redeploy of deployment \"%s\" was rolled back with no failure message",
-                                            deploymentUnitName);
+                                    ServerLogger.ROOT_LOGGER.redeployRolledBackWithNoMessage(deploymentUnitName);
                                 }
                             } else {
-                                log.infof("Redeployed \"%s\"", deploymentUnitName);
+                                ServerLogger.ROOT_LOGGER.deploymentRedeployed(deploymentUnitName);
                             }
                         }
                     }, OperationContext.Stage.IMMEDIATE);
                     if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                         // TODO restore
                         if (context.hasFailureDescription()) {
-                            log.infof("Undeploy of deployment \"%s\" was rolled back with failure message %s",
-                                    deploymentUnitName, context.getFailureDescription().asString());
+                            ServerLogger.ROOT_LOGGER.undeploymentRolledBack(deploymentUnitName, context.getFailureDescription().asString());
                         } else {
-                            log.infof("Undeploy of deployment \"%s\" was rolled back with no failure message",
-                                    deploymentUnitName);
+                            ServerLogger.ROOT_LOGGER.undeploymentRolledBackWithNoMessage(deploymentUnitName);
                         }
                     } else {
-                        log.infof("Undeployed \"%s\"", deploymentUnitName);
+                        ServerLogger.ROOT_LOGGER.deploymentUndeployed(deploymentUnitName);
                     }
                 }
             }, OperationContext.Stage.RUNTIME);
@@ -265,14 +261,12 @@ public class DeploymentHandlerUtil {
                         doDeploy(context, runtimeName, name, verificationHandler, deployment, registration, mutableRegistration, contents);
 
                         if (context.hasFailureDescription()) {
-                            log.infof("Replacement of deployment \"%s\" by deployment \"%s\" was rolled back with failure message %s",
-                                    replacedDeploymentUnitName, deploymentUnitName, context.getFailureDescription().asString());
+                            ServerLogger.ROOT_LOGGER.replaceRolledBack(replacedDeploymentUnitName, deploymentUnitName, context.getFailureDescription().asString());
                         } else {
-                            log.infof("Replacement of deployment \"%s\" by deployment \"%s\" was rolled back with no failure message",
-                                    replacedDeploymentUnitName, deploymentUnitName);
+                            ServerLogger.ROOT_LOGGER.replaceRolledBackWithNoMessage(replacedDeploymentUnitName, deploymentUnitName);
                         }
                     } else {
-                        log.infof("Replaced deployment \"%s\" with deployment \"%s\"", replacedDeploymentUnitName, deploymentUnitName);
+                        ServerLogger.ROOT_LOGGER.deploymentReplaced(replacedDeploymentUnitName, deploymentUnitName);
                     }
                 }
             }, OperationContext.Stage.RUNTIME);
@@ -302,14 +296,12 @@ public class DeploymentHandlerUtil {
                         doDeploy(context, runtimeName, name, verificationHandler, deployment, registration, mutableRegistration, contents);
 
                         if (context.hasFailureDescription()) {
-                            log.infof("Undeploy of deployment \"%s\" was rolled back with failure message %s",
-                                    deploymentUnitName, context.getFailureDescription().asString());
+                            ServerLogger.ROOT_LOGGER.undeploymentRolledBack(deploymentUnitName, context.getFailureDescription().asString());
                         } else {
-                            log.infof("Undeploy of deployment \"%s\" was rolled back with no failure message",
-                                    deploymentUnitName);
+                            ServerLogger.ROOT_LOGGER.undeploymentRolledBackWithNoMessage(deploymentUnitName);
                         }
                     } else {
-                        log.infof("Undeployed \"%s\"", deploymentUnitName);
+                        ServerLogger.ROOT_LOGGER.deploymentUndeployed(deploymentUnitName);
                     }
                 }
             }, OperationContext.Stage.RUNTIME);

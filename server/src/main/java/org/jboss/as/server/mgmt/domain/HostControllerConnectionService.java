@@ -37,6 +37,7 @@ import javax.security.sasl.RealmChoiceCallback;
 
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
+import org.jboss.as.server.ServerMessages;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -96,9 +97,8 @@ public class HostControllerConnectionService implements Service<Channel> {
         try {
             connection = client.connectSync(new ClientCallbackHandler());
             channel = connection.openChannel(ManagementRemotingServices.SERVER_CHANNEL, OptionMap.EMPTY).get();
-            // channel.startReceiving();
         } catch (IOException e) {
-            throw new StartException("Failed to start remote Host Controller connection", e);
+            throw ServerMessages.MESSAGES.failedToConnectToHC(e);
         }
     }
 

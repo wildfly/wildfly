@@ -52,6 +52,7 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.protocol.StreamUtils;
 
+import org.jboss.as.server.ServerMessages;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.CONTENT_ADDITION_PARAMETERS;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.asString;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.createFailureException;
@@ -122,7 +123,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
         final Resource root = context.readResource(PathAddress.EMPTY_ADDRESS);
         boolean exists = root.hasChild(PathElement.pathElement(DEPLOYMENT, name));
         if (! exists) {
-            throw createFailureException("No deployment with name %s found", name);
+            ServerMessages.MESSAGES.noSuchDeployment(name);
         }
 
         final ModelNode replaceNode = context.readResourceForUpdate(address).getModel();
@@ -138,8 +139,9 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
         if (contentItemNode.hasDefined(HASH)) {
             managedContentValidator.validate(contentItemNode);
             hash = contentItemNode.require(HASH).asBytes();
-            if (!contentRepository.hasContent(hash))
-                throw createFailureException("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash));
+            if (!contentRepository.hasContent(hash)) {
+                ServerMessages.MESSAGES.noSuchDeploymentContent(HashUtil.bytesToHexString(hash));
+            }
             contentItem = new DeploymentHandlerUtil.ContentItem(hash);
         } else if (hasValidContentAdditionParameterDefined(contentItemNode)) {
             InputStream in = getInputStream(context, contentItemNode);

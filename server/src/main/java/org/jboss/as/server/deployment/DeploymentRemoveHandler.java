@@ -32,6 +32,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.controller.descriptions.ServerDescriptions;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
@@ -84,15 +85,13 @@ public class DeploymentRemoveHandler implements OperationStepHandler, Descriptio
                         recoverServices(context, operation, model);
 
                         if (enabled && context.hasFailureDescription()) {
-                            log.infof("Undeploy of deployment \"%s\" was rolled back with failure message %s",
-                                    deploymentUnitName, context.getFailureDescription().asString());
+                            ServerLogger.ROOT_LOGGER.undeploymentRolledBack(deploymentUnitName, context.getFailureDescription().asString());
                         } else if (enabled) {
-                            log.infof("Undeploy of deployment \"%s\" was rolled back with no failure message",
-                                    deploymentUnitName);
+                            ServerLogger.ROOT_LOGGER.undeploymentRolledBackWithNoMessage(deploymentUnitName);
                         }
                     } else {
                         if (enabled) {
-                            log.infof("Undeployed \"%s\"", deploymentUnitName);
+                            ServerLogger.ROOT_LOGGER.deploymentUndeployed(deploymentUnitName);
                         }
                         if (standalone) {
                             for (byte[] hash : removedHashes) {

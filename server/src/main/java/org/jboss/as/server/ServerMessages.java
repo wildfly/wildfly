@@ -129,4 +129,23 @@ public interface ServerMessages {
 
     @Message(id = 15809, value = "An IP address cannot be resolved using the given interface selection criteria. Failure was -- %s")
     OperationFailedException cannotResolveInterface(Exception msg, @Param Exception cause);
+
+    @Message(id = 15810, value = "failed to resolve interface %s")
+    StartException failedToResolveInterface(String name);
+
+    @Message(id = 15811, value = "Failed to start the http-interface service")
+    StartException failedToStartHttpManagementService(@Param Exception e);
+
+    @Message(id = 15812, value = "No deployment content with hash %s is available in the deployment content repository.")
+    OperationFailedException noSuchDeploymentContent(String hash);
+
+    @Message(id = 15813, value = "No deployment with name %s found")
+    OperationFailedException noSuchDeployment(String deploymentName);
+
+    @Message(id = 15814, value = "Cannot use %s with the same value for parameters %s and %s. " +
+                        "Use %s to redeploy the same content or %s to replace content with a new version with the same name.")
+    OperationFailedException cannotReplaceDeployment(String replaceOperation, String name, String toReplace, String redeployOperation, String fullReplace);
+
+    @Message(id = 15815, value = "Deployment %s is already started")
+    OperationFailedException deploymentAlreadyStarted(String deploymentName);
 }
