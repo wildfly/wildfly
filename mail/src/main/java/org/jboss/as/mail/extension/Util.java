@@ -20,32 +20,32 @@ import org.jboss.dmr.ModelNode;
  */
 public class Util {
 
-    static void fillFrom(final ModelNode operation, final MailSessionConfig sessionConfig) {
-        operation.get(JNDI_NAME).set(sessionConfig.getJndiName());
-
-        operation.get(DEBUG).set(sessionConfig.isDebug());
-        if (sessionConfig.getSmtpServer() != null) {
-            addServerConfig(operation, sessionConfig.getSmtpServer(), SMTP_SERVER);
-        }
-        if (sessionConfig.getPop3Server() != null) {
-            addServerConfig(operation, sessionConfig.getPop3Server(), POP3_SERVER);
-        }
-        if (sessionConfig.getImapServer() != null) {
-            addServerConfig(operation, sessionConfig.getImapServer(), IMAP_SERVER);
-        }
-    }
-
-    private static void addServerConfig(final ModelNode operation, final MailSessionServer server, final String name) {
-        operation.get(name).get(OUTBOUND_SOCKET_BINDING_REF).set(server.getOutgoingSocketBinding());
-        addCredentials(operation.get(name), server.getCredentials());
-    }
-
-    private static void addCredentials(final ModelNode operation, final Credentials credentials) {
-        if (credentials != null) {
-            operation.get(CREDENTIALS).get(USERNAME).set(credentials.getUsername());
-            operation.get(CREDENTIALS).get(PASSWORD).set(credentials.getPassword());
-        }
-    }
+////    static void fillFrom(final ModelNode operation, final MailSessionConfig sessionConfig) {
+////        operation.get(JNDI_NAME).set(sessionConfig.getJndiName());
+////
+////        operation.get(DEBUG).set(sessionConfig.isDebug());
+////        if (sessionConfig.getSmtpServer() != null) {
+////            addServerConfig(operation, sessionConfig.getSmtpServer(), SMTP_SERVER);
+////        }
+////        if (sessionConfig.getPop3Server() != null) {
+////            addServerConfig(operation, sessionConfig.getPop3Server(), POP3_SERVER);
+////        }
+////        if (sessionConfig.getImapServer() != null) {
+////            addServerConfig(operation, sessionConfig.getImapServer(), IMAP_SERVER);
+////        }
+////    }
+//
+//    private static void addServerConfig(final ModelNode operation, final MailSessionServer server, final String name) {
+//        operation.get(name).get(OUTBOUND_SOCKET_BINDING_REF).set(server.getOutgoingSocketBinding());
+//        addCredentials(operation.get(name), server.getCredentials());
+//    }
+//
+//    private static void addCredentials(final ModelNode operation, final Credentials credentials) {
+//        if (credentials != null) {
+//            operation.get(CREDENTIALS).get(USERNAME).set(credentials.getUsername());
+//            operation.get(CREDENTIALS).get(PASSWORD).set(credentials.getPassword());
+//        }
+//    }
 
     private static MailSessionServer readServerConfig(final OperationContext operationContext, final ModelNode model) throws OperationFailedException {
         final String socket = model.require(OUTBOUND_SOCKET_BINDING_REF).asString();
