@@ -258,8 +258,8 @@ public class SerializationGroupMemberContainer<K extends Serializable, V extends
     }
 
     @Override
-    public SerializationGroupMember<K, V, G> get(K key) {
-        SerializationGroupMember<K, V, G> entry = store.get(key);
+    public SerializationGroupMember<K, V, G> get(K key, boolean lock) {
+        SerializationGroupMember<K, V, G> entry = store.get(key, lock);
         // In case it was deserialized, make sure it has a ref to us
         if (entry != null)
             entry.setPassivatingCache(delegate);

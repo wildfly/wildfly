@@ -66,7 +66,7 @@ public class SimpleBackingCacheEntryStore<K extends Serializable, V extends Cach
     }
 
     @Override
-    public E get(K key) {
+    public E get(K key, boolean lock) {
         E entry = cache.get(key);
         if (entry == null) {
             entry = store.load(key);
@@ -110,7 +110,7 @@ public class SimpleBackingCacheEntryStore<K extends Serializable, V extends Cach
 
     @Override
     public E remove(K id) {
-        E entry = get(id);
+        E entry = get(id, false);
         if (entry != null) {
             cache.remove(id);
             this.remove(entry);
