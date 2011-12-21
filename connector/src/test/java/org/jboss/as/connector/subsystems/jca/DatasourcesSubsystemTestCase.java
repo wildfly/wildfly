@@ -75,7 +75,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
 
     @Override
-    protected void validateXml(String configId, String original, String marshalled) throws Exception {
+    protected void compareXml(String configId, String original, String marshalled) throws Exception {
         //FIXME remove this and marshall properly
     }
 

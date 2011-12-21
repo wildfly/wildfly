@@ -591,6 +591,46 @@ public abstract class AbstractSubsystemTest {
         }
     }
 
+    /**
+     * Validate the marshalled xml without adjusting the namespaces for the original and marshalled xml.
+     * @param configId the id of the xml configuration
+     * @param original the original subsystem xml
+     * @param marshalled the marshalled subsystem xml
+     *
+     * @throws Exception
+     */
+    protected void compareXml(String configId, final String original, final String marshalled) throws Exception {
+        compareXml(configId, original, marshalled, false);
+    }
+
+    /**
+     * Validate the marshalled xml without adjusting the namespaces for the original and marshalled xml.
+     * @param configId TODO
+     * @param original the original subsystem xml
+     * @param marshalled the marshalled subsystem xml
+     * @param ignoreNamespace if {@code true} the subsystem's namespace is ignored, otherwise it is taken into account when comparing the normalized xml.
+     *
+     * @throws Exception
+     */
+    protected void compareXml(String configId, final String original, final String marshalled, final boolean ignoreNamespace) throws Exception {
+        final String xmlOriginal;
+        final String xmlMarshalled;
+        if (ignoreNamespace) {
+            xmlOriginal = removeNamespace(original);
+            xmlMarshalled = removeNamespace(marshalled);
+        } else {
+            xmlOriginal = original;
+            xmlMarshalled = marshalled;
+        }
+
+
+        Assert.assertEquals(normalizeXML(xmlOriginal), normalizeXML(xmlMarshalled));
+    }
+
+    private String removeNamespace(String xml) {
+        return xml.replaceFirst(" xmlns=\".*\"", "");
+    }
+
     private final class ExtensionParsingContextImpl implements ExtensionParsingContext {
         private final XMLMapper mapper;
 
