@@ -29,12 +29,12 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-webservices</artifactId>
-        <version>7.1.0.CR1</version>
+        <version>7.1.0.CR1b</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-webservices-server-integration</artifactId>
-    <version>7.1.0.CR1</version>
+    <version>7.1.0.CR1b</version>
     <packaging>jar</packaging>
 
     <name>JBoss Application Server: Web Services Server Integration Subsystem</name>

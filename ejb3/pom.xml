@@ -31,7 +31,7 @@ vi:ts=4:sw=4:expandtab
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-parent</artifactId>
-        <version>7.1.0.CR1</version>
+        <version>7.1.0.CR1b</version>
     </parent>
 
     <artifactId>jboss-as-ejb3</artifactId>

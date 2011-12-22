@@ -29,12 +29,12 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-parent</artifactId>
-        <version>7.1.0.CR1</version>
+        <version>7.1.0.CR1b</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-platform-mbean</artifactId>
-    <version>7.1.0.CR1</version>
+    <version>7.1.0.CR1b</version>
 
     <name>JBoss Application Server: Platform MBean integration</name>
 

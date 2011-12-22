@@ -28,12 +28,12 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-arquillian</artifactId>
-        <version>7.1.0.CR1</version>
+        <version>7.1.0.CR1b</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-arquillian-container-managed</artifactId>
-    <version>7.1.0.CR1</version>
+    <version>7.1.0.CR1b</version>
 
     <name>JBoss Application Server: Arquillian Managed Container</name>
 
