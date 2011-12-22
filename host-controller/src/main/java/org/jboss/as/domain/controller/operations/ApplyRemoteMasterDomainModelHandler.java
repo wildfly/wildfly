@@ -45,6 +45,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYS
 import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getRelatedElements;
 import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getServersForGroup;
 import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getServersForType;
+import static org.jboss.as.domain.controller.DomainControllerLogger.ROOT_LOGGER;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -315,7 +316,7 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
             }
 
             if (!affectedServers.isEmpty()) {
-                Logger.getLogger(ApplyRemoteMasterDomainModelHandler.class).info("Domain model has changed on re-connect.  The following servers will need to be restarted for changes to take affect: " + affectedServers);
+                ROOT_LOGGER.domainModelChangedOnReConnect(affectedServers);
                 final Set<ServerIdentity> runningServers = DomainServerUtils.getAllRunningServers(hostModel, localHostInfo.getLocalHostName(), serverProxies);
                 for (ServerIdentity serverIdentity : affectedServers) {
                     if(!runningServers.contains(serverIdentity)) {

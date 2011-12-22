@@ -23,6 +23,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getAllRunningServers;
 import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getRelatedElements;
 import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getServersForGroup;
@@ -144,8 +146,8 @@ public class ServerOperationResolver {
 
     public Map<Set<ServerIdentity>, ModelNode> getServerOperations(ModelNode operation, PathAddress address, ModelNode domain, ModelNode host) {
 
-        if (PrepareStepHandler.isTraceEnabled()) {
-            PrepareStepHandler.log.trace("Resolving " + operation);
+        if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
+            HOST_CONTROLLER_LOGGER.tracef("Resolving %s", operation);
         }
         if (address.size() == 0) {
             return resolveDomainRootOperation(operation, domain, host);
@@ -185,7 +187,7 @@ public class ServerOperationResolver {
                     return getServerHostOperations(operation, address, domain, host);
                 }
                 default:
-                    throw new IllegalStateException(String.format("Unexpected initial path key %s", address.getElement(0).getKey()));
+                    throw MESSAGES.unexpectedInitialPathKey(address.getElement(0).getKey());
             }
         }
     }
@@ -435,7 +437,7 @@ public class ServerOperationResolver {
                 }
                 case SERVER:
                 default:
-                    throw new IllegalStateException(String.format("Unexpected initial path key %s", address.getElement(0).getKey()));
+                    throw MESSAGES.unexpectedInitialPathKey(address.getElement(0).getKey());
             }
         }
     }

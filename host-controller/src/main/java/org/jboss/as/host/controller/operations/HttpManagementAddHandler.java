@@ -22,6 +22,8 @@
 
 package org.jboss.as.host.controller.operations;
 
+import static org.jboss.as.host.controller.HostControllerLogger.AS_ROOT_LOGGER;
+
 import java.security.AccessController;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -45,7 +47,6 @@ import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.server.mgmt.HttpManagementService;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -121,15 +122,7 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
         int securePort = hostControllerInfo.getHttpManagementSecurePort();
         String securityRealm = hostControllerInfo.getHttpManagementSecurityRealm();
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("creating http management service using network interface (").append(interfaceName).append(")");
-        if (port > -1) {
-            sb.append(" port (").append(port).append(")");
-        }
-        if (securePort > -1) {
-            sb.append(" securePort (").append(securePort).append(")");
-        }
-        Logger.getLogger("org.jboss.as").info(sb.toString());
+        AS_ROOT_LOGGER.creatingHttpManagementService(interfaceName, port, securePort);
 
         final ThreadFactory httpMgmtThreads = new JBossThreadFactory(new ThreadGroup("HttpManagementService-threads"),
                 Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
@@ -154,7 +147,7 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
         if (securityRealm != null) {
             builder.addDependency(SecurityRealmService.BASE_SERVICE_NAME.append(securityRealm), SecurityRealmService.class, service.getSecurityRealmInjector());
         } else {
-            Logger.getLogger("org.jboss.as").warn("No security realm defined for http management service, all access will be unrestricted.");
+            AS_ROOT_LOGGER.noSecurityRealmDefined();
         }
         if (verificationHandler != null) {
             builder.addListener(verificationHandler);

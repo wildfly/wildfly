@@ -32,6 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
 import static org.jboss.as.controller.operations.validation.ChainedParameterValidator.chain;
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.CONTENT_ADDITION_PARAMETERS;
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.createFailureException;
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.getInputStream;
@@ -142,7 +143,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
             if (contentRepository != null) {
                 // We are the master DC. Validate that we actually have this content.
                 if (!contentRepository.hasContent(hash)) {
-                    throw createFailureException("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash));
+                    throw createFailureException(MESSAGES.noDeploymentContentWithHash(HashUtil.bytesToHexString(hash)));
                 }
             } else {
                 // We are a slave controller
@@ -152,7 +153,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
         } else if (hasValidContentAdditionParameterDefined(contentItemNode)) {
             if (contentRepository == null) {
                 // This is a slave DC. We can't handle this operation; it should have been fixed up on the master DC
-                throw createFailureException("A slave domain controller cannot accept deployment content uploads");
+                throw createFailureException(MESSAGES.slaveCannotAcceptUploads());
             }
 
             InputStream in = getInputStream(context, contentItemNode);
@@ -178,7 +179,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
         final PathElement deploymentPath = PathElement.pathElement(DEPLOYMENT, name);
         final Resource replaceNode = root.getChild(deploymentPath);
         if (replaceNode == null) {
-            throw createFailureException("No deployment with name %s found", name);
+            throw createFailureException(MESSAGES.noDeploymentContentWithName(name));
         }
 
         final Resource deployment = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(DEPLOYMENT, name)));

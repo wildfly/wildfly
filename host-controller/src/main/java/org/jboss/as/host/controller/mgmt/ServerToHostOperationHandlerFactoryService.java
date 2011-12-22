@@ -23,6 +23,8 @@
 package org.jboss.as.host.controller.mgmt;
 
 import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
+import static org.jboss.as.host.controller.HostControllerLogger.CONTROLLER_MANAGEMENT_LOGGER;
+import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.io.DataInput;
 import java.io.IOException;
@@ -42,7 +44,6 @@ import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
 import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.server.mgmt.domain.DomainServerProtocol;
 import org.jboss.as.server.mgmt.domain.HostControllerServerClient;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -65,7 +66,6 @@ import org.jboss.remoting3.MessageOutputStream;
  */
 public class ServerToHostOperationHandlerFactoryService implements ManagementChannelInitialization, Service<ManagementChannelInitialization> {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.host.controller.mgmt");
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("management", "server", "to", "host", "controller");
 
     private final ExecutorService executorService;
@@ -122,7 +122,7 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
                 final ManagementRequestHeader request = (ManagementRequestHeader) header;
                 handleMessage(channel, input, request);
             } else {
-                safeWriteResponse(channel, header, new IOException("unrecognized type " + type));
+                safeWriteResponse(channel, header, MESSAGES.unrecognizedType(type));
                 channel.close();
             }
         }
@@ -133,7 +133,7 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
                 expectHeader(input, DomainServerProtocol.PARAM_SERVER_NAME);
                 final String serverName = input.readUTF();
 
-                log.infof("Server [%s] registered using connection [%s]", serverName, channel);
+                CONTROLLER_MANAGEMENT_LOGGER.serverRegistered(serverName, channel);
                 executorService.execute(new Runnable() {
                     @Override
                     public void run() {
@@ -157,7 +157,7 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
                 });
 
             } else {
-                safeWriteResponse(channel, header, new IOException("unrecognized type " + type));
+                safeWriteResponse(channel, header, MESSAGES.unrecognizedType(type));
                 channel.close();
             }
         }

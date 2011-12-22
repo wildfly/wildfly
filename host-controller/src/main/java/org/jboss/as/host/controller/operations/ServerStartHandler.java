@@ -19,8 +19,8 @@
 package org.jboss.as.host.controller.operations;
 
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.util.Locale;
 
@@ -32,7 +32,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.host.controller.descriptions.HostRootDescription;
@@ -64,7 +63,7 @@ public class ServerStartHandler implements OperationStepHandler, DescriptionProv
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         if (context.getRunningMode() == RunningMode.ADMIN_ONLY) {
-            throw new OperationFailedException(new ModelNode(String.format("Cannot start servers when the Host Controller running mode is %s", context.getRunningMode())));
+            throw new OperationFailedException(new ModelNode(MESSAGES.cannotStartServersInvalidMode(context.getRunningMode())));
         }
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));

@@ -22,6 +22,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
 
 import java.io.DataInput;
@@ -223,7 +224,7 @@ public class MasterDomainControllerOperationHandlerImpl extends ManagementChanne
                     return localFileRepository.getDeploymentRoot(hash);
                 }
                 default: {
-                    throw new RequestProcessingException(String.format("Invalid root id [%d]", rootId));
+                    throw MESSAGES.invalidRootId(rootId);
                 }
             }
         }

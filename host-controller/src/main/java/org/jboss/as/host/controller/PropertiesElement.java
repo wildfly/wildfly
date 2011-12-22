@@ -22,6 +22,8 @@
 
 package org.jboss.as.host.controller;
 
+import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -60,7 +62,7 @@ public final class PropertiesElement {
                 for (String name : pe.getPropertyNames()) {
                     String val = pe.getProperty(name);
                     if (!allowNullValue && val == null) {
-                        throw new IllegalStateException("Property " + name + " has a null value");
+                        throw MESSAGES.propertyValueHasNullValue(name);
                     }
                     else {
                         properties.put(name, val);
@@ -86,10 +88,10 @@ public final class PropertiesElement {
     void addProperty(final String name, final String value) {
         synchronized (properties) {
             if (properties.containsKey(name)) {
-                throw new IllegalArgumentException("Property " + name + " already exists");
+                throw MESSAGES.propertyAlreadyExists(name);
             }
             if (value == null && !allowNullValue) {
-                throw new IllegalArgumentException("Value for property " + name + " is null");
+                throw MESSAGES.propertyValueNull(name);
             }
             properties.put(name, value);
         }
@@ -99,7 +101,7 @@ public final class PropertiesElement {
         synchronized (properties) {
             final String old = properties.remove(name);
             if (old == null) {
-                throw new IllegalArgumentException("Property " + name + " does not exist");
+                throw MESSAGES.propertyNotFound(name);
             }
             return old;
         }

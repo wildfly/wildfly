@@ -24,6 +24,8 @@ package org.jboss.as.host.controller;
 
 import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
 import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
+import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.io.BufferedOutputStream;
 import java.io.DataInput;
@@ -67,7 +69,6 @@ import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -95,7 +96,6 @@ import org.xnio.OptionMap;
  */
 public class RemoteDomainConnectionService implements MasterDomainControllerClient, Service<MasterDomainControllerClient>, ClosedCallback {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
     private final ModelController controller;
     private final InetAddress host;
     private final int port;
@@ -170,18 +170,18 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                 Throwable cause = e;
                 while ((cause = cause.getCause()) != null) {
                     if (cause instanceof SaslException) {
-                        throw new IllegalStateException("Unable to connect due to authentication failure.", cause);
+                        throw MESSAGES.authenticationFailureUnableToConnect(cause);
                     }
                 }
 
                 if (System.currentTimeMillis() > endTime) {
-                    throw new IllegalStateException("Could not connect to master in " + retries + "attempts within  " + timeout + " ms", e);
+                    throw MESSAGES.connectionToMasterTimeout(e, retries, timeout);
                 }
                 ise = e;
                 try {
                     ReconnectPolicy.CONNECT.wait(retries);
                 } catch (InterruptedException ie) {
-                    throw new IllegalStateException("Interrupted while trying to connect to master");
+                    throw MESSAGES.connectionToMasterInterrupted();
                 }
             } catch (HostAlreadyExistsException e) {
                 throw new IllegalStateException(e.getMessage());
@@ -239,7 +239,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 
             masterProxy = new ExistingChannelModelControllerClient(channel, executor);
         } catch (IOException e) {
-            log.warnf("Could not connect to remote domain controller %s:%d", host.getHostAddress(), port);
+            ROOT_LOGGER.cannotConnect(host.getHostAddress(), port);
             throw new IllegalStateException(e);
         }
 
@@ -247,7 +247,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         try {
             error = new RegisterModelControllerRequest().executeForResult(handler, channel, null);
         } catch (Exception e) {
-            log.warnf("Error retrieving domain model from remote domain controller %s:%d: %s", host.getHostAddress(), port, e.getMessage());
+            ROOT_LOGGER.errorRetrievingDomainModel(host.getHostAddress(), port, e.getLocalizedMessage());
             throw new IllegalStateException(e);
         }
 
@@ -269,7 +269,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             new UnregisterModelControllerRequest().executeForResult(handler, channel, null);
             registered.set(false);
         } catch (Exception e) {
-            log.debugf(e, "Error unregistering from master");
+            ROOT_LOGGER.debugf(e, "Error unregistering from master");
         }
         finally {
             channelClient.close();
@@ -313,7 +313,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 
     @Override
     public void close() throws IOException {
-        throw new UnsupportedOperationException("Close should be managed by the service");
+        throw MESSAGES.closeShouldBeManagedByService();
     }
 
 
@@ -336,7 +336,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     public void connectionClosed() {
 
         if (!connected.get()) {
-            log.error("Null reconnect info, cannot try to reconnect");
+            ROOT_LOGGER.nullReconnectInfo();
             return;
         }
 
@@ -358,10 +358,10 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 
                     int count = 0;
                     while (!shutdown.get()) {
-                        log.debug("Attempting reconnection to master...");
+                        ROOT_LOGGER.debug("Attempting reconnection to master...");
                         try {
                             connect();
-                            log.info("Reconnected to master");
+                            ROOT_LOGGER.reconnectedToMaster();
                             break;
                         } catch (Exception e) {
                         }
@@ -455,7 +455,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             output.writeByte(rootId);
             output.writeByte(DomainControllerProtocol.PARAM_FILE_PATH);
             output.writeUTF(filePath);
-            log.debugf("Requesting files for path %s", filePath);
+            ROOT_LOGGER.debugf("Requesting files for path %s", filePath);
         }
 
         @Override
@@ -481,14 +481,14 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             }
             expectHeader(input, DomainControllerProtocol.PARAM_NUM_FILES);
             int numFiles = input.readInt();
-            log.debugf("Received %d files for %s", numFiles, localPath);
+            ROOT_LOGGER.debugf("Received %d files for %s", numFiles, localPath);
             switch (numFiles) {
                 case -1: { // Not found on DC
                     break;
                 }
                 case 0: { // Found on DC, but was an empty dir
                     if (!localPath.mkdirs()) {
-                        throw new IOException("Unable to create local directory: " + localPath);
+                        throw MESSAGES.cannotCreateLocalDirectory(localPath);
                     }
                     break;
                 }
@@ -499,10 +499,10 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                         final String path = input.readUTF();
                         expectHeader(input, DomainControllerProtocol.PARAM_FILE_SIZE);
                         final long length = input.readLong();
-                        log.debugf("Received file [%s] of length %d", path, length);
+                        ROOT_LOGGER.debugf("Received file [%s] of length %d", path, length);
                         final File file = new File(localPath, path);
                         if (!file.getParentFile().exists() && !file.getParentFile().mkdirs()) {
-                            throw new IOException("Unable to create local directory " + localPath.getParent());
+                            throw MESSAGES.cannotCreateLocalDirectory(localPath.getParentFile());
                         }
                         long totalRead = 0;
                         OutputStream fileOut = null;
@@ -521,7 +521,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                             }
                         }
                         if (totalRead != length) {
-                            throw new IOException("Did not read the entire file. Missing: " + (length - totalRead));
+                            throw MESSAGES.didNotReadEntireFile((length - totalRead));
                         }
 
                         expectHeader(input, DomainControllerProtocol.FILE_END);
@@ -581,7 +581,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             try {
                 return new GetFileRequest(repoId, relativePath, localFileRepository).executeForResult(handler, channel, null);
             } catch (Exception e) {
-                throw new RuntimeException("Failed to get file from remote repository", e);
+                throw MESSAGES.failedToGetFileFromRemoteRepository(e);
             }
         }
     };

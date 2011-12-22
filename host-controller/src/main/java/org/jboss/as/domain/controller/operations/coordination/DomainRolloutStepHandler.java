@@ -41,6 +41,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_OPERATIONS;
+import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -73,7 +75,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
     private final Map<String, ProxyController> serverProxies;
     private final ExecutorService executorService;
     private final ModelNode providedRolloutPlan;
-    private final boolean trace = PrepareStepHandler.isTraceEnabled();
+    private final boolean trace = HOST_CONTROLLER_LOGGER.isTraceEnabled();
 
     public DomainRolloutStepHandler(final Map<String, ProxyController> hostProxies,
                                     final Map<String, ProxyController> serverProxies,
@@ -103,18 +105,18 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
             ModelNode ourResult = domainOperationContext.getCoordinatorResult();
             if (ourResult.has(FAILURE_DESCRIPTION)) {
                 if (trace) {
-                    PrepareStepHandler.log.trace("coordinator failed: " + ourResult);
+                    HOST_CONTROLLER_LOGGER.tracef("coordinator failed: %s", ourResult);
                 }
                 pushToServers = false;
                 domainOperationContext.setCompleteRollback(true);
             } else {
                 if (trace) {
-                    PrepareStepHandler.log.trace("coordinator succeeded: " + ourResult);
+                    HOST_CONTROLLER_LOGGER.tracef("coordinator succeeded: %s", ourResult);
                 }
                 for (ModelNode hostResult : domainOperationContext.getHostControllerResults().values()) {
                     if (hostResult.has(FAILURE_DESCRIPTION)) {
                         if (trace) {
-                            PrepareStepHandler.log.trace("host failed: " + hostResult);
+                            HOST_CONTROLLER_LOGGER.tracef("host failed: %s", hostResult);
                         }
                         pushToServers = false;
                         domainOperationContext.setCompleteRollback(true);
@@ -153,11 +155,10 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
                             domainOperationContext.addServerResult(entry.getKey(), finalResult);
                         } catch (InterruptedException e) {
                             interrupted = true;
-                            PrepareStepHandler.log.warnf("Interrupted awaiting final response from server %s on host %s", entry.getKey().getServerName(), entry.getKey().getHostName());
+                            HOST_CONTROLLER_LOGGER.interruptedAwaitingFinalResponse(entry.getKey().getServerName(), entry.getKey().getHostName());
 
                         } catch (ExecutionException e) {
-                            PrepareStepHandler.log.warnf(e.getCause(), "Caught exception awaiting final response from server %s on host %s",
-                                    entry.getKey().getServerName(), entry.getKey().getHostName());
+                            HOST_CONTROLLER_LOGGER.caughtExceptionAwaitingFinalResponse(e.getCause(), entry.getKey().getServerName(), entry.getKey().getHostName());
                         }
                     }
                 } finally {
@@ -193,7 +194,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
             final ModelNode rolloutPlan = getRolloutPlan(this.providedRolloutPlan, opsByGroup);
 
             if (trace) {
-                PrepareStepHandler.log.trace("Rollout plan is " + rolloutPlan);
+                HOST_CONTROLLER_LOGGER.tracef("Rollout plan is %s", rolloutPlan);
             }
             final NewServerOperationExecutor operationExecutor = new NewServerOperationExecutor() {
                 @Override
@@ -205,7 +206,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
                             proxy = serverProxies.get(server.getServerName());
                             if (proxy == null) {
                                 if (trace) {
-                                    PrepareStepHandler.log.trace("No proxy for " + server);
+                                    HOST_CONTROLLER_LOGGER.tracef("No proxy for %s", server);
                                 }
                                 return null;
                             }
@@ -228,10 +229,10 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
                         result = new ModelNode();
                         result.get(OUTCOME).set(FAILED);
                         if (e instanceof InterruptedException) {
-                            result.get(FAILURE_DESCRIPTION).set(String.format("Interrupted waiting for result from server %s", server));
+                            result.get(FAILURE_DESCRIPTION).set(MESSAGES.interruptedAwaitingResultFromServer(server));
                             interrupted = true;
                         } else {
-                            result.get(FAILURE_DESCRIPTION).set(String.format("Exception getting result from server %s: %s", server, e.getMessage()));
+                            result.get(FAILURE_DESCRIPTION).set(MESSAGES.exceptionAwaitingResultFromServer(server, e.getMessage()));
                         }
                         task.cancel();
                         future.cancel(true);
@@ -247,7 +248,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
             NewRolloutPlanController rolloutPlanController = new NewRolloutPlanController(opsByGroup, rolloutPlan, domainOperationContext, operationExecutor, executorService);
             NewRolloutPlanController.Result planResult = rolloutPlanController.execute();
             if (trace) {
-                PrepareStepHandler.log.trace("Rollout plan result is " + planResult);
+                HOST_CONTROLLER_LOGGER.tracef("Rollout plan result is %s", planResult);
             }
             if (planResult == NewRolloutPlanController.Result.FAILED) {
                 domainOperationContext.setCompleteRollback(true);
@@ -255,7 +256,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
                 // Waiting to do it in the DomainFinalResultHandler on the way out is too late
                 // Create the result node first so the server results will end up before the failure stuff
                 context.getResult();
-                context.getFailureDescription().set("Operation failed or was rolled back on all servers.");
+                context.getFailureDescription().set(MESSAGES.operationFailedOrRolledBack());
                 domainOperationContext.setFailureReported(true);
             }
         }
@@ -266,7 +267,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
 
         for (Map.Entry<String, ModelNode> entry : hostResults.entrySet()) {
             if (trace) {
-                PrepareStepHandler.log.trace("1st phase result from host " + entry.getKey() + " is " + entry.getValue());
+                HOST_CONTROLLER_LOGGER.tracef("1st phase result from host %s is %s", entry.getKey(), entry.getValue());
             }
             ModelNode hostResult = entry.getValue().get(RESULT);
             if (hostResult.hasDefined(SERVER_OPERATIONS)) {
@@ -308,7 +309,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
                         validateServerGroupPlan(found, prop);
                     }
                     else {
-                        throw new OperationFailedException(new ModelNode().set(String.format("Invalid rollout plan. %s is not a valid child of node %s", series, IN_SERIES)));
+                        throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidRolloutPlan(series, IN_SERIES)));
                     }
                 }
             }
@@ -316,7 +317,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
             Set<String> groups = new HashSet<String>(opsByGroup.keySet());
             groups.removeAll(found);
             if (!groups.isEmpty()) {
-                throw new OperationFailedException(new ModelNode().set(String.format("Invalid rollout plan. Plan operations affect server groups %s that are not reflected in the rollout plan", groups)));
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidRolloutPlan(groups)));
             }
         }
         return rolloutPlan;
@@ -324,7 +325,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
 
     private void validateServerGroupPlan(Set<String> found, Property prop) throws OperationFailedException {
         if (!found.add(prop.getName())) {
-            throw new OperationFailedException(new ModelNode().set(String.format("Invalid rollout plan. Server group %s appears more than once in the plan.", prop.getName())));
+            throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidRolloutPlanGroupAlreadyExists(prop.getName())));
         }
         ModelNode plan = prop.getValue();
         if (plan.hasDefined(MAX_FAILURE_PERCENTAGE)) {
@@ -333,13 +334,13 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
             }
             int max = plan.get(MAX_FAILURE_PERCENTAGE).asInt();
             if (max < 0 || max > 100) {
-                throw new OperationFailedException(new ModelNode().set(String.format("Invalid rollout plan. Server group %s has a %s value of %s; must be between 0 and 100.", prop.getName(), MAX_FAILURE_PERCENTAGE, max)));
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidRolloutPlanRange(prop.getName(), MAX_FAILURE_PERCENTAGE, max)));
             }
         }
         if (plan.hasDefined(MAX_FAILED_SERVERS)) {
             int max = plan.get(MAX_FAILED_SERVERS).asInt();
             if (max < 0) {
-                throw new OperationFailedException(new ModelNode().set(String.format("Invalid rollout plan. Server group %s has a %s value of %s; cannot be less than 0.", prop.getName(), MAX_FAILED_SERVERS, max)));
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidRolloutPlanLess(prop.getName(), MAX_FAILED_SERVERS, max)));
             }
         }
     }
@@ -373,7 +374,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
         final ModelNode coordinator = domainOperationContext.getCoordinatorResult();
         ModelNode domainFailure = null;
         if (isDomain &&  coordinator != null && coordinator.has(FAILURE_DESCRIPTION)) {
-            domainFailure = coordinator.hasDefined(FAILURE_DESCRIPTION) ? coordinator.get(FAILURE_DESCRIPTION) : new ModelNode().set("Unexplained failure");
+            domainFailure = coordinator.hasDefined(FAILURE_DESCRIPTION) ? coordinator.get(FAILURE_DESCRIPTION) : new ModelNode().set(MESSAGES.unexplainedFailure());
         }
         if (domainFailure != null) {
             context.getFailureDescription().get(DOMAIN_FAILURE_DESCRIPTION).set(domainFailure);
@@ -391,7 +392,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
                 if (hostFailureResults == null) {
                     hostFailureResults = new ModelNode();
                 }
-                final ModelNode desc = hostResult.hasDefined(FAILURE_DESCRIPTION) ? hostResult.get(FAILURE_DESCRIPTION) : new ModelNode().set("Unexplained failure");
+                final ModelNode desc = hostResult.hasDefined(FAILURE_DESCRIPTION) ? hostResult.get(FAILURE_DESCRIPTION) : new ModelNode().set(MESSAGES.unexplainedFailure());
                 hostFailureResults.add(entry.getKey(), desc);
             }
         }
@@ -401,7 +402,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
             if (hostFailureResults == null) {
                 hostFailureResults = new ModelNode();
             }
-            final ModelNode desc = coordinator.hasDefined(FAILURE_DESCRIPTION) ? coordinator.get(FAILURE_DESCRIPTION) : new ModelNode().set("Unexplained failure");
+            final ModelNode desc = coordinator.hasDefined(FAILURE_DESCRIPTION) ? coordinator.get(FAILURE_DESCRIPTION) : new ModelNode().set(MESSAGES.unexplainedFailure());
             hostFailureResults.add(domainOperationContext.getLocalHostInfo().getLocalHostName(), desc);
         }
 

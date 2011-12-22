@@ -18,6 +18,8 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
+import static org.jboss.as.domain.controller.DomainControllerLogger.DEPLOYMENT_LOGGER;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
@@ -34,8 +36,6 @@ import java.io.InputStream;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public abstract class AbstractDeploymentUploadHandler implements OperationStepHandler {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.deployment");
 
     private static final String[] EMPTY = new String[0];
     private final ContentRepository contentRepository;
@@ -78,7 +78,7 @@ public abstract class AbstractDeploymentUploadHandler implements OperationStepHa
                 is.close();
             }
             catch (Exception e) {
-                log.warn("Caught exception closing input stream", e);
+                DEPLOYMENT_LOGGER.caughtExceptionClosingInputStream(e);
             }
         }
     }

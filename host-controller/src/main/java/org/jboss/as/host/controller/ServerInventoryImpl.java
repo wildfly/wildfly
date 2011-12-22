@@ -24,6 +24,8 @@ package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
+import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -32,6 +34,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -58,7 +61,6 @@ import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
 import org.jboss.as.server.ServerState;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.sasl.callback.DigestHashCallback;
@@ -73,7 +75,6 @@ import org.jboss.sasl.util.UsernamePasswordHashUtil;
  */
 public class ServerInventoryImpl implements ServerInventory {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
     private final Map<String, ManagedServer> servers = Collections.synchronizedMap(new HashMap<String, ManagedServer>());
 
     private final HostControllerEnvironment environment;
@@ -109,7 +110,7 @@ public class ServerInventoryImpl implements ServerInventory {
         }
         try {
             if (!processInventoryLatch.await(30, TimeUnit.SECONDS)){
-                throw new RuntimeException("Could not get the server inventory in 30 seconds");
+                throw MESSAGES.couldNotGetServerInventory(30L, TimeUnit.SECONDS.toString().toLowerCase(Locale.US));
             }
         } catch (InterruptedException e) {
         }
@@ -165,7 +166,7 @@ public class ServerInventoryImpl implements ServerInventory {
                     status = ServerStatus.STOPPED;
                     break;
                 default:
-                    throw new IllegalStateException("Unexpected state " + client.getState());
+                    throw MESSAGES.unexpectedState(client.getState());
             }
         }
         return status;
@@ -175,10 +176,10 @@ public class ServerInventoryImpl implements ServerInventory {
         final String processName = ManagedServer.getServerProcessName(serverName);
         final ManagedServer existing = servers.get(processName);
         if(existing != null) { // FIXME
-            log.warnf("Existing server [%s] with state: %s", processName, existing.getState());
+            ROOT_LOGGER.existingServerWithState(processName, existing.getState());
             return determineServerStatus(serverName);
         }
-        log.infof("Starting server %s", serverName);
+        ROOT_LOGGER.startingServer(serverName);
         final ManagedServer server = createManagedServer(serverName, domainModel);
         synchronized (shutdownCondition) {
             servers.put(processName, server);
@@ -188,12 +189,12 @@ public class ServerInventoryImpl implements ServerInventory {
         try {
             server.createServerProcess();
         } catch(IOException e) {
-            log.errorf(e, "Failed to create server process %s", serverName);
+            ROOT_LOGGER.failedToCreateServerProcess(e, serverName);
         }
         try {
             server.startServerProcess();
         } catch(IOException e) {
-            log.errorf(e, "Failed to start server %s", serverName);
+            ROOT_LOGGER.failedToStartServer(e, serverName);
         }
         return determineServerStatus(serverName);
     }
@@ -203,9 +204,9 @@ public class ServerInventoryImpl implements ServerInventory {
         final String processName = ManagedServer.getServerProcessName(serverName);
         final ManagedServer existing = servers.get(processName);
         if(existing != null) { // FIXME
-            log.warnf("existing server [%s] with state: %s", processName, existing.getState());
+            ROOT_LOGGER.existingServerWithState(processName, existing.getState());
         }
-        log.info("Reconnecting server " + serverName);
+        ROOT_LOGGER.reconnectingServer(serverName);
         final ManagedServer server = createManagedServer(serverName, domainModel);
         synchronized (shutdownCondition) {
             servers.put(processName, server);
@@ -216,7 +217,7 @@ public class ServerInventoryImpl implements ServerInventory {
             try {
                 server.reconnectServerProcess();
             } catch (IOException e) {
-                log.errorf(e, "Failed to send reconnect message to server %s", serverName);
+                ROOT_LOGGER.failedToSendReconnect(e, serverName);
             }
         }
     }
@@ -243,7 +244,7 @@ public class ServerInventoryImpl implements ServerInventory {
     }
 
     public ServerStatus stopServer(final String serverName, final int gracefulTimeout) {
-        log.info("stopping server " + serverName);
+        ROOT_LOGGER.stoppingServer(serverName);
         final String processName = ManagedServer.getServerProcessName(serverName);
         try {
             final ManagedServer server = servers.get(processName);
@@ -255,8 +256,7 @@ public class ServerInventoryImpl implements ServerInventory {
                     // FIXME figure out how/when server.removeServerProcess() && servers.remove(processName) happens
 
                     // Workaround until the above is fixed
-                    log.warnf("Graceful shutdown of server %s was requested but is not presently supported. " +
-                            "Falling back to rapid shutdown.", serverName);
+                    ROOT_LOGGER.gracefulShutdownNotSupported(serverName);
                     server.stopServerProcess();
                     server.removeServerProcess();
                 }
@@ -267,7 +267,7 @@ public class ServerInventoryImpl implements ServerInventory {
             }
         }
         catch (final Exception e) {
-            log.errorf(e, "Failed to stop server %s", serverName);
+            ROOT_LOGGER.failedToStopServer(e, serverName);
         }
         return determineServerStatus(serverName);
     }
@@ -278,7 +278,7 @@ public class ServerInventoryImpl implements ServerInventory {
         try {
             final ManagedServer server = servers.get(serverProcessName);
             if (server == null) {
-                log.errorf("No server called %s available", serverProcessName);
+                ROOT_LOGGER.noServerAvailable(serverProcessName);
                 return;
             }
 
@@ -308,7 +308,7 @@ public class ServerInventoryImpl implements ServerInventory {
 
             server.resetRespawnCount();
         } catch (final Exception e) {
-            log.errorf(e, "Could not start server %s", serverProcessName);
+            ROOT_LOGGER.failedToStartServer(e, serverProcessName);
         }
     }
 
@@ -317,7 +317,7 @@ public class ServerInventoryImpl implements ServerInventory {
     public void serverStartFailed(String serverProcessName) {
         final ManagedServer server = servers.get(serverProcessName);
         if (server == null) {
-            log.errorf("No server called %s exists", serverProcessName);
+            ROOT_LOGGER.noServerAvailable(serverProcessName);
             return;
         }
         checkState(server, ServerState.STARTING);
@@ -332,7 +332,7 @@ public class ServerInventoryImpl implements ServerInventory {
     public void serverStopped(String serverProcessName) {
         final ManagedServer server = servers.get(serverProcessName);
         if (server == null) {
-            log.errorf("No server called %s exists for stop", serverProcessName);
+            ROOT_LOGGER.noServerAvailable(serverProcessName);
             return;
         }
         domainController.unregisterRunningServer(server.getServerName());
@@ -347,7 +347,7 @@ public class ServerInventoryImpl implements ServerInventory {
                 }
                 server.setState(ServerState.MAX_FAILED);
             } catch(IOException e) {
-                log.error("Failed to start server " + serverProcessName, e);
+                ROOT_LOGGER.failedToStopServer(e, serverProcessName);
             }
         }
         synchronized (shutdownCondition) {
@@ -413,7 +413,7 @@ public class ServerInventoryImpl implements ServerInventory {
     private void checkState(final ManagedServer server, final ServerState expected) {
         final ServerState state = server.getState();
         if (state != expected) {
-            log.warnf("Server %s is not in the expected %s state: %s" , server.getServerProcessName(), expected, state);
+            ROOT_LOGGER.unexpectedServerState(server.getServerProcessName(), expected, state);
         }
     }
 
@@ -486,11 +486,11 @@ public class ServerInventoryImpl implements ServerInventory {
                         try {
                             UsernamePasswordHashUtil uph = new UsernamePasswordHashUtil();
                             if (userName == null || realm == null) {
-                                throw new SaslException("Insufficient information to generate hash.");
+                                throw MESSAGES.insufficientInformationToGenerateHash();
                             }
                             dhc.setHash(uph.generateHashedURP(userName, realm, password.toCharArray()));
                         } catch (NoSuchAlgorithmException e) {
-                            throw new SaslException("Unable to generate hash", e);
+                            throw MESSAGES.unableToGenerateHash(e);
                         }
                     }
                 }

@@ -24,11 +24,11 @@ package org.jboss.as.domain.controller.plan;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
+import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
 
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
 
 /**
  * {@link org.jboss.as.domain.controller.plan.AbstractServerUpdateTask} that performs the updates by applying them
@@ -38,8 +38,6 @@ import org.jboss.logging.Logger;
  * {@link #run()} method executed once.
  */
 class NewRunningServerUpdateTask extends AbstractServerUpdateTask {
-
-    private static final Logger logger = Logger.getLogger("org.jboss.as.host.controller");
 
     private final NewServerOperationExecutor serverOperationExecutor;
     private final ModelNode serverUpdate;
@@ -66,7 +64,7 @@ class NewRunningServerUpdateTask extends AbstractServerUpdateTask {
     @Override
     protected void processUpdates() {
 
-        logger.tracef("Applying operation to  %s", serverId);
+        HOST_CONTROLLER_LOGGER.tracef("Applying operation to  %s", serverId);
         ModelNode op = getServerOp();
         ModelNode rsp =
             serverOperationExecutor.executeServerOperation(serverId, op);

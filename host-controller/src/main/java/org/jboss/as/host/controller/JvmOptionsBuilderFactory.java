@@ -21,13 +21,15 @@
  */
 package org.jboss.as.host.controller;
 
+import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.controller.parsing.JvmType;
-import org.jboss.logging.Logger;
 
 /**
  *
@@ -35,8 +37,6 @@ import org.jboss.logging.Logger;
  * @version $Revision: 1.1 $
  */
 class JvmOptionsBuilderFactory {
-
-    private static final Logger log = Logger.getLogger(JvmOptionsBuilderFactory.class);
 
     private static final JvmOptionsBuilderFactory INSTANCE = new JvmOptionsBuilderFactory();
 
@@ -57,14 +57,14 @@ class JvmOptionsBuilderFactory {
 
     void addOptions(JvmElement jvmElement, List<String> command){
         if (jvmElement == null) {
-            throw new IllegalArgumentException("Null jvm");
+            throw MESSAGES.nullVar("jvm");
         }
         if (command == null) {
-            throw new IllegalArgumentException("Null command");
+            throw MESSAGES.nullVar("command");
         }
         JvmOptionsBuilder builder = BUILDERS.get(jvmElement.getJvmType());
         if (builder == null) {
-            throw new IllegalArgumentException("Unknown jvm " + jvmElement.getJvmType());
+            throw MESSAGES.unknown("jvm", jvmElement.getJvmType());
         }
         builder.addToOptions(jvmElement, command);
     }
@@ -160,7 +160,7 @@ class JvmOptionsBuilderFactory {
 
         boolean checkOption(boolean condition, String jvm, String option, String schemaElement) {
             if (condition) {
-                log.warn("Ignoring <option value=\"" + option + "\" for jvm '" + jvm + "' since '" + schemaElement + "' was set");
+                ROOT_LOGGER.optionAlreadySet(option, jvm, schemaElement);
                 return false;
             }
             return true;
@@ -203,7 +203,7 @@ class JvmOptionsBuilderFactory {
         @Override
         void addPermGen(JvmElement jvmElement, List<String> command) {
             if (jvmElement.getPermgenSize() != null || jvmElement.getMaxPermgen() != null) {
-                log.warn("Ignoring <permgen> for '" + type + "' type jvm: " + jvmElement.getName());
+                ROOT_LOGGER.ignoringPermGen(type, jvmElement.getName());
             }
         }
     }

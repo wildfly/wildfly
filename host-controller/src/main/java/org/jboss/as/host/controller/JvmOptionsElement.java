@@ -22,6 +22,8 @@
 
 package org.jboss.as.host.controller;
 
+import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,7 +72,7 @@ public final class JvmOptionsElement {
     void addOption(final String value) {
         synchronized (options) {
             if (value == null) {
-                throw new IllegalArgumentException("Value for jvm option is null");
+                throw MESSAGES.nullVar("value");
             }
             options.add(value);
         }

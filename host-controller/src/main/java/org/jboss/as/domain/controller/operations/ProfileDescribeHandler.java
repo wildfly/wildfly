@@ -25,6 +25,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -117,7 +118,7 @@ public class ProfileDescribeHandler implements OperationStepHandler, Description
                 PathAddress relativeAddress = PathAddress.pathAddress(pe);
                 OperationStepHandler subsysHandler = registry.getOperationHandler(relativeAddress, opName);
                 if (subsysHandler == null) {
-                    throw new OperationFailedException(new ModelNode().set(String.format("No handler for operation %s at address %s", opName, fullAddress)));
+                    throw new OperationFailedException(new ModelNode().set(MESSAGES.noHandlerForOperation(opName, fullAddress)));
                 }
 
                 // Step to store subsystem ops in overall list

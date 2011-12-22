@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -81,7 +82,7 @@ public class DomainFinalResultHandler implements OperationStepHandler {
         final ModelNode coordinator = domainOperationContext.getCoordinatorResult();
         ModelNode domainFailure = null;
         if (isDomain &&  coordinator != null && coordinator.has(FAILURE_DESCRIPTION)) {
-            domainFailure = coordinator.hasDefined(FAILURE_DESCRIPTION) ? coordinator.get(FAILURE_DESCRIPTION) : new ModelNode().set("Unexplained failure");
+            domainFailure = coordinator.hasDefined(FAILURE_DESCRIPTION) ? coordinator.get(FAILURE_DESCRIPTION) : new ModelNode().set(MESSAGES.unexplainedFailure());
         }
         if (domainFailure != null) {
             context.getFailureDescription().get(DOMAIN_FAILURE_DESCRIPTION).set(domainFailure);
@@ -101,11 +102,11 @@ public class DomainFinalResultHandler implements OperationStepHandler {
                 if (failure.isDefined())
                     formattedFailure.get(DOMAIN_FAILURE_DESCRIPTION).set(failure);
                 else
-                    formattedFailure.get(DOMAIN_FAILURE_DESCRIPTION).set("Unexplained failure");
+                    formattedFailure.get(DOMAIN_FAILURE_DESCRIPTION).set(MESSAGES.unexplainedFailure());
             } else {
                 ModelNode hostFailureProperty = new ModelNode();
                 ModelNode contextFailure = context.getFailureDescription();
-                ModelNode hostFailure = contextFailure.isDefined() ? contextFailure : new ModelNode().set("Unexplained failure");
+                ModelNode hostFailure = contextFailure.isDefined() ? contextFailure : new ModelNode().set(MESSAGES.unexplainedFailure());
                 hostFailureProperty.add(domainOperationContext.getLocalHostInfo().getLocalHostName(), hostFailure);
 
                 formattedFailure.get(HOST_FAILURE_DESCRIPTIONS).set(hostFailureProperty);
@@ -126,7 +127,7 @@ public class DomainFinalResultHandler implements OperationStepHandler {
                 if (hostFailureResults == null) {
                     hostFailureResults = new ModelNode();
                 }
-                final ModelNode desc = hostResult.hasDefined(FAILURE_DESCRIPTION) ? hostResult.get(FAILURE_DESCRIPTION) : new ModelNode().set("Unexplained failure");
+                final ModelNode desc = hostResult.hasDefined(FAILURE_DESCRIPTION) ? hostResult.get(FAILURE_DESCRIPTION) : new ModelNode().set(MESSAGES.unexplainedFailure());
                 hostFailureResults.add(entry.getKey(), desc);
             }
         }
@@ -136,7 +137,7 @@ public class DomainFinalResultHandler implements OperationStepHandler {
             if (hostFailureResults == null) {
                 hostFailureResults = new ModelNode();
             }
-            final ModelNode desc = coordinator.hasDefined(FAILURE_DESCRIPTION) ? coordinator.get(FAILURE_DESCRIPTION) : new ModelNode().set("Unexplained failure");
+            final ModelNode desc = coordinator.hasDefined(FAILURE_DESCRIPTION) ? coordinator.get(FAILURE_DESCRIPTION) : new ModelNode().set(MESSAGES.unexplainedFailure());
             hostFailureResults.add(domainOperationContext.getLocalHostInfo().getLocalHostName(), desc);
         }
 
@@ -199,7 +200,7 @@ public class DomainFinalResultHandler implements OperationStepHandler {
             result.get(SERVER_GROUPS, groupName).set(groupNode);
         }
         if(!serverGroupSuccess) {
-            context.getFailureDescription().set("Operation failed or was rolled back on all servers.");
+            context.getFailureDescription().set(MESSAGES.operationFailedOrRolledBack());
         }
     }
 

@@ -3,6 +3,8 @@
  */
 package org.jboss.as.host.controller;
 
+import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
+
 import java.io.File;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -163,36 +165,36 @@ public class HostControllerEnvironment {
                                      Integer hostControllerPort, String defaultJVM, String domainConfig, String hostConfig,
                                      RunningMode initialRunningMode, boolean backupDomainFiles, boolean useCachedDc) {
         if (hostSystemProperties == null) {
-            throw new IllegalArgumentException("hostSystemProperties is null");
+            throw MESSAGES.nullVar("hostSystemProperties");
         }
         this.hostSystemProperties = Collections.unmodifiableMap(hostSystemProperties);
 
         if (stdin == null) {
-             throw new IllegalArgumentException("stdin is null");
+             throw MESSAGES.nullVar("stdin");
         }
         this.stdin = stdin;
 
         if (stdout == null) {
-             throw new IllegalArgumentException("stdout is null");
+             throw MESSAGES.nullVar("stdout");
         }
         this.stdout = stdout;
 
         if (stderr == null) {
-             throw new IllegalArgumentException("stderr is null");
+             throw MESSAGES.nullVar("stderr");
         }
         this.stderr = stderr;
 
         if (processControllerAddress == null) {
-            throw new IllegalArgumentException("processControllerAddress is null");
+            throw MESSAGES.nullVar("processControllerAddress");
         }
         if (processControllerPort == null) {
-            throw new IllegalArgumentException("processControllerPort is null");
+            throw MESSAGES.nullVar("processControllerPort");
         }
         if (hostControllerAddress == null) {
-            throw new IllegalArgumentException("hostControllerAddress is null");
+            throw MESSAGES.nullVar("hostControllerAddress");
         }
         if (hostControllerPort == null) {
-            throw new IllegalArgumentException("hostControllerPort is null");
+            throw MESSAGES.nullVar("hostControllerPort");
         }
         this.processControllerPort = processControllerPort;
         this.processControllerAddress = processControllerAddress;

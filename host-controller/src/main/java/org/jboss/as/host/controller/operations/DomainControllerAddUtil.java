@@ -30,6 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
+import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -98,7 +99,7 @@ public class DomainControllerAddUtil {
         try {
             name = host.require(NAME).asString();
         } catch (NoSuchElementException e1) {
-            throw new IllegalArgumentException("A host connecting to a remote domain controller must have its name attribute set");
+            throw MESSAGES.noNameAttributeOnHost();
         }
 
         final ModelNode dc = host.require(DOMAIN_CONTROLLER).require(REMOTE);

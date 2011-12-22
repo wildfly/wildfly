@@ -304,7 +304,7 @@ public class DomainModelUtil {
 
     public static void validateRolloutPlanStructure(ModelNode plan) throws OperationFailedException {
         if(plan == null) {
-            throw new OperationFailedException("rolloutPlan argument is null.");
+            throw new OperationFailedException(MESSAGES.nullVar("plan").getLocalizedMessage());
         }
         if(!plan.hasDefined(ROLLOUT_PLAN)) {
             throw new OperationFailedException(MESSAGES.requiredChildIsMissing(ROLLOUT_PLAN, ROLLOUT_PLAN, plan.toString()));

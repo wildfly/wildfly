@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
 import static org.jboss.as.controller.operations.validation.ChainedParameterValidator.chain;
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -147,11 +148,11 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
             // we do not need the content until it's added to a server group we care about, so we defer
             // pulling it until then
             if (contentRepository != null && !contentRepository.hasContent(hash))
-                throw createFailureException("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash));
+                throw createFailureException(MESSAGES.noDeploymentContentWithHash(HashUtil.bytesToHexString(hash)));
         } else if (hasValidContentAdditionParameterDefined(contentItemNode)) {
             if (contentRepository == null) {
                 // This is a slave DC. We can't handle this operation; it should have been fixed up on the master DC
-                throw createFailureException("A slave domain controller cannot accept deployment content uploads");
+                throw createFailureException(MESSAGES.slaveCannotAcceptUploads());
             }
 
             InputStream in = getInputStream(context, contentItemNode);
@@ -187,15 +188,15 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
         String message = "";
         if (operation.hasDefined(INPUT_STREAM_INDEX)) {
             int streamIndex = operation.get(INPUT_STREAM_INDEX).asInt();
-            message = "Null stream at index " + streamIndex;
+            message = MESSAGES.nullStream(streamIndex);
             in = context.getAttachmentStream(streamIndex);
         } else if (operation.hasDefined(BYTES)) {
-            message = "Invalid byte stream.";
+            message = MESSAGES.invalidByteStream();
             in = new ByteArrayInputStream(operation.get(BYTES).asBytes());
         } else if (operation.hasDefined(URL)) {
             final String urlSpec = operation.get(URL).asString();
             try {
-                message = "Invalid url stream.";
+                message = MESSAGES.invalidUrlStream();
                 in = new URL(urlSpec).openStream();
             } catch (MalformedURLException e) {
                 throw createFailureException(message);
@@ -243,6 +244,6 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
     private static void validateOnePieceOfContent(final ModelNode content) throws OperationFailedException {
         // TODO: implement overlays
         if (content.asList().size() != 1)
-            throw createFailureException("Only 1 piece of content is current supported (AS7-431");
+            throw createFailureException(MESSAGES.as7431());
     }
 }

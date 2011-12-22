@@ -23,6 +23,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+import static org.jboss.as.domain.controller.DomainControllerLogger.DEPLOYMENT_LOGGER;
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +42,6 @@ import org.jboss.as.domain.controller.descriptions.DomainRootDescription;
 import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 
 /**
  * Handles removal of a deployment from the model. This can be used at either the domain deployments level
@@ -49,8 +50,6 @@ import org.jboss.logging.Logger;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class DeploymentRemoveHandler implements OperationStepHandler, DescriptionProvider {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.deployment");
 
     public static final String OPERATION_NAME = REMOVE;
 
@@ -94,7 +93,7 @@ public class DeploymentRemoveHandler implements OperationStepHandler, Descriptio
                         try {
                             contentRepository.removeContent(node.asBytes());
                         } catch (Exception e) {
-                            log.debugf(e, "Exception occurred removing %s", node.asBytes());
+                            DEPLOYMENT_LOGGER.debugf(e, "Exception occurred removing %s", node.asBytes());
                         }
                     }
                 }
@@ -116,8 +115,7 @@ public class DeploymentRemoveHandler implements OperationStepHandler, Descriptio
             }
 
             if (badGroups.size() > 0) {
-                String msg = String.format("Cannot remove deployment %s from the domain as it is still used by server groups %s", deploymentName, badGroups);
-                throw new OperationFailedException(new ModelNode().set(msg));
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.cannotRemoveDeploymentInUse(deploymentName, badGroups)));
             }
         }
     }

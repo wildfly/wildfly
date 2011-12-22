@@ -30,6 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_OPERATIONS;
+import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
 
 import java.util.Collections;
 import java.util.Map;
@@ -109,8 +110,8 @@ public class ServerOperationsResolverHandler implements OperationStepHandler {
                 createOverallResult(serverOps, localResult, responseNode);
             }
 
-            if (PrepareStepHandler.isTraceEnabled()) {
-                PrepareStepHandler.log.trace(getClass().getSimpleName() + " responseNode is " + responseNode);
+            if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
+                HOST_CONTROLLER_LOGGER.tracef("%s responseNode is %s",getClass().getSimpleName(), responseNode);
             }
         }
 

@@ -23,6 +23,7 @@
 package org.jboss.as.domain.controller.plan;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.util.Set;
 
@@ -109,7 +110,7 @@ class ServerUpdatePolicy {
      */
     public boolean canUpdateServer(ServerIdentity server) {
         if (!serverGroupName.equals(server.getServerGroupName()) || !servers.contains(server)) {
-            throw new IllegalStateException("Unknown server " + server);
+            throw MESSAGES.unknownServer(server);
         }
 
         if (!parent.canChildProceed())
@@ -129,7 +130,7 @@ class ServerUpdatePolicy {
     public void recordServerResult(ServerIdentity server, ModelNode response) {
 
         if (!serverGroupName.equals(server.getServerGroupName()) || !servers.contains(server)) {
-            throw new IllegalStateException("Unknown server " + server);
+            throw MESSAGES.unknownServer(server);
         }
 
         boolean serverFailed = response.has(FAILURE_DESCRIPTION);

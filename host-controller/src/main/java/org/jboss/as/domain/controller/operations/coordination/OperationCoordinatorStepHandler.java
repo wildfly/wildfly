@@ -35,6 +35,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLAN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
+import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -96,8 +98,8 @@ public class OperationCoordinatorStepHandler {
             routetoMasterDomainController(context, operation);
         }
         else if (routing.getSingleHost() != null && !localHostControllerInfo.getLocalHostName().equals(routing.getSingleHost())) {
-            if (PrepareStepHandler.isTraceEnabled()) {
-                PrepareStepHandler.log.trace("Remote single host");
+            if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
+                HOST_CONTROLLER_LOGGER.trace("Remote single host");
             }
             // Possibly a two step operation, but not coordinated by this host. Execute direct and let the remote HC
             // coordinate any two step process (if there is one)
@@ -129,9 +131,8 @@ public class OperationCoordinatorStepHandler {
         // master may overly complicate the security infrastructure. Therefore,
         // the ability to do this is being disabled until it's clear that it's
         // not a problem
-        context.getFailureDescription().set(String.format("Operation %s for address %s can only be handled by the " +
-                "master Domain Controller; this host is not the master Domain Controller",
-                operation.get(OP).asString(), PathAddress.pathAddress(operation.get(OP_ADDR))));
+        context.getFailureDescription().set(MESSAGES.masterDomainControllerOnlyOperation(operation.get(OP).asString(),
+                PathAddress.pathAddress(operation.get(OP_ADDR))));
         context.completeStep();
     }
 
@@ -142,8 +143,8 @@ public class OperationCoordinatorStepHandler {
      * @throws OperationFailedException
      */
     private void executeDirect(OperationContext context, ModelNode operation) throws OperationFailedException {
-        if (PrepareStepHandler.isTraceEnabled()) {
-            PrepareStepHandler.log.trace("Executing direct");
+        if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
+            HOST_CONTROLLER_LOGGER.trace("Executing direct");
         }
         final String operationName =  operation.require(OP).asString();
         OperationStepHandler stepHandler = null;
@@ -154,14 +155,14 @@ public class OperationCoordinatorStepHandler {
         if(stepHandler != null) {
             context.addStep(stepHandler, OperationContext.Stage.MODEL);
         } else {
-            context.getFailureDescription().set(String.format("No handler for operation %s at address %s", operationName, PathAddress.pathAddress(operation.get(OP_ADDR))));
+            context.getFailureDescription().set(MESSAGES.noHandlerForOperation(operationName, PathAddress.pathAddress(operation.get(OP_ADDR))));
         }
         context.completeStep();
     }
 
     private void executeTwoPhaseOperation(OperationContext context, ModelNode operation, OperationRouting routing) throws OperationFailedException {
-        if (PrepareStepHandler.isTraceEnabled()) {
-            PrepareStepHandler.log.trace("Executing two-phase");
+        if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
+            HOST_CONTROLLER_LOGGER.trace("Executing two-phase");
         }
 
         DomainOperationContext overallContext = new DomainOperationContext(localHostControllerInfo);
@@ -209,7 +210,7 @@ public class OperationCoordinatorStepHandler {
                     if (proxy != null) {
                         remoteProxies.put(host, proxy);
                     } else if (!global) {
-                        throw new OperationFailedException(new ModelNode().set(String.format("Operation targets host %s but that host is not registered", host)));
+                        throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidOperationTargetHost(host)));
                     }
                 }
 
@@ -252,7 +253,7 @@ public class OperationCoordinatorStepHandler {
                     opNode.get(CONTENT).get(0).get(HASH).set(hash);
             }
         } catch (IOException ioe) {
-            throw new OperationFailedException(new ModelNode().set(String.format("Caught IOException storing deployment content -- %s", ioe)));
+            throw new OperationFailedException(new ModelNode().set(MESSAGES.caughtExceptionStoringDeploymentContent(ioe.getClass().getSimpleName(), ioe)));
         }
     }
 

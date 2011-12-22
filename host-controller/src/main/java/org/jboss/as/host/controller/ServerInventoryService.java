@@ -23,6 +23,7 @@
 package org.jboss.as.host.controller;
 
 import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
+import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
@@ -31,7 +32,6 @@ import java.util.concurrent.Future;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -48,7 +48,6 @@ import org.jboss.threads.AsyncFutureTask;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 class ServerInventoryService implements Service<ServerInventory> {
-    private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
 
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "server-inventory");
 
@@ -89,7 +88,7 @@ class ServerInventoryService implements Service<ServerInventory> {
     /** {@inheritDoc} */
     @Override
     public synchronized void start(StartContext context) throws StartException {
-        log.debug("Starting Host Controller Server Inventory");
+        ROOT_LOGGER.debug("Starting Host Controller Server Inventory");
         try {
             final ProcessControllerConnectionService processControllerConnectionService = client.getValue();
             final InetSocketAddress binding = new InetSocketAddress(interfaceBinding.getValue().getAddress(), port);

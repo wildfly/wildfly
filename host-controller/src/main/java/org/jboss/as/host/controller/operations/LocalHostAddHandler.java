@@ -24,17 +24,16 @@ package org.jboss.as.host.controller.operations;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathElement;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.util.Locale;
 
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALMS;
 
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.HostModelUtil;
@@ -72,7 +71,7 @@ public class LocalHostAddHandler implements OperationStepHandler, DescriptionPro
      */
     public void execute(OperationContext context, ModelNode operation) {
         if (!context.isBooting()) {
-            throw new IllegalStateException(String.format("Invocations of %s after HostController boot are not allowed", OPERATION_NAME));
+            throw MESSAGES.invocationNotAllowedAfterBoot(OPERATION_NAME);
         }
 
         final Resource rootResource = context.createResource(PathAddress.EMPTY_ADDRESS);

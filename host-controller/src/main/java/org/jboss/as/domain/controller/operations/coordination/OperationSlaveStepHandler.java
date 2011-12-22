@@ -34,6 +34,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -86,7 +87,7 @@ public class OperationSlaveStepHandler {
         final ImmutableManagementResourceRegistration originalRegistration = context.getResourceRegistration();
         if (originalRegistration == null) {
             String operationName = operation.require(OP).asString();
-            throw new OperationFailedException(new ModelNode().set(String.format("No handler for operation %s at address %s", operationName, originalAddress)));
+            throw new OperationFailedException(new ModelNode().set(MESSAGES.noHandlerForOperation(operationName, originalAddress)));
         }
         final Resource root = context.getRootResource();
         final ModelNode model = Resource.Tools.readModel(root);
@@ -117,7 +118,7 @@ public class OperationSlaveStepHandler {
         if(stepHandler != null) {
             context.addStep(operation, stepHandler, OperationContext.Stage.MODEL);
         } else {
-            throw new OperationFailedException(new ModelNode().set(String.format("No handler for operation %s at address %s", operationName, PathAddress.pathAddress(operation.get(OP_ADDR)))));
+            throw new OperationFailedException(new ModelNode().set(MESSAGES.noHandlerForOperation(operationName, PathAddress.pathAddress(operation.get(OP_ADDR)))));
         }
     }
 
