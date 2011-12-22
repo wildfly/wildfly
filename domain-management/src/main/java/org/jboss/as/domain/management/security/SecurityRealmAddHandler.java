@@ -19,19 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.domain.management.operations;
+package org.jboss.as.domain.management.security;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.KEYSTORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PASSWORD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECRET;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRUSTSTORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
@@ -40,28 +39,19 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 
 import java.security.KeyStore;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.ManagementDescription;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.connections.ConnectionManager;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionManagerService;
-import org.jboss.as.domain.management.security.DomainCallbackHandler;
-import org.jboss.as.domain.management.security.FileKeystoreService;
-import org.jboss.as.domain.management.security.PropertiesCallbackHandler;
-import org.jboss.as.domain.management.security.SSLIdentityService;
-import org.jboss.as.domain.management.security.SecretIdentityService;
-import org.jboss.as.domain.management.security.SecurityRealmService;
-import org.jboss.as.domain.management.security.UserDomainCallbackHandler;
-import org.jboss.as.domain.management.security.UserLdapCallbackHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
@@ -73,35 +63,42 @@ import org.jboss.msc.service.ServiceTarget;
  * Handler to add security realm definitions and register the service.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class SecurityRealmAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
+public class SecurityRealmAddHandler implements OperationStepHandler {
 
     public static final SecurityRealmAddHandler INSTANCE = new SecurityRealmAddHandler();
     public static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
-        final ModelNode authentication = operation.hasDefined(AUTHENTICATION) ? operation.get(AUTHENTICATION) : null;
-        final ModelNode serverIdentities = operation.hasDefined(SERVER_IDENTITIES) ? operation.get(SERVER_IDENTITIES) : null;
-
-        if (serverIdentities != null) {
-            model.get(SERVER_IDENTITIES).set(serverIdentities);
-        }
-        if (authentication != null) {
-            model.get(AUTHENTICATION).set(authentication);
-        }
-    }
-
     @Override
-    protected boolean requiresRuntime(OperationContext context) {
-        return true;
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+
+        context.createResource(PathAddress.EMPTY_ADDRESS);
+
+        // Add a step validating that we have the correct authentication child resources
+        ModelNode validationOp = AuthenticationValidatingHandler.createOperation(operation);
+        context.addStep(validationOp, AuthenticationValidatingHandler.INSTANCE, OperationContext.Stage.MODEL);
+
+        context.addStep(new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                // Install another RUNTIME handler to actually install the services. This will run after the
+                // RUNTIME handler for any child resources. Doing this will ensure that child resource handlers don't
+                // see the installed services and can just ignore doing any RUNTIME stage work
+                context.addStep(ServiceInstallStepHandler.INSTANCE, OperationContext.Stage.RUNTIME);
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            }
+        }, OperationContext.Stage.RUNTIME);
+
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final String realmName = address.getLastElement().getValue();
+    protected void installServices(final OperationContext context, final String realmName, final ModelNode model,
+                                   final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers)
+            throws OperationFailedException {
 
-        final ModelNode authentication = operation.hasDefined(AUTHENTICATION) ? operation.get(AUTHENTICATION) : null;
-        final ModelNode serverIdentities = operation.hasDefined(SERVER_IDENTITIES) ? operation.get(SERVER_IDENTITIES) : null;
+        final ModelNode authentication = model.hasDefined(AUTHENTICATION) ? model.get(AUTHENTICATION) : null;
+        final ModelNode serverIdentities = model.hasDefined(SERVER_IDENTITY) ? model.get(SERVER_IDENTITY) : null;
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
@@ -142,16 +139,11 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
             }
         }
 
-        newControllers.add(realmBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install());
-    }
-
-    public ModelNode getModelDescription(Locale locale) {
-        return ManagementDescription.getAddManagementSecurityRealmDescription(locale);
-    }
-
-    protected boolean requiresRuntimeVerification() {
-        return false;
+        realmBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND);
+        ServiceController<?> sc = realmBuilder.install();
+        if (newControllers != null) {
+            newControllers.add(sc);
+        }
     }
 
     private ServiceName addLdapService(ModelNode ldap, ServiceName realmServiceName, ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) {
@@ -278,5 +270,26 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
             }
         }
         return users;
+    }
+
+    private static class ServiceInstallStepHandler implements OperationStepHandler {
+
+        private static final ServiceInstallStepHandler INSTANCE = new ServiceInstallStepHandler();
+
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            final List<ServiceController<?>> newControllers = new ArrayList<ServiceController<?>>();
+            final String realmName = ManagementUtil.getSecurityRealmName(operation);
+            final ModelNode model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+            SecurityRealmAddHandler.INSTANCE.installServices(context, realmName, model, new ServiceVerificationHandler(), newControllers);
+            context.completeStep(new OperationContext.RollbackHandler() {
+                @Override
+                public void handleRollback(OperationContext context, ModelNode operation) {
+                    for (ServiceController<?> sc : newControllers) {
+                        context.removeService(sc);
+                    }
+                }
+            });
+        }
     }
 }

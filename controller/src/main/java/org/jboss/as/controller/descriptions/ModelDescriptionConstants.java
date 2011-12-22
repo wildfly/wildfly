@@ -223,6 +223,7 @@ public class ModelDescriptionConstants {
     public static final String SERVER_GROUP = "server-group";
     public static final String SERVER_GROUPS = "server-groups";
     public static final String SERVER_IDENTITIES = "server-identities";
+    public static final String SERVER_IDENTITY = "server-identity";
     public static final String SERVER_OPERATIONS = "server-operations";
     public static final String SERVICE_CONTAINER = "service-container";
     public static final String OPERATION_REQUIRES_RELOAD = "operation-requires-reload";

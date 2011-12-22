@@ -32,6 +32,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.descriptions.common.ManagementDescription;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -67,7 +68,7 @@ public class LdapConnectionResourceDefinition extends SimpleResourceDefinition {
     public static final LdapConnectionResourceDefinition INSTANCE = new LdapConnectionResourceDefinition();
 
     private LdapConnectionResourceDefinition() {
-        super(RESOURCE_PATH, CommonDescriptions.getResourceDescriptionResolver("core.management.ldap-connection"),
+        super(RESOURCE_PATH, ManagementDescription.getResourceDescriptionResolver("core.management.ldap-connection"),
                 LdapConnectionAddHandler.INSTANCE, LdapConnectionRemoveHandler.INSTANCE,
                 OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }

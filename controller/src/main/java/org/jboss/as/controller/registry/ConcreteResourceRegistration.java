@@ -112,6 +112,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
         final ManagementResourceRegistration resourceRegistration = child.register(address.getValue(), resourceDefinition, false);
         resourceDefinition.registerAttributes(resourceRegistration);
         resourceDefinition.registerOperations(resourceRegistration);
+        resourceDefinition.registerChildren(resourceRegistration);
         return resourceRegistration;
     }
 

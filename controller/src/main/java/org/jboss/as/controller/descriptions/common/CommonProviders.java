@@ -67,26 +67,6 @@ public final class CommonProviders {
     };
 
     /**
-     * Provider for a sub-model that defines a management security-realm configuration.
-     */
-    public static final DescriptionProvider MANAGEMENT_SECURITY_REALM_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(final Locale locale) {
-            return ManagementDescription.getManagementSecurityRealmDescription(locale);
-        }
-    };
-
-    /**
-     * Provider for a sub-model that defines a management authentication/authorization connection factory configuration.
-     */
-    public static final DescriptionProvider MANAGEMENT_OUTBOUND_CONNECTION_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(final Locale locale) {
-            return ManagementDescription.getManagementOutboundConnectionDescription(locale);
-        }
-    };
-
-    /**
      * Provider for a sub-model that names a "path" and specifies the actual path.
      */
     public static final DescriptionProvider SPECIFIED_PATH_PROVIDER = new DescriptionProvider() {

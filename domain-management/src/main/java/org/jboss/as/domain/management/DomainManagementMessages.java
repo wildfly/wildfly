@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.management;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
@@ -33,6 +34,7 @@ import javax.naming.NamingException;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import java.io.IOException;
+import java.util.Set;
 
 /**
  * Date: 05.11.2011
@@ -380,4 +382,25 @@ public interface DomainManagementMessages {
      */
     @Message(value = "Error")
     String errorHeader();
+
+    /**
+     * Error message if more than one username/password authentication mechanism is defined.
+     *
+     * @param realmName the name of the security realm
+     * @param mechanisms the set of mechanisms .
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 15244, value = "Configuration for security realm '%s' includes multiple username/password based authentication mechanisms (%s). Only one is allowed")
+    OperationFailedException multipleAuthenticationMechanismsDefined(String realmName, Set<String> mechanisms);
+
+    /**
+     * Creates an exception indicating no authentication mechanism was defined in the security realm.
+     *
+     * @param realmName the security realm name
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 15245, value = "No authentication mechanism defined in security realm '%s'.")
+    OperationFailedException noAuthenticationDefined(String realmName);
 }

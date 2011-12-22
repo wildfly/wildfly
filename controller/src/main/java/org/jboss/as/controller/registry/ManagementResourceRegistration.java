@@ -389,6 +389,11 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
                 public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
                     //  no-op
                 }
+
+                @Override
+                public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+                    //  no-op
+                }
             };
             return new ConcreteResourceRegistration(null, null, rootResourceDefinition, false);
         }

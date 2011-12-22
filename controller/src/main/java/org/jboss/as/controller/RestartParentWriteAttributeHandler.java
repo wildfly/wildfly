@@ -39,7 +39,7 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author Jason T. Greene.
  */
-public abstract class RestartParentWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
+public abstract class RestartParentWriteAttributeHandler extends AbstractWriteAttributeHandler<ModelNode> {
     private final String parentKeyName;
 
     public RestartParentWriteAttributeHandler(String parentKeyName) {
@@ -52,8 +52,8 @@ public abstract class RestartParentWriteAttributeHandler extends AbstractWriteAt
 
     }
 
-    public RestartParentWriteAttributeHandler(String parentKeyName, AttributeDefinition definition) {
-        super(definition);
+    public RestartParentWriteAttributeHandler(String parentKeyName, AttributeDefinition... definitions) {
+        super(definitions);
         this.parentKeyName = parentKeyName;
     }
 
@@ -63,10 +63,7 @@ public abstract class RestartParentWriteAttributeHandler extends AbstractWriteAt
     }
 
     @Override
-    protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> voidHandback) throws OperationFailedException {
-         if (context.isBooting()) {
-            return false;
-        }
+    protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<ModelNode> handbackHolder) throws OperationFailedException {
 
         PathAddress address = getParentAddress(PathAddress.pathAddress(operation.require(OP_ADDR)));
         ServiceName serviceName = getParentServiceName(address);
@@ -78,20 +75,49 @@ public abstract class RestartParentWriteAttributeHandler extends AbstractWriteAt
             return false;
         }
 
-        boolean restartServices = context.isResourceServiceRestartAllowed();
+        boolean restartServices = isResourceServiceRestartAllowed(context, service);
 
         if (restartServices) {
             ModelNode parentModel = getModel(context, address);
             if (parentModel != null && context.markResourceRestarted(address, this)) {
-                context.removeService(serviceName);
+                removeServices(context, serviceName, parentModel);
                 final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                 recreateParentService(context, address, parentModel, verificationHandler);
                 context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
+                handbackHolder.setHandback(parentModel);
             }
         }
 
         // Fall back to server wide reload
         return !restartServices;
+    }
+
+    /**
+     * Gets whether a restart of the parent resource's services is allowed. This default implementation
+     * checks whether {@link OperationContext#isResourceServiceRestartAllowed() the context allows resource service restarts};
+     * subclasses could also check the state of the {@code service}.
+     *
+     * @param context the operation context
+     * @param service the parent service
+     * @return {@code true} if a restart is allowed; {@code false}
+     */
+    protected boolean isResourceServiceRestartAllowed(final OperationContext context, final ServiceController<?> service) {
+        return context.isResourceServiceRestartAllowed();
+    }
+
+    /**
+     * Removes services. This default implementation simply
+     * {@link OperationContext#removeService(ServiceController) instructs the context to remove the parentService}.
+     * Subclasses could use the provided {@code parentModel} to identify and remove other services.
+     *
+     * @param context the operation context
+     * @param parentService the name of the parent service
+     * @param parentModel the model associated with the parent resource, including nodes for any child resources
+     *
+     * @throws OperationFailedException if there is a problem removing the services
+     */
+    protected void removeServices(final OperationContext context, final ServiceName parentService, final ModelNode parentModel) throws OperationFailedException {
+        context.removeService(parentService);
     }
 
     protected abstract void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel, ServiceVerificationHandler verificationHandler) throws OperationFailedException;
@@ -105,25 +131,20 @@ public abstract class RestartParentWriteAttributeHandler extends AbstractWriteAt
 
 
     @Override
-    protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode resolvedValue, Void handback) throws OperationFailedException {
-        PathAddress address = getParentAddress(PathAddress.pathAddress(operation.require(OP_ADDR)));
-        ServiceName serviceName = getParentServiceName(address);
-        ServiceController<?> service = serviceName != null ?
-                             context.getServiceRegistry(false).getService(serviceName) : null;
+    protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode resolvedValue, ModelNode invalidatedParentModel) throws OperationFailedException {
 
-        // No parent service indicates boot
-        if (service == null) {
+        if (invalidatedParentModel == null) {
+            // We didn't restart services, so no need to revert
             return;
         }
 
-        if (context.isResourceServiceRestartAllowed()) {
-            ModelNode parentModel = getOriginalModel(context, address);
-            if (parentModel != null && context.revertResourceRestarted(address, this)) {
-                context.removeService(serviceName);
-                recreateParentService(context, address, parentModel, null);
-            }
-        }  else {
-            context.revertReloadRequired();
+        PathAddress address = getParentAddress(PathAddress.pathAddress(operation.require(OP_ADDR)));
+        ServiceName serviceName = getParentServiceName(address);
+
+        ModelNode parentModel = getOriginalModel(context, address);
+        if (parentModel != null && context.revertResourceRestarted(address, this)) {
+            removeServices(context, serviceName, invalidatedParentModel);
+            recreateParentService(context, address, parentModel, null);
         }
     }
 
