@@ -30,6 +30,7 @@ import org.jboss.as.appclient.logging.AppClientMessages;
 import org.jboss.as.appclient.service.ApplicationClientDeploymentService;
 import org.jboss.as.appclient.service.ApplicationClientStartService;
 import org.jboss.as.appclient.service.DefaultApplicationClientCallbackHandler;
+import org.jboss.as.appclient.service.RealmCallbackWrapper;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.server.deployment.Attachments;
@@ -91,7 +92,7 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
         if (appClientData != null && appClientData.getCallbackHandler() != null && !appClientData.getCallbackHandler().isEmpty()) {
             try {
                 final Class<?> callbackClass = classIndex.classIndex(appClientData.getCallbackHandler()).getModuleClass();
-                callbackHandler = (CallbackHandler) callbackClass.newInstance();
+                callbackHandler = new RealmCallbackWrapper((CallbackHandler) callbackClass.newInstance());
             } catch (ClassNotFoundException e) {
                 throw AppClientMessages.MESSAGES.couldNotLoadCallbackClass(appClientData.getCallbackHandler());
             } catch (Exception e) {
