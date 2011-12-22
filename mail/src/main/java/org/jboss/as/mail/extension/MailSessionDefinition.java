@@ -21,17 +21,17 @@ public class MailSessionDefinition extends SimpleResourceDefinition {
                 MailSessionAdd.INSTANCE, MailSessionRemove.INSTANCE);
     }
 
-    private static final SimpleAttributeDefinition JNDI_NAME =
+    protected static final SimpleAttributeDefinition JNDI_NAME =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.JNDI_NAME, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
-    private static final SimpleAttributeDefinition FROM =
+    protected static final SimpleAttributeDefinition FROM =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.FROM, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
-    private static final SimpleAttributeDefinition DEBUG =
+    protected static final SimpleAttributeDefinition DEBUG =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.DEBUG, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
@@ -39,9 +39,7 @@ public class MailSessionDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(final ManagementResourceRegistration rootResourceRegistration) {
-        rootResourceRegistration.registerReadOnlyAttribute(JNDI_NAME, null);
-        rootResourceRegistration.registerReadOnlyAttribute(FROM, null);
-        rootResourceRegistration.registerReadOnlyAttribute(DEBUG, null);
+        MailSessionWriteAttributeHandler.INSTANCE.registerAttributes(rootResourceRegistration);
     }
 
 }
