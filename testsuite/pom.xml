@@ -436,6 +436,13 @@
                 <executions><execution><id>attach-sources</id><phase>none</phase></execution></executions>
             </plugin>
 
+            <!-- Don't run checkstyle - nothing in src/java. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <executions><execution><id>check-style</id><phase>none</phase></execution></executions>
+            </plugin>
+
         </plugins>
     </build>
 
