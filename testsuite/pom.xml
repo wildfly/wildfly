@@ -428,6 +428,13 @@
                 </dependencies>
             </plugin>
             
+            <!-- Don't create source jars - nothing to do. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions><execution><id>attach-sources</id><phase>none</phase></execution></executions>
+            </plugin>
+
         </plugins>
     </build>
 
