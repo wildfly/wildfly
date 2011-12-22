@@ -34,6 +34,7 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.logging.Logger;
 
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Fix CapeDwarf JPA usage - atm we use Hibernate.
@@ -42,6 +43,9 @@ import java.util.List;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CapedwarfJPAProcessor implements DeploymentUnitProcessor {
+
+    static final String DIALECT_PROPERTY_KEY = "hibernate.dialect";
+    static final String DEFAULT_DIALECT = "org.hibernate.dialect.H2Dialect";
 
     private Logger log = Logger.getLogger(getClass());
 
@@ -69,6 +73,9 @@ public class CapedwarfJPAProcessor implements DeploymentUnitProcessor {
                     if (Configuration.getProviderModuleNameFromProviderClassName(providerClassName) == null) {
                         log.debug("Changing JPA configuration - " + providerClassName + " not yet supported.");
                         pumd.setPersistenceProviderClassName(Configuration.PROVIDER_CLASS_HIBERNATE); // TODO OGM usage
+                        final Properties properties = pumd.getProperties();
+                        if (properties.contains(DIALECT_PROPERTY_KEY) == false)
+                            properties.put(DIALECT_PROPERTY_KEY, DEFAULT_DIALECT);
                     }
                 }
             }
