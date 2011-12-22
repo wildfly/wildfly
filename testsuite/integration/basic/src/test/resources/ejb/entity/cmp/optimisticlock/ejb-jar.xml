@@ -72,7 +72,7 @@
             <local-home>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocalHome</local-home>
             <local>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocal</local>
 
-            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.ejb.CmpEntityBean</ejb-class>
+            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.CmpEntityBean</ejb-class>
             <persistence-type>Container</persistence-type>
             <prim-key-class>java.lang.Integer</prim-key-class>
             <reentrant>false</reentrant>
@@ -121,7 +121,7 @@
             <local-home>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocalHome</local-home>
             <local>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocal</local>
 
-            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.ejb.CmpEntityBean</ejb-class>
+            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.CmpEntityBean</ejb-class>
             <persistence-type>Container</persistence-type>
             <prim-key-class>java.lang.Integer</prim-key-class>
             <reentrant>false</reentrant>
@@ -170,7 +170,7 @@
             <local-home>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocalHome</local-home>
             <local>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocal</local>
 
-            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.ejb.CmpEntityBean</ejb-class>
+            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.CmpEntityBean</ejb-class>
             <persistence-type>Container</persistence-type>
             <prim-key-class>java.lang.Integer</prim-key-class>
             <reentrant>false</reentrant>
@@ -219,7 +219,7 @@
             <local-home>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocalHome</local-home>
             <local>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocal</local>
 
-            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.ejb.CmpEntityBean</ejb-class>
+            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.CmpEntityBean</ejb-class>
             <persistence-type>Container</persistence-type>
             <prim-key-class>java.lang.Integer</prim-key-class>
             <reentrant>false</reentrant>
@@ -268,7 +268,7 @@
             <local-home>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocalHome</local-home>
             <local>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocal</local>
 
-            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.ejb.CmpEntityBean</ejb-class>
+            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.CmpEntityBean</ejb-class>
             <persistence-type>Container</persistence-type>
             <prim-key-class>java.lang.Integer</prim-key-class>
             <reentrant>false</reentrant>
@@ -317,7 +317,7 @@
             <local-home>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocalHome</local-home>
             <local>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocal</local>
 
-            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.ejb.CmpEntityBean</ejb-class>
+            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.CmpEntityBean</ejb-class>
             <persistence-type>Container</persistence-type>
             <prim-key-class>java.lang.Integer</prim-key-class>
             <reentrant>false</reentrant>
@@ -366,7 +366,7 @@
             <local-home>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocalHome</local-home>
             <local>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocal</local>
 
-            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.ejb.CmpEntityBean</ejb-class>
+            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.CmpEntityBean</ejb-class>
             <persistence-type>Container</persistence-type>
             <prim-key-class>java.lang.Integer</prim-key-class>
             <reentrant>false</reentrant>

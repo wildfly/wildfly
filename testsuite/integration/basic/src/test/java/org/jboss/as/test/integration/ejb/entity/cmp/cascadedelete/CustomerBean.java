@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete.ejb;
+package org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete;
 
 import java.rmi.RemoteException;
 import java.util.Collection;
@@ -36,7 +36,7 @@ import javax.ejb.RemoveException;
  * @author <a href="alex@jboss.com">Alexey Loubyansky</a>
  * @version $Revision: 82920 $
  */
-public abstract class AccountBean implements EntityBean
+public abstract class CustomerBean implements EntityBean
 {
    public Long ejbCreate(Long id, String name) throws CreateException
    {
@@ -55,20 +55,8 @@ public abstract class AccountBean implements EntityBean
    public abstract String getName();
    public abstract void setName(String name);
 
-   public abstract CustomerLocal getCustomer();
-   public abstract void setCustomer(CustomerLocal customer);
-
-   public abstract AccountLocal getParentAccount();
-   public abstract void setParentAccount(AccountLocal account);
-
-   public abstract Collection getChildAccounts();
-   public abstract void setChildAccounts(Collection accounts);
-
-   public abstract AccountLocal getParentAccount2();
-   public abstract void setParentAccount2(AccountLocal account);
-
-   public abstract Collection getChildAccounts2();
-   public abstract void setChildAccounts2(Collection accounts);
+   public abstract Collection getAccounts();
+   public abstract void setAccounts(Collection accounts);
 
    public void setEntityContext(EntityContext arg0) throws EJBException, RemoteException
    {

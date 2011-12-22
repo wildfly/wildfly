@@ -64,7 +64,6 @@ public class SimpleCMPUnitTestCase extends AbstractCmpTest {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME);
         jar.addPackage(SimpleCMPUnitTestCase.class.getPackage());
         jar.addAsManifestResource("ejb/entity/cmp/simple/ejb-jar.xml", "ejb-jar.xml");
-        jar.addAsManifestResource("ejb/entity/cmp/simple/jboss.xml", "jboss.xml");
         jar.addAsManifestResource("ejb/entity/cmp/simple/jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
         AbstractCmpTest.addDeploymentAssets(jar);
         return jar;

@@ -19,35 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete.ejb;
+package org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete;
 
-import java.util.Collection;
-
-import javax.ejb.EJBLocalObject;
+import javax.ejb.CreateException;
+import javax.ejb.EJBLocalHome;
+import javax.ejb.FinderException;
 
 /**
- * A CustomerLocal.
+ * A CustomerLocalHome.
  *
  * @author <a href="alex@jboss.com">Alexey Loubyansky</a>
  * @version $Revision: 82920 $
  */
-public interface AccountLocal extends EJBLocalObject
+public interface AccountLocalHome extends EJBLocalHome
 {
-   Long getId();
+   AccountLocal create(Long id, String name) throws CreateException;
 
-   String getName();
-   void setName(String name);
-
-   CustomerLocal getCustomer();
-   void setCustomer(CustomerLocal customer);
-
-   AccountLocal getParentAccount();
-   void setParentAccount(AccountLocal parent);
-
-   Collection getChildAccounts();
-
-   AccountLocal getParentAccount2();
-   void setParentAccount2(AccountLocal parent);
-
-   Collection getChildAccounts2();
+   AccountLocal findByPrimaryKey(Long id) throws FinderException;
 }

@@ -19,18 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete.test;
+package org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete;
 
 import javax.ejb.ObjectNotFoundException;
 import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.as.test.integration.ejb.entity.cmp.AbstractCmpTest;
 import org.jboss.as.test.integration.ejb.entity.cmp.CmpTestRunner;
-import org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete.ejb.AccountBean;
-import org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete.ejb.AccountLocal;
-import org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete.ejb.AccountLocalHome;
-import org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete.ejb.CustomerLocal;
-import org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete.ejb.CustomerLocalHome;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -53,7 +48,6 @@ public class CascadeDeleteUnitTestCase extends AbstractCmpTest {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "cmp-cascadedelete.jar");
         jar.addPackage(AccountBean.class.getPackage());
         jar.addAsManifestResource("ejb/entity/cmp/cascadedelete/ejb-jar.xml", "ejb-jar.xml");
-        jar.addAsManifestResource("ejb/entity/cmp/cascadedelete/jboss.xml", "jboss.xml");
         jar.addAsManifestResource("ejb/entity/cmp/cascadedelete/jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
         AbstractCmpTest.addDeploymentAssets(jar);
         return jar;
@@ -105,10 +99,10 @@ public class CascadeDeleteUnitTestCase extends AbstractCmpTest {
     }
 
     private AccountLocalHome getAccountHome() throws NamingException {
-        return (AccountLocalHome) iniCtx.lookup("java:module/Account!org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete.ejb.AccountLocalHome");
+        return (AccountLocalHome) iniCtx.lookup("java:module/Account!org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete.AccountLocalHome");
     }
 
     private CustomerLocalHome getCustomerHome() throws NamingException {
-        return (CustomerLocalHome) iniCtx.lookup("java:module/Customer!org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete.ejb.CustomerLocalHome");
+        return (CustomerLocalHome) iniCtx.lookup("java:module/Customer!org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete.CustomerLocalHome");
     }
 }

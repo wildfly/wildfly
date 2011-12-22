@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.ejb;
+package org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock;
 
 import javax.annotation.Resource;
 import javax.ejb.SessionContext;
@@ -323,6 +323,6 @@ public class FacadeBean {
     }
 
     private FacadeBean getFacade() throws NamingException {
-        return (FacadeBean) new InitialContext().lookup("java:module/FacadeBean!org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.ejb.FacadeBean");
+        return (FacadeBean) new InitialContext().lookup("java:module/FacadeBean!org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.FacadeBean");
     }
 }

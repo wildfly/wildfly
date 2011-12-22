@@ -49,7 +49,6 @@ public class LazyResultSetLoadingTestCase extends AbstractCmpTest {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "cmp-commerce.jar");
         jar.addPackage(LazyResultSetLoadingTestCase.class.getPackage());
         jar.addAsManifestResource("ejb/entity/cmp/commerce/ejb-jar.xml", "ejb-jar.xml");
-        jar.addAsManifestResource("ejb/entity/cmp/commerce/jboss.xml", "jboss.xml");
         jar.addAsManifestResource("ejb/entity/cmp/commerce/jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
         AbstractCmpTest.addDeploymentAssets(jar);
         return jar;

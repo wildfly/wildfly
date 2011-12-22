@@ -45,7 +45,6 @@ public abstract class AbstractRelationshipTest extends AbstractCmpTest{
         jar.addPackage(org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneBidirectional.ABTestCase.class.getPackage());
         jar.addPackage(AbstractRelationshipTest.class.getPackage());
         jar.addAsManifestResource("ejb/entity/cmp/relationship/ejb-jar.xml", "ejb-jar.xml");
-        jar.addAsManifestResource("ejb/entity/cmp/relationship/jboss.xml", "jboss.xml");
         jar.addAsManifestResource("ejb/entity/cmp/relationship/jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
         AbstractCmpTest.addDeploymentAssets(jar);
         return jar;
