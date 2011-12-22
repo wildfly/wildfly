@@ -79,6 +79,7 @@ import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
+import org.jboss.as.domain.management.parsing.ManagementXml;
 import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
 import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
 import org.jboss.dmr.ModelNode;
@@ -93,7 +94,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * @author Brian Stansberry
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class HostXml extends CommonXml {
+public class HostXml extends CommonXml implements ManagementXml.Delegate {
 
     public HostXml(final ModuleLoader loader, ExecutorService executorService) {
         super(loader, executorService);
@@ -157,7 +158,8 @@ public class HostXml extends CommonXml {
         }
 
         if (modelNode.hasDefined(CORE_SERVICE) && modelNode.get(CORE_SERVICE).hasDefined(MANAGEMENT)) {
-            writeManagement(writer, modelNode.get(CORE_SERVICE, MANAGEMENT), true);
+            ManagementXml managementXml = new ManagementXml(this);
+            managementXml.writeManagement(writer, modelNode.get(CORE_SERVICE, MANAGEMENT), true);
             writeNewLine(writer);
         }
 
@@ -263,7 +265,8 @@ public class HostXml extends CommonXml {
         }
 
         if (element == Element.MANAGEMENT) {
-            parseManagement(reader, address, DOMAIN_1_0, list, true, false);
+            ManagementXml managementXml = new ManagementXml(this);
+            managementXml.parseManagement(reader, address, DOMAIN_1_0, list, true, false);
             element = nextElement(reader, DOMAIN_1_0);
         }
         if (element == Element.DOMAIN_CONTROLLER) {
@@ -363,7 +366,8 @@ public class HostXml extends CommonXml {
             element = nextElement(reader, DOMAIN_1_1);
         }
         if (element == Element.MANAGEMENT) {
-            parseManagement(reader, address, DOMAIN_1_1, list, true, true);
+            ManagementXml managementXml = new ManagementXml(this);
+            managementXml.parseManagement(reader, address, DOMAIN_1_1, list, true, true);
             element = nextElement(reader, DOMAIN_1_1);
         } else {
             throw missingRequiredElement(reader, EnumSet.of(Element.MANAGEMENT));
@@ -391,7 +395,8 @@ public class HostXml extends CommonXml {
 
     }
 
-    protected void parseManagementInterfaces(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+    @Override
+    public void parseManagementInterfaces(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
             final List<ModelNode> list) throws XMLStreamException {
 
         requireNoAttributes(reader);
@@ -1042,7 +1047,8 @@ public class HostXml extends CommonXml {
 
     }
 
-    protected void writeNativeManagementProtocol(final XMLExtendedStreamWriter writer, final ModelNode protocol)
+    @Override
+    public void writeNativeManagementProtocol(final XMLExtendedStreamWriter writer, final ModelNode protocol)
             throws XMLStreamException {
 
         writer.writeStartElement(Element.NATIVE_INTERFACE.getLocalName());
@@ -1055,7 +1061,8 @@ public class HostXml extends CommonXml {
         writer.writeEndElement();
     }
 
-    protected void writeHttpManagementProtocol(final XMLExtendedStreamWriter writer, final ModelNode protocol)
+    @Override
+    public void writeHttpManagementProtocol(final XMLExtendedStreamWriter writer, final ModelNode protocol)
             throws XMLStreamException {
 
         writer.writeStartElement(Element.HTTP_INTERFACE.getLocalName());

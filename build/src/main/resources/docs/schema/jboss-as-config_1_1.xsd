@@ -258,7 +258,7 @@
     <xs:complexType name="secretType">
         <xs:annotation>
             <xs:documentation>
-                Configuration of the SSL identity of this server.
+                Configuration of the secret/password-based identity of this server.
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="value" type="xs:string" use="required">
@@ -294,6 +294,13 @@
                 The keystore configuration for the server.
             </xs:documentation>
         </xs:annotation>
+        <xs:attribute name="path" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The path of the keystore.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="relative-to" use="optional" type="xs:string">
             <xs:annotation>
                 <xs:documentation>
@@ -301,13 +308,6 @@
                     standard paths provided by the system. If 'relative-to' is
                     provided, the value of the 'path' attribute is treated as
                     relative to the path specified by this attribute.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="path" type="xs:string" use="required">
-            <xs:annotation>
-                <xs:documentation>
-                    The path of the keystore.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
@@ -324,13 +324,13 @@
         <xs:annotation>
             <xs:documentation>
                 Configuration of the server side authentication mechanisms.
-                
-                Optionally one truststore can be defined and one username/password based store can be defined,
-                authentication will first attemp to use the truststore and if this is not available fall back
+
+                Optionally one truststore can be defined and one username/password based store can be defined.
+                Authentication will first attempt to use the truststore and if this is not available will fall back
                 to the username/password authentication.
-                
-                If none of these are specified the only available mechanism will be the local mechanism for the 
-                Native interface, the HTTP interface will not be accessible.
+
+                If none of these are specified the only available mechanism will be the local mechanism for the
+                Native interface and the HTTP interface will not be accessible.
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>

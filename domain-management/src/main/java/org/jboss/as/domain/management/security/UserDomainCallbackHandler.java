@@ -55,12 +55,17 @@ public class UserDomainCallbackHandler implements Service<UserDomainCallbackHand
 
     private final String realm;
 
-    private final ModelNode userDomain;
+    private volatile ModelNode userDomain;
 
     public UserDomainCallbackHandler(String realm, ModelNode userDomain) {
         this.realm = realm;
-        this.userDomain = userDomain;
+        setUserDomain(userDomain);
     }
+
+    void setUserDomain(final ModelNode userDomain) {
+        this.userDomain = userDomain == null || !userDomain.isDefined() ? new ModelNode().setEmptyObject() : userDomain.clone();
+    }
+
 
     /*
      *  Service Methods
@@ -90,6 +95,9 @@ public class UserDomainCallbackHandler implements Service<UserDomainCallbackHand
     }
 
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+
+        final ModelNode userMap = this.userDomain;
+
         List<Callback> toRespondTo = new LinkedList<Callback>();
 
         String userName = null;
@@ -107,8 +115,8 @@ public class UserDomainCallbackHandler implements Service<UserDomainCallbackHand
             } else if (current instanceof NameCallback) {
                 NameCallback nameCallback = (NameCallback) current;
                 userName = nameCallback.getDefaultName();
-                if (userDomain.get(USER).hasDefined(userName)) {
-                    user = userDomain.get(USER, userName);
+                if (userMap.get(USER).hasDefined(userName)) {
+                    user = userMap.get(USER, userName);
                 }
             } else if (current instanceof PasswordCallback) {
                 toRespondTo.add(current);

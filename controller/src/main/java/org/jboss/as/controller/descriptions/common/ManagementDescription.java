@@ -39,6 +39,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAI
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -49,6 +51,10 @@ import org.jboss.dmr.ModelNode;
 public class ManagementDescription {
 
     private static final String RESOURCE_NAME = ManagementDescription.class.getPackage().getName() + ".LocalDescriptions";
+
+    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
+        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, ManagementDescription.class.getClassLoader(), true, false);
+    }
 
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {
@@ -81,43 +87,6 @@ public class ManagementDescription {
             root.get(CHILDREN, MANAGEMENT_INTERFACE, MODEL_DESCRIPTION);
         }
 
-        return root;
-    }
-
-    public static ModelNode getManagementSecurityRealmDescription(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("core.management.security-realm"));
-        // TODO attributes
-        root.get(OPERATIONS).setEmptyObject();
-        return root;
-    }
-
-    public static ModelNode getAddManagementSecurityRealmDescription(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(ADD);
-        root.get(DESCRIPTION).set(bundle.getString("core.management.security-realm.add"));
-        //TODO attributes
-        return root;
-    }
-
-    public static ModelNode getManagementOutboundConnectionDescription(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("core.management.outbound-connection"));
-        // TODO attributes
-        root.get(OPERATIONS).setEmptyObject();
-        return root;
-    }
-
-    public static ModelNode getAddManagementOutboundConnectionDescription(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("core.management.outbound-connection"));
-        root.get(OPERATION_NAME).set(ADD);
-        root.get(DESCRIPTION).set(bundle.getString("core.management.outbound-connection.add"));
-        // TODO attributes
         return root;
     }
 }

@@ -171,6 +171,11 @@ public class SimpleResourceDefinition implements ResourceDefinition {
         // no-op
     }
 
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        // no-op
+    }
+
     /**
      * Gets the {@link ResourceDescriptionResolver} used by this resource definition, or {@code null}
      * if a {@code ResourceDescriptionResolver} is not used.

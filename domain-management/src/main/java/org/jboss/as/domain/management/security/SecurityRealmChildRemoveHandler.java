@@ -19,31 +19,34 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.controller;
 
+package org.jboss.as.domain.management.security;
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Simple remove handler that, if allowed, restarts a parent resource when a child is removed.
- * Otherwise the server is put into a forced reload.
+ * Remove handler for a child resource of a management security realm.
  *
- * @author Jason T. Greene
+ * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public abstract class RestartParentResourceRemoveHandler extends RestartParentResourceHandlerBase {
+public class SecurityRealmChildRemoveHandler extends SecurityRealmParentRestartHandler {
 
-    protected RestartParentResourceRemoveHandler(String parentKeyName) {
-        super(parentKeyName);
+    private final boolean validateAuthentication;
+
+    public SecurityRealmChildRemoveHandler(boolean validateAuthentication) {
+        this.validateAuthentication = validateAuthentication;
     }
 
-    /**
-     * Performs the update to the persistent configuration model. This default implementation simply removes
-     * the targeted resource.
-     *
-     * @param context the operation context
-     * @param operation  the operation
-     * @throws OperationFailedException if there is a problem updating the model
-     */
-    protected void updateModel(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+    @Override
+    protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
         context.removeResource(PathAddress.EMPTY_ADDRESS);
+
+        if (validateAuthentication && !context.isBooting()) {
+            ModelNode validationOp = AuthenticationValidatingHandler.createOperation(operation);
+            context.addStep(validationOp, AuthenticationValidatingHandler.INSTANCE, OperationContext.Stage.MODEL);
+        } // else we know the SecurityRealmAddHandler is part of this overall set of ops and it added AuthenticationValidatingHandler
     }
 }

@@ -2143,4 +2143,13 @@ public interface ControllerMessages {
     @Message(id = 14815, value = "There is no operation %s registered at address %s")
     IllegalArgumentException operationNotRegisteredException(String op, PathAddress address);
 
+
+    /**
+     * Creates a runtime exception indicating there was a failure to recover services during an operation rollback
+     *
+     * @param cause the cause of the failure
+     * @return the runtime exception.
+     */
+    @Message(id = 14816, value = "Failed to recover services during operation rollback")
+    RuntimeException failedToRecoverServices(@Param OperationFailedException cause);
 }

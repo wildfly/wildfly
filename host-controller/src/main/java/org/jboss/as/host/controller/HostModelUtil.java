@@ -31,7 +31,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTBOUND_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRIORITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
@@ -92,9 +91,9 @@ import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
-import org.jboss.as.domain.management.connections.ldap.LdapConnectionAddHandler;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
-import org.jboss.as.domain.management.operations.SecurityRealmAddHandler;
+import org.jboss.as.domain.management.security.SecurityRealmAddHandler;
+import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
 import org.jboss.as.host.controller.RemoteDomainConnectionService.RemoteFileRepository;
 import org.jboss.as.host.controller.descriptions.HostDescriptionProviders;
 import org.jboss.as.host.controller.descriptions.HostRootDescription;
@@ -241,12 +240,8 @@ public class HostModelUtil {
 
         // Central Management
         ManagementResourceRegistration management = hostRegistration.registerSubModel(PathElement.pathElement(CORE_SERVICE, MANAGEMENT), CommonProviders.MANAGEMENT_WITH_INTERFACES_PROVIDER);
-        ManagementResourceRegistration securityRealm = management.registerSubModel(PathElement.pathElement(SECURITY_REALM), CommonProviders.MANAGEMENT_SECURITY_REALM_PROVIDER);
-        securityRealm.registerOperationHandler(SecurityRealmAddHandler.OPERATION_NAME, SecurityRealmAddHandler.INSTANCE, SecurityRealmAddHandler.INSTANCE, false);
-
+        management.registerSubModel(SecurityRealmResourceDefinition.INSTANCE);
         management.registerSubModel(LdapConnectionResourceDefinition.INSTANCE);
-
-        // Management API protocols
         management.registerSubModel(new NativeManagementResourceDefinition(hostControllerInfo));
         management.registerSubModel(new HttpManagementResourceDefinition(hostControllerInfo, environment));
 
