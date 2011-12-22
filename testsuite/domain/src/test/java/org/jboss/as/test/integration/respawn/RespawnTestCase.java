@@ -31,7 +31,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
@@ -53,13 +52,17 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import junit.framework.Assert;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.process.Main;
 import org.jboss.as.process.ProcessController;
 import org.jboss.as.protocol.StreamUtils;
@@ -67,7 +70,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.xnio.IoUtils;
 
@@ -193,6 +195,101 @@ public class RespawnTestCase {
         readHostControllerServers();
     }
 
+    @Test
+    public void testReloadHc() throws Exception {
+        List<RunningProcess> original = waitForAllProcesses();
+        Set<String> serverIds = new HashSet<String>();
+        for (RunningProcess proc : original) {
+            if (!proc.getProcess().equals(HOST_CONTROLLER)) {
+                serverIds.add(proc.getProcessId());
+            }
+        }
+
+        executeReloadOperation(null, null);
+
+        List<RunningProcess> reloaded = waitForAllProcesses(serverIds);
+        Assert.assertEquals(original.size(), reloaded.size());
+        //Check new processes different from old, apart from HC
+        for (RunningProcess reloadedProc : reloaded) {
+            RunningProcess orig = findProcess(original, reloadedProc.getProcess());
+            if (reloadedProc.getProcess().equals(HOST_CONTROLLER)) {
+                Assert.assertTrue(reloadedProc.getProcessId().equals(orig.getProcessId()));
+            } else {
+                Assert.assertFalse(reloadedProc.getProcessId().equals(orig.getProcessId()));
+            }
+        }
+    }
+
+    @Test
+    public void testReloadHcButNotServers() throws Exception {
+        List<RunningProcess> original = waitForAllProcesses();
+        //Wait for servers (last test restarted them)
+        readHostControllerServers();
+
+        //Execute reload w/ restart-servers=false, admin-only=true
+        executeReloadOperation(false, true);
+
+        //Read HC model until there are no servers
+        long timeout = System.currentTimeMillis() + TIMEOUT;
+        while (true) {
+            Thread.sleep(500);
+            if (lookupServerInModel(MASTER, SERVER_ONE) || lookupServerInModel(MASTER, SERVER_TWO)) {
+                if (System.currentTimeMillis() < timeout) {
+                    continue;
+                } else {
+                    Assert.fail("Should not have servers in restarted admin-only HC model");
+                }
+            } else {
+                break;
+            }
+        }
+
+        //Execute reload w/ restart-servers=false, admin-only=false
+        executeReloadOperation(false, false);
+        //Wait for servers
+        readHostControllerServers();
+
+
+        //Check all processes are the same
+        List<RunningProcess> reloaded = waitForAllProcesses();
+        Assert.assertEquals(original.size(), reloaded.size());
+        //Check new processes different from old, apart from HC
+        for (RunningProcess reloadedProc : reloaded) {
+            RunningProcess orig = findProcess(original, reloadedProc.getProcess());
+            Assert.assertTrue(reloadedProc.getProcessId().equals(orig.getProcessId()));
+        }
+    }
+
+    private RunningProcess findProcess(List<RunningProcess> processes, String name) {
+        RunningProcess proc = null;
+        for (RunningProcess cur : processes) {
+            if (cur.getProcess().equals(name)) {
+                Assert.assertNull(proc);
+                proc = cur;
+            }
+        }
+        Assert.assertNotNull(proc);
+        return proc;
+    }
+
+
+    private void executeReloadOperation(Boolean restartServers, Boolean adminOnly) throws Exception {
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set("reload");
+        operation.get(OP_ADDR).set(PathAddress.pathAddress(PathElement.pathElement(HOST, "master")).toModelNode());
+        if (restartServers != null) {
+            operation.get(ModelDescriptionConstants.RESTART_SERVERS).set(restartServers);
+        }
+        if (adminOnly != null) {
+            operation.get(ModelDescriptionConstants.ADMIN_ONLY).set(adminOnly);
+        }
+        final ModelControllerClient client = ModelControllerClient.Factory.create("localhost", HC_PORT, getCallbackHandler());
+        try {
+            Assert.assertEquals(SUCCESS, client.execute(operation).get(OUTCOME).asString());
+        } catch (IOException canHappenWhenShuttingDownController) {
+        }
+    }
+
     private void shutdownHostController(boolean restart) throws Exception {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(SHUTDOWN);
@@ -202,12 +299,6 @@ public class RespawnTestCase {
     }
 
     private void readHostControllerServers() throws Exception {
-
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set(READ_RESOURCE_OPERATION);
-        operation.get(OP_ADDR).set(PathAddress.pathAddress(PathElement.pathElement(HOST, "master")).toModelNode());
-        operation.get(RECURSIVE).set(true);
-
         final long time = System.currentTimeMillis() + TIMEOUT;
         boolean hasOne = false;
         boolean hasTwo = false;
@@ -260,6 +351,27 @@ public class RespawnTestCase {
         } while(System.currentTimeMillis() < time);
         Assert.fail("Did not have all running processes " + runningProcesses);
         return null;
+    }
+
+    private List<RunningProcess> waitForAllProcesses(Set<String> excludedProcessIds) throws Exception {
+        final long time = System.currentTimeMillis() + TIMEOUT;
+        List<RunningProcess> runningProcesses;
+        do {
+            runningProcesses = processUtil.getRunningProcesses();
+            for (Iterator<RunningProcess> it = runningProcesses.iterator() ; it.hasNext() ; ) {
+                RunningProcess proc = it.next();
+                if (excludedProcessIds.contains(proc.getProcessId())) {
+                    it.remove();
+                }
+            }
+            if (processUtil.containsProcesses(runningProcesses, HOST_CONTROLLER, SERVER_ONE, SERVER_TWO)){
+                return runningProcesses;
+            }
+            Thread.sleep(200);
+        } while(System.currentTimeMillis() < time);
+        Assert.fail("Did not have all running processes " + runningProcesses);
+        return null;
+
     }
 
     private static void copyFile(File file, File directory) throws IOException{

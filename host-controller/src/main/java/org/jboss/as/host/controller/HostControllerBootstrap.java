@@ -22,25 +22,7 @@
 
 package org.jboss.as.host.controller;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-
-import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.RunningModeControl;
-import org.jboss.as.server.services.path.AbsolutePathService;
-import org.jboss.as.threads.ThreadFactoryService;
-import org.jboss.logging.Logger;
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 
 /**
  * Bootstrap of the HostController process.
@@ -67,7 +49,7 @@ public class HostControllerBootstrap {
      */
     public void bootstrap() throws Exception {
 
-        final RunningModeControl runningModeControl = new RunningModeControl(environment.getInitialRunningMode());
+        final HostRunningModeControl runningModeControl = new HostRunningModeControl(environment.getInitialRunningMode(), RestartMode.SERVERS);
         final HostControllerService hcs = new HostControllerService(environment, runningModeControl, authCode);
         serviceContainer.subTarget().addService(HostControllerService.HC_SERVICE_NAME, hcs).install();
     }

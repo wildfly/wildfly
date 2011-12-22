@@ -37,7 +37,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 
 import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.server.BootstrapListener;
 import org.jboss.as.server.FutureServiceContainer;
 import org.jboss.as.server.services.path.AbsolutePathService;
@@ -68,13 +67,13 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
     static final int DEFAULT_POOL_SIZE = 20;
 
     private final HostControllerEnvironment environment;
-    private final RunningModeControl runningModeControl;
+    private final HostRunningModeControl runningModeControl;
     private final ControlledProcessState processState;
     private final byte[] authCode;
     private volatile FutureServiceContainer futureContainer;
     private volatile long startTime;
 
-    HostControllerService(final HostControllerEnvironment environment, final RunningModeControl runningModeControl, byte[] authCode) {
+    HostControllerService(final HostControllerEnvironment environment, final HostRunningModeControl runningModeControl, byte[] authCode) {
         this.environment = environment;
         this.runningModeControl = runningModeControl;
         this.authCode = authCode;
