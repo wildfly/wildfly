@@ -31,7 +31,7 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-parent</artifactId>
-        <version>7.1.0.CR1</version>
+        <version>7.1.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>jboss-as-cmp</artifactId>
