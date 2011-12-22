@@ -25,7 +25,7 @@ import static java.security.AccessController.doPrivileged;
  */
 public class DefaultApplicationClientCallbackHandler implements CallbackHandler {
 
-    public static final String ANONYMOUS = "anonymous";
+    public static final String DOLLAR_LOCAL = "$local";
 
     @Override
     public void handle(final Callback[] callbacks) throws IOException, UnsupportedCallbackException {
@@ -37,13 +37,13 @@ public class DefaultApplicationClientCallbackHandler implements CallbackHandler 
                 if (context != null) {
                     final Set<Identity> identities = context.getSubjectInfo().getIdentities();
                     if (identities.isEmpty()) {
-                        ncb.setName(ANONYMOUS);
+                        ncb.setName(DOLLAR_LOCAL);
                     } else {
                         final Identity identity = identities.iterator().next();
                         ncb.setName(identity.getName());
                     }
                 } else {
-                    ncb.setName(ANONYMOUS);
+                    ncb.setName(DOLLAR_LOCAL);
                 }
             } else if (current instanceof PasswordCallback) {
                 if (context != null) {

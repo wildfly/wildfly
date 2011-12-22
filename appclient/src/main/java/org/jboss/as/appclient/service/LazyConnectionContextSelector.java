@@ -21,7 +21,7 @@ import org.xnio.Options;
 
 /**
  * Selector that does not create a connection until it is actually required.
- *
+ * <p/>
  * This allows the user to perform a login before the connection is established.
  *
  * @author Stuart Douglas
@@ -48,7 +48,7 @@ public class LazyConnectionContextSelector implements ContextSelector<EJBClientC
             endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
 
             // open a connection
-            final IoFuture<Connection> futureConnection = endpoint.connect(new URI(hostUrl), OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE), callbackHandler);
+            final IoFuture<Connection> futureConnection = endpoint.connect(new URI(hostUrl), OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE, Options.SASL_POLICY_NOPLAINTEXT, Boolean.FALSE), callbackHandler);
             connection = IoFutureHelper.get(futureConnection, 30L, TimeUnit.SECONDS);
 
             final EJBClientContext ejbClientContext = EJBClientContext.create();
