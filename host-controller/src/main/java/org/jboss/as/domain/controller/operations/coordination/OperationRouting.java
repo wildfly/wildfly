@@ -28,6 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -141,9 +142,8 @@ public class OperationRouting {
 
     private static void checkNull(final ModelNode operation, final Object toCheck) throws OperationFailedException {
         if (toCheck == null) {
-            String msg = String.format("No handler for %s at address %s", operation.require(OP).asString(),
-                                        PathAddress.pathAddress(operation.get(OP_ADDR)));
-            throw new OperationFailedException(new ModelNode().set(msg));
+            throw new OperationFailedException(new ModelNode().set(MESSAGES.noHandlerForOperation( operation.require(OP).asString(),
+                    PathAddress.pathAddress(operation.get(OP_ADDR)))));
         }
 
     }

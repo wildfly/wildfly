@@ -33,6 +33,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_FAILURE_DESCRIPTIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import org.jboss.dmr.ModelNode;
 
@@ -67,7 +68,7 @@ public class DomainFailureResultHandler implements OperationStepHandler {
         final ModelNode coordinator = domainOperationContext.getCoordinatorResult();
         ModelNode domainFailure = null;
         if (isDomain &&  coordinator != null && coordinator.has(FAILURE_DESCRIPTION)) {
-            domainFailure = coordinator.hasDefined(FAILURE_DESCRIPTION) ? coordinator.get(FAILURE_DESCRIPTION) : new ModelNode().set("Unexplained failure");
+            domainFailure = coordinator.hasDefined(FAILURE_DESCRIPTION) ? coordinator.get(FAILURE_DESCRIPTION) : new ModelNode().set(MESSAGES.unexplainedFailure());
         }
         if (domainFailure != null) {
             context.getFailureDescription().get(DOMAIN_FAILURE_DESCRIPTION).set(domainFailure);
@@ -84,7 +85,7 @@ public class DomainFailureResultHandler implements OperationStepHandler {
                 if (hostFailureResults == null) {
                     hostFailureResults = new ModelNode();
                 }
-                final ModelNode desc = hostResult.hasDefined(FAILURE_DESCRIPTION) ? hostResult.get(FAILURE_DESCRIPTION) : new ModelNode().set("Unexplained failure");
+                final ModelNode desc = hostResult.hasDefined(FAILURE_DESCRIPTION) ? hostResult.get(FAILURE_DESCRIPTION) : new ModelNode().set(MESSAGES.unexplainedFailure());
                 hostFailureResults.add(entry.getKey(), desc);
             }
         }
@@ -94,7 +95,7 @@ public class DomainFailureResultHandler implements OperationStepHandler {
             if (hostFailureResults == null) {
                 hostFailureResults = new ModelNode();
             }
-            final ModelNode desc = coordinator.hasDefined(FAILURE_DESCRIPTION) ? coordinator.get(FAILURE_DESCRIPTION) : new ModelNode().set("Unexplained failure");
+            final ModelNode desc = coordinator.hasDefined(FAILURE_DESCRIPTION) ? coordinator.get(FAILURE_DESCRIPTION) : new ModelNode().set(MESSAGES.unexplainedFailure());
             hostFailureResults.add(domainOperationContext.getLocalHostInfo().getLocalHostName(), desc);
         }
 

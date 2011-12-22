@@ -24,6 +24,7 @@ package org.jboss.as.host.controller.operations;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
@@ -77,7 +78,7 @@ public class ServerStatusHandler implements OperationStepHandler {
             context.getResult().set(status.toString());
             context.completeStep();
         } else {
-            throw new OperationFailedException(new ModelNode().set("Failed to get server status"));
+            throw new OperationFailedException(new ModelNode().set(MESSAGES.failedToGetServerStatus()));
         }
     }
 

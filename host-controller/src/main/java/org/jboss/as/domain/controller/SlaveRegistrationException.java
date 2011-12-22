@@ -21,6 +21,8 @@
 */
 package org.jboss.as.domain.controller;
 
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
+
 import org.jboss.as.controller.RunningMode;
 
 /**
@@ -111,7 +113,7 @@ public class SlaveRegistrationException extends Exception {
             } else if (code == HOST_IS_NOT_MASTER.getCode()) {
                 return HOST_IS_NOT_MASTER;
             }
-            throw new IllegalArgumentException("Invalid code " + code);
+            throw MESSAGES.invalidCode(code);
         }
     }
 }

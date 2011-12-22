@@ -26,6 +26,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CAN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.domain.controller.DomainControllerLogger.CONTROLLER_LOGGER;
+import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,7 +41,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 
 /**
  * Executes the first phase of a two phase operation on one or more remote, slave host controllers.
@@ -46,8 +48,6 @@ import org.jboss.logging.Logger;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class DomainSlaveHandler implements OperationStepHandler {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
     private final ExecutorService executorService;
     private final DomainOperationContext domainOperationContext;
@@ -92,17 +92,17 @@ public class DomainSlaveHandler implements OperationStepHandler {
                     result = new ModelNode();
                     result.get(OUTCOME).set(FAILED);
                     if (e instanceof InterruptedException) {
-                        result.get(FAILURE_DESCRIPTION).set(String.format("Interrupted waiting for result from host %s", entry.getKey()));
+                        result.get(FAILURE_DESCRIPTION).set(MESSAGES.interruptedAwaitingResultFromHost(entry.getKey()));
                         interrupted = true;
                     } else {
-                        result.get(FAILURE_DESCRIPTION).set(String.format("Exception getting result from host %s: %s", entry.getKey(), e.getMessage()));
+                        result.get(FAILURE_DESCRIPTION).set(MESSAGES.exceptionAwaitingResultFromHost(entry.getKey(), e.getMessage()));
                     }
                     task.cancel();
                     futures.get(entry.getKey()).cancel(true);
                 }
 
-                if (PrepareStepHandler.isTraceEnabled()) {
-                    PrepareStepHandler.log.trace("Result for remote host " + entry.getKey() + " is " + result);
+                if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
+                    HOST_CONTROLLER_LOGGER.tracef("Result for remote host %s is %s", entry.getKey(), result);
                 }
                 domainOperationContext.addHostControllerResult(entry.getKey(), result);
             }
@@ -125,11 +125,10 @@ public class DomainSlaveHandler implements OperationStepHandler {
                         domainOperationContext.addHostControllerResult(entry.getKey(), finalResult);
                     } catch (InterruptedException e) {
                         interrupted = true;
-                        log.warnf("Interrupted awaiting final response from host %s", entry.getKey());
+                        CONTROLLER_LOGGER.interruptedAwaitingFinalResponse(entry.getKey());
 
                     } catch (ExecutionException e) {
-                        log.warnf(e.getCause(), "Caught exception awaiting final response from host %s",
-                                entry.getKey());
+                        CONTROLLER_LOGGER.caughtExceptionAwaitingFinalResponse(e.getCause(), entry.getKey());
                     }
 //                    catch (TimeoutException e) {
 //                        log.warnf("Host %s did not respond to %s within [%d] seconds", entry.getKey(), (rollback ? "rollback" : "commit"), timeout);

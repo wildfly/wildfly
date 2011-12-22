@@ -33,6 +33,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
+import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 import org.jboss.as.host.controller.descriptions.HostServerDescription;
 import org.jboss.dmr.ModelNode;
 
@@ -71,7 +72,7 @@ public class ServerRemoveHandler extends AbstractRemoveStepHandler implements De
                     throw new OperationFailedException(new ModelNode().set(context.getResourceRegistration().getChildNames(PathAddress.EMPTY_ADDRESS).toString()));
                 }
                 if(controller != null) {
-                    context.getFailureDescription().set("server (" + serverName + ") still running");
+                    context.getFailureDescription().set(MESSAGES.serverStillRunning(serverName));
                 }
                 context.completeStep();
             }

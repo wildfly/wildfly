@@ -12,6 +12,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLING_TO_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SHUTDOWN;
+import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,7 +29,6 @@ import org.jboss.as.domain.controller.operations.coordination.DomainOperationCon
 import org.jboss.as.domain.controller.plan.AbstractServerUpdateTask.ServerUpdateResultHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
 
 /**
  * Coordinates rolling out a series of operations to the servers specified in a rollout plan.
@@ -36,8 +36,6 @@ import org.jboss.logging.Logger;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class NewRolloutPlanController implements ServerUpdateResultHandler {
-
-    private static final Logger logger = Logger.getLogger("org.jboss.as.host.controller");
 
     public static enum Result {
         SUCCESS,
@@ -53,7 +51,6 @@ public class NewRolloutPlanController implements ServerUpdateResultHandler {
     private final NewServerOperationExecutor serverOperationExecutor;
     private final DomainOperationContext domainOperationContext;
     private final ConcurrentMap<String, Map<ServerIdentity, ModelNode>> serverResults = new ConcurrentHashMap<String, Map<ServerIdentity, ModelNode>>();
-    private final boolean trace = logger.isTraceEnabled();
 
     public NewRolloutPlanController(final Map<String, Map<ServerIdentity, ModelNode>> opsByGroup,
                                     final ModelNode rolloutPlan,
@@ -149,8 +146,8 @@ public class NewRolloutPlanController implements ServerUpdateResultHandler {
 
     @Override
     public void handleServerUpdateResult(ServerIdentity serverId, ModelNode response) {
-        if (trace) {
-            logger.trace("From " + serverId + " received " + response);
+        if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
+            HOST_CONTROLLER_LOGGER.tracef("From %s received %s", serverId, response);
         }
         Map<ServerIdentity, ModelNode> groupResults = serverResults.get(serverId.getServerGroupName());
         if (groupResults == null) {

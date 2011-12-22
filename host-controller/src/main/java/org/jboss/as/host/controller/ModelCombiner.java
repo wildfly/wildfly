@@ -48,6 +48,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
@@ -175,7 +176,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
             portOffSet = serverModel.get(SOCKET_BINDING_PORT_OFFSET).asInt();
         }
         if(socketBindingRef == null) {
-            throw new IllegalArgumentException("undefined socket binding group for server " + serverName);
+            throw MESSAGES.undefinedSocketBinding(serverName);
         }
 
         List<ModelNode> updates = new ArrayList<ModelNode>();
@@ -419,7 +420,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         }
         final ModelNode group = groups.get(bindingRef);
         if(group == null) {
-            throw new IllegalStateException(String.format("Included socket binding group %s is not defined", bindingRef));
+            throw MESSAGES.undefinedSocketBindingGroup(bindingRef);
         }
         final ModelNode groupAddress = pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, bindingRef));
         final ModelNode groupAdd = BindingGroupAddHandler.getOperation(groupAddress, group);
@@ -436,7 +437,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
                 if(processed.add(ref)) {
                     final ModelNode includedGroup = groups.get(ref);
                     if(group == null) {
-                        throw new IllegalStateException(String.format("Included socket binding group %s is not defined", ref));
+                        throw MESSAGES.undefinedSocketBindingGroup(ref);
                     }
                     mergeBindingGroups(updates, groups, groupName, includedGroup, processed);
                 }

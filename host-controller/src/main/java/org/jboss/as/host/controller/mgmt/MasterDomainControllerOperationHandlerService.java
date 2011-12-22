@@ -21,12 +21,12 @@
 */
 package org.jboss.as.host.controller.mgmt;
 
-import org.jboss.as.controller.ControllerLogger;
+import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
+
 import org.jboss.as.controller.remote.AbstractModelControllerOperationHandlerFactoryService;
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFactoryService;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
@@ -40,7 +40,6 @@ import java.util.concurrent.TimeUnit;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class MasterDomainControllerOperationHandlerService extends AbstractModelControllerOperationHandlerFactoryService {
-    private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
 
     public static final ServiceName SERVICE_NAME = DomainController.SERVICE_NAME.append(ModelControllerClientOperationHandlerFactoryService.OPERATION_HANDLER_NAME_SUFFIX);
 
@@ -62,7 +61,7 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
                 try {
                     handler.awaitCompletion(100, TimeUnit.MILLISECONDS);
                 } catch (Exception e) {
-                    ControllerLogger.ROOT_LOGGER.warnf(e , "service shutdown did not complete");
+                    ROOT_LOGGER.serviceShutdownIncomplete(e);
                 } finally {
                     handler.shutdownNow();
                 }

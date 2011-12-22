@@ -22,6 +22,8 @@
 
 package org.jboss.as.domain.controller.plan;
 
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -106,7 +108,7 @@ class ConcurrentGroupServerUpdatePolicy {
                 notifyAll();
             }
             else {
-                throw new IllegalStateException("Unknown server group " + serverGroup);
+                throw MESSAGES.unknownServerGroup(serverGroup);
             }
         }
     }

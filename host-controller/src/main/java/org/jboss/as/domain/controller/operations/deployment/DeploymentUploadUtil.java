@@ -7,6 +7,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -36,7 +37,7 @@ public class DeploymentUploadUtil {
 
     private static InputStream getContents(OperationContext context, ModelNode operation) throws OperationFailedException {
         if(! operation.hasDefined(CONTENT)) {
-            createFailureException("invalid content declaration");
+            createFailureException(MESSAGES.invalidContentDeclaration());
         }
         return getInputStream(context, operation.require(CONTENT).get(0));
     }
@@ -47,18 +48,18 @@ public class DeploymentUploadUtil {
         if (content.hasDefined(INPUT_STREAM_INDEX)) {
             int streamIndex = content.get(INPUT_STREAM_INDEX).asInt();
             if (streamIndex > context.getAttachmentStreamCount() - 1) {
-                message = String.format("Invalid %s [%d], the maximum index is [%d]",  INPUT_STREAM_INDEX, streamIndex, (context.getAttachmentStreamCount() - 1));
+                message = MESSAGES.invalidValue(INPUT_STREAM_INDEX, streamIndex, (context.getAttachmentStreamCount() - 1));
                 throw createFailureException(message);
             }
-            message = "Null stream at index " + streamIndex;
+            message = MESSAGES.nullStream(streamIndex);
             in = context.getAttachmentStream(streamIndex);
         } else if (content.hasDefined(BYTES)) {
             in = new ByteArrayInputStream(content.get(BYTES).asBytes());
-            message = "Invalid byte stream.";
+            message = MESSAGES.invalidByteStream();
         } else if (content.hasDefined(URL)) {
             final String urlSpec = content.get(URL).asString();
             try {
-                message = "Invalid url stream.";
+                message = MESSAGES.invalidUrlStream();
                 in = new URL(urlSpec).openStream();
             } catch (MalformedURLException e) {
                 throw createFailureException(message);

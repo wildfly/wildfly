@@ -23,6 +23,7 @@
 package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.io.File;
 import java.io.OutputStream;
@@ -64,7 +65,7 @@ public class HostControllerConfigurationPersister implements ExtensibleConfigura
 
     public void initializeDomainConfigurationPersister(boolean slave) {
         if (domainPersister != null) {
-            throw new IllegalStateException("Configuration persister for domain model is already initialized");
+            throw MESSAGES.configurationPersisterAlreadyInitialized();
         }
 
         final File configDir = environment.getDomainConfigurationDir();
@@ -84,14 +85,14 @@ public class HostControllerConfigurationPersister implements ExtensibleConfigura
 
     public boolean isSlave() {
         if (slave == null) {
-            throw new IllegalStateException("Must call initializeDomainConfigurationPersister before checking for slave status");
+            throw MESSAGES.mustInvokeBeforeCheckingSlaveStatus("initializeDomainConfigurationPersister");
         }
         return slave;
     }
 
     public ExtensibleConfigurationPersister getDomainPersister() {
         if (domainPersister == null) {
-            throw new IllegalStateException("Must call initializeDomainConfigurationPersister before persisting the domain model");
+            throw MESSAGES.mustInvokeBeforePersisting("initializeDomainConfigurationPersister");
         }
         return domainPersister;
     }

@@ -20,6 +20,7 @@ package org.jboss.as.host.controller.operations;
 
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.util.Locale;
 
@@ -61,7 +62,7 @@ public class ServerRestartHandler implements OperationStepHandler, DescriptionPr
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         if (context.getRunningMode() == RunningMode.ADMIN_ONLY) {
-            throw new OperationFailedException(new ModelNode(String.format("Cannot start servers when the Host Controller running mode is %s", context.getRunningMode())));
+            throw new OperationFailedException(new ModelNode(MESSAGES.cannotStartServersInvalidMode(context.getRunningMode())));
         }
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
@@ -74,7 +75,7 @@ public class ServerRestartHandler implements OperationStepHandler, DescriptionPr
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 final ServerStatus origStatus = serverInventory.determineServerStatus(serverName);
                 if (origStatus != ServerStatus.STARTED) {
-                    throw new OperationFailedException(new ModelNode(String.format("Cannot restart server %s as it is not currently started; it is %s", serverName, origStatus)));
+                    throw new OperationFailedException(new ModelNode(MESSAGES.cannotRestartServer(serverName, origStatus)));
                 }
                 final ServerStatus status = serverInventory.restartServer(serverName, -1, model);
                 context.getResult().set(status.toString());

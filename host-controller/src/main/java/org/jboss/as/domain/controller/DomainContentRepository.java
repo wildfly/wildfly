@@ -23,7 +23,6 @@
 package org.jboss.as.domain.controller;
 
 import org.jboss.as.server.deployment.repository.impl.ContentRepositoryImpl;
-import org.jboss.logging.Logger;
 
 import java.io.File;
 
@@ -33,8 +32,6 @@ import java.io.File;
  * @author Brian Stansberry
  */
 public class DomainContentRepository extends ContentRepositoryImpl {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
 
     /**
      * Creates a new DomainContentRepository.

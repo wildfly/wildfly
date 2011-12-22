@@ -21,20 +21,19 @@
  */
 package org.jboss.as.domain.controller.plan;
 
+import static org.jboss.as.domain.controller.DomainControllerLogger.DOMAIN_DEPLOYMENT_LOGGER;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-import org.jboss.logging.Logger;
-
 /**
  * A task that uses an executor service to concurrently execute other tasks
  */
 class ConcurrentUpdateTask implements Runnable {
 
-    private static final Logger logger = Logger.getLogger("org.jboss.as.domain.deployment");
     private final List<Runnable> concurrentTasks;
     private final ExecutorService executorService;
 
@@ -58,13 +57,13 @@ class ConcurrentUpdateTask implements Runnable {
             try {
                 future.get();
             } catch (InterruptedException e) {
-                logger.errorf("%s caught InterruptedException waiting for task %s; returning",
-                        ConcurrentUpdateTask.class.getSimpleName(), concurrentTasks.get(i).toString());
+                DOMAIN_DEPLOYMENT_LOGGER.caughtExceptionWaitingForTaskReturning(ConcurrentUpdateTask.class.getSimpleName(),
+                        e.getClass().getSimpleName(), concurrentTasks.get(i).toString());
                 Thread.currentThread().interrupt();
                 return;
             } catch (ExecutionException e) {
-                logger.errorf(e, "%s caught ExecutionException waiting for task %s",
-                        ConcurrentUpdateTask.class.getSimpleName(), concurrentTasks.get(i).toString());
+                DOMAIN_DEPLOYMENT_LOGGER.caughtExceptionWaitingForTask(ConcurrentUpdateTask.class.getSimpleName(),
+                        e.getClass().getSimpleName(), concurrentTasks.get(i).toString());
             }
         }
     }

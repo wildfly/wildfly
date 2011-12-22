@@ -22,6 +22,8 @@
 
 package org.jboss.as.host.controller;
 
+import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
+
 import javax.net.SocketFactory;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -89,14 +91,14 @@ class ProcessControllerConnectionService implements Service<ProcessControllerCon
                 @Override
                 public void handleProcessStarted(final ProcessControllerClient client, final String processName) {
                     if (serverInventory == null){
-                        throw new IllegalStateException("No server inventory");
+                        throw MESSAGES.noServerInventory();
                     }
                 }
 
                 @Override
                 public void handleProcessStopped(final ProcessControllerClient client, final String processName, final long uptimeMillis) {
                     if (serverInventory == null){
-                        throw new IllegalStateException("No server inventory");
+                        throw MESSAGES.noServerInventory();
                     }
                     serverInventory.serverStopped(processName);
                 }

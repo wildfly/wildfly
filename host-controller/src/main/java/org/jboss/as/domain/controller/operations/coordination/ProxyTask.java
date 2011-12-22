@@ -25,6 +25,7 @@ package org.jboss.as.domain.controller.operations.coordination;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -68,9 +69,9 @@ class ProxyTask implements Callable<ModelNode> {
     @Override
     public ModelNode call() throws Exception {
         try {
-            boolean trace = PrepareStepHandler.isTraceEnabled();
+            boolean trace = HOST_CONTROLLER_LOGGER.isTraceEnabled();
             if (trace) {
-                PrepareStepHandler.log.trace("Sending " + operation + " to " + host);
+                HOST_CONTROLLER_LOGGER.tracef("Sending %s to %s", operation, host);
             }
             OperationMessageHandler messageHandler = new DelegatingMessageHandler(context);
 
@@ -103,12 +104,12 @@ class ProxyTask implements Callable<ModelNode> {
             if (result != null) {
                 // operation failed before it could commit
                 if (trace) {
-                    PrepareStepHandler.log.trace("Received final result " + result + " from " + host);
+                    HOST_CONTROLLER_LOGGER.tracef("Received final result %s from %s", result, host);
                 }
             } else {
                 result = preparedResultRef.get();
                 if (trace) {
-                    PrepareStepHandler.log.trace("Received prepared result " + result + " from " + host);
+                    HOST_CONTROLLER_LOGGER.tracef("Received prepared result %s from %s", result, host);
                 }
                 remoteTransaction = txRef.get();
             }

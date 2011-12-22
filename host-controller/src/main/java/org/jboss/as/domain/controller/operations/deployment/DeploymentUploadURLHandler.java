@@ -35,6 +35,7 @@ import java.util.Locale;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPLOAD_DEPLOYMENT_URL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 /**
  * Handler for the upload-deployment-url operation.
@@ -81,9 +82,9 @@ implements DescriptionProvider {
             URL url = new URL(urlSpec);
             return url.openStream();
         } catch (MalformedURLException e) {
-            throw new OperationFailedException(new ModelNode().set(String.format("%s is not a valid URL -- %s", urlSpec, e.toString())));
+            throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidUrl(urlSpec, e.toString())));
         } catch (IOException e) {
-            throw new OperationFailedException(new ModelNode().set(String.format("Error obtaining input stream from URL %s -- %s", urlSpec, e.toString())));
+            throw new OperationFailedException(new ModelNode().set(MESSAGES.errorObtainingUrlStream(urlSpec, e.toString())));
         }
     }
 

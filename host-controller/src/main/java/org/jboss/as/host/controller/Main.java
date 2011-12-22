@@ -22,6 +22,8 @@
 
 package org.jboss.as.host.controller;
 
+import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
+
 import static org.jboss.as.process.Main.getVersionString;
 import static org.jboss.as.process.Main.usage;
 
@@ -75,7 +77,7 @@ public final class Main {
         try {
             StreamUtils.readFully(System.in, authKey);
         } catch (IOException e) {
-            System.err.printf("Failed to read authentication key: %s", e);
+            System.err.println(MESSAGES.failedToReadAuthenticationKey(e));
             System.exit(1);
             return;
         }
@@ -202,7 +204,7 @@ public final class Main {
                     try {
                         pmPort = Integer.valueOf(port);
                     } catch (NumberFormatException e) {
-                        System.err.printf("Value for %s is not an Integer -- %s\n", CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT, port);
+                        System.err.println(MESSAGES.invalidValue(CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT, "Integer", port));
                         usage();
                         return null;
                     }
@@ -221,7 +223,7 @@ public final class Main {
                     try {
                         pmAddress = InetAddress.getByName(addr);
                     } catch (UnknownHostException e) {
-                        System.err.printf("Value for %s is not a known host -- %s\n", CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR, addr);
+                        System.err.println(MESSAGES.unknownHostValue(CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR, addr));
                         usage();
                         return null;
                     }
@@ -289,7 +291,7 @@ public final class Main {
 
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
-                        System.err.printf("Argument expected for option %s\n", arg);
+                        System.err.println(MESSAGES.argumentExpected(arg));
                         usage();
                         return null;
                     }
@@ -302,7 +304,7 @@ public final class Main {
 
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
-                        System.err.printf("Argument expected for option %s\n", arg);
+                        System.err.println(MESSAGES.argumentExpected(arg));
                         usage();
                         return null;
                     }
@@ -335,7 +337,7 @@ public final class Main {
 
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
-                        System.err.printf("Argument expected for option %s\n", arg);
+                        System.err.println(MESSAGES.argumentExpected(arg));
                         usage();
                         return null;
                     }
@@ -358,7 +360,7 @@ public final class Main {
 
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
-                        System.err.printf("Argument expected for option %s\n", arg);
+                        System.err.println(MESSAGES.argumentExpected(arg));
                         usage();
                         return null;
                     }
@@ -367,12 +369,12 @@ public final class Main {
                     hostSystemProperties.put(HostControllerEnvironment.JBOSS_DEFAULT_MULTICAST_ADDRESS, value);
                     SecurityActions.setSystemProperty(HostControllerEnvironment.JBOSS_DEFAULT_MULTICAST_ADDRESS, value);
                 } else {
-                    System.err.printf("Invalid option '%s'\n", arg);
+                    System.err.println(MESSAGES.invalidOption(arg));
                     usage();
                     return null;
                 }
             } catch (IndexOutOfBoundsException e) {
-                System.err.printf("Argument expected for option %s\n", arg);
+                System.err.println(MESSAGES.argumentExpected(arg));
                 usage();
                 return null;
             }
@@ -407,11 +409,11 @@ public final class Main {
              }
              return true;
          } catch (MalformedURLException e) {
-             System.err.printf("Malformed URL provided for option %s\n", arg);
+             System.err.println(MESSAGES.malformedUrl(arg));
              usage();
              return false;
          } catch (IOException e) {
-             System.err.printf("Unable to load properties from URL %s\n", url);
+             System.err.println(MESSAGES.unableToLoadProperties(url));
              usage();
              return false;
          }
@@ -421,7 +423,7 @@ public final class Main {
          try {
              return Integer.valueOf(value);
          } catch (NumberFormatException e) {
-             System.err.printf("Value for %s is not an Integer -- %s\n", key, value);
+             System.err.println(MESSAGES.invalidValue(key, "Integer", value));
              usage();
              return null;
          }
@@ -431,7 +433,7 @@ public final class Main {
         try {
             return InetAddress.getByName(value);
         } catch (UnknownHostException e) {
-            System.err.printf("Value for %s is not a known host -- %s\n", key, value);
+            System.err.println(MESSAGES.unknownHostValue(key, value));
             usage();
             return null;
         }
@@ -488,10 +490,7 @@ public final class Main {
 
         private InetAddress getBindAddress() {
             if (bindAddress == null) {
-                throw new RuntimeException(String.format("Cannot obtain a valid default address for communicating with " +
-                        "the ProcessController using either %s or InetAddress.getLocalHost(). Please check your system's " +
-                        "network configuration or use the %s command line switch to configure a valid address",
-                        defaultBindAddress, CommandLineConstants.INTERPROCESS_HC_ADDRESS), uhe);
+                throw MESSAGES.cannotObtainValidDefaultAddress(uhe, defaultBindAddress, CommandLineConstants.INTERPROCESS_HC_ADDRESS);
             }
             return bindAddress;
         }
@@ -559,7 +558,7 @@ public final class Main {
                 bindAddress = InetAddress.getByName(value);
             } catch (UnknownHostException e) {
                 parseFailed = true;
-                System.err.printf("Value for %s is not a valid InetAddress -- %s\n", key, value);
+                System.out.println(MESSAGES.invalidValue(key, "InetAddress", value));
                 usage();
             }
         }

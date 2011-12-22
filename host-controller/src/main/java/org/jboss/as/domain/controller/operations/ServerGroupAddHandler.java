@@ -29,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.util.Locale;
 import java.util.NoSuchElementException;
@@ -77,7 +78,7 @@ public class ServerGroupAddHandler implements OperationStepHandler, DescriptionP
         try {
             context.getRootResource().navigate(PathAddress.pathAddress(PathElement.pathElement(PROFILE, profile)));
         } catch (NoSuchElementException e) {
-            throw new OperationFailedException(new ModelNode().set(String.format("Unknown %s %s", PROFILE, profile)));
+            throw new OperationFailedException(new ModelNode().set(MESSAGES.unknown(PROFILE, profile)));
         }
         model.get(PROFILE).set(profile);
 
@@ -87,7 +88,7 @@ public class ServerGroupAddHandler implements OperationStepHandler, DescriptionP
             try {
                 context.getRootResource().navigate(PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, socketBindingGroup)));
             } catch (NoSuchElementException e) {
-                throw new OperationFailedException(new ModelNode().set(String.format("Unknown %s %s", SOCKET_BINDING_GROUP, socketBindingGroup)));
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.unknown(SOCKET_BINDING_GROUP, socketBindingGroup)));
             }
             model.get(SOCKET_BINDING_GROUP).set(socketBindingGroup);
         }

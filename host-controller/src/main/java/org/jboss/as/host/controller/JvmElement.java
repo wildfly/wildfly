@@ -3,6 +3,8 @@
  */
 package org.jboss.as.host.controller;
 
+import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -206,7 +208,7 @@ public class JvmElement {
 
     void setAgentPath(String agentPath) {
         if (agentLib != null) {
-            throw new IllegalArgumentException("Attempting to set 'agent-path' when 'agent-lib' was already set");
+            throw MESSAGES.attemptingToSet("agent-path", "agent-lib");
         }
         this.agentPath = agentPath;
     }
@@ -217,7 +219,7 @@ public class JvmElement {
 
     void setAgentLib(String agentLib) {
         if (agentPath != null) {
-            throw new IllegalArgumentException("Attempting to set 'agent-lib' when 'agent-path' was already set");
+            throw MESSAGES.attemptingToSet("agent-lib", "agent-path");
         }
         this.agentLib = agentLib;
     }

@@ -24,6 +24,7 @@ package org.jboss.as.domain.controller.operations.deployment;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -69,15 +70,15 @@ abstract class AbstractDeploymentHandler {
         String message = "";
         if (operation.hasDefined(INPUT_STREAM_INDEX)) {
             int streamIndex = operation.get(INPUT_STREAM_INDEX).asInt();
-            message = "Null stream at index " + streamIndex;
+            message = MESSAGES.nullStream(streamIndex);
             in = context.getAttachmentStream(streamIndex);
         } else if (operation.hasDefined(BYTES)) {
-            message = "Invalid byte stream.";
+            message = MESSAGES.invalidByteStream();
             in = new ByteArrayInputStream(operation.get(BYTES).asBytes());
         } else if (operation.hasDefined(URL)) {
             final String urlSpec = operation.get(URL).asString();
             try {
-                message = "Invalid url stream.";
+                message = MESSAGES.invalidUrlStream();
                 in = new URL(urlSpec).openStream();
             } catch (MalformedURLException e) {
                 throw createFailureException(message);
@@ -110,6 +111,6 @@ abstract class AbstractDeploymentHandler {
     protected static void validateOnePieceOfContent(final ModelNode content) throws OperationFailedException {
         // TODO: implement overlays
         if (content.asList().size() != 1)
-            throw createFailureException("Only 1 piece of content is current supported (JBAS-9020)");
+            throw createFailureException(MESSAGES.as7431());
     }
 }

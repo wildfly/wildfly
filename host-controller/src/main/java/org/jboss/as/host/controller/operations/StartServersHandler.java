@@ -22,6 +22,8 @@ package org.jboss.as.host.controller.operations;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
+import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.util.Locale;
 import java.util.Map;
@@ -31,14 +33,12 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 
 /**
  * Starts or reconnect all auto-start servers (at boot).
@@ -48,8 +48,6 @@ import org.jboss.logging.Logger;
 public class StartServersHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "start-servers";
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
 
     private final ServerInventory serverInventory;
     private final HostControllerEnvironment hostControllerEnvironment;
@@ -69,11 +67,11 @@ public class StartServersHandler implements OperationStepHandler, DescriptionPro
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         if (!context.isBooting()) {
-            throw new OperationFailedException(new ModelNode().set(String.format("Cannot invoke %s after host boot", operation.require(OP))));
+            throw new OperationFailedException(new ModelNode().set(MESSAGES.invocationNotAllowedAfterBoot(operation.require(OP))));
         }
 
         if (context.getRunningMode() == RunningMode.ADMIN_ONLY) {
-            throw new OperationFailedException(new ModelNode(String.format("Cannot start servers when the Host Controller running mode is %s", context.getRunningMode())));
+            throw new OperationFailedException(new ModelNode(MESSAGES.cannotStartServersInvalidMode(context.getRunningMode())));
         }
 
 
@@ -111,7 +109,7 @@ public class StartServersHandler implements OperationStepHandler, DescriptionPro
                 try {
                     serverInventory.startServer(serverName, domainModel);
                 } catch (Exception e) {
-                    log.errorf(e, "Failed to start server (%s)", serverName);
+                    ROOT_LOGGER.failedToStartServer(e, serverName);
                 }
             }
         }
@@ -126,7 +124,7 @@ public class StartServersHandler implements OperationStepHandler, DescriptionPro
                 try {
                     serverInventory.startServer(serverName, domainModel);
                 } catch (Exception e) {
-                    log.errorf(e, "Failed to start server (%s)", serverName);
+                    ROOT_LOGGER.failedToStartServer(e, serverName);
                 }
             } else if (info != null){
                 //Reconnect the server

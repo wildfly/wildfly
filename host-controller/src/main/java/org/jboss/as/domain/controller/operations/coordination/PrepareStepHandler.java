@@ -27,6 +27,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
+import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -40,7 +42,6 @@ import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 
 /**
  * Initial step handler for a {@link org.jboss.as.controller.ModelController} that is the model controller for a host controller.
@@ -50,14 +51,6 @@ import org.jboss.logging.Logger;
 public class PrepareStepHandler  implements OperationStepHandler {
 
     public static final String EXECUTE_FOR_COORDINATOR = "execute-for-coordinator";
-
-    static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
-
-    private static boolean trace = false;
-
-    public static boolean isTraceEnabled() {
-        return trace;
-    }
 
     private final LocalHostControllerInfo localHostControllerInfo;
     private final OperationCoordinatorStepHandler coordinatorHandler;
@@ -73,8 +66,6 @@ public class PrepareStepHandler  implements OperationStepHandler {
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-
-        trace = log.isTraceEnabled();
 
         if (context.isBooting()) {
             executeDirect(context, operation);
@@ -111,8 +102,8 @@ public class PrepareStepHandler  implements OperationStepHandler {
      * @throws OperationFailedException
      */
     private void executeDirect(OperationContext context, ModelNode operation) throws OperationFailedException {
-        if (trace) {
-            log.trace(getClass().getSimpleName() + " executing direct");
+        if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
+            HOST_CONTROLLER_LOGGER.tracef("%s executing direct", getClass().getSimpleName());
         }
         final String operationName =  operation.require(OP).asString();
         OperationStepHandler stepHandler = null;
@@ -123,7 +114,7 @@ public class PrepareStepHandler  implements OperationStepHandler {
         if(stepHandler != null) {
             context.addStep(stepHandler, OperationContext.Stage.MODEL);
         } else {
-            context.getFailureDescription().set(String.format("No handler for operation %s at address %s", operationName, PathAddress.pathAddress(operation.get(OP_ADDR))));
+            context.getFailureDescription().set(MESSAGES.noHandlerForOperation(operationName, PathAddress.pathAddress(operation.get(OP_ADDR))));
         }
         context.completeStep();
     }
