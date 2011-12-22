@@ -61,7 +61,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
-                        <executions combine.children="append">
+                        <executions>
                             <!-- Copy in some jars. -->
                             <execution>
                                 <id>prepare-jars-basic-integration.server</id>
