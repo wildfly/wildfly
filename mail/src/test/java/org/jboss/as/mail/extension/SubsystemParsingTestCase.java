@@ -113,7 +113,7 @@ public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Override
-    protected void validateXml(String configId, String original, String marshalled) throws Exception {
+    protected void compareXml(String configId, String original, String marshalled) throws Exception {
         //TODO remove this method so we get validation.
         //The problem is that the parser goes via MailSessionConfig, so this:
         // <mail-session jndi-name="java:/Mail\">
