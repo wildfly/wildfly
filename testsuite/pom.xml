@@ -324,6 +324,7 @@
                         <id>update-ip-addresses-jbossas.server</id>
                         <phase>process-test-resources</phase>
                         <goals><goal>transform</goal></goals>
+                        <inherited>false</inherited>
                         <configuration>
                             <transformationSets>
                                 <transformationSet>
@@ -426,7 +427,7 @@
                     </dependency>
                 </dependencies>
             </plugin>
-
+            
         </plugins>
     </build>
 
@@ -602,6 +603,7 @@
                                 <id>update-datasource.server</id>
                                 <phase>process-test-resources</phase>
                                 <goals><goal>transform</goal></goals>
+                                <inherited>false</inherited>
                                 <configuration>
                                     <transformationSets>
                                         <transformationSet>
