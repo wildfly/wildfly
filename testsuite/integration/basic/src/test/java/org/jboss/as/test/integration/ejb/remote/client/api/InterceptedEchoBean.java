@@ -66,4 +66,10 @@ public class InterceptedEchoBean implements EchoRemote {
     public EchoRemote getBusinessObject() {
         return null;
     }
+
+    @Override
+    public boolean testRequestScopeActive() {
+        //not used
+        return false;
+    }
 }

@@ -23,12 +23,13 @@ import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 
+import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.weld.WeldContainer;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.weld.context.ejb.EjbLiteral;
 import org.jboss.weld.context.ejb.EjbRequestContext;
 
@@ -48,11 +49,11 @@ public class EjbRequestScopeActivationInterceptor implements Serializable, org.j
 
     private volatile EjbRequestContext requestContext;
     private final ClassLoader classLoader;
-    private final InjectedValue<WeldContainer> weldContainer;
+    private final ServiceName weldContainerServiceName;
 
-    public EjbRequestScopeActivationInterceptor(final ClassLoader classLoader, final InjectedValue<WeldContainer> weldContainer) {
+    public EjbRequestScopeActivationInterceptor(final ClassLoader classLoader, final ServiceName weldContainerServiceName) {
         this.classLoader = classLoader;
-        this.weldContainer = weldContainer;
+        this.weldContainerServiceName = weldContainerServiceName;
     }
 
     @Override
@@ -65,7 +66,10 @@ public class EjbRequestScopeActivationInterceptor implements Serializable, org.j
             try {
                 SecurityActions.setContextClassLoader(classLoader);
                 //it does not matter if this happens twice
-                final BeanManager beanManager = weldContainer.getValue().getBeanManager();
+                //we just look up the service rather than using a dependency
+                //the component itself has a dependency on this service, which means that it has to be up
+                final WeldContainer weldContainer = (WeldContainer) CurrentServiceContainer.getServiceContainer().getRequiredService(weldContainerServiceName).getValue();
+                final BeanManager beanManager = weldContainer.getBeanManager();
                 final Bean<?> bean = beanManager.resolve(beanManager.getBeans(EjbRequestContext.class, EjbLiteral.INSTANCE));
                 final CreationalContext<?> ctx = beanManager.createCreationalContext(bean);
                 requestContext = (EjbRequestContext) beanManager.getReference(bean, EjbRequestContext.class, ctx);
@@ -74,35 +78,32 @@ public class EjbRequestScopeActivationInterceptor implements Serializable, org.j
             }
         }
 
-
-        try {
-            requestContext.associate(context.getInvocationContext());
-            requestContext.activate();
+        if (!requestContext.isActive()) {
+            try {
+                requestContext.associate(context.getInvocationContext());
+                requestContext.activate();
+                return context.proceed();
+            } finally {
+                requestContext.deactivate();
+                requestContext.dissociate(context.getInvocationContext());
+            }
+        } else {
             return context.proceed();
-        } finally {
-            requestContext.deactivate();
-            requestContext.dissociate(context.getInvocationContext());
         }
     }
 
 
     public static class Factory implements InterceptorFactory {
 
-        private final InjectedValue<WeldContainer> weldContainer = new InjectedValue<WeldContainer>();
         private final Interceptor interceptor;
 
-        public Factory(final ClassLoader classLoader) {
-            this.interceptor = new EjbRequestScopeActivationInterceptor(classLoader, weldContainer);
+        public Factory(final ClassLoader classLoader, final ServiceName weldContainerServiceName) {
+            this.interceptor = new EjbRequestScopeActivationInterceptor(classLoader, weldContainerServiceName);
         }
-
 
         @Override
         public org.jboss.invocation.Interceptor create(final InterceptorFactoryContext context) {
             return interceptor;
-        }
-
-        public InjectedValue<WeldContainer> getWeldContainer() {
-            return weldContainer;
         }
     }
 

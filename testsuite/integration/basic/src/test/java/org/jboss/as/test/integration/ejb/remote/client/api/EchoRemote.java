@@ -34,4 +34,7 @@ public interface EchoRemote {
     Future<String> asyncEcho(String message, long delayInMilliSec);
 
     EchoRemote getBusinessObject();
+
+    boolean testRequestScopeActive();
+
 }

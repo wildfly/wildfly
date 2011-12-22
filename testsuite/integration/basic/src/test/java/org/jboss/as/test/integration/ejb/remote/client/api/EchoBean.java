@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api;
 
-import org.jboss.logging.Logger;
+import java.util.concurrent.Future;
 
 import javax.annotation.Resource;
 import javax.ejb.AsyncResult;
@@ -30,7 +30,9 @@ import javax.ejb.Asynchronous;
 import javax.ejb.Remote;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
-import java.util.concurrent.Future;
+import javax.inject.Inject;
+
+import org.jboss.logging.Logger;
 
 /**
  * User: jpai
@@ -41,6 +43,9 @@ public class EchoBean implements EchoRemote {
 
     @Resource
     private SessionContext sessionContext;
+
+    @Inject
+    private RequestScopedBean requestScopedBean;
 
     private static final Logger logger = Logger.getLogger(EchoBean.class);
 
@@ -66,5 +71,12 @@ public class EchoBean implements EchoRemote {
     @Override
     public EchoRemote getBusinessObject() {
         return sessionContext.getBusinessObject(EchoRemote.class);
+    }
+
+    @Override
+    public boolean testRequestScopeActive() {
+        requestScopedBean.setState(10);
+        requestScopedBean.setState(requestScopedBean.getState() + 10);
+        return requestScopedBean.getState() == 20;
     }
 }
