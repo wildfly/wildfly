@@ -255,11 +255,12 @@
 
             <!--
                 Provide jboss-annotations-api_1.1_spec to compiler as endorsed.
-                Big complex hack just to get @Resource(lookup="foo").
+                Big complex hack just to get @Resource(lookup="foo").  AS7-3123
             -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
+                <inherited>true</inherited>  <!-- Needed for compilation of all submodules. -->
                 <executions combine.children="append">
                     <execution>
                         <id>copy-annotations-endorsed</id>
