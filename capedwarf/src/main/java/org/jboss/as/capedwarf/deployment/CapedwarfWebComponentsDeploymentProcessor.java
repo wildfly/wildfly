@@ -1,6 +1,7 @@
 package org.jboss.as.capedwarf.deployment;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.capedwarf.appidentity.CDIListener;
 import org.jboss.capedwarf.appidentity.GAEFilter;
 import org.jboss.capedwarf.users.AuthServlet;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
@@ -9,6 +10,7 @@ import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.FilterMappingMetaData;
 import org.jboss.metadata.web.spec.FilterMetaData;
 import org.jboss.metadata.web.spec.FiltersMetaData;
+import org.jboss.metadata.web.spec.ListenerMetaData;
 import org.jboss.metadata.web.spec.ServletMappingMetaData;
 
 import java.util.ArrayList;
@@ -16,39 +18,60 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * Add GAE filter and auth servlet.
+ *
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CapedwarfFiltersDeploymentProcessor extends CapedwarfWebDeploymentProcessor {
-
-    /**
-     * The relative order of this processor within the {@link #PHASE}.
-     * The current number is large enough for it to happen after all
-     * the standard deployment unit processors that come with JBoss AS.
-     */
-    public static final int PRIORITY = 0x3B00;
+public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModificationDeploymentProcessor {
 
     private static final String GAE_FILTER_NAME = "GAEFilter";
     private static final String AUTH_SERVLET_NAME = "authservlet";
 
+    private final ListenerMetaData CDI_LISTENER;
     private final FilterMetaData GAE_FILTER;
     private final FilterMappingMetaData GAE_FILTER_MAPPING;
     private final JBossServletMetaData GAE_SERVLET;
     private final ServletMappingMetaData GAE_SERVLET_MAPPING;
 
-    public CapedwarfFiltersDeploymentProcessor() {
+    public CapedwarfWebComponentsDeploymentProcessor() {
+        CDI_LISTENER = createListener();
         GAE_FILTER = createFilter();
         GAE_FILTER_MAPPING = createFilterMapping();
         GAE_SERVLET = createAuthServlet();
         GAE_SERVLET_MAPPING = createAuthServletMapping();
     }
 
-    protected void doDeploy(DeploymentUnit unit, JBossWebMetaData webMetaData) {
-        addFilterTo(webMetaData);
-        addFilterMappingTo(webMetaData);
+    @Override
+    protected void doDeploy(DeploymentUnit unit, JBossWebMetaData webMetaData, Type type) {
+        if (type == Type.MERGED) {
+            addListenerTo(webMetaData);
 
-        addAuthServletTo(webMetaData);
-        addAuthServletMappingTo(webMetaData);
+            addFilterTo(webMetaData);
+            addFilterMappingTo(webMetaData);
+
+            addAuthServletTo(webMetaData);
+            addAuthServletMappingTo(webMetaData);
+        }
+    }
+
+    private void addListenerTo(JBossWebMetaData webMetaData) {
+        getListeners(webMetaData).add(CDI_LISTENER);
+    }
+
+    private ListenerMetaData createListener() {
+        ListenerMetaData listener = new ListenerMetaData();
+        listener.setListenerClass(CDIListener.class.getName());
+        return listener;
+    }
+
+    private List<ListenerMetaData> getListeners(JBossWebMetaData webMetaData) {
+        List<ListenerMetaData> listeners = webMetaData.getListeners();
+        if (listeners == null) {
+            listeners = new ArrayList<ListenerMetaData>();
+            webMetaData.setListeners(listeners);
+        }
+        return listeners;
     }
 
     private void addFilterTo(JBossWebMetaData webMetaData) {

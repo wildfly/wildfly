@@ -44,13 +44,6 @@ public class CapedwarfInitializationProcessor implements DeploymentUnitProcessor
 
     private final Logger log = Logger.getLogger(CapedwarfInitializationProcessor.class);
 
-    /**
-     * The relative order of this processor within the phase.
-     * The current number is large enough for it to happen after all
-     * the standard deployment unit processors that come with JBoss AS.
-     */
-    public static final int PRIORITY = 0x4000;
-
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit unit = phaseContext.getDeploymentUnit();

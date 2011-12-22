@@ -23,9 +23,10 @@
 package org.jboss.as.capedwarf.extension;
 
 import org.jboss.as.capedwarf.deployment.CapedwarfDeploymentProcessor;
-import org.jboss.as.capedwarf.deployment.CapedwarfFiltersDeploymentProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfInitializationProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfJPAProcessor;
+import org.jboss.as.capedwarf.deployment.CapedwarfWebCleanupProcessor;
+import org.jboss.as.capedwarf.deployment.CapedwarfWebComponentsDeploymentProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfWeldProcessor;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -68,11 +69,12 @@ class SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
-                processorTarget.addDeploymentProcessor(Phase.PARSE, CapedwarfInitializationProcessor.PRIORITY, new CapedwarfInitializationProcessor());
-                processorTarget.addDeploymentProcessor(Phase.PARSE, CapedwarfFiltersDeploymentProcessor.PRIORITY, new CapedwarfFiltersDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_DEPLOYMENT - 10, new CapedwarfInitializationProcessor());
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_DEPLOYMENT + 1, new CapedwarfWebCleanupProcessor()); // right after web.xml parsing
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_MERGE_METADATA + 1, new CapedwarfWebComponentsDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WELD - 10, new CapedwarfWeldProcessor()); // before Weld
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JPA - 10, new CapedwarfJPAProcessor()); // before default JPA processor
-                processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, CapedwarfDeploymentProcessor.PRIORITY, new CapedwarfDeploymentProcessor(appengineAPI));
+                processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WAR_MODULE + 10, new CapedwarfDeploymentProcessor(appengineAPI));
             }
         }, OperationContext.Stage.RUNTIME);
 

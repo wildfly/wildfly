@@ -25,9 +25,6 @@ package org.jboss.as.capedwarf.deployment;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.jboss.metadata.web.spec.ListenerMetaData;
-import org.jboss.metadata.web.spec.WebMetaData;
 
 import java.util.Iterator;
 import java.util.List;
@@ -39,7 +36,6 @@ import java.util.List;
  */
 public class CapedwarfWeldProcessor extends CapedwarfWebDeploymentProcessor {
 
-    private static final String WELD_LISTENER_PREFIX = "org.jboss.weld.environment.servlet.";
     private static final String WELD_SERVLET = "weld-servlet";
 
     @Override
@@ -50,29 +46,6 @@ public class CapedwarfWeldProcessor extends CapedwarfWebDeploymentProcessor {
             ResourceRoot rr = rrIter.next();
             if (rr.getRootName().contains(WELD_SERVLET))
                 rrIter.remove();
-        }
-    }
-
-    @Override
-    protected void doDeploy(DeploymentUnit unit, WebMetaData webMetaData) {
-        final List<ListenerMetaData> listeners = webMetaData.getListeners();
-        removeListeners(listeners);
-    }
-
-    @Override
-    protected void doDeploy(DeploymentUnit unit, JBossWebMetaData webMetaData) {
-        final List<ListenerMetaData> listeners = webMetaData.getListeners();
-        removeListeners(listeners);
-    }
-
-    protected void removeListeners(List<ListenerMetaData> listeners) {
-        if (listeners != null) {
-            final Iterator<ListenerMetaData> iter = listeners.iterator();
-            while (iter.hasNext()) {
-                ListenerMetaData lmd = iter.next();
-                if (lmd.getListenerClass().startsWith(WELD_LISTENER_PREFIX))
-                    iter.remove();
-            }
         }
     }
 }

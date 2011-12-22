@@ -29,6 +29,8 @@
 
     <dependencies>
         <module name="javax.api"/>
+        <module name="javax.enterprise.api"/>
+        <module name="javax.inject.api"/>
         <module name="javax.transaction.api"/>
         <module name="javax.activation.api"/>
         <module name="javax.mail.api"/>

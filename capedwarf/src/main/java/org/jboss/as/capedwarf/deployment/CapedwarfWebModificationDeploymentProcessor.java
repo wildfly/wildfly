@@ -22,11 +22,10 @@
 
 package org.jboss.as.capedwarf.deployment;
 
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.logging.Logger;
+import org.jboss.as.web.deployment.WarMetaData;
+import org.jboss.metadata.web.jboss.JBossWebMetaData;
+import org.jboss.metadata.web.spec.WebMetaData;
 
 /**
  * CapeDwarf modifying web content processor.
@@ -34,22 +33,40 @@ import org.jboss.logging.Logger;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public abstract class CapedwarfWebDeploymentProcessor implements DeploymentUnitProcessor {
+public abstract class CapedwarfWebModificationDeploymentProcessor extends CapedwarfWebDeploymentProcessor {
 
-    protected Logger log = Logger.getLogger(getClass());
-
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit unit = phaseContext.getDeploymentUnit();
-        if (CapedwarfDeploymentMarker.isCapedwarfDeployment(unit) == false)
-            return;
-
-        doDeploy(unit);
+    protected static enum Type {
+        SPEC,
+        JBOSS,
+        MERGED,
+        SHARED
     }
 
     protected void doDeploy(DeploymentUnit unit) {
+        WarMetaData warMetaData = unit.getAttachment(WarMetaData.ATTACHMENT_KEY);
+        if (warMetaData == null)
+            return;
+
+        WebMetaData webMetaData = warMetaData.getWebMetaData();
+        if (webMetaData != null)
+            doDeploy(unit, webMetaData, Type.SPEC);
+
+        webMetaData = warMetaData.getSharedWebMetaData();
+        if (webMetaData != null)
+            doDeploy(unit, webMetaData, Type.SHARED);
+
+        JBossWebMetaData jBossWebMetaData = warMetaData.getJbossWebMetaData();
+        if (webMetaData != null)
+            doDeploy(unit, jBossWebMetaData, Type.JBOSS);
+
+        jBossWebMetaData = warMetaData.getMergedJBossWebMetaData();
+        if (webMetaData != null)
+            doDeploy(unit, jBossWebMetaData, Type.MERGED);
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
+    protected void doDeploy(DeploymentUnit unit, WebMetaData webMetaData, Type type) {
+    }
+
+    protected void doDeploy(DeploymentUnit unit, JBossWebMetaData webMetaData, Type type) {
     }
 }
