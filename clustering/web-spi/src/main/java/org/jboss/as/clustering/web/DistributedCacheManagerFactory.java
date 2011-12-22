@@ -22,18 +22,16 @@
 
 package org.jboss.as.clustering.web;
 
-import java.util.Collection;
-
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Factory for obtaining a DistributedCacheManager.
  * @author Brian Stansberry
  */
 public interface DistributedCacheManagerFactory {
-    <T extends OutgoingDistributableSessionData> DistributedCacheManager<T> getDistributedCacheManager(ServiceRegistry registry, LocalDistributableSessionManager localManager) throws ClusteringNotSupportedException;
+    <T extends OutgoingDistributableSessionData> DistributedCacheManager<T> getDistributedCacheManager(LocalDistributableSessionManager localManager) throws ClusteringNotSupportedException;
 
-    Collection<ServiceName> getDependencies(JBossWebMetaData metaData);
+    boolean addDependencies(ServiceTarget target, ServiceBuilder<?> builder, JBossWebMetaData metaData);
 }

@@ -24,7 +24,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.Cache;
 import org.infinispan.manager.CacheContainer;
-import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -38,8 +37,6 @@ import org.jboss.msc.value.InjectedValue;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 public class CacheService<K, V> implements Service<Cache<K, V>> {
-
-    private static final Logger log = Logger.getLogger(CacheService.class.getPackage().getName()) ;
 
     private final InjectedValue<CacheContainer> container = new InjectedValue<CacheContainer>();
     private final String name;
@@ -81,9 +78,7 @@ public class CacheService<K, V> implements Service<Cache<K, V>> {
 
         // get an instance of the defined cache
         this.cache = container.getCache(this.name);
-
-        // advertise
-        log.debugf("Cache %s started", this.name);
+        this.cache.start();
     }
 
     /**
@@ -96,7 +91,5 @@ public class CacheService<K, V> implements Service<Cache<K, V>> {
         // this may cause problems if the cache name is reused with a different cache type as the
         // original cache definition will be takes as base config
         this.cache.stop();
-
-        log.debugf("Cache %s stopped", this.name);
     }
 }

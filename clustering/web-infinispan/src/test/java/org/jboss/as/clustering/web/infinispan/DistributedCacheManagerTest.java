@@ -53,7 +53,6 @@ import org.jboss.as.clustering.web.IncomingDistributableSessionData;
 import org.jboss.as.clustering.web.LocalDistributableSessionManager;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.clustering.web.SessionOwnershipSupport;
-import org.jboss.msc.service.ServiceRegistry;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,7 +64,6 @@ import org.mockito.Mockito;
  *
  */
 public class DistributedCacheManagerTest {
-    private ServiceRegistry registry = mock(ServiceRegistry.class);
     @SuppressWarnings("unchecked")
     private SessionKeyFactory<SessionKey> keyFactory = mock(SessionKeyFactory.class);
     private LocalDistributableSessionManager sessionManager = mock(LocalDistributableSessionManager.class);
@@ -73,7 +71,8 @@ public class DistributedCacheManagerTest {
     private SessionAttributeStorage<OutgoingDistributableSessionData> storage = mock(SessionAttributeStorage.class);
     @SuppressWarnings("unchecked")
     private AdvancedCache<SessionKey, Map<Object, Object>> sessionCache = mock(AdvancedCache.class);
-    private CacheSource jvmRouteCacheSource = mock(CacheSource.class);
+    @SuppressWarnings("unchecked")
+    private AdvancedCache<Address, String> jvmRouteCache = mock(AdvancedCache.class);
     private SharedLocalYieldingClusterLockManager lockManager = mock(SharedLocalYieldingClusterLockManager.class);
     private BatchingManager batchingManager = mock(BatchingManager.class);
     private CacheInvoker invoker = mock(CacheInvoker.class);
@@ -87,14 +86,14 @@ public class DistributedCacheManagerTest {
 
         when(this.sessionCache.getConfiguration()).thenReturn(configuration);
 
-        this.manager = new DistributedCacheManager<OutgoingDistributableSessionData, SessionKey>(this.registry, this.sessionManager, this.sessionCache, this.jvmRouteCacheSource, this.lockManager, this.storage, this.batchingManager, this.keyFactory, this.invoker);
+        this.manager = new DistributedCacheManager<OutgoingDistributableSessionData, SessionKey>(this.sessionManager, this.sessionCache, this.jvmRouteCache, this.lockManager, this.storage, this.batchingManager, this.keyFactory, this.invoker);
 
         reset(this.sessionCache);
     }
 
     @After
     public void after() {
-        reset(this.registry, this.keyFactory, this.sessionManager, this.storage, this.sessionCache, this.jvmRouteCacheSource, this.lockManager, this.batchingManager, this.invoker);
+        reset(this.keyFactory, this.sessionManager, this.storage, this.sessionCache, this.lockManager, this.batchingManager, this.invoker);
     }
 
     @Test
@@ -121,7 +120,6 @@ public class DistributedCacheManagerTest {
 
         when(this.sessionManager.getJvmRoute()).thenReturn(jvmRoute);
         when(container.getAddress()).thenReturn(address);
-        when(this.jvmRouteCacheSource.<Address, String>getCache(this.registry, this.sessionManager)).thenReturn(jvmRouteCache);
         when(jvmRouteCache.putIfAbsent(same(address), same(jvmRoute))).thenReturn(null);
 
         this.manager.start();
@@ -653,12 +651,9 @@ public class DistributedCacheManagerTest {
         Address member = mock(Address.class);
         Address oldMember = mock(Address.class);
         @SuppressWarnings("unchecked")
-        Cache<Address, String> jvmRouteCache = mock(Cache.class);
         String jvmRoute = "node1";
 
         DistributedCacheManager.JvmRouteHandler handler = this.start(ComponentStatus.RUNNING, false);
-
-        when(this.jvmRouteCacheSource.<Address, String>getCache(this.registry, this.sessionManager)).thenReturn(jvmRouteCache);
 
         when(jvmRouteCache.startBatch()).thenReturn(true);
 
@@ -670,9 +665,9 @@ public class DistributedCacheManagerTest {
 
         handler.viewChanged(event);
 
-        verify(jvmRouteCache).remove(same(oldMember));
-        verify(jvmRouteCache).put(same(newMember), same(jvmRoute));
-        verify(jvmRouteCache).endBatch(true);
+        verify(this.jvmRouteCache).remove(same(oldMember));
+        verify(this.jvmRouteCache).put(same(newMember), same(jvmRoute));
+        verify(this.jvmRouteCache).endBatch(true);
     }
 
     @Test
@@ -718,8 +713,6 @@ public class DistributedCacheManagerTest {
 
         // Test rehash in progress
         DistributionManager distManager = mock(DistributionManager.class);
-        @SuppressWarnings("unchecked")
-        Cache<Address, String> jvmRouteCache = mock(Cache.class);
 
         when(this.sessionCache.getAdvancedCache()).thenReturn(this.sessionCache);
         when(this.sessionCache.getDistributionManager()).thenReturn(distManager);
@@ -759,8 +752,7 @@ public class DistributedCacheManagerTest {
         when(distManager.locate(same(sessionId))).thenReturn(addresses);
         when(this.sessionCache.getCacheManager()).thenReturn(container);
         when(container.getAddress()).thenReturn(localAddress);
-        when(this.jvmRouteCacheSource.<Address, String>getCache(this.registry, this.sessionManager)).thenReturn(jvmRouteCache);
-        when(jvmRouteCache.get(capturedAddress.capture())).thenReturn(expected);
+        when(this.jvmRouteCache.get(capturedAddress.capture())).thenReturn(expected);
         when(this.sessionCache.withFlags(Flag.FORCE_SYNCHRONOUS)).thenReturn(this.sessionCache);
 
         result = this.manager.locate(sessionId);

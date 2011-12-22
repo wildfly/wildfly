@@ -59,7 +59,6 @@ import org.jboss.as.clustering.web.LocalDistributableSessionManager;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.clustering.web.SessionOwnershipSupport;
 import org.jboss.as.clustering.web.impl.IncomingDistributableSessionDataImpl;
-import org.jboss.msc.service.ServiceRegistry;
 
 import static org.jboss.as.clustering.web.infinispan.InfinispanWebLogger.ROOT_LOGGER;
 import static org.jboss.as.clustering.web.infinispan.InfinispanWebMessages.MESSAGES;
@@ -103,8 +102,8 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData,
     private final JvmRouteHandler jvmRouteHandler;
     private final SessionKeyFactory<K> keyFactory;
 
-    public DistributedCacheManager(ServiceRegistry registry, LocalDistributableSessionManager manager,
-            Cache<K, Map<Object, Object>> sessionCache, CacheSource jvmRouteCacheSource,
+    public DistributedCacheManager(LocalDistributableSessionManager manager,
+            Cache<K, Map<Object, Object>> sessionCache, Cache<Address, String> jvmRouteCache,
             SharedLocalYieldingClusterLockManager lockManager, SessionAttributeStorage<T> attributeStorage,
             BatchingManager batchingManager, SessionKeyFactory<K> keyFactory, CacheInvoker invoker) {
         this.manager = manager;
@@ -121,7 +120,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData,
         List<CacheLoaderConfig> loaders = configuration.getCacheLoaders();
         CacheLoaderConfig loader = !loaders.isEmpty() ? loaders.get(0) : null;
         this.requiresPurge = (loader != null) && (loader instanceof CacheStoreConfig) ? ((CacheStoreConfig) loader).isPurgeOnStartup() && mode.isReplicated() : false;
-        this.jvmRouteHandler = mode.isDistributed() ? new JvmRouteHandler(registry, jvmRouteCacheSource, this.manager) : null;
+        this.jvmRouteHandler = mode.isDistributed() ? new JvmRouteHandler(jvmRouteCache, this.manager) : null;
     }
 
     /**
@@ -573,33 +572,20 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData,
         static interface Operation<R> extends CacheInvoker.Operation<Address, String, R> {
         }
 
-        private final ServiceRegistry registry;
         private final LocalDistributableSessionManager manager;
-        private final CacheSource source;
+        private final Cache<Address, String> cache;
 
-        JvmRouteHandler(ServiceRegistry registry, CacheSource source, LocalDistributableSessionManager manager) {
-            this.registry = registry;
-            this.source = source;
+        JvmRouteHandler(Cache<Address, String> cache, LocalDistributableSessionManager manager) {
+            this.cache = cache;
             this.manager = manager;
         }
 
         Cache<Address, String> getCache() {
-            return this.source.getCache(this.registry, this.manager);
+            return this.cache;
         }
 
         <R> R batch(Operation<R> operation) {
-            Cache<Address, String> cache = this.getCache();
-            boolean started = cache.startBatch();
-            boolean success = false;
-            try {
-                R result = operation.invoke(cache);
-                success = true;
-                return result;
-            } finally {
-                if (started) {
-                    cache.endBatch(success);
-                }
-            }
+            return new BatchOperation<Address, String, R>(operation).invoke(this.cache);
         }
 
         @ViewChanged

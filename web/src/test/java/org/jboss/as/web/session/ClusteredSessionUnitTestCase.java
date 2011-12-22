@@ -30,7 +30,6 @@ import org.apache.catalina.Container;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.web.session.mocks.MockDistributedCacheManagerFactory;
 import org.jboss.metadata.web.jboss.ReplicationGranularity;
-import org.jboss.msc.service.ServiceRegistry;
 import org.junit.Test;
 
 /**
@@ -51,7 +50,7 @@ public class ClusteredSessionUnitTestCase {
      */
     @Test
     public void testNewSessionIsOutdated() throws Exception {
-        DistributableSessionManager<?> mgr = new DistributableSessionManager<OutgoingDistributableSessionData>(new MockDistributedCacheManagerFactory(), mock(Container.class), SessionTestUtil.createWebMetaData(10), mock(ServiceRegistry.class));
+        DistributableSessionManager<?> mgr = new DistributableSessionManager<OutgoingDistributableSessionData>(new MockDistributedCacheManagerFactory(), mock(Container.class), SessionTestUtil.createWebMetaData(10));
         SessionTestUtil.setupContainer("test", null, mgr);
         mgr.start();
 

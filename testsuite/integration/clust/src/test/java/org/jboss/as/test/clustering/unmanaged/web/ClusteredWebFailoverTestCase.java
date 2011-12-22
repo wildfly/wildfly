@@ -58,8 +58,7 @@ import org.junit.runner.RunWith;
 public class ClusteredWebFailoverTestCase {
 
     /** Constants **/
-    public static final long GRACE_TIME_TO_REPLICATE = 1000; // 3 seconds should be more then enough
-    public static final long GRACE_TIME_TO_MEMBERSHIP_CHANGE = 3000;
+    public static final long GRACE_TIME_TO_MEMBERSHIP_CHANGE = 5000;
     public static final String CONTAINER1 = "clustering-udp-0-unmanaged";
     public static final String CONTAINER2 = "clustering-udp-1-unmanaged";
     public static final String DEPLOYMENT1 = "deployment-0-unmanaged";
@@ -149,7 +148,7 @@ public class ClusteredWebFailoverTestCase {
             controller.stop(CONTAINER1);
 
             // Lets wait for the session to replicate, we dont care about membership now.
-            Thread.sleep(GRACE_TIME_TO_REPLICATE);
+            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
 
             // Now check on the 2nd server
 
@@ -247,7 +246,7 @@ public class ClusteredWebFailoverTestCase {
             deployer.undeploy(DEPLOYMENT1);
 
             // Lets wait for the session to replicate, we dont care about membership now.
-            Thread.sleep(GRACE_TIME_TO_REPLICATE);
+            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
 
             // Now check on the 2nd server
 

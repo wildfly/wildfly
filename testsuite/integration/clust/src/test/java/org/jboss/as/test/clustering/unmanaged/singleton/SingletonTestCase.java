@@ -33,7 +33,7 @@ import org.junit.runner.RunWith;
 public class SingletonTestCase {
 
     /** Constants **/
-    public static final long GRACE_TIME_TO_MEMBERSHIP_CHANGE = 3000;
+    public static final long GRACE_TIME_TO_MEMBERSHIP_CHANGE = 5000;
     public static final String CONTAINER1 = "clustering-udp-0-unmanaged";
     public static final String CONTAINER2 = "clustering-udp-1-unmanaged";
     public static final String DEPLOYMENT1 = "deployment-0-unmanaged";

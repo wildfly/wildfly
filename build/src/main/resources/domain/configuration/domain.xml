@@ -465,6 +465,8 @@
                     <distributed-cache name="dist" mode="ASYNC" batching="true">
                         <file-store/>
                     </distributed-cache>
+                    <replicated-cache name="registry" mode="SYNC" batching="true"/>
+                    <replicated-cache name="sso" mode="SYNC" batching="true"/>
                 </cache-container>
                 <cache-container name="sfsb" default-cache="repl">
                     <alias>sfsb-cache</alias>

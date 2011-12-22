@@ -36,8 +36,8 @@ import javax.servlet.ServletContext;
 import org.apache.catalina.Loader;
 import org.apache.catalina.Realm;
 import org.apache.catalina.core.StandardContext;
-import org.apache.catalina.startup.ContextConfig;
 import org.jboss.as.clustering.web.DistributedCacheManagerFactory;
+import org.jboss.as.clustering.web.DistributedCacheManagerFactoryService;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
@@ -57,7 +57,6 @@ import org.jboss.as.web.deployment.component.ComponentInstantiator;
 import org.jboss.as.web.security.JBossWebRealmService;
 import org.jboss.as.web.security.SecurityContextAssociationValve;
 import org.jboss.as.web.security.WarJaccService;
-import org.jboss.as.web.session.DistributableSessionManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -65,6 +64,7 @@ import org.jboss.metadata.web.jboss.ValveMetaData;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
@@ -139,7 +139,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
 
         // Create the context
         final StandardContext webContext = new StandardContext();
-        final ContextConfig config = new JBossContextConfig(deploymentUnit);
+        final JBossContextConfig config = new JBossContextConfig(deploymentUnit);
 
         // add SecurityAssociationValve right at the beginning
         webContext.addValve(new SecurityContextAssociationValve(deploymentUnit));
@@ -240,9 +240,15 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
             }
 
             if (metaData.getDistributable() != null) {
-                final DistributedCacheManagerFactory factory = DistributableSessionManager.getDistributedCacheManagerFactory();
+                DistributedCacheManagerFactoryService factoryService = new DistributedCacheManagerFactoryService();
+                DistributedCacheManagerFactory factory = factoryService.getValue();
                 if (factory != null) {
-                    builder.addDependencies(DependencyType.OPTIONAL, factory.getDependencies(metaData));
+                    ServiceName factoryServiceName = deploymentServiceName.append("session");
+                    builder.addDependency(DependencyType.OPTIONAL, factoryServiceName, DistributedCacheManagerFactory.class, config.getDistributedCacheManagerFactoryInjector());
+
+                    ServiceBuilder<DistributedCacheManagerFactory> factoryBuilder = serviceTarget.addService(factoryServiceName, factoryService);
+                    boolean enabled = factory.addDependencies(serviceTarget, factoryBuilder, metaData);
+                    factoryBuilder.setInitialMode(enabled ? ServiceController.Mode.ON_DEMAND : ServiceController.Mode.NEVER).install();
                 }
             }
 
