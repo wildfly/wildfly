@@ -40,7 +40,7 @@ public class MailSessionAdd extends AbstractAddStepHandler {
      */
     @Override
     protected void populateModel(ModelNode existingModel, ModelNode newModel) throws OperationFailedException {
-        Util.copyModel(existingModel,newModel,MailSubsystemModel.JNDI_NAME,MailSubsystemModel.DEBUG,MailSubsystemModel.FROM);
+        Util.copyModel(existingModel,newModel,MailSubsystemModel.JNDI_NAME,MailSubsystemModel.DEBUG,MailSubsystemModel.SERVER_TYPE);
     }
 
 
@@ -79,6 +79,7 @@ public class MailSessionAdd extends AbstractAddStepHandler {
         addOutboundSocketDependency(service, mailSessionBuilder, config.getSmtpServer());
 
         final ManagedReferenceFactory valueManagedReferenceFactory = new ManagedReferenceFactory() {
+
             @Override
             public ManagedReference getReference() {
                 return new ValueManagedReference(new ImmediateValue<Object>(service.getValue()));

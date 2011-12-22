@@ -9,18 +9,18 @@ public class MailSessionServer {
     private final Credentials credentials;
     private boolean sslEnabled = false;
 
-    public MailSessionServer(final String outgoingSocketBinding, final Credentials credentials,boolean ssl) {
+    public MailSessionServer(final String outgoingSocketBinding, final Credentials credentials, boolean ssl) {
         this.outgoingSocketBinding = outgoingSocketBinding;
         this.credentials = credentials;
         this.sslEnabled = ssl;
     }
 
-    public MailSessionServer(final String outgoingSocketBinding, String username, String password,boolean ssl) {
+    public MailSessionServer(final String outgoingSocketBinding, String username, String password, boolean ssl) {
         this.outgoingSocketBinding = outgoingSocketBinding;
         this.sslEnabled = ssl;
         if (username != null) {
             this.credentials = new Credentials(username, password);
-        }else{
+        } else {
             credentials = null;
         }
     }

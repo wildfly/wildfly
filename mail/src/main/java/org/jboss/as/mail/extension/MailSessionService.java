@@ -10,13 +10,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
-import javax.mail.Address;
-import javax.mail.Message;
 import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.URLName;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -80,6 +74,9 @@ public class MailSessionService implements Service<Session> {
         }
         if (config.getPop3Server() != null) {
             setServerProps(props, config.getPop3Server(), "pop3");
+        }
+        if (config.getFrom() != null) {
+            props.setProperty("mail.from", config.getFrom());
         }
         props.setProperty("mail.debug", String.valueOf(config.isDebug()));
         log.tracef("props: %s", props);
@@ -161,15 +158,15 @@ public class MailSessionService implements Service<Session> {
         protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
             String protocol = getRequestingProtocol();
             Credentials c = null;
-            if ("smtp".equals(protocol)){
+            if (MailSubsystemModel.SMTP.equals(protocol)) {
                 c = config.getSmtpServer().getCredentials();
-            }else if ("pop3".equals(protocol)){
+            } else if (MailSubsystemModel.POP3.equals(protocol)) {
                 c = config.getPop3Server().getCredentials();
-            }else if ("imap".equals(protocol)){
+            } else if (MailSubsystemModel.IMAP.equals(protocol)) {
                 c = config.getImapServer().getCredentials();
             }
 
-            if (c!=null){
+            if (c != null) {
                 return new javax.mail.PasswordAuthentication(c.getUsername(), c.getPassword());
             }
             return null;
