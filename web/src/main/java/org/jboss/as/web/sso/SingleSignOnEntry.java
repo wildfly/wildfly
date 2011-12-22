@@ -124,7 +124,7 @@ public class SingleSignOnEntry extends org.apache.catalina.authenticator.SingleS
         this.authType = authType;
         this.username = username;
         this.password = password;
-        this.canReauthenticate = HttpServletRequest.BASIC_AUTH.equals(authType) || HttpServletRequest.FORM_AUTH.equals(authType);
+        this.canReauthenticate = HttpServletRequest.BASIC_AUTH.equals(authType) || HttpServletRequest.FORM_AUTH.equals(authType) || (username != null && password != null);
         return changed;
     }
 
