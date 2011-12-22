@@ -21,34 +21,31 @@ public class MailServerDefinition extends SimpleResourceDefinition {
         super(path, MailExtension.getResourceDescriptionResolver(MailSubsystemModel.SERVER_TYPE), MailServerAdd.INSTANCE, MailServerRemove.INSTANCE);
     }
 
-    private static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING_REF =
+    protected static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING_REF =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.OUTBOUND_SOCKET_BINDING_REF, ModelType.STRING, true)
                     .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
-    private static final SimpleAttributeDefinition SSL =
+    protected static final SimpleAttributeDefinition SSL =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.SSL, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
-    private static final SimpleAttributeDefinition USERNAME =
+    protected static final SimpleAttributeDefinition USERNAME =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.USER_NAME, ModelType.STRING, true)
                     .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
-    private static final SimpleAttributeDefinition PASSWORD =
+    protected static final SimpleAttributeDefinition PASSWORD =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.PASSWORD, ModelType.STRING, true)
                     .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadOnlyAttribute(OUTBOUND_SOCKET_BINDING_REF, null);
-        resourceRegistration.registerReadOnlyAttribute(SSL, null);
-        resourceRegistration.registerReadOnlyAttribute(USERNAME, null);
-        resourceRegistration.registerReadOnlyAttribute(PASSWORD, null);
+        MailServerWriteAttributeHandler.INSTANCE.registerAttributes(resourceRegistration);
     }
 }
