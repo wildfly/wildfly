@@ -29,7 +29,7 @@
     <parent>
         <artifactId>jboss-as-testsuite</artifactId>
         <groupId>org.jboss.as</groupId>
-        <version>7.1.0.CR1-SNAPSHOT</version>
+        <version>7.1.0.CR1</version>
     </parent>
 
     <artifactId>jboss-as-testsuite-integration-compat</artifactId>

@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jdr</artifactId>
-        <version>7.1.0.CR1-SNAPSHOT</version>
+        <version>7.1.0.CR1</version>
     </parent>
 
     <artifactId>jboss-as-sos</artifactId>

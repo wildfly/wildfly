@@ -34,7 +34,7 @@
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-build-config</artifactId>
     <name>JBoss Application Server: Build Configuration</name>
-    <version>7.1.0.CR1-SNAPSHOT</version>
+    <version>7.1.0.CR1</version>
 
     <licenses>
         <license>

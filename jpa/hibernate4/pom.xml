@@ -30,7 +30,7 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-jpa-parent</artifactId>
-        <version>7.1.0.CR1-SNAPSHOT</version>
+        <version>7.1.0.CR1</version>
     </parent>
 
     <artifactId>jboss-as-jpa-hibernate4</artifactId>

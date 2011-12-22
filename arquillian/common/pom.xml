@@ -21,12 +21,12 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-arquillian</artifactId>
-        <version>7.1.0.CR1-SNAPSHOT</version>
+        <version>7.1.0.CR1</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-arquillian-common</artifactId>
-    <version>7.1.0.CR1-SNAPSHOT</version>
+    <version>7.1.0.CR1</version>
 
     <name>JBoss Application Server: Arquillian Common</name>
 
