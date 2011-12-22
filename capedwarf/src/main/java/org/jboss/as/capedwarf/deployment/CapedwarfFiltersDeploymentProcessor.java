@@ -1,20 +1,15 @@
 package org.jboss.as.capedwarf.deployment;
 
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.capedwarf.appidentity.GAEFilter;
 import org.jboss.capedwarf.users.AuthServlet;
-import org.jboss.logging.Logger;
+import org.jboss.metadata.web.jboss.JBossServletMetaData;
+import org.jboss.metadata.web.jboss.JBossServletsMetaData;
+import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.FilterMappingMetaData;
 import org.jboss.metadata.web.spec.FilterMetaData;
 import org.jboss.metadata.web.spec.FiltersMetaData;
 import org.jboss.metadata.web.spec.ServletMappingMetaData;
-import org.jboss.metadata.web.spec.ServletMetaData;
-import org.jboss.metadata.web.spec.ServletsMetaData;
-import org.jboss.metadata.web.spec.WebMetaData;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,11 +17,9 @@ import java.util.List;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CapedwarfFiltersDeploymentProcessor implements DeploymentUnitProcessor {
-
-    Logger log = Logger.getLogger(CapedwarfFiltersDeploymentProcessor.class);
-
+public class CapedwarfFiltersDeploymentProcessor extends CapedwarfWebDeploymentProcessor {
 
     /**
      * The relative order of this processor within the {@link #PHASE}.
@@ -38,13 +31,19 @@ public class CapedwarfFiltersDeploymentProcessor implements DeploymentUnitProces
     private static final String GAE_FILTER_NAME = "GAEFilter";
     private static final String AUTH_SERVLET_NAME = "authservlet";
 
-    @Override
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        WebMetaData webMetaData = getWebMetaData(phaseContext);
-        if (webMetaData == null) {
-            return;
-        }
+    private final FilterMetaData GAE_FILTER;
+    private final FilterMappingMetaData GAE_FILTER_MAPPING;
+    private final JBossServletMetaData GAE_SERVLET;
+    private final ServletMappingMetaData GAE_SERVLET_MAPPING;
 
+    public CapedwarfFiltersDeploymentProcessor() {
+        GAE_FILTER = createFilter();
+        GAE_FILTER_MAPPING = createFilterMapping();
+        GAE_SERVLET = createAuthServlet();
+        GAE_SERVLET_MAPPING = createAuthServletMapping();
+    }
+
+    protected void doDeploy(DeploymentUnit unit, JBossWebMetaData webMetaData) {
         addFilterTo(webMetaData);
         addFilterMappingTo(webMetaData);
 
@@ -52,14 +51,8 @@ public class CapedwarfFiltersDeploymentProcessor implements DeploymentUnitProces
         addAuthServletMappingTo(webMetaData);
     }
 
-    private WebMetaData getWebMetaData(DeploymentPhaseContext phaseContext) {
-        DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
-        return warMetaData == null ? null : warMetaData.getSharedWebMetaData();
-    }
-
-    private void addFilterTo(WebMetaData webMetaData) {
-        getFilters(webMetaData).add(createFilter());
+    private void addFilterTo(JBossWebMetaData webMetaData) {
+        getFilters(webMetaData).add(GAE_FILTER);
     }
 
     private FilterMetaData createFilter() {
@@ -69,7 +62,7 @@ public class CapedwarfFiltersDeploymentProcessor implements DeploymentUnitProces
         return filter;
     }
 
-    private FiltersMetaData getFilters(WebMetaData webMetaData) {
+    private FiltersMetaData getFilters(JBossWebMetaData webMetaData) {
         FiltersMetaData filters = webMetaData.getFilters();
         if (filters == null) {
             filters = new FiltersMetaData();
@@ -78,8 +71,8 @@ public class CapedwarfFiltersDeploymentProcessor implements DeploymentUnitProces
         return filters;
     }
 
-    private void addFilterMappingTo(WebMetaData webMetaData) {
-        getFilterMappings(webMetaData).add(createFilterMapping());
+    private void addFilterMappingTo(JBossWebMetaData webMetaData) {
+        getFilterMappings(webMetaData).add(GAE_FILTER_MAPPING);
     }
 
     private FilterMappingMetaData createFilterMapping() {
@@ -89,7 +82,7 @@ public class CapedwarfFiltersDeploymentProcessor implements DeploymentUnitProces
         return filterMapping;
     }
 
-    private List<FilterMappingMetaData> getFilterMappings(WebMetaData webMetaData) {
+    private List<FilterMappingMetaData> getFilterMappings(JBossWebMetaData webMetaData) {
         List<FilterMappingMetaData> filterMappings = webMetaData.getFilterMappings();
         if (filterMappings == null) {
             filterMappings = new ArrayList<FilterMappingMetaData>();
@@ -98,32 +91,32 @@ public class CapedwarfFiltersDeploymentProcessor implements DeploymentUnitProces
         return filterMappings;
     }
 
-    private void addAuthServletTo(WebMetaData webMetaData) {
-        getServlets(webMetaData).add(createAuthServlet());
+    private void addAuthServletTo(JBossWebMetaData webMetaData) {
+        getServlets(webMetaData).add(GAE_SERVLET);
     }
 
-    private ServletsMetaData getServlets(WebMetaData webMetaData) {
-        ServletsMetaData servletsMetaData = webMetaData.getServlets();
+    private JBossServletsMetaData getServlets(JBossWebMetaData webMetaData) {
+        JBossServletsMetaData servletsMetaData = webMetaData.getServlets();
         if (servletsMetaData == null) {
-            servletsMetaData = new ServletsMetaData();
+            servletsMetaData = new JBossServletsMetaData();
             webMetaData.setServlets(servletsMetaData);
         }
         return servletsMetaData;
     }
 
-    private ServletMetaData createAuthServlet() {
-        ServletMetaData servlet = new ServletMetaData();
+    private JBossServletMetaData createAuthServlet() {
+        JBossServletMetaData servlet = new JBossServletMetaData();
         servlet.setServletName(AUTH_SERVLET_NAME);
         servlet.setServletClass(AuthServlet.class.getName());
         servlet.setEnabled(true);
         return servlet;
     }
 
-    private void addAuthServletMappingTo(WebMetaData webMetaData) {
-        getServletMappings(webMetaData).add(createAuthServletMapping());
+    private void addAuthServletMappingTo(JBossWebMetaData webMetaData) {
+        getServletMappings(webMetaData).add(GAE_SERVLET_MAPPING);
     }
 
-    private List<ServletMappingMetaData> getServletMappings(WebMetaData webMetaData) {
+    private List<ServletMappingMetaData> getServletMappings(JBossWebMetaData webMetaData) {
         List<ServletMappingMetaData> servletMappings = webMetaData.getServletMappings();
         if (servletMappings == null) {
             servletMappings = new ArrayList<ServletMappingMetaData>();
@@ -137,9 +130,5 @@ public class CapedwarfFiltersDeploymentProcessor implements DeploymentUnitProces
         servletMapping.setServletName(AUTH_SERVLET_NAME);
         servletMapping.setUrlPatterns(Collections.singletonList(AuthServlet.SERVLET_URI + "/*"));   // TODO: introduce AuthServlet.URL_PATTERN
         return servletMapping;
-    }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
     }
 }
