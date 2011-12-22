@@ -61,7 +61,6 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
@@ -119,7 +118,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
     private HostControllerConfigurationPersister hostControllerConfigurationPersister;
     private final HostControllerEnvironment environment;
-    private final RunningModeControl runningModeControl;
+    private final HostRunningModeControl runningModeControl;
     private final LocalHostControllerInfoImpl hostControllerInfo;
     private final FileRepository localFileRepository;
     private final RemoteFileRepository remoteFileRepository;
@@ -143,7 +142,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
     public static ServiceController<ModelController> addService(final ServiceTarget serviceTarget,
                                                             final HostControllerEnvironment environment,
-                                                            final RunningModeControl runningModeControl,
+                                                            final HostRunningModeControl runningModeControl,
                                                             final ControlledProcessState processState,
                                                             final BootstrapListener bootstrapListener) {
         final Map<String, ProxyController> hostProxies = new ConcurrentHashMap<String, ProxyController>();
@@ -163,7 +162,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     private DomainModelControllerService(final HostControllerEnvironment environment,
-                                         final RunningModeControl runningModeControl,
+                                         final HostRunningModeControl runningModeControl,
                                          final ControlledProcessState processState,
                                          final LocalHostControllerInfoImpl hostControllerInfo,
                                          final ContentRepository contentRepository,
@@ -304,7 +303,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
             final RunningMode currentRunningMode = runningModeControl.getRunningMode();
 
             // Now we know our management interface configuration. Install the server inventory
-            Future<ServerInventory> inventoryFuture = ServerInventoryService.install(serviceTarget, this, environment,
+            Future<ServerInventory> inventoryFuture = ServerInventoryService.install(serviceTarget, this, runningModeControl, environment,
                     hostControllerInfo.getNativeManagementInterface(), hostControllerInfo.getNativeManagementPort());
 
             // Install the core remoting endpoint and listener
