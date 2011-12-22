@@ -77,8 +77,13 @@ public class ServiceBasedNamingStore implements NamingStore {
             if (lower != null && lower.isParentOf(lookupName)) {
                 // Parent might be a reference or a link
                 obj = lookup(name.toString(), lower);
-                checkReferenceForContinuation(name, obj);
-                return new ResolveResult(obj, suffix(lower, lookupName));
+                //if the lower is a context that has been explicitly bound then
+                //we do not return a resolve result, as this will result in an
+                //infinite loop
+                if(!(obj instanceof NamingContext)) {
+                    checkReferenceForContinuation(name, obj);
+                    return new ResolveResult(obj, suffix(lower, lookupName));
+                }
             }
 
             final ServiceName ceiling = boundServices.ceiling(lookupName);
