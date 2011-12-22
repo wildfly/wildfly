@@ -9,12 +9,13 @@ import java.util.Map;
  */
 public enum Attribute {
     UNKNOWN(null),
-    USERNAME(ModelKeys.USERNAME),
-    PASSWORD(ModelKeys.PASSWORD),
-    JNDI_NAME(ModelKeys.JNDI_NAME),
-    DEBUG(ModelKeys.DEBUG),
-    OUTBOUND_SOCKET_BINDING_REF(ModelKeys.OUTBOUND_SOCKET_BINDING_REF),
-    SSL(ModelKeys.SSL);
+    USERNAME(MailSubsystemModel.LOGIN_USERNAME),
+    PASSWORD(MailSubsystemModel.PASSWORD),
+    JNDI_NAME(MailSubsystemModel.JNDI_NAME),
+    DEBUG(MailSubsystemModel.DEBUG),
+    FROM(MailSubsystemModel.FROM),
+    OUTBOUND_SOCKET_BINDING_REF(MailSubsystemModel.OUTBOUND_SOCKET_BINDING_REF),
+    SSL(MailSubsystemModel.SSL);
 
     private final String name;
 

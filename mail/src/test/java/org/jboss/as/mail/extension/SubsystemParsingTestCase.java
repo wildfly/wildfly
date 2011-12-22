@@ -29,7 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
     private String SUBSYSTEM_XML =
             " <subsystem xmlns=\"urn:jboss:domain:mail:1.0\">\n" +
-                    "            <mail-session jndi-name=\"java:/Mail\" >\n" +
+                    "            <mail-session jndi-name=\"java:/Mail\" from=\"tomaz.cerar@gmail.com\" >\n" +
                     "                <smtp-server outbound-socket-binding-ref=\"mail-smtp\" ssl=\"true\">\n" +
                     "                       <login name=\"nobody\" password=\"pass\"/>\n" +
                     "                </smtp-server>\n" +
@@ -59,7 +59,7 @@ public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
         ///Check that we have the expected number of operations
         log.info("operations: " + operations);
         log.info("operations.size: " + operations.size());
-        Assert.assertEquals(3, operations.size());
+        Assert.assertEquals(7, operations.size());
 
         //Check that each operation has the correct content
         ModelNode addSubsystem = operations.get(0);

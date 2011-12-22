@@ -25,7 +25,24 @@
             <xs:element name="imap-server" type="server-type" maxOccurs="1" minOccurs="0"/>
         </xs:sequence>
         <xs:attribute name="jndi-name" use="required"/>
-        <xs:attribute name="debug" use="optional"/>
+        <xs:attribute name="debug" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                       enables debuging of mail session
+                    ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="from" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                            sets mail.from attribute
+                        ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="login-type" mixed="true">
@@ -56,6 +73,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+
     </xs:complexType>
 
 </xs:schema>

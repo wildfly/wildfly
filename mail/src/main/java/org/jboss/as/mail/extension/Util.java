@@ -1,19 +1,15 @@
 package org.jboss.as.mail.extension;
 
-import static org.jboss.as.mail.extension.ModelKeys.CREDENTIALS;
-import static org.jboss.as.mail.extension.ModelKeys.DEBUG;
-import static org.jboss.as.mail.extension.ModelKeys.IMAP_SERVER;
-import static org.jboss.as.mail.extension.ModelKeys.JNDI_NAME;
-import static org.jboss.as.mail.extension.ModelKeys.OUTBOUND_SOCKET_BINDING_REF;
-import static org.jboss.as.mail.extension.ModelKeys.PASSWORD;
-import static org.jboss.as.mail.extension.ModelKeys.POP3_SERVER;
-import static org.jboss.as.mail.extension.ModelKeys.SMTP_SERVER;
-import static org.jboss.as.mail.extension.ModelKeys.SSL;
-import static org.jboss.as.mail.extension.ModelKeys.USERNAME;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
+
+import java.util.List;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.mail.extension.MailSubsystemModel.*;
 
 /**
  * @author Tomaz Cerar
@@ -21,31 +17,24 @@ import org.jboss.dmr.ModelNode;
  */
 public class Util {
 
-    static void fillFrom(final ModelNode operation, final MailSessionConfig sessionConfig) {
-        operation.get(JNDI_NAME).set(sessionConfig.getJndiName());
 
-        operation.get(DEBUG).set(sessionConfig.isDebug());
-        if (sessionConfig.getSmtpServer() != null) {
-            addServerConfig(operation, sessionConfig.getSmtpServer(), SMTP_SERVER);
-        }
-        if (sessionConfig.getPop3Server() != null) {
-            addServerConfig(operation, sessionConfig.getPop3Server(), POP3_SERVER);
-        }
-        if (sessionConfig.getImapServer() != null) {
-            addServerConfig(operation, sessionConfig.getImapServer(), IMAP_SERVER);
-        }
-    }
-
-    private static void addServerConfig(final ModelNode operation, final MailSessionServer server, final String name) {
-        operation.get(name).get(OUTBOUND_SOCKET_BINDING_REF).set(server.getOutgoingSocketBinding());
-        operation.get(name).get(SSL).set(server.isSslEnabled());
-        addCredentials(operation.get(name), server.getCredentials());
+    protected static void addServerConfig(final MailSessionServer server, final String name, final ModelNode parent, List<ModelNode> list) {
+        final ModelNode address = parent.clone();
+        address.add(MailSubsystemModel.SERVER_TYPE, name);
+        address.protect();
+        final ModelNode operation = new ModelNode();
+        operation.get(OP_ADDR).set(address);
+        operation.get(OP).set(ADD);
+        operation.get(OUTBOUND_SOCKET_BINDING_REF).set(server.getOutgoingSocketBinding());
+        operation.get(SSL).set(server.isSslEnabled());
+        addCredentials(operation, server.getCredentials());
+        list.add(operation);
     }
 
     private static void addCredentials(final ModelNode operation, final Credentials credentials) {
         if (credentials != null) {
-            operation.get(CREDENTIALS).get(USERNAME).set(credentials.getUsername());
-            operation.get(CREDENTIALS).get(PASSWORD).set(credentials.getPassword());
+            operation.get(USER_NAME).set(credentials.getUsername());
+            operation.get(PASSWORD).set(credentials.getPassword());
         }
     }
 
@@ -53,13 +42,13 @@ public class Util {
         final String socket = model.require(OUTBOUND_SOCKET_BINDING_REF).asString();
         final Credentials credentials = readCredentials(operationContext, model);
         boolean ssl = model.get(SSL).asBoolean(false);
-        return new MailSessionServer(socket, credentials,ssl);
+        return new MailSessionServer(socket, credentials, ssl);
     }
 
     private static Credentials readCredentials(final OperationContext operationContext, final ModelNode model) throws OperationFailedException {
-        if (model.has(CREDENTIALS)) {
-            String un = model.get(CREDENTIALS).get(USERNAME).asString();
-            String pw = operationContext.resolveExpressions((model.get(CREDENTIALS, PASSWORD))).asString();
+        if (model.has(USER_NAME)) {
+            String un = model.get(USER_NAME).asString();
+            String pw = operationContext.resolveExpressions((model.get(PASSWORD))).asString();
             return new Credentials(un, pw);
         }
         return null;
@@ -69,15 +58,19 @@ public class Util {
         MailSessionConfig cfg = new MailSessionConfig();
         cfg.setJndiName(model.require(JNDI_NAME).asString());
         cfg.setDebug(model.get(DEBUG).asBoolean(false));
+        cfg.setFrom(model.get(FROM).asString());
 
-        if (model.hasDefined(SMTP_SERVER)) {
-            cfg.setSmtpServer(readServerConfig(operationContext, model.get(SMTP_SERVER)));
-        }
-        if (model.hasDefined(POP3_SERVER)) {
-            cfg.setPop3Server(readServerConfig(operationContext, model.get(POP3_SERVER)));
-        }
-        if (model.hasDefined(IMAP_SERVER)) {
-            cfg.setPop3Server(readServerConfig(operationContext, model.get(IMAP_SERVER)));
+        if (model.hasDefined(SERVER_TYPE)) {
+            ModelNode server = model.get(SERVER_TYPE);
+            if (server.hasDefined(SMTP)) {
+                cfg.setSmtpServer(readServerConfig(operationContext, server.get(SMTP)));
+            }
+            if (server.hasDefined(POP3)) {
+                cfg.setPop3Server(readServerConfig(operationContext, server.get(POP3)));
+            }
+            if (server.hasDefined(IMAP)) {
+                cfg.setImapServer(readServerConfig(operationContext, server.get(IMAP)));
+            }
         }
         return cfg;
     }
@@ -101,4 +94,11 @@ public class Util {
     }
 
 
+    static void copyModel(ModelNode src, ModelNode target, String... params) {
+        for (String p : params) {
+            if (src.hasDefined(p)) {
+                target.get(p).set(src.get(p).asString());
+            }
+        }
+    }
 }
