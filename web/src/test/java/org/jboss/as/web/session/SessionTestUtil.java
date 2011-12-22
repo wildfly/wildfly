@@ -45,10 +45,8 @@ import org.apache.catalina.connector.Connector;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.core.StandardContext;
-import org.infinispan.Cache;
 import org.infinispan.config.Configuration;
 import org.infinispan.config.Configuration.CacheMode;
-import org.infinispan.config.FluentConfiguration;
 import org.infinispan.config.FluentGlobalConfiguration;
 import org.infinispan.config.GlobalConfiguration;
 import org.infinispan.loaders.file.FileCacheStoreConfig;
@@ -63,9 +61,7 @@ import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerDefaults
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerDefaultsService;
 import org.jboss.as.clustering.jgroups.MuxChannel;
 import org.jboss.as.clustering.web.ClusteringNotSupportedException;
-import org.jboss.as.clustering.web.LocalDistributableSessionManager;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
-import org.jboss.as.clustering.web.infinispan.CacheSource;
 import org.jboss.as.clustering.web.infinispan.DistributedCacheManagerFactory;
 import org.jboss.as.web.session.mocks.BasicRequestHandler;
 import org.jboss.as.web.session.mocks.MockEngine;
@@ -82,7 +78,6 @@ import org.jboss.metadata.web.jboss.ReplicationConfig;
 import org.jboss.metadata.web.jboss.ReplicationGranularity;
 import org.jboss.metadata.web.jboss.ReplicationTrigger;
 import org.jboss.metadata.web.jboss.SnapshotMode;
-import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jgroups.Channel;
@@ -106,24 +101,11 @@ public class SessionTestUtil {
         }
 
         DistributedCacheManagerFactory factory = new DistributedCacheManagerFactory();
-        CacheSource sessionCacheSource = new CacheSource() {
-            @Override
-            public <K, V> Cache<K, V> getCache(ServiceRegistry registry, LocalDistributableSessionManager manager) {
-                return cacheContainer.getCache();
-            }
-        };
-        CacheSource jvmRouteCacheSource = new CacheSource() {
-            @Override
-            public <K, V> Cache<K, V> getCache(ServiceRegistry registry, LocalDistributableSessionManager manager) {
-                return cacheContainer.getCache(JVM_ROUTE_CACHE_NAME);
-            }
-        };
-
-        factory.setSessionCacheSource(sessionCacheSource);
-        factory.setJvmRouteCacheSource(jvmRouteCacheSource);
+        factory.getSessionCacheInjector().inject(cacheContainer.getCache());
+        factory.getJvmRouteCacheInjector().inject(cacheContainer.getCache(JVM_ROUTE_CACHE_NAME));
 
         try {
-            DistributableSessionManager<OutgoingDistributableSessionData> manager = new DistributableSessionManager<OutgoingDistributableSessionData>(factory, mock(Container.class), metaData, mock(ServiceRegistry.class));
+            DistributableSessionManager<OutgoingDistributableSessionData> manager = new DistributableSessionManager<OutgoingDistributableSessionData>(factory, mock(Container.class), metaData);
 
             setupContainer(warName, jvmRoute, manager);
 

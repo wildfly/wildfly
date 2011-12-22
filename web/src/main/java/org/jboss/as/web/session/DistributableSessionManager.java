@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -75,7 +74,6 @@ import org.jboss.metadata.web.jboss.ReplicationConfig;
 import org.jboss.metadata.web.jboss.ReplicationGranularity;
 import org.jboss.metadata.web.jboss.ReplicationTrigger;
 import org.jboss.metadata.web.jboss.SnapshotMode;
-import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.util.loading.ContextClassLoaderSwitcher;
 
 /**
@@ -87,18 +85,6 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
     private static final int TOTAL_PERMITS = Integer.MAX_VALUE;
     @SuppressWarnings("unchecked")
     private static ContextClassLoaderSwitcher switcher = (ContextClassLoaderSwitcher) AccessController.doPrivileged(ContextClassLoaderSwitcher.INSTANTIATOR);
-    private static final DistributedCacheManagerFactory defaultFactory = findDefaultFactory();
-
-    private static DistributedCacheManagerFactory findDefaultFactory() {
-        for (DistributedCacheManagerFactory factory : ServiceLoader.load(DistributedCacheManagerFactory.class, DistributedCacheManagerFactory.class.getClassLoader())) {
-            return factory;
-        }
-        return null;
-    }
-
-    public static DistributedCacheManagerFactory getDistributedCacheManagerFactory() {
-        return defaultFactory;
-    }
 
     private final String name;
     private final DistributedCacheManager<O> distributedCacheManager;
@@ -140,16 +126,8 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
     /** Sessions that have been created but not yet loaded. Used to ensure concurrent threads trying to load the same session */
     private final ConcurrentMap<String, ClusteredSession<O>> embryonicSessions = new ConcurrentHashMap<String, ClusteredSession<O>>();
 
-    public DistributableSessionManager(Container host, JBossWebMetaData metaData, ServiceRegistry registry) throws ClusteringNotSupportedException {
-        this(defaultFactory, host, metaData, registry);
-    }
-
-    public DistributableSessionManager(DistributedCacheManagerFactory factory, Container host, JBossWebMetaData metaData, ServiceRegistry registry) throws ClusteringNotSupportedException {
+    public DistributableSessionManager(DistributedCacheManagerFactory factory, Container host, JBossWebMetaData metaData) throws ClusteringNotSupportedException {
         super(metaData);
-
-        if (factory == null) {
-            throw new ClusteringNotSupportedException("No DistributedCacheManagerFactory service provider found.");
-        }
 
         PassivationConfig passivationConfig = metaData.getPassivationConfig();
         Boolean useSessionPassivation = (passivationConfig != null) ? passivationConfig.getUseSessionPassivation() : null;
@@ -173,7 +151,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
 
         String hostName = host.getName();
         this.name = String.format("//%s/%s", (hostName == null) ? "localhost" : hostName, metaData.getContextRoot());
-        this.distributedCacheManager = factory.getDistributedCacheManager(registry,  this);
+        this.distributedCacheManager = factory.getDistributedCacheManager(this);
     }
 
     @Override

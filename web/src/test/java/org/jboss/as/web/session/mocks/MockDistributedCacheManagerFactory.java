@@ -22,17 +22,14 @@
 
 package org.jboss.as.web.session.mocks;
 
-import java.util.Collection;
-import java.util.Collections;
-
 import org.jboss.as.clustering.web.ClusteringNotSupportedException;
 import org.jboss.as.clustering.web.DistributedCacheManager;
 import org.jboss.as.clustering.web.DistributedCacheManagerFactory;
 import org.jboss.as.clustering.web.LocalDistributableSessionManager;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * 
@@ -44,13 +41,12 @@ import org.jboss.msc.service.ServiceRegistry;
 public class MockDistributedCacheManagerFactory implements DistributedCacheManagerFactory {
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends OutgoingDistributableSessionData> DistributedCacheManager<T> getDistributedCacheManager(
-            ServiceRegistry registry, LocalDistributableSessionManager localManager) throws ClusteringNotSupportedException {
+    public <T extends OutgoingDistributableSessionData> DistributedCacheManager<T> getDistributedCacheManager(LocalDistributableSessionManager localManager) throws ClusteringNotSupportedException {
         return (DistributedCacheManager<T>) MockDistributedCacheManager.INSTANCE;
     }
 
     @Override
-    public Collection<ServiceName> getDependencies(JBossWebMetaData metaData) {
-        return Collections.emptyList();
+    public boolean addDependencies(ServiceTarget target, ServiceBuilder<?> builder, JBossWebMetaData metaData) {
+        return true;
     }
 }

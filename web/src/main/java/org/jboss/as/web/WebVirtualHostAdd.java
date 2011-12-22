@@ -31,6 +31,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REL
 import java.util.List;
 import java.util.Locale;
 
+import org.jboss.as.clustering.web.sso.SSOClusterManager;
+import org.jboss.as.clustering.web.sso.SSOClusterManagerService;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -45,6 +47,7 @@ import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -108,8 +111,22 @@ class WebVirtualHostAdd extends AbstractAddStepHandler implements DescriptionPro
             service.setRewrite(operation.get(Constants.REWRITE).clone());
         }
         if (operation.hasDefined(Constants.SSO)) {
-            service.setSso(operation.get(Constants.SSO).clone());
-            // FIXME: If a cache container is defined, add the dependency and inject it
+            ModelNode sso = operation.get(Constants.SSO).clone();
+            service.setSso(sso);
+            if (sso.hasDefined(Constants.CACHE_CONTAINER)) {
+                ServiceName ssoName = WebSubsystemServices.JBOSS_WEB_HOST.append(name, Constants.SSO);
+                serviceBuilder.addDependency(ssoName, SSOClusterManager.class, service.getSSOClusterManager());
+
+                SSOClusterManagerService ssoService = new SSOClusterManagerService();
+                SSOClusterManager ssoManager = ssoService.getValue();
+                ssoManager.setCacheContainerName(sso.get(Constants.CACHE_CONTAINER).asString());
+                if (sso.hasDefined(Constants.CACHE_NAME)) {
+                    ssoManager.setCacheName(sso.get(Constants.CACHE_NAME).asString());
+                }
+                ServiceBuilder<SSOClusterManager> builder = serviceTarget.addService(ssoName, ssoService);
+                ssoService.getValue().addDependencies(serviceTarget, builder);
+                newControllers.add(builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install());
+            }
         }
 
         if (operation.hasDefined(Constants.DEFAULT_WEB_MODULE)) {

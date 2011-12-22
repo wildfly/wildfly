@@ -74,7 +74,7 @@ public class CoreGroupCommunicationServiceService implements Service<CoreGroupCo
     @Override
     public void start(StartContext context) throws StartException {
         this.service = new CoreGroupCommunicationService();
-        this.service.setChannel(channel.getValue());
+        this.service.setChannel(this.channel.getValue());
         this.service.setScopeId(this.scope);
 
         try {

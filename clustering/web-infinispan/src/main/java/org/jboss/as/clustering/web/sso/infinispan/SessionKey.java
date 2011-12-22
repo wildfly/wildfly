@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat Middleware LLC, and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
+ * JBoss, Home of Professional Open Source
+ * Copyright 2010, JBoss Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -19,16 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.web.infinispan;
+package org.jboss.as.clustering.web.sso.infinispan;
 
-import org.infinispan.Cache;
-import org.jboss.as.clustering.web.LocalDistributableSessionManager;
-import org.jboss.msc.service.ServiceRegistry;
+import java.util.Map;
+
+import org.jboss.as.clustering.web.sso.FullyQualifiedSessionId;
 
 /**
  * @author Paul Ferraro
- *
  */
-public interface CacheSource {
-    <K, V> Cache<K, V> getCache(ServiceRegistry registry, LocalDistributableSessionManager manager);
+public class SessionKey extends AbstractSSOKey<Map<FullyQualifiedSessionId, Void>> {
+    private static final long serialVersionUID = 5846784540873611578L;
+
+    public SessionKey(String ssoId) {
+        super(ssoId);
+    }
 }

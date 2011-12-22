@@ -57,6 +57,7 @@ import org.apache.naming.resources.FileDirContext;
 import org.apache.naming.resources.ProxyDirContext;
 import org.apache.tomcat.util.IntrospectionUtils;
 import org.jboss.annotation.javaee.Icon;
+import org.jboss.as.clustering.web.DistributedCacheManagerFactory;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -111,6 +112,8 @@ import org.jboss.metadata.web.spec.WebResourceCollectionsMetaData;
 import org.jboss.metadata.web.spec.WelcomeFileListMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.value.InjectedValue;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -121,6 +124,7 @@ public class JBossContextConfig extends ContextConfig {
 
     private DeploymentUnit deploymentUnitContext = null;
     private Set<String> overlays = new HashSet<String>();
+    private final InjectedValue<DistributedCacheManagerFactory> factory = new InjectedValue<DistributedCacheManagerFactory>();
 
     /**
      * <p>
@@ -277,10 +281,10 @@ public class JBossContextConfig extends ContextConfig {
         // Distributable
         if (metaData.getDistributable() != null) {
             try {
-                context.setManager(new DistributableSessionManager<OutgoingDistributableSessionData>(this.context.getParent(), metaData, this.deploymentUnitContext.getServiceRegistry()));
+                context.setManager(new DistributableSessionManager<OutgoingDistributableSessionData>(this.factory.getOptionalValue(), this.context.getParent(), metaData));
                 context.setDistributable(true);
             } catch (Exception e) {
-                log.warn("Clustering not supported, falling back to non-clustered session manager.", e);
+                log.warn("Clustering not supported, falling back to non-clustered session manager.");
             }
         }
 
@@ -923,5 +927,9 @@ public class JBossContextConfig extends ContextConfig {
             context.setConfigured(false);
         }
 
+    }
+
+    Injector<DistributedCacheManagerFactory> getDistributedCacheManagerFactoryInjector() {
+        return this.factory;
     }
 }
