@@ -45,24 +45,30 @@ public class CapedwarfJPAProcessor implements DeploymentUnitProcessor {
 
     private Logger log = Logger.getLogger(getClass());
 
-    @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
         if (CapedwarfDeploymentMarker.isCapedwarfDeployment(unit) == false)
             return;
 
+        final ResourceRoot deploymentRoot = unit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        modifyPersistenceInfo(deploymentRoot);
+
         final List<ResourceRoot> resourceRoots = unit.getAttachment(Attachments.RESOURCE_ROOTS);
         for (ResourceRoot rr : resourceRoots) {
-            final PersistenceUnitMetadataHolder holder = rr.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
-            if (holder != null) {
-                List<PersistenceUnitMetadata> pus = holder.getPersistenceUnits();
-                if (pus != null && pus.isEmpty() == false) {
-                    for (PersistenceUnitMetadata pumd : pus) {
-                        final String providerClassName = pumd.getPersistenceProviderClassName();
-                        if (Configuration.getProviderModuleNameFromProviderClassName(providerClassName) == null) {
-                            log.debug("Changing JPA configuration - " + providerClassName + " not yet supported.");
-                            pumd.setPersistenceProviderClassName(Configuration.PROVIDER_CLASS_HIBERNATE); // TODO OGM usage
-                        }
+            modifyPersistenceInfo(rr);
+        }
+    }
+
+    protected void modifyPersistenceInfo(ResourceRoot resourceRoot) {
+        final PersistenceUnitMetadataHolder holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
+        if (holder != null) {
+            final List<PersistenceUnitMetadata> pus = holder.getPersistenceUnits();
+            if (pus != null && pus.isEmpty() == false) {
+                for (PersistenceUnitMetadata pumd : pus) {
+                    final String providerClassName = pumd.getPersistenceProviderClassName();
+                    if (Configuration.getProviderModuleNameFromProviderClassName(providerClassName) == null) {
+                        log.debug("Changing JPA configuration - " + providerClassName + " not yet supported.");
+                        pumd.setPersistenceProviderClassName(Configuration.PROVIDER_CLASS_HIBERNATE); // TODO OGM usage
                     }
                 }
             }
