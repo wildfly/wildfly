@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.test;
+package org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock;
 
 import javax.naming.NamingException;
 
@@ -29,8 +29,6 @@ import org.jboss.as.test.integration.ejb.entity.cmp.CmpTestRunner;
 import org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.bug1006723.testentity.EntityABean;
 import org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.bug1006723.testsession.TestSession;
 import org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.bug1006723.testsession.TestSessionHome;
-import org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.ejb.CmpEntityBean;
-import org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.ejb.FacadeBean;
 import org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocal;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -72,7 +70,6 @@ public class OptimisticLockUnitTestCase extends AbstractCmpTest {
         jar.addPackage(CmpEntityBean.class.getPackage());
         jar.addPackage(CmpEntityLocal.class.getPackage());
         jar.addAsManifestResource("ejb/entity/cmp/optimisticlock/ejb-jar.xml", "ejb-jar.xml");
-        jar.addAsManifestResource("ejb/entity/cmp/optimisticlock/jboss.xml", "jboss.xml");
         jar.addAsManifestResource("ejb/entity/cmp/optimisticlock/jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
         AbstractCmpTest.addDeploymentAssets(jar);
         return jar;
@@ -311,7 +308,7 @@ public class OptimisticLockUnitTestCase extends AbstractCmpTest {
 
     private FacadeBean getFacade() throws NamingException {
         if (facade == null) {
-            facade = (FacadeBean) iniCtx.lookup("java:module/FacadeBean!org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.ejb.FacadeBean");
+            facade = (FacadeBean) iniCtx.lookup("java:module/FacadeBean!org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.FacadeBean");
         }
         return facade;
     }

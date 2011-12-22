@@ -13,10 +13,10 @@
             <description><![CDATA[Description for Customer]]></description>
             <display-name>Customer</display-name>
             <ejb-name>Customer</ejb-name>
-            <local-home>org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete.ejb.CustomerLocalHome
+            <local-home>org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete.CustomerLocalHome
             </local-home>
-            <local>org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete.ejb.CustomerLocal</local>
-            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete.ejb.CustomerBean</ejb-class>
+            <local>org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete.CustomerLocal</local>
+            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete.CustomerBean</ejb-class>
             <persistence-type>Container</persistence-type>
             <prim-key-class>java.lang.Long</prim-key-class>
             <reentrant>False</reentrant>
@@ -36,10 +36,10 @@
             <description><![CDATA[Description for Account]]></description>
             <display-name>Account</display-name>
             <ejb-name>Account</ejb-name>
-            <local-home>org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete.ejb.AccountLocalHome
+            <local-home>org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete.AccountLocalHome
             </local-home>
-            <local>org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete.ejb.AccountLocal</local>
-            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete.ejb.AccountBean</ejb-class>
+            <local>org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete.AccountLocal</local>
+            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.cascadedelete.AccountBean</ejb-class>
             <persistence-type>Container</persistence-type>
             <prim-key-class>java.lang.Long</prim-key-class>
             <reentrant>False</reentrant>
