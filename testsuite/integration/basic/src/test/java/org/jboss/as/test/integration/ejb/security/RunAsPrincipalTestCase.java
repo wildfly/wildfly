@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.security;
 
+import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.junit.Ignore;
 import org.junit.Test;
 
