@@ -21,6 +21,9 @@
  */
 package org.jboss.as.ejb3.timerservice.task;
 
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.util.Date;
 
 import org.jboss.as.ejb3.timerservice.TimerImpl;
@@ -28,9 +31,6 @@ import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
 import org.jboss.as.ejb3.timerservice.TimerState;
 import org.jboss.as.ejb3.timerservice.spi.BeanRemovedException;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
-
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * A timer task which will be invoked at appropriate intervals based on a {@link javax.ejb.Timer}
@@ -105,6 +105,14 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
             if(this.timer.getNextExpiration() != null) {
                 this.timer.scheduleTimeout();
             }
+            return;
+        }
+        // If the recurring timer running longer than the interval is, we don't want to allow another
+        // execution until the it is complete. See JIRA AS7-3119
+        if(this.timer.getState() == TimerState.IN_TIMEOUT && !this.timer.isCalendarTimer()) {
+            ROOT_LOGGER.skipOverlappingInvokeTimeout(this.timer.getId(), now);
+            this.timer.setNextTimeout(this.calculateNextTimeout());
+            this.timerService.persistTimer(this.timer);
             return;
         }
 
