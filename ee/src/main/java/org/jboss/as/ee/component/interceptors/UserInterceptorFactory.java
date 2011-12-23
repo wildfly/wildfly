@@ -6,7 +6,6 @@ package org.jboss.as.ee.component.interceptors;
  * @author Stuart Douglas
  */
 
-import org.jboss.as.ee.component.TimerInvocationMarker;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
@@ -30,13 +29,11 @@ public class UserInterceptorFactory implements InterceptorFactory {
         return new Interceptor() {
             @Override
             public Object processInvocation(final InterceptorContext context) throws Exception {
-                final
-
-                TimerInvocationMarker marker = context.getPrivateData(TimerInvocationMarker.class);
-                if (marker == null) {
-                    return aroundInvoke.processInvocation(context);
-                } else {
+                final InvocationType marker = context.getPrivateData(InvocationType.class);
+                if (marker == InvocationType.TIMER) {
                     return aroundTimeout.processInvocation(context);
+                } else {
+                    return aroundInvoke.processInvocation(context);
                 }
             }
         };

@@ -27,7 +27,7 @@ import javax.ejb.ConcurrentAccessException;
 import javax.ejb.ConcurrentAccessTimeoutException;
 
 import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.ee.component.TimerInvocationMarker;
+import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
@@ -74,7 +74,8 @@ public class EntityBeanAssociatingInterceptorFactory implements InterceptorFacto
                 } catch (javax.ejb.NoSuchEntityException e) {
                     //if this is a timer service invocation we throw a special exception
                     //that tells the invoker that this timer no longer exists, and can be removed
-                    if (context.getPrivateData(TimerInvocationMarker.class) != null) {
+
+                    if (context.getPrivateData(InvocationType.class) == InvocationType.TIMER) {
                         throw new BeanRemovedException(e);
                     }
                     throw e;

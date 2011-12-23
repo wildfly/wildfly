@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.component.interceptors;
 
 import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -54,7 +55,9 @@ public final class AsyncVoidInterceptorFactory implements InterceptorFactory {
         return new Interceptor() {
             @Override
             public Object processInvocation(final InterceptorContext context) throws Exception {
-                component.getAsynchronousExecutor().execute(new Task(context.clone()));
+                final InterceptorContext asyncInterceptorContext = context.clone();
+                asyncInterceptorContext.putPrivateData(InvocationType.class, InvocationType.ASYNC);
+                component.getAsynchronousExecutor().execute(new Task(asyncInterceptorContext));
                 return null;
             }
         };

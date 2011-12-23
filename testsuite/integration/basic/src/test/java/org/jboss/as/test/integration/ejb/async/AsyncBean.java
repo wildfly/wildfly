@@ -22,12 +22,14 @@
 
 package org.jboss.as.test.integration.ejb.async;
 
-import javax.ejb.AsyncResult;
-import javax.ejb.Asynchronous;
-import javax.ejb.Stateless;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+
+import javax.ejb.AsyncResult;
+import javax.ejb.Asynchronous;
+import javax.ejb.Stateless;
+import javax.inject.Inject;
 
 /**
  * stateful session bean
@@ -39,7 +41,10 @@ public class AsyncBean {
     public static volatile boolean voidMethodCalled = false;
     public static volatile boolean futureMethodCalled = false;
 
-    public void asyncMethod(CountDownLatch latch,CountDownLatch latch2) throws InterruptedException {
+    @Inject
+    private RequestScopedBean requestScopedBean;
+
+    public void asyncMethod(CountDownLatch latch, CountDownLatch latch2) throws InterruptedException {
         latch.await(5, TimeUnit.SECONDS);
         voidMethodCalled = true;
         latch2.countDown();
@@ -49,6 +54,12 @@ public class AsyncBean {
         latch.await(5, TimeUnit.SECONDS);
         futureMethodCalled = true;
         return new AsyncResult<Boolean>(true);
+    }
+
+    public Future<Integer> testRequestScopeActive(CountDownLatch latch) throws InterruptedException {
+        latch.await(5, TimeUnit.SECONDS);
+        requestScopedBean.setState(20);
+        return new AsyncResult<Integer>(requestScopedBean.getState());
     }
 
 }

@@ -22,14 +22,15 @@
 
 package org.jboss.as.ejb3.component.interceptors;
 
+import java.util.concurrent.Future;
+
 import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-
-import java.util.concurrent.Future;
 
 /**
  * An asynchronous execution interceptor for methods returning {@link Future}.  Because asynchronous invocations
@@ -61,6 +62,7 @@ public final class AsyncFutureInterceptorFactory implements InterceptorFactory {
             @Override
             public Object processInvocation(final InterceptorContext context) throws Exception {
                 final InterceptorContext asyncInterceptorContext = context.clone();
+                asyncInterceptorContext.putPrivateData(InvocationType.class, InvocationType.ASYNC);
                 final CancellationFlag flag = new CancellationFlag();
                 final AsyncInvocationTask task = new AsyncInvocationTask( flag) {
 

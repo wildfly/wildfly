@@ -22,20 +22,22 @@
 
 package org.jboss.as.test.integration.ejb.async;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
 
 /**
  * Tests that a simple async annotation works
@@ -55,6 +57,7 @@ public class AsyncMethodTestCase {
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addPackage(AsyncMethodTestCase.class.getPackage());
+        jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
         return jar;
     }
 
@@ -85,5 +88,15 @@ public class AsyncMethodTestCase {
         Assert.assertTrue(result);
     }
 
+
+    @Test
+    public void testRequestScopeActive() throws Exception {
+        AsyncBean bean = lookup(AsyncBean.class);
+        final CountDownLatch latch = new CountDownLatch(1);
+        final Future<Integer> future = bean.testRequestScopeActive(latch);
+        latch.countDown();
+        int result = future.get();
+        Assert.assertEquals(20, result);
+    }
 
 }

@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.ee.component.Component;
-import org.jboss.as.ee.component.TimerInvocationMarker;
+import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.MethodIntf;
@@ -97,7 +97,7 @@ public class TimedObjectInvokerImpl implements TimedObjectInvoker, Serializable,
         }
         context.putPrivateData(Component.class, ejbComponent.getValue());
         context.putPrivateData(MethodIntf.class, MethodIntf.TIMER);
-        context.putPrivateData(TimerInvocationMarker.class, TimerInvocationMarker.INSTANCE);
+        context.putPrivateData(InvocationType.class, InvocationType.TIMER);
         interceptor.processInvocation(context);
     }
 

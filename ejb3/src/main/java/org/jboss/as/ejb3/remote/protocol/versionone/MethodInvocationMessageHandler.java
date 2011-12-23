@@ -33,6 +33,7 @@ import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.interceptors.AsyncInvocationTask;
 import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
@@ -236,6 +237,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
         interceptorContext.setContextData(new HashMap<String, Object>());
         interceptorContext.putPrivateData(Component.class, componentView.getComponent());
         interceptorContext.putPrivateData(ComponentView.class, componentView);
+        interceptorContext.putPrivateData(InvocationType.class, InvocationType.REMOTE);
         if (attachments != null) {
             // attach the attachments which were passed from the remote client
             for (final Map.Entry<String, Object> attachment : attachments.entrySet()) {

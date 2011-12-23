@@ -130,6 +130,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         context.putPrivateData(Component.class, ejbComponent);
         context.putPrivateData(ComponentView.class, view);
 
+
         if (locator instanceof StatefulEJBLocator) {
             final SessionID sessionID = ((StatefulEJBLocator) locator).getSessionId();
             context.putPrivateData(SessionID.class, sessionID);

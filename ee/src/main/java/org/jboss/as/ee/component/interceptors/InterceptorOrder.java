@@ -117,7 +117,6 @@ public class
         public static final int INVALID_METHOD_EXCEPTION                                = 0x201;
         public static final int SECURITY_CONTEXT                                        = 0x250;
         public static final int EJB_SECURITY_AUTHORIZATION_INTERCEPTOR                  = 0x300;
-        public static final int CDI_REQUEST_SCOPE                                       = 0x350;
         public static final int INVOCATION_CONTEXT_INTERCEPTOR                          = 0x400;
         // should happen before the CMT/BMT interceptors
         public static final int REMOTE_TRANSACTION_PROPOGATION_INTERCEPTOR              = 0x450;
