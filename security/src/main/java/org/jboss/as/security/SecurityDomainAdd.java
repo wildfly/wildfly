@@ -30,6 +30,7 @@ import static org.jboss.as.security.Constants.ACL_MODULES;
 import static org.jboss.as.security.Constants.ADDITIONAL_PROPERTIES;
 import static org.jboss.as.security.Constants.ALGORITHM;
 import static org.jboss.as.security.Constants.AUDIT;
+import static org.jboss.as.security.Constants.AUTHORIZATION;
 import static org.jboss.as.security.Constants.AUTH_MODULES;
 import static org.jboss.as.security.Constants.CACHE_TYPE;
 import static org.jboss.as.security.Constants.CIPHER_SUITES;
@@ -49,8 +50,8 @@ import static org.jboss.as.security.Constants.MAPPING;
 import static org.jboss.as.security.Constants.MAPPING_MODULES;
 import static org.jboss.as.security.Constants.MODULE;
 import static org.jboss.as.security.Constants.MODULE_OPTIONS;
-import static org.jboss.as.security.Constants.NAME;
 import static org.jboss.as.security.Constants.PASSWORD;
+import static org.jboss.as.security.Constants.POLICY_MODULES;
 import static org.jboss.as.security.Constants.PROTOCOLS;
 import static org.jboss.as.security.Constants.PROVIDER;
 import static org.jboss.as.security.Constants.PROVIDER_ARGUMENT;
@@ -104,9 +105,11 @@ import org.jboss.security.auth.login.AuthenticationInfo;
 import org.jboss.security.auth.login.BaseAuthenticationInfo;
 import org.jboss.security.auth.login.JASPIAuthenticationInfo;
 import org.jboss.security.auth.login.LoginModuleStackHolder;
+import org.jboss.security.authorization.config.AuthorizationModuleEntry;
 import org.jboss.security.config.ACLInfo;
 import org.jboss.security.config.ApplicationPolicy;
 import org.jboss.security.config.AuditInfo;
+import org.jboss.security.config.AuthorizationInfo;
 import org.jboss.security.config.ControlFlag;
 import org.jboss.security.config.IdentityTrustInfo;
 import org.jboss.security.config.MappingInfo;
@@ -211,6 +214,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
 
         create  = processClassicAuth(securityDomain, model, applicationPolicy);
         create |= processJASPIAuth(securityDomain, model, applicationPolicy);
+        create |= processAuthorization(securityDomain, model,applicationPolicy);
         create |= processACL(securityDomain, model, applicationPolicy);
         create |= processAudit(securityDomain, model, applicationPolicy);
         create |= processIdentityTrust(securityDomain, model, applicationPolicy);
@@ -318,6 +322,31 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
 
         }
         applicationPolicy.setAclInfo(aclInfo);
+        return true;
+    }
+
+    private boolean processAuthorization(String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy) {
+        node = peek(node, AUTHORIZATION, CLASSIC);
+        if (node == null)
+            return false;
+
+        AuthorizationInfo authzInfo = new AuthorizationInfo(securityDomain);
+        List<ModelNode> modules = node.get(POLICY_MODULES).asList();
+        for (ModelNode module : modules) {
+            String codeName = this.extractCode(module, ModulesMap.AUTHORIZATION_MAP);
+            ControlFlag controlFlag = ControlFlag.valueOf(module.require(FLAG).asString());
+            Map<String, Object> options = extractOptions(module);
+            AuthorizationModuleEntry authzModuleEntry = new AuthorizationModuleEntry(codeName, options);
+            authzModuleEntry.setControlFlag(controlFlag);
+            authzInfo.add(authzModuleEntry);
+
+            String moduleName = module.get(MODULE).asString();
+            if(module.hasDefined(MODULE) && moduleName != null &&  moduleName.length() > 0 ) {
+                authzInfo.setJBossModuleName(moduleName);
+            }
+        }
+
+        applicationPolicy.setAuthorizationInfo(authzInfo);
         return true;
     }
 
