@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.security;
 
+import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
