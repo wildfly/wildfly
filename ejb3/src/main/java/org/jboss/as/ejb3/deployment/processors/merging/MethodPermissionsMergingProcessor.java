@@ -78,37 +78,37 @@ public class MethodPermissionsMergingProcessor extends AbstractMergingProcessor<
         final RuntimeAnnotationInformation<Boolean> permitData = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, PermitAll.class);
 
         for (Map.Entry<String, List<Boolean>> entry : permitData.getClassAnnotations().entrySet()) {
-            description.getMethodPermissions().setAttribute(null, entry.getKey(), EJBMethodSecurityAttribute.permitAll());
+            description.getAnnotationMethodPermissions().setAttribute(null, entry.getKey(), EJBMethodSecurityAttribute.permitAll());
         }
 
         for (Map.Entry<Method, List<Boolean>> entry : permitData.getMethodAnnotations().entrySet()) {
             final Method method = entry.getKey();
             final MethodIdentifier identifier = MethodIdentifier.getIdentifierForMethod(method);
-            description.getMethodPermissions().setAttribute(null, EJBMethodSecurityAttribute.permitAll(), method.getDeclaringClass().getName(), method.getName(), identifier.getParameterTypes());
+            description.getAnnotationMethodPermissions().setAttribute(null, EJBMethodSecurityAttribute.permitAll(), method.getDeclaringClass().getName(), method.getName(), identifier.getParameterTypes());
         }
 
         final RuntimeAnnotationInformation<String[]> data = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, RolesAllowed.class);
 
         for (Map.Entry<String, List<String[]>> entry : data.getClassAnnotations().entrySet()) {
-            description.getMethodPermissions().setAttribute(null, entry.getKey(), EJBMethodSecurityAttribute.rolesAllowed(new HashSet<String>(Arrays.<String>asList(entry.getValue().get(0)))));
+            description.getAnnotationMethodPermissions().setAttribute(null, entry.getKey(), EJBMethodSecurityAttribute.rolesAllowed(new HashSet<String>(Arrays.<String>asList(entry.getValue().get(0)))));
         }
 
         for (Map.Entry<Method, List<String[]>> entry : data.getMethodAnnotations().entrySet()) {
             final Method method = entry.getKey();
             final MethodIdentifier identifier = MethodIdentifier.getIdentifierForMethod(method);
-            description.getMethodPermissions().setAttribute(null, EJBMethodSecurityAttribute.rolesAllowed(new HashSet<String>(Arrays.<String>asList(entry.getValue().get(0)))), method.getDeclaringClass().getName(), method.getName(), identifier.getParameterTypes());
+            description.getAnnotationMethodPermissions().setAttribute(null, EJBMethodSecurityAttribute.rolesAllowed(new HashSet<String>(Arrays.<String>asList(entry.getValue().get(0)))), method.getDeclaringClass().getName(), method.getName(), identifier.getParameterTypes());
         }
 
         final RuntimeAnnotationInformation<Boolean> denyData = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, DenyAll.class);
 
         for (Map.Entry<String, List<Boolean>> entry : denyData.getClassAnnotations().entrySet()) {
-            description.getMethodPermissions().setAttribute(null, entry.getKey(), EJBMethodSecurityAttribute.denyAll());
+            description.getAnnotationMethodPermissions().setAttribute(null, entry.getKey(), EJBMethodSecurityAttribute.denyAll());
         }
 
         for (Map.Entry<Method, List<Boolean>> entry : denyData.getMethodAnnotations().entrySet()) {
             final Method method = entry.getKey();
             final MethodIdentifier identifier = MethodIdentifier.getIdentifierForMethod(method);
-            description.getMethodPermissions().setAttribute(null, EJBMethodSecurityAttribute.denyAll(), method.getDeclaringClass().getName(), method.getName(), identifier.getParameterTypes());
+            description.getAnnotationMethodPermissions().setAttribute(null, EJBMethodSecurityAttribute.denyAll(), method.getDeclaringClass().getName(), method.getName(), identifier.getParameterTypes());
         }
     }
 
@@ -135,16 +135,16 @@ public class MethodPermissionsMergingProcessor extends AbstractMergingProcessor<
                         final String methodName = method.getMethodName();
                         final MethodIntf methodIntf = this.getMethodIntf(method.getMethodIntf());
                         if (methodName.equals("*")) {
-                            componentConfiguration.getMethodPermissions().setAttribute(methodIntf, null, EJBMethodSecurityAttribute.denyAll());
+                            componentConfiguration.getDescriptorMethodPermissions().setAttribute(methodIntf, null, EJBMethodSecurityAttribute.denyAll());
                         } else {
 
                             final MethodParametersMetaData methodParams = method.getMethodParams();
                             // update the session bean description with the tx attribute info
                             if (methodParams == null) {
-                                componentConfiguration.getMethodPermissions().setAttribute(methodIntf, EJBMethodSecurityAttribute.denyAll(), methodName);
+                                componentConfiguration.getDescriptorMethodPermissions().setAttribute(methodIntf, EJBMethodSecurityAttribute.denyAll(), methodName);
                             } else {
 
-                                componentConfiguration.getMethodPermissions().setAttribute(methodIntf, EJBMethodSecurityAttribute.denyAll(), null, methodName, this.getMethodParams(methodParams));
+                                componentConfiguration.getDescriptorMethodPermissions().setAttribute(methodIntf, EJBMethodSecurityAttribute.denyAll(), null, methodName, this.getMethodParams(methodParams));
                             }
                         }
                     }
@@ -167,22 +167,22 @@ public class MethodPermissionsMergingProcessor extends AbstractMergingProcessor<
                             final String methodName = method.getMethodName();
                             final MethodIntf methodIntf = this.getMethodIntf(method.getMethodIntf());
                             if (methodName.equals("*")) {
-                                final EJBMethodSecurityAttribute existingRoles = componentConfiguration.getMethodPermissions().getAttributeStyle1(methodIntf, null);
+                                final EJBMethodSecurityAttribute existingRoles = componentConfiguration.getDescriptorMethodPermissions().getAttributeStyle1(methodIntf, null);
                                 ejbMethodSecurityMetaData = mergeExistingRoles(ejbMethodSecurityMetaData, existingRoles);
-                                componentConfiguration.getMethodPermissions().setAttribute(methodIntf, null, ejbMethodSecurityMetaData);
+                                componentConfiguration.getDescriptorMethodPermissions().setAttribute(methodIntf, null, ejbMethodSecurityMetaData);
                             } else {
 
                                 final MethodParametersMetaData methodParams = method.getMethodParams();
                                 // update the session bean description with the tx attribute info
                                 if (methodParams == null) {
 
-                                    final EJBMethodSecurityAttribute existingRoles = componentConfiguration.getMethodPermissions().getAttributeStyle2(methodIntf, methodName);
+                                    final EJBMethodSecurityAttribute existingRoles = componentConfiguration.getDescriptorMethodPermissions().getAttributeStyle2(methodIntf, methodName);
                                     ejbMethodSecurityMetaData = mergeExistingRoles(ejbMethodSecurityMetaData, existingRoles);
-                                    componentConfiguration.getMethodPermissions().setAttribute(methodIntf, ejbMethodSecurityMetaData, methodName);
+                                    componentConfiguration.getDescriptorMethodPermissions().setAttribute(methodIntf, ejbMethodSecurityMetaData, methodName);
                                 } else {
-                                    final EJBMethodSecurityAttribute existingRoles = componentConfiguration.getMethodPermissions().getAttributeStyle3(methodIntf, null, methodName, this.getMethodParams(methodParams));
+                                    final EJBMethodSecurityAttribute existingRoles = componentConfiguration.getDescriptorMethodPermissions().getAttributeStyle3(methodIntf, null, methodName, this.getMethodParams(methodParams));
                                     ejbMethodSecurityMetaData = mergeExistingRoles(ejbMethodSecurityMetaData, existingRoles);
-                                    componentConfiguration.getMethodPermissions().setAttribute(methodIntf, ejbMethodSecurityMetaData, null, methodName, this.getMethodParams(methodParams));
+                                    componentConfiguration.getDescriptorMethodPermissions().setAttribute(methodIntf, ejbMethodSecurityMetaData, null, methodName, this.getMethodParams(methodParams));
                                 }
                             }
                         }

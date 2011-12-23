@@ -24,7 +24,10 @@ package org.jboss.as.ejb3.security;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
@@ -35,6 +38,7 @@ import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
+import org.jboss.as.ejb3.deployment.ApplicableMethodInformation;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
@@ -82,28 +86,60 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
                 continue;
             }
             // setup the authorization interceptor
-            EJBMethodSecurityAttribute ejbMethodSecurityMetaData = ejbComponentDescription.getMethodPermissions().getViewAttribute(ejbViewDescription.getMethodIntf(), viewMethod.getName(), MethodIdentifier.getIdentifierForMethod(viewMethod).getParameterTypes());
-            if (ejbMethodSecurityMetaData == null) {
-                ejbMethodSecurityMetaData = ejbComponentDescription.getMethodPermissions().getViewAttribute(MethodIntf.BEAN, viewMethod.getName(), MethodIdentifier.getIdentifierForMethod(viewMethod).getParameterTypes());
-            }
-
-            if (ejbMethodSecurityMetaData == null) {
-                //if this is null we try with the corresponding bean method
-                final Method classMethod = ClassReflectionIndexUtil.findMethod(deploymentReflectionIndex, componentConfiguration.getComponentClass(), viewMethod);
-                if (classMethod != null) {
-                    ejbMethodSecurityMetaData = ejbComponentDescription.getMethodPermissions().getAttribute(ejbViewDescription.getMethodIntf(), classMethod.getDeclaringClass().getName(), classMethod.getName(), MethodIdentifier.getIdentifierForMethod(classMethod).getParameterTypes());
-                    if (ejbMethodSecurityMetaData == null) {
-                        ejbMethodSecurityMetaData = ejbComponentDescription.getMethodPermissions().getAttribute(MethodIntf.BEAN, classMethod.getDeclaringClass().getName(), classMethod.getName(), MethodIdentifier.getIdentifierForMethod(classMethod).getParameterTypes());
-
-                    }
-                }
-            }
-            //we do not add the security interceptor if there is no security information
-            if (ejbMethodSecurityMetaData != null) {
-                final Interceptor authorizationInterceptor = new AuthorizationInterceptor(ejbMethodSecurityMetaData, viewClassName, viewMethod);
-                viewConfiguration.addViewInterceptor(viewMethod, new ImmediateInterceptorFactory(authorizationInterceptor), InterceptorOrder.View.EJB_SECURITY_AUTHORIZATION_INTERCEPTOR);
+            ApplicableMethodInformation<EJBMethodSecurityAttribute> permissions = ejbComponentDescription.getDescriptorMethodPermissions();
+            if(!handlePermissions(componentConfiguration, viewConfiguration, deploymentReflectionIndex, viewClassName, ejbViewDescription, viewMethod, permissions, false)) {
+                //if it was not handled by the descriptor processor we look for annotation basic info
+                handlePermissions(componentConfiguration, viewConfiguration, deploymentReflectionIndex, viewClassName, ejbViewDescription, viewMethod, ejbComponentDescription.getAnnotationMethodPermissions(), true);
             }
         }
 
+    }
+
+    private boolean handlePermissions(ComponentConfiguration componentConfiguration, ViewConfiguration viewConfiguration, DeploymentReflectionIndex deploymentReflectionIndex, String viewClassName, EJBViewDescription ejbViewDescription, Method viewMethod, ApplicableMethodInformation<EJBMethodSecurityAttribute> permissions, boolean annotations) {
+        EJBMethodSecurityAttribute ejbMethodSecurityMetaData = permissions.getViewAttribute(ejbViewDescription.getMethodIntf(), viewMethod.getName(), MethodIdentifier.getIdentifierForMethod(viewMethod).getParameterTypes());
+        final List<EJBMethodSecurityAttribute> allAttributes = new ArrayList<EJBMethodSecurityAttribute>();
+        allAttributes.addAll(permissions.getAllAttributes(ejbViewDescription.getMethodIntf(), viewMethod.getDeclaringClass().getName(), viewMethod.getName(), MethodIdentifier.getIdentifierForMethod(viewMethod).getParameterTypes()));
+
+        if (ejbMethodSecurityMetaData == null) {
+            ejbMethodSecurityMetaData = permissions.getViewAttribute(MethodIntf.BEAN, viewMethod.getName(), MethodIdentifier.getIdentifierForMethod(viewMethod).getParameterTypes());
+        }
+        allAttributes.addAll(permissions.getAllAttributes(MethodIntf.BEAN, viewMethod.getDeclaringClass().getName(), viewMethod.getName(), MethodIdentifier.getIdentifierForMethod(viewMethod).getParameterTypes()));
+
+        final Method classMethod = ClassReflectionIndexUtil.findMethod(deploymentReflectionIndex, componentConfiguration.getComponentClass(), viewMethod);
+        if (ejbMethodSecurityMetaData == null) {
+            //if this is null we try with the corresponding bean method
+            if (classMethod != null) {
+                ejbMethodSecurityMetaData = permissions.getAttribute(ejbViewDescription.getMethodIntf(), classMethod.getDeclaringClass().getName(), classMethod.getName(), MethodIdentifier.getIdentifierForMethod(classMethod).getParameterTypes());
+                if (ejbMethodSecurityMetaData == null) {
+                    ejbMethodSecurityMetaData = permissions.getAttribute(MethodIntf.BEAN, classMethod.getDeclaringClass().getName(), classMethod.getName(), MethodIdentifier.getIdentifierForMethod(classMethod).getParameterTypes());
+
+                }
+            }
+        }
+        if(classMethod != null) {
+            allAttributes.addAll(permissions.getAllAttributes(ejbViewDescription.getMethodIntf(), classMethod.getDeclaringClass().getName(), classMethod.getName(), MethodIdentifier.getIdentifierForMethod(classMethod).getParameterTypes()));
+            allAttributes.addAll(permissions.getAllAttributes(MethodIntf.BEAN, classMethod.getDeclaringClass().getName(), classMethod.getName(), MethodIdentifier.getIdentifierForMethod(classMethod).getParameterTypes()));
+        }
+
+
+        //we do not add the security interceptor if there is no security information
+        if (ejbMethodSecurityMetaData != null) {
+
+            if(!annotations &&
+                    !ejbMethodSecurityMetaData.isDenyAll() &&
+                    !ejbMethodSecurityMetaData.isPermitAll()) {
+                //roles are additive when defined in the deployment descriptor
+                final Set<String> rolesAllowed = new HashSet<String>();
+                for(EJBMethodSecurityAttribute attr : allAttributes) {
+                    rolesAllowed.addAll(attr.getRolesAllowed());
+                }
+                ejbMethodSecurityMetaData = EJBMethodSecurityAttribute.rolesAllowed(rolesAllowed);
+            }
+
+            final Interceptor authorizationInterceptor = new AuthorizationInterceptor(ejbMethodSecurityMetaData, viewClassName, viewMethod);
+            viewConfiguration.addViewInterceptor(viewMethod, new ImmediateInterceptorFactory(authorizationInterceptor), InterceptorOrder.View.EJB_SECURITY_AUTHORIZATION_INTERCEPTOR);
+            return true;
+        }
+        return false;
     }
 }

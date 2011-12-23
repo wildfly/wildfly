@@ -40,9 +40,9 @@ public class EjbJaccConfigurator implements ComponentConfigurator {
         final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
         final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(Attachments.CLASS_INDEX);
 
-        EJBComponentDescription component = EJBComponentDescription.class.cast(description);
+        final EJBComponentDescription component = EJBComponentDescription.class.cast(description);
 
-        EjbJaccConfig config = new EjbJaccConfig();
+        final EjbJaccConfig config = new EjbJaccConfig();
         context.getDeploymentUnit().addToAttachmentList(EjbDeploymentAttachmentKeys.JACC_PERMISSIONS, config);
 
         String ejbClassName = component.getEJBClassName();
@@ -53,7 +53,7 @@ public class EjbJaccConfigurator implements ComponentConfigurator {
         boolean permitOnAllViews = true;
         List<EJBMethodPermission> permissions = new ArrayList<EJBMethodPermission>();
         List<EJBMethodPermission> uncheckedPermissions = new ArrayList<EJBMethodPermission>();
-        final ApplicableMethodInformation<EJBMethodSecurityAttribute> perms = component.getMethodPermissions();
+        final ApplicableMethodInformation<EJBMethodSecurityAttribute> perms = component.getDescriptorMethodPermissions();
         for (ViewDescription view : component.getViews()) {
 
             String viewClassName = view.getViewClassName();
@@ -86,10 +86,13 @@ public class EjbJaccConfigurator implements ComponentConfigurator {
 
             for (Method method : viewClass.getClassMethods()) {
                 final MethodIdentifier identifier = MethodIdentifier.getIdentifierForMethod(method);
-                EJBMethodSecurityAttribute methodLevel = component.getMethodPermissions().getAttribute(methodIntf, method.getDeclaringClass().getName(), method.getName(), identifier.getParameterTypes());
+                EJBMethodSecurityAttribute methodLevel = component.getDescriptorMethodPermissions().getAttribute(methodIntf, method.getDeclaringClass().getName(), method.getName(), identifier.getParameterTypes());
                 // check method level
                 if (methodLevel == null) {
-                    continue;
+                    methodLevel = component.getAnnotationMethodPermissions().getAttribute(methodIntf, method.getDeclaringClass().getName(), method.getName(), identifier.getParameterTypes());
+                    if (methodLevel == null) {
+                        continue;
+                    }
                 }
                 EJBMethodPermission p = new EJBMethodPermission(ejbName, identifier.getName(), type.name(), identifier.getParameterTypes());
 

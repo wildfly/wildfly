@@ -76,6 +76,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.msc.service.ServiceBuilder;
@@ -129,7 +130,9 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     private final Map<String, Collection<String>> securityRoleLinks = new HashMap<String, Collection<String>>();
 
 
-    private final ApplicableMethodInformation<EJBMethodSecurityAttribute> methodPermissions;
+    private final ApplicableMethodInformation<EJBMethodSecurityAttribute> descriptorMethodPermissions;
+    private final ApplicableMethodInformation<EJBMethodSecurityAttribute> annotationMethodPermissions;
+
 
     /**
      * @Schedule methods
@@ -206,7 +209,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         this.addRemoteTransactionsRepositoryDependency();
         this.transactionAttributes = new ApplicableMethodInformation<TransactionAttributeType>(componentName, TransactionAttributeType.REQUIRED);
         this.transactionTimeouts = new ApplicableMethodInformation<Integer>(componentName, null);
-        this.methodPermissions = new ApplicableMethodInformation<EJBMethodSecurityAttribute>(componentName, null);
+        this.descriptorMethodPermissions = new ApplicableMethodInformation<EJBMethodSecurityAttribute>(componentName, null);
+        this.annotationMethodPermissions = new ApplicableMethodInformation<EJBMethodSecurityAttribute>(componentName, null);
 
 
 
@@ -663,8 +667,12 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         return transactionTimeouts;
     }
 
-    public ApplicableMethodInformation<EJBMethodSecurityAttribute> getMethodPermissions() {
-        return methodPermissions;
+    public ApplicableMethodInformation<EJBMethodSecurityAttribute> getDescriptorMethodPermissions() {
+        return descriptorMethodPermissions;
+    }
+
+    public ApplicableMethodInformation<EJBMethodSecurityAttribute> getAnnotationMethodPermissions() {
+        return annotationMethodPermissions;
     }
 
     @Override

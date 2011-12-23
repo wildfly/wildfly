@@ -1,7 +1,9 @@
 package org.jboss.as.ejb3.deployment;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.ejb3.component.MethodIntf;
@@ -109,6 +111,35 @@ public class ApplicableMethodInformation<T> {
             return attr;
         return defaultAttribute;
     }
+
+    public List<T> getAllAttributes(MethodIntf methodIntf, String className, String methodName, String... methodParams) {
+        assert methodIntf != null : "methodIntf is null";
+        assert methodName != null : "methodName is null";
+        assert methodParams != null : "methodParams is null";
+        final List<T> ret = new ArrayList<T>();
+        ArrayKey methodParamsKey = new ArrayKey((Object[]) methodParams);
+        T attr = get(get(get(perViewStyle3, methodIntf), methodName), methodParamsKey);
+        if (attr != null)
+            ret.add(attr);
+        attr = get(get(perViewStyle2, methodIntf), methodName);
+        if (attr != null)
+            ret.add(attr);
+        attr = get(perViewStyle1, methodIntf);
+        if (attr != null)
+            ret.add(attr);
+        attr = get(get(get(style3, className), methodName), methodParamsKey);
+        if (attr != null)
+            ret.add(attr);
+        attr = get(style2, methodName);
+        if (attr != null)
+            ret.add(attr);
+        attr = get(style1, className);
+        if (attr != null)
+            ret.add(attr);
+        return ret;
+    }
+
+
 
     public T getViewAttribute(MethodIntf methodIntf, String methodName, String... methodParams) {
         assert methodIntf != null : "methodIntf is null";
