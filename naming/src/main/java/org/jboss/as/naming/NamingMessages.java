@@ -23,6 +23,7 @@
 package org.jboss.as.naming;
 
 import org.jboss.as.naming.deployment.JndiName;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
@@ -369,4 +370,7 @@ public interface NamingMessages {
      */
     @Message(id = 11862, value = "Thread interrupted while retrieving service reference for service %s")
     NamingException threadInterrupt(ServiceName serviceName);
+
+    @Message(id = 11863, value = "Invalid name for context binding %s")
+    DeploymentUnitProcessingException invalidNameForContextBinding(String name);
 }

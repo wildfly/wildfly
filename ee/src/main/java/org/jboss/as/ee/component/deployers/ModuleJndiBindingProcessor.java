@@ -40,6 +40,9 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.InterceptorDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
+import org.jboss.as.ee.naming.ContextInjectionSource;
+import org.jboss.as.ee.structure.DeploymentType;
+import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -70,7 +73,8 @@ import static org.jboss.as.ee.EeMessages.MESSAGES;
  *
  * @author Stuart Douglas
  */
-public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
+public class
+        ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
 
     private static class IntHolder {
         private int value = 0;
@@ -95,6 +99,16 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
         // handle these duplicates?
         IntHolder moduleCount = new IntHolder();
         final List<BindingConfiguration> bindingConfigurations = eeModuleDescription.getBindingConfigurations();
+
+        //we need to make sure that java:module/env and java:comp/env are always available
+        if (!DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
+            bindingConfigurations.add(new BindingConfiguration("java:module/env", new ContextInjectionSource("env", "java:module/env")));
+        }
+        if (deploymentUnit.getParent() == null) {
+            bindingConfigurations.add(new BindingConfiguration("java:app/env", new ContextInjectionSource("env", "java:app/env")));
+        }
+
+
         final ServiceName moduleOwnerName = deploymentUnit.getServiceName().append("module").append(moduleConfiguration.getApplicationName()).append(moduleConfiguration.getModuleName());
         for (BindingConfiguration binding : bindingConfigurations) {
 

@@ -76,7 +76,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.msc.service.ServiceBuilder;
@@ -220,7 +219,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
                 //make sure java:comp/env is always available, even if nothing is bound there
                 if(description.getNamingMode() == ComponentNamingMode.CREATE) {
-                    description.getBindingConfigurations().add(new BindingConfiguration("java:comp/env", new ContextInjectionSource("env")));
+                    description.getBindingConfigurations().add(new BindingConfiguration("java:comp/env", new ContextInjectionSource("env", "java:comp/env")));
                 }
 
                 if (description.isTimerServiceApplicable()) {
