@@ -42,6 +42,7 @@ import javax.transaction.UserTransaction;
 
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
@@ -450,5 +451,9 @@ public abstract class EJBComponent extends BasicComponent {
      */
     public EJBRemoteTransactionsRepository getEjbRemoteTransactionsRepository() {
         return this.ejbRemoteTransactionsRepository;
+    }
+
+    public AllowedMethodsInformation getAllowedMethodsInformation() {
+        return AllowedMethodsInformation.INSTANCE;
     }
 }

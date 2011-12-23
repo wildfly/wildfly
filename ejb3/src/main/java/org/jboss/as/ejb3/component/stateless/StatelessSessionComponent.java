@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.ee.component.BasicComponentInstance;
+import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.component.pool.PooledComponent;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
@@ -119,4 +120,8 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
         super.stop(stopContext);
     }
 
+    @Override
+    public AllowedMethodsInformation getAllowedMethodsInformation() {
+        return StatelessAllowedMethodsInformation.INSTANCE;
+    }
 }

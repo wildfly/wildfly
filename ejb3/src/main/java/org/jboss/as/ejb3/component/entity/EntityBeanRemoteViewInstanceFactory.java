@@ -31,13 +31,19 @@ import javax.transaction.Synchronization;
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentInjector;
+import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.ViewInstanceFactory;
+import org.jboss.as.ee.component.deployers.ComponentInstallProcessor;
+import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanHomeCreateInterceptorFactory;
+import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EntityEJBLocator;
+import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.Interceptors;
 import org.jboss.msc.value.ImmediateValue;
 
@@ -125,10 +131,18 @@ public class EntityBeanRemoteViewInstanceFactory implements ViewInstanceFactory 
     }
 
     protected Object invokeEjbCreate(final Map<Object, Object> contextData, final Method ejbCreate, final EntityBeanComponentInstance instance, final Object[] params) throws Exception {
+
+        //there will always be an invocation
+        //as this is only used from home invocations
+        final InterceptorContext context = CurrentInvocationContext.get();
+        final InvocationType invocationType = context.getPrivateData(InvocationType.class);
         try {
+            context.putPrivateData(InvocationType.class, InvocationType.ENTITY_EJB_CREATE);
             return ejbCreate.invoke(instance.getInstance(), params);
         } catch (InvocationTargetException e) {
             throw Interceptors.rethrow(e.getCause());
+        }finally {
+            context.putPrivateData(InvocationType.class, invocationType);
         }
     }
 }

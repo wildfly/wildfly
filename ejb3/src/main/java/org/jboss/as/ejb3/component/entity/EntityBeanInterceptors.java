@@ -63,7 +63,7 @@ public class EntityBeanInterceptors {
         @Override
         public Object processInvocation(final InterceptorContext context) throws Exception {
             final EntityBeanComponentInstance instance = (EntityBeanComponentInstance) context.getPrivateData(ComponentInstance.class);
-            instance.setupContext();
+            instance.setupContext(context);
             return context.proceed();
         }
     });

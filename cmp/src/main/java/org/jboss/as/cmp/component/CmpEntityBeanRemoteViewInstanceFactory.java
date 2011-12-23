@@ -47,11 +47,7 @@ public class CmpEntityBeanRemoteViewInstanceFactory extends EntityBeanRemoteView
         final CmpEntityBeanComponentInstance cmpInstance = CmpEntityBeanComponentInstance.class.cast(instance);
         final JDBCEntityPersistenceStore storeManager = cmpInstance.getComponent().getStoreManager();
         storeManager.initEntity(cmpInstance.getEjbContext());
-        try {
-            ejbCreate.invoke(instance.getInstance(), params);
-        } catch (InvocationTargetException ite) {
-            throw Interceptors.rethrow(ite.getCause());
-        }
+        super.invokeEjbCreate(contextData, ejbCreate, instance, params);
         return storeManager.createEntity(ejbCreate, params, cmpInstance.getEjbContext());
     }
 

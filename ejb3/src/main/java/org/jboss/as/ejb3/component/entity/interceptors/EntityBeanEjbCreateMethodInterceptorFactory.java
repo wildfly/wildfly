@@ -30,6 +30,7 @@ import javax.transaction.Synchronization;
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.invocation.Interceptor;
@@ -147,10 +148,14 @@ public class EntityBeanEjbCreateMethodInterceptorFactory implements InterceptorF
     }
 
     protected Object invokeEjbCreate(final InterceptorContext context, final Method ejbCreate, final EntityBeanComponentInstance instance, final Object[] params) throws Exception {
+        final InvocationType invocationType = context.getPrivateData(InvocationType.class);
         try {
+            context.putPrivateData(InvocationType.class, InvocationType.ENTITY_EJB_CREATE);
             return ejbCreate.invoke(instance.getInstance(), params);
         } catch (InvocationTargetException e) {
             throw Interceptors.rethrow(e.getCause());
+        } finally {
+            context.putPrivateData(InvocationType.class, invocationType);
         }
     }
 }

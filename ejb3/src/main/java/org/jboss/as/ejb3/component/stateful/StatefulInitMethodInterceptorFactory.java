@@ -26,6 +26,7 @@ import java.lang.reflect.Method;
 
 import javax.ejb.CreateException;
 
+import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.as.ejb3.component.interceptors.EjbExceptionTransformingInterceptorFactories;
 import org.jboss.as.ejb3.component.interceptors.SessionBeanHomeInterceptorFactory;
@@ -63,13 +64,17 @@ public class StatefulInitMethodInterceptorFactory implements InterceptorFactory 
             @Override
             public Object processInvocation(final InterceptorContext context) throws Exception {
                 if (method != null) {
+                    final InvocationType invocationType = context.getPrivateData(InvocationType.class);
                     try {
+                        context.putPrivateData(InvocationType.class, InvocationType.SFSB_INIT_METHOD);
                         method.invoke(context.getTarget(), params);
                     } catch (InvocationTargetException e) {
-                        if(CreateException.class.isAssignableFrom(e.getCause().getClass())) {
-                            EjbExceptionTransformingInterceptorFactories.setCreateException((CreateException)e.getCause());
+                        if (CreateException.class.isAssignableFrom(e.getCause().getClass())) {
+                            EjbExceptionTransformingInterceptorFactories.setCreateException((CreateException) e.getCause());
                         }
                         throw Interceptors.rethrow(e.getCause());
+                    } finally {
+                        context.putPrivateData(InvocationType.class, invocationType);
                     }
                 }
                 return context.proceed();

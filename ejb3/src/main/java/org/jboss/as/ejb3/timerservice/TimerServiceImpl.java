@@ -57,6 +57,8 @@ import javax.transaction.TransactionManager;
 
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
+import org.jboss.as.ejb3.component.allowedmethods.MethodType;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.as.ejb3.component.singleton.SingletonComponent;
 import org.jboss.as.ejb3.component.stateful.CurrentSynchronizationCallback;
@@ -1020,7 +1022,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     }
 
     private void assertTimerServiceState() {
-        TimerServiceDisabledTacker.assertEnabled();
+        AllowedMethodsInformation.checkAllowed(MethodType.TIMER_SERVICE_METHOD);
         if (isLifecycleCallbackInvocation() && !this.isSingletonBeanInvocation()) {
             throw MESSAGES.failToInvokeTimerServiceDoLifecycle();
         }

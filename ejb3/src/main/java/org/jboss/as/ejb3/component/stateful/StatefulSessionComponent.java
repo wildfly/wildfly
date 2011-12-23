@@ -42,6 +42,7 @@ import org.jboss.as.ejb3.cache.StatefulObjectFactory;
 import org.jboss.as.ejb3.cache.TransactionAwareObjectFactory;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
+import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.as.naming.ManagedReference;
@@ -270,5 +271,10 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     public void stop(final StopContext stopContext) {
         super.stop(stopContext);
         cache.stop();
+    }
+
+    @Override
+    public AllowedMethodsInformation getAllowedMethodsInformation() {
+        return StatefulAllowedMethodsInformation.INSTANCE;
     }
 }

@@ -33,6 +33,7 @@ import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
+import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.as.ejb3.concurrency.LockableComponent;
@@ -173,5 +174,10 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
             singletonComponentInstance.destroy();
             this.singletonComponentInstance = null;
         }
+    }
+
+    @Override
+    public AllowedMethodsInformation getAllowedMethodsInformation() {
+        return SingletonAllowedMethodsInformation.INSTANCE;
     }
 }

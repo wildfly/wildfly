@@ -37,7 +37,6 @@ import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.component.EJBComponentCreateServiceFactory;
 import org.jboss.as.ejb3.component.InvokeMethodOnTargetInterceptor;
-import org.jboss.as.ejb3.component.entity.interceptors.DisableTimerServiceInterceptorFactory;
 import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.invocation.ImmediateInterceptorFactory;
@@ -122,7 +121,7 @@ public class EntityBeanComponentCreateService extends EJBComponentCreateService 
         this.ejbLoad = Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(ejbLoad));
         this.ejbStore = Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(ejbStore));
         this.ejbPassivate = Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(ejbPassivate));
-        this.unsetEntityContext = Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, new DisableTimerServiceInterceptorFactory("unsetEntityContext"), invokeMethodOnTarget(unsetEntityContext));
+        this.unsetEntityContext = Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(unsetEntityContext));
     }
 
     private Class<?> load(ClassLoader classLoader, String ejbClass) {

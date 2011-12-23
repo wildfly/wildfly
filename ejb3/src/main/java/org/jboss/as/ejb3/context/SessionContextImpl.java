@@ -32,6 +32,8 @@ import javax.xml.rpc.handler.MessageContext;
 
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.interceptors.DependencyInjectionCompleteMarker;
+import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
+import org.jboss.as.ejb3.component.allowedmethods.MethodType;
 import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
@@ -64,12 +66,14 @@ public class SessionContextImpl extends EJBContextImpl implements SessionContext
     }
 
     public EJBLocalObject getEJBLocalObject() throws IllegalStateException {
+        AllowedMethodsInformation.checkAllowed(MethodType.GET_EJB_LOCAL_OBJECT);
         // to allow override per invocation
         final InterceptorContext invocation = CurrentInvocationContext.get();
         return getComponent().getEJBLocalObject(invocation);
     }
 
     public EJBObject getEJBObject() throws IllegalStateException {
+        AllowedMethodsInformation.checkAllowed(MethodType.GET_EJB_OBJECT);
         // to allow override per invocation
         final InterceptorContext invocation = CurrentInvocationContext.get();
         return getComponent().getEJBObject(invocation);
@@ -149,19 +153,13 @@ public class SessionContextImpl extends EJBContextImpl implements SessionContext
 
     @Override
     public void setRollbackOnly() throws IllegalStateException {
-        final CurrentSynchronizationCallback.CallbackType type = CurrentSynchronizationCallback.get();
-        if(type == CurrentSynchronizationCallback.CallbackType.AFTER_COMPLETION) {
-            throw MESSAGES.cannotCallMethodInAfterCompletion("setRollbackOnly");
-        }
+        AllowedMethodsInformation.checkAllowed(MethodType.SET_ROLLBACK_ONLY);
         super.setRollbackOnly();
     }
 
     @Override
     public boolean getRollbackOnly() throws IllegalStateException {
-        final CurrentSynchronizationCallback.CallbackType type = CurrentSynchronizationCallback.get();
-        if(type == CurrentSynchronizationCallback.CallbackType.AFTER_COMPLETION) {
-            throw MESSAGES.cannotCallMethodInAfterCompletion("getRollbackOnly");
-        }
+        AllowedMethodsInformation.checkAllowed(MethodType.GET_ROLLBACK_ONLY);
         return super.getRollbackOnly();
     }
 }

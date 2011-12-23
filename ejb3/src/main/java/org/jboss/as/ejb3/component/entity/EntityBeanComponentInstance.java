@@ -32,10 +32,10 @@ import javax.ejb.EntityBean;
 import javax.ejb.Timer;
 
 import org.jboss.as.ee.component.BasicComponent;
+import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.component.EjbComponentInstance;
 import org.jboss.as.ejb3.context.EntityContextImpl;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
-import org.jboss.as.ejb3.timerservice.TimerServiceDisabledTacker;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -108,6 +108,7 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
         final InterceptorContext context = prepareInterceptorContext();
         final EntityBeanComponent component = getComponent();
         context.setMethod(component.getUnsetEntityContextMethod());
+        context.putPrivateData(InvocationType.class, InvocationType.UNSET_ENTITY_CONTEXT);
         unsetEntityContext.processInvocation(context);
     }
 
@@ -183,11 +184,11 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
         }
     }
 
-    public void setupContext() {
+    public void setupContext(final InterceptorContext interceptorContext) {
 
-        String prev = TimerServiceDisabledTacker.getDisabledReason();
+        final InvocationType invocationType = interceptorContext.getPrivateData(InvocationType.class);
         try {
-            TimerServiceDisabledTacker.setDisabledReason("setEntityContext");
+            interceptorContext.putPrivateData(InvocationType.class, InvocationType.SET_ENTITY_CONTEXT);
             final EntityContextImpl entityContext = new EntityContextImpl(this);
             setEjbContext(entityContext);
             getInstance().setEntityContext(entityContext);
@@ -196,7 +197,7 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
-            TimerServiceDisabledTacker.setDisabledReason(prev);
+            interceptorContext.putPrivateData(InvocationType.class, invocationType);
         }
     }
 

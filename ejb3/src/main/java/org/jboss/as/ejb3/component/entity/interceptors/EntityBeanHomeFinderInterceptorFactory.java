@@ -33,6 +33,7 @@ import java.util.Set;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.invocation.Interceptor;
@@ -85,12 +86,14 @@ public class EntityBeanHomeFinderInterceptorFactory implements InterceptorFactor
                 //grab a bean from the pool to invoke the finder method on
                 final EntityBeanComponentInstance instance = component.getPool().get();
                 final Object result;
+                final InvocationType invocationType = context.getPrivateData(InvocationType.class);
                 try {
+                    context.putPrivateData(InvocationType.class, InvocationType.FINDER_METHOD);
                     result = invokeFind(context, instance);
                     return prepareResults(context, result, component);
-
                 } finally {
                     component.getPool().release(instance);
+                    context.putPrivateData(InvocationType.class, invocationType);
                 }
             }
 
@@ -134,7 +137,7 @@ public class EntityBeanHomeFinderInterceptorFactory implements InterceptorFactor
             }
             default: {
                 if (result == null) {
-                    throw MESSAGES.couldNotFindEntity(finderMethod,Arrays.toString(context.getParameters()));
+                    throw MESSAGES.couldNotFindEntity(finderMethod, Arrays.toString(context.getParameters()));
                 }
                 return getLocalObject(result);
             }

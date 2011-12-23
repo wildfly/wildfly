@@ -40,6 +40,7 @@ import org.jboss.as.cmp.jdbc.JDBCEntityPersistenceStore;
 import org.jboss.as.cmp.jdbc.bridge.CMRMessage;
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
+import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentCreateService;
 import org.jboss.as.ejb3.component.entity.entitycache.ReadyEntityCache;
@@ -178,5 +179,10 @@ public class CmpEntityBeanComponent extends EntityBeanComponent {
         } else {
             return new TransactionLocalEntityCache(this);
         }
+    }
+
+    @Override
+    public AllowedMethodsInformation getAllowedMethodsInformation() {
+        return CmpAllowedMethodsInformation.INSTANCE;
     }
 }

@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.component.session;
 import javax.ejb.SessionBean;
 
 import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -45,7 +46,13 @@ public class SessionBeanSetSessionContextMethodInvocationInterceptor implements 
     @Override
     public Object processInvocation(final InterceptorContext context) throws Exception {
         SessionBeanComponentInstance instance = (SessionBeanComponentInstance) context.getPrivateData(ComponentInstance.class);
-        ((SessionBean) context.getTarget()).setSessionContext(instance.getEjbContext());
+        final InvocationType invocationType = context.getPrivateData(InvocationType.class);
+        try {
+            context.putPrivateData(InvocationType.class, InvocationType.SET_SESSION_CONTEXT);
+            ((SessionBean) context.getTarget()).setSessionContext(instance.getEjbContext());
+        } finally {
+            context.putPrivateData(InvocationType.class, invocationType);
+        }
         return context.proceed();
     }
 }
