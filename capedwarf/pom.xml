@@ -26,7 +26,7 @@
     <parent>
         <artifactId>jboss-as-parent</artifactId>
         <groupId>org.jboss.as</groupId>
-        <version>7.1.0.CR1-SNAPSHOT</version>
+        <version>7.1.0.Final-SNAPSHOT</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
