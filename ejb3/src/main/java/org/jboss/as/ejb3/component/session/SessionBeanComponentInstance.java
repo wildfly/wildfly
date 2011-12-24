@@ -36,7 +36,9 @@ import org.jboss.invocation.Interceptor;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public abstract class SessionBeanComponentInstance extends EjbComponentInstance {
-    private volatile SessionContextImpl sessionContext;
+    private static final long serialVersionUID = 5176535401148504579L;
+
+    private transient volatile SessionContextImpl sessionContext;
 
     /**
      * Construct a new instance.
@@ -54,6 +56,7 @@ public abstract class SessionBeanComponentInstance extends EjbComponentInstance 
 
     protected abstract SessionID getId();
 
+    @Override
     public SessionContextImpl getEjbContext() {
         if (sessionContext == null) {
             synchronized (this) {

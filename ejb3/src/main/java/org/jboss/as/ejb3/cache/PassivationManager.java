@@ -46,18 +46,4 @@ public interface PassivationManager<K, V extends Identifiable<K>> {
     void prePassivate(V obj);
 
     MarshallingConfiguration getMarshallingConfiguration();
-    /**
-     * This method is called after a previously replicated object has been retrieved from a clustered cache.
-     * @param obj the object.
-     */
-//    void postReplicate(V obj);
-
-    /**
-     * This method is called before an object is replicated by a clustered cache.
-     * @param obj the object
-     * @throws IllegalStateException if <code>obj</code>, or another object in the same serialization group as <code>obj</code>,
-     *         is in use. Checking if an object is in use and throwing this exception is not required, so callers should not
-     *         assume it will be thrown.
-     */
-//    void preReplicate(V obj);
 }

@@ -360,20 +360,12 @@ public class SerializationGroupMemberImpl<K extends Serializable, V extends Cach
     }
 
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-        try {
         if (groupId != null) {
             setGroup(null);
         }
         out.defaultWriteObject();
         if (groupId == null) {
             out.writeObject(value);
-        }
-        } catch (IOException e) {
-            e.printStackTrace(System.err);
-            throw e;
-        } catch (Throwable e) {
-            e.printStackTrace(System.err);
-            throw new IOException(e);
         }
     }
 }

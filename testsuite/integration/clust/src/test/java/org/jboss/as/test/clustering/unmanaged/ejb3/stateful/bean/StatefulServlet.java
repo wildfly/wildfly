@@ -41,16 +41,13 @@ import javax.servlet.http.HttpSession;
 public class StatefulServlet extends HttpServlet {
     private static final long serialVersionUID = -592774116315946908L;
 
-//    @EJB(beanName = "StatefulBean")
-//    private Stateful bean;
-
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession session = req.getSession(true);
         Stateful bean = (Stateful) session.getAttribute("bean");
         if (bean == null) {
             try {
-                bean = (Stateful) new InitialContext().lookup("java:app/stateful/StatefulBean");
+                bean = (Stateful) new InitialContext().lookup("java:app/stateful/StatefulBean!org.jboss.as.test.clustering.unmanaged.ejb3.stateful.bean.Stateful");
             } catch (NamingException e) {
                 throw new ServletException(e);
             }
