@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.security;
 
+import org.jboss.as.test.shared.integration.ejb.security.Util;
 import javax.ejb.EJBAccessException;
 import javax.naming.Context;
 import javax.naming.InitialContext;

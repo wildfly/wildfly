@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.security;
 
+import org.jboss.as.test.shared.integration.ejb.security.Util;
 import static org.junit.Assert.fail;
 
 import java.util.Map;
