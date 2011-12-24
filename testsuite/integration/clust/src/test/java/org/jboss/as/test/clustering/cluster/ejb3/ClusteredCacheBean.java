@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.clustering.cluster.ejb3;
 
-import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PreDestroy;
@@ -39,9 +38,7 @@ import org.jboss.ejb3.annotation.Cache;
 @Stateful
 @StatefulTimeout(value = 1000L, unit = TimeUnit.MILLISECONDS)
 @Cache("clustered")
-public class ClusteredCacheBean implements Serializable {
-    private static final long serialVersionUID = 2910170208821101469L;
-
+public class ClusteredCacheBean {
     public static volatile boolean preDestroy = false;
     public static volatile boolean prePassivate = false;
     private int count = 0;

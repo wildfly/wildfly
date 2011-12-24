@@ -22,12 +22,15 @@
 
 package org.jboss.as.test.clustering.unmanaged.ejb3.stateful;
 
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.util.Properties;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.arquillian.container.test.api.ContainerController;
@@ -42,9 +45,7 @@ import org.jboss.as.test.clustering.unmanaged.ejb3.stateful.bean.StatefulBean;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -61,8 +62,10 @@ public class StatefulFailoverTestCase {
     public static final long GRACE_TIME_TO_REPLICATE = 2000;
     public static final String CONTAINER1 = "clustering-udp-0-unmanaged";
     public static final String CONTAINER2 = "clustering-udp-1-unmanaged";
+    public static final String[] CONTAINERS = new String[] { CONTAINER1, CONTAINER2 };
     public static final String DEPLOYMENT1 = "deployment-0-unmanaged";
     public static final String DEPLOYMENT2 = "deployment-1-unmanaged";
+    public static final String[] DEPLOYMENTS = new String[] { DEPLOYMENT1, DEPLOYMENT2 };
 
     @ArquillianResource
     ContainerController controller;
@@ -99,7 +102,7 @@ public class StatefulFailoverTestCase {
     @Test
     @InSequence(1)
     /* @OperateOnDeployment(DEPLOYMENT1) -- See http://community.jboss.org/thread/176096 */
-    public void test(/*@ArquillianResource(SimpleServlet.class) URL baseURL*/) throws IOException, InterruptedException {
+    public void testRestart(/*@ArquillianResource(SimpleServlet.class) URL baseURL*/) throws IOException, InterruptedException {
         // Container is unmanaged, need to start manually.
         controller.start(CONTAINER1);
         deployer.deploy(DEPLOYMENT1);
@@ -107,129 +110,155 @@ public class StatefulFailoverTestCase {
         DefaultHttpClient client = new DefaultHttpClient();
 
         // ARQ-674 Ouch, second hardcoded URL will need fixing. ARQ doesnt support @OperateOnDeployment on 2 containers.
-        String url1 = "http://127.0.0.1:8080/stateful/count"; /* baseURL.toString() + "simple"; */
+        String url1 = "http://127.0.0.1:8080/stateful/count";
         String url2 = "http://127.0.0.1:8180/stateful/count";
 
         try {
-            HttpResponse response = client.execute(new HttpGet(url1));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader("count").getValue()));
-            response.getEntity().getContent().close();
-
-            response = client.execute(new HttpGet(url1));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader("count").getValue()));
-            response.getEntity().getContent().close();
+            assertEquals(1, this.queryCount(client, url1));
+            assertEquals(2, this.queryCount(client, url1));
 
             controller.start(CONTAINER2);
             deployer.deploy(DEPLOYMENT2);
 
             Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
 
-            response = client.execute(new HttpGet(url1));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(3, Integer.parseInt(response.getFirstHeader("count").getValue()));
-            response.getEntity().getContent().close();
-
-            response = client.execute(new HttpGet(url1));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(4, Integer.parseInt(response.getFirstHeader("count").getValue()));
-            response.getEntity().getContent().close();
+            assertEquals(3, this.queryCount(client, url1));
+            assertEquals(4, this.queryCount(client, url1));
 
             Thread.sleep(GRACE_TIME_TO_REPLICATE);
 
-            response = client.execute(new HttpGet(url2));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(5, Integer.parseInt(response.getFirstHeader("count").getValue()));
-            response.getEntity().getContent().close();
-
-            response = client.execute(new HttpGet(url2));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(6, Integer.parseInt(response.getFirstHeader("count").getValue()));
-            response.getEntity().getContent().close();
+            assertEquals(5, this.queryCount(client, url2));
+            assertEquals(6, this.queryCount(client, url2));
 
             controller.stop(CONTAINER2);
             Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
 
-            response = client.execute(new HttpGet(url1));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(7, Integer.parseInt(response.getFirstHeader("count").getValue()));
-            response.getEntity().getContent().close();
-
-            response = client.execute(new HttpGet(url1));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(8, Integer.parseInt(response.getFirstHeader("count").getValue()));
-            response.getEntity().getContent().close();
+            assertEquals(7, this.queryCount(client, url1));
+            assertEquals(8, this.queryCount(client, url1));
 
             controller.start(CONTAINER2);
             Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
 
-            response = client.execute(new HttpGet(url1));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(9, Integer.parseInt(response.getFirstHeader("count").getValue()));
-            response.getEntity().getContent().close();
-
-            response = client.execute(new HttpGet(url1));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(10, Integer.parseInt(response.getFirstHeader("count").getValue()));
-            response.getEntity().getContent().close();
+            assertEquals(9, this.queryCount(client, url1));
+            assertEquals(10, this.queryCount(client, url1));
 
             Thread.sleep(GRACE_TIME_TO_REPLICATE);
             
-            response = client.execute(new HttpGet(url2));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(11, Integer.parseInt(response.getFirstHeader("count").getValue()));
-            response.getEntity().getContent().close();
-            
-            response = client.execute(new HttpGet(url2));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(12, Integer.parseInt(response.getFirstHeader("count").getValue()));
-            response.getEntity().getContent().close();
+            assertEquals(11, this.queryCount(client, url2));
+            assertEquals(12, this.queryCount(client, url2));
 
             controller.stop(CONTAINER1);
             Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
 
-            response = client.execute(new HttpGet(url2));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(13, Integer.parseInt(response.getFirstHeader("count").getValue()));
-            response.getEntity().getContent().close();
-
-            response = client.execute(new HttpGet(url2));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(14, Integer.parseInt(response.getFirstHeader("count").getValue()));
-            response.getEntity().getContent().close();
+            assertEquals(13, this.queryCount(client, url2));
+            assertEquals(14, this.queryCount(client, url2));
             
             controller.start(CONTAINER1);
             Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
 
-            response = client.execute(new HttpGet(url1));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(15, Integer.parseInt(response.getFirstHeader("count").getValue()));
-            response.getEntity().getContent().close();
-
-            response = client.execute(new HttpGet(url1));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(16, Integer.parseInt(response.getFirstHeader("count").getValue()));
-            response.getEntity().getContent().close();
+            assertEquals(15, this.queryCount(client, url1));
+            assertEquals(16, this.queryCount(client, url1));
 
             Thread.sleep(GRACE_TIME_TO_REPLICATE);
             
-            response = client.execute(new HttpGet(url2));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(17, Integer.parseInt(response.getFirstHeader("count").getValue()));
-            response.getEntity().getContent().close();
-            
-            response = client.execute(new HttpGet(url2));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(18, Integer.parseInt(response.getFirstHeader("count").getValue()));
-            response.getEntity().getContent().close();
+            assertEquals(17, this.queryCount(client, url1));
+            assertEquals(18, this.queryCount(client, url1));
         } finally {
             client.getConnectionManager().shutdown();
 
-            deployer.undeploy(DEPLOYMENT1);
-            controller.stop(CONTAINER1);
+            this.cleanup(DEPLOYMENT1, CONTAINER1);
+            this.cleanup(DEPLOYMENT2, CONTAINER2);
+        }
+    }
+    
+    @Test
+    @InSequence(2)
+    /* @OperateOnDeployment(DEPLOYMENT1) -- See http://community.jboss.org/thread/176096 */
+    public void testRedeploy(/*@ArquillianResource(SimpleServlet.class) URL baseURL*/) throws IOException, InterruptedException {
+        // Container is unmanaged, need to start manually.
+        controller.start(CONTAINER1);
+        deployer.deploy(DEPLOYMENT1);
+
+        DefaultHttpClient client = new DefaultHttpClient();
+
+        // ARQ-674 Ouch, second hardcoded URL will need fixing. ARQ doesnt support @OperateOnDeployment on 2 containers.
+        String url1 = "http://127.0.0.1:8080/stateful/count";
+        String url2 = "http://127.0.0.1:8180/stateful/count";
+
+        try {
+            assertEquals(1, this.queryCount(client, url1));
+            assertEquals(2, this.queryCount(client, url1));
+
+            controller.start(CONTAINER2);
+            deployer.deploy(DEPLOYMENT2);
+
+            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
+
+            assertEquals(3, this.queryCount(client, url1));
+            assertEquals(4, this.queryCount(client, url1));
+
+            Thread.sleep(GRACE_TIME_TO_REPLICATE);
+
+            assertEquals(5, this.queryCount(client, url2));
+            assertEquals(6, this.queryCount(client, url2));
+
             deployer.undeploy(DEPLOYMENT2);
-            controller.stop(CONTAINER2);
+            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
+
+            assertEquals(7, this.queryCount(client, url1));
+            assertEquals(8, this.queryCount(client, url1));
+
+            deployer.deploy(DEPLOYMENT2);
+            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
+
+            assertEquals(9, this.queryCount(client, url1));
+            assertEquals(10, this.queryCount(client, url1));
+
+            Thread.sleep(GRACE_TIME_TO_REPLICATE);
+            
+            assertEquals(11, this.queryCount(client, url2));
+            assertEquals(12, this.queryCount(client, url2));
+
+            deployer.undeploy(DEPLOYMENT1);
+            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
+
+            assertEquals(13, this.queryCount(client, url2));
+            assertEquals(14, this.queryCount(client, url2));
+            
+            deployer.deploy(DEPLOYMENT1);
+            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
+
+            assertEquals(15, this.queryCount(client, url1));
+            assertEquals(16, this.queryCount(client, url1));
+
+            Thread.sleep(GRACE_TIME_TO_REPLICATE);
+            
+            assertEquals(17, this.queryCount(client, url2));
+            assertEquals(18, this.queryCount(client, url2));
+        } finally {
+            client.getConnectionManager().shutdown();
+
+            this.cleanup(DEPLOYMENT1, CONTAINER1);
+            this.cleanup(DEPLOYMENT2, CONTAINER2);
+        }
+    }
+    
+    private int queryCount(HttpClient client, String url) throws IOException {
+        HttpResponse response = client.execute(new HttpGet(url));
+        try {
+            assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            return Integer.parseInt(response.getFirstHeader("count").getValue());
+        } finally {
+            response.getEntity().getContent().close();
+        }
+    }
+    
+    private void cleanup(String deployment, String container) {
+        try {
+            this.deployer.undeploy(deployment);
+            this.controller.stop(container);
+        } catch (Throwable e) {
+            e.printStackTrace(System.err);
         }
     }
 }

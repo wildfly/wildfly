@@ -22,10 +22,7 @@
 
 package org.jboss.as.test.clustering.unmanaged.ejb3.stateful.bean;
 
-import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.ejb.TransactionAttributeType;
 
 import org.jboss.ejb3.annotation.Clustered;
 
@@ -34,13 +31,9 @@ import org.jboss.ejb3.annotation.Clustered;
  */
 @Clustered
 @javax.ejb.Stateful(name = "StatefulBean")
-public class StatefulBean implements Stateful, Serializable {
-    private static final long serialVersionUID = 1L;
-
+public class StatefulBean implements Stateful {
     private AtomicInteger count = new AtomicInteger(0);
     
-    @javax.ejb.TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    @Override
     public int increment() {
         return this.count.incrementAndGet();
     }

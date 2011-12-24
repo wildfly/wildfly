@@ -94,6 +94,8 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         this.cache = componentDescription.getCache();
         this.marshallingConfiguration = new MarshallingConfiguration();
         this.marshallingConfiguration.setClassResolver(new SimpleClassResolver(componentConfiguration.getModuleClassLoder()));
+        this.marshallingConfiguration.setObjectResolver(new StatefulSessionBeanObjectResolver());
+        this.marshallingConfiguration.setClassTable(new StatefulSessionBeanClassTable(componentConfiguration.getComponentClass()));
     }
 
     private static Collection<InterceptorFactory> createInterceptorFactories(Collection<Method> methods, InterceptorFactory... factories) {
@@ -112,7 +114,6 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         method.setAccessible(true);
         return InvokeMethodOnTargetInterceptor.factory(method);
     }
-
 
     @Override
     protected BasicComponent createComponent() {

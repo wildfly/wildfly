@@ -230,19 +230,40 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
         public AdvancedCache<K, V> with(ClassLoader classLoader) {
             AdvancedCache<K, V> cache = super.with(classLoader);
             CommandInterceptor interceptor = new ClassLoaderAwareCommandInterceptor(cache);
-            try {
-                this.cache.addInterceptor(interceptor, 0);
-            } catch (ConfigurationException e) {
-                this.cache.removeInterceptor(interceptor.getClass());
-                this.cache.addInterceptor(interceptor, 0);
+            synchronized (this) {
+                try {
+                    this.cache.addInterceptor(interceptor, 0);
+                } catch (ConfigurationException e) {
+                    this.cache.removeInterceptor(interceptor.getClass());
+                    this.cache.addInterceptor(interceptor, 0);
+                }
             }
             return cache;
         }
 
         @Override
-        public void addInterceptor(CommandInterceptor interceptor, int position) {
-            // Don't let some other interceptor step in front of the ClassLoaderAwareCommandInterceptor
+        public synchronized void addInterceptor(CommandInterceptor interceptor, int position) {
             super.addInterceptor(interceptor, (position > 0) ? position : 1);
+        }
+
+        @Override
+        public synchronized boolean addInterceptorAfter(CommandInterceptor i, Class<? extends CommandInterceptor> afterInterceptor) {
+            return super.addInterceptorAfter(i, afterInterceptor);
+        }
+
+        @Override
+        public synchronized boolean addInterceptorBefore(CommandInterceptor i, Class<? extends CommandInterceptor> beforeInterceptor) {
+            return super.addInterceptorBefore(i, beforeInterceptor);
+        }
+
+        @Override
+        public synchronized void removeInterceptor(int position) {
+            super.removeInterceptor(position);
+        }
+
+        @Override
+        public synchronized void removeInterceptor(Class<? extends CommandInterceptor> interceptorType) {
+            super.removeInterceptor(interceptorType);
         }
 
         @Override
