@@ -40,7 +40,7 @@ public class MailSessionAdd extends AbstractAddStepHandler {
      */
     @Override
     protected void populateModel(ModelNode existingModel, ModelNode newModel) throws OperationFailedException {
-        Util.copyModel(existingModel,newModel,MailSubsystemModel.JNDI_NAME,MailSubsystemModel.DEBUG,MailSubsystemModel.SERVER_TYPE);
+        Util.copyModel(existingModel,newModel,MailSubsystemModel.JNDI_NAME,MailSubsystemModel.DEBUG,MailSubsystemModel.FROM);
     }
 
 

@@ -38,7 +38,7 @@ public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
                     "                    <login name=\"nobody\" password=\"pass\"/>\n" +
                     "                </imap-server>\n" +
                     "           </mail-session>\n" +
-                    "            <mail-session jndi-name=\"java:jboss/mail/Default\" >\n" +
+                    "            <mail-session debug=\"true\" jndi-name=\"java:jboss/mail/Default\" >\n" +
                     "                <smtp-server outbound-socket-binding-ref=\"mail-smtp\"/>\n" +
                     "            </mail-session>\n" +
                     "        </subsystem>";

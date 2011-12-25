@@ -49,7 +49,8 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
             writer.writeStartElement(Element.MAIL_SESSION.getLocalName());
 
             writer.writeAttribute(Attribute.JNDI_NAME.getLocalName(), jndi);
-            if (sessionData.hasDefined(DEBUG)) {
+            boolean debug = sessionData.get(DEBUG).asBoolean(false);
+            if (debug){
                 writer.writeAttribute(Attribute.DEBUG.getLocalName(), sessionData.get(MailSubsystemModel.DEBUG).asString());
             }
             if (sessionData.hasDefined(MailSubsystemModel.FROM)) {
