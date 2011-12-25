@@ -186,7 +186,7 @@
         <version.org.jboss.osgi.webapp>1.0.5</version.org.jboss.osgi.webapp>
         <version.org.jboss.osgi.webconsole>1.0.6</version.org.jboss.osgi.webconsole>
         <version.org.jboss.osgi.xerces>2.9.1.SP7</version.org.jboss.osgi.xerces>
-        <version.org.jboss.remoting3>3.2.0.CR8</version.org.jboss.remoting3>
+        <version.org.jboss.remoting3>3.2.0.CR6-darranl-1</version.org.jboss.remoting3>
         <version.org.jboss.resteasy>2.3.0.GA</version.org.jboss.resteasy>
         <version.org.jboss.sasl>1.0.0.Beta9</version.org.jboss.sasl>
         <version.org.jboss.seam.int>6.0.0.GA</version.org.jboss.seam.int>
@@ -233,7 +233,7 @@
         <version.org.jboss.ws.spi>2.0.0.GA</version.org.jboss.ws.spi>
         <version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>1.0.0.GA</version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>
         <version.org.jboss.xb>2.0.3.GA</version.org.jboss.xb>
-        <version.org.jboss.xnio>3.0.0.CR7</version.org.jboss.xnio>
+        <version.org.jboss.xnio>3.0.0.CR5</version.org.jboss.xnio>
         <version.org.jboss.xnio.xnio-api>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-nio>
         <version.org.jgroups>3.0.1.Final</version.org.jgroups>
