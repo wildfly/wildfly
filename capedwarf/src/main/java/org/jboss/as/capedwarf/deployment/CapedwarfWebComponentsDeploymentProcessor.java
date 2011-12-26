@@ -4,6 +4,11 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.capedwarf.appidentity.CDIListener;
 import org.jboss.capedwarf.appidentity.GAEFilter;
 import org.jboss.capedwarf.users.AuthServlet;
+import org.jboss.metadata.javaee.spec.Environment;
+import org.jboss.metadata.javaee.spec.EnvironmentRefsGroupMetaData;
+import org.jboss.metadata.javaee.spec.MutableRemoteEnvironment;
+import org.jboss.metadata.javaee.spec.ResourceReferenceMetaData;
+import org.jboss.metadata.javaee.spec.ResourceReferencesMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossServletsMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -33,6 +38,7 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
     private final FilterMappingMetaData GAE_FILTER_MAPPING;
     private final JBossServletMetaData GAE_SERVLET;
     private final ServletMappingMetaData GAE_SERVLET_MAPPING;
+    private final ResourceReferenceMetaData INFINISPAN_REF;
 
     public CapedwarfWebComponentsDeploymentProcessor() {
         CDI_LISTENER = createListener();
@@ -40,6 +46,7 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         GAE_FILTER_MAPPING = createFilterMapping();
         GAE_SERVLET = createAuthServlet();
         GAE_SERVLET_MAPPING = createAuthServletMapping();
+        INFINISPAN_REF = createInfinispanRef();
     }
 
     @Override
@@ -52,6 +59,8 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
 
             addAuthServletTo(webMetaData);
             addAuthServletMappingTo(webMetaData);
+
+            addResourceReference(webMetaData);
         }
     }
 
@@ -153,5 +162,30 @@ public class CapedwarfWebComponentsDeploymentProcessor extends CapedwarfWebModif
         servletMapping.setServletName(AUTH_SERVLET_NAME);
         servletMapping.setUrlPatterns(Collections.singletonList(AuthServlet.SERVLET_URI + "/*"));   // TODO: introduce AuthServlet.URL_PATTERN
         return servletMapping;
+    }
+
+    private ResourceReferenceMetaData createInfinispanRef() {
+        ResourceReferenceMetaData ref = new ResourceReferenceMetaData();
+        ref.setResourceRefName("infinispan/capedwarf");
+        ref.setJndiName("java:jboss/infinispan/capedwarf");
+        ref.setType("org.infinispan.manager.EmbeddedCacheManager");
+        return ref;
+    }
+
+    private void addResourceReference(JBossWebMetaData webMetaData) {
+        ResourceReferencesMetaData references = webMetaData.getResourceReferences();
+        if (references == null) {
+            references = new ResourceReferencesMetaData();
+            Environment env = webMetaData.getJndiEnvironmentRefsGroup();
+            if (env == null) {
+                env = new EnvironmentRefsGroupMetaData();
+                webMetaData.setJndiEnvironmentRefsGroup(env);
+            }
+            if (env instanceof MutableRemoteEnvironment) {
+                MutableRemoteEnvironment mre = (MutableRemoteEnvironment) env;
+                mre.setResourceReferences(references);
+            }
+        }
+        references.add(INFINISPAN_REF);
     }
 }

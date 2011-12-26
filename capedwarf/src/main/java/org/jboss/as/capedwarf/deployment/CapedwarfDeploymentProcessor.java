@@ -47,6 +47,7 @@ public class CapedwarfDeploymentProcessor implements DeploymentUnitProcessor {
 
     private static final ModuleIdentifier APPENGINE = ModuleIdentifier.create("com.google.appengine");
     private static final ModuleIdentifier CAPEDWARF = ModuleIdentifier.create("org.jboss.capedwarf");
+    private static final ModuleIdentifier INFINISPAN = ModuleIdentifier.create("org.infinispan");
 
     private static final VirtualFileFilter LIBS = new VirtualFileFilter() {
         @Override
@@ -73,6 +74,8 @@ public class CapedwarfDeploymentProcessor implements DeploymentUnitProcessor {
         ModuleSpecification moduleSpecification = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
         // always add CapeDwarf
         moduleSpecification.addSystemDependency(createModuleDependency(CAPEDWARF));
+        // always add Infinispan
+        moduleSpecification.addSystemDependency(createModuleDependency(INFINISPAN));
          // check if we bundle gae api jar
         if (hasAppEngineAPI(unit)) {
             moduleSpecification.addClassFileTransformer("org.jboss.capedwarf.bytecode.FactoriesTransformer");
