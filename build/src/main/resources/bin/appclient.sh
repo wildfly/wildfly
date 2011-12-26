@@ -92,8 +92,8 @@ else
     JVM_OPTVERSION="-server $JVM_OPTVERSION"
 fi
 
-if [ "x$MODULEPATH" = "x" ]; then
-    MODULEPATH="$JBOSS_HOME/modules"
+if [ "x$JBOSS_MODULEPATH" = "x" ]; then
+    JBOSS_MODULEPATH="$JBOSS_HOME/modules"
 fi
 
 # For Cygwin, switch paths to Windows format before running java
@@ -102,7 +102,7 @@ if $cygwin; then
     JAVA_HOME=`cygpath --path --windows "$JAVA_HOME"`
     JBOSS_CLASSPATH=`cygpath --path --windows "$JBOSS_CLASSPATH"`
     JBOSS_ENDORSED_DIRS=`cygpath --path --windows "$JBOSS_ENDORSED_DIRS"`
-    MODULEPATH=`cygpath --path --windows "$MODULEPATH"`
+    JBOSS_MODULEPATH=`cygpath --path --windows "$JBOSS_MODULEPATH"`
 fi
 
 CLASSPATH="$CLASSPATH:$JBOSS_HOME/jboss-modules.jar"
@@ -113,7 +113,7 @@ eval \"$JAVA\" $JAVA_OPTS \
  \"-Dorg.jboss.boot.log.file=$JBOSS_HOME/appclient/log/boot.log\" \
  \"-Dlogging.configuration=file:$JBOSS_HOME/appclient/configuration/logging.properties\" \
  org.jboss.modules.Main \
- -mp \"${MODULEPATH}\" \
+ -mp \"${JBOSS_MODULEPATH}\" \
  -logmodule "org.jboss.logmanager" \
  -jaxpmodule javax.xml.jaxp-provider \
  org.jboss.as.appclient \
