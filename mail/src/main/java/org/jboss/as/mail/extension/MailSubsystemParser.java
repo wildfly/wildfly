@@ -50,7 +50,7 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
 
             writer.writeAttribute(Attribute.JNDI_NAME.getLocalName(), jndi);
             boolean debug = sessionData.get(DEBUG).asBoolean(false);
-            if (debug){
+            if (debug) {
                 writer.writeAttribute(Attribute.DEBUG.getLocalName(), sessionData.get(MailSubsystemModel.DEBUG).asString());
             }
             if (sessionData.hasDefined(MailSubsystemModel.FROM)) {
@@ -155,13 +155,33 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
 
     static void fillSessionData(final MailSessionConfig sessionConfig, final ModelNode address, List<ModelNode> list) {
         if (sessionConfig.getSmtpServer() != null) {
-            Util.addServerConfig(sessionConfig.getSmtpServer(), SMTP, address, list);
+            addServerConfig(sessionConfig.getSmtpServer(), SMTP, address, list);
         }
         if (sessionConfig.getPop3Server() != null) {
-            Util.addServerConfig(sessionConfig.getPop3Server(), POP3, address, list);
+            addServerConfig(sessionConfig.getPop3Server(), POP3, address, list);
         }
         if (sessionConfig.getImapServer() != null) {
-            Util.addServerConfig(sessionConfig.getImapServer(), IMAP, address, list);
+            addServerConfig(sessionConfig.getImapServer(), IMAP, address, list);
+        }
+    }
+
+    private static void addServerConfig(final MailSessionServer server, final String name, final ModelNode parent, List<ModelNode> list) {
+        final ModelNode address = parent.clone();
+        address.add(MailSubsystemModel.SERVER_TYPE, name);
+        address.protect();
+        final ModelNode operation = new ModelNode();
+        operation.get(OP_ADDR).set(address);
+        operation.get(OP).set(ADD);
+        operation.get(OUTBOUND_SOCKET_BINDING_REF).set(server.getOutgoingSocketBinding());
+        operation.get(SSL).set(server.isSslEnabled());
+        addCredentials(operation, server.getCredentials());
+        list.add(operation);
+    }
+
+    private static void addCredentials(final ModelNode operation, final Credentials credentials) {
+        if (credentials != null) {
+            operation.get(USER_NAME).set(credentials.getUsername());
+            operation.get(PASSWORD).set(credentials.getPassword());
         }
     }
 

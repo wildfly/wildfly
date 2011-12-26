@@ -36,20 +36,13 @@ public class MailServerAdd extends AbstractAddStepHandler {
      */
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        //model.get(MailSubsystemModel.OUTBOUND_SOCKET_BINDING_REF).set(operation.get(MailSubsystemModel.OUTBOUND_SOCKET_BINDING_REF).asString());
-        //model.get(MailSubsystemModel.SSL).set(operation.get(MailSubsystemModel.SSL).asBoolean());
-        //copyAndFlaten(operation, model, SMTP, IMAP, POP3);
-        Util.copyModel(operation, model, OUTBOUND_SOCKET_BINDING_REF, SSL, FROM, USER_NAME, PASSWORD);
+        MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF.validateAndSet(operation,model);
+        MailServerDefinition.SSL.validateAndSet(operation,model);
+        MailServerDefinition.USERNAME.validateAndSet(operation,model);
+        MailServerDefinition.PASSWORD.validateAndSet(operation,model);
+        //Util.copyModel(operation, model, OUTBOUND_SOCKET_BINDING_REF, SSL, FROM, USER_NAME, PASSWORD);
     }
 
-    /*static void copyAndFlaten(ModelNode src, ModelNode target, String... params) {
-        for (String p : params) {
-            if (src.hasDefined(p)) {
-                ModelNode server = src.get(p);
-                Util.copyModel(server, target, OUTBOUND_SOCKET_BINDING_REF, SSL, FROM,USER_NAME,PASSWORD);
-            }
-        }
-    }*/
 
     /**
      * Make any runtime changes necessary to effect the changes indicated by the given {@code operation}. Executes
