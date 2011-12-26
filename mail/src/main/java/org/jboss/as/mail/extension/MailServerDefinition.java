@@ -44,6 +44,7 @@ public class MailServerDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
+
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         MailServerWriteAttributeHandler.INSTANCE.registerAttributes(resourceRegistration);
