@@ -63,8 +63,8 @@ if [ "x$JAVA" = "x" ]; then
     fi
 fi
 
-if [ "x$MODULEPATH" = "x" ]; then
-    MODULEPATH="$JBOSS_HOME/modules"
+if [ "x$JBOSS_MODULEPATH" = "x" ]; then
+    JBOSS_MODULEPATH="$JBOSS_HOME/modules"
 fi
 
 ###
@@ -72,10 +72,10 @@ fi
 ###
 
 # Shared libs
-JBOSS_VAULT_CLASSPATH="$MODULEPATH/org/picketbox/main/*"
-JBOSS_VAULT_CLASSPATH="$JBOSS_VAULT_CLASSPATH:$MODULEPATH/org/jboss/logging/main/*"
-JBOSS_VAULT_CLASSPATH="$JBOSS_VAULT_CLASSPATH:$MODULEPATH/org/jboss/common-core/main/*"
-JBOSS_VAULT_CLASSPATH="$JBOSS_VAULT_CLASSPATH:$MODULEPATH/org/jboss/as/security/main/*"
+JBOSS_VAULT_CLASSPATH="$JBOSS_MODULEPATH/org/picketbox/main/*"
+JBOSS_VAULT_CLASSPATH="$JBOSS_VAULT_CLASSPATH:$JBOSS_MODULEPATH/org/jboss/logging/main/*"
+JBOSS_VAULT_CLASSPATH="$JBOSS_VAULT_CLASSPATH:$JBOSS_MODULEPATH/org/jboss/common-core/main/*"
+JBOSS_VAULT_CLASSPATH="$JBOSS_VAULT_CLASSPATH:$JBOSS_MODULEPATH/org/jboss/as/security/main/*"
 
 export JBOSS_VAULT_CLASSPATH
 
@@ -85,7 +85,7 @@ if $cygwin; then
     JAVA_HOME=`cygpath --path --windows "$JAVA_HOME"`
     JBOSS_CLASSPATH=`cygpath --path --windows "$JBOSS_CLASSPATH"`
     JBOSS_ENDORSED_DIRS=`cygpath --path --windows "$JBOSS_ENDORSED_DIRS"`
-    MODULEPATH=`cygpath --path --windows "$MODULEPATH"`
+    JBOSS_MODULEPATH=`cygpath --path --windows "$JBOSS_MODULEPATH"`
     JBOSS_VAULT_CLASSPATH=`cygpath --path --windows "$JBOSS_VAULT_CLASSPATH"`
 fi
 

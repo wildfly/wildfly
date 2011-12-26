@@ -71,8 +71,8 @@ rem Setup the java endorsed dirs
 set JBOSS_ENDORSED_DIRS=%JBOSS_HOME%\lib\endorsed
 
 rem Set default module root paths
-if "x%MODULEPATH%" == "x" (
-  set  "MODULEPATH=%JBOSS_HOME%\modules"
+if "x%JBOSS_MODULEPATH%" == "x" (
+  set  "JBOSS_MODULEPATH=%JBOSS_HOME%\modules"
 )
 
 
@@ -80,7 +80,7 @@ if "x%MODULEPATH%" == "x" (
  "-Dorg.jboss.boot.log.file=%JBOSS_HOME%\standalone\log\boot.log" ^
  "-Dlogging.configuration=file:%JBOSS_HOME%/standalone/configuration/logging.properties" ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
-    -mp "%MODULEPATH%" ^
+    -mp "%JBOSS_MODULEPATH%" ^
     -logmodule "org.jboss.logmanager" ^
     -jaxpmodule "javax.xml.jaxp-provider" ^
      org.jboss.as.standalone ^

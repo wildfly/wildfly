@@ -92,8 +92,8 @@ else
     JVM_OPTVERSION="-server $JVM_OPTVERSION"
 fi
 
-if [ "x$MODULEPATH" = "x" ]; then
-    MODULEPATH="$JBOSS_HOME/modules"
+if [ "x$JBOSS_MODULEPATH" = "x" ]; then
+    JBOSS_MODULEPATH="$JBOSS_HOME/modules"
 fi
 
 # For Cygwin, switch paths to Windows format before running java
@@ -102,7 +102,7 @@ if $cygwin; then
     JAVA_HOME=`cygpath --path --windows "$JAVA_HOME"`
     JBOSS_CLASSPATH=`cygpath --path --windows "$JBOSS_CLASSPATH"`
     JBOSS_ENDORSED_DIRS=`cygpath --path --windows "$JBOSS_ENDORSED_DIRS"`
-    MODULEPATH=`cygpath --path --windows "$MODULEPATH"`
+    JBOSS_MODULEPATH=`cygpath --path --windows "$JBOSS_MODULEPATH"`
 fi
 
 # Display our environment
@@ -126,7 +126,7 @@ while true; do
          \"-Dorg.jboss.boot.log.file=$JBOSS_HOME/domain/log/process-controller/boot.log\" \
          \"-Dlogging.configuration=file:$JBOSS_HOME/domain/configuration/logging.properties\" \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
-         -mp \"${MODULEPATH}\" \
+         -mp \"${JBOSS_MODULEPATH}\" \
          -logmodule "org.jboss.logmanager" \
          org.jboss.as.process-controller \
          -jboss-home \"$JBOSS_HOME\" \
@@ -145,7 +145,7 @@ while true; do
          \"-Dorg.jboss.boot.log.file=$JBOSS_HOME/domain/log/process-controller/boot.log\" \
          \"-Dlogging.configuration=file:$JBOSS_HOME/domain/configuration/logging.properties\" \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
-         -mp \"${MODULEPATH}\" \
+         -mp \"${JBOSS_MODULEPATH}\" \
          -logmodule "org.jboss.logmanager" \
          org.jboss.as.process-controller \
          -jboss-home \"$JBOSS_HOME\" \
