@@ -25,24 +25,31 @@ package org.jboss.as.capedwarf.deployment;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.logging.Logger;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 
 /**
- * CapeDwarf modifying web content processor.
+ * Capedwarf deployment unit processor.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
- * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public abstract class CapedwarfWebDeploymentProcessor extends CapedwarfDeploymentUnitProcessor {
+public abstract class CapedwarfDeploymentUnitProcessor implements DeploymentUnitProcessor {
 
-    protected Logger log = Logger.getLogger(getClass());
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        if (CapedwarfDeploymentMarker.isCapedwarfDeployment(phaseContext.getDeploymentUnit())) {
+            doDeploy(phaseContext); // only handle CapeDwarf deployments
+        }
+    }
+
+    /**
+     * Do deploy a Capedwarf deployment.
+     *
+     * @param phaseContext the phase context
+     * @throws DeploymentUnitProcessingException for any deployment error
+     */
+    protected abstract void doDeploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException;
 
     @Override
-    protected void doDeploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit unit = phaseContext.getDeploymentUnit();
-        doDeploy(unit);
+    public void undeploy(DeploymentUnit context) {
     }
 
-    protected void doDeploy(DeploymentUnit unit) {
-    }
 }

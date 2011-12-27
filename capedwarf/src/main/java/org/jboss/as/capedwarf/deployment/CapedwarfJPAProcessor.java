@@ -29,7 +29,6 @@ import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.logging.Logger;
 
@@ -42,17 +41,16 @@ import java.util.Properties;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CapedwarfJPAProcessor implements DeploymentUnitProcessor {
+public class CapedwarfJPAProcessor extends CapedwarfDeploymentUnitProcessor {
 
     static final String DIALECT_PROPERTY_KEY = "hibernate.dialect";
     static final String DEFAULT_DIALECT = "org.hibernate.dialect.H2Dialect";
 
     private Logger log = Logger.getLogger(getClass());
 
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    @Override
+    protected void doDeploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
-        if (CapedwarfDeploymentMarker.isCapedwarfDeployment(unit) == false)
-            return;
 
         final ResourceRoot deploymentRoot = unit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         modifyPersistenceInfo(deploymentRoot);
@@ -80,10 +78,6 @@ public class CapedwarfJPAProcessor implements DeploymentUnitProcessor {
                 }
             }
         }
-    }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
     }
 
 }

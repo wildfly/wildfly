@@ -80,7 +80,7 @@ public class CapedwarfExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(SubsystemProviders.SUBSYSTEM);
         // We always need to add an 'add' operation
-        registration.registerOperationHandler(ADD, SubsystemAdd.INSTANCE, SubsystemProviders.SUBSYSTEM_ADD, false);
+        registration.registerOperationHandler(ADD, CapedwarfSubsystemAdd.INSTANCE, SubsystemProviders.SUBSYSTEM_ADD, false);
         // We always need to add a 'describe' operation
         registration.registerOperationHandler(DESCRIBE, SubsystemDescribeHandler.INSTANCE, SubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         // Register parser

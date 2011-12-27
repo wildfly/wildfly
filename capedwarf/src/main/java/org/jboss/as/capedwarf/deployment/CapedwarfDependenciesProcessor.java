@@ -22,27 +22,24 @@
 
 package org.jboss.as.capedwarf.deployment;
 
+import org.jboss.as.clustering.infinispan.subsystem.CacheConfigurationService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
- * CapeDwarf modifying web content processor.
+ * Define any MSC dependencies.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
- * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public abstract class CapedwarfWebDeploymentProcessor extends CapedwarfDeploymentUnitProcessor {
+public class CapedwarfDependenciesProcessor extends CapedwarfDeploymentUnitProcessor {
 
-    protected Logger log = Logger.getLogger(getClass());
+    private final ServiceName DEFAULT_CACHE_CONFIG = CacheConfigurationService.getServiceName("capedwarf", "default");
 
-    @Override
     protected void doDeploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit unit = phaseContext.getDeploymentUnit();
-        doDeploy(unit);
+        final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
+        serviceTarget.addDependency(DEFAULT_CACHE_CONFIG); // make sure the default cache config is registerd into container before we get the cache
     }
 
-    protected void doDeploy(DeploymentUnit unit) {
-    }
 }

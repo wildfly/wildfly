@@ -26,7 +26,6 @@ import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
@@ -43,7 +42,7 @@ import java.io.IOException;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CapedwarfDeploymentProcessor implements DeploymentUnitProcessor {
+public class CapedwarfDeploymentProcessor extends CapedwarfDeploymentUnitProcessor {
 
     private static final ModuleIdentifier APPENGINE = ModuleIdentifier.create("com.google.appengine");
     private static final ModuleIdentifier CAPEDWARF = ModuleIdentifier.create("org.jboss.capedwarf");
@@ -65,11 +64,8 @@ public class CapedwarfDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
     @Override
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    protected void doDeploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit unit = phaseContext.getDeploymentUnit();
-
-        if (CapedwarfDeploymentMarker.isCapedwarfDeployment(unit) == false)
-            return; // Skip non CapeDwarf deployments
 
         ModuleSpecification moduleSpecification = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
         // always add CapeDwarf
@@ -102,10 +98,6 @@ public class CapedwarfDeploymentProcessor implements DeploymentUnitProcessor {
 
     protected ModuleDependency createModuleDependency(ModuleIdentifier moduleIdentifier) {
         return new ModuleDependency(Module.getBootModuleLoader(), moduleIdentifier, false, false, true);
-    }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
     }
 
 }

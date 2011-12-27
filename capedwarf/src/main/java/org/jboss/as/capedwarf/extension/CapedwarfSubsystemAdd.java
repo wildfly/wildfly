@@ -22,6 +22,7 @@
 
 package org.jboss.as.capedwarf.extension;
 
+import org.jboss.as.capedwarf.deployment.CapedwarfDependenciesProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfDeploymentProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfInitializationProcessor;
 import org.jboss.as.capedwarf.deployment.CapedwarfJPAProcessor;
@@ -46,11 +47,11 @@ import java.util.List;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class SubsystemAdd extends AbstractBoottimeAddStepHandler {
+class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
-    static final SubsystemAdd INSTANCE = new SubsystemAdd();
+    static final CapedwarfSubsystemAdd INSTANCE = new CapedwarfSubsystemAdd();
 
-    private SubsystemAdd() {
+    private CapedwarfSubsystemAdd() {
     }
 
     /** {@inheritDoc} */
@@ -75,6 +76,7 @@ class SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WELD - 10, new CapedwarfWeldProcessor()); // before Weld
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JPA - 10, new CapedwarfJPAProcessor()); // before default JPA processor
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WAR_MODULE + 10, new CapedwarfDeploymentProcessor(appengineAPI));
+                processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_APP_NAMING_CONTEXT + 10, new CapedwarfDependenciesProcessor()); // adjust order as needed
             }
         }, OperationContext.Stage.RUNTIME);
 
