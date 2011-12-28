@@ -35,6 +35,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.ejb.client.remoting.PackedInteger;
+import org.jboss.ejb.client.remoting.ProtocolV1ClassTable;
+import org.jboss.ejb.client.remoting.ProtocolV1ObjectTable;
 import org.jboss.marshalling.ByteInput;
 import org.jboss.marshalling.ByteOutput;
 import org.jboss.marshalling.ClassResolver;
