@@ -21,9 +21,8 @@
  */
 package org.jboss.as.ee.beanvalidation;
 
-import org.hibernate.validator.HibernateValidator;
-import org.hibernate.validator.HibernateValidatorConfiguration;
-import org.hibernate.validator.cfg.ConstraintMapping;
+import java.util.Collections;
+import java.util.List;
 
 import javax.validation.Configuration;
 import javax.validation.ConstraintValidatorFactory;
@@ -35,8 +34,10 @@ import javax.validation.Validator;
 import javax.validation.ValidatorContext;
 import javax.validation.ValidatorFactory;
 import javax.validation.spi.ValidationProvider;
-import java.util.Collections;
-import java.util.List;
+
+import org.hibernate.validator.HibernateValidator;
+import org.hibernate.validator.HibernateValidatorConfiguration;
+import org.hibernate.validator.cfg.ConstraintMapping;
 
 /**
  * This class lazily initialize the ValidatorFactory on the first usage
@@ -52,6 +53,7 @@ public class LazyValidatorFactory implements ValidatorFactory {
 
     private final Configuration<?> configuration;
     private final ClassLoader classLoader;
+
     private volatile ValidatorFactory delegate; //use as a barrier
 
     /**
@@ -86,7 +88,7 @@ public class LazyValidatorFactory implements ValidatorFactory {
     private ValidatorFactory initFactory() {
         final ClassLoader oldTCCL = SecurityActions.getContextClassLoader();
         try {
-            SecurityActions.setContextClassLoader(oldTCCL);
+            SecurityActions.setContextClassLoader(classLoader);
             if (configuration == null) {
                 ConstraintMapping mapping = new ConstraintMapping();
                 HibernateValidatorConfiguration config = Validation.byProvider(HibernateValidator.class).providerResolver(new JbossProviderResolver()).configure();

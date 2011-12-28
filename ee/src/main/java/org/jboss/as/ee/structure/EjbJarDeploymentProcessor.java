@@ -33,7 +33,6 @@ import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
-import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -54,11 +53,13 @@ public class EjbJarDeploymentProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);
         if (!DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             return;
         }
-        final EarMetaData md =deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.EAR_METADATA);
-        if(md != null) {
+        //we don't check for the metadata attachment
+        //cause this could come from a jboss-app.xml instead
+        if(deploymentRoot.getRoot().getChild("META-INF/application.xml").exists()) {
             //if we have an application.xml we don't scan
             return;
         }

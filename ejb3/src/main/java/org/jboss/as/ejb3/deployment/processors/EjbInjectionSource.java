@@ -152,7 +152,7 @@ public class EjbInjectionSource extends InjectionSource {
         if (beanName != null) {
             componentsForViewName = applicationDescription.getComponents(beanName, typeName, deploymentRoot.getRoot());
         } else {
-            componentsForViewName = applicationDescription.getComponentsForViewName(typeName);
+            componentsForViewName = applicationDescription.getComponentsForViewName(typeName, deploymentRoot.getRoot());
         }
         return componentsForViewName;
     }

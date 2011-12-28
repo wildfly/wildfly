@@ -35,6 +35,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.ejb3.annotation.SecurityDomain;
 import org.jboss.metadata.ear.jboss.JBossAppMetaData;
+import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.metadata.ejb.spec.AssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 
@@ -101,16 +102,17 @@ public class SecurityDomainMergingProcessor extends AbstractMergingProcessor<EJB
 
     /**
      * Try to obtain the security domain configured in jboss-app.xml at the ear level if available
+     *
      * @param deploymentUnit
      * @return
      */
-    private String getJBossAppSecurityDomain(final DeploymentUnit deploymentUnit){
+    private String getJBossAppSecurityDomain(final DeploymentUnit deploymentUnit) {
         String securityDomain = null;
         DeploymentUnit parent = deploymentUnit.getParent();
-        if(parent != null){
-            final JBossAppMetaData jbossAppMetaData = parent.getAttachment(Attachments.JBOSS_APP_METADATA);
-            if(jbossAppMetaData != null){
-                securityDomain = jbossAppMetaData.getSecurityDomain();
+        if (parent != null) {
+            final EarMetaData jbossAppMetaData = parent.getAttachment(Attachments.EAR_METADATA);
+            if (jbossAppMetaData instanceof JBossAppMetaData) {
+                securityDomain = ((JBossAppMetaData) jbossAppMetaData).getSecurityDomain();
             }
         }
         return securityDomain;

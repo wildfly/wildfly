@@ -31,7 +31,6 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 import javax.annotation.Resources;
-import javax.validation.ValidatorFactory;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
@@ -79,14 +78,13 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
 
     static {
         final Map<String, String> locations = new HashMap<String, String>();
-        locations.put("javax.transaction.UserTransaction", "java:comp/UserTransaction");
-        locations.put("javax.transaction.TransactionSynchronizationRegistry", "java:comp/TransactionSynchronizationRegistry");
+        locations.put("javax.transaction.UserTransaction", "java:jboss/UserTransaction");
+        locations.put("javax.transaction.TransactionSynchronizationRegistry", "java:jboss/TransactionSynchronizationRegistry");
+
+        //we have to be careful with java:comp lookups here
+        //as they will not work in entries in application.xml, as there is no comp context availble
+        //so we can only use it for resources that are not valid to be entries in application.xml
         locations.put("javax.enterprise.inject.spi.BeanManager", "java:comp/BeanManager");
-        locations.put("javax.validation.Validator", "java:comp/Validator");
-        locations.put(ValidatorFactory.class.getName(), "java:comp/ValidatorFactory");
-        locations.put("javax.ejb.EJBContext", "java:comp/EJBContext");
-        locations.put("javax.ejb.SessionContext", "java:comp/EJBContext");
-        locations.put("javax.ejb.MessageDrivenContext", "java:comp/EJBContext");
         locations.put("javax.ejb.TimerService", "java:comp/TimerService");
         locations.put("org.osgi.framework.BundleContext", "java:comp/BundleContext");
         locations.put("org.omg.CORBA.ORB", "java:comp/ORB");
@@ -243,7 +241,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
             //and the user has to configure the value in a deployment descriptor
             final EEResourceReferenceProcessor resourceReferenceProcessor = EEResourceReferenceProcessorRegistry.getResourceReferenceProcessor(injectionType);
             if (resourceReferenceProcessor != null) {
-                valueSource = resourceReferenceProcessor.getResourceReferenceBindingSource(phaseContext, eeModuleDescription, classDescription, injectionType, localContextName, targetDescription);
+                valueSource = resourceReferenceProcessor.getResourceReferenceBindingSource();
             }
         } else {
             //handle resource reference types

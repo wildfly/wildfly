@@ -22,7 +22,10 @@
 
 package org.jboss.as.ee.structure;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
+import java.io.InputStream;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -30,16 +33,16 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.metadata.ear.spec.Ear6xMetaData;
+import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.metadata.ear.spec.EarMetaData;
+import org.jboss.metadata.merge.JBossAppMetaDataMerger;
+import org.jboss.metadata.parser.jboss.JBossAppMetaDataParser;
 import org.jboss.metadata.parser.spec.EarMetaDataParser;
 import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamReader;
-import java.io.InputStream;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * Deployment processor responsible for parsing the applicaiton.xml file of an ear.
@@ -48,6 +51,7 @@ import java.io.InputStream;
  */
 public class EarMetaDataParsingProcessor implements DeploymentUnitProcessor {
     private static final String APPLICATION_XML = "META-INF/application.xml";
+    private static final String JBOSS_APP_XML = "META-INF/jboss-app.xml";
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -56,34 +60,66 @@ public class EarMetaDataParsingProcessor implements DeploymentUnitProcessor {
         }
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);
         final VirtualFile deploymentFile = deploymentRoot.getRoot();
-        final VirtualFile applicationXmlFile = deploymentFile.getChild(APPLICATION_XML);
-        if (!applicationXmlFile.exists()) {
+        EarMetaData earMetaData = handleSpecMetadata(deploymentFile);
+        JBossAppMetaData jbossMetaData = handleJbossMetadata(deploymentFile);
+        if (earMetaData == null && jbossMetaData == null) {
             return;
         }
+        JBossAppMetaData merged;
+        if (earMetaData != null) {
+            merged = new JBossAppMetaData(earMetaData.getEarVersion());
+        } else {
+            merged = new JBossAppMetaData();
+        }
+        JBossAppMetaDataMerger.merge(merged, jbossMetaData, earMetaData);
 
+        deploymentUnit.putAttachment(Attachments.EAR_METADATA, merged);
+        if (merged.getEarEnvironmentRefsGroup() != null) {
+            final DeploymentDescriptorEnvironment bindings = new DeploymentDescriptorEnvironment("java:app/env/", merged.getEarEnvironmentRefsGroup());
+            deploymentUnit.putAttachment(org.jboss.as.ee.component.Attachments.MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT, bindings);
+        }
+
+    }
+
+    private EarMetaData handleSpecMetadata(VirtualFile deploymentFile) throws DeploymentUnitProcessingException {
+        final VirtualFile applicationXmlFile = deploymentFile.getChild(APPLICATION_XML);
+        if (!applicationXmlFile.exists()) {
+            return null;
+        }
         InputStream inputStream = null;
         try {
             inputStream = applicationXmlFile.openStream();
             final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
             inputFactory.setXMLResolver(NoopXMLResolver.create());
             XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(inputStream);
-            final EarMetaData earMetaData = EarMetaDataParser.parse(xmlReader);
-            if (earMetaData != null) {
-                deploymentUnit.putAttachment(Attachments.EAR_METADATA, earMetaData);
-                if(earMetaData instanceof Ear6xMetaData) {
-                    Ear6xMetaData metaData = (Ear6xMetaData)earMetaData;
-                    if(metaData.getEarEnvironmentRefsGroup() != null) {
-                        final DeploymentDescriptorEnvironment bindings = new DeploymentDescriptorEnvironment("java:app/env/", ((Ear6xMetaData) earMetaData).getEarEnvironmentRefsGroup());
-                        deploymentUnit.putAttachment(org.jboss.as.ee.component.Attachments.MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT, bindings);
-                    }
-                }
-            }
+            return EarMetaDataParser.INSTANCE.parse(xmlReader);
+
         } catch (Exception e) {
             throw MESSAGES.failedToParse(e, applicationXmlFile);
         } finally {
             VFSUtils.safeClose(inputStream);
         }
+    }
 
+
+    private JBossAppMetaData handleJbossMetadata(VirtualFile deploymentFile) throws DeploymentUnitProcessingException {
+        final VirtualFile applicationXmlFile = deploymentFile.getChild(JBOSS_APP_XML);
+        if (!applicationXmlFile.exists()) {
+            return null;
+        }
+        InputStream inputStream = null;
+        try {
+            inputStream = applicationXmlFile.openStream();
+            final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+            inputFactory.setXMLResolver(NoopXMLResolver.create());
+            XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(inputStream);
+            return JBossAppMetaDataParser.INSTANCE.parse(xmlReader);
+
+        } catch (Exception e) {
+            throw MESSAGES.failedToParse(e, applicationXmlFile);
+        } finally {
+            VFSUtils.safeClose(inputStream);
+        }
     }
 
     public void undeploy(final DeploymentUnit deploymentUnit) {

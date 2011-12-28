@@ -55,10 +55,18 @@ public final class ComponentAggregationProcessor implements DeploymentUnitProces
 
             final EEApplicationDescription applicationDescription = new EEApplicationDescription();
             deploymentUnit.putAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION, applicationDescription);
+
+            final EEModuleDescription earDesc = deploymentUnit.getAttachment(EE_MODULE_DESCRIPTION);
+            if (earDesc != null) {
+                for (final Map.Entry<String, String> messageDestination : earDesc.getMessageDestinations().entrySet()) {
+                    applicationDescription.addMessageDestination(messageDestination.getKey(), messageDestination.getValue(), deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT).getRoot());
+                }
+            }
+
             /*
-             * We are an EAR, so we must inspect all of our subdeployments and aggregate all their component views
-             * into a single index, so that inter-module resolution will work.
-             */
+            * We are an EAR, so we must inspect all of our subdeployments and aggregate all their component views
+            * into a single index, so that inter-module resolution will work.
+            */
             // Add the application description
             final List<DeploymentUnit> subdeployments = deploymentUnit.getAttachmentList(SUB_DEPLOYMENTS);
             for (final DeploymentUnit subdeployment : subdeployments) {

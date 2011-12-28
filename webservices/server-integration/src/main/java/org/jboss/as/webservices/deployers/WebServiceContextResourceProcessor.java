@@ -24,12 +24,8 @@ package org.jboss.as.webservices.deployers;
 
 import javax.xml.ws.WebServiceContext;
 
-import org.jboss.as.ee.component.EEModuleClassDescription;
-import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InjectionSource;
-import org.jboss.as.ee.component.InjectionTarget;
 import org.jboss.as.ee.component.deployers.EEResourceReferenceProcessor;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.webservices.injection.WebServiceContextInjectionSource;
 
@@ -37,6 +33,7 @@ import org.jboss.as.webservices.injection.WebServiceContextInjectionSource;
  * Processes {@link javax.annotation.Resource @Resource} and {@link javax.annotation.Resources @Resources} annotations
  * for a {@link WebServiceContext} type resource
  * <p/>
+ *
  * @author Jaikiran Pai
  */
 public final class WebServiceContextResourceProcessor implements EEResourceReferenceProcessor {
@@ -47,9 +44,7 @@ public final class WebServiceContextResourceProcessor implements EEResourceRefer
     }
 
     @Override
-    public InjectionSource getResourceReferenceBindingSource(final DeploymentPhaseContext phaseContext, final EEModuleDescription eeModuleDescription,
-      final EEModuleClassDescription classDescription, final String resourceReferenceType,
-      final String localContextName, final InjectionTarget injectionTarget) throws DeploymentUnitProcessingException {
+    public InjectionSource getResourceReferenceBindingSource() throws DeploymentUnitProcessingException {
         return new WebServiceContextInjectionSource();
     }
 

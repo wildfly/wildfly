@@ -95,9 +95,9 @@ public class WeldEjbInjectionServices implements EjbInjectionServices {
             final Set<ViewDescription> viewService;
             if (ejb.beanName().isEmpty()) {
                 if (ejb.beanInterface() != Object.class) {
-                    viewService = applicationDescription.getComponentsForViewName(ejb.beanInterface().getName());
+                    viewService = applicationDescription.getComponentsForViewName(ejb.beanInterface().getName(), deploymentRoot);
                 } else {
-                    viewService = applicationDescription.getComponentsForViewName(getType(injectionPoint.getType()).getName());
+                    viewService = applicationDescription.getComponentsForViewName(getType(injectionPoint.getType()).getName(), deploymentRoot);
                 }
             } else {
                 if (ejb.beanInterface() != Object.class) {

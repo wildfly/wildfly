@@ -36,6 +36,7 @@ import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.EnvEntryInjectionSource;
 import org.jboss.as.ee.component.FixedInjectionSource;
+import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -74,7 +75,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
         return bindings;
     }
 
-    private List<BindingConfiguration> getResourceEnvRefEntries(DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, ComponentDescription componentDescription, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
+    private List<BindingConfiguration> getResourceEnvRefEntries(final DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, ComponentDescription componentDescription, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
         List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
         final ResourceEnvironmentReferencesMetaData resourceEnvRefs = environment.getEnvironment().getResourceEnvironmentReferences();
         if (resourceEnvRefs == null) {
@@ -111,12 +112,19 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                 if (lookup != null) {
                     bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(lookup));
                 } else {
-                    //TODO: how are we going to handle these? Previously they would have been handled by jboss-*.xml
-                    if (resourceEnvRef.getResourceEnvRefName().startsWith("java:")) {
-                        ROOT_LOGGER.cannotResolve("resource-env-ref", name);
-                        continue;
+
+                    final EEResourceReferenceProcessor resourceReferenceProcessor = EEResourceReferenceProcessorRegistry.getResourceReferenceProcessor(classType.getName());
+                    if (resourceReferenceProcessor != null) {
+                        InjectionSource valueSource = resourceReferenceProcessor.getResourceReferenceBindingSource();
+                        bindingConfiguration = new BindingConfiguration(name, valueSource);
                     } else {
-                        bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource("java:jboss/resources/" + resourceEnvRef.getResourceEnvRefName()));
+                        //TODO: how are we going to handle these? Previously they would have been handled by jboss-*.xml
+                        if (resourceEnvRef.getResourceEnvRefName().startsWith("java:")) {
+                            ROOT_LOGGER.cannotResolve("resource-env-ref", name);
+                            continue;
+                        } else {
+                            bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource("java:jboss/resources/" + resourceEnvRef.getResourceEnvRefName()));
+                        }
                     }
                 }
             }
@@ -196,12 +204,18 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                 final String lookup = ResourceInjectionAnnotationParsingProcessor.FIXED_LOCATIONS.get(classType.getName());
                 if (lookup != null) {
                     bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(lookup));
-                } else if (!resourceRef.getResourceRefName().startsWith("java:")) {
-                    bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource("java:jboss/resources/" + resourceRef.getResourceRefName()));
                 } else {
-                    //if we cannot resolve it just log
-                    ROOT_LOGGER.cannotResolve("resource-env-ref", name);
-                    continue;
+                    final EEResourceReferenceProcessor resourceReferenceProcessor = EEResourceReferenceProcessorRegistry.getResourceReferenceProcessor(classType.getName());
+                    if (resourceReferenceProcessor != null) {
+                        InjectionSource valueSource = resourceReferenceProcessor.getResourceReferenceBindingSource();
+                        bindingConfiguration = new BindingConfiguration(name, valueSource);
+                    } else if (!resourceRef.getResourceRefName().startsWith("java:")) {
+                        bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource("java:jboss/resources/" + resourceRef.getResourceRefName()));
+                    } else {
+                        //if we cannot resolve it just log
+                        ROOT_LOGGER.cannotResolve("resource-env-ref", name);
+                        continue;
+                    }
                 }
             }
             bindings.add(bindingConfiguration);

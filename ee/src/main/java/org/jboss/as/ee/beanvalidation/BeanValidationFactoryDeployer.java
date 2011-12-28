@@ -21,17 +21,12 @@
  */
 package org.jboss.as.ee.beanvalidation;
 
-import javax.validation.ValidatorFactory;
-
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
-import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
@@ -118,16 +113,4 @@ public class BeanValidationFactoryDeployer implements DeploymentUnitProcessor {
 
     }
 
-    private static final class ValidatorJndiInjectable implements ManagedReferenceFactory {
-        private final ValidatorFactory factory;
-
-        public ValidatorJndiInjectable(ValidatorFactory factory) {
-            this.factory = factory;
-        }
-
-        @Override
-        public ManagedReference getReference() {
-            return new ValueManagedReference(new ImmediateValue<Object>(factory.getValidator()));
-        }
-    }
 }

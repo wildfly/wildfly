@@ -21,14 +21,16 @@
  */
 package org.jboss.as.naming.deployment;
 
+import java.util.Set;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-
-import java.util.Set;
 
 /**
  * Adds a service that depends on all JNDI bindings from the deployment to be up.
@@ -49,9 +51,12 @@ public class JndiNamingDependencyProcessor implements DeploymentUnitProcessor {
 
         Set<ServiceName> dependencies = deploymentUnit.getAttachment(Attachments.JNDI_DEPENDENCIES);
         final ServiceName serviceName = serviceName(deploymentUnit);
-        phaseContext.getServiceTarget().addService(serviceName, org.jboss.msc.service.Service.NULL)
-                .addDependencies(dependencies)
-                .install();
+        final ServiceBuilder<Void> serviceBuilder = phaseContext.getServiceTarget().addService(serviceName, Service.NULL);
+        serviceBuilder.addDependencies(dependencies);
+        if(deploymentUnit.getParent() != null) {
+            serviceBuilder.addDependencies(deploymentUnit.getParent().getAttachment(Attachments.JNDI_DEPENDENCIES));
+        }
+        serviceBuilder.install();
 
     }
 

@@ -33,7 +33,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.metadata.ear.spec.Ear6xMetaData;
 import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.metadata.ear.spec.ModuleMetaData;
 import org.jboss.msc.service.ServiceName;
@@ -53,53 +52,51 @@ public class InitializeInOrderProcessor implements DeploymentUnitProcessor {
         }
         final EarMetaData earConfig = parent.getAttachment(Attachments.EAR_METADATA);
         if (earConfig != null) {
-            if (earConfig instanceof Ear6xMetaData) {
-                final boolean inOrder = ((Ear6xMetaData) earConfig).getInitializeInOrder();
-                if (inOrder && earConfig.getModules().size() > 1) {
+            final boolean inOrder = earConfig.getInitializeInOrder();
+            if (inOrder && earConfig.getModules().size() > 1) {
 
 
-                    final Map<String, DeploymentUnit> deploymentUnitMap = new HashMap<String, DeploymentUnit>();
-                    for (final DeploymentUnit subDeployment : parent.getAttachment(org.jboss.as.server.deployment.Attachments.SUB_DEPLOYMENTS)) {
+                final Map<String, DeploymentUnit> deploymentUnitMap = new HashMap<String, DeploymentUnit>();
+                for (final DeploymentUnit subDeployment : parent.getAttachment(org.jboss.as.server.deployment.Attachments.SUB_DEPLOYMENTS)) {
 
-                        final ResourceRoot deploymentRoot = subDeployment.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);
-                        final ModuleMetaData moduleMetaData = deploymentRoot.getAttachment(Attachments.MODULE_META_DATA);
-                        if (moduleMetaData != null) {
-                            deploymentUnitMap.put(moduleMetaData.getFileName(), subDeployment);
+                    final ResourceRoot deploymentRoot = subDeployment.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);
+                    final ModuleMetaData moduleMetaData = deploymentRoot.getAttachment(Attachments.MODULE_META_DATA);
+                    if (moduleMetaData != null) {
+                        deploymentUnitMap.put(moduleMetaData.getFileName(), subDeployment);
+                    }
+                }
+
+
+                final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);
+                final ModuleMetaData thisModulesMetadata = deploymentRoot.getAttachment(Attachments.MODULE_META_DATA);
+                if (thisModulesMetadata != null && thisModulesMetadata.getType() != ModuleMetaData.ModuleType.Client) {
+                    ModuleMetaData previous = null;
+                    boolean found = false;
+                    for (ModuleMetaData module : earConfig.getModules()) {
+                        if (module.getType() != ModuleMetaData.ModuleType.Client) {
+                            if (module.getFileName().equals(thisModulesMetadata.getFileName())) {
+                                found = true;
+                                break;
+                            }
+                            previous = module;
                         }
                     }
-
-
-                    final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);
-                    final ModuleMetaData thisModulesMetadata = deploymentRoot.getAttachment(Attachments.MODULE_META_DATA);
-                    if (thisModulesMetadata != null && thisModulesMetadata.getType() != ModuleMetaData.ModuleType.Client) {
-                        ModuleMetaData previous = null;
-                        boolean found = false;
-                        for (ModuleMetaData module : earConfig.getModules()) {
-                            if (module.getType() != ModuleMetaData.ModuleType.Client) {
-                                if (module.getFileName().equals(thisModulesMetadata.getFileName())) {
-                                    found = true;
-                                    break;
-                                }
-                                previous = module;
+                    if (previous != null && found) {
+                        //now we know the previous module we can setup the service dependencies
+                        //we setup one on the deployment service, and also one on every component
+                        final ServiceName serviceName = Services.deploymentUnitName(parent.getName(), previous.getFileName());
+                        phaseContext.addToAttachmentList(org.jboss.as.server.deployment.Attachments.NEXT_PHASE_DEPS, serviceName.append(Phase.INSTALL.name()));
+                        final DeploymentUnit prevDeployment = deploymentUnitMap.get(previous.getFileName());
+                        final EEModuleDescription eeModuleDescription = prevDeployment.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+                        if (eeModuleDescription != null) {
+                            for (final ComponentDescription component : eeModuleDescription.getComponentDescriptions()) {
+                                phaseContext.addToAttachmentList(org.jboss.as.server.deployment.Attachments.NEXT_PHASE_DEPS, component.getStartServiceName());
                             }
                         }
-                        if (previous != null && found) {
-                            //now we know the previous module we can setup the service dependencies
-                            //we setup one on the deployment service, and also one on every component
-                            final ServiceName serviceName = Services.deploymentUnitName(parent.getName(), previous.getFileName());
-                            phaseContext.addToAttachmentList(org.jboss.as.server.deployment.Attachments.NEXT_PHASE_DEPS, serviceName.append(Phase.INSTALL.name()));
-                            final DeploymentUnit prevDeployment = deploymentUnitMap.get(previous.getFileName());
-                            final EEModuleDescription eeModuleDescription = prevDeployment.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-                            if (eeModuleDescription != null) {
-                                for (final ComponentDescription component : eeModuleDescription.getComponentDescriptions()) {
-                                    phaseContext.addToAttachmentList(org.jboss.as.server.deployment.Attachments.NEXT_PHASE_DEPS, component.getStartServiceName());
-                                }
-                            }
-                            for(final ServiceName name : prevDeployment.getAttachmentList(Attachments.INITIALISE_IN_ORDER_SERVICES)) {
-                                phaseContext.addToAttachmentList(org.jboss.as.server.deployment.Attachments.NEXT_PHASE_DEPS, name);
-                            }
-
+                        for (final ServiceName name : prevDeployment.getAttachmentList(Attachments.INITIALISE_IN_ORDER_SERVICES)) {
+                            phaseContext.addToAttachmentList(org.jboss.as.server.deployment.Attachments.NEXT_PHASE_DEPS, name);
                         }
+
                     }
                 }
             }

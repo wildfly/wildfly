@@ -27,7 +27,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.metadata.ear.spec.Ear6xMetaData;
 import org.jboss.metadata.ear.spec.EarMetaData;
 
 /**
@@ -65,8 +64,8 @@ public class EarApplicationNameProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit parentDU = deploymentUnit.getParent();
         if (parentDU == null) {
             final EarMetaData earMetaData = deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.EAR_METADATA);
-            if (earMetaData != null && earMetaData instanceof Ear6xMetaData) {
-                final String overriddenAppName = ((Ear6xMetaData) earMetaData).getApplicationName();
+            if (earMetaData != null) {
+                final String overriddenAppName = earMetaData.getApplicationName();
                 if (overriddenAppName == null) {
                     return this.getEarName(deploymentUnit);
                 }

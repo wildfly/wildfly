@@ -21,17 +21,17 @@
  */
 package org.jboss.as.naming.deployment;
 
+import java.util.Collections;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.msc.service.ServiceName;
 
-import java.util.Collections;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
- * Adds the JNDI dependencies map to a top level deployment
+ * Adds the JNDI dependencies map to a deployment
  *
  * @author Stuart Douglas
  */

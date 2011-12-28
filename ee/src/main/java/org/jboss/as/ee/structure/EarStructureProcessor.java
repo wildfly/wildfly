@@ -22,8 +22,6 @@
 
 package org.jboss.as.ee.structure;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,8 +40,6 @@ import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.module.TempFileProviderService;
-import org.jboss.metadata.ear.jboss.JBossAppMetaData;
-import org.jboss.metadata.ear.spec.Ear5xMetaData;
 import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.metadata.ear.spec.ModuleMetaData;
 import org.jboss.metadata.ear.spec.ModuleMetaData.ModuleType;
@@ -52,6 +48,8 @@ import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VisitorAttributes;
 import org.jboss.vfs.util.SuffixMatchFilter;
+
+import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * Deployment processor responsible for detecting EAR deployments and putting setting up the basic structure.
@@ -98,22 +96,13 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
         ModuleRootMarker.mark(deploymentRoot, false);
 
         String libDirName = DEFAULT_LIB_DIR;
-
-        final JBossAppMetaData appMetaData = deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.JBOSS_APP_METADATA);
+        //its possible that the ear metadata could come for jboss-app.xml
+        final boolean appXmlPresent = deploymentRoot.getRoot().getChild("META-INF/application.xml").exists();
         final EarMetaData earMetaData = deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.EAR_METADATA);
-        if (appMetaData != null) {
-            final String xmlLibDirName = appMetaData.getLibraryDirectory();
+        if (earMetaData != null) {
+            final String xmlLibDirName = earMetaData.getLibraryDirectory();
             if (xmlLibDirName != null) {
                 libDirName = xmlLibDirName;
-            }
-        } else {
-            if (earMetaData != null) {
-                if (earMetaData instanceof Ear5xMetaData) {
-                    final String xmlLibDirName = Ear5xMetaData.class.cast(earMetaData).getLibraryDirectory();
-                    if (xmlLibDirName != null) {
-                        libDirName = xmlLibDirName;
-                    }
-                }
             }
         }
 
@@ -163,7 +152,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
             })));
 
             // if there is no application.xml then look in the ear root for modules
-            if (earMetaData == null) {
+            if (!appXmlPresent) {
                 for (final VirtualFile child : childArchives) {
                     final boolean isWarFile = child.getName().toLowerCase(Locale.ENGLISH).endsWith(WAR_EXTENSION);
                     final boolean isRarFile = child.getName().toLowerCase(Locale.ENGLISH).endsWith(RAR_EXTENSION);
@@ -187,7 +176,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                     final ResourceRoot childResource = this.createResourceRoot(deploymentUnit, moduleFile, true, webArchive);
                     childResource.putAttachment(org.jboss.as.ee.structure.Attachments.MODULE_META_DATA, module);
 
-                    if(!webArchive) {
+                    if (!webArchive) {
                         ModuleRootMarker.mark(childResource);
                     }
 

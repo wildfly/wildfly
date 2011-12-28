@@ -41,8 +41,6 @@ public final class Attachments {
 
     public static final AttachmentKey<EarMetaData> EAR_METADATA = AttachmentKey.create(EarMetaData.class);
 
-    public static final AttachmentKey<JBossAppMetaData> JBOSS_APP_METADATA = AttachmentKey.create(JBossAppMetaData.class);
-
     public static final AttachmentKey<ModuleMetaData> MODULE_META_DATA = AttachmentKey.create(ModuleMetaData.class);
 
     public static final AttachmentKey<EJBClientDescriptorMetaData> EJB_CLIENT_METADATA = AttachmentKey.create(EJBClientDescriptorMetaData.class);

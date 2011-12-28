@@ -24,6 +24,10 @@ package org.jboss.as.ejb3.subsystem;
 
 import java.util.List;
 
+import javax.ejb.EJBContext;
+import javax.ejb.EntityContext;
+import javax.ejb.MessageDrivenContext;
+import javax.ejb.SessionContext;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
@@ -34,7 +38,9 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.ee.component.deployers.EEResourceReferenceProcessorRegistry;
 import org.jboss.as.ejb3.component.EJBUtilities;
+import org.jboss.as.ejb3.context.EjbContextResourceReferenceProcessor;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.processors.ApplicationExceptionAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.BusinessViewAnnotationProcessor;
@@ -162,6 +168,12 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         RemoteObjectSubstitutionManager.setRemoteObjectSubstitution(substitutionService);
 
+        //setup ejb context jndi handlers
+        EEResourceReferenceProcessorRegistry.registerResourceReferenceProcessor(new EjbContextResourceReferenceProcessor(EJBContext.class));
+        EEResourceReferenceProcessorRegistry.registerResourceReferenceProcessor(new EjbContextResourceReferenceProcessor(SessionContext.class));
+        EEResourceReferenceProcessorRegistry.registerResourceReferenceProcessor(new EjbContextResourceReferenceProcessor(EntityContext.class));
+        EEResourceReferenceProcessorRegistry.registerResourceReferenceProcessor(new EjbContextResourceReferenceProcessor(MessageDrivenContext.class));
+
 
         //setup ejb: namespace
         EjbNamingContextSetup.setupEjbNamespace();
@@ -174,6 +186,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
             protected void execute(DeploymentProcessorTarget processorTarget) {
 
                 //DUP's that are used even for app client deployments
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_CONTEXT_BINDING, new EjbContextJndiBindingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_DEPLOYMENT, new EjbJarParsingDeploymentUnitProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_SESSION_BEAN_CREATE_COMPONENT_DESCRIPTIONS, new SessionBeanComponentDescriptionFactory(appclient));
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_SESSION_BEAN_DD, new SessionBeanXmlDescriptorProcessor(appclient));
@@ -185,7 +198,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_EJB, new EjbDependencyDeploymentUnitProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_HOME_MERGE, new HomeViewMergingProcessor(appclient));
-                processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_REF, new EjbRefProcessor());
+                processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_REF, new EjbRefProcessor(appclient));
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_CLIENT_CONTEXT_SETUP, new EjbClientContextSetupProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_BUSINESS_VIEW_ANNOTATION, new BusinessViewAnnotationProcessor(appclient));
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_ORB_BIND, new IIOPJndiBindingProcessor());
@@ -199,7 +212,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                     // add the metadata parser deployment processor
 
                     // Process @DependsOn after the @Singletons have been registered.
-                    processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_CONTEXT_BINDING, new EjbContextJndiBindingProcessor());
                     processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_TIMERSERVICE_BINDING, new TimerServiceJndiBindingProcessor());
                     processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_APPLICATION_EXCEPTION_ANNOTATION, new ApplicationExceptionAnnotationProcessor());
                     processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_DD_INTERCEPTORS, new InterceptorClassDeploymentDescriptorProcessor());

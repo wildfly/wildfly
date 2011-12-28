@@ -185,7 +185,6 @@ public enum Phase {
     public static final int STRUCTURE_WAR                               = 0x0500;
     public static final int STRUCTURE_EAR_DEPLOYMENT_INIT               = 0x0600;
     public static final int STRUCTURE_EAR_APP_XML_PARSE                 = 0x0700;
-    public static final int STRUCTURE_EAR_JBOSS_APP_XML_PARSE           = 0x0800;
     public static final int STRUCTURE_JBOSS_EJB_CLIENT_XML_PARSE        = 0x0825;
     public static final int STRUCTURE_EJB_EAR_APPLICATION_NAME          = 0x0850;
     public static final int STRUCTURE_EAR                               = 0x0900;
@@ -272,6 +271,7 @@ public enum Phase {
     public static final int PARSE_JACORB                                = 0x3A00;
     public static final int PARSE_TRANSACTION_ROLLBACK_ACTION           = 0x3B00;
     public static final int PARSE_WEB_INITIALIZE_IN_ORDER               = 0x3C00;
+    public static final int PARSE_EAR_MESSAGE_DESTINATIONS              = 0x3D00;
 
     // DEPENDENCIES
     public static final int DEPENDENCIES_EJB                            = 0x0000;

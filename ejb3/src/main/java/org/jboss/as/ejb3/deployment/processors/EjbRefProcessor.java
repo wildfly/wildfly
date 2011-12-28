@@ -51,6 +51,12 @@ import org.jboss.metadata.javaee.spec.RemoteEnvironment;
  */
 public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcessor {
 
+    private final boolean appclient;
+
+    public EjbRefProcessor(boolean appclient) {
+        this.appclient = appclient;
+    }
+
     /**
      * Resolves ejb-ref and ejb-local-ref elements
      *
@@ -129,7 +135,7 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
             }
         }
 
-        if (remoteEnvironment instanceof Environment) {
+        if (remoteEnvironment instanceof Environment && !appclient) {
             EJBLocalReferencesMetaData ejbLocalRefs = ((Environment) remoteEnvironment).getEjbLocalReferences();
             if (ejbLocalRefs != null) {
                 for (EJBLocalReferenceMetaData ejbRef : ejbLocalRefs) {

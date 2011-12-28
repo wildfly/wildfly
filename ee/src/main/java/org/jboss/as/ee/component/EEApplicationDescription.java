@@ -86,15 +86,22 @@ public class EEApplicationDescription {
      * @param viewType The view type
      * @return All views of the given type
      */
-    public Set<ViewDescription> getComponentsForViewName(final String viewType) {
+    public Set<ViewDescription> getComponentsForViewName(final String viewType, final VirtualFile deploymentRoot) {
         final List<ViewInformation> info = componentsByViewName.get(viewType);
 
         if (info == null) {
             return Collections.<ViewDescription>emptySet();
         }
         final Set<ViewDescription> ret = new HashSet<ViewDescription>();
+        final Set<ViewDescription> currentDep = new HashSet<ViewDescription>();
         for (ViewInformation i : info) {
+            if (deploymentRoot.equals(i.deploymentRoot)) {
+                currentDep.add(i.viewDescription);
+            }
             ret.add(i.viewDescription);
+        }
+        if(!currentDep.isEmpty()) {
+            return currentDep;
         }
         return ret;
     }

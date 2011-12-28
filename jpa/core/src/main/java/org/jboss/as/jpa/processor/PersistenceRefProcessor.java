@@ -22,8 +22,6 @@
 
 package org.jboss.as.jpa.processor;
 
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +30,6 @@ import java.util.Map;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContextType;
-import javax.persistence.spi.PersistenceUnitTransactionType;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
@@ -61,6 +58,8 @@ import org.jboss.metadata.javaee.spec.PropertiesMetaData;
 import org.jboss.metadata.javaee.spec.PropertyMetaData;
 import org.jboss.metadata.javaee.spec.RemoteEnvironment;
 import org.jboss.msc.service.ServiceName;
+
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 /**
  * Deployment processor responsible for processing persistence unit / context references from deployment descriptors.
@@ -176,7 +175,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
                     BindingConfiguration bindingConfiguration = null;
                     if (!isEmpty(lookup)) {
                         bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(lookup));
-                    } else if (!isEmpty(persistenceUnitName)) {
+                    } else {
                         PropertiesMetaData properties = puRef.getProperties();
                         Map map = new HashMap();
                         if (properties != null) {
@@ -213,9 +212,6 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
     private InjectionSource getPersistenceContextBindingSource(final DeploymentUnit deploymentUnit, final String unitName, PersistenceContextType type, Map properties) throws
         DeploymentUnitProcessingException {
         PersistenceUnitMetadata pu = getPersistenceUnit(deploymentUnit, unitName);
-        if (pu.getTransactionType() == PersistenceUnitTransactionType.RESOURCE_LOCAL) {
-            throw MESSAGES.cannotInjectResourceLocalEntityManager(unitName);
-        }
         String scopedPuName = pu.getScopedPersistenceUnitName();
         ServiceName puServiceName = getPuServiceName(scopedPuName);
         return new PersistenceContextInjectionSource(type, properties, puServiceName, deploymentUnit, scopedPuName, EntityManager.class.getName(), SFSBXPCMap.getXpcMap(deploymentUnit), pu);

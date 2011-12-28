@@ -22,18 +22,19 @@
 
 package org.jboss.as.ee.component;
 
+import java.util.Iterator;
+import java.util.Set;
+
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 
-import java.util.Iterator;
-import java.util.Set;
-
-import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
 import static org.jboss.as.ee.EeMessages.MESSAGES;
+import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
 
 /**
  * An injection source which injects a component based upon its type.
@@ -50,7 +51,8 @@ public final class ComponentTypeInjectionSource extends InjectionSource {
     public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(EE_APPLICATION_DESCRIPTION);
-        final Set<ViewDescription> componentsForViewName = applicationDescription.getComponentsForViewName(typeName);
+        final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);
+        final Set<ViewDescription> componentsForViewName = applicationDescription.getComponentsForViewName(typeName, deploymentRoot.getRoot());
         final Iterator<ViewDescription> iterator = componentsForViewName.iterator();
         if (!iterator.hasNext()) {
             throw MESSAGES.componentNotFound(typeName);
