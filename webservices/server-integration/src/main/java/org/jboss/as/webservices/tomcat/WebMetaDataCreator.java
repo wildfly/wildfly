@@ -21,8 +21,6 @@
  */
 package org.jboss.as.webservices.tomcat;
 
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -30,7 +28,9 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WebMetaDataHelper;
+import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
+import org.jboss.metadata.merge.javaee.spec.SecurityRolesMetaDataMerger;
 import org.jboss.metadata.web.jboss.JBossServletsMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.LoginConfigMetaData;
@@ -41,6 +41,8 @@ import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.deployment.HttpEndpoint;
+
+import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
@@ -60,8 +62,7 @@ final class WebMetaDataCreator {
     /**
      * Creates web meta data for EJB deployments.
      *
-     * @param dep
-     *            webservice deployment
+     * @param dep webservice deployment
      */
     void create(final Deployment dep) {
         final DeploymentUnit unit = WSHelper.getRequiredAttachment(dep, DeploymentUnit.class);
@@ -75,6 +76,21 @@ final class WebMetaDataCreator {
             jbossWebMD = new JBossWebMetaData();
             warMD.setMergedJBossWebMetaData(jbossWebMD);
             unit.putAttachment(WarMetaData.ATTACHMENT_KEY, warMD);
+
+
+            //merge security roles from the ear
+            //TODO: is there somewhere better to put this?
+            DeploymentUnit parent = unit.getParent();
+            if (parent != null) {
+                final EarMetaData earMetaData = parent.getAttachment(org.jboss.as.ee.structure.Attachments.EAR_METADATA);
+                if (earMetaData != null) {
+                    SecurityRolesMetaData earSecurityRolesMetaData = earMetaData.getSecurityRoles();
+                    if (earSecurityRolesMetaData != null) {
+                        jbossWebMD.setSecurityRoles(new SecurityRolesMetaData());
+                        SecurityRolesMetaDataMerger.merge(jbossWebMD.getSecurityRoles(), jbossWebMD.getSecurityRoles(), earSecurityRolesMetaData);
+                    }
+                }
+            }
         }
 
         createWebAppDescriptor(dep, jbossWebMD);
@@ -86,10 +102,8 @@ final class WebMetaDataCreator {
     /**
      * Creates web.xml descriptor meta data.
      *
-     * @param dep
-     *            webservice deployment
-     * @param jbossWebMD
-     *            jboss web meta data
+     * @param dep        webservice deployment
+     * @param jbossWebMD jboss web meta data
      */
     private void createWebAppDescriptor(final Deployment dep, final JBossWebMetaData jbossWebMD) {
         ROOT_LOGGER.creatingWebXmlDescriptor();
@@ -102,7 +116,7 @@ final class WebMetaDataCreator {
 
     /**
      * Creates jboss-web.xml descriptor meta data.
-     *
+     * <p/>
      * <pre>
      * &lt;jboss-web&gt;
      *   &lt;security-domain&gt;java:/jaas/custom-security-domain&lt;/security-domain&gt;
@@ -113,10 +127,8 @@ final class WebMetaDataCreator {
      * &lt;/jboss-web&gt;
      * </pre>
      *
-     * @param dep
-     *            webservice deployment
-     * @param jbossWebMD
-     *            jboss web meta data
+     * @param dep        webservice deployment
+     * @param jbossWebMD jboss web meta data
      */
     private void createJBossWebAppDescriptor(final Deployment dep, final JBossWebMetaData jbossWebMD) {
         ROOT_LOGGER.creatingJBossWebXmlDescriptor();
@@ -141,7 +153,7 @@ final class WebMetaDataCreator {
 
     /**
      * Creates servlets part of web.xml descriptor.
-     *
+     * <p/>
      * <pre>
      * &lt;servlet&gt;
      *   &lt;servlet-name&gt;EJBEndpointShortName&lt;/servlet-name&gt;
@@ -149,10 +161,8 @@ final class WebMetaDataCreator {
      * &lt;/servlet&gt;
      * </pre>
      *
-     * @param dep
-     *            webservice deployment
-     * @param jbossWebMD
-     *            jboss web meta data
+     * @param dep        webservice deployment
+     * @param jbossWebMD jboss web meta data
      */
     private void createServlets(final Deployment dep, final JBossWebMetaData jbossWebMD) {
         ROOT_LOGGER.creatingServlets();
@@ -169,7 +179,7 @@ final class WebMetaDataCreator {
 
     /**
      * Creates servlet-mapping part of web.xml descriptor.
-     *
+     * <p/>
      * <pre>
      * &lt;servlet-mapping&gt;
      *   &lt;servlet-name&gt;EJBEndpointShortName&lt;/servlet-name&gt;
@@ -177,10 +187,8 @@ final class WebMetaDataCreator {
      * &lt;/servlet-mapping&gt;
      * </pre>
      *
-     * @param dep
-     *            webservice deployment
-     * @param jbossWebMD
-     *            jboss web meta data
+     * @param dep        webservice deployment
+     * @param jbossWebMD jboss web meta data
      */
     private void createServletMappings(final Deployment dep, final JBossWebMetaData jbossWebMD) {
         ROOT_LOGGER.creatingServletMappings();
@@ -189,7 +197,7 @@ final class WebMetaDataCreator {
         for (final Endpoint ep : dep.getService().getEndpoints()) {
             if (ep instanceof HttpEndpoint) {
                 final String endpointName = ep.getShortName();
-                final List<String> urlPatterns = WebMetaDataHelper.getUrlPatterns(((HttpEndpoint)ep).getURLPattern());
+                final List<String> urlPatterns = WebMetaDataHelper.getUrlPatterns(((HttpEndpoint) ep).getURLPattern());
 
                 ROOT_LOGGER.creatingServletMapping(endpointName, urlPatterns);
                 WebMetaDataHelper.newServletMapping(endpointName, urlPatterns, servletMappings);
@@ -199,7 +207,7 @@ final class WebMetaDataCreator {
 
     /**
      * Creates security constraints part of web.xml descriptor.
-     *
+     * <p/>
      * <pre>
      * &lt;security-constraint&gt;
      *   &lt;web-resource-collection&gt;
@@ -217,10 +225,8 @@ final class WebMetaDataCreator {
      * &lt;/security-constraint&gt;
      * </pre>
      *
-     * @param dep
-     *            webservice deployemnt
-     * @param jbossWebMD
-     *            jboss web meta data
+     * @param dep        webservice deployemnt
+     * @param jbossWebMD jboss web meta data
      */
     private void createSecurityConstraints(final Deployment dep, final JBossWebMetaData jbossWebMD) {
         ROOT_LOGGER.creatingSecurityConstraints();
@@ -235,17 +241,17 @@ final class WebMetaDataCreator {
 
             if (ejbEndpoint instanceof HttpEndpoint && (hasAuthMethod || hasTransportGuarantee)) {
                 final List<SecurityConstraintMetaData> securityConstraints = WebMetaDataHelper
-                .getSecurityConstraints(jbossWebMD);
+                        .getSecurityConstraints(jbossWebMD);
 
                 // security-constraint
                 final SecurityConstraintMetaData securityConstraint = WebMetaDataHelper
-                .newSecurityConstraint(securityConstraints);
+                        .newSecurityConstraint(securityConstraints);
 
                 // web-resource-collection
                 final WebResourceCollectionsMetaData webResourceCollections = WebMetaDataHelper
-                .getWebResourceCollections(securityConstraint);
+                        .getWebResourceCollections(securityConstraint);
                 final String endpointName = ejbEndpoint.getShortName();
-                final String urlPattern = ((HttpEndpoint)ejbEndpoint).getURLPattern();
+                final String urlPattern = ((HttpEndpoint) ejbEndpoint).getURLPattern();
                 ROOT_LOGGER.creatingWebResourceCollection(endpointName, urlPattern);
                 WebMetaDataHelper.newWebResourceCollection(endpointName, urlPattern, secureWsdlAccess,
                         webResourceCollections);
@@ -267,7 +273,7 @@ final class WebMetaDataCreator {
 
     /**
      * Creates login-config part of web.xml descriptor.
-     *
+     * <p/>
      * <pre>
      * &lt;login-config&gt;
      *   &lt;auth-method&gt;EjbDeploymentAuthMethod&lt;/auth-method&gt;
@@ -275,10 +281,8 @@ final class WebMetaDataCreator {
      * &lt;/login-config&gt;
      * </pre>
      *
-     * @param dep
-     *            webservice deployment
-     * @param jbossWebMD
-     *            jboss web meta data
+     * @param dep        webservice deployment
+     * @param jbossWebMD jboss web meta data
      */
     private void createLoginConfig(final Deployment dep, final JBossWebMetaData jbossWebMD) {
         final String authMethod = getAuthMethod(dep);
@@ -294,7 +298,7 @@ final class WebMetaDataCreator {
 
     /**
      * Creates security roles part of web.xml descriptor.
-     *
+     * <p/>
      * <pre>
      * &lt;security-role&gt;
      *   &lt;role-name&gt;role1&lt;/role-name&gt;
@@ -303,10 +307,8 @@ final class WebMetaDataCreator {
      * &lt;/security-role&gt;
      * </pre>
      *
-     * @param dep
-     *            webservice deployment
-     * @param jbossWebMD
-     *            jboss web meta data
+     * @param dep        webservice deployment
+     * @param jbossWebMD jboss web meta data
      */
     private void createSecurityRoles(final Deployment dep, final JBossWebMetaData jbossWebMD) {
         final String authMethod = getAuthMethod(dep);
@@ -327,8 +329,7 @@ final class WebMetaDataCreator {
     /**
      * Returns deployment authentication method.
      *
-     * @param dep
-     *            webservice deployment
+     * @param dep webservice deployment
      * @return deployment authentication method
      */
     private String getAuthMethod(final Deployment dep) {
@@ -351,8 +352,7 @@ final class WebMetaDataCreator {
     /**
      * Returns security builder associated with EJB deployment.
      *
-     * @param dep
-     *            webservice EJB deployment
+     * @param dep webservice EJB deployment
      * @return security builder for EJB deployment
      */
     private SecurityMetaDataAccessorEJB getEjbSecurityMetaDataAccessor(final Deployment dep) {

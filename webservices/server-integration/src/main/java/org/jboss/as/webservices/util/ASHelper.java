@@ -21,10 +21,6 @@
  */
 package org.jboss.as.webservices.util;
 
-import static org.jboss.as.webservices.util.DotNames.JAXWS_SERVICE_CLASS;
-import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXRPC_ENDPOINTS_KEY;
-import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXWS_ENDPOINTS_KEY;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -52,6 +48,10 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
+
+import static org.jboss.as.webservices.util.DotNames.JAXWS_SERVICE_CLASS;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXRPC_ENDPOINTS_KEY;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXWS_ENDPOINTS_KEY;
 
 /**
  * JBoss AS integration helper class.
@@ -277,7 +277,7 @@ public final class ASHelper {
 
         // prefer context root defined in application.xml over one defined in jboss-web.xml
         if (jbossAppMD != null) {
-            final ModuleMetaData moduleMD = jbossAppMD.getModule(dep.getSimpleName());
+            final ModuleMetaData moduleMD = jbossAppMD.getModules().get(dep.getSimpleName());
             if (moduleMD != null) {
                 final WebModuleMetaData webModuleMD = (WebModuleMetaData) moduleMD.getValue();
                 contextRoot = webModuleMD.getContextRoot();

@@ -44,7 +44,10 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.metadata.javaee.spec.EmptyMetaData;
+import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
+import org.jboss.metadata.merge.javaee.spec.SecurityRolesMetaDataMerger;
 import org.jboss.metadata.merge.web.jboss.JBossWebMetaDataMerger;
 import org.jboss.metadata.merge.web.spec.WebCommonMetaDataMerger;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -325,20 +328,35 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
 
         warMetaData.setMergedJBossWebMetaData(mergedMetaData);
 
-        if(mergedMetaData.isMetadataComplete()) {
+        if (mergedMetaData.isMetadataComplete()) {
             MetadataCompleteMarker.setMetadataComplete(deploymentUnit, true);
         }
 
         //now attach any JNDI binding related information to the deployment
-        if(mergedMetaData.getJndiEnvironmentRefsGroup() != null) {
+        if (mergedMetaData.getJndiEnvironmentRefsGroup() != null) {
             final DeploymentDescriptorEnvironment bindings = new DeploymentDescriptorEnvironment("java:module/env/", mergedMetaData.getJndiEnvironmentRefsGroup());
             deploymentUnit.putAttachment(org.jboss.as.ee.component.Attachments.MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT, bindings);
         }
 
         //override module name if applicable
-        if(mergedMetaData.getModuleName() != null && !mergedMetaData.getModuleName().isEmpty()) {
+        if (mergedMetaData.getModuleName() != null && !mergedMetaData.getModuleName().isEmpty()) {
             final EEModuleDescription description = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
             description.setModuleName(mergedMetaData.getModuleName());
+        }
+
+        //merge security roles from the ear
+        DeploymentUnit parent = deploymentUnit.getParent();
+        if (parent != null) {
+            final EarMetaData earMetaData = parent.getAttachment(org.jboss.as.ee.structure.Attachments.EAR_METADATA);
+            if (earMetaData != null) {
+                SecurityRolesMetaData earSecurityRolesMetaData = earMetaData.getSecurityRoles();
+                if(earSecurityRolesMetaData != null) {
+                    if(mergedMetaData.getSecurityRoles() == null) {
+                        mergedMetaData.setSecurityRoles(new SecurityRolesMetaData());
+                    }
+                    SecurityRolesMetaDataMerger.merge(mergedMetaData.getSecurityRoles(), mergedMetaData.getSecurityRoles(), earSecurityRolesMetaData);
+                }
+            }
         }
     }
 
@@ -538,7 +556,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
      * Generate the Jar processing order.
      *
      * @param webOrderings The list of orderings, as parsed from the fragments
-     * @param order The generated order list
+     * @param order        The generated order list
      */
     protected static void resolveOrder(List<WebOrdering> webOrderings, List<String> order) {
         List<Ordering> work = new ArrayList<Ordering>();

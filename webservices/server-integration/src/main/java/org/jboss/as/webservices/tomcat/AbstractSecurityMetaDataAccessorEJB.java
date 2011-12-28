@@ -29,6 +29,7 @@ import org.jboss.as.ee.structure.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.metadata.model.EJBEndpoint;
 import org.jboss.metadata.ear.jboss.JBossAppMetaData;
+import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.ws.common.integration.WSHelper;
@@ -63,8 +64,8 @@ abstract class AbstractSecurityMetaDataAccessorEJB implements SecurityMetaDataAc
         if (securityDomain == null) {
             final DeploymentUnit unit = WSHelper.getRequiredAttachment(dep, DeploymentUnit.class);
             if (unit.getParent() != null) {
-                final JBossAppMetaData jbossAppMD = unit.getParent().getAttachment(Attachments.JBOSS_APP_METADATA);
-                return jbossAppMD != null ? jbossAppMD.getSecurityDomain() : null;
+                final EarMetaData jbossAppMD = unit.getParent().getAttachment(Attachments.EAR_METADATA);
+                return jbossAppMD instanceof JBossAppMetaData ? ((JBossAppMetaData)jbossAppMD).getSecurityDomain() : null;
             }
         }
 
