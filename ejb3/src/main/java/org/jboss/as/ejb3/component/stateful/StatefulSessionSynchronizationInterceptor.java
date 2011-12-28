@@ -54,14 +54,13 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
     private final boolean containerManagedTransactions;
     private boolean synchronizationRegistered = false;
 
+    private static final Factory CONTAINER_MANAGED = new Factory(TransactionManagementType.CONTAINER);
+    private static final Factory BEAN_MANAGED = new Factory(TransactionManagementType.BEAN);
 
     public static InterceptorFactory factory(final TransactionManagementType type) {
-        return new ComponentInstanceInterceptorFactory() {
-            @Override
-            protected Interceptor create(final Component component, final InterceptorFactoryContext context) {
-                return new StatefulSessionSynchronizationInterceptor(type == TransactionManagementType.CONTAINER );
-            }
-        };
+        //we need to always return the same factory instance
+        //otherwise multiple synchronization interceptors may be created
+        return type == TransactionManagementType.CONTAINER ? CONTAINER_MANAGED : BEAN_MANAGED;
     }
 
 
@@ -210,6 +209,20 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
         lock.unlock();
         if (ROOT_LOGGER.isTraceEnabled()) {
             ROOT_LOGGER.trace("Released lock: " + lock);
+        }
+    }
+
+    private static class Factory extends ComponentInstanceInterceptorFactory {
+
+        private final TransactionManagementType type;
+
+        public Factory(final TransactionManagementType type) {
+            this.type = type;
+        }
+
+        @Override
+        protected Interceptor create(final Component component, final InterceptorFactoryContext context) {
+            return new StatefulSessionSynchronizationInterceptor(type == TransactionManagementType.CONTAINER );
         }
     }
 

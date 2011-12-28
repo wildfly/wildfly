@@ -45,6 +45,8 @@ import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.invocation.SimpleInterceptorFactoryContext;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -65,9 +67,8 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
      * Construct a new instance.
      *
      * @param component the component
-     * @param ejb2XRemoveInterceptor
      */
-    protected StatefulSessionComponentInstance(final StatefulSessionComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
+    protected StatefulSessionComponentInstance(final StatefulSessionComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, final InterceptorFactoryContext factoryContext) {
         super(component, instanceReference, preDestroyInterceptor, methodInterceptors);
 
         final UUID uuid = UUID.randomUUID();
@@ -75,23 +76,23 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
         bb.putLong(uuid.getMostSignificantBits());
         bb.putLong(uuid.getLeastSignificantBits());
         this.id = SessionID.createSessionID(bb.array());
-        this.createInterceptors();
+        this.createInterceptors(factoryContext);
     }
 
-    private void createInterceptors() {
+    private void createInterceptors(final InterceptorFactoryContext factoryContext) {
         StatefulSessionComponent component = this.getComponent();
-        this.afterBegin = component.createInterceptor(component.getAfterBegin());
-        this.afterCompletion = component.createInterceptor(component.getAfterCompletion());
-        this.beforeCompletion = component.createInterceptor(component.getBeforeCompletion());
-        this.prePassivate = this.createInterceptors(component, component.getPrePassivate());
-        this.postActivate = this.createInterceptors(component, component.getPostActivate());
-        this.ejb2XRemoveInterceptor = component.createInterceptor(component.getEjb2XRemoveMethod());
+        this.afterBegin = component.createInterceptor(component.getAfterBegin(), factoryContext);
+        this.afterCompletion = component.createInterceptor(component.getAfterCompletion(), factoryContext);
+        this.beforeCompletion = component.createInterceptor(component.getBeforeCompletion(), factoryContext);
+        this.prePassivate = this.createInterceptors(component, component.getPrePassivate(), factoryContext);
+        this.postActivate = this.createInterceptors(component, component.getPostActivate(), factoryContext);
+        this.ejb2XRemoveInterceptor = component.createInterceptor(component.getEjb2XRemoveMethod(), factoryContext);
     }
 
-    private Collection<Interceptor> createInterceptors(StatefulSessionComponent component, Collection<InterceptorFactory> factories) {
+    private Collection<Interceptor> createInterceptors(StatefulSessionComponent component, Collection<InterceptorFactory> factories, final InterceptorFactoryContext factoryContext) {
         List<Interceptor> interceptors = new ArrayList<Interceptor>(factories.size());
         for (InterceptorFactory factory: factories) {
-            interceptors.add(component.createInterceptor(factory));
+            interceptors.add(component.createInterceptor(factory, factoryContext));
         }
         return Collections.unmodifiableList(interceptors);
     }
@@ -189,6 +190,9 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
 
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        this.createInterceptors();
+        //TODO: this is a bug
+        //as the context is not the same one that is used to create the component we will not get the same
+        //session synchronization interceptor
+        this.createInterceptors(new SimpleInterceptorFactoryContext());
     }
 }

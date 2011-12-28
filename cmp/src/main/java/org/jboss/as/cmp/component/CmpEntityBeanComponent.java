@@ -39,7 +39,6 @@ import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.JDBCEntityPersistenceStore;
 import org.jboss.as.cmp.jdbc.bridge.CMRMessage;
 import org.jboss.as.ee.component.BasicComponentInstance;
-import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentCreateService;
@@ -49,7 +48,6 @@ import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.msc.value.Value;
 
 /**
@@ -59,6 +57,7 @@ public class CmpEntityBeanComponent extends EntityBeanComponent {
 
     private final Value<JDBCEntityPersistenceStore> storeManager;
     private final InterceptorFactory relationInterceptorFactory;
+    private final boolean cmp10;
     private boolean ejbStoreForClean;
 
     private final TransactionEntityMap transactionEntityMap;
@@ -70,14 +69,12 @@ public class CmpEntityBeanComponent extends EntityBeanComponent {
 
         this.relationInterceptorFactory = ejbComponentCreateService.getRelationInterceptorFactory();
         this.transactionEntityMap = ejbComponentCreateService.getTransactionEntityMap();
+        this.cmp10 = ejbComponentCreateService.getEntityMetaData().isCMP1x();
     }
 
     protected BasicComponentInstance instantiateComponentInstance(final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, final InterceptorFactoryContext interceptorContext) {
-        final SimpleInterceptorFactoryContext factoryContext = new SimpleInterceptorFactoryContext();
-        factoryContext.getContextData().put(Component.class, this);
-        final Interceptor interceptor = relationInterceptorFactory.create(factoryContext);
-
-        return new CmpEntityBeanComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors, interceptor);
+        final Interceptor interceptor = relationInterceptorFactory.create(interceptorContext);
+        return new CmpEntityBeanComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors, interceptor, interceptorContext);
     }
 
     public void start() {
@@ -183,6 +180,9 @@ public class CmpEntityBeanComponent extends EntityBeanComponent {
 
     @Override
     public AllowedMethodsInformation getAllowedMethodsInformation() {
+        if(cmp10) {
+            return Cmp10AllowedMethodsInformation.INSTANCE;
+        }
         return CmpAllowedMethodsInformation.INSTANCE;
     }
 }

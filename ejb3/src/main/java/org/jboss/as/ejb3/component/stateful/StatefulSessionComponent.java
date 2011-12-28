@@ -54,7 +54,6 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.StopContext;
@@ -194,10 +193,9 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
         return defaultAccessTimeoutProvider.getDefaultAccessTimeout();
     }
 
-    protected Interceptor createInterceptor(final InterceptorFactory factory) {
+    protected Interceptor createInterceptor(final InterceptorFactory factory, final InterceptorFactoryContext context) {
         if (factory == null)
             return null;
-        final SimpleInterceptorFactoryContext context = new SimpleInterceptorFactoryContext();
         context.getContextData().put(Component.class, this);
         return factory.create(context);
     }
@@ -212,7 +210,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
 
     @Override
     protected BasicComponentInstance instantiateComponentInstance(final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, final InterceptorFactoryContext interceptorContext) {
-        return new StatefulSessionComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
+        return new StatefulSessionComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors, interceptorContext);
     }
 
     /**

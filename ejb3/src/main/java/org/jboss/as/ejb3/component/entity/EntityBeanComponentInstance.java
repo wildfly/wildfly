@@ -39,6 +39,7 @@ import org.jboss.as.ejb3.timerservice.TimerImpl;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactoryContext;
 
 /**
  * @author Stuart Douglas
@@ -59,14 +60,14 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
     private final Interceptor ejbPassivate;
     private final Interceptor unsetEntityContext;
 
-    protected EntityBeanComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
+    protected EntityBeanComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, final InterceptorFactoryContext context) {
         super(component, instanceReference, preDestroyInterceptor, methodInterceptors);
         final EntityBeanComponent ejbComponent = (EntityBeanComponent) component;
-        this.ejbStore = ejbComponent.createInterceptor(ejbComponent.getEjbStore());
-        this.ejbActivate = ejbComponent.createInterceptor(ejbComponent.getEjbActivate());
-        this.ejbLoad = ejbComponent.createInterceptor(ejbComponent.getEjbLoad());
-        this.ejbPassivate = ejbComponent.createInterceptor(ejbComponent.getEjbPassivate());
-        this.unsetEntityContext = ejbComponent.createInterceptor(ejbComponent.getUnsetEntityContext());
+        this.ejbStore = ejbComponent.createInterceptor(ejbComponent.getEjbStore(), context);
+        this.ejbActivate = ejbComponent.createInterceptor(ejbComponent.getEjbActivate(), context);
+        this.ejbLoad = ejbComponent.createInterceptor(ejbComponent.getEjbLoad(), context);
+        this.ejbPassivate = ejbComponent.createInterceptor(ejbComponent.getEjbPassivate(), context);
+        this.unsetEntityContext = ejbComponent.createInterceptor(ejbComponent.getUnsetEntityContext(), context);
     }
 
     @Override

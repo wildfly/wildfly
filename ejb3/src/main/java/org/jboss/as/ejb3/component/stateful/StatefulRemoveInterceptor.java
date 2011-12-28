@@ -59,7 +59,7 @@ public class StatefulRemoveInterceptor implements Interceptor {
         //if a session bean is participating in a transaction, it
         //is an error for a client to invoke the remove method
         //on the session object's home or component interface.
-         final ComponentView view = context.getPrivateData(ComponentView.class);
+        final ComponentView view = context.getPrivateData(ComponentView.class);
         if (view != null) {
             Ejb2xViewType viewType = view.getPrivateData(Ejb2xViewType.class);
             if (viewType != null) {

@@ -42,6 +42,7 @@ import org.jboss.as.ejb3.component.entity.WrappedRemoteException;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactoryContext;
 
 /**
  * @author John Bailey
@@ -49,8 +50,8 @@ import org.jboss.invocation.InterceptorContext;
 public class CmpEntityBeanComponentInstance extends EntityBeanComponentInstance {
     private final Interceptor relationshipInterceptor;
 
-    CmpEntityBeanComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, Map<Method, Interceptor> methodInterceptors, final Interceptor relationshipInterceptor) {
-        super(component, instanceReference, preDestroyInterceptor, methodInterceptors);
+    CmpEntityBeanComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, Map<Method, Interceptor> methodInterceptors, final Interceptor relationshipInterceptor, final InterceptorFactoryContext interceptorContext) {
+        super(component, instanceReference, preDestroyInterceptor, methodInterceptors, interceptorContext);
         this.relationshipInterceptor = relationshipInterceptor;
     }
 
