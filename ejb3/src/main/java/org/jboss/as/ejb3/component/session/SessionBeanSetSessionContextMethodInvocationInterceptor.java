@@ -48,7 +48,7 @@ public class SessionBeanSetSessionContextMethodInvocationInterceptor implements 
         SessionBeanComponentInstance instance = (SessionBeanComponentInstance) context.getPrivateData(ComponentInstance.class);
         final InvocationType invocationType = context.getPrivateData(InvocationType.class);
         try {
-            context.putPrivateData(InvocationType.class, InvocationType.SET_SESSION_CONTEXT);
+            context.putPrivateData(InvocationType.class, InvocationType.DEPENDENCY_INJECTION);
             ((SessionBean) context.getTarget()).setSessionContext(instance.getEjbContext());
         } finally {
             context.putPrivateData(InvocationType.class, invocationType);

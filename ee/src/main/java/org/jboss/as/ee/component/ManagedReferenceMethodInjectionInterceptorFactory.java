@@ -22,13 +22,12 @@
 
 package org.jboss.as.ee.component;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.invocation.Interceptor;
@@ -36,6 +35,8 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.value.Value;
+
+import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -108,7 +109,13 @@ final class ManagedReferenceMethodInjectionInterceptorFactory implements Interce
             boolean ok = false;
             try {
                 valueReference.set(reference);
-                method.invoke(target, reference.getInstance());
+                final InvocationType invocationType = context.getPrivateData(InvocationType.class);
+                try {
+                    context.putPrivateData(InvocationType.class, InvocationType.DEPENDENCY_INJECTION);
+                    method.invoke(target, reference.getInstance());
+                } finally {
+                    context.putPrivateData(InvocationType.class, invocationType);
+                }
                 Object result = context.proceed();
                 ok = true;
                 return result;

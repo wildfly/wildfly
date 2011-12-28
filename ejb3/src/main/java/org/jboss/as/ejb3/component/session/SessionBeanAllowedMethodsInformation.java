@@ -15,8 +15,7 @@ public class SessionBeanAllowedMethodsInformation  extends AllowedMethodsInforma
     @Override
     protected void setup(Set<DeniedMethodKey> denied) {
         super.setup(denied);
-        add(denied, InvocationType.SET_SESSION_CONTEXT, MethodType.GET_EJB_LOCAL_OBJECT);
-        add(denied, InvocationType.SET_SESSION_CONTEXT, MethodType.GET_EJB_OBJECT);
-        add(denied, InvocationType.SET_SESSION_CONTEXT, MethodType.TIMER_SERVICE_METHOD);
+        add(denied, InvocationType.DEPENDENCY_INJECTION, MethodType.GET_EJB_LOCAL_OBJECT);
+        add(denied, InvocationType.DEPENDENCY_INJECTION, MethodType.GET_EJB_OBJECT);
     }
 }

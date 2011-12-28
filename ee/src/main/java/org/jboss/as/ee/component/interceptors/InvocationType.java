@@ -13,7 +13,7 @@ public enum InvocationType {
     UNSET_ENTITY_CONTEXT("unsetEntityContext"),
     POST_CONSTRUCT("postConstruct"),
     PRE_DESTROY("preDestroy"),
-    SET_SESSION_CONTEXT("setSessionContext"),
+    DEPENDENCY_INJECTION("setSessionContext"),
     SFSB_INIT_METHOD("stateful session bean init method"),
     FINDER_METHOD("entity bean finder method"),
     HOME_METHOD("entity bean home method"),
