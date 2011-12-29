@@ -35,7 +35,7 @@
     <artifactId>jboss-as-clustering-service</artifactId>
     <packaging>jar</packaging>
 
-    <name>JBoss Application Server: Clustered service provider registry services</name>
+    <name>JBoss Application Server: Clustered singleton services</name>
 
     <dependencies>
         <dependency>
