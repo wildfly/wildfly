@@ -17,12 +17,28 @@
 
 package org.jboss.as.weld.ejb;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.InterceptionType;
+import javax.enterprise.inject.spi.Interceptor;
+import javax.interceptor.InvocationContext;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;
+import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.weld.WeldContainer;
 import org.jboss.as.weld.services.bootstrap.WeldEjbServices;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.bean.SessionBean;
 import org.jboss.weld.ejb.spi.EjbDescriptor;
@@ -32,17 +48,6 @@ import org.jboss.weld.ejb.spi.helpers.ForwardingEjbServices;
 import org.jboss.weld.manager.BeanManagerImpl;
 import org.jboss.weld.serialization.spi.ContextualStore;
 import org.jboss.weld.serialization.spi.helpers.SerializableContextualInstance;
-
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.InterceptionType;
-import javax.enterprise.inject.spi.Interceptor;
-import javax.interceptor.InvocationContext;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Interceptor for applying the JSR-299 specific interceptor bindings.
@@ -195,7 +200,17 @@ public class Jsr299BindingsInterceptor implements Serializable, org.jboss.invoca
 
         @Override
         public org.jboss.invocation.Interceptor create(final Component component, final InterceptorFactoryContext context) {
-            return new Jsr299BindingsInterceptor((BeanManagerImpl) weldContainer.getValue().getBeanManager(beanArchiveId), ejbName, context, interceptionType, classLoader);
+
+            //we use the interception type as the context key
+            //as there are potentially up to six instances of this interceptor for every component
+            final AtomicReference<ManagedReference> reference = (AtomicReference<ManagedReference>) context.getContextData().get(interceptionType);
+            if (reference != null) {
+                return (org.jboss.invocation.Interceptor) reference.get().getInstance();
+            } else {
+                final Jsr299BindingsInterceptor interceptor =  new Jsr299BindingsInterceptor((BeanManagerImpl) weldContainer.getValue().getBeanManager(beanArchiveId), ejbName, context, interceptionType, classLoader);
+                context.getContextData().put(interceptionType, new AtomicReference<ManagedReference>(new ValueManagedReference(new ImmediateValue<Object>(interceptor))));
+                return interceptor;
+            }
         }
 
         public InjectedValue<WeldContainer> getWeldContainer() {

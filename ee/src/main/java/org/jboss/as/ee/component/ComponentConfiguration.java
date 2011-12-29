@@ -26,6 +26,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +81,8 @@ public class ComponentConfiguration {
     private InterceptorFactory namespaceContextInterceptorFactory;
 
     private NamespaceContextSelector namespaceContextSelector;
+
+    private final Set<Object> interceptorContextKeys = new HashSet<Object>();
 
     public ComponentConfiguration(final ComponentDescription componentDescription, final ClassIndex classIndex, final ClassLoader moduleClassLoder) {
         this.componentDescription = componentDescription;
@@ -379,5 +382,9 @@ public class ComponentConfiguration {
 
     public void setNamespaceContextSelector(final NamespaceContextSelector namespaceContextSelector) {
         this.namespaceContextSelector = namespaceContextSelector;
+    }
+
+    public Set<Object> getInterceptorContextKeys() {
+        return interceptorContextKeys;
     }
 }

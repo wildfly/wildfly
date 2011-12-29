@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
+ * JBoss, Home of Professional Open Source
+ * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -19,26 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.test.clustering.unmanaged.ejb3.stateful.bean;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-import javax.interceptor.Interceptors;
-
-import org.jboss.ejb3.annotation.Clustered;
+import javax.interceptor.InterceptorBinding;
 
 /**
- * @author Paul Ferraro
+ * @author Stuart Douglas
  */
-@Clustered
-@javax.ejb.Stateful(name = "StatefulBean")
-@Interceptors(StatefulInterceptor.class)
-@Intercepted
-public class StatefulBean implements Stateful {
-    private AtomicInteger count = new AtomicInteger(0);
-    
-    public int increment() {
-        return this.count.incrementAndGet();
-    }
+@Retention(RetentionPolicy.RUNTIME)
+@InterceptorBinding
+public @interface Intercepted {
 }

@@ -2,7 +2,10 @@ package org.jboss.as.ejb3.component.stateful;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.ejb.client.SessionID;
@@ -25,11 +28,13 @@ public class SerializedStatefulSessionComponent implements Serializable {
     private final String serviceName;
     private final SessionID sessionID;
     private final Object instance;
+    private final Map<Object, Object> serializableInterceptors;
 
-    public SerializedStatefulSessionComponent(final Object instance, final SessionID sessionID, final String serviceName) {
+    public SerializedStatefulSessionComponent(final Object instance, final SessionID sessionID, final String serviceName, final Map<Object, Object> serializableInterceptors) {
         this.instance = instance;
         this.sessionID = sessionID;
         this.serviceName = serviceName;
+        this.serializableInterceptors = serializableInterceptors;
     }
 
 
@@ -38,6 +43,11 @@ public class SerializedStatefulSessionComponent implements Serializable {
         ServiceController<?> service = CurrentServiceContainer.getServiceContainer().getRequiredService(name);
         StatefulSessionComponent component = (StatefulSessionComponent) service.getValue();
         final InterceptorFactoryContext context = new SimpleInterceptorFactoryContext();
+
+        for(final Map.Entry<Object, Object> entry : serializableInterceptors.entrySet()) {
+            AtomicReference<ManagedReference> referenceReference = new AtomicReference<ManagedReference>(new ValueManagedReference(new ImmediateValue<Object>(entry.getValue())));
+            context.getContextData().put(entry.getKey(), referenceReference);
+        }
         context.getContextData().put(SessionID.class, sessionID);
         return component.constructComponentInstance(new ValueManagedReference(new ImmediateValue<Object>(instance)), false, context);
     }

@@ -161,8 +161,18 @@ public class BasicComponent implements Component {
                 throw MESSAGES.componentConstructionFailure(e);
             }
         }
+        componentInstanceCreated(basicComponentInstance, context);
         // return the component instance
         return basicComponentInstance;
+    }
+
+    /**
+     * Method that can be overriden to perform setup on the instance after it has been created
+     * @param basicComponentInstance The component instance
+     * @param context The interceptor factory context used to construct the instance
+     */
+    protected void componentInstanceCreated(final BasicComponentInstance basicComponentInstance, final InterceptorFactoryContext context) {
+
     }
 
 

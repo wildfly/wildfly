@@ -37,6 +37,7 @@ import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.interceptors.UserInterceptorFactory;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
+import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -107,6 +108,16 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
                     addWeldIntegration(context.getServiceTarget(), configuration, description, componentClass, beanName, weldServiceName, interceptorClasses, classLoader, description.getBeanDeploymentArchiveId());
 
                     configuration.addPostConstructInterceptor(new WeldInjectionInterceptor.Factory(configuration, interceptorClasses), InterceptorOrder.ComponentPostConstruct.WELD_INJECTION);
+
+                    //add a context key for weld interceptor replication
+                    if(description instanceof StatefulComponentDescription) {
+                        configuration.getInterceptorContextKeys().add(InterceptionType.AROUND_INVOKE);
+                        configuration.getInterceptorContextKeys().add(InterceptionType.AROUND_TIMEOUT);
+                        configuration.getInterceptorContextKeys().add(InterceptionType.POST_ACTIVATE);
+                        configuration.getInterceptorContextKeys().add(InterceptionType.POST_CONSTRUCT);
+                        configuration.getInterceptorContextKeys().add(InterceptionType.PRE_DESTROY);
+                        configuration.getInterceptorContextKeys().add(InterceptionType.PRE_PASSIVATE);
+                    }
                 }
             });
         }
@@ -155,6 +166,7 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
             final Jsr299BindingsInterceptor.Factory postConstruct = new Jsr299BindingsInterceptor.Factory(description.getBeanDeploymentArchiveId(), beanName, InterceptionType.POST_CONSTRUCT, classLoader);
             builder.addDependency(weldServiceName, WeldContainer.class, postConstruct.getWeldContainer());
             configuration.addPostConstructInterceptor(postConstruct, InterceptorOrder.ComponentPostConstruct.CDI_INTERCEPTORS);
+
         }
 
         builder.install();
