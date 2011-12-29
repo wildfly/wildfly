@@ -21,7 +21,7 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
-import java.io.IOException;
+import java.io.ObjectStreamException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -46,7 +46,6 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-import org.jboss.invocation.SimpleInterceptorFactoryContext;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -56,12 +55,12 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
 
     private final SessionID id;
 
-    private transient Interceptor afterBegin;
-    private transient Interceptor afterCompletion;
-    private transient Interceptor beforeCompletion;
-    private transient Collection<Interceptor> prePassivate;
-    private transient Collection<Interceptor> postActivate;
-    private transient Interceptor ejb2XRemoveInterceptor;
+    private final Interceptor afterBegin;
+    private final Interceptor afterCompletion;
+    private final Interceptor beforeCompletion;
+    private final Collection<Interceptor> prePassivate;
+    private final Collection<Interceptor> postActivate;
+    private final Interceptor ejb2XRemoveInterceptor;
 
     /**
      * Construct a new instance.
@@ -71,16 +70,16 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
     protected StatefulSessionComponentInstance(final StatefulSessionComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, final InterceptorFactoryContext factoryContext) {
         super(component, instanceReference, preDestroyInterceptor, methodInterceptors);
 
-        final UUID uuid = UUID.randomUUID();
-        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
-        bb.putLong(uuid.getMostSignificantBits());
-        bb.putLong(uuid.getLeastSignificantBits());
-        this.id = SessionID.createSessionID(bb.array());
-        this.createInterceptors(factoryContext);
-    }
-
-    private void createInterceptors(final InterceptorFactoryContext factoryContext) {
-        StatefulSessionComponent component = this.getComponent();
+        final SessionID existingSession = (SessionID) factoryContext.getContextData().get(SessionID.class);
+        if (existingSession != null) {
+            this.id = existingSession;
+        } else {
+            final UUID uuid = UUID.randomUUID();
+            ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
+            bb.putLong(uuid.getMostSignificantBits());
+            bb.putLong(uuid.getLeastSignificantBits());
+            this.id = SessionID.createSessionID(bb.array());
+        }
         this.afterBegin = component.createInterceptor(component.getAfterBegin(), factoryContext);
         this.afterCompletion = component.createInterceptor(component.getAfterCompletion(), factoryContext);
         this.beforeCompletion = component.createInterceptor(component.getBeforeCompletion(), factoryContext);
@@ -91,7 +90,7 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
 
     private Collection<Interceptor> createInterceptors(StatefulSessionComponent component, Collection<InterceptorFactory> factories, final InterceptorFactoryContext factoryContext) {
         List<Interceptor> interceptors = new ArrayList<Interceptor>(factories.size());
-        for (InterceptorFactory factory: factories) {
+        for (InterceptorFactory factory : factories) {
             interceptors.add(component.createInterceptor(factory, factoryContext));
         }
         return Collections.unmodifiableList(interceptors);
@@ -125,13 +124,13 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
     }
 
     protected void prePassivate() {
-        for (Interceptor interceptor: this.prePassivate) {
+        for (Interceptor interceptor : this.prePassivate) {
             this.execute(interceptor, null);
         }
     }
 
     protected void postActivate() {
-        for (Interceptor interceptor: this.postActivate) {
+        for (Interceptor interceptor : this.postActivate) {
             this.execute(interceptor, null);
         }
     }
@@ -143,7 +142,7 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
         }
     }
 
-    private Object execute(final Interceptor interceptor, final Method method, final Object ... parameters) {
+    private Object execute(final Interceptor interceptor, final Method method, final Object... parameters) {
         if (interceptor == null)
             return null;
         final InterceptorContext interceptorContext = new InterceptorContext();
@@ -188,11 +187,7 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
         return " Instance of " + getComponent().getComponentName() + " {" + id + "}";
     }
 
-    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        //TODO: this is a bug
-        //as the context is not the same one that is used to create the component we will not get the same
-        //session synchronization interceptor
-        this.createInterceptors(new SimpleInterceptorFactoryContext());
+    public Object writeReplace() throws ObjectStreamException {
+        return new SerializedStatefulSessionComponent(getInstance(), id, getComponent().getCreateServiceName().getCanonicalName());
     }
 }

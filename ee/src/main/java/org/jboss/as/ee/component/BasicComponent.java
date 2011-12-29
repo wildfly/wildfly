@@ -81,8 +81,7 @@ public class BasicComponent implements Component {
      * {@inheritDoc}
      */
     public ComponentInstance createInstance() {
-        waitForComponentStart();
-        BasicComponentInstance instance = constructComponentInstance(null, true);
+        BasicComponentInstance instance = constructComponentInstance(null, true, new SimpleInterceptorFactoryContext());
         return instance;
     }
 
@@ -92,8 +91,7 @@ public class BasicComponent implements Component {
      * @return The new ComponentInstance
      */
     public ComponentInstance createInstance(Object instance) {
-        waitForComponentStart();
-        BasicComponentInstance obj = constructComponentInstance(new ValueManagedReference(new ImmediateValue<Object>(instance)), true);
+        BasicComponentInstance obj = constructComponentInstance(new ValueManagedReference(new ImmediateValue<Object>(instance)), true, new SimpleInterceptorFactoryContext());
         return obj;
     }
 
@@ -124,9 +122,9 @@ public class BasicComponent implements Component {
      * @param instance An instance to be wrapped, or null if a new instance should be created
      * @return the component instance
      */
-    protected final BasicComponentInstance constructComponentInstance(ManagedReference instance, boolean invokePostConstruct) {
+    protected BasicComponentInstance constructComponentInstance(ManagedReference instance, boolean invokePostConstruct, InterceptorFactoryContext context) {
+        waitForComponentStart();
         // Interceptor factory context
-        final SimpleInterceptorFactoryContext context = new SimpleInterceptorFactoryContext();
         context.getContextData().put(Component.class, this);
 
         // Create the post-construct interceptors for the ComponentInstance
@@ -171,7 +169,7 @@ public class BasicComponent implements Component {
     /**
      * Responsible for instantiating the {@link BasicComponentInstance}. This method is *not* responsible for
      * handling the post construct activities like injection and lifecycle invocation. That is handled by
-     * {@link #constructComponentInstance(ManagedReference)}.
+     * {@link #constructComponentInstance(ManagedReference, boolean, InterceptorFactoryContext)}.
      * <p/>
      *
      * @return

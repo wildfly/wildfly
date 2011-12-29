@@ -22,12 +22,8 @@
 
 package org.jboss.as.test.clustering.unmanaged.ejb3.stateful;
 
-import static org.junit.Assert.*;
-
 import java.io.IOException;
 import java.util.Properties;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -50,6 +46,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * @author Paul Ferraro
  *
@@ -58,8 +56,7 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class StatefulFailoverTestCase {
     /** Constants **/
-    public static final long GRACE_TIME_TO_MEMBERSHIP_CHANGE = 5000;
-    public static final long GRACE_TIME_TO_REPLICATE = 2000;
+    public static final int GRACE_TIME = 20000;
     public static final String CONTAINER1 = "clustering-udp-0-unmanaged";
     public static final String CONTAINER2 = "clustering-udp-1-unmanaged";
     public static final String[] CONTAINERS = new String[] { CONTAINER1, CONTAINER2 };
@@ -114,55 +111,42 @@ public class StatefulFailoverTestCase {
         String url2 = "http://127.0.0.1:8180/stateful/count";
 
         try {
-            assertEquals(1, this.queryCount(client, url1));
-            assertEquals(2, this.queryCount(client, url1));
+            assertQueryCount(1, client, url1);
+            assertQueryCount(2, client, url1);
 
             controller.start(CONTAINER2);
             deployer.deploy(DEPLOYMENT2);
 
-            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
+            assertQueryCount(3, client, url1);
+            assertQueryCount(4, client, url1);
 
-            assertEquals(3, this.queryCount(client, url1));
-            assertEquals(4, this.queryCount(client, url1));
-
-            Thread.sleep(GRACE_TIME_TO_REPLICATE);
-
-            assertEquals(5, this.queryCount(client, url2));
-            assertEquals(6, this.queryCount(client, url2));
+            assertQueryCount(5, client, url2);
+            assertQueryCount(6, client, url2);
 
             controller.stop(CONTAINER2);
-            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
 
-            assertEquals(7, this.queryCount(client, url1));
-            assertEquals(8, this.queryCount(client, url1));
+            assertQueryCount(7, client, url1);
+            assertQueryCount(8, client, url1);
 
             controller.start(CONTAINER2);
-            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
 
-            assertEquals(9, this.queryCount(client, url1));
-            assertEquals(10, this.queryCount(client, url1));
+            assertQueryCount(9, client, url1);
+            assertQueryCount(10, client, url1);
 
-            Thread.sleep(GRACE_TIME_TO_REPLICATE);
-            
-            assertEquals(11, this.queryCount(client, url2));
-            assertEquals(12, this.queryCount(client, url2));
+            assertQueryCount(11, client, url2);
+            assertQueryCount(12, client, url2);
 
             controller.stop(CONTAINER1);
-            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
-
-            assertEquals(13, this.queryCount(client, url2));
-            assertEquals(14, this.queryCount(client, url2));
+            assertQueryCount(13, client, url2);
+            assertQueryCount(14, client, url2);
             
             controller.start(CONTAINER1);
-            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
 
-            assertEquals(15, this.queryCount(client, url1));
-            assertEquals(16, this.queryCount(client, url1));
+            assertQueryCount(15, client, url1);
+            assertQueryCount(16, client, url1);
 
-            Thread.sleep(GRACE_TIME_TO_REPLICATE);
-            
-            assertEquals(17, this.queryCount(client, url1));
-            assertEquals(18, this.queryCount(client, url1));
+            assertQueryCount(17, client, url1);
+            assertQueryCount(18, client, url1);
         } finally {
             client.getConnectionManager().shutdown();
 
@@ -186,55 +170,43 @@ public class StatefulFailoverTestCase {
         String url2 = "http://127.0.0.1:8180/stateful/count";
 
         try {
-            assertEquals(1, this.queryCount(client, url1));
-            assertEquals(2, this.queryCount(client, url1));
+            assertQueryCount(1, client, url1);
+            assertQueryCount(2, client, url1);
 
             controller.start(CONTAINER2);
             deployer.deploy(DEPLOYMENT2);
 
-            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
+            assertQueryCount(3, client, url1);
+            assertQueryCount(4, client, url1);
 
-            assertEquals(3, this.queryCount(client, url1));
-            assertEquals(4, this.queryCount(client, url1));
-
-            Thread.sleep(GRACE_TIME_TO_REPLICATE);
-
-            assertEquals(5, this.queryCount(client, url2));
-            assertEquals(6, this.queryCount(client, url2));
+            assertQueryCount(5, client, url2);
+            assertQueryCount(6, client, url2);
 
             deployer.undeploy(DEPLOYMENT2);
-            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
 
-            assertEquals(7, this.queryCount(client, url1));
-            assertEquals(8, this.queryCount(client, url1));
+            assertQueryCount(7, client, url1);
+            assertQueryCount(8, client, url1);
 
             deployer.deploy(DEPLOYMENT2);
-            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
 
-            assertEquals(9, this.queryCount(client, url1));
-            assertEquals(10, this.queryCount(client, url1));
+            assertQueryCount(9, client, url1);
+            assertQueryCount(10, client, url1);
 
-            Thread.sleep(GRACE_TIME_TO_REPLICATE);
-            
-            assertEquals(11, this.queryCount(client, url2));
-            assertEquals(12, this.queryCount(client, url2));
+            assertQueryCount(11, client, url2);
+            assertQueryCount(12, client, url2);
 
             deployer.undeploy(DEPLOYMENT1);
-            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
 
-            assertEquals(13, this.queryCount(client, url2));
-            assertEquals(14, this.queryCount(client, url2));
+            assertQueryCount(13, client, url2);
+            assertQueryCount(14, client, url2);
             
             deployer.deploy(DEPLOYMENT1);
-            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
 
-            assertEquals(15, this.queryCount(client, url1));
-            assertEquals(16, this.queryCount(client, url1));
+            assertQueryCount(15, client, url1);
+            assertQueryCount(16, client, url1);
 
-            Thread.sleep(GRACE_TIME_TO_REPLICATE);
-            
-            assertEquals(17, this.queryCount(client, url2));
-            assertEquals(18, this.queryCount(client, url2));
+            assertQueryCount(17, client, url2);
+            assertQueryCount(18, client, url2);
         } finally {
             client.getConnectionManager().shutdown();
 
@@ -246,7 +218,10 @@ public class StatefulFailoverTestCase {
     private int queryCount(HttpClient client, String url) throws IOException {
         HttpResponse response = client.execute(new HttpGet(url));
         try {
-            assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            if (response.getStatusLine().getStatusCode() >= 400 && response.getStatusLine().getStatusCode() < 500) 
+               return -1;
+
+            assertEquals(200, response.getStatusLine().getStatusCode());
             return Integer.parseInt(response.getFirstHeader("count").getValue());
         } finally {
             response.getEntity().getContent().close();
@@ -261,4 +236,21 @@ public class StatefulFailoverTestCase {
             e.printStackTrace(System.err);
         }
     }
+ 
+    private void assertQueryCount(int i, HttpClient client, String url) throws IOException, InterruptedException {
+           int maxWait = GRACE_TIME;
+           int count = 0;
+           while (maxWait > 0) {
+               Thread.sleep(1000);
+
+               count = queryCount(client, url);
+               if (count >= 0) break;
+               maxWait -= 1000;
+          }
+
+          if (count == -1)
+              throw new AssertionError("Timed out waiting for a result");
+
+          assertEquals(i, count);
+      }
 }

@@ -118,6 +118,17 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     }
 
     @Override
+    public StatefulSessionComponentInstance createInstance( final Object instance) {
+        return (StatefulSessionComponentInstance) super.createInstance();
+    }
+
+
+    @Override
+    protected StatefulSessionComponentInstance constructComponentInstance(ManagedReference instance, boolean invokePostConstruct, InterceptorFactoryContext context) {
+        return (StatefulSessionComponentInstance) super.constructComponentInstance(instance, invokePostConstruct, context);
+    }
+
+    @Override
     public void destroyInstance(StatefulSessionComponentInstance instance) {
         instance.destroy();
     }
