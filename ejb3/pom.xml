@@ -79,6 +79,10 @@ vi:ts=4:sw=4:expandtab
 -->
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>jboss-as-clustering-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>jboss-as-ee</artifactId>
         </dependency>
 

@@ -23,6 +23,7 @@
 package org.jboss.as.clustering;
 
 import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -45,6 +46,7 @@ public class CoreGroupCommunicationServiceService implements Service<CoreGroupCo
 
     private final short scope;
     private final InjectedValue<Channel> channel = new InjectedValue<Channel>();
+    private final InjectedValue<GroupMembershipNotifierRegistry> groupMembershipNotifierRegistry = new InjectedValue<GroupMembershipNotifierRegistry>();
 
     private volatile CoreGroupCommunicationService service;
 
@@ -82,6 +84,8 @@ public class CoreGroupCommunicationServiceService implements Service<CoreGroupCo
         } catch (Exception e) {
             throw new StartException(e);
         }
+        // add it to the registry
+        this.groupMembershipNotifierRegistry.getValue().registerGroupMembershipNotifier(this.service);
     }
 
     /**
@@ -91,5 +95,11 @@ public class CoreGroupCommunicationServiceService implements Service<CoreGroupCo
     @Override
     public void stop(StopContext context) {
         this.service.stop();
+        // remove from registry
+        this.groupMembershipNotifierRegistry.getValue().unregisterGroupMembershipNotifier(this.service.getGroupName());
+    }
+
+    public Injector<GroupMembershipNotifierRegistry> getGroupMembershipNotifierRegistryInjector() {
+        return this.groupMembershipNotifierRegistry;
     }
 }

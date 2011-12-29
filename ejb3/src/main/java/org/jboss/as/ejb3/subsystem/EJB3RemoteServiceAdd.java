@@ -30,13 +30,17 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL_NAME;
 
+import javax.transaction.TransactionManager;
+import javax.transaction.UserTransaction;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import org.jboss.as.clustering.GroupMembershipNotifierRegistry;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.ejb3.cache.impl.backing.clustering.GroupMembershipNotifierRegistryService;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
@@ -48,9 +52,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
-
-import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
 
 /**
  * A {@link AbstractBoottimeAddStepHandler} to handle the add operation for the EJB
@@ -109,6 +110,7 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         ejbRemoteConnectorServiceBuilder.addDependency(EJB3ThreadPoolAdd.BASE_SERVICE_NAME.append(threadPoolName), ExecutorService.class, service.getExecutorService())
                 .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, service.getDeploymentRepositoryInjector())
                 .addDependency(EJBRemoteTransactionsRepository.SERVICE_NAME, EJBRemoteTransactionsRepository.class, service.getEJBRemoteTransactionsRepositoryInjector())
+                .addDependency(GroupMembershipNotifierRegistryService.SERVICE_NAME, GroupMembershipNotifierRegistry.class, service.getClusterRegistryInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE);
         if (verificationHandler != null) {
             ejbRemoteConnectorServiceBuilder.addListener(verificationHandler);

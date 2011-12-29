@@ -40,6 +40,7 @@ import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.util.TypedProperties;
 import org.jboss.as.clustering.CoreGroupCommunicationServiceService;
+import org.jboss.as.clustering.GroupMembershipNotifierRegistry;
 import org.jboss.as.clustering.HashableMarshalledValueFactory;
 import org.jboss.as.clustering.MarshalledValue;
 import org.jboss.as.clustering.MarshalledValueFactory;
@@ -54,6 +55,7 @@ import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.PassivationManager;
 import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreConfig;
 import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreSource;
+import org.jboss.as.ejb3.cache.impl.backing.clustering.GroupMembershipNotifierRegistryService;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStore;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStoreSource;
 import org.jboss.as.ejb3.cache.spi.SerializationGroup;
@@ -97,7 +99,11 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
             serviceName = serviceName.append(CacheContainer.DEFAULT_CACHE_NAME);
         }
         String container = serviceName.getParent().getSimpleName();
-        new CoreGroupCommunicationServiceService(SCOPE_ID).build(target, container).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        // install the GroupCommunicationService
+        final CoreGroupCommunicationServiceService groupCommunicationService = new CoreGroupCommunicationServiceService(SCOPE_ID);
+        groupCommunicationService.build(target, container).setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .addDependency(GroupMembershipNotifierRegistryService.SERVICE_NAME, GroupMembershipNotifierRegistry.class, groupCommunicationService.getGroupMembershipNotifierRegistryInjector())
+                .install();
         new SharedLocalYieldingClusterLockManagerService(container).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         builder.addDependency(serviceName, Cache.class, this.groupCache);
         builder.addDependency(SharedLocalYieldingClusterLockManagerService.getServiceName(container), SharedLocalYieldingClusterLockManager.class, this.lockManager);

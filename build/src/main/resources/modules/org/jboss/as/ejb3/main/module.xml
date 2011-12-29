@@ -39,6 +39,7 @@
         <module name="javax.rmi.api"/>
         <module name="org.hibernate"/>
         <module name="org.jacorb"/>
+        <module name="org.jboss.as.clustering.api"/>
         <module name="org.jboss.as.clustering.ejb3.infinispan" services="import" optional="true"/>
         <module name="org.jboss.as.controller"/>
         <!-- So we can access its integration API -->

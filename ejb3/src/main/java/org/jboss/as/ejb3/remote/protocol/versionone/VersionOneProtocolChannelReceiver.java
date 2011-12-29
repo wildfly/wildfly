@@ -28,6 +28,8 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
+import org.jboss.as.clustering.GroupMembershipNotifier;
+import org.jboss.as.clustering.GroupMembershipNotifierRegistry;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.DeploymentRepositoryListener;
@@ -43,7 +45,7 @@ import org.xnio.IoUtils;
 /**
  * @author Jaikiran Pai
  */
-public class VersionOneProtocolChannelReceiver implements Channel.Receiver, DeploymentRepositoryListener {
+public class VersionOneProtocolChannelReceiver implements Channel.Receiver, DeploymentRepositoryListener, GroupMembershipNotifierRegistry.Listener {
 
     /**
      * Logger
@@ -59,22 +61,21 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
     private static final byte HEADER_TX_BEFORE_COMPLETION_REQUEST = 0x13;
 
     private final Channel channel;
-
     private final DeploymentRepository deploymentRepository;
-
     private final EJBRemoteTransactionsRepository transactionsRepository;
-
     private final MarshallerFactory marshallerFactory;
-
     private final ExecutorService executorService;
+    private final GroupMembershipNotifierRegistry groupMembershipNotifierRegistry;
 
     public VersionOneProtocolChannelReceiver(final Channel channel, final DeploymentRepository deploymentRepository,
-                                             final EJBRemoteTransactionsRepository transactionsRepository, final MarshallerFactory marshallerFactory, final ExecutorService executorService) {
+                                             final EJBRemoteTransactionsRepository transactionsRepository, final GroupMembershipNotifierRegistry groupMembershipNotifierRegistry,
+                                             final MarshallerFactory marshallerFactory, final ExecutorService executorService) {
         this.marshallerFactory = marshallerFactory;
         this.channel = channel;
         this.executorService = executorService;
         this.deploymentRepository = deploymentRepository;
         this.transactionsRepository = transactionsRepository;
+        this.groupMembershipNotifierRegistry = groupMembershipNotifierRegistry;
     }
 
     public void startReceiving() {
@@ -83,6 +84,12 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         this.channel.receiveMessage(this);
         // listen to module availability/unavailability events
         this.deploymentRepository.addListener(this);
+        // listen to new clusters (a.k.a groups) being started/stopped
+        this.groupMembershipNotifierRegistry.addListener(this);
+        // TODO: Send the cluster topology for existing clusters in the registry
+        // and for each of these clusters added ourselves as a listener for cluster topology changes (members added/removed
+        // events in the cluster)
+        final Iterable<GroupMembershipNotifier> clusters = this.groupMembershipNotifierRegistry.getGroupMembershipNotifiers();
     }
 
     @Override
@@ -209,6 +216,16 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         } finally {
             outputStream.close();
         }
+    }
+
+    @Override
+    public void newGroupMembershipNotifierRegistered(GroupMembershipNotifier groupMembershipNotifier) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void groupMembershipNotifierUnregistered(GroupMembershipNotifier groupMembershipNotifier) {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     private class ChannelCloseHandler implements CloseHandler<Channel> {
