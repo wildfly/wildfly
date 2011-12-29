@@ -126,7 +126,7 @@ public class PropertiesCallbackHandler implements Service<DomainCallbackHandler>
                 long fileLastModified = propertiesFile.lastModified();
                 boolean loadReallyRequired = userProperties == null || fileUpdated != fileLastModified;
                 if (loadReallyRequired) {
-                    ROOT_LOGGER.debugf("Reloading properties file '%s%", propertiesFile.getAbsolutePath());
+                    ROOT_LOGGER.debugf("Reloading properties file '%s'", propertiesFile.getAbsolutePath());
                     Properties props = new Properties();
                     InputStream is = new FileInputStream(propertiesFile);
                     try {
