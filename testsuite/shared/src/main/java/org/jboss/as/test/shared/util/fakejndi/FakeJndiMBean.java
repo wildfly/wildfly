@@ -19,7 +19,8 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.smoke.embedded.demos.fakejndi;
+
+package org.jboss.as.test.shared.util.fakejndi;
 
 /**
  * MBean to do JNDI lookups on the server on client's behalf. Once remote JNDI is supported
