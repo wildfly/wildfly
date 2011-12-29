@@ -122,9 +122,9 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
                     throw new DeploymentUnitProcessingException("Could not determine type of ejb-ref " + name + " for component " + componentDescription);
                 }
                     if (!isEmpty(ejbName)) {
-                        bindingConfiguration = new BindingConfiguration(name, ejbInjectionSource = new EjbInjectionSource(ejbName, remoteInterfaceType.getName(), name, deploymentUnit));
+                        bindingConfiguration = new BindingConfiguration(name, ejbInjectionSource = new EjbInjectionSource(ejbName, remoteInterfaceType.getName(), name, deploymentUnit, appclient));
                     } else {
-                        bindingConfiguration = new BindingConfiguration(name, ejbInjectionSource = new EjbInjectionSource(remoteInterfaceType.getName(), name, deploymentUnit));
+                        bindingConfiguration = new BindingConfiguration(name, ejbInjectionSource = new EjbInjectionSource(remoteInterfaceType.getName(), name, deploymentUnit, appclient));
                     }
                 }
 
@@ -184,9 +184,9 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
                             bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(lookup));
                         }
                     } else if (!isEmpty(ejbName)) {
-                        bindingConfiguration = new BindingConfiguration(name, ejbInjectionSource = new EjbInjectionSource(ejbName, localInterfaceType.getName(), name, deploymentUnit));
+                        bindingConfiguration = new BindingConfiguration(name, ejbInjectionSource = new EjbInjectionSource(ejbName, localInterfaceType.getName(), name, deploymentUnit, appclient));
                     } else {
-                        bindingConfiguration = new BindingConfiguration(name, ejbInjectionSource = new EjbInjectionSource(localInterfaceType.getName(), name, deploymentUnit));
+                        bindingConfiguration = new BindingConfiguration(name, ejbInjectionSource = new EjbInjectionSource(localInterfaceType.getName(), name, deploymentUnit, appclient));
                     }
                     if (ejbInjectionSource != null) {
                         deploymentUnit.addToAttachmentList(EjbDeploymentAttachmentKeys.EJB_INJECTIONS, ejbInjectionSource);

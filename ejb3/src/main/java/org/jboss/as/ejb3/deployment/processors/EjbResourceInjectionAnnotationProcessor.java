@@ -36,6 +36,7 @@ import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.InjectionTarget;
 import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.ee.component.MethodInjectionTarget;
+import org.jboss.as.ee.component.OptionalLookupInjectionSource;
 import org.jboss.as.ee.component.ResourceInjectionConfiguration;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -60,10 +61,17 @@ import org.jboss.logging.Logger;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitProcessor {
+
     private static final DotName EJB_ANNOTATION_NAME = DotName.createSimple(EJB.class.getName());
     private static final DotName EJBS_ANNOTATION_NAME = DotName.createSimple(EJBs.class.getName());
 
+    private final boolean appclient;
+
     private static final Logger logger = Logger.getLogger(EjbResourceInjectionAnnotationProcessor.class);
+
+    public EjbResourceInjectionAnnotationProcessor(final boolean appclient) {
+        this.appclient = appclient;
+    }
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -150,19 +158,19 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
             if (!lookup.startsWith("java:")) {
                 valueSource = new EjbLookupInjectionSource(lookup, targetDescription.getDeclaredValueClassName());
             } else {
-                valueSource = new LookupInjectionSource(lookup);
+                valueSource = createLookup(lookup, appclient);
             }
         } else if (!isEmpty(beanName)) {
-            valueSource = ejbInjectionSource = new EjbInjectionSource(beanName, beanInterface, localContextName, deploymentUnit);
+            valueSource = ejbInjectionSource = new EjbInjectionSource(beanName, beanInterface, localContextName, deploymentUnit, appclient);
         } else {
-            valueSource = ejbInjectionSource = new EjbInjectionSource(beanInterface, localContextName, deploymentUnit);
+            valueSource = ejbInjectionSource = new EjbInjectionSource(beanInterface, localContextName, deploymentUnit, appclient);
         }
         if (ejbInjectionSource != null) {
             deploymentUnit.addToAttachmentList(EjbDeploymentAttachmentKeys.EJB_INJECTIONS, ejbInjectionSource);
         }
         // our injection comes from the local lookup, no matter what.
         final ResourceInjectionConfiguration injectionConfiguration = targetDescription != null ?
-                new ResourceInjectionConfiguration(targetDescription, new LookupInjectionSource(localContextName)) : null;
+                new ResourceInjectionConfiguration(targetDescription, createLookup(localContextName, appclient)) : null;
 
         // Create the binding from whence our injection comes.
         final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, valueSource);
@@ -170,6 +178,16 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
         classDescription.getBindingConfigurations().add(bindingConfiguration);
         if (injectionConfiguration != null) {
             classDescription.addResourceInjection(injectionConfiguration);
+        }
+    }
+
+    private InjectionSource createLookup(final String localContextName, final boolean appclient) {
+        //appclient lookups are always optional
+        //as they could reference local interfaces that are not present
+        if(appclient) {
+            return new OptionalLookupInjectionSource(localContextName);
+        } else {
+            return new LookupInjectionSource(localContextName);
         }
     }
 
