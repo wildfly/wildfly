@@ -44,6 +44,7 @@ import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.invocation.SimpleInterceptorFactoryContext;
 
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
@@ -111,12 +112,13 @@ public class EntityBeanComponent extends EJBComponent {
 
     @Override
     protected BasicComponentInstance instantiateComponentInstance(final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, final InterceptorFactoryContext interceptorContext) {
-        return new EntityBeanComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors, interceptorContext);
+        return new EntityBeanComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
     }
 
-    protected Interceptor createInterceptor(final InterceptorFactory factory, final InterceptorFactoryContext context) {
+    protected Interceptor createInterceptor(final InterceptorFactory factory) {
         if (factory == null)
             return null;
+        final InterceptorFactoryContext context = new SimpleInterceptorFactoryContext();
         context.getContextData().put(Component.class, this);
         return factory.create(context);
     }
