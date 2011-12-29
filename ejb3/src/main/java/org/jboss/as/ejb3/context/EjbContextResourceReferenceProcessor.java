@@ -31,13 +31,7 @@ public class EjbContextResourceReferenceProcessor implements EEResourceReference
 
     @Override
     public InjectionSource getResourceReferenceBindingSource() throws DeploymentUnitProcessingException {
-        return new InjectionSource() {
-
-            @Override
-            public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
-                injector.inject(ejbContextManagedReferenceFactory);
-            }
-        };
+        return new EjbContextInjectionSource();
     }
 
     private static final ManagedReference ejbContextManagedReference = new ManagedReference() {
@@ -54,4 +48,20 @@ public class EjbContextResourceReferenceProcessor implements EEResourceReference
             return ejbContextManagedReference;
         }
     };
+
+    private static class EjbContextInjectionSource extends InjectionSource {
+
+        @Override
+        public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
+            injector.inject(ejbContextManagedReferenceFactory);
+        }
+
+        public boolean equals(Object other) {
+            return other instanceof EjbContextInjectionSource;
+        }
+
+        public int hashCode() {
+            return 45647;
+        }
+    }
 }
