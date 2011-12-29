@@ -76,21 +76,6 @@ final class WebMetaDataCreator {
             jbossWebMD = new JBossWebMetaData();
             warMD.setMergedJBossWebMetaData(jbossWebMD);
             unit.putAttachment(WarMetaData.ATTACHMENT_KEY, warMD);
-
-
-            //merge security roles from the ear
-            //TODO: is there somewhere better to put this?
-            DeploymentUnit parent = unit.getParent();
-            if (parent != null) {
-                final EarMetaData earMetaData = parent.getAttachment(org.jboss.as.ee.structure.Attachments.EAR_METADATA);
-                if (earMetaData != null) {
-                    SecurityRolesMetaData earSecurityRolesMetaData = earMetaData.getSecurityRoles();
-                    if (earSecurityRolesMetaData != null) {
-                        jbossWebMD.setSecurityRoles(new SecurityRolesMetaData());
-                        SecurityRolesMetaDataMerger.merge(jbossWebMD.getSecurityRoles(), jbossWebMD.getSecurityRoles(), earSecurityRolesMetaData);
-                    }
-                }
-            }
         }
 
         createWebAppDescriptor(dep, jbossWebMD);
@@ -322,6 +307,24 @@ final class WebMetaDataCreator {
             if (hasSecurityRolesMD) {
                 ROOT_LOGGER.creatingSecurityRoles();
                 jbossWebMD.setSecurityRoles(securityRolesMD);
+            }
+        }
+
+        //merge security roles from the ear
+        //TODO: is there somewhere better to put this?
+        final DeploymentUnit unit = dep.getAttachment(DeploymentUnit.class);
+        DeploymentUnit parent = unit.getParent();
+        if (parent != null) {
+            final EarMetaData earMetaData = parent.getAttachment(org.jboss.as.ee.structure.Attachments.EAR_METADATA);
+            if (earMetaData != null) {
+                if (jbossWebMD.getSecurityRoles() == null) {
+                    jbossWebMD.setSecurityRoles(new SecurityRolesMetaData());
+                }
+
+                SecurityRolesMetaData earSecurityRolesMetaData = earMetaData.getSecurityRoles();
+                if (earSecurityRolesMetaData != null) {
+                    SecurityRolesMetaDataMerger.merge(jbossWebMD.getSecurityRoles(), jbossWebMD.getSecurityRoles(), earSecurityRolesMetaData);
+                }
             }
         }
     }
