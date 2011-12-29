@@ -39,6 +39,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
     private static final String SERVLET_INIT_PARAM = "javax.ws.rs.Application";
     public static final String RESTEASY_SCAN = "resteasy.scan";
     public static final String RESTEASY_SCAN_RESOURCES = "resteasy.scan.resources";
+    public static final String RESTEASY_SCAN_PROVIDERS = "resteasy.scan.providers";
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -76,6 +77,9 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
                 } else if (param.getParamName().equals(RESTEASY_SCAN_RESOURCES)) {
                     it.remove();
                     JAXRS_LOGGER.resteasyScanWarning(RESTEASY_SCAN_RESOURCES);
+                } else if (param.getParamName().equals(RESTEASY_SCAN_PROVIDERS)) {
+                    it.remove();
+                    JAXRS_LOGGER.resteasyScanWarning(RESTEASY_SCAN_PROVIDERS);
                 }
             }
         }
