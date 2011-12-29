@@ -1140,6 +1140,10 @@ public class JDBCMetaDataParser extends MetaDataElementParser {
                     fields.add(getElementText(reader));
                     break;
                 }
+                case DESCRIPTION: {
+                    getElementText(reader);
+                    break;
+                }                
                 default: {
                     throw unexpectedElement(reader);
                 }
