@@ -61,6 +61,7 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
     private final Collection<Interceptor> prePassivate;
     private final Collection<Interceptor> postActivate;
     private final Interceptor ejb2XRemoveInterceptor;
+    private volatile Map<Object, Object> serializableInterceptors;
 
     /**
      * Construct a new instance.
@@ -163,6 +164,14 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
         }
     }
 
+    public Map<Object, Object> getSerializableInterceptors() {
+        return serializableInterceptors;
+    }
+
+    public void setSerializableInterceptors(final Map<Object, Object> serializableInterceptors) {
+        this.serializableInterceptors = serializableInterceptors;
+    }
+
     @Override
     public StatefulSessionComponent getComponent() {
         return (StatefulSessionComponent) super.getComponent();
@@ -188,6 +197,6 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
     }
 
     public Object writeReplace() throws ObjectStreamException {
-        return new SerializedStatefulSessionComponent(getInstance(), id, getComponent().getCreateServiceName().getCanonicalName());
+        return new SerializedStatefulSessionComponent(getInstance(), id, getComponent().getCreateServiceName().getCanonicalName(), serializableInterceptors);
     }
 }

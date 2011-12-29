@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -67,6 +68,7 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
     private final InterceptorFactory ejb2XRemoveMethod;
     @SuppressWarnings("rawtypes")
     private final InjectedValue<CacheFactory> cacheFactory = new InjectedValue<CacheFactory>();
+    private final Set<Object> serializableInterceptorContextKeys;
 
     /**
      * Construct a new instance.
@@ -96,6 +98,7 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         this.marshallingConfiguration.setClassResolver(new SimpleClassResolver(componentConfiguration.getModuleClassLoder()));
         this.marshallingConfiguration.setObjectResolver(new StatefulSessionBeanObjectResolver());
         this.marshallingConfiguration.setClassTable(new StatefulSessionBeanClassTable(componentConfiguration.getComponentClass()));
+        this.serializableInterceptorContextKeys = componentConfiguration.getInterceptorContextKeys();
     }
 
     private static Collection<InterceptorFactory> createInterceptorFactories(Collection<Method> methods, InterceptorFactory... factories) {
@@ -174,6 +177,10 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
 
     public InterceptorFactory getEjb2XRemoveMethod() {
         return ejb2XRemoveMethod;
+    }
+
+    public Set<Object> getSerializableInterceptorContextKeys() {
+        return serializableInterceptorContextKeys;
     }
 
     @SuppressWarnings("unchecked")

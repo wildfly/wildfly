@@ -111,42 +111,42 @@ public class StatefulFailoverTestCase {
         String url2 = "http://127.0.0.1:8180/stateful/count";
 
         try {
-            assertQueryCount(1, client, url1);
-            assertQueryCount(2, client, url1);
+            assertQueryCount(101, client, url1);
+            assertQueryCount(202, client, url1);
 
             controller.start(CONTAINER2);
             deployer.deploy(DEPLOYMENT2);
 
-            assertQueryCount(3, client, url1);
-            assertQueryCount(4, client, url1);
+            assertQueryCount(303, client, url1);
+            assertQueryCount(404, client, url1);
 
-            assertQueryCount(5, client, url2);
-            assertQueryCount(6, client, url2);
+            assertQueryCount(505, client, url2);
+            assertQueryCount(606, client, url2);
 
             controller.stop(CONTAINER2);
 
-            assertQueryCount(7, client, url1);
-            assertQueryCount(8, client, url1);
+            assertQueryCount(707, client, url1);
+            assertQueryCount(808, client, url1);
 
             controller.start(CONTAINER2);
 
-            assertQueryCount(9, client, url1);
-            assertQueryCount(10, client, url1);
+            assertQueryCount(909, client, url1);
+            assertQueryCount(1010, client, url1);
 
-            assertQueryCount(11, client, url2);
-            assertQueryCount(12, client, url2);
+            assertQueryCount(1111, client, url2);
+            assertQueryCount(1212, client, url2);
 
             controller.stop(CONTAINER1);
-            assertQueryCount(13, client, url2);
-            assertQueryCount(14, client, url2);
+            assertQueryCount(1313, client, url2);
+            assertQueryCount(1414, client, url2);
             
             controller.start(CONTAINER1);
 
-            assertQueryCount(15, client, url1);
-            assertQueryCount(16, client, url1);
+            assertQueryCount(1515, client, url1);
+            assertQueryCount(1616, client, url1);
 
-            assertQueryCount(17, client, url1);
-            assertQueryCount(18, client, url1);
+            assertQueryCount(1717, client, url1);
+            assertQueryCount(1818, client, url1);
         } finally {
             client.getConnectionManager().shutdown();
 
@@ -170,43 +170,43 @@ public class StatefulFailoverTestCase {
         String url2 = "http://127.0.0.1:8180/stateful/count";
 
         try {
-            assertQueryCount(1, client, url1);
-            assertQueryCount(2, client, url1);
+            assertQueryCount(101, client, url1);
+            assertQueryCount(202, client, url1);
 
             controller.start(CONTAINER2);
             deployer.deploy(DEPLOYMENT2);
 
-            assertQueryCount(3, client, url1);
-            assertQueryCount(4, client, url1);
+            assertQueryCount(303, client, url1);
+            assertQueryCount(404, client, url1);
 
-            assertQueryCount(5, client, url2);
-            assertQueryCount(6, client, url2);
+            assertQueryCount(505, client, url2);
+            assertQueryCount(606, client, url2);
 
             deployer.undeploy(DEPLOYMENT2);
 
-            assertQueryCount(7, client, url1);
-            assertQueryCount(8, client, url1);
+            assertQueryCount(707, client, url1);
+            assertQueryCount(808, client, url1);
 
             deployer.deploy(DEPLOYMENT2);
 
-            assertQueryCount(9, client, url1);
-            assertQueryCount(10, client, url1);
+            assertQueryCount(909, client, url1);
+            assertQueryCount(1010, client, url1);
 
-            assertQueryCount(11, client, url2);
-            assertQueryCount(12, client, url2);
+            assertQueryCount(1111, client, url2);
+            assertQueryCount(1212, client, url2);
 
             deployer.undeploy(DEPLOYMENT1);
 
-            assertQueryCount(13, client, url2);
-            assertQueryCount(14, client, url2);
+            assertQueryCount(1313, client, url2);
+            assertQueryCount(1414, client, url2);
             
             deployer.deploy(DEPLOYMENT1);
 
-            assertQueryCount(15, client, url1);
-            assertQueryCount(16, client, url1);
+            assertQueryCount(1515, client, url1);
+            assertQueryCount(1616, client, url1);
 
-            assertQueryCount(17, client, url2);
-            assertQueryCount(18, client, url2);
+            assertQueryCount(1717, client, url2);
+            assertQueryCount(1818, client, url2);
         } finally {
             client.getConnectionManager().shutdown();
 

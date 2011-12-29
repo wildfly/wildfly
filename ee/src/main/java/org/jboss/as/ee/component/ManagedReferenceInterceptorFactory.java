@@ -22,8 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.naming.ManagedReference;
@@ -33,10 +31,12 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 /**
  * An interceptor factory which gets an object instance from a managed resource.  A reference to the resource will be
  * attached to the given factory context key; the resource should be retained and passed to an instance of {@link
- * org.jboss.as.ee.component.ManagedReferenceReleaseInterceptor} which is run during destruction.
+ * org.jboss.as.ee.component.ManagedReferenceReleaseInterceptorFactory} which is run during destruction.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -66,8 +66,11 @@ class ManagedReferenceInterceptorFactory implements InterceptorFactory {
      * {@inheritDoc}
      */
     public Interceptor create(final InterceptorFactoryContext context) {
-        final AtomicReference<ManagedReference> referenceReference = new AtomicReference<ManagedReference>();
-        context.getContextData().put(contextKey, referenceReference);
+        AtomicReference<ManagedReference> referenceReference = (AtomicReference<ManagedReference>) context.getContextData().get(contextKey);
+        if (referenceReference == null) {
+            referenceReference = new AtomicReference<ManagedReference>();
+            context.getContextData().put(contextKey, referenceReference);
+        }
         return new ManagedReferenceInterceptor(componentInstantiation, referenceReference);
     }
 

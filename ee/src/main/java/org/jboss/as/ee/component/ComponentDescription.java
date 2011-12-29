@@ -623,6 +623,7 @@ public class ComponentDescription {
 
                 //we store the interceptor instance under the class key
                 final Object contextKey = interceptorClass.getModuleClass();
+                configuration.getInterceptorContextKeys().add(contextKey);
 
                 final ClassReflectionIndex<?> interceptorIndex = deploymentReflectionIndex.getClassIndex(interceptorClass.getModuleClass());
                 final Constructor<?> constructor = interceptorIndex.getConstructor(EMPTY_CLASS_ARRAY);
