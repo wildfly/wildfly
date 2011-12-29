@@ -101,7 +101,7 @@ public class ManagementHttpServer {
         }
     }
 
-    public static ManagementHttpServer create(InetSocketAddress bindAddress, InetSocketAddress secureBindAddress, int backlog, ModelControllerClient modelControllerClient, Executor executor, SecurityRealm securityRealm, ConsoleMode consoleMode)
+    public static ManagementHttpServer create(InetSocketAddress bindAddress, InetSocketAddress secureBindAddress, int backlog, ModelControllerClient modelControllerClient, Executor executor, SecurityRealm securityRealm, ConsoleMode consoleMode, String consoleSlot)
             throws IOException {
         Map<String, String> configuration = new HashMap<String, String>(1);
         configuration.put("sun.net.httpserver.maxReqTime", "15"); // HTTP Server to close connections if initial request not received within 15 seconds.
@@ -172,7 +172,7 @@ public class ManagementHttpServer {
         ManagementHttpServer managementHttpServer = new ManagementHttpServer(httpServer, secureHttpServer, securityRealm);
         ResourceHandler consoleHandler;
         try {
-            consoleHandler = consoleMode.createConsoleHandler();
+            consoleHandler = consoleMode.createConsoleHandler(consoleSlot);
         } catch (ModuleLoadException e) {
             throw new IOException("Unable to load resource handler", e);
         }
@@ -183,7 +183,7 @@ public class ManagementHttpServer {
         }
 
         try {
-            managementHttpServer.addHandler(new ErrorHandler());
+            managementHttpServer.addHandler(new ErrorHandler(consoleSlot));
         } catch (ModuleLoadException e) {
             throw new IOException("Unable to load resource handler", e);
         }

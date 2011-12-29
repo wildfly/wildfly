@@ -24,6 +24,7 @@ package org.jboss.as.server;
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.persistence.ConfigurationFile;
+import org.jboss.as.version.ProductConfig;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -215,9 +216,10 @@ public class ServerEnvironment implements Serializable {
     private final boolean standalone;
     private final boolean allowModelControllerExecutor;
     private final RunningMode initialRunningMode;
+    private final ProductConfig productConfig;
 
     public ServerEnvironment(final String hostControllerName, final Properties props, final Map<String, String> env, final String serverConfig,
-                             final LaunchType launchType, final RunningMode initialRunningMode) {
+                             final LaunchType launchType, final RunningMode initialRunningMode, ProductConfig productConfig) {
         if (props == null) {
             throw ControllerMessages.MESSAGES.nullVar("props");
         }
@@ -358,6 +360,8 @@ public class ServerEnvironment implements Serializable {
             }
         }
         allowModelControllerExecutor = allowExecutor;
+
+        this.productConfig = productConfig;
     }
 
     void install() {
@@ -492,6 +496,10 @@ public class ServerEnvironment implements Serializable {
     // package protected for now as this is not a stable API
     boolean isAllowModelControllerExecutor() {
         return allowModelControllerExecutor;
+    }
+
+    public ProductConfig getProductConfig() {
+        return productConfig;
     }
 
     /**

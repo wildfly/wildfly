@@ -24,7 +24,6 @@ package org.jboss.as.host.controller;
 
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
-import static org.jboss.as.process.Main.getVersionString;
 import static org.jboss.as.process.Main.usage;
 
 import java.io.File;
@@ -43,10 +42,12 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.ExitCodes;
 import org.jboss.as.process.protocol.StreamUtils;
+import org.jboss.as.version.ProductConfig;
 import org.jboss.logging.MDC;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
 import org.jboss.logmanager.handlers.ConsoleHandler;
+import org.jboss.modules.Module;
 import org.jboss.stdio.LoggingOutputStream;
 import org.jboss.stdio.NullInputStream;
 import org.jboss.stdio.SimpleStdioContextSelector;
@@ -156,7 +157,6 @@ public final class Main {
         Integer pmPort = null;
         InetAddress pmAddress = null;
         final PCSocketConfig pcSocketConfig = new PCSocketConfig();
-        final String procName = "Host Controller";   // final because we have no proper support for changing it
         String defaultJVM = null;
         boolean isRestart = false;
         boolean backupDomainFiles = false;
@@ -165,6 +165,8 @@ public final class Main {
         String hostConfig = null;
         RunningMode initialRunningMode = RunningMode.NORMAL;
         Map<String, String> hostSystemProperties = new HashMap<String, String>();
+        ProductConfig productConfig;
+
 
         final int argsLength = args.length;
         for (int i = 0; i < argsLength; i++) {
@@ -173,7 +175,8 @@ public final class Main {
             try {
                 if (CommandLineConstants.VERSION.equals(arg) || CommandLineConstants.SHORT_VERSION.equals(arg)
                         || CommandLineConstants.OLD_VERSION.equals(arg) || CommandLineConstants.OLD_SHORT_VERSION.equals(arg)) {
-                    System.out.println("JBoss Application Server " + getVersionString());
+                    productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty(HostControllerEnvironment.HOME_DIR));
+                    System.out.println(productConfig.getPrettyVersionString());
                     return null;
                 } else if (CommandLineConstants.HELP.equals(arg) || CommandLineConstants.SHORT_HELP.equals(arg) || CommandLineConstants.OLD_HELP.equals(arg)) {
                     usage();
@@ -380,9 +383,10 @@ public final class Main {
             }
         }
 
+        productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty(HostControllerEnvironment.HOME_DIR));
         return new HostControllerEnvironment(hostSystemProperties, isRestart,  stdin, stdout, stderr, pmAddress, pmPort,
                 pcSocketConfig.getBindAddress(), pcSocketConfig.getBindPort(), defaultJVM,
-                domainConfig, hostConfig, initialRunningMode, backupDomainFiles, cachedDc);
+                domainConfig, hostConfig, initialRunningMode, backupDomainFiles, cachedDc, productConfig);
     }
 
     private static String parseValue(final String arg, final String key) {

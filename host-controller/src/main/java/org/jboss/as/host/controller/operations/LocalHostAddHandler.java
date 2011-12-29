@@ -36,6 +36,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.host.controller.HostControllerService;
 import org.jboss.as.host.controller.HostModelUtil;
 import org.jboss.as.platform.mbean.PlatformMBeanConstants;
 import org.jboss.as.platform.mbean.RootPlatformMBeanResource;
@@ -76,7 +77,11 @@ public class LocalHostAddHandler implements OperationStepHandler, DescriptionPro
 
         final Resource rootResource = context.createResource(PathAddress.EMPTY_ADDRESS);
         final ModelNode model = rootResource.getModel();
-        HostModelUtil.initCoreModel(model);
+
+
+        // TODO Revisit this
+        HostControllerService service = (HostControllerService) context.getServiceRegistry(false).getRequiredService(HostControllerService.HC_SERVICE_NAME).getService();
+        HostModelUtil.initCoreModel(model, service.getEnvironment());
 
         // Create the empty management security resources
         context.createResource(PathAddress.pathAddress(PathElement.pathElement(CORE_SERVICE, MANAGEMENT)));

@@ -163,6 +163,8 @@ public class ModelDescriptionConstants {
     public static final String PRIORITY = "priority";
     public static final String PROCESS_TYPE = "process-type";
     public static final String PROCESS_STATE = "process-state";
+    public static final String PRODUCT_NAME = "product-name";
+    public static final String PRODUCT_VERSION = "product-version";
     public static final String PROFILE = "profile";
     public static final String PROFILE_NAME = "profile-name";
     public static final String PROPERTIES = "properties";

@@ -47,8 +47,8 @@ class ErrorHandler extends ResourceHandler {
         }
     }
 
-    ErrorHandler() throws ModuleLoadException {
-        super(ERROR_CONTEXT, DEFAULT_RESOURCE, getClassLoader(ERROR_MODULE));
+    ErrorHandler(String slot) throws ModuleLoadException {
+        super(ERROR_CONTEXT, DEFAULT_RESOURCE, getClassLoader(ERROR_MODULE, slot));
     }
 
     @Override

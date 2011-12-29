@@ -39,9 +39,11 @@ import java.util.logging.Logger;
 import javax.net.ServerSocketFactory;
 
 import org.jboss.as.process.protocol.ProtocolServer;
+import org.jboss.as.version.ProductConfig;
 import org.jboss.as.version.Version;
 import org.jboss.logging.MDC;
 import org.jboss.logmanager.handlers.ConsoleHandler;
+import org.jboss.modules.Module;
 import org.jboss.threads.JBossThreadFactory;
 
 /**
@@ -120,7 +122,7 @@ public final class Main {
                                 return null;
                             } else if (CommandLineConstants.VERSION.equals(arg) || CommandLineConstants.SHORT_VERSION.equals(arg)
                                     || CommandLineConstants.OLD_VERSION.equals(arg) || CommandLineConstants.OLD_SHORT_VERSION.equals(arg)) {
-                                System.out.println("\nJBoss Application Server " + getVersionString());
+                                System.out.println(new ProductConfig(Module.getBootModuleLoader(), jbossHome).getPrettyVersionString());
                                 return null;
                             } else if (pcSocketConfig.processPCSocketConfigArgument(arg, args, i)) {
                                 if (pcSocketConfig.isParseFailed()) {

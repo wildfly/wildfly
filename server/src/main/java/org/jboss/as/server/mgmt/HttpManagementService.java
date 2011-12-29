@@ -65,6 +65,7 @@ public class HttpManagementService implements Service<HttpManagement> {
     private final InjectedValue<ExecutorService> executorServiceValue = new InjectedValue<ExecutorService>();
     private final InjectedValue<SecurityRealmService> securityRealmServiceValue = new InjectedValue<SecurityRealmService>();
     private final ConsoleMode consoleMode;
+    private final String consoleSlot;
     private ManagementHttpServer serverManagement;
     private SocketBindingManager socketBindingManager;
     private boolean useUnmanagedBindings = false;
@@ -115,16 +116,9 @@ public class HttpManagementService implements Service<HttpManagement> {
         }
     };
 
-    public HttpManagementService(ConsoleMode consoleMode) {
+    public HttpManagementService(ConsoleMode consoleMode, String consoleSlot) {
         this.consoleMode = consoleMode;
-    }
-
-    public HttpManagementService createForStandalone(RunningMode runningMode) {
-        return new HttpManagementService(runningMode == RunningMode.ADMIN_ONLY ? ConsoleMode.ADMIN_ONLY : ConsoleMode.CONSOLE);
-    }
-
-    public HttpManagementService createForHost(RunningMode runningMode) {
-        return new HttpManagementService(runningMode == RunningMode.ADMIN_ONLY ? ConsoleMode.ADMIN_ONLY : ConsoleMode.CONSOLE);
+        this.consoleSlot = consoleSlot;
     }
 
     /**
@@ -167,7 +161,7 @@ public class HttpManagementService implements Service<HttpManagement> {
         }
 
         try {
-            serverManagement = ManagementHttpServer.create(bindAddress, secureBindAddress, 50, modelControllerClient, executorService, securityRealmService, consoleMode);
+            serverManagement = ManagementHttpServer.create(bindAddress, secureBindAddress, 50, modelControllerClient, executorService, securityRealmService, consoleMode, consoleSlot);
             serverManagement.start();
 
             // Register the now-created sockets with the SBM

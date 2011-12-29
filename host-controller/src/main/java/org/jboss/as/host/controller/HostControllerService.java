@@ -42,7 +42,6 @@ import org.jboss.as.server.BootstrapListener;
 import org.jboss.as.server.FutureServiceContainer;
 import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.threads.ThreadFactoryService;
-import org.jboss.as.version.Version;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
@@ -63,7 +62,7 @@ import org.jboss.threads.AsyncFuture;
  */
 public class HostControllerService implements Service<AsyncFuture<ServiceContainer>> {
 
-    static final ServiceName HC_SERVICE_NAME = ServiceName.JBOSS.append("host", "controller");
+    public static final ServiceName HC_SERVICE_NAME = ServiceName.JBOSS.append("host", "controller");
     static final ServiceName HC_EXECUTOR_SERVICE_NAME = HC_SERVICE_NAME.append("executor");
     static final int DEFAULT_POOL_SIZE = 20;
 
@@ -87,7 +86,8 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
 
         processState.setStarting();
 
-        AS_ROOT_LOGGER.serverStarting(Version.AS_VERSION, Version.AS_RELEASE_CODENAME);
+        String prettyVersion = environment.getProductConfig().getPrettyVersionString();
+        AS_ROOT_LOGGER.serverStarting(prettyVersion);
         if (CONFIG_LOGGER.isDebugEnabled()) {
             final Properties properties = System.getProperties();
             final StringBuilder b = new StringBuilder(8192);
@@ -119,7 +119,7 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
             this.startTime = -1;
         }
 
-        final BootstrapListener bootstrapListener = new BootstrapListener(serviceContainer, startTime, serviceTarget, futureContainer,  "JBoss AS (Host Controller)");
+        final BootstrapListener bootstrapListener = new BootstrapListener(serviceContainer, startTime, serviceTarget, futureContainer,  prettyVersion + " (Host Controller)");
         serviceTarget.addListener(ServiceListener.Inheritance.ALL, bootstrapListener);
         myController.addListener(bootstrapListener);
 
@@ -151,13 +151,18 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
 
     @Override
     public void stop(StopContext context) {
+        String prettyVersion = environment.getProductConfig().getPrettyVersionString();
         processState.setStopping();
-        AS_ROOT_LOGGER.serverStopped(Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Integer.valueOf((int) (context.getElapsedTime() / 1000000L)));
+        AS_ROOT_LOGGER.serverStopped(prettyVersion, Integer.valueOf((int) (context.getElapsedTime() / 1000000L)));
     }
 
     @Override
     public AsyncFuture<ServiceContainer> getValue() throws IllegalStateException, IllegalArgumentException {
         return futureContainer;
+    }
+
+    public HostControllerEnvironment getEnvironment() {
+        return environment;
     }
 
     private String getVMArguments() {
