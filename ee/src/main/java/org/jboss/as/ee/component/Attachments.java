@@ -24,6 +24,7 @@ package org.jboss.as.ee.component;
 
 import java.util.Set;
 
+import org.jboss.as.ee.component.deployers.EEResourceReferenceProcessorRegistry;
 import org.jboss.as.ee.component.deployers.MessageDestinationInjectionSource;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
@@ -75,5 +76,7 @@ public class Attachments {
      */
     public static final AttachmentKey<AttachmentList<MessageDestinationInjectionSource>> MESSAGE_DESTINATIONS = AttachmentKey.createList(MessageDestinationInjectionSource.class);
 
+
+    public static final AttachmentKey<EEResourceReferenceProcessorRegistry> RESOURCE_REFERENCE_PROCESSOR_REGISTRY = AttachmentKey.create(EEResourceReferenceProcessorRegistry.class);
 
 }

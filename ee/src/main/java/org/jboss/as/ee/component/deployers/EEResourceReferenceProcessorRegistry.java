@@ -22,19 +22,19 @@
 
 package org.jboss.as.ee.component.deployers;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * User: jpai
  */
 public class EEResourceReferenceProcessorRegistry {
 
-    private static final Map<String, EEResourceReferenceProcessor> resourceReferenceProcessors = new ConcurrentHashMap<String, EEResourceReferenceProcessor>();
+    private final Map<String, EEResourceReferenceProcessor> resourceReferenceProcessors = new ConcurrentHashMap<String, EEResourceReferenceProcessor>();
 
-    public static void registerResourceReferenceProcessor(final EEResourceReferenceProcessor resourceReferenceProcessor) {
+    public void registerResourceReferenceProcessor(final EEResourceReferenceProcessor resourceReferenceProcessor) {
         if (resourceReferenceProcessor == null) {
             throw MESSAGES.nullResourceReference();
         }
@@ -45,17 +45,7 @@ public class EEResourceReferenceProcessorRegistry {
         resourceReferenceProcessors.put(resourceReferenceType, resourceReferenceProcessor);
     }
 
-    public static void unregisterResourceReferenceProcessor(final String resourceReferenceType) {
-        if (resourceReferenceType == null || resourceReferenceType.trim().isEmpty()) {
-            throw MESSAGES.nullOrEmptyResourceReferenceType();
-        }
-        if (!resourceReferenceProcessors.containsKey(resourceReferenceType)) {
-            throw MESSAGES.resourceReferenceNotRegistered(resourceReferenceType);
-        }
-        resourceReferenceProcessors.remove(resourceReferenceType);
-    }
-
-    public static EEResourceReferenceProcessor getResourceReferenceProcessor(final String resourceReferenceType) {
+    public EEResourceReferenceProcessor getResourceReferenceProcessor(final String resourceReferenceType) {
         return resourceReferenceProcessors.get(resourceReferenceType);
     }
 

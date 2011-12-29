@@ -22,8 +22,6 @@
 
 package org.jboss.as.webservices.dmr;
 
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
-
 import java.util.List;
 
 import org.jboss.as.ee.component.deployers.EEResourceReferenceProcessorRegistry;
@@ -40,12 +38,15 @@ import org.jboss.as.webservices.deployers.WSIntegrationProcessorJAXWS_JMS;
 import org.jboss.as.webservices.deployers.WSIntegrationProcessorJAXWS_POJO;
 import org.jboss.as.webservices.deployers.WSModelDeploymentProcessor;
 import org.jboss.as.webservices.deployers.WebServiceContextResourceProcessor;
+import org.jboss.as.webservices.deployers.WebServicesContextJndiSetupProcessor;
 import org.jboss.as.webservices.deployers.WebservicesDescriptorDeploymentProcessor;
 import org.jboss.as.webservices.deployers.deployment.DeploymentAspectsProvider;
 import org.jboss.as.webservices.injection.WSHandlerChainAnnotationProcessor;
 import org.jboss.as.webservices.webserviceref.WSRefAnnotationProcessor;
 import org.jboss.as.webservices.webserviceref.WSRefDDProcessor;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
+
+import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 
 /**
  * @author alessio.soldano@jboss.com
@@ -54,13 +55,10 @@ import org.jboss.wsf.spi.deployment.DeploymentAspect;
 final class WSDeploymentActivator {
 
     static void activate(final DeploymentProcessorTarget processorTarget, final boolean appclient) {
-        // Add a EEResourceReferenceProcessor which handles @Resource references of type WebServiceContext.
-        // Note that we do it here instead of a DUP because the @Resource reference processor for WebServiceContext *isn't*
-        // per DU
-        EEResourceReferenceProcessorRegistry.registerResourceReferenceProcessor(new WebServiceContextResourceProcessor());
         processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WS_REF_DESCRIPTOR, new WSRefDDProcessor());
         processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WS_REF_ANNOTATION, new WSRefAnnotationProcessor());
         if (!appclient) {
+            processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEBSERVICES_CONTEXT_INJECTION, new WebServicesContextJndiSetupProcessor());
             processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEBSERVICES_XML, new WebservicesDescriptorDeploymentProcessor());
             processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JBOSS_WEBSERVICES_XML, new JBossWebservicesDescriptorDeploymentProcessor());
             processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JAXWS_EJB_INTEGRATION, new WSIntegrationProcessorJAXWS_EJB());

@@ -69,15 +69,17 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
     protected List<BindingConfiguration> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
         List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
         bindings.addAll(getEnvironmentEntries(environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription, applicationClasses));
-        bindings.addAll(getResourceEnvRefEntries(environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription, applicationClasses));
-        bindings.addAll(getResourceRefEntries(environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription, applicationClasses));
+        bindings.addAll(getResourceEnvRefEntries(deploymentUnit, environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription, applicationClasses));
+        bindings.addAll(getResourceRefEntries(deploymentUnit, environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription, applicationClasses));
         bindings.addAll(getMessageDestinationRefs(environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription, applicationClasses, deploymentUnit));
         return bindings;
     }
 
-    private List<BindingConfiguration> getResourceEnvRefEntries(final DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, ComponentDescription componentDescription, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
+    private List<BindingConfiguration> getResourceEnvRefEntries(final DeploymentUnit deploymentUnit, final DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, ComponentDescription componentDescription, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
         List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
         final ResourceEnvironmentReferencesMetaData resourceEnvRefs = environment.getEnvironment().getResourceEnvironmentReferences();
+        final EEResourceReferenceProcessorRegistry registry = deploymentUnit.getAttachment(Attachments.RESOURCE_REFERENCE_PROCESSOR_REGISTRY);
+
         if (resourceEnvRefs == null) {
             return bindings;
         }
@@ -113,7 +115,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                     bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(lookup));
                 } else {
 
-                    final EEResourceReferenceProcessor resourceReferenceProcessor = EEResourceReferenceProcessorRegistry.getResourceReferenceProcessor(classType.getName());
+                    final EEResourceReferenceProcessor resourceReferenceProcessor = registry.getResourceReferenceProcessor(classType.getName());
                     if (resourceReferenceProcessor != null) {
                         InjectionSource valueSource = resourceReferenceProcessor.getResourceReferenceBindingSource();
                         bindingConfiguration = new BindingConfiguration(name, valueSource);
@@ -133,8 +135,10 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
         return bindings;
     }
 
-    private List<BindingConfiguration> getResourceRefEntries(DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, ComponentDescription componentDescription, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
+    private List<BindingConfiguration> getResourceRefEntries(final DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, ComponentDescription componentDescription, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
         List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
+
+        final EEResourceReferenceProcessorRegistry registry = deploymentUnit.getAttachment(Attachments.RESOURCE_REFERENCE_PROCESSOR_REGISTRY);
         final ResourceReferencesMetaData resourceRefs = environment.getEnvironment().getResourceReferences();
         if (resourceRefs == null) {
             return bindings;
@@ -205,7 +209,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                 if (lookup != null) {
                     bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(lookup));
                 } else {
-                    final EEResourceReferenceProcessor resourceReferenceProcessor = EEResourceReferenceProcessorRegistry.getResourceReferenceProcessor(classType.getName());
+                    final EEResourceReferenceProcessor resourceReferenceProcessor = registry.getResourceReferenceProcessor(classType.getName());
                     if (resourceReferenceProcessor != null) {
                         InjectionSource valueSource = resourceReferenceProcessor.getResourceReferenceBindingSource();
                         bindingConfiguration = new BindingConfiguration(name, valueSource);

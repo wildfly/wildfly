@@ -210,6 +210,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
     }
 
     protected void process(final DeploymentPhaseContext phaseContext, final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final String injectionType, final String localContextName, final InjectionTarget targetDescription, final EEModuleDescription eeModuleDescription, final Module module, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
+        final EEResourceReferenceProcessorRegistry registry = phaseContext.getDeploymentUnit().getAttachment(Attachments.RESOURCE_REFERENCE_PROCESSOR_REGISTRY);
         final AnnotationValue lookupAnnotation = annotation.value("lookup");
         String lookup = lookupAnnotation == null ? null : lookupAnnotation.asString();
         // if "lookup" hasn't been specified then fallback on "mappedName" which we treat the same as "lookup"
@@ -239,7 +240,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
             //otherwise we just try and handle it
             //if we don't have a value source we will try and inject from a lookup
             //and the user has to configure the value in a deployment descriptor
-            final EEResourceReferenceProcessor resourceReferenceProcessor = EEResourceReferenceProcessorRegistry.getResourceReferenceProcessor(injectionType);
+            final EEResourceReferenceProcessor resourceReferenceProcessor = registry.getResourceReferenceProcessor(injectionType);
             if (resourceReferenceProcessor != null) {
                 valueSource = resourceReferenceProcessor.getResourceReferenceBindingSource();
             }

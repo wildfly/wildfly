@@ -30,8 +30,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.ee.beanvalidation.BeanValidationFactoryDeployer;
-import org.jboss.as.ee.beanvalidation.BeanValidationFactoryResourceReferenceProcessor;
-import org.jboss.as.ee.beanvalidation.BeanValidationResourceReferenceProcessor;
 import org.jboss.as.ee.component.deployers.ApplicationClassesAggregationProcessor;
 import org.jboss.as.ee.component.deployers.AroundInvokeAnnotationParsingProcessor;
 import org.jboss.as.ee.component.deployers.ComponentInstallProcessor;
@@ -42,7 +40,6 @@ import org.jboss.as.ee.component.deployers.EEDistinctNameProcessor;
 import org.jboss.as.ee.component.deployers.EEModuleConfigurationProcessor;
 import org.jboss.as.ee.component.deployers.EEModuleInitialProcessor;
 import org.jboss.as.ee.component.deployers.EEModuleNameProcessor;
-import org.jboss.as.ee.component.deployers.EEResourceReferenceProcessorRegistry;
 import org.jboss.as.ee.component.deployers.EarApplicationNameProcessor;
 import org.jboss.as.ee.component.deployers.EarMessageDestinationProcessor;
 import org.jboss.as.ee.component.deployers.InterceptorAnnotationProcessor;
@@ -51,6 +48,7 @@ import org.jboss.as.ee.component.deployers.MessageDestinationResolutionProcessor
 import org.jboss.as.ee.component.deployers.ModuleJndiBindingProcessor;
 import org.jboss.as.ee.component.deployers.ResourceInjectionAnnotationParsingProcessor;
 import org.jboss.as.ee.component.deployers.ResourceReferenceProcessor;
+import org.jboss.as.ee.component.deployers.ResourceReferenceRegistrySetupProcessor;
 import org.jboss.as.ee.datasource.DataSourceDefinitionAnnotationParser;
 import org.jboss.as.ee.datasource.DataSourceDefinitionDeploymentDescriptorParser;
 import org.jboss.as.ee.managedbean.processors.JavaEEDependencyProcessor;
@@ -110,10 +108,6 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addListener(verificationHandler)
                 .install();
 
-
-        EEResourceReferenceProcessorRegistry.registerResourceReferenceProcessor(BeanValidationFactoryResourceReferenceProcessor.INSTANCE);
-        EEResourceReferenceProcessorRegistry.registerResourceReferenceProcessor(BeanValidationResourceReferenceProcessor.INSTANCE);
-
         final ModelNode globalModules = GlobalModulesDefinition.INSTANCE.resolveModelAttribute(context, model);
         // see if the ear subdeployment isolation flag is set. By default, we don't isolate subdeployments, so that
         // they can see each other's classes.
@@ -135,6 +129,7 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_APPLICATION_CLIENT_IN_EAR, new ApplicationClientDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_MANAGED_BEAN_JAR_IN_EAR, new ManagedBeanSubDeploymentMarkingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EE_MODULE_INIT, new EEModuleInitialProcessor());
+                processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EE_RESOURCE_INJECTION_REGISTRY, new ResourceReferenceRegistrySetupProcessor());
 
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EE_MODULE_NAME, new EEModuleNameProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EE_ANNOTATIONS, new EEAnnotationProcessor());

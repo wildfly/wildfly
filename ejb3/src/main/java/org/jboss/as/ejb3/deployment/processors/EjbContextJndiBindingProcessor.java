@@ -22,19 +22,29 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import java.util.Collection;
+
+import javax.ejb.EJBContext;
+import javax.ejb.EntityContext;
+import javax.ejb.MessageDrivenContext;
+import javax.ejb.SessionContext;
+
+import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InjectionSource;
-import org.jboss.as.ee.component.deployers.AbstractComponentConfigProcessor;
+import org.jboss.as.ee.component.deployers.EEResourceReferenceProcessorRegistry;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
+import org.jboss.as.ejb3.context.EjbContextResourceReferenceProcessor;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
@@ -45,7 +55,42 @@ import org.jboss.msc.service.ServiceBuilder;
  *
  * @author John Bailey
  */
-public class EjbContextJndiBindingProcessor extends AbstractComponentConfigProcessor {
+public class EjbContextJndiBindingProcessor implements DeploymentUnitProcessor {
+
+    /**
+     * {@inheritDoc} *
+     */
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final EEResourceReferenceProcessorRegistry registry = deploymentUnit.getAttachment(Attachments.RESOURCE_REFERENCE_PROCESSOR_REGISTRY);
+
+        //setup ejb context jndi handlers
+        registry.registerResourceReferenceProcessor(new EjbContextResourceReferenceProcessor(EJBContext.class));
+        registry.registerResourceReferenceProcessor(new EjbContextResourceReferenceProcessor(SessionContext.class));
+        registry.registerResourceReferenceProcessor(new EjbContextResourceReferenceProcessor(EntityContext.class));
+        registry.registerResourceReferenceProcessor(new EjbContextResourceReferenceProcessor(MessageDrivenContext.class));
+
+
+        final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+        final Collection<ComponentDescription> componentConfigurations = eeModuleDescription.getComponentDescriptions();
+        if (componentConfigurations == null || componentConfigurations.isEmpty()) {
+            return;
+        }
+
+        for (ComponentDescription componentConfiguration : componentConfigurations) {
+            final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
+            if (index != null) {
+                processComponentConfig(deploymentUnit, phaseContext, index, componentConfiguration);
+            }
+        }
+    }
+
+    @Override
+    public void undeploy(final DeploymentUnit context) {
+
+    }
+
+
     protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
         if (!(componentDescription instanceof EJBComponentDescription)) {
             return;  // Only process EJBs

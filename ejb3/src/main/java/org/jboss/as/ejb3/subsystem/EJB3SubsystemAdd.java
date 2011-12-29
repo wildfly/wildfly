@@ -24,10 +24,6 @@ package org.jboss.as.ejb3.subsystem;
 
 import java.util.List;
 
-import javax.ejb.EJBContext;
-import javax.ejb.EntityContext;
-import javax.ejb.MessageDrivenContext;
-import javax.ejb.SessionContext;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
@@ -38,9 +34,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.ee.component.deployers.EEResourceReferenceProcessorRegistry;
 import org.jboss.as.ejb3.component.EJBUtilities;
-import org.jboss.as.ejb3.context.EjbContextResourceReferenceProcessor;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.processors.ApplicationExceptionAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.BusinessViewAnnotationProcessor;
@@ -167,13 +161,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .install());
 
         RemoteObjectSubstitutionManager.setRemoteObjectSubstitution(substitutionService);
-
-        //setup ejb context jndi handlers
-        EEResourceReferenceProcessorRegistry.registerResourceReferenceProcessor(new EjbContextResourceReferenceProcessor(EJBContext.class));
-        EEResourceReferenceProcessorRegistry.registerResourceReferenceProcessor(new EjbContextResourceReferenceProcessor(SessionContext.class));
-        EEResourceReferenceProcessorRegistry.registerResourceReferenceProcessor(new EjbContextResourceReferenceProcessor(EntityContext.class));
-        EEResourceReferenceProcessorRegistry.registerResourceReferenceProcessor(new EjbContextResourceReferenceProcessor(MessageDrivenContext.class));
-
 
         //setup ejb: namespace
         EjbNamingContextSetup.setupEjbNamespace();
