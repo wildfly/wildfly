@@ -28,12 +28,15 @@ import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
+import org.jboss.as.clustering.GroupMembershipNotifierRegistry;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.ee.component.deployers.EEResourceReferenceProcessorRegistry;
+import org.jboss.as.ejb3.cache.impl.backing.clustering.GroupMembershipNotifierRegistryService;
 import org.jboss.as.ejb3.component.EJBUtilities;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.processors.ApplicationExceptionAnnotationProcessor;
@@ -272,6 +275,8 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         newControllers.add(context.getServiceTarget().addService(DeploymentRepository.SERVICE_NAME, new DeploymentRepository()).install());
 
         addRemoteInvocationServices(context, newControllers, appclient);
+        // add clustering service
+        this.addClusteringServices(context, newControllers, appclient);
 
         if (!appclient) {
             final EJBUtilities utilities = new EJBUtilities();
@@ -329,6 +334,14 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
 
         newControllers.add(clientContextServiceBuilder.install());
+    }
+
+    private void addClusteringServices(final OperationContext context, final List<ServiceController<?>> newControllers, final boolean appclient) {
+        if (!appclient) {
+            final GroupMembershipNotifierRegistryService groupMembershipNotifierRegistryService = new GroupMembershipNotifierRegistryService();
+            final ServiceController<GroupMembershipNotifierRegistry> groupMembershipNotifierRegistryServiceController = context.getServiceTarget().addService(GroupMembershipNotifierRegistryService.SERVICE_NAME, groupMembershipNotifierRegistryService).install();
+            newControllers.add(groupMembershipNotifierRegistryServiceController);
+        }
     }
 
 }

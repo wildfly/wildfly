@@ -27,7 +27,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 
+import org.jboss.as.clustering.GroupMembershipNotifierRegistry;
 import org.jboss.as.ejb3.EjbLogger;
+import org.jboss.as.ejb3.cache.impl.backing.clustering.GroupMembershipNotifierRegistryService;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.remote.protocol.versionone.VersionOneProtocolChannelReceiver;
 import org.jboss.ejb.client.remoting.PackedInteger;
@@ -64,17 +66,12 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "connector");
 
     private final InjectedValue<Endpoint> endpointValue = new InjectedValue<Endpoint>();
-
     private final InjectedValue<ExecutorService> executorService = new InjectedValue<ExecutorService>();
-
     private final InjectedValue<DeploymentRepository> deploymentRepositoryInjectedValue = new InjectedValue<DeploymentRepository>();
-
     private final InjectedValue<EJBRemoteTransactionsRepository> ejbRemoteTransactionsRepositoryInjectedValue = new InjectedValue<EJBRemoteTransactionsRepository>();
-
+    private final InjectedValue<GroupMembershipNotifierRegistry> clusterRegistry = new InjectedValue<GroupMembershipNotifierRegistry>();
     private volatile Registration registration;
-
     private final byte serverProtocolVersion;
-
     private final String[] supportedMarshallingStrategies;
 
     public EJBRemoteConnectorService(final byte serverProtocolVersion, final String[] supportedMarshallingStrategies) {
@@ -205,8 +202,11 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
                         final MarshallerFactory marshallerFactory = EJBRemoteConnectorService.this.getMarshallerFactory(clientMarshallingStrategy);
                         // enroll VersionOneProtocolChannelReceiver for handling subsequent messages on this channel
                         final DeploymentRepository deploymentRepository = EJBRemoteConnectorService.this.deploymentRepositoryInjectedValue.getValue();
+                        final GroupMembershipNotifierRegistry groupMembershipNotifierRegistry = EJBRemoteConnectorService.this.clusterRegistry.getValue();
                         final VersionOneProtocolChannelReceiver receiver = new VersionOneProtocolChannelReceiver(channel, deploymentRepository,
-                                EJBRemoteConnectorService.this.ejbRemoteTransactionsRepositoryInjectedValue.getValue(), marshallerFactory, executorService.getValue());
+                                EJBRemoteConnectorService.this.ejbRemoteTransactionsRepositoryInjectedValue.getValue(), groupMembershipNotifierRegistry,
+                                marshallerFactory, executorService.getValue());
+                        // trigger the receiving
                         receiver.startReceiving();
                         break;
 
@@ -236,6 +236,10 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
     public Injector<EJBRemoteTransactionsRepository> getEJBRemoteTransactionsRepositoryInjector() {
         return this.ejbRemoteTransactionsRepositoryInjectedValue;
+    }
+
+    public Injector<GroupMembershipNotifierRegistry> getClusterRegistryInjector() {
+        return this.clusterRegistry;
     }
 
     private boolean isSupportedMarshallingStrategy(final String strategy) {
