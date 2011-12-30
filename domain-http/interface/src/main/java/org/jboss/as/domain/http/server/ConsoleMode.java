@@ -39,8 +39,8 @@ public enum ConsoleMode {
      */
     CONSOLE {
         @Override
-        ResourceHandler createConsoleHandler() throws ModuleLoadException {
-            return new ConsoleHandler();
+        ResourceHandler createConsoleHandler(String slot) throws ModuleLoadException {
+            return new ConsoleHandler(slot);
         }
     },
     /**
@@ -48,8 +48,8 @@ public enum ConsoleMode {
      */
     SLAVE_HC {
         @Override
-        ResourceHandler createConsoleHandler() throws ModuleLoadException {
-            return DisabledConsoleHandler.createNoConsoleForSlave();
+        ResourceHandler createConsoleHandler(String slot) throws ModuleLoadException {
+            return DisabledConsoleHandler.createNoConsoleForSlave(slot);
         }
     },
     /**
@@ -57,8 +57,8 @@ public enum ConsoleMode {
      */
     ADMIN_ONLY{
         @Override
-        ResourceHandler createConsoleHandler() throws ModuleLoadException {
-            return DisabledConsoleHandler.createNoConsoleForAdminMode();
+        ResourceHandler createConsoleHandler(String slot) throws ModuleLoadException {
+            return DisabledConsoleHandler.createNoConsoleForAdminMode(slot);
         }
     },
     /**
@@ -66,7 +66,7 @@ public enum ConsoleMode {
      */
     NO_CONSOLE{
         @Override
-        ResourceHandler createConsoleHandler() throws ModuleLoadException {
+        ResourceHandler createConsoleHandler(String slot) throws ModuleLoadException {
             return null;
         }
     };
@@ -76,7 +76,7 @@ public enum ConsoleMode {
      *
      * @return the console handler, may be {@code null}
      */
-    ResourceHandler createConsoleHandler() throws ModuleLoadException {
+    ResourceHandler createConsoleHandler(String slot) throws ModuleLoadException {
         throw new IllegalStateException("Not overridden for " + this);
     }
 
@@ -95,8 +95,8 @@ public enum ConsoleMode {
         private static final String CONTEXT = "/console";
         private static final String DEFAULT_RESOURCE = "/" + INDEX_HTML;
 
-        ConsoleHandler() throws ModuleLoadException {
-            super(CONTEXT, DEFAULT_RESOURCE, getClassLoader(CONSOLE_MODULE));
+        ConsoleHandler(String slot) throws ModuleLoadException {
+            super(CONTEXT, DEFAULT_RESOURCE, getClassLoader(CONSOLE_MODULE, slot));
         }
 
         @Override
@@ -129,16 +129,16 @@ public enum ConsoleMode {
         private static final String NO_CONSOLE_FOR_SLAVE = "/noConsoleForSlaveDcError.html";
         private static final String NO_CONSOLE_FOR_ADMIN_MODE = "/noConsoleForAdminModeError.html";
 
-        private DisabledConsoleHandler(String resource) throws ModuleLoadException {
-            super(CONTEXT, resource, getClassLoader(ERROR_MODULE));
+        private DisabledConsoleHandler(String slot, String resource) throws ModuleLoadException {
+            super(CONTEXT, resource, getClassLoader(ERROR_MODULE, slot));
         }
 
-        static DisabledConsoleHandler createNoConsoleForSlave() throws ModuleLoadException {
-            return new DisabledConsoleHandler(NO_CONSOLE_FOR_SLAVE);
+        static DisabledConsoleHandler createNoConsoleForSlave(String slot) throws ModuleLoadException {
+            return new DisabledConsoleHandler(slot, NO_CONSOLE_FOR_SLAVE);
         }
 
-        static DisabledConsoleHandler createNoConsoleForAdminMode() throws ModuleLoadException {
-            return new DisabledConsoleHandler(NO_CONSOLE_FOR_ADMIN_MODE);
+        static DisabledConsoleHandler createNoConsoleForAdminMode(String slot) throws ModuleLoadException {
+            return new DisabledConsoleHandler(slot, NO_CONSOLE_FOR_ADMIN_MODE);
         }
 
         @Override

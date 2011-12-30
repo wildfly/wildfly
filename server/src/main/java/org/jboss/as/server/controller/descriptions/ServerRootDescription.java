@@ -107,6 +107,18 @@ public class ServerRootDescription {
         root.get(ATTRIBUTES, RELEASE_CODENAME, NILLABLE).set(false);
         root.get(ATTRIBUTES, RELEASE_CODENAME, MIN_LENGTH).set(1);
 
+        root.get(ATTRIBUTES, RELEASE_VERSION, DESCRIPTION).set(bundle.getString("server.product-name"));
+        root.get(ATTRIBUTES, RELEASE_VERSION, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, RELEASE_VERSION, REQUIRED).set(true);
+        root.get(ATTRIBUTES, RELEASE_VERSION, NILLABLE).set(true);
+        root.get(ATTRIBUTES, RELEASE_VERSION, MIN_LENGTH).set(1);
+
+        root.get(ATTRIBUTES, RELEASE_CODENAME, DESCRIPTION).set(bundle.getString("server.product-version"));
+        root.get(ATTRIBUTES, RELEASE_CODENAME, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, RELEASE_CODENAME, REQUIRED).set(true);
+        root.get(ATTRIBUTES, RELEASE_CODENAME, NILLABLE).set(true);
+        root.get(ATTRIBUTES, RELEASE_CODENAME, MIN_LENGTH).set(1);
+
         root.get(ATTRIBUTES, PROFILE_NAME, DESCRIPTION).set(bundle.getString("server.profile"));
         root.get(ATTRIBUTES, PROFILE_NAME, TYPE).set(ModelType.STRING);
         root.get(ATTRIBUTES, PROFILE_NAME, REQUIRED).set(true);

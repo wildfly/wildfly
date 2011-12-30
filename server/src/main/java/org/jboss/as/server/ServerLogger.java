@@ -77,23 +77,21 @@ public interface ServerLogger extends BasicLogger {
     /**
      * Logs an informational message indicating the server is starting.
      *
-     * @param version  the server version.
-     * @param codeName the code name.
+     * @param prettyVersion  the server version.
      */
     @LogMessage(level = INFO)
-    @Message("JBoss AS %s \"%s\" starting")
-    void serverStarting(String version, String codeName);
+    @Message("%s starting")
+    void serverStarting(String prettyVersion);
 
     /**
      * Logs an informational message indicating the server is stopped.
      *
-     * @param version  the server version.
-     * @param codeName the code name.
+     * @param prettyVersion  the server version.
      * @param time     the time it took to stop.
      */
     @LogMessage(level = INFO)
-    @Message("JBoss AS %s \"%s\" stopped in %dms")
-    void serverStopped(String version, String codeName, int time);
+    @Message("%s stopped in %dms")
+    void serverStopped(String prettyVersion, int time);
 
     /**
      * Log message for when a jboss-deployment-structure.xml file is ignored

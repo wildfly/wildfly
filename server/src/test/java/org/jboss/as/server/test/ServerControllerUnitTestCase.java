@@ -51,6 +51,7 @@ import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.version.ProductConfig;
 import org.jboss.as.server.ServerControllerModelUtil;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.Services;
@@ -58,6 +59,7 @@ import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
 import org.jboss.as.server.parsing.StandaloneXml;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceTarget;
@@ -243,7 +245,7 @@ public class ServerControllerUnitTestCase {
             properties.put("jboss.home.dir", ".");
 
             final String hostControllerName = "hostControllerName"; // Host Controller name may not be null when in a managed domain
-            final ServerEnvironment environment = new ServerEnvironment(hostControllerName, properties, new HashMap<String, String>(), null, ServerEnvironment.LaunchType.DOMAIN, null);
+            final ServerEnvironment environment = new ServerEnvironment(hostControllerName, properties, new HashMap<String, String>(), null, ServerEnvironment.LaunchType.DOMAIN, null, new ProductConfig(Module.getBootModuleLoader(), "."));
             ServerControllerModelUtil.initOperations(rootRegistration, null, persister, environment, processState, null, null, false);
         }
 

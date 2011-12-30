@@ -15,6 +15,7 @@ import java.util.Map;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.process.DefaultJvmUtils;
+import org.jboss.as.version.ProductConfig;
 
 /**
  * Encapsulates the runtime environment for a host controller.
@@ -158,12 +159,13 @@ public class HostControllerEnvironment {
     private final PrintStream stderr;
 
     private final RunningMode initialRunningMode;
+    private final ProductConfig productConfig;
 
 
     public HostControllerEnvironment(Map<String, String> hostSystemProperties, boolean isRestart, InputStream stdin, PrintStream stdout, PrintStream stderr,
                                      InetAddress processControllerAddress, Integer processControllerPort, InetAddress hostControllerAddress,
                                      Integer hostControllerPort, String defaultJVM, String domainConfig, String hostConfig,
-                                     RunningMode initialRunningMode, boolean backupDomainFiles, boolean useCachedDc) {
+                                     RunningMode initialRunningMode, boolean backupDomainFiles, boolean useCachedDc, ProductConfig productConfig) {
         if (hostSystemProperties == null) {
             throw MESSAGES.nullVar("hostSystemProperties");
         }
@@ -282,6 +284,7 @@ public class HostControllerEnvironment {
         this.backupDomainFiles = backupDomainFiles;
         this.useCachedDc = useCachedDc;
         this.initialRunningMode = initialRunningMode;
+        this.productConfig = productConfig;
     }
 
     /**
@@ -383,6 +386,10 @@ public class HostControllerEnvironment {
 
     public RunningMode getInitialRunningMode() {
         return initialRunningMode;
+    }
+
+    public ProductConfig getProductConfig() {
+        return productConfig;
     }
 
     public File getHomeDir() {

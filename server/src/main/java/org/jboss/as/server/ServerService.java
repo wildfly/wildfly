@@ -289,7 +289,7 @@ public final class ServerService extends AbstractControllerService {
 
     @Override
     protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
-        ServerControllerModelUtil.updateCoreModel(rootResource.getModel());
+        ServerControllerModelUtil.updateCoreModel(rootResource.getModel(), configuration.getServerEnvironment());
         ServerControllerModelUtil.initOperations(rootRegistration, injectedContentRepository.getValue(),
                 extensibleConfigurationPersister, configuration.getServerEnvironment(), processState,
                 runningModeControl, vaultReader, queuelessExecutor != null);

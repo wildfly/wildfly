@@ -319,8 +319,8 @@ class ResourceHandler implements ManagementHttpHandler {
         httpServer.removeContext(context);
     }
 
-    protected static ClassLoader getClassLoader(final String module) throws ModuleLoadException {
-        ModuleIdentifier id = ModuleIdentifier.fromString(module);
+    protected static ClassLoader getClassLoader(final String module, final String slot) throws ModuleLoadException {
+        ModuleIdentifier id = ModuleIdentifier.create(module, slot);
         ClassLoader cl = Module.getCallerModuleLoader().loadModule(id).getClassLoader();
 
         return cl;
