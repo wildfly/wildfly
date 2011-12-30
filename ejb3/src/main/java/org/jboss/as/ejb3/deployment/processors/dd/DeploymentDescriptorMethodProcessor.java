@@ -173,6 +173,43 @@ public class DeploymentDescriptorMethodProcessor implements DeploymentUnitProces
                 }
             }
         }
+
+        if (metaData instanceof SessionBeanMetaData) {
+
+            final SessionBeanMetaData sessionBeanMetadata = (SessionBeanMetaData) metaData;
+            // pre-passivate(s) of the interceptor configured (if any) in the deployment descriptor
+            final LifecycleCallbacksMetaData prePassivates = sessionBeanMetadata.getPrePassivates();
+            if (preDestroys != null) {
+                for (final LifecycleCallbackMetaData prePassivate : prePassivates) {
+                    final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder();
+                    final String methodName = prePassivate.getMethodName();
+                    final MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(void.class, methodName);
+                    builder.setPrePassivate(methodIdentifier);
+                    if (prePassivate.getClassName() == null || prePassivate.getClassName().isEmpty()) {
+                        final String className = ClassReflectionIndexUtil.findRequiredMethod(reflectionIndex, componentClass.getModuleClass(), methodIdentifier).getDeclaringClass().getName();
+                        component.addInterceptorMethodOverride(className, builder.build());
+                    } else {
+                        component.addInterceptorMethodOverride(prePassivate.getClassName(), builder.build());
+                    }
+                }
+            }
+
+            final LifecycleCallbacksMetaData postActivates = sessionBeanMetadata.getPostActivates();
+            if (postActivates != null) {
+                for (final LifecycleCallbackMetaData postActivate : postActivates) {
+                    final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder();
+                    final String methodName = postActivate.getMethodName();
+                    final MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(void.class, methodName);
+                    builder.setPostActivate(methodIdentifier);
+                    if (postActivate.getClassName() == null || postActivate.getClassName().isEmpty()) {
+                        final String className = ClassReflectionIndexUtil.findRequiredMethod(reflectionIndex, componentClass.getModuleClass(), methodIdentifier).getDeclaringClass().getName();
+                        component.addInterceptorMethodOverride(className, builder.build());
+                    } else {
+                        component.addInterceptorMethodOverride(postActivate.getClassName(), builder.build());
+                    }
+                }
+            }
+        }
     }
 
     @Override

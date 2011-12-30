@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.naming.context.NamespaceContextSelector;
@@ -153,6 +154,7 @@ public class BasicComponent implements Component {
             final InterceptorContext interceptorContext = new InterceptorContext();
             interceptorContext.putPrivateData(Component.class, this);
             interceptorContext.putPrivateData(ComponentInstance.class, basicComponentInstance);
+            interceptorContext.putPrivateData(InvocationType.class, InvocationType.POST_CONSTRUCT);
             interceptorContext.setContextData(new HashMap<String, Object>());
 
             try {

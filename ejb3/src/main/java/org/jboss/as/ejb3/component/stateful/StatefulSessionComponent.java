@@ -22,7 +22,6 @@
 package org.jboss.as.ejb3.component.stateful;
 
 import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -79,8 +78,8 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     private final Method afterCompletionMethod;
     private final InterceptorFactory beforeCompletion;
     private final Method beforeCompletionMethod;
-    private final Collection<InterceptorFactory> prePassivate;
-    private final Collection<InterceptorFactory> postActivate;
+    private final InterceptorFactory prePassivate;
+    private final InterceptorFactory postActivate;
     private final Map<EJBBusinessMethod, AccessTimeoutDetails> methodAccessTimeouts;
     private final DefaultAccessTimeoutService defaultAccessTimeoutProvider;
     private final MarshallingConfiguration marshallingConfiguration;
@@ -281,11 +280,11 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
         return beforeCompletionMethod;
     }
 
-    public Collection<InterceptorFactory> getPrePassivate() {
+    public InterceptorFactory getPrePassivate() {
         return this.prePassivate;
     }
 
-    public Collection<InterceptorFactory> getPostActivate() {
+    public InterceptorFactory getPostActivate() {
         return this.postActivate;
     }
 

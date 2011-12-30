@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -113,6 +114,7 @@ public class BasicComponentInstance implements ComponentInstance {
             if (reference != null) {
                 final InterceptorContext interceptorContext = prepareInterceptorContext();
                 interceptorContext.setTarget(reference.getInstance());
+                interceptorContext.putPrivateData(InvocationType.class, InvocationType.PRE_DESTROY);
                 preDestroy.processInvocation(interceptorContext);
             }
         } catch (Exception e) {

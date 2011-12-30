@@ -49,6 +49,6 @@ public class OverlapTimerTestCase {
     @Test
     public void testContinuedAfterOverlap() throws Exception {
         Assert.assertTrue("Schedule timeout method was not invoked within 3 seconds!", ScheduleRetryFailSingletonBean.startLatch().await(3, TimeUnit.SECONDS));
-        Assert.assertTrue("Schedule timer is not alive after overlapped invocation!",ScheduleRetryFailSingletonBean.aliveLatch().await(4, TimeUnit.SECONDS));
+        Assert.assertTrue("Schedule timer is not alive after overlapped invocation!",ScheduleRetryFailSingletonBean.aliveLatch().await(5, TimeUnit.SECONDS));
     }
 }

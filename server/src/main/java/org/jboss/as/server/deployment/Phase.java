@@ -260,6 +260,7 @@ public enum Phase {
     public static final int PARSE_PERSISTENCE_UNIT                      = 0x2F00;
     public static final int PARSE_PERSISTENCE_ANNOTATION                = 0x3000;
     public static final int PARSE_LIEFCYCLE_ANNOTATION                  = 0x3200;
+    public static final int PARSE_PASSIVATION_ANNOTATION                = 0x3250;
     public static final int PARSE_AROUNDINVOKE_ANNOTATION               = 0x3300;
     public static final int PARSE_AROUNDTIMEOUT_ANNOTATION              = 0x3400;
     public static final int PARSE_TIMEOUT_ANNOTATION                    = 0x3401;
@@ -335,7 +336,6 @@ public enum Phase {
     public static final int POST_MODULE_EJB_INIT_METHOD                 = 0x0610;
     public static final int POST_MODULE_EJB_SESSION_BEAN                = 0x0611;
     public static final int POST_MODULE_EJB_SECURITY_PRINCIPAL_ROLE_MAPPING_MERGE   = 0x0612;
-    public static final int POST_MODULE_EJB_SESSION_PASSIVATION         = 0x0613;
     public static final int POST_MODULE_EJB_CACHE                       = 0x0614;
     public static final int POST_MODULE_EJB_CLUSTERED                   = 0x0615;
     public static final int POST_MODULE_WELD_COMPONENT_INTEGRATION      = 0x0800;

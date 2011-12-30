@@ -27,9 +27,7 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
@@ -74,8 +72,6 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
     private Method afterBegin;
     private Method afterCompletion;
     private Method beforeCompletion;
-    private final Set<Method> prePassivateMethods = new HashSet<Method>();
-    private final Set<Method> postActivateMethods = new HashSet<Method>();
     private final Map<MethodIdentifier, StatefulRemoveMethod> removeMethods = new HashMap<MethodIdentifier, StatefulRemoveMethod>();
     private StatefulTimeoutInfo statefulTimeout;
     private CacheInfo cache;
@@ -204,14 +200,6 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
         return beforeCompletion;
     }
 
-    public Set<Method> getPrePassivateMethods() {
-        return Collections.unmodifiableSet(this.prePassivateMethods);
-    }
-
-    public Set<Method> getPostActivateMethods() {
-        return Collections.unmodifiableSet(this.postActivateMethods);
-    }
-
     @Override
     public SessionBeanType getSessionBeanType() {
         return SessionBeanComponentDescription.SessionBeanType.STATEFUL;
@@ -229,14 +217,6 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
         this.beforeCompletion = afterCompletion;
     }
 
-    public void addPrePassivateMethod(final Method prePassivate) {
-        this.prePassivateMethods.add(prePassivate);
-    }
-
-    public void addPostActivateMethod(final Method postActivate) {
-        this.postActivateMethods.add(postActivate);
-    }
-
     @Override
     protected void setupViewInterceptors(EJBViewDescription view) {
         // let super do its job
@@ -248,17 +228,14 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
 
         this.addViewSerializationInterceptor(view);
 
-        if (view instanceof EJBViewDescription) {
-            EJBViewDescription ejbViewDescription = (EJBViewDescription) view;
-            if (ejbViewDescription.getMethodIntf() == MethodIntf.REMOTE) {
-                view.getConfigurators().add(new ViewConfigurator() {
-                    @Override
-                    public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                        final String earApplicationName = componentConfiguration.getComponentDescription().getModuleDescription().getEarApplicationName();
-                        configuration.setViewInstanceFactory(new StatefulRemoteViewInstanceFactory(earApplicationName, componentConfiguration.getModuleName(), componentConfiguration.getComponentDescription().getModuleDescription().getDistinctName(), componentConfiguration.getComponentName()));
-                    }
-                });
-            }
+        if (view.getMethodIntf() == MethodIntf.REMOTE) {
+            view.getConfigurators().add(new ViewConfigurator() {
+                @Override
+                public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                    final String earApplicationName = componentConfiguration.getComponentDescription().getModuleDescription().getEarApplicationName();
+                    configuration.setViewInstanceFactory(new StatefulRemoteViewInstanceFactory(earApplicationName, componentConfiguration.getModuleName(), componentConfiguration.getComponentDescription().getModuleDescription().getDistinctName(), componentConfiguration.getComponentName()));
+                }
+            });
         }
     }
 
@@ -386,5 +363,10 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
 
     public void setCache(CacheInfo cache) {
         this.cache = cache;
+    }
+
+    @Override
+    public boolean isPassivationApplicable() {
+        return true;
     }
 }

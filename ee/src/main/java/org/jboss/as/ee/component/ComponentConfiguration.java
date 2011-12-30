@@ -64,6 +64,8 @@ public class ComponentConfiguration {
     // Interceptor config
     private final OrderedItemContainer<InterceptorFactory> postConstructInterceptors = new OrderedItemContainer<InterceptorFactory>();
     private final OrderedItemContainer<InterceptorFactory> preDestroyInterceptors = new OrderedItemContainer<InterceptorFactory>();
+    private final OrderedItemContainer<InterceptorFactory> prePassivateInterceptors = new OrderedItemContainer<InterceptorFactory>();
+    private final OrderedItemContainer<InterceptorFactory> postActivateInterceptors = new OrderedItemContainer<InterceptorFactory>();
     private final Map<Method, OrderedItemContainer<InterceptorFactory>> componentInterceptors = new IdentityHashMap<Method, OrderedItemContainer<InterceptorFactory>>();
 
     //TODO: move this into an EJB specific configuration
@@ -294,6 +296,48 @@ public class ComponentConfiguration {
      */
     public void addPreDestroyInterceptor(InterceptorFactory interceptorFactory, int priority) {
         preDestroyInterceptors.add(interceptorFactory, priority);
+    }
+
+    /**
+     * Get the pre-passivate interceptors.
+     * <p/>
+     * This method should only be called after all interceptors have been added
+     *
+     * @return the sorted interceptors
+     */
+    public List<InterceptorFactory> getPrePassivateInterceptors() {
+        return prePassivateInterceptors.getSortedItems();
+    }
+
+    /**
+     * Adds a pre passivate interceptor
+     *
+     * @param interceptorFactory The interceptor to add
+     * @param priority           The priority
+     */
+    public void addPrePassivateInterceptor(InterceptorFactory interceptorFactory, int priority) {
+        prePassivateInterceptors.add(interceptorFactory, priority);
+    }
+
+    /**
+     * Get the post-activate interceptors.
+     * <p/>
+     * This method should only be called after all interceptors have been added
+     *
+     * @return the sorted interceptors
+     */
+    public List<InterceptorFactory> getPostActivateInterceptors() {
+        return postActivateInterceptors.getSortedItems();
+    }
+
+    /**
+     * Adds a post activate interceptor
+     *
+     * @param interceptorFactory The interceptor to add
+     * @param priority           The priority
+     */
+    public void addPostActivateInterceptor(InterceptorFactory interceptorFactory, int priority) {
+        postActivateInterceptors.add(interceptorFactory, priority);
     }
 
     /**
