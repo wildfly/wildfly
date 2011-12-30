@@ -16,6 +16,7 @@ public enum MethodType {
     GET_TIMER_SERVICE("getTimerService()"),
     IS_CALLER_IN_ROLE("isCallerInRole()"),
     GET_CALLER_PRINCIPLE("getCallerPrinciple()"),
+    GET_USER_TRANSACTION("getUserTransaction()"),
     ;
 
     private final String label;

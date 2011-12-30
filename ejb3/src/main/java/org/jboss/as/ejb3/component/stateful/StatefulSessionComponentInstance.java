@@ -24,11 +24,7 @@ package org.jboss.as.ejb3.component.stateful;
 import java.io.ObjectStreamException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -44,7 +40,6 @@ import org.jboss.as.naming.ManagedReference;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 
 /**
@@ -58,8 +53,8 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
     private final Interceptor afterBegin;
     private final Interceptor afterCompletion;
     private final Interceptor beforeCompletion;
-    private final Collection<Interceptor> prePassivate;
-    private final Collection<Interceptor> postActivate;
+    private final Interceptor prePassivate;
+    private final Interceptor postActivate;
     private final Interceptor ejb2XRemoveInterceptor;
     private volatile Map<Object, Object> serializableInterceptors;
 
@@ -84,18 +79,11 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
         this.afterBegin = component.createInterceptor(component.getAfterBegin(), factoryContext);
         this.afterCompletion = component.createInterceptor(component.getAfterCompletion(), factoryContext);
         this.beforeCompletion = component.createInterceptor(component.getBeforeCompletion(), factoryContext);
-        this.prePassivate = this.createInterceptors(component, component.getPrePassivate(), factoryContext);
-        this.postActivate = this.createInterceptors(component, component.getPostActivate(), factoryContext);
+        this.prePassivate = component.createInterceptor(component.getPrePassivate(), factoryContext);
+        this.postActivate = component.createInterceptor(component.getPostActivate(), factoryContext);
         this.ejb2XRemoveInterceptor = component.createInterceptor(component.getEjb2XRemoveMethod(), factoryContext);
     }
 
-    private Collection<Interceptor> createInterceptors(StatefulSessionComponent component, Collection<InterceptorFactory> factories, final InterceptorFactoryContext factoryContext) {
-        List<Interceptor> interceptors = new ArrayList<Interceptor>(factories.size());
-        for (InterceptorFactory factory : factories) {
-            interceptors.add(component.createInterceptor(factory, factoryContext));
-        }
-        return Collections.unmodifiableList(interceptors);
-    }
 
     protected void afterBegin() {
         CurrentSynchronizationCallback.set(CurrentSynchronizationCallback.CallbackType.AFTER_BEGIN);
@@ -125,15 +113,11 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
     }
 
     protected void prePassivate() {
-        for (Interceptor interceptor : this.prePassivate) {
-            this.execute(interceptor, null);
-        }
+        this.execute(prePassivate, null);
     }
 
     protected void postActivate() {
-        for (Interceptor interceptor : this.postActivate) {
-            this.execute(interceptor, null);
-        }
+        this.execute(postActivate, null);
     }
 
     public void discard() {

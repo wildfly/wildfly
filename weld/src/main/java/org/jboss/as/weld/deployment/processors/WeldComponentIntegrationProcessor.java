@@ -110,7 +110,7 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
                     configuration.addPostConstructInterceptor(new WeldInjectionInterceptor.Factory(configuration, interceptorClasses), InterceptorOrder.ComponentPostConstruct.WELD_INJECTION);
 
                     //add a context key for weld interceptor replication
-                    if(description instanceof StatefulComponentDescription) {
+                    if (description instanceof StatefulComponentDescription) {
                         configuration.getInterceptorContextKeys().add(InterceptionType.AROUND_INVOKE);
                         configuration.getInterceptorContextKeys().add(InterceptionType.AROUND_TIMEOUT);
                         configuration.getInterceptorContextKeys().add(InterceptionType.POST_ACTIVATE);
@@ -162,6 +162,15 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
             final Jsr299BindingsInterceptor.Factory preDestroyInterceptor = new Jsr299BindingsInterceptor.Factory(description.getBeanDeploymentArchiveId(), beanName, InterceptionType.PRE_DESTROY, classLoader);
             builder.addDependency(weldServiceName, WeldContainer.class, preDestroyInterceptor.getWeldContainer());
             configuration.addPreDestroyInterceptor(preDestroyInterceptor, InterceptorOrder.ComponentPreDestroy.CDI_INTERCEPTORS);
+
+            if (description.isPassivationApplicable()) {
+                final Jsr299BindingsInterceptor.Factory prePassivateInterceptor = new Jsr299BindingsInterceptor.Factory(description.getBeanDeploymentArchiveId(), beanName, InterceptionType.PRE_PASSIVATE, classLoader);
+                builder.addDependency(weldServiceName, WeldContainer.class, prePassivateInterceptor.getWeldContainer());
+                configuration.addPrePassivateInterceptor(prePassivateInterceptor, InterceptorOrder.ComponentPassivation.CDI_INTERCEPTORS);
+                final Jsr299BindingsInterceptor.Factory postActivateInterceptor = new Jsr299BindingsInterceptor.Factory(description.getBeanDeploymentArchiveId(), beanName, InterceptionType.POST_ACTIVATE, classLoader);
+                builder.addDependency(weldServiceName, WeldContainer.class, postActivateInterceptor.getWeldContainer());
+                configuration.addPostActivateInterceptor(postActivateInterceptor, InterceptorOrder.ComponentPassivation.CDI_INTERCEPTORS);
+            }
 
             final Jsr299BindingsInterceptor.Factory postConstruct = new Jsr299BindingsInterceptor.Factory(description.getBeanDeploymentArchiveId(), beanName, InterceptionType.POST_CONSTRUCT, classLoader);
             builder.addDependency(weldServiceName, WeldContainer.class, postConstruct.getWeldContainer());

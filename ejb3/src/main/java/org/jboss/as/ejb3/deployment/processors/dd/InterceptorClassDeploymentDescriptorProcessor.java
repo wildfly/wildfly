@@ -107,6 +107,38 @@ public class InterceptorClassDeploymentDescriptorProcessor implements Deployment
                     }
                 }
             }
+
+            // pre-passivates(s) of the interceptor configured (if any) in the deployment descriptor
+            LifecycleCallbacksMetaData prePassivates = interceptor.getPrePassivates();
+            if (prePassivates != null) {
+                for (LifecycleCallbackMetaData prePassivate : prePassivates) {
+                    final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder();
+                    String methodName = prePassivate.getMethodName();
+                    MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(void.class, methodName, InvocationContext.class);
+                    builder.setPrePassivate(methodIdentifier);
+                    if (prePassivate.getClassName() == null || prePassivate.getClassName().isEmpty()) {
+                        eeModuleDescription.addInterceptorMethodOverride(interceptorClassName, builder.build());
+                    } else {
+                        eeModuleDescription.addInterceptorMethodOverride(prePassivate.getClassName(), builder.build());
+                    }
+                }
+            }
+
+            // pre-passivates(s) of the interceptor configured (if any) in the deployment descriptor
+            LifecycleCallbacksMetaData postActivates = interceptor.getPostActivates();
+            if (postActivates != null) {
+                for (LifecycleCallbackMetaData postActivate : postActivates) {
+                    final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder();
+                    String methodName = postActivate.getMethodName();
+                    MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(void.class, methodName, InvocationContext.class);
+                    builder.setPostActivate(methodIdentifier);
+                    if (postActivate.getClassName() == null || postActivate.getClassName().isEmpty()) {
+                        eeModuleDescription.addInterceptorMethodOverride(interceptorClassName, builder.build());
+                    } else {
+                        eeModuleDescription.addInterceptorMethodOverride(postActivate.getClassName(), builder.build());
+                    }
+                }
+            }
         }
 
     }

@@ -17,5 +17,8 @@ public class SessionBeanAllowedMethodsInformation  extends AllowedMethodsInforma
         super.setup(denied);
         add(denied, InvocationType.DEPENDENCY_INJECTION, MethodType.GET_EJB_LOCAL_OBJECT);
         add(denied, InvocationType.DEPENDENCY_INJECTION, MethodType.GET_EJB_OBJECT);
+        add(denied, InvocationType.DEPENDENCY_INJECTION, MethodType.GET_CALLER_PRINCIPLE);
+        add(denied, InvocationType.DEPENDENCY_INJECTION, MethodType.IS_CALLER_IN_ROLE);
+        add(denied, InvocationType.DEPENDENCY_INJECTION, MethodType.GET_USER_TRANSACTION);
     }
 }

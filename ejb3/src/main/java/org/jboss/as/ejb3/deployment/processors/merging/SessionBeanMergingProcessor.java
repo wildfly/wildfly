@@ -46,10 +46,13 @@ public class SessionBeanMergingProcessor extends AbstractMergingProcessor<Sessio
                 }
             });
 
-            //now EJB remove
+            //now lifecycle callbacks
             final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder();
             builder.setPreDestroy(MethodIdentifier.getIdentifier(void.class, "ejbRemove"));
+            builder.setPostActivate(MethodIdentifier.getIdentifier(void.class, "ejbActivate"));
+            builder.setPrePassivate(MethodIdentifier.getIdentifier(void.class, "ejbPassivate"));
             description.addInterceptorMethodOverride(componentClass.getName(), builder.build());
+
 
         }
     }

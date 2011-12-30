@@ -35,50 +35,62 @@ public class InterceptorClassDescription {
     private final MethodIdentifier aroundTimeout;
     private final MethodIdentifier preDestroy;
     private final MethodIdentifier postConstruct;
+    private final MethodIdentifier prePassivate;
+    private final MethodIdentifier postActivate;
 
-    public InterceptorClassDescription(final MethodIdentifier aroundInvoke, final MethodIdentifier aroundTimeout, final MethodIdentifier preDestroy, final MethodIdentifier postConstruct) {
+    public InterceptorClassDescription(final MethodIdentifier aroundInvoke, final MethodIdentifier aroundTimeout, final MethodIdentifier preDestroy, final MethodIdentifier postConstruct, final MethodIdentifier postActivate, final MethodIdentifier prePassivate) {
         this.aroundInvoke = aroundInvoke;
         this.aroundTimeout = aroundTimeout;
         this.preDestroy = preDestroy;
         this.postConstruct = postConstruct;
+        this.postActivate = postActivate;
+        this.prePassivate = prePassivate;
     }
 
     /**
      * Merges two descriptors, either of the paraemters will be null.
-     *
+     * <p/>
      * this method will never return null;
+     *
      * @param existing
      * @param override
      * @return
      */
     public static InterceptorClassDescription merge(InterceptorClassDescription existing, InterceptorClassDescription override) {
-        if(existing == null && override ==null) {
+        if (existing == null && override == null) {
             return EMPTY_INSTANCE;
         }
-        if(override == null) {
+        if (override == null) {
             return existing;
         }
-        if(existing == null) {
+        if (existing == null) {
             return override;
         }
         final Builder builder = builder(existing);
-        if(override.getAroundInvoke() != null) {
+        if (override.getAroundInvoke() != null) {
             builder.setAroundInvoke(override.getAroundInvoke());
         }
-        if(override.getAroundTimeout() != null) {
+        if (override.getAroundTimeout() != null) {
             builder.setAroundTimeout(override.getAroundTimeout());
         }
-        if(override.getPostConstruct() != null) {
+        if (override.getPostConstruct() != null) {
             builder.setPostConstruct(override.getPostConstruct());
         }
-        if(override.getPreDestroy() != null) {
+        if (override.getPreDestroy() != null) {
             builder.setPreDestroy(override.getPreDestroy());
+        }
+        if (override.getPrePassivate() != null) {
+            builder.setPrePassivate(override.getPrePassivate());
+        }
+        if (override.getPostActivate() != null) {
+            builder.setPrePassivate(override.getPostActivate());
         }
         return builder.build();
     }
 
     /**
      * Constructs a new empty builder
+     *
      * @return An empty builder
      */
     public static Builder builder() {
@@ -86,12 +98,11 @@ public class InterceptorClassDescription {
     }
 
     /**
-     *
      * @param base The existing description, or null for an empty builder
      * @return A builder based on the existing description
      */
     public static Builder builder(InterceptorClassDescription base) {
-        if(base == null) {
+        if (base == null) {
             return new Builder();
         }
         return new Builder(base);
@@ -104,6 +115,8 @@ public class InterceptorClassDescription {
         private MethodIdentifier aroundTimeout;
         private MethodIdentifier preDestroy;
         private MethodIdentifier postConstruct;
+        private MethodIdentifier prePassivate;
+        private MethodIdentifier postActivate;
 
         Builder() {
 
@@ -114,10 +127,12 @@ public class InterceptorClassDescription {
             this.aroundTimeout = existing.aroundTimeout;
             this.preDestroy = existing.preDestroy;
             this.postConstruct = existing.postConstruct;
+            this.prePassivate = existing.prePassivate;
+            this.postActivate = existing.postActivate;
         }
 
         public InterceptorClassDescription build() {
-            return new InterceptorClassDescription(aroundInvoke, aroundTimeout, preDestroy, postConstruct);
+            return new InterceptorClassDescription(aroundInvoke, aroundTimeout, preDestroy, postConstruct, postActivate, prePassivate);
         }
 
 
@@ -152,6 +167,22 @@ public class InterceptorClassDescription {
         public void setPreDestroy(final MethodIdentifier preDestroy) {
             this.preDestroy = preDestroy;
         }
+
+        public MethodIdentifier getPrePassivate() {
+            return prePassivate;
+        }
+
+        public void setPrePassivate(final MethodIdentifier prePassivate) {
+            this.prePassivate = prePassivate;
+        }
+
+        public MethodIdentifier getPostActivate() {
+            return postActivate;
+        }
+
+        public void setPostActivate(final MethodIdentifier postActivate) {
+            this.postActivate = postActivate;
+        }
     }
 
     public MethodIdentifier getAroundInvoke() {
@@ -168,5 +199,13 @@ public class InterceptorClassDescription {
 
     public MethodIdentifier getPreDestroy() {
         return preDestroy;
+    }
+
+    public MethodIdentifier getPrePassivate() {
+        return prePassivate;
+    }
+
+    public MethodIdentifier getPostActivate() {
+        return postActivate;
     }
 }

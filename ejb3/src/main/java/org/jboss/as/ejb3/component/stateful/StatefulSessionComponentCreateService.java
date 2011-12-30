@@ -23,11 +23,6 @@
 package org.jboss.as.ejb3.component.stateful;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.ee.component.BasicComponent;
@@ -59,8 +54,8 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
     private final Method afterCompletionMethod;
     private final InterceptorFactory beforeCompletion;
     private final Method beforeCompletionMethod;
-    private final Collection<InterceptorFactory> prePassivate;
-    private final Collection<InterceptorFactory> postActivate;
+    private final InterceptorFactory prePassivate;
+    private final InterceptorFactory postActivate;
     private final StatefulTimeoutInfo statefulTimeout;
     private final CacheInfo cache;
     private final MarshallingConfiguration marshallingConfiguration;
@@ -88,8 +83,8 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         this.afterCompletion = (this.afterCompletionMethod != null) ? Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(this.afterCompletionMethod)) : null;
         this.beforeCompletionMethod = componentDescription.getBeforeCompletion();
         this.beforeCompletion = (this.beforeCompletionMethod != null) ? Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(this.beforeCompletionMethod)) : null;
-        this.prePassivate = createInterceptorFactories(componentDescription.getPrePassivateMethods(), tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY);
-        this.postActivate = createInterceptorFactories(componentDescription.getPostActivateMethods(), tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY);
+        this.prePassivate = Interceptors.getChainedInterceptorFactory(componentConfiguration.getPrePassivateInterceptors());
+        this.postActivate = Interceptors.getChainedInterceptorFactory(componentConfiguration.getPostActivateInterceptors());
         this.statefulTimeout = componentDescription.getStatefulTimeout();
         //the interceptor chain for EJB e.x remove methods
         this.ejb2XRemoveMethod = Interceptors.getChainedInterceptorFactory(StatefulSessionSynchronizationInterceptor.factory(componentDescription.getTransactionManagementType()), new ImmediateInterceptorFactory(new StatefulRemoveInterceptor(false)), Interceptors.getTerminalInterceptorFactory());
@@ -99,18 +94,6 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         this.marshallingConfiguration.setObjectResolver(new StatefulSessionBeanObjectResolver());
         this.marshallingConfiguration.setClassTable(new StatefulSessionBeanClassTable(componentConfiguration.getComponentClass()));
         this.serializableInterceptorContextKeys = componentConfiguration.getInterceptorContextKeys();
-    }
-
-    private static Collection<InterceptorFactory> createInterceptorFactories(Collection<Method> methods, InterceptorFactory... factories) {
-        if (methods.isEmpty()) return Collections.emptyList();
-        Collection<InterceptorFactory> collection = new ArrayList<InterceptorFactory>(methods.size());
-        for (Method method: methods) {
-            List<InterceptorFactory> list = new ArrayList<InterceptorFactory>(factories.length + 1);
-            list.addAll(Arrays.asList(factories));
-            list.add(invokeMethodOnTarget(method));
-            collection.add(Interceptors.getChainedInterceptorFactory(list));
-        }
-        return collection;
     }
 
     private static InterceptorFactory invokeMethodOnTarget(final Method method) {
@@ -135,11 +118,11 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         return beforeCompletion;
     }
 
-    public Collection<InterceptorFactory> getPrePassivate() {
+    public InterceptorFactory getPrePassivate() {
         return this.prePassivate;
     }
 
-    public Collection<InterceptorFactory> getPostActivate() {
+    public InterceptorFactory getPostActivate() {
         return this.postActivate;
     }
 
