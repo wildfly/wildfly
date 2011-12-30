@@ -179,7 +179,7 @@ public class DeploymentDescriptorMethodProcessor implements DeploymentUnitProces
             final SessionBeanMetaData sessionBeanMetadata = (SessionBeanMetaData) metaData;
             // pre-passivate(s) of the interceptor configured (if any) in the deployment descriptor
             final LifecycleCallbacksMetaData prePassivates = sessionBeanMetadata.getPrePassivates();
-            if (preDestroys != null) {
+            if (prePassivates != null) {
                 for (final LifecycleCallbackMetaData prePassivate : prePassivates) {
                     final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder();
                     final String methodName = prePassivate.getMethodName();
