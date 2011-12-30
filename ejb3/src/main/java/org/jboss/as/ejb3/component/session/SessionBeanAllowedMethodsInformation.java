@@ -20,5 +20,6 @@ public class SessionBeanAllowedMethodsInformation  extends AllowedMethodsInforma
         add(denied, InvocationType.DEPENDENCY_INJECTION, MethodType.GET_CALLER_PRINCIPLE);
         add(denied, InvocationType.DEPENDENCY_INJECTION, MethodType.IS_CALLER_IN_ROLE);
         add(denied, InvocationType.DEPENDENCY_INJECTION, MethodType.GET_USER_TRANSACTION);
+        add(denied, InvocationType.DEPENDENCY_INJECTION, MethodType.GET_TIMER_SERVICE);
     }
 }
