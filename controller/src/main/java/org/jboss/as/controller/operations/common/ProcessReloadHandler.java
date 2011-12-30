@@ -30,7 +30,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -43,12 +42,12 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * Operation handler for process reloads.
+ * Operation handler for process reloads of servers.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ProcessReloadHandler implements OperationStepHandler, DescriptionProvider {
+public class ProcessReloadHandler<T extends RunningModeControl> implements OperationStepHandler, DescriptionProvider {
 
     /**
      * The operation name.
@@ -58,13 +57,18 @@ public class ProcessReloadHandler implements OperationStepHandler, DescriptionPr
     private static final AttributeDefinition ADMIN_ONLY = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.ADMIN_ONLY, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode(false)).build();
 
-    private final RunningModeControl runningModeControl;
+    //Only used for hosts
+    private static final AttributeDefinition RESTART_SERVERS = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.RESTART_SERVERS, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode(true)).build();
+
+
+    private final T runningModeControl;
     private DescriptionProvider descriptionProvider;
 
     private final ServiceName rootService;
     private final ResourceDescriptionResolver resourceDescriptionResolver;
 
-    public ProcessReloadHandler(final ServiceName rootService, final RunningModeControl runningModeControl,
+    public ProcessReloadHandler(final ServiceName rootService, final T runningModeControl,
                                 final ResourceDescriptionResolver resourceDescriptionResolver) {
         this.rootService = rootService;
         this.runningModeControl = runningModeControl;
@@ -78,17 +82,19 @@ public class ProcessReloadHandler implements OperationStepHandler, DescriptionPr
             @Override
             public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                 final boolean adminOnly = ADMIN_ONLY.resolveModelAttribute(context, operation).asBoolean(false);
+                final boolean restartServers = RESTART_SERVERS.resolveModelAttribute(context, operation).asBoolean(true);
                 final ServiceController<?> service = context.getServiceRegistry(true).getRequiredService(rootService);
                 if(context.completeStep() == OperationContext.ResultAction.KEEP) {
                     service.addListener(new AbstractServiceListener<Object>() {
                         public void listenerAdded(final ServiceController<?> controller) {
+                            reloadInitiated(runningModeControl, adminOnly, restartServers);
                             controller.setMode(ServiceController.Mode.NEVER);
                         }
 
                         public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
                             if (transition == ServiceController.Transition.STOPPING_to_DOWN) {
                                 controller.removeListener(this);
-                                runningModeControl.setRunningMode(adminOnly ? RunningMode.ADMIN_ONLY : RunningMode.NORMAL);
+                                doReload(runningModeControl, adminOnly, restartServers);
                                 controller.setMode(ServiceController.Mode.ACTIVE);
                             }
                         }
@@ -106,8 +112,25 @@ public class ProcessReloadHandler implements OperationStepHandler, DescriptionPr
 
     private synchronized DescriptionProvider getDescriptionProvider() {
         if (descriptionProvider == null) {
-            descriptionProvider = new DefaultOperationDescriptionProvider(OPERATION_NAME, resourceDescriptionResolver, ADMIN_ONLY);
+            if (isIncludeRestartServers()) {
+                descriptionProvider = new DefaultOperationDescriptionProvider(OPERATION_NAME, resourceDescriptionResolver, ADMIN_ONLY, RESTART_SERVERS);
+            } else {
+                descriptionProvider = new DefaultOperationDescriptionProvider(OPERATION_NAME, resourceDescriptionResolver, ADMIN_ONLY);
+            }
         }
         return descriptionProvider;
+    }
+
+    protected boolean isIncludeRestartServers() {
+        return false;
+    }
+
+    protected void reloadInitiated(T runningModeControl, final boolean adminOnly, final boolean restartServers) {
+
+    }
+
+    //To be overridden by the host version of this
+    protected void doReload(final T runningModeControl, final boolean adminOnly, final boolean restartServers) {
+        runningModeControl.setRunningMode(adminOnly ? RunningMode.ADMIN_ONLY : RunningMode.NORMAL);
     }
 }

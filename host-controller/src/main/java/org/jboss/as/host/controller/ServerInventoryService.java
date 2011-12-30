@@ -55,6 +55,7 @@ class ServerInventoryService implements Service<ServerInventory> {
     private final InjectedValue<NetworkInterfaceBinding> interfaceBinding = new InjectedValue<NetworkInterfaceBinding>();
     private final DomainController domainController;
     private final HostControllerEnvironment environment;
+    private final HostRunningModeControl runningModeControl;
     private final int port;
     private final InjectedValue<ExecutorService> executorService = new InjectedValue<ExecutorService>();
 
@@ -62,13 +63,14 @@ class ServerInventoryService implements Service<ServerInventory> {
 
     private ServerInventoryImpl serverInventory;
 
-    private ServerInventoryService(final DomainController domainController, final HostControllerEnvironment environment, final int port) {
+    private ServerInventoryService(final DomainController domainController, final HostRunningModeControl runningModeControl, final HostControllerEnvironment environment, final int port) {
         this.domainController = domainController;
+        this.runningModeControl = runningModeControl;
         this.environment = environment;
         this.port = port;
     }
 
-    static Future<ServerInventory> install(final ServiceTarget serviceTarget, final DomainController domainController, final HostControllerEnvironment environment,
+    static Future<ServerInventory> install(final ServiceTarget serviceTarget, final DomainController domainController, final HostRunningModeControl runningModeControl, final HostControllerEnvironment environment,
                                            final String interfaceBinding, final int port){
         final ServerInventoryCallbackService callbackService = new ServerInventoryCallbackService();
         serviceTarget.addService(ServerInventoryCallbackService.SERVICE_NAME, callbackService)
@@ -76,7 +78,7 @@ class ServerInventoryService implements Service<ServerInventory> {
                 .setInitialMode(ON_DEMAND)
                 .install();
 
-        final ServerInventoryService inventory = new ServerInventoryService(domainController, environment, port);
+        final ServerInventoryService inventory = new ServerInventoryService(domainController, runningModeControl, environment, port);
         serviceTarget.addService(ServerInventoryService.SERVICE_NAME, inventory)
                 .addDependency(HostControllerService.HC_EXECUTOR_SERVICE_NAME, ExecutorService.class, inventory.executorService)
                 .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerConnectionService.class, inventory.getClient())
@@ -108,21 +110,23 @@ class ServerInventoryService implements Service<ServerInventory> {
      */
     @Override
     public synchronized void stop(final StopContext context) {
-        context.asynchronous();
-        Runnable r = new Runnable() {
+        if (runningModeControl.getRestartMode() == RestartMode.SERVERS) {
+            context.asynchronous();
+            Runnable r = new Runnable() {
 
-            @Override
-            public void run() {
-                try {
-                    serverInventory.stopServers(-1, true); // TODO graceful shutdown // TODO async
-                    serverInventory = null;
-                    client.getValue().setServerInventory(null);
-                } finally {
-                    context.complete();
+                @Override
+                public void run() {
+                    try {
+                        serverInventory.stopServers(-1, true); // TODO graceful shutdown // TODO async
+                        serverInventory = null;
+                        client.getValue().setServerInventory(null);
+                    } finally {
+                        context.complete();
+                    }
                 }
-            }
-        };
-        executorService.getValue().execute(r);
+            };
+            executorService.getValue().execute(r);
+        }
     }
 
     /** {@inheritDoc} */

@@ -29,13 +29,15 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.HostControllerEnvironment;
+import org.jboss.as.host.controller.HostRunningModeControl;
+import org.jboss.as.host.controller.RestartMode;
 import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.dmr.ModelNode;
@@ -51,13 +53,15 @@ public class StartServersHandler implements OperationStepHandler, DescriptionPro
 
     private final ServerInventory serverInventory;
     private final HostControllerEnvironment hostControllerEnvironment;
+    private final HostRunningModeControl runningModeControl;
 
     /**
      * Create the ServerAddHandler
      */
-    public StartServersHandler(final HostControllerEnvironment hostControllerEnvironment, final ServerInventory serverInventory) {
+    public StartServersHandler(final HostControllerEnvironment hostControllerEnvironment, final ServerInventory serverInventory, HostRunningModeControl runningModeControl) {
         this.hostControllerEnvironment = hostControllerEnvironment;
         this.serverInventory = serverInventory;
+        this.runningModeControl = runningModeControl;
     }
 
     /**
@@ -84,7 +88,7 @@ public class StartServersHandler implements OperationStepHandler, DescriptionPro
                 final ModelNode hostModel = Resource.Tools.readModel(resource);
                 if(hostModel.hasDefined(SERVER_CONFIG)) {
                     final ModelNode servers = hostModel.get(SERVER_CONFIG).clone();
-                    if (hostControllerEnvironment.isRestart()){
+                    if (hostControllerEnvironment.isRestart() || runningModeControl.getRestartMode() == RestartMode.HC_ONLY){
                         restartedHcStartOrReconnectServers(servers, domainModel);
                     } else {
                         cleanStartServers(servers, domainModel);
