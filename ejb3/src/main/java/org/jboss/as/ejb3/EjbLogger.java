@@ -385,4 +385,15 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 14141, value = "Channel end notification received, closing channel %s")
     void closingChannelOnChannelEnd(Channel channel);
 
+    /**
+     * Logs a message which includes the resource adapter name and the destination on which a message driven bean
+     * is listening
+     *
+     * @param mdbName     The message driven bean name
+     * @param raName      The resource adapter name
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 14142, value = "Started message driven bean '%s' with '%s' resource adapter")
+    void logMDBStart(final String mdbName, final String raName);
+
 }

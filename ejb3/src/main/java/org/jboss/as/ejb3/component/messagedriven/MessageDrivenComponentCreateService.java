@@ -29,10 +29,13 @@ import java.util.Properties;
 
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.inflow.EndpointDeployer;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -60,6 +63,13 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
         this.messageListenerInterface = componentConfiguration.getViews().get(0).getViewClass();
 
         this.activationProps = componentDescription.getActivationProps();
+    }
+
+    @Override
+    public void start(StartContext context) throws StartException {
+        super.start(context);
+        // AS7-3073 just log a message about the MDB being started
+        EjbLogger.ROOT_LOGGER.logMDBStart(this.getComponentName(), this.resourceAdapterName);
     }
 
     @Override
