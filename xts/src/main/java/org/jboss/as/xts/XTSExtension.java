@@ -61,7 +61,7 @@ public class XTSExtension implements Extension {
 
     public void initialize(ExtensionContext context) {
         log.debug("Initializing XTS Extension");
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(XTSSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ModelDescriptionConstants.ADD, XTSSubsystemAdd.INSTANCE, XTSSubsystemProviders.SUBSYSTEM_ADD, false);
         registration.registerOperationHandler(ModelDescriptionConstants.REMOVE, XTSSubsystemRemove.INSTANCE, XTSSubsystemProviders.SUBSYSTEM_REMOVE, false);
@@ -70,7 +70,7 @@ public class XTSExtension implements Extension {
     }
 
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), parser);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CURRENT.getUriString(), parser);
     }
 
     private static ModelNode createEmptyAddOperation() {

@@ -87,7 +87,7 @@ public class DeploymentScannerExtension implements Extension {
     public void initialize(ExtensionContext context) {
         ROOT_LOGGER.debug("Initializing Deployment Scanner Extension");
 
-        final SubsystemRegistration subsystem = context.registerSubsystem(CommonAttributes.DEPLOYMENT_SCANNER);
+        final SubsystemRegistration subsystem = context.registerSubsystem(CommonAttributes.DEPLOYMENT_SCANNER, 1, 0);
         subsystem.registerXMLElementWriter(parser);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(SUBSYSTEM);
         registration.registerOperationHandler(DeploymentScannerSubsystemAdd.OPERATION_NAME, DeploymentScannerSubsystemAdd.INSTANCE,
@@ -110,7 +110,7 @@ public class DeploymentScannerExtension implements Extension {
     /** {@inheritDoc} */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), parser);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CURRENT.getUriString(), parser);
     }
 
     static class DeploymentScannerParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {

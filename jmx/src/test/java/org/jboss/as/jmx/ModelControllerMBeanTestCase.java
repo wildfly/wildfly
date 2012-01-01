@@ -989,7 +989,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
             complexValueType.get("bigdecimal-value", TYPE).set(ModelType.BIG_DECIMAL);
 
 
-            final SubsystemRegistration subsystem = context.registerSubsystem("test");
+            final SubsystemRegistration subsystem = context.registerSubsystem("test", 1, 0);
             final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new DescriptionProvider() {
 
                 @Override
@@ -1072,7 +1072,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
 
         @Override
         public void initializeParsers(ExtensionParsingContext context) {
-            context.setSubsystemXmlMapping(NAMESPACE, new TestExtensionParser());
+            context.setSubsystemXmlMapping("test", NAMESPACE, new TestExtensionParser());
         }
 
         static class TestExtensionParser implements XMLElementReader<List<ModelNode>> {
@@ -1213,7 +1213,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         @Override
         public void initialize(ExtensionContext context) {
 
-            final SubsystemRegistration subsystem = context.registerSubsystem("test");
+            final SubsystemRegistration subsystem = context.registerSubsystem("test", 1, 0);
             final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new DescriptionProvider() {
 
                 @Override
@@ -1253,7 +1253,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
 
         @Override
         public void initializeParsers(ExtensionParsingContext context) {
-            context.setSubsystemXmlMapping(NAMESPACE, new TestExtensionParser());
+            context.setSubsystemXmlMapping("test", NAMESPACE, new TestExtensionParser());
         }
 
         static class TestExtensionParser implements XMLElementReader<List<ModelNode>> {

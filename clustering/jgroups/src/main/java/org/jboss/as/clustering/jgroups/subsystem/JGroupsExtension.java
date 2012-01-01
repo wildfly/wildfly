@@ -77,7 +77,7 @@ public class JGroupsExtension implements Extension, DescriptionProvider, XMLElem
      */
     @Override
     public void initialize(ExtensionContext context) {
-        SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
+        SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
         subsystem.registerXMLElementWriter(this);
 
         ManagementResourceRegistration registration = subsystem.registerSubsystemModel(this);
@@ -96,7 +96,7 @@ public class JGroupsExtension implements Extension, DescriptionProvider, XMLElem
      */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUri(), this);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CURRENT.getUri(), this);
     }
 
     /**

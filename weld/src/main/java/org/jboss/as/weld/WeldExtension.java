@@ -73,7 +73,7 @@ public class WeldExtension implements Extension {
     @Override
     public void initialize(final ExtensionContext context) {
         log.debug("Activating Weld Extension");
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(SUBSYSTEM_DESCRIPTION);
         registration.registerOperationHandler(ADD, WeldSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESCRIPTION, false);
         registration.registerOperationHandler(DESCRIBE, WeldSubsystemDescribeHandler.INSTANCE, WeldSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
@@ -84,7 +84,7 @@ public class WeldExtension implements Extension {
     /** {@inheritDoc} */
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(WeldExtension.NAMESPACE, parser);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, WeldExtension.NAMESPACE, parser);
     }
 
     private static ModelNode createAddSubSystemOperation() {

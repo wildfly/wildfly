@@ -72,7 +72,7 @@ public class JaxrsExtension implements Extension {
     @Override
     public void initialize(final ExtensionContext context) {
         JAXRS_LOGGER.debug("Activating JAX-RS Extension");
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(SUBSYSTEM_DESCRIPTION);
         registration.registerOperationHandler(ADD, JaxrsSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESCRIPTION, false);
         registration.registerOperationHandler(DESCRIBE, JaxrsSubsystemDescribeHandler.INSTANCE, JaxrsSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
@@ -83,7 +83,7 @@ public class JaxrsExtension implements Extension {
     /** {@inheritDoc} */
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(JaxrsExtension.NAMESPACE, parser);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, JaxrsExtension.NAMESPACE, parser);
     }
 
     private static ModelNode createAddSubSystemOperation() {

@@ -87,7 +87,7 @@ public class JcaExtension implements Extension {
     public void initialize(final ExtensionContext context) {
         ROOT_LOGGER.debugf("Initializing Connector Extension");
 
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(JcaSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, JcaSubsystemAdd.INSTANCE, JcaSubsystemProviders.SUBSYSTEM_ADD_DESC, false);
@@ -154,8 +154,8 @@ public class JcaExtension implements Extension {
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.JCA_1_0.getUriString(), ConnectorSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(Namespace.JCA_1_1.getUriString(), ConnectorSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_1_0.getUriString(), ConnectorSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_1_1.getUriString(), ConnectorSubsystemParser.INSTANCE);
     }
 
     private static ModelNode createEmptyAddOperation() {

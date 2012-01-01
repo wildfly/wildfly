@@ -57,7 +57,7 @@ public class AppClientExtension implements Extension {
 
     @Override
     public void initialize(final ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(Constants.SUBSYSTEM_NAME);
+        final SubsystemRegistration subsystem = context.registerSubsystem(Constants.SUBSYSTEM_NAME, 1, 0);
         final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(AppClientSubsystemProviders.SUBSYSTEM);
 
         // register the operations
@@ -68,7 +68,7 @@ public class AppClientExtension implements Extension {
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(AppClientExtension.NAMESPACE_1_0, parser);
+        context.setSubsystemXmlMapping(Constants.SUBSYSTEM_NAME, AppClientExtension.NAMESPACE_1_0, parser);
     }
 
 

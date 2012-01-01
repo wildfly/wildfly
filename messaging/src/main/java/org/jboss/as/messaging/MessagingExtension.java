@@ -118,7 +118,7 @@ public class MessagingExtension implements Extension {
     }
 
     public void initialize(ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
         subsystem.registerXMLElementWriter(MessagingSubsystemParser.getInstance());
 
         // Root resource
@@ -305,7 +305,7 @@ public class MessagingExtension implements Extension {
             if (namespace == Namespace.UNKNOWN) {
                 continue;
             }
-            context.setSubsystemXmlMapping(namespace.getUriString(), MessagingSubsystemParser.getInstance());
+            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, namespace.getUriString(), MessagingSubsystemParser.getInstance());
         }
     }
 
