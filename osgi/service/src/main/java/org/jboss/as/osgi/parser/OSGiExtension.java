@@ -48,13 +48,13 @@ public class OSGiExtension implements Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.OSGI_1_0.getUriString(), OSGiNamespace10Parser.INSTANCE);
-        context.setSubsystemXmlMapping(Namespace.OSGI_1_1.getUriString(), OSGiNamespace11Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.OSGI_1_0.getUriString(), OSGiNamespace10Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.OSGI_1_1.getUriString(), OSGiNamespace11Parser.INSTANCE);
     }
 
     @Override
     public void initialize(ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(OSGiSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ModelDescriptionConstants.ADD, OSGiSubsystemAdd.INSTANCE, OSGiSubsystemAdd.DESCRIPTION, false);
         registration.registerReadWriteAttribute(ModelConstants.ACTIVATION, null, ActivationAttributeHandler.INSTANCE, EnumSet.of(AttributeAccess.Flag.STORAGE_CONFIGURATION, AttributeAccess.Flag.RESTART_JVM));

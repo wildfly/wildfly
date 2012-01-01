@@ -61,7 +61,7 @@ public class TestExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         System.out.println("Initializing TestExtension");
-        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
+        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
 
         ManagementResourceRegistration root = registration.registerSubsystemModel(new DescriptionProvider() {
 
@@ -119,7 +119,7 @@ public class TestExtension implements Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping("urn:jboss:domain:remoting:1.0", new XMLElementReader<List<ModelNode>>() {
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, "urn:jboss:domain:remoting:1.0", new XMLElementReader<List<ModelNode>>() {
 
             @Override
             public void readElement(XMLExtendedStreamReader reader, List<ModelNode> value) throws XMLStreamException {

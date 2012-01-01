@@ -114,7 +114,7 @@ public class RemotingExtension implements Extension {
     public void initialize(ExtensionContext context) {
 
         // Register the remoting subsystem
-        final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
+        final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
         registration.registerXMLElementWriter(RemotingSubsystem11Parser.INSTANCE);
 
         final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(new RemotingSubsystemRootResource(context.getProcessType()));
@@ -139,8 +139,8 @@ public class RemotingExtension implements Extension {
      */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.REMOTING_1_0.getUriString(), RemotingSubsystem10Parser.INSTANCE);
-        context.setSubsystemXmlMapping(Namespace.REMOTING_1_1.getUriString(), RemotingSubsystem11Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.REMOTING_1_0.getUriString(), RemotingSubsystem10Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.REMOTING_1_1.getUriString(), RemotingSubsystem11Parser.INSTANCE);
     }
 
     /**

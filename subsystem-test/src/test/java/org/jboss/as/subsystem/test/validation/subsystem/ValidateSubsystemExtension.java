@@ -55,13 +55,13 @@ public class ValidateSubsystemExtension implements Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(NAMESPACE, parser);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE, parser);
     }
 
 
     @Override
     public void initialize(ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(ValidateSubsystemProviders.SUBSYSTEM);
         //We always need to add an 'add' operation
         registration.registerOperationHandler(ADD,

@@ -88,7 +88,7 @@ public class ThreadsExtension implements Extension {
         log.debugf("Initializing Threading Extension");
 
         // Register the remoting subsystem
-        final SubsystemRegistration registration = context.registerSubsystem(THREADS);
+        final SubsystemRegistration registration = context.registerSubsystem(THREADS, 1, 0);
         registration.registerXMLElementWriter(ThreadsParser.INSTANCE);
         // Remoting subsystem description and operation handlers
         final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM_PROVIDER);
@@ -142,7 +142,7 @@ public class ThreadsExtension implements Extension {
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), ThreadsParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CURRENT.getUriString(), ThreadsParser.INSTANCE);
     }
 
     private static class ThreadsSubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {

@@ -50,7 +50,7 @@ public class JacORBExtension implements Extension {
 
     @Override
     public void initialize(ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(
                 JacORBSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, JacORBSubsystemAdd.INSTANCE,
@@ -65,7 +65,7 @@ public class JacORBExtension implements Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(JacORBSubsystemParser.Namespace.JacORB_1_0.getUriString(), PARSER);
-        context.setSubsystemXmlMapping(JacORBSubsystemParser.Namespace.JacORB_1_1.getUriString(), PARSER);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, JacORBSubsystemParser.Namespace.JacORB_1_0.getUriString(), PARSER);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, JacORBSubsystemParser.Namespace.JacORB_1_1.getUriString(), PARSER);
     }
 }

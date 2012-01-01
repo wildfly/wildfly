@@ -26,14 +26,15 @@ import static org.jboss.as.cmp.subsystem.CmpConstants.HILO_KEY_GENERATOR;
 import static org.jboss.as.cmp.subsystem.CmpConstants.UUID_KEY_GENERATOR;
 import static org.jboss.as.cmp.subsystem.CmpSubsystemProviders.HILO_KEY_GENERATOR_DESC;
 import static org.jboss.as.cmp.subsystem.CmpSubsystemProviders.UUID_KEY_GENERATOR_DESC;
-import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SubsystemRegistration;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -46,7 +47,7 @@ public class CmpExtension implements Extension {
     public static final String SUBSYSTEM_NAME = "cmp";
 
     public void initialize(final ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
         final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(CmpSubsystemProviders.SUBSYSTEM);
         subsystem.registerXMLElementWriter(CmpSubsystem10Parser.INSTANCE);
 
@@ -64,6 +65,6 @@ public class CmpExtension implements Extension {
     }
 
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CMP_1_0.getUriString(), CmpSubsystem10Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CMP_1_0.getUriString(), CmpSubsystem10Parser.INSTANCE);
     }
 }

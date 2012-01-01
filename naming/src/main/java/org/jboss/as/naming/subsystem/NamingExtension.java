@@ -63,7 +63,7 @@ public class NamingExtension implements Extension {
      */
     @Override
     public void initialize(ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(NamingSubsystemRootResourceDefinition.INSTANCE);
 
@@ -81,8 +81,8 @@ public class NamingExtension implements Extension {
      */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(NAMESPACE_1_0, NamingSubsystem10Parser.INSTANCE);
-        context.setSubsystemXmlMapping(NAMESPACE_1_1, NamingSubsystem11Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_0, NamingSubsystem10Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_1, NamingSubsystem11Parser.INSTANCE);
     }
 
     static ModelNode createAddOperation() {

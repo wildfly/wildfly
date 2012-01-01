@@ -143,7 +143,6 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.connector.pool.PoolConfigurationRWHandler;
 import org.jboss.as.connector.pool.PoolConfigurationRWHandler.LocalAndXaDataSourcePoolConfigurationWriteHandler;
 import org.jboss.as.connector.pool.PoolConfigurationRWHandler.PoolConfigurationReadHandler;
-import org.jboss.as.connector.pool.PoolMetrics;
 import org.jboss.as.connector.pool.PoolOperations;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -196,9 +195,9 @@ public class DataSourcesExtension implements Extension {
         SUBSYSTEM_DATASOURCES_LOGGER.debugf("Initializing Datasources Extension");
 
         // Register the remoting subsystem
-        final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
+        final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
 
-        registration.registerXMLElementWriter(NewDataSourceSubsystemParser.INSTANCE);
+        registration.registerXMLElementWriter(DataSourceSubsystemParser.INSTANCE);
 
         // Remoting subsystem description and operation handlers
         final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM);
@@ -273,13 +272,13 @@ public class DataSourcesExtension implements Extension {
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), NewDataSourceSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CURRENT.getUriString(), DataSourceSubsystemParser.INSTANCE);
     }
 
-    public static final class NewDataSourceSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
+    public static final class DataSourceSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
             XMLElementWriter<SubsystemMarshallingContext> {
 
-        static final NewDataSourceSubsystemParser INSTANCE = new NewDataSourceSubsystemParser();
+        static final DataSourceSubsystemParser INSTANCE = new DataSourceSubsystemParser();
 
         /**
          * {@inheritDoc}

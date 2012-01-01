@@ -73,7 +73,7 @@ public class InfinispanExtension implements Extension {
      */
     @Override
     public void initialize(ExtensionContext context) {
-        SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
+        SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
         subsystem.registerXMLElementWriter(InfinispanSubsystemParser_1_0.getInstance());
 
         ManagementResourceRegistration registration = subsystem.registerSubsystemModel(InfinispanSubsystemProviders.SUBSYSTEM);
@@ -125,8 +125,8 @@ public class InfinispanExtension implements Extension {
      */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.INFINISPAN_1_0.getUri(), InfinispanSubsystemParser_1_0.getInstance());
-        context.setSubsystemXmlMapping(Namespace.INFINISPAN_1_1.getUri(),InfinispanSubsystemParser_1_0.getInstance());
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.INFINISPAN_1_0.getUri(), InfinispanSubsystemParser_1_0.getInstance());
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.INFINISPAN_1_1.getUri(),InfinispanSubsystemParser_1_0.getInstance());
     }
 
 

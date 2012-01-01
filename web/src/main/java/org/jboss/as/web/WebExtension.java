@@ -72,7 +72,7 @@ public class WebExtension implements Extension {
     public void initialize(ExtensionContext context) {
         log.debugf("Activating Web Extension");
 
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(WebSubsystemDescriptionProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, WebSubsystemAdd.INSTANCE, WebSubsystemAdd.INSTANCE, false);
         registration.registerOperationHandler(DESCRIBE, WebSubsystemDescribe.INSTANCE, WebSubsystemDescribe.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
@@ -188,8 +188,8 @@ public class WebExtension implements Extension {
     /** {@inheritDoc} */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.WEB_1_1.getUriString(), WebSubsystemParser.getInstance());
-        context.setSubsystemXmlMapping(Namespace.WEB_1_0.getUriString(), WebSubsystemParser.getInstance());
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEB_1_1.getUriString(), WebSubsystemParser.getInstance());
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEB_1_0.getUriString(), WebSubsystemParser.getInstance());
     }
 
 }

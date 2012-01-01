@@ -76,7 +76,7 @@ public class JMXExtension implements Extension {
     /** {@inheritDoc} */
     @Override
     public void initialize(ExtensionContext context) {
-        final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
+        final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
         final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(JMXSubsystemRootResource.INSTANCE);
         subsystem.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         subsystem.registerSubModel(JMXConnectorResource.INSTANCE);
@@ -86,8 +86,8 @@ public class JMXExtension implements Extension {
     /** {@inheritDoc} */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.JMX_1_0.getUriString(), parser10);
-        context.setSubsystemXmlMapping(Namespace.JMX_1_1.getUriString(), parserCurrent);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JMX_1_0.getUriString(), parser10);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JMX_1_1.getUriString(), parserCurrent);
     }
 
     private static ModelNode createAddOperation(Boolean showModel) {

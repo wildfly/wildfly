@@ -27,12 +27,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension.NewDataSourceSubsystemParser;
+import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension.DataSourceSubsystemParser;
 
 import org.jboss.as.connector.subsystems.datasources.Namespace;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.protocol.StreamUtils;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriterFactory;
 import org.jboss.staxmapper.XMLMapper;
@@ -45,7 +44,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Map;
 import java.util.Map.Entry;
-import org.jboss.as.controller.client.ModelControllerClient;
+
 import org.jboss.dmr.ModelNode;
 import java.util.ArrayList;
 import org.junit.Assert;
@@ -100,7 +99,7 @@ public class DataSourceOperationTestUtil {
                 SUCCESS.equals(ret.get(OUTCOME).asString()));
         final ModelNode result = ret.get(RESULT);
         Assert.assertNotNull(result);
-        
+
         final Map<String, ModelNode> children = getChildren(result);
         for (final Entry<String, ModelNode> child : children.entrySet()) {
             Assert.assertTrue(child.getKey() != null);
@@ -114,7 +113,7 @@ public class DataSourceOperationTestUtil {
         StringWriter strWriter = new StringWriter();
         XMLExtendedStreamWriter writer = XMLExtendedStreamWriterFactory.create(XMLOutputFactory.newFactory()
                 .createXMLStreamWriter(strWriter));
-        NewDataSourceSubsystemParser parser = new NewDataSourceSubsystemParser();
+        DataSourceSubsystemParser parser = new DataSourceSubsystemParser();
         parser.writeContent(writer, new SubsystemMarshallingContext(dsNode, writer));
         writer.flush();
 

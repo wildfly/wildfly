@@ -132,7 +132,7 @@ public class ResourceAdaptersExtension implements Extension {
     public void initialize(final ExtensionContext context) {
         SUBSYSTEM_RA_LOGGER.debugf("Initializing ResourceAdapters Extension");
         // Register the remoting subsystem
-        final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
+        final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
 
         ReloadRequiredWriteAttributeHandler reloadRequiredWriteAttributeHandler = new ReloadRequiredWriteAttributeHandler();
 
@@ -193,7 +193,7 @@ public class ResourceAdaptersExtension implements Extension {
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), ResourceAdapterSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CURRENT.getUriString(), ResourceAdapterSubsystemParser.INSTANCE);
     }
 
     public static final class ResourceAdapterSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,

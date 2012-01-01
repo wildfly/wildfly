@@ -108,7 +108,7 @@ public class LoggingExtension implements Extension {
      */
     @Override
     public void initialize(ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(LoggingSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, NewLoggingSubsystemAdd.ADD_INSTANCE, LoggingSubsystemProviders.SUBSYSTEM_ADD, false);
         registration.registerOperationHandler(DESCRIBE, LoggingDescribeHandler.INSTANCE, LoggingDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
@@ -206,8 +206,8 @@ public class LoggingExtension implements Extension {
      */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.LOGGING_1_0.getUriString(), LoggingSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(Namespace.LOGGING_1_1.getUriString(), LoggingSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.LOGGING_1_0.getUriString(), LoggingSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.LOGGING_1_1.getUriString(), LoggingSubsystemParser.INSTANCE);
     }
 
     private void addWriteAttributes(final ManagementResourceRegistration handler, final AbstractLogHandlerWriteAttributeHandler<?> stepHandler) {

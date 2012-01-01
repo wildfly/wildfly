@@ -67,7 +67,7 @@ public class EJB3Extension implements Extension {
      */
     @Override
     public void initialize(ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
 
         subsystem.registerXMLElementWriter(EJB3Subsystem12Parser.INSTANCE);
 
@@ -113,8 +113,8 @@ public class EJB3Extension implements Extension {
      */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(NAMESPACE_1_0, EJB3Subsystem10Parser.INSTANCE);
-        context.setSubsystemXmlMapping(NAMESPACE_1_1, EJB3Subsystem11Parser.INSTANCE);
-        context.setSubsystemXmlMapping(NAMESPACE_1_2, EJB3Subsystem12Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_0, EJB3Subsystem10Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_1, EJB3Subsystem11Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_2, EJB3Subsystem12Parser.INSTANCE);
     }
 }
