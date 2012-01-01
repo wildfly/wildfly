@@ -206,7 +206,7 @@ public class ExtensionResource implements Resource.ResourceEntry {
                 majorNode.set(major.intValue());
             }
             final ModelNode minorNode = model.get(ExtensionSubsystemResourceDefinition.MINOR_VERSION.getName());
-            Integer minor = subsystemInformation.getManagementInterfaceMajorVersion();
+            Integer minor = subsystemInformation.getManagementInterfaceMinorVersion();
             if (minor != null) {
                 minorNode.set(minor.intValue());
             }
