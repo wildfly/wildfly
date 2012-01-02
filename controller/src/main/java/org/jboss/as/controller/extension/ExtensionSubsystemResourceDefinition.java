@@ -23,6 +23,8 @@
 package org.jboss.as.controller.extension;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.util.Locale;
@@ -87,10 +89,10 @@ public class ExtensionSubsystemResourceDefinition extends SimpleResourceDefiniti
         }
     };
 
-    public static final SimpleAttributeDefinition MAJOR_VERSION = new SimpleAttributeDefinitionBuilder("major-version", ModelType.INT, true)
+    public static final SimpleAttributeDefinition MAJOR_VERSION = new SimpleAttributeDefinitionBuilder(MANAGEMENT_MAJOR_VERSION, ModelType.INT, true)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
 
-    public static final SimpleAttributeDefinition MINOR_VERSION = new SimpleAttributeDefinitionBuilder("minor-version", ModelType.INT, true)
+    public static final SimpleAttributeDefinition MINOR_VERSION = new SimpleAttributeDefinitionBuilder(MANAGEMENT_MINOR_VERSION, ModelType.INT, true)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
 
     ExtensionSubsystemResourceDefinition() {

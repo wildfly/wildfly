@@ -147,11 +147,11 @@ public class ManagementVersionTestCase {
             for (Property subsystem : subsystems.asPropertyList()) {
                 String subsystemName = subsystem.getName();
                 ModelNode value = subsystem.getValue();
-                Assert.assertEquals(subsystemName + " has major version", ModelType.INT, value.get("major-version").getType());
-                Assert.assertEquals(subsystemName + " has minor version", ModelType.INT, value.get("minor-version").getType());
+                Assert.assertEquals(subsystemName + " has major version", ModelType.INT, value.get("management-major-version").getType());
+                Assert.assertEquals(subsystemName + " has minor version", ModelType.INT, value.get("management-minor-version").getType());
                 Assert.assertEquals(subsystemName + " has namespaces", ModelType.LIST, value.get("xml-namespaces").getType());
-                Assert.assertTrue(subsystemName + " has positive major version", value.get("major-version").asInt() > 0);
-                Assert.assertTrue(subsystemName + " has non-negative minor version", value.get("minor-version").asInt() >= 0);
+                Assert.assertTrue(subsystemName + " has positive major version", value.get("management-major-version").asInt() > 0);
+                Assert.assertTrue(subsystemName + " has non-negative minor version", value.get("management-minor-version").asInt() >= 0);
                 Assert.assertTrue(subsystemName + " has more than zero namespaces", value.get("xml-namespaces").asInt() > 0);
             }
         }
