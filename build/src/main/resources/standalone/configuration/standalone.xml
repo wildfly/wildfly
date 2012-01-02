@@ -188,6 +188,7 @@
         <subsystem xmlns="urn:jboss:domain:jdr:1.0"/>
         <subsystem xmlns="urn:jboss:domain:jmx:1.1">
             <show-model value="true"/>
+            <remoting-connector/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jpa:1.0">
             <jpa default-datasource=""/>
@@ -300,8 +301,6 @@
         <socket-binding name="https" port="8443"/>
         <socket-binding name="jacorb" port="3528"/>
         <socket-binding name="jacorb-ssl" port="3529"/>
-        <socket-binding name="jmx-connector-registry" interface="management" port="1090"/>
-        <socket-binding name="jmx-connector-server" interface="management" port="1091"/>
         <socket-binding name="management-native" interface="management" port="${jboss.management.native.port:9999}"/>
         <socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}"/>
         <socket-binding name="messaging" port="5445"/>

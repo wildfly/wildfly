@@ -22,14 +22,6 @@
 
 package org.jboss.as.jmx;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.jmx.CommonAttributes.CONNECTOR;
-import static org.jboss.as.jmx.CommonAttributes.JMX;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -53,6 +45,14 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.jmx.CommonAttributes.JMX;
+import static org.jboss.as.jmx.CommonAttributes.REMOTING_CONNECTOR;
+
 /**
  * Domain extension used to initialize the JMX subsystem.
  *
@@ -72,19 +72,22 @@ public class JMXExtension implements Extension {
     static final JMXSubsystemParser_1_1 parserCurrent = new JMXSubsystemParser_1_1();
     static final JMXSubsystemParser_1_0 parser10 = new JMXSubsystemParser_1_0();
 
-
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
         final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
-        final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(new JMXSubsystemRootResource(registerRuntimeOnly));
+        final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(new JMXSubsystemRootResource());
         subsystem.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
-        subsystem.registerSubModel(JMXConnectorResource.INSTANCE);
+        subsystem.registerSubModel(RemotingConnectorResource.INSTANCE);
         registration.registerXMLElementWriter(parserCurrent);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JMX_1_0.getUriString(), parser10);
@@ -101,18 +104,11 @@ public class JMXExtension implements Extension {
         return subsystem;
     }
 
-    private static ModelNode createAddConnectorOperation(String serverBinding, String registryBinding) {
-        final ModelNode connector = new ModelNode();
-        connector.get(OP).set(ADD);
-        connector.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME).add(CONNECTOR, JMX);
-        connector.get(CommonAttributes.SERVER_BINDING).set(serverBinding);
-        connector.get(CommonAttributes.REGISTRY_BINDING).set(registryBinding);
-        return connector;
-    }
-
     private static class JMXSubsystemParser_1_0 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
             ParseUtils.requireNoAttributes(reader);
@@ -120,24 +116,26 @@ public class JMXExtension implements Extension {
 
             boolean gotConnector = false;
 
-            while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
                 final Element element = Element.forName(reader.getLocalName());
-                switch(element){
+                switch (element) {
                     case JMX_CONNECTOR: {
                         if (gotConnector) {
                             throw ParseUtils.duplicateNamedElement(reader, Element.JMX_CONNECTOR.getLocalName());
                         }
-                        parseConnector(reader, list);
+                        parseConnector(reader);
                         gotConnector = true;
                         break;
-                    } default: {
+                    }
+                    default: {
                         throw ParseUtils.unexpectedElement(reader);
                     }
                 }
             }
         }
 
-        void parseConnector(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
+        void parseConnector(XMLExtendedStreamReader reader) throws XMLStreamException {
+            JmxLogger.ROOT_LOGGER.jmxConnectorNotSupported();
             String serverBinding = null;
             String registryBinding = null;
             int count = reader.getAttributeCount();
@@ -148,45 +146,44 @@ public class JMXExtension implements Extension {
                     case SERVER_BINDING: {
                         serverBinding = value;
                         break;
-                    } case REGISTRY_BINDING: {
+                    }
+                    case REGISTRY_BINDING: {
                         registryBinding = value;
                         break;
-                    } default: {
+                    }
+                    default: {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
                 }
             }
             // Require no content
             ParseUtils.requireNoContent(reader);
-            if(serverBinding == null) {
+            if (serverBinding == null) {
                 throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SERVER_BINDING));
             }
-            if(registryBinding == null) {
+            if (registryBinding == null) {
                 throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.REGISTRY_BINDING));
             }
-            list.add(createAddConnectorOperation(serverBinding, registryBinding));
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
             Namespace schemaVer = Namespace.CURRENT;
             ModelNode node = context.getModelNode();
 
             context.startSubsystemElement(schemaVer.getUriString(), false);
-            if (node.hasDefined(CommonAttributes.SERVER_BINDING)) {
-                writer.writeStartElement(Element.JMX_CONNECTOR.getLocalName());
-                writer.writeAttribute(Attribute.REGISTRY_BINDING.getLocalName(), node.get(CommonAttributes.REGISTRY_BINDING).asString());
-                writer.writeAttribute(Attribute.SERVER_BINDING.getLocalName(), node.get(CommonAttributes.SERVER_BINDING).asString());
-                writer.writeEndElement();
-            }
             writer.writeEndElement();
         }
     }
 
     private static class JMXSubsystemParser_1_1 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
             Boolean showModel = null;
@@ -194,22 +191,23 @@ public class JMXExtension implements Extension {
             ParseUtils.requireNoAttributes(reader);
 
             ModelNode connectorAdd = null;
-            while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
                 final Element element = Element.forName(reader.getLocalName());
-                switch(element){
+                switch (element) {
                     case SHOW_MODEL:
                         if (showModel != null) {
                             throw ParseUtils.duplicateNamedElement(reader, Element.SHOW_MODEL.getLocalName());
                         }
                         showModel = parseShowModelElement(reader);
                         break;
-                    case JMX_CONNECTOR: {
+                    case REMOTING_CONNECTOR: {
                         if (connectorAdd != null) {
-                            throw ParseUtils.duplicateNamedElement(reader, Element.JMX_CONNECTOR.getLocalName());
+                            throw ParseUtils.duplicateNamedElement(reader, Element.REMOTING_CONNECTOR.getLocalName());
                         }
-                        connectorAdd = parseConnector(reader);
+                        connectorAdd = parseRemoteConnector(reader);
                         break;
-                    } default: {
+                    }
+                    default: {
                         throw ParseUtils.unexpectedElement(reader);
                     }
                 }
@@ -220,43 +218,26 @@ public class JMXExtension implements Extension {
             }
         }
 
+        private ModelNode parseRemoteConnector(final XMLExtendedStreamReader reader) throws XMLStreamException {
+            // Require no content
+            ParseUtils.requireNoAttributes(reader);
+            ParseUtils.requireNoContent(reader);
+            final ModelNode connector = new ModelNode();
+            connector.get(OP).set(ADD);
+            connector.get(OP_ADDR).add(SUBSYSTEM).add(JMX);
+            connector.get(OP_ADDR).add(REMOTING_CONNECTOR).add(CommonAttributes.JMX);
+            return connector;
+        }
+
 
         boolean parseShowModelElement(XMLExtendedStreamReader reader) throws XMLStreamException {
             ParseUtils.requireSingleAttribute(reader, CommonAttributes.VALUE);
             return ParseUtils.readBooleanAttributeElement(reader, CommonAttributes.VALUE);
         }
 
-        ModelNode parseConnector(XMLExtendedStreamReader reader) throws XMLStreamException {
-            String serverBinding = null;
-            String registryBinding = null;
-            int count = reader.getAttributeCount();
-            for (int i = 0; i < count; i++) {
-                final String value = reader.getAttributeValue(i);
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case SERVER_BINDING: {
-                        serverBinding = value;
-                        break;
-                    } case REGISTRY_BINDING: {
-                        registryBinding = value;
-                        break;
-                    } default: {
-                        throw ParseUtils.unexpectedAttribute(reader, i);
-                    }
-                }
-            }
-            // Require no content
-            ParseUtils.requireNoContent(reader);
-            if(serverBinding == null) {
-                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SERVER_BINDING));
-            }
-            if(registryBinding == null) {
-                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.REGISTRY_BINDING));
-            }
-            return createAddConnectorOperation(serverBinding, registryBinding);
-        }
-
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
             Namespace schemaVer = Namespace.CURRENT;
@@ -267,11 +248,8 @@ public class JMXExtension implements Extension {
                 writer.writeEmptyElement(Element.SHOW_MODEL.getLocalName());
                 JMXSubsystemRootResource.SHOW_MODEL.marshallAsAttribute(node, writer);
             }
-            if (node.hasDefined(CommonAttributes.CONNECTOR) && node.get(CommonAttributes.CONNECTOR).hasDefined(CommonAttributes.JMX)) {
-                ModelNode connector = node.get(CommonAttributes.CONNECTOR, CommonAttributes.JMX);
-                writer.writeStartElement(Element.JMX_CONNECTOR.getLocalName());
-                JMXConnectorResource.REGISTRY_BINDING.marshallAsAttribute(connector, writer);
-                JMXConnectorResource.SERVER_BINDING.marshallAsAttribute(connector, writer);
+            if (node.hasDefined(CommonAttributes.REMOTING_CONNECTOR)) {
+                writer.writeStartElement(Element.REMOTING_CONNECTOR.getLocalName());
                 writer.writeEndElement();
             }
             writer.writeEndElement();

@@ -21,8 +21,6 @@
 */
 package org.jboss.as.jmx;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -33,10 +31,8 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
@@ -49,18 +45,11 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
 
     static final SimpleAttributeDefinition SHOW_MODEL = SimpleAttributeDefinitionBuilder.create(CommonAttributes.SHOW_MODEL, ModelType.BOOLEAN, true).setXmlName(CommonAttributes.VALUE).build();
 
-    private static final String INVOKE_MBEAN_RAW = "invoke-mbean-raw";
-    private static final String GET_MBEAN_INFO_RAW = "get-mbean-info-raw";
-    private static final String GET_MBEAN_ATTRIBUTE_INFO_RAW = "get-mbean-attribute-info-raw";
-
-    private final boolean registerRuntimeOnly;
-
-    JMXSubsystemRootResource(final boolean registerRuntimeOnly) {
+    JMXSubsystemRootResource() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JMXExtension.SUBSYSTEM_NAME),
                 JMXExtension.getResourceDescriptionResolver(JMXExtension.SUBSYSTEM_NAME),
                 JMXSubsystemAdd.INSTANCE,
                 JMXSubsystemRemove.INSTANCE);
-        this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
     @Override
@@ -71,20 +60,7 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
-        if (registerRuntimeOnly) {
-            resourceRegistration.registerOperationHandler(INVOKE_MBEAN_RAW, new InvokeMBeanRaw(), EMPTY_DESCRIPTION , false, EntryType.PRIVATE);
-            resourceRegistration.registerOperationHandler(GET_MBEAN_INFO_RAW, new GetMBeanInfoRaw(), EMPTY_DESCRIPTION, false, EntryType.PRIVATE);
-            resourceRegistration.registerOperationHandler(GET_MBEAN_ATTRIBUTE_INFO_RAW, new GetMBeanAttributeInfoRaw(), EMPTY_DESCRIPTION, false, EntryType.PRIVATE);
-        }
     }
-
-    private static DescriptionProvider EMPTY_DESCRIPTION = new DescriptionProvider() {
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode();
-        }
-    };
 
     private static class JMXWriteAttributeHandler extends RestartParentWriteAttributeHandler {
         JMXWriteAttributeHandler(AttributeDefinition attr) {

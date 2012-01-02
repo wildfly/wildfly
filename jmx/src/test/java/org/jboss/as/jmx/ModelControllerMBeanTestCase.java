@@ -21,20 +21,6 @@
  */
 package org.jboss.as.jmx;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collections;
@@ -94,16 +80,37 @@ import org.jboss.as.jmx.ModelControllerMBeanTestCase.TestExtension.ComplexOperat
 import org.jboss.as.jmx.ModelControllerMBeanTestCase.TestExtension.IntOperationWithParams;
 import org.jboss.as.jmx.ModelControllerMBeanTestCase.TestExtension.VoidOperationNoParams;
 import org.jboss.as.jmx.model.Constants;
+import org.jboss.as.network.SocketBinding;
+import org.jboss.as.remoting.EndpointService;
+import org.jboss.as.remoting.RemotingServices;
+import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.Test;
+import org.xnio.OptionMap;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
 /**
  *
@@ -120,8 +127,6 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
     private final static ObjectName SOCKET_BINDING_GROUP_NAME = createObjectName(Constants.DOMAIN + ":socket-binding-group=test-socket-binding-group");
     private final static ObjectName SERVER_SOCKET_BINDING_NAME = createObjectName(Constants.DOMAIN + ":socket-binding-group=test-socket-binding-group,socket-binding=server");
     private final static ObjectName SERVER_SOCKET_BINDING_NAME_2 = createObjectName(Constants.DOMAIN + ":socket-binding=server,socket-binding-group=test-socket-binding-group");
-    private final static ObjectName REGISTRY_SOCKET_BINDING_NAME = createObjectName(Constants.DOMAIN + ":socket-binding-group=test-socket-binding-group,socket-binding=registry");
-    private final static ObjectName REGISTRY_SOCKET_BINDING_NAME_2 = createObjectName(Constants.DOMAIN + ":socket-binding=registry,socket-binding-group=test-socket-binding-group");
     private final static ObjectName SUBSYSTEM_NAME = createObjectName(Constants.DOMAIN + ":subsystem=jmx");
     private final static ObjectName BAD_NAME = createObjectName(Constants.DOMAIN + ":type=bad");
 
@@ -140,15 +145,15 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         Assert.assertEquals(count, objectNames.size());
         checkSameMBeans(instances, objectNames);
         assertContainsNames(objectNames, ROOT_NAME, INTERFACE_NAME, SOCKET_BINDING_GROUP_NAME, SERVER_SOCKET_BINDING_NAME,
-                REGISTRY_SOCKET_BINDING_NAME, SUBSYSTEM_NAME);
+                SUBSYSTEM_NAME);
 
         Set<ObjectInstance> filteredInstances = connection.queryMBeans(createObjectName(Constants.DOMAIN + ":socket-binding-group=*,*"),
                 null);
         Set<ObjectName> filteredNames = connection.queryNames(createObjectName(Constants.DOMAIN + ":socket-binding-group=*,*"), null);
-        Assert.assertEquals(3, filteredInstances.size());
-        Assert.assertEquals(3, filteredNames.size());
+        Assert.assertEquals(2, filteredInstances.size());
+        Assert.assertEquals(2, filteredNames.size());
         checkSameMBeans(filteredInstances, filteredNames);
-        assertContainsNames(objectNames, SOCKET_BINDING_GROUP_NAME, SERVER_SOCKET_BINDING_NAME, REGISTRY_SOCKET_BINDING_NAME);
+        assertContainsNames(objectNames, SOCKET_BINDING_GROUP_NAME, SERVER_SOCKET_BINDING_NAME);
 
         // TODO test with QueryExp
     }
@@ -161,9 +166,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         Assert.assertEquals(ROOT_NAME, connection.getObjectInstance(ROOT_NAME).getObjectName());
         Assert.assertNotNull(connection.getObjectInstance(INTERFACE_NAME));
         Assert.assertNotNull(connection.getObjectInstance(SERVER_SOCKET_BINDING_NAME));
-        Assert.assertNotNull(connection.getObjectInstance(REGISTRY_SOCKET_BINDING_NAME));
         Assert.assertNotNull(connection.getObjectInstance(SERVER_SOCKET_BINDING_NAME_2));
-        Assert.assertNotNull(connection.getObjectInstance(REGISTRY_SOCKET_BINDING_NAME_2));
         try {
             connection.getObjectInstance(BAD_NAME);
             Assert.fail();
@@ -887,7 +890,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         // Parse the subsystem xml and install into the controller
         String subsystemXml = "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">"
                 + "<show-model value=\"true\"/>"
-                + "    <jmx-connector registry-binding=\"registry\" server-binding=\"server\" />" + "</subsystem>"
+                + "<remoting-connector/>" + "</subsystem>"
                 + additionalInitialization.getExtraXml();
         KernelServices services = super.installInController(additionalInitialization, subsystemXml);
 
@@ -895,7 +898,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         String host = "localhost";
         int port = 12345;
         String urlString = System
-                .getProperty("jmx.service.url", "service:jmx:rmi:///jndi/rmi://" + host + ":" + port + "/jmxrmi");
+                .getProperty("jmx.service.url", "service:jmx:remote://" + host + ":" + port);
         JMXServiceURL serviceURL = new JMXServiceURL(urlString);
 
         // TODO this is horrible - for some reason after the first test the
@@ -940,9 +943,19 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
 
         @Override
         protected void setupController(ControllerInitializer controllerInitializer) {
-            controllerInitializer.addSocketBinding("registry", 12345);
-            controllerInitializer.addSocketBinding("server", 12346);
+            controllerInitializer.addSocketBinding("server", 12345);
+            controllerInitializer.addPath("jboss.controller.temp.dir", System.getProperty("java.io.tmpdir"), null);
         }
+
+        @Override
+        protected void addExtraServices(final ServiceTarget target) {
+            ManagementRemotingServices.installRemotingEndpoint(target, ManagementRemotingServices.MANAGEMENT_ENDPOINT, "loaclhost", EndpointService.EndpointType.MANAGEMENT, null, null);
+            ServiceName tmpDirPath = ServiceName.JBOSS.append("server", "path", "jboss.controller.temp.dir");
+
+            RemotingServices.installSecurityServices(target, "server", null, null, tmpDirPath, null, null);
+            RemotingServices.installConnectorServicesForSocketBinding(target, ManagementRemotingServices.MANAGEMENT_ENDPOINT, "server", SocketBinding.JBOSS_BINDING_NAME.append("server"), OptionMap.EMPTY, null, null);
+        }
+
 
         String getExtraXml() {
             return "";

@@ -22,13 +22,18 @@
 
 package org.jboss.as.test.integration.sar.unit;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+import java.io.IOException;
+import java.net.UnknownHostException;
+
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.container.TunneledMBeanServerConnection;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.sar.SarWithinEarService;
 import org.jboss.as.test.integration.sar.SarWithinEarServiceMBean;
@@ -41,13 +46,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
-import java.io.IOException;
-import java.net.UnknownHostException;
-import java.util.HashMap;
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 
 /**
  * Test that a service configured in a .sar within a .ear deployment works fine, both when the .ear contains a application.xml
@@ -140,7 +139,7 @@ public class SarWithinEarTestCase {
     }
 
     private MBeanServerConnection getMBeanServerConnection() throws IOException {
-        return new TunneledMBeanServerConnection(client);
+        return JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:remote://localhost:9999")).getMBeanServerConnection();
 
     }
 }
