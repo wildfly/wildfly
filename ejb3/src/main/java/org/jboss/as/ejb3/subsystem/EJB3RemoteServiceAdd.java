@@ -97,7 +97,6 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
     }
 
     ServiceController<EJBRemoteConnectorService> installRuntimeService(final OperationContext context, final ModelNode model, final ServiceVerificationHandler verificationHandler) {
-        // TODO this variable is unused
         final String connectorName = model.require(CONNECTOR_REF).asString();
         final String threadPoolName = model.require(THREAD_POOL_NAME).asString();
         final ServiceTarget serviceTarget = context.getServiceTarget();
@@ -106,6 +105,8 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         final ServiceBuilder<EJBRemoteConnectorService> ejbRemoteConnectorServiceBuilder = serviceTarget.addService(EJBRemoteConnectorService.SERVICE_NAME, service);
         // add dependency on the Remoting subsytem endpoint
         ejbRemoteConnectorServiceBuilder.addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, service.getEndpointInjector());
+        // add dependency on the remoting connector
+        ejbRemoteConnectorServiceBuilder.addDependency(RemotingServices.connectorServiceName(connectorName));
         // add rest of the dependencies
         ejbRemoteConnectorServiceBuilder.addDependency(EJB3ThreadPoolAdd.BASE_SERVICE_NAME.append(threadPoolName), ExecutorService.class, service.getExecutorService())
                 .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, service.getDeploymentRepositoryInjector())
