@@ -1978,6 +1978,6 @@ public interface EjbMessages {
      * Exception thrown if the session-type of a session bean is not specified
      */
     @Message(id=14551, value = "<session-type> not specified for ejb %s. This must be present in ejb-jar.xml")
-    IllegalStateException sessionTypeNotSpecified(String bean);
+    DeploymentUnitProcessingException sessionTypeNotSpecified(String bean);
 
 }
