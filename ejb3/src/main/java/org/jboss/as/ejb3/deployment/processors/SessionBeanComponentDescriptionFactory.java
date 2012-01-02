@@ -33,6 +33,7 @@ import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
@@ -48,6 +49,7 @@ import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.ejb.spec.EjbType;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.ejb.spec.GenericBeanMetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
@@ -137,8 +139,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
             final String beanClassName;
             if (beanMetaData != null && beanMetaData instanceof SessionBeanMetaData) {
                 sessionBeanType = override(annotatedSessionBeanType, descriptionOf(((SessionBeanMetaData) beanMetaData).getSessionType()));
-            }
-            else {
+            } else {
                 sessionBeanType = annotatedSessionBeanType;
             }
             if (beanMetaData != null) {
@@ -246,15 +247,18 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
         }
         final SessionType sessionType = sessionBean.getSessionType();
 
-        if(sessionType == null) {
-
+        if (sessionType == null && sessionBean instanceof GenericBeanMetaData) {
+            final GenericBeanMetaData bean = (GenericBeanMetaData) sessionBean;
+            if (bean.getEjbType() == EjbType.SESSION) {
+                throw EjbMessages.MESSAGES.sessionTypeNotSpecified(beanName);
+            } else {
+                //it is not a session bean, so we ignore it
+                return;
+            }
+        } else if(sessionType == null) {
+            throw EjbMessages.MESSAGES.sessionTypeNotSpecified(beanName);
         }
 
-
-        if(sessionType == null && sessionBean instanceof GenericBeanMetaData) {
-            //TODO: this is a hack
-            return;
-        }
         final String beanClassName = sessionBean.getEjbClass();
         final SessionBeanComponentDescription sessionBeanDescription;
         switch (sessionType) {
