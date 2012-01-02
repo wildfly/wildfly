@@ -63,12 +63,12 @@
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
 
-        <!-- 
+        <!--
             Dependency versions. Please keep alphabetical.
-            
+
             Each version property should be of the form "version.<groupId>".
             For example: <version.org.jboss.as>
-            
+
             In cases where multiple artifacts use the same groupId but have different
             versions, add the artifactId or other qualifier to the property name.
             For example: <version.org.jboss.as.console>
@@ -173,7 +173,7 @@
         <version.org.jboss.mod_cluster>1.2.0.Beta2</version.org.jboss.mod_cluster>
         <version.org.jboss.modules.jboss-modules>1.1.0.CR6</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.msc.jboss-msc>1.0.1.GA</version.org.jboss.msc.jboss-msc>
-        <version.org.jboss.netty>3.2.5.Final</version.org.jboss.netty>
+        <version.org.jboss.netty>3.2.6.Final</version.org.jboss.netty>
         <version.org.jboss.osgi.blueprint>1.0.3</version.org.jboss.osgi.blueprint>
         <version.org.jboss.osgi.deployment>1.0.10</version.org.jboss.osgi.deployment>
         <version.org.jboss.osgi.framework>1.1.0</version.org.jboss.osgi.framework>
