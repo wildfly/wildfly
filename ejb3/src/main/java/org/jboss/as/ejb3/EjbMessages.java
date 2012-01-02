@@ -1980,4 +1980,13 @@ public interface EjbMessages {
     @Message(id=14551, value = "<session-type> not specified for ejb %s. This must be present in ejb-jar.xml")
     DeploymentUnitProcessingException sessionTypeNotSpecified(String bean);
 
+
+    /**
+     * Creates an exception indicating Default interceptors specify an absolute ordering
+     *
+     * @return a {@link DeploymentUnitProcessingException} for the error.
+     */
+    @Message(id = 14552, value = "Default interceptors cannot specify an <interceptor-order> element in ejb-jar.xml")
+    DeploymentUnitProcessingException defaultInterceptorsNotSpecifyOrder();
+
 }

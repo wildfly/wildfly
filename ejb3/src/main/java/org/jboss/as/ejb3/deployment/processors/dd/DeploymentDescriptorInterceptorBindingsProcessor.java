@@ -95,6 +95,9 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
                 if (binding.getMethod() != null) {
                     throw MESSAGES.defaultInterceptorsNotBindToMethod();
                 }
+                if(binding.getInterceptorOrder() != null) {
+                    throw MESSAGES.defaultInterceptorsNotSpecifyOrder();
+                }
                 defaultInterceptorBindings.add(binding);
             } else {
                 List<InterceptorBindingMetaData> bindings = bindingsPerComponent.get(binding.getEjbName());
