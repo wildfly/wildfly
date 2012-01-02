@@ -670,6 +670,10 @@
         </module-def>
 
         <module-def name="org.jboss.as.clustering.service">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-clustering-registry"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.clustering.service">
             <maven-resource group="org.jboss.as" artifact="jboss-as-clustering-service"/>
         </module-def>
 
