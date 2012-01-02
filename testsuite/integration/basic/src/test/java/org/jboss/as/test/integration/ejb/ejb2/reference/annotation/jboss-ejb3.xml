@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
+                  xmlns="http://java.sun.com/xml/ns/javaee"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd
+                     http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"
+                  version="3.1"
+                  impl-version="2.0">
+   <enterprise-beans>
+      
+      <session>
+         <ejb-name>Session21</ejb-name>
+         <ejb-ref>
+            <ejb-ref-name>Session30</ejb-ref-name>
+            <jndi-name>java:module/Session30!org.jboss.as.test.integration.ejb.ejb2.reference.global.Session30RemoteBusiness</jndi-name>
+         </ejb-ref>
+      </session>
+      
+      <session>
+         <ejb-name>Session30</ejb-name>
+         <ejb-ref>
+	     	<ejb-ref-name>injected</ejb-ref-name>
+	     	<home>org.jboss.as.test.integration.ejb.ejb2.reference.global.Session21Home</home>
+			<ignore-dependency/> 
+         </ejb-ref>
+      </session>
+      
+   </enterprise-beans>
+</jboss:ejb-jar>

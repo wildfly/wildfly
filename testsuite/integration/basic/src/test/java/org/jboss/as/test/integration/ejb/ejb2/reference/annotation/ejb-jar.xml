@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-jar
+        xmlns="http://java.sun.com/xml/ns/javaee"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+                            http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd"
+        version="3.0">
+   <description>jBoss test application</description>
+   <display-name>Test</display-name>
+   <enterprise-beans>
+      <session>
+         <ejb-name>Session21</ejb-name>
+         <home>org.jboss.as.test.integration.ejb.ejb2.reference.global.Session21Home</home>
+         <remote>org.jboss.as.test.integration.ejb.ejb2.reference.global.Session21</remote>
+         <ejb-class>org.jboss.as.test.integration.ejb.ejb2.reference.global.Session21Bean</ejb-class>
+         <session-type>Stateless</session-type>
+         <transaction-type>Container</transaction-type>
+         <ejb-ref>
+            <ejb-ref-name>Session30</ejb-ref-name>
+            <ejb-ref-type>Session</ejb-ref-type>
+            <home>org.jboss.as.test.integration.ejb.ejb2.reference.global.Session30</home>
+            <remote>org.jboss.as.test.integration.ejb.ejb2.reference.global.Session30</remote>
+            <ejb-link>Session30</ejb-link>
+         </ejb-ref>
+      </session>
+      <session>
+         <ejb-name>Session30</ejb-name>
+         <home>org.jboss.as.test.integration.ejb.ejb2.reference.annotation.Session30Home</home>
+         <local-home>org.jboss.as.test.integration.ejb.ejb2.reference.annotation.Session30LocalHome</local-home>
+      </session>
+      <session>
+         <ejb-name>StatefulSession30</ejb-name>
+         <home>org.jboss.as.test.integration.ejb.ejb2.reference.annotation.StatefulSession30Home</home>
+         <local-home>org.jboss.as.test.integration.ejb.ejb2.reference.annotation.StatefulSession30LocalHome</local-home>
+      </session>
+   </enterprise-beans>
+</ejb-jar>

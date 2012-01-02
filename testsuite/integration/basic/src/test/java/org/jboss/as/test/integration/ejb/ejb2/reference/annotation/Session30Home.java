@@ -20,25 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.ejb.ejb2.reference.global;
+package org.jboss.as.test.integration.ejb.ejb2.reference.annotation;
 
-import java.rmi.RemoteException;
+import javax.ejb.EJBHome;
 
-import javax.ejb.EJBObject;
+import org.jboss.as.test.integration.ejb.ejb2.reference.global.Session30;
+
 
 /**
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
  */
-public interface Session30 extends EJBObject {
-    String access() throws RemoteException;
+public interface Session30Home extends EJBHome {
 
-    String access21() throws RemoteException;
-
-    String globalAccess21() throws RemoteException;
-
-    String accessLocalStateful() throws RemoteException;
-
-    String accessLocalStateful(String value) throws RemoteException;
-
-    String accessLocalStateful(String value, Integer suffix) throws RemoteException;
+    public Session30 create() throws java.rmi.RemoteException, javax.ejb.CreateException;
 }
