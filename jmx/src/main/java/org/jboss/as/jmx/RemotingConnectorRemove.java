@@ -25,32 +25,31 @@ package org.jboss.as.jmx;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 
 /**
- * @author Emanuel Muckenhuber
+ * @author Stuart Douglas
  */
-class JMXConnectorRemove extends AbstractRemoveStepHandler {
+class RemotingConnectorRemove extends AbstractRemoveStepHandler {
 
-    static final JMXConnectorRemove INSTANCE = new JMXConnectorRemove();
+    static final RemotingConnectorRemove INSTANCE = new RemotingConnectorRemove();
 
-    static final String OPERATION_NAME = "remove-connector";
-
-    private JMXConnectorRemove() {
+    private RemotingConnectorRemove() {
         //
     }
 
     protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) {
-        final ModelNode toUpdate = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
-        toUpdate.get(CommonAttributes.SERVER_BINDING).clear();
-        toUpdate.get(CommonAttributes.REGISTRY_BINDING).clear();
+
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
-        context.removeService(JMXConnectorService.SERVICE_NAME);
+        final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
+        final String name = address.getLastElement().getValue();
+        context.removeService(RemotingConnectorService.SERVICE_NAME);
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
-        JMXConnectorAdd.INSTANCE.launchServices(context, model, null, null);
+        RemotingConnectorAdd.INSTANCE.launchServices(context, null, null);
     }
 }

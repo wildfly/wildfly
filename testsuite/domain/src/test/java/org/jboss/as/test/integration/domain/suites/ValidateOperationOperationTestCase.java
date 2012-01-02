@@ -21,16 +21,9 @@
 */
 package org.jboss.as.test.integration.domain.suites;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALIDATE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-
 import java.io.IOException;
 
 import junit.framework.Assert;
-
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.management.util.ModelUtil;
@@ -38,6 +31,12 @@ import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALIDATE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 /**
  * Tests that the validate-operation operation works as it should
@@ -77,15 +76,14 @@ public class ValidateOperationOperationTestCase extends AbstractMgmtTestBase {
 
     @Test
     public void testValidDcOperation() throws IOException, MgmtOperationException {
-        ModelNode op = ModelUtil.createOpNode("profile=default/subsystem=jmx/connector=jmx", ADD);
-        op.get("registry-binding").set("REG");
-        op.get("server-binding").set("SVR");
+        ModelNode op = ModelUtil.createOpNode("profile=default/subsystem=jmx/remoting-connector=jmx", ADD);
         executeOperation(createValidateOperation(op));
     }
 
     @Test
     public void testInvalidDcOperation() throws IOException {
-        ModelNode op = ModelUtil.createOpNode("profile=default/subsystem=jmx/connector=jmx", ADD);
+        ModelNode op = ModelUtil.createOpNode("profile=default/subsystem=jmx/remoting-connector=jmx", ADD);
+        op.get("badata").set("junk");
         executeInvalidOperation(op);
     }
 
@@ -131,9 +129,7 @@ public class ValidateOperationOperationTestCase extends AbstractMgmtTestBase {
     }
 
     private void testValidServerOperation(String host, String server) throws IOException, MgmtOperationException {
-        ModelNode op = ModelUtil.createOpNode("host=" + host + "/server=" + server + "/subsystem=jmx/connector=jmx", ADD);
-        op.get("registry-binding").set("REG");
-        op.get("server-binding").set("SVR");
+        ModelNode op = ModelUtil.createOpNode("host=" + host + "/server=" + server + "/subsystem=jmx/remoting-connector=jmx", ADD);
         executeOperation(createValidateOperation(op));
     }
 
@@ -148,7 +144,8 @@ public class ValidateOperationOperationTestCase extends AbstractMgmtTestBase {
     }
 
     private void testInvalidServerOperation(String host, String server) throws IOException, MgmtOperationException {
-        ModelNode op = ModelUtil.createOpNode("host=" + host + "/server=" + server + "/subsystem=jmx/connector=jmx", ADD);
+        ModelNode op = ModelUtil.createOpNode("host=" + host + "/server=" + server + "/subsystem=jmx/remoting-connector=jmx", ADD);
+        op.get("badata").set("junk");
         executeInvalidOperation(op);
     }
 

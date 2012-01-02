@@ -738,8 +738,6 @@
             <socket-binding name="https" port="8443"/>
             <socket-binding name="jacorb" port="3528"/>
             <socket-binding name="jacorb-ssl" port="3529"/>
-            <socket-binding name="jmx-connector-registry" interface="management" port="1090"/>
-            <socket-binding name="jmx-connector-server" interface="management" port="1091"/>
             <socket-binding name="messaging" port="5445"/>
             <socket-binding name="messaging-throughput" port="5455"/>
             <socket-binding name="osgi-http" interface="management" port="8090"/>
@@ -761,8 +759,6 @@
             <socket-binding name="jgroups-tcp-fd" port="57600"/>
             <socket-binding name="jgroups-udp" port="55200" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45688"/>
             <socket-binding name="jgroups-udp-fd" port="54200"/>
-            <socket-binding name="jmx-connector-registry" interface="management" port="1090"/>
-            <socket-binding name="jmx-connector-server" interface="management" port="1091"/>
             <socket-binding name="messaging" port="5445"/>
             <socket-binding name="messaging-throughput" port="5455"/>
             <socket-binding name="modcluster" port="0"  multicast-address="224.0.1.105" multicast-port="23364"/>

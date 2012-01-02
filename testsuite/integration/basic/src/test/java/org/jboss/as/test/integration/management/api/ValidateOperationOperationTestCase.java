@@ -21,16 +21,9 @@
 */
 package org.jboss.as.test.integration.management.api;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALIDATE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-
 import java.io.IOException;
 
 import junit.framework.Assert;
-
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
@@ -41,6 +34,12 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALIDATE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 /**
  * Tests that the validate-operation operation works as it should
@@ -77,28 +76,27 @@ public class ValidateOperationOperationTestCase extends AbstractMgmtTestBase {
 
     @Test
     public void testValidChildOperation() throws IOException, MgmtOperationException {
-        ModelNode op = ModelUtil.createOpNode("subsystem=jmx/connector=jmx", ADD);
-        op.get("registry-binding").set("REG");
-        op.get("server-binding").set("SVR");
+        ModelNode op = ModelUtil.createOpNode("subsystem=jmx/remoting-connector=jmx", ADD);
         executeOperation(createValidateOperation(op));
     }
 
     @Test
     public void testInvalidChildOperation() throws IOException {
-        ModelNode op = ModelUtil.createOpNode("subsystem=jmx/connector=jmx", ADD);
+        ModelNode op = ModelUtil.createOpNode("subsystem=jmx/remoting-connector=jmx", ADD);
+        op.get("nonexistent").set("stuff");
         executeInvalidOperation(op);
     }
 
     @Test
     public void testValidInheritedOperation() throws IOException, MgmtOperationException {
-        ModelNode op = ModelUtil.createOpNode("subsystem=jmx/connector=jmx", READ_OPERATION_DESCRIPTION_OPERATION);
+        ModelNode op = ModelUtil.createOpNode("subsystem=jmx/remoting-connector=jmx", READ_OPERATION_DESCRIPTION_OPERATION);
         op.get(NAME).set("Doesn't matter");
         executeOperation(createValidateOperation(op));
     }
 
     @Test
     public void testInvalidInheritedOperation() throws IOException {
-        ModelNode op = ModelUtil.createOpNode("subsystem=jmx/connector=jmx", READ_OPERATION_DESCRIPTION_OPERATION);
+        ModelNode op = ModelUtil.createOpNode("subsystem=jmx/remoting-connector=jmx", READ_OPERATION_DESCRIPTION_OPERATION);
         executeInvalidOperation(op);
     }
 

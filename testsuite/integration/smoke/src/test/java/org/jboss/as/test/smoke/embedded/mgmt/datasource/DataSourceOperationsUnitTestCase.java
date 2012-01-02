@@ -28,12 +28,13 @@ import java.util.Properties;
 
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
 
 import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.container.TunneledMBeanServerConnection;
 import org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
@@ -596,7 +597,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
         Assert.assertNotNull("Reparsing failed:",newList);
 
         ModelNode rightChild=findNodeWithProperty(newList,"jndi-name",complexDsJndi);
-        
+
         Assert.assertTrue("node:"+rightChild.asString()+";\nparams"+params,checkModelParams(rightChild, params));
 
     }
@@ -646,7 +647,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
         Assert.assertNotNull("Reparsing failed:",newList);
 
         ModelNode rightChild=findNodeWithProperty(newList,"jndi-name",complexXaDsJndi);
-        
+
         Assert.assertTrue("node:"+rightChild.asString()+";\nparams"+params,checkModelParams(rightChild, params));
 
     }
@@ -655,7 +656,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
     private static <T> T lookup(ModelControllerClient client, String name, Class<T> expected) throws Exception {
         //TODO Don't do this FakeJndi stuff once we have remote JNDI working
 
-        MBeanServerConnection mbeanServer = new TunneledMBeanServerConnection(client);
+        MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:remote://127.0.0.1:9999")).getMBeanServerConnection();
         ObjectName objectName = new ObjectName("jboss:name=test,type=fakejndi");
         PollingUtils.retryWithTimeout(10000, new PollingUtils.WaitForMBeanTask(mbeanServer, objectName));
         Object o = mbeanServer.invoke(objectName, "lookup", new Object[] {name}, new String[] {"java.lang.String"});

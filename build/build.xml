@@ -208,6 +208,10 @@
             <maven-resource group="org.jboss.remoting3" artifact="jboss-remoting"/>
         </module-def>
 
+        <module-def name="org.jboss.remoting3.remoting-jmx">
+            <maven-resource group="org.jboss.remoting3" artifact="remoting-jmx"/>
+        </module-def>
+
         <module-def name="org.jboss.sasl">
             <maven-resource group="org.jboss.sasl" artifact="jboss-sasl" />
         </module-def>

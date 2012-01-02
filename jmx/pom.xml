@@ -76,6 +76,18 @@
             <artifactId>jboss-as-server</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.remoting3</groupId>
+            <artifactId>remoting-jmx</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.marshalling</groupId>
+            <artifactId>jboss-marshalling</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.marshalling</groupId>
+            <artifactId>jboss-marshalling-river</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-subsystem-test</artifactId>
             <scope>test</scope>

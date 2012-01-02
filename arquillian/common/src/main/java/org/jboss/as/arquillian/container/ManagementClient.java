@@ -16,37 +16,16 @@
  */
 package org.jboss.as.arquillian.container;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FilterInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.net.URI;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.management.MBeanServerConnection;
-import javax.management.Notification;
-import javax.management.NotificationListener;
 import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
+import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.arquillian.container.spi.client.protocol.metadata.HTTPContext;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.JMXContext;
@@ -57,6 +36,19 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 /**
  * A helper class to join management related operations, like extract sub system ip/port (web/jmx)
@@ -77,6 +69,7 @@ public class ManagementClient {
     private static final String POSTFIX_EAR = ".ear";
 
     private final String mgmtAddress;
+    private final int mgmtPort;
     private final ModelControllerClient client;
     private final Map<String, URI> subsystemURICache;
 
@@ -86,13 +79,14 @@ public class ManagementClient {
     private MBeanServerConnection connection;
     private JMXConnector connector;
 
-    public ManagementClient(ModelControllerClient client, final String mgmtAddress) {
+    public ManagementClient(ModelControllerClient client, final String mgmtAddress, final int managementPort) {
         if (client == null) {
             throw new IllegalArgumentException("Client must be specified");
         }
         this.client = client;
         this.mgmtAddress = mgmtAddress;
         this.subsystemURICache = new HashMap<String, URI>();
+        this.mgmtPort = managementPort;
     }
 
     //-------------------------------------------------------------------------------------||
@@ -180,9 +174,6 @@ public class ManagementClient {
 
         if ("web".equals(subsystem)) {
             String socketBinding = rootNode.get("subsystem").get("web").get("connector").get("http").get("socket-binding").asString();
-            return getBinding(socketBinding);
-        } else if ("jmx".equals(subsystem)) {
-            String socketBinding = rootNode.get("subsystem").get("jmx").get("connector").get("jmx").get("registry-binding").asString();
             return getBinding(socketBinding);
         }
         throw new IllegalArgumentException("No handler for subsystem " + subsystem);
@@ -345,15 +336,20 @@ public class ManagementClient {
 
     private MBeanServerConnection getConnection() {
         if (connection == null) {
-            connection = new TunneledMBeanServerConnection(client);
+            try {
+                final HashMap<String, Object> env = new HashMap<String, Object>();
+                env.put(CallbackHandler.class.getName(), Authentication.getCallbackHandler());
+                connection = JMXConnectorFactory.connect(getRemoteJMXURL(), env).getMBeanServerConnection();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
         return connection;
     }
 
     private JMXServiceURL getRemoteJMXURL() {
-        URI jmxURI = getSubSystemURI(JMX);
         try {
-            return new JMXServiceURL("service:jmx:rmi:///jndi/rmi://" + jmxURI.getHost() + ":" + jmxURI.getPort() + "/jmxrmi");
+            return new JMXServiceURL("service:jmx:remote://" + mgmtAddress + ":" + mgmtPort);
         } catch (Exception e) {
             throw new RuntimeException("Could not create JMXServiceURL:" + this, e);
         }

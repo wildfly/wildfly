@@ -255,6 +255,7 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jmx:1.1">
             <show-model value="true"/>
+            <remoting-connector/>
         </subsystem>
          <subsystem xmlns="urn:jboss:domain:jpa:1.0">
             <jpa default-datasource=""/>

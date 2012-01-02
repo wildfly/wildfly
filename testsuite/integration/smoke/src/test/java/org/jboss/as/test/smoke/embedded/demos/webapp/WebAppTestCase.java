@@ -21,9 +21,6 @@
  */
 package org.jboss.as.test.smoke.embedded.demos.webapp;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
-import static org.jboss.as.protocol.StreamUtils.safeClose;
-
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.net.InetAddress;
@@ -41,12 +38,12 @@ import javax.jms.QueueSession;
 import javax.jms.TextMessage;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
-import org.jboss.as.arquillian.container.TunneledMBeanServerConnection;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.demos.webapp.archive.SimpleServlet;
 import org.jboss.as.test.smoke.embedded.demos.fakejndi.FakeJndi;
@@ -55,6 +52,9 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 /**
  *
@@ -138,7 +138,7 @@ public class WebAppTestCase {
 
     private static <T> T lookup(String name, Class<T> expected) throws Exception {
         ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("127.0.0.1"), 9999, getCallbackHandler());
-        MBeanServerConnection mbeanServer = new TunneledMBeanServerConnection(client);
+        MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:remote://127.0.0.1:9999")).getMBeanServerConnection();
         ObjectName objectName = new ObjectName("jboss:name=test,type=fakejndi");
         Object o = mbeanServer.invoke(objectName, "lookup", new Object[] {name}, new String[] {"java.lang.String"});
         return expected.cast(o);

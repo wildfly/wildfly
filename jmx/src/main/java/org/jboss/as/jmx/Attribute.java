@@ -31,7 +31,7 @@ import java.util.Map;
 enum Attribute {
 
     UNKNOWN(null),
-
+    NAME(CommonAttributes.NAME),
     SHOW_MODEL(CommonAttributes.SHOW_MODEL),
     SERVER_BINDING(CommonAttributes.SERVER_BINDING),
     REGISTRY_BINDING(CommonAttributes.REGISTRY_BINDING),

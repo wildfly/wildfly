@@ -33,33 +33,30 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
- * @author Emanuel Muckenhuber
- * @author Kabir Khan
+ * @author Stuart Douglas
  */
-class JMXConnectorAdd extends AbstractAddStepHandler {
+class RemotingConnectorAdd extends AbstractAddStepHandler {
 
-    static final JMXConnectorAdd INSTANCE = new JMXConnectorAdd();
+    static final RemotingConnectorAdd INSTANCE = new RemotingConnectorAdd();
 
-    private JMXConnectorAdd() {
+    private RemotingConnectorAdd() {
     }
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        JMXConnectorResource.REGISTRY_BINDING.validateAndSet(operation, model);
-        JMXConnectorResource.SERVER_BINDING.validateAndSet(operation, model);
     }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
             ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
             throws OperationFailedException {
-        launchServices(context, model, verificationHandler, newControllers);
+        launchServices(context, verificationHandler, newControllers);
     }
 
-    void launchServices(OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    void launchServices(OperationContext context, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+
         final ServiceTarget target = context.getServiceTarget();
-        ServiceController<?> controller = JMXConnectorService.addService(target, model.require(CommonAttributes.SERVER_BINDING).asString(),
-                model.require(CommonAttributes.REGISTRY_BINDING).asString(), verificationHandler);
+        ServiceController<?> controller = RemotingConnectorService.addService(target, verificationHandler);
         if (newControllers != null) {
             newControllers.add(controller);
         }
