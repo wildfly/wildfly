@@ -22,50 +22,41 @@
 
 package org.jboss.as.test.smoke.embedded.mgmt.datasource;
 
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.testConnection;
-import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.testConnectionXA;
-import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.marshalAndReparseDsResources;
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.setOperationParams;
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.nonXaDsProperties;
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.xaDsProperties;
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.addExtensionProperties;
-import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.checkModelParams;
-
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Properties;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 
-import org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 
-import org.jboss.as.controller.client.ModelControllerClient;
 import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.container.TunneledMBeanServerConnection;
+import org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.smoke.embedded.demos.fakejndi.FakeJndi;
 import org.jboss.as.test.smoke.modular.utils.PollingUtils;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.AfterClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.addExtensionProperties;
+import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.checkModelParams;
+import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.nonXaDsProperties;
+import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.setOperationParams;
+import static org.jboss.as.test.integration.management.util.ComplexPropertiesParseUtils.xaDsProperties;
+import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.marshalAndReparseDsResources;
+import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.testConnection;
+import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.testConnectionXA;
 
 
 /**
@@ -175,7 +166,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
         remove(address);
 
         Assert.assertNotNull("Reparsing failed:",newList);
-        
+
         Assert.assertNotNull(findNodeWithProperty(newList,"jndi-name","java:jboss/datasources/MyNewDs"));
     }
 
@@ -230,7 +221,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
         remove(address);
 
         Assert.assertNotNull("Reparsing failed:",newList);
-        
+
         Assert.assertNotNull(findNodeWithProperty(newList,"jndi-name","java:jboss/datasources/MyNewDs"));
     }
 
@@ -403,12 +394,12 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
         remove(address);
 
         Assert.assertNotNull("Reparsing failed:",newList);
-        
+
         // remove from xml too
         marshalAndReparseDsResources("xa-data-source",getModelControllerClient());
-        
+
         Assert.assertNotNull(findNodeWithProperty(newList,"jndi-name","java:jboss/datasources/" + jndiDsName));
- 
+
     }
 
     /**
@@ -417,6 +408,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
      * @throws Exception
      */
     @Test
+    @Ignore("AS7-3173")
     public void DisableAndReEnableXaDs() throws Exception {
         final String dsName = "XaDsNameDisEn";
         final String jndiDsName = "XaJndiDsNameDisEn";
@@ -547,7 +539,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
         Assert.assertNotNull("Reparsing failed:",newList);
 
         ModifiableXaDataSource jxaDS = null;
-        
+
         try{
             jxaDS = lookup(getModelControllerClient(), xaDsJndi ,ModifiableXaDataSource .class);
 
@@ -557,7 +549,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
             // must be thrown NameNotFound exception - datasource is unbounded
 
         }
-        
+
         Assert.assertNotNull(findNodeWithProperty(newList,"jndi-name",xaDsJndi));
 
     }
@@ -604,7 +596,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
         Assert.assertNotNull("Reparsing failed:",newList);
 
         ModelNode rightChild=findNodeWithProperty(newList,"jndi-name",complexDsJndi);
-        
+
         Assert.assertTrue(checkModelParams(rightChild, params));
     }
     /**
@@ -653,11 +645,11 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
         Assert.assertNotNull("Reparsing failed:",newList);
 
         ModelNode rightChild=findNodeWithProperty(newList,"jndi-name",complexXaDsJndi);
-        
+
         Assert.assertTrue(checkModelParams(rightChild, params));
     }
-    
-    
+
+
     private static <T> T lookup(ModelControllerClient client, String name, Class<T> expected) throws Exception {
         //TODO Don't do this FakeJndi stuff once we have remote JNDI working
 
