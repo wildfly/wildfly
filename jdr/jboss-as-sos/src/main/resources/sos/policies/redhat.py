@@ -98,7 +98,7 @@ class RHELPolicy(Policy):
     @classmethod
     def check(self):
         "This method checks to see if we are running on RHEL. It returns True or False."
-        return os.path.isfile('/etc/redhat-release')
+        return os.path.isfile('/etc/redhat-release') or os.path.isfile('/etc/fedora-release')
 
     def preferedArchive(self):
         from sos.utilities import TarFileArchive

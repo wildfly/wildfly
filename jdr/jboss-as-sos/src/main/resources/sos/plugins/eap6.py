@@ -25,10 +25,10 @@ class Request(object):
         """Generator function to split a url into (key, value) tuples. The url
         should contain an even number of pairs.  In the case of / the generator
         will immediately stop iteration."""
-        if self.resource == "/":
-            raise StopIteration
+        parts = self.resource.strip("/").split("/")
 
-        parts = self.resource.lstrip("/").split("/")
+        if parts == ['']:
+            raise StopIteration
 
         while parts:
             yield (parts.pop(0), parts.pop(0))
@@ -141,17 +141,15 @@ class EAP6(Plugin, IndependentPlugin):
     def query(self, request_obj):
         try:
             return self.query_java(request_obj)
-        # ImportError is when we try to import java stuff
-        # we raise an AttributeError if the controller_client_proxy is
-        # unavailable
-        except (ImportError, AttributeError):
+        except Exception, e:
+            self.addAlert("JBOSS API call failed, falling back to HTTP: %s" % e)
             return self.query_http(request_obj)
 
     def query_java(self, request_obj):
         from org.jboss.dmr import ModelNode
         controller_client = self.getOption('controller_client_proxy')
         if not controller_client:
-            raise AttributeError
+            raise AttributeError("Controller Client is not available")
 
         request = ModelNode()
         request.get("operation").set(request_obj.operation)
@@ -211,21 +209,51 @@ class EAP6(Plugin, IndependentPlugin):
             self.addAlert(err_msg)
             return err_msg
 
+    def _set_domain_info(self, parameters=None):
+        """This function will add host controller and server instance
+        name data if it is present to the desired resource. This is to support
+        domain-mode operation in AS7"""
+        host_controller_name = self.getOption("as7_host_controller_name")
+        server_name = self.getOption("as7_server_name")
+
+        if host_controller_name and server_name:
+            if not parameters:
+                parameters = {}
+
+            parameters['host'] = host_controller_name
+            parameters['server'] = server_name
+
+        return parameters
+
+
+    def _resource_to_file(self, resource=None, parameters=None, operation='read-resource', outfile=None):
+        parameters = self._set_domain_info(parameters)
+
+        r = Request(resource=resource,
+                    parameters=parameters,
+                    operation=operation)
+        self.addStringAsFile(self.query(r), filename=outfile)
+
+
     def get_online_data(self):
         """
         This function co-locates calls to the management api that gather
         information from a running system.
         """
-        for caller, outfile in [
-                # waiting for the fix in AS7
-#                (Request(resource="/core-service/platform-mbean/type/threading",
-#                        operation="dump-all-threads",
-#                        parameters={"locked-synchronizers": "true", "locked-monitors": "true"}), "threaddump.json"),
-                (Request(resource="/", parameters={"recursive": "true"}), "configuration.json"),
-                (Request(resource="/core-service/service-container", operation='dump-services'), "dump-services.json"),
-                (Request(resource="/subsystem/modcluster", operation='read-proxies-configuration'), "cluster-proxies-configuration.json"),
-                ]:
-            self.addStringAsFile(self.query(caller), filename=outfile)
+        self._resource_to_file(resource="/",
+                parameters={"recursive": "true"},
+                outfile="configuration.json")
+        self._resource_to_file(resource="/core-service/service-container",
+                operation="dump-services",
+                outfile="dump-services.json")
+        self._resource_to_file(resource="/subsystem/modcluster",
+                operation="read-proxies-configuration",
+                outfile="cluster-proxies-configuration.json")
+        self._resource_to_file(resource="/core-service/platform-mbean/type/threading",
+                operation="dump-all-threads",
+                parameters={"locked-synchronizers": "true",
+                            "locked-monitors": "true"},
+                outfile="threaddump.json")
 
     def __getFiles(self, configDirAry):
         """
