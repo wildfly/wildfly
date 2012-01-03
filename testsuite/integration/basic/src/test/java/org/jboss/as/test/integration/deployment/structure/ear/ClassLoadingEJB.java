@@ -37,4 +37,8 @@ public class ClassLoadingEJB {
         }
         return this.getClass().getClassLoader().loadClass(className);
     }
+
+    public boolean hasResource(String resource) {
+        return this.getClass().getResource(resource) != null;
+    }
 }

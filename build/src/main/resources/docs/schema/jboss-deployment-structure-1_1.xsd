@@ -363,6 +363,17 @@
                 </documentation>
             </annotation>
         </xsd:attribute>
+        <xsd:attribute name="meta-inf" type="metaInfDispositionType" use="optional" default="none">
+            <annotation xmlns="http://www.w3.org/2001/XMLSchema">
+                <documentation>
+                    Specifies whether and how META-INF entries in this dependency are used (default is "none").
+                    Specifying
+                    a value of "import" for this attribute is equivalent to adding a filter at the end of the import
+                    filter list which includes the META-INF/** path from the dependency module. Setting a value
+                    of "export" for this attribute is equivalent to the same action on the export filter list.
+                </documentation>
+            </annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="systemDependencyType">
@@ -462,6 +473,37 @@
                 <annotation xmlns="http://www.w3.org/2001/XMLSchema">
                     <documentation>
                         Import and re-export services found in this dependency.
+                    </documentation>
+                </annotation>
+            </xsd:enumeration>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="metaInfDispositionType">
+        <annotation xmlns="http://www.w3.org/2001/XMLSchema">
+            <documentation>
+                The requested behavior for META-INF handling on a dependency.
+            </documentation>
+        </annotation>
+        <xsd:restriction base="xsd:token">
+            <xsd:enumeration value="none">
+                <annotation xmlns="http://www.w3.org/2001/XMLSchema">
+                    <documentation>
+                        Do not import or export META-INF items from this dependency.
+                    </documentation>
+                </annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="import">
+                <annotation xmlns="http://www.w3.org/2001/XMLSchema">
+                    <documentation>
+                        Import, but do not re-export, META-INF items from this dependency.
+                    </documentation>
+                </annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="export">
+                <annotation xmlns="http://www.w3.org/2001/XMLSchema">
+                    <documentation>
+                        Import and re-export META-INF items found in this dependency.
                     </documentation>
                 </annotation>
             </xsd:enumeration>

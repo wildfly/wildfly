@@ -207,7 +207,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
     }
 
     private void createDependencies(final DeploymentPhaseContext phaseContext, final ModuleSpec.Builder specBuilder, final List<ModuleDependency> apiDependencies, final boolean requireTransitive) {
-        if (apiDependencies != null)
+        if (apiDependencies != null) {
             for (final ModuleDependency dependency : apiDependencies) {
                 final boolean export = requireTransitive ? true : dependency.isExport();
                 final List<FilterSpecification> importFilters = dependency.getImportFilters();
@@ -249,6 +249,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
                             .moduleSpecServiceName(dependency.getIdentifier()));
                 }
             }
+        }
     }
 
     private static void addResourceRoot(final ModuleSpec.Builder specBuilder, final ResourceRoot resource)

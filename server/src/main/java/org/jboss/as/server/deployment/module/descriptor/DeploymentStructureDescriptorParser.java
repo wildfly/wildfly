@@ -163,6 +163,11 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
 
             // handle additional modules
             for (final ModuleStructureSpec additionalModule : result.getAdditionalModules()) {
+                for(final ModuleIdentifier identifier : additionalModule.getAnnotationModules()) {
+                    //additional modules don't support annotation imports
+                    ServerLogger.DEPLOYMENT_LOGGER.annotationImportIgnored(identifier, additionalModule.getModuleIdentifier());
+                }
+
                 final AdditionalModuleSpecification additional = new AdditionalModuleSpecification(additionalModule .getModuleIdentifier(), additionalModule.getResourceRoots());
                 additional.addAliases(additionalModule.getAliases());
                 additional.addSystemDependencies(additionalModule.getModuleDependencies());

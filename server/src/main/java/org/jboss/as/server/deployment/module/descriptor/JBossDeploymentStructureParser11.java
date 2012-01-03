@@ -116,7 +116,7 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
     }
 
     enum Attribute {
-        NAME, SLOT, EXPORT, SERVICES, PATH, OPTIONAL, CLASS, VALUE, USE_PHYSICAL_CODE_SOURCE, ANNOTATIONS,
+        NAME, SLOT, EXPORT, SERVICES, PATH, OPTIONAL, CLASS, VALUE, USE_PHYSICAL_CODE_SOURCE, ANNOTATIONS, META_INF,
 
         // default unknown attribute
         UNKNOWN;
@@ -135,6 +135,7 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
             attributesMap.put(new QName("value"), VALUE);
             attributesMap.put(new QName("use-physical-code-source"), USE_PHYSICAL_CODE_SOURCE);
             attributesMap.put(new QName("annotations"), ANNOTATIONS);
+            attributesMap.put(new QName("meta-inf"), META_INF);
             attributes = attributesMap;
         }
 
@@ -553,6 +554,7 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
         boolean optional = false;
         boolean annotations = false;
         Disposition services = Disposition.NONE;
+        Disposition metaInf = Disposition.NONE;
         final Set<Attribute> required = EnumSet.of(Attribute.NAME);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -577,6 +579,9 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
                 case ANNOTATIONS:
                     annotations = Boolean.parseBoolean(reader.getAttributeValue(i));
                     break;
+                case META_INF:
+                    metaInf = Disposition.of(reader.getAttributeValue(i));
+                    break;
                 default:
                     throw unexpectedContent(reader);
             }
@@ -589,6 +594,17 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
                 services == Disposition.IMPORT);
         if(annotations) {
             specBuilder.addAnnotationModule(identifier);
+        }
+        switch (metaInf) {
+            case EXPORT: {
+                dependency.addImportFilter(PathFilters.getMetaInfSubdirectoriesFilter(), true);
+                dependency.addExportFilter(PathFilters.getMetaInfSubdirectoriesFilter(), true);
+                break;
+            }
+            case IMPORT: {
+                dependency.addImportFilter(PathFilters.getMetaInfSubdirectoriesFilter(), true);
+                break;
+            }
         }
 
         specBuilder.addModuleDependency(dependency);

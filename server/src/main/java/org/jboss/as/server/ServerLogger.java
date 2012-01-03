@@ -28,6 +28,7 @@ import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
+import org.jboss.modules.ModuleIdentifier;
 
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
@@ -162,4 +163,9 @@ public interface ServerLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 18565, value = "Replaced deployment \"%s\" with deployment \"%s\"")
     void deploymentReplaced(String replaced, String deployment);
+
+    @LogMessage(level = WARN)
+    @Message(id = 18566, value = "Annotations import option %s specified in jboss-deployment-structure.xml for additional module %s has been ignored. Additional modules cannot import annotations.")
+    void annotationImportIgnored(ModuleIdentifier annotationModuleId, ModuleIdentifier additionalModuleId);
+
 }

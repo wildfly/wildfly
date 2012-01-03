@@ -22,6 +22,9 @@
 
 package org.jboss.as.server.deployment.module;
 
+import java.util.List;
+import java.util.jar.Manifest;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -32,9 +35,7 @@ import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
-
-import java.util.List;
-import java.util.jar.Manifest;
+import org.jboss.modules.filter.PathFilters;
 
 /**
  * Deployment unit processor that will extract module dependencies from an and attach them.
@@ -50,6 +51,7 @@ public final class ManifestDependencyProcessor implements DeploymentUnitProcesso
     private static final String OPTIONAL_PARAM = "optional";
     private static final String SERVICES_PARAM = "services";
     private static final String ANNOTATIONS_PARAM = "annotations";
+    private static final String META_INF = "meta-inf";
 
     /**
      * Process the deployment root for module dependency information.
@@ -83,6 +85,7 @@ public final class ManifestDependencyProcessor implements DeploymentUnitProcesso
                 final boolean optional = containsParam(dependencyParts, OPTIONAL_PARAM);
                 final boolean services = containsParam(dependencyParts, SERVICES_PARAM);
                 final boolean annotations = containsParam(dependencyParts, ANNOTATIONS_PARAM);
+                final boolean metaInf = containsParam(dependencyParts, META_INF);
                 final ModuleLoader dependencyLoader;
                 if (dependencyId.getName().startsWith("deployment.")) {
                     dependencyLoader = deploymentModuleLoader;
@@ -94,6 +97,9 @@ public final class ManifestDependencyProcessor implements DeploymentUnitProcesso
                 }
 
                 final ModuleDependency dependency = new ModuleDependency(dependencyLoader, dependencyId, optional, export, services);
+                if(metaInf) {
+                    dependency.addImportFilter(PathFilters.getMetaInfSubdirectoriesFilter(), true);
+                }
                 deploymentUnit.addToAttachmentList(Attachments.MANIFEST_DEPENDENCIES, dependency);
             }
         }

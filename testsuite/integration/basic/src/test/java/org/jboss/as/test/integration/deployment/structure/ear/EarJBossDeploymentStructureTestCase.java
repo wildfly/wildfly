@@ -7,6 +7,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
@@ -29,6 +30,7 @@ public class EarJBossDeploymentStructureTestCase {
 
     public static final String TO_BE_FOUND_CLASS_NAME = "org.jboss.as.test.integration.deployment.structure.ear.Available";
     public static final String TO_BE_MISSSING_CLASS_NAME = "org.jboss.as.test.integration.deployment.structure.ear.ToBeIgnored";
+    public static final String METAINF_RESOURCE_TXT = "aa/metainf-resource.txt";
 
     /**
      * .ear
@@ -52,6 +54,7 @@ public class EarJBossDeploymentStructureTestCase {
 
         final JavaArchive jarOne = ShrinkWrap.create(JavaArchive.class, "available.jar");
         jarOne.addClass(Available.class);
+        jarOne.addAsManifestResource(new StringAsset("test resource"), METAINF_RESOURCE_TXT);
 
         final JavaArchive ignoredJar = ShrinkWrap.create(JavaArchive.class, "ignored.jar");
         ignoredJar.addClass(ToBeIgnored.class);
@@ -90,6 +93,11 @@ public class EarJBossDeploymentStructureTestCase {
         Class<?> clazz = this.ejb.loadClass(TO_BE_FOUND_CLASS_NAME);
         Assert.assertTrue( clazz.getProtectionDomain().getCodeSource().getLocation().getProtocol().equals("jar"));
         Assert.assertTrue(ClassLoadingEJB.class.getProtectionDomain().getCodeSource().getLocation().getProtocol().equals("jar"));
+    }
+
+    @Test
+    public void testMetaInfResourceImported() {
+        Assert.assertTrue(this.ejb.hasResource("/META-INF/" + METAINF_RESOURCE_TXT));
     }
 
 }
