@@ -25,13 +25,20 @@ package org.jboss.as.clustering.ejb3.cache.backing.infinispan;
 import java.io.File;
 import java.io.Serializable;
 import java.util.AbstractMap;
+import java.util.Properties;
 
 import org.infinispan.Cache;
-import org.infinispan.config.Configuration;
+import org.infinispan.configuration.cache.AbstractLoaderConfiguration;
+import org.infinispan.configuration.cache.AbstractLoaderConfigurationBuilder;
+import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.FileCacheStoreConfiguration;
+import org.infinispan.configuration.cache.LoaderConfiguration;
+import org.infinispan.configuration.cache.LoadersConfigurationBuilder;
 import org.infinispan.eviction.EvictionStrategy;
-import org.infinispan.loaders.CacheLoaderConfig;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.util.TypedProperties;
 import org.jboss.as.clustering.CoreGroupCommunicationServiceService;
 import org.jboss.as.clustering.HashableMarshalledValueFactory;
 import org.jboss.as.clustering.MarshalledValue;
@@ -41,7 +48,6 @@ import org.jboss.as.clustering.SimpleMarshalledValueFactory;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.infinispan.invoker.RetryingCacheInvoker;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
-import org.jboss.as.clustering.infinispan.subsystem.FileCacheStoreConfig;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManagerService;
 import org.jboss.as.ejb3.cache.Cacheable;
@@ -116,21 +122,27 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
     @Override
     public <E extends SerializationGroupMember<K, V, G>> BackingCacheEntryStore<K, V, E> createIntegratedObjectStore(final String beanName, PassivationManager<K, E> passivationManager, StatefulTimeoutInfo timeout) {
         Cache<?, ?> groupCache = this.groupCache.getValue();
+        Configuration groupCacheConfiguration = groupCache.getCacheConfiguration();
         EmbeddedCacheManager container = groupCache.getCacheManager();
-        Configuration configuration = new Configuration();
+        ConfigurationBuilder builder = new ConfigurationBuilder().read(groupCacheConfiguration);
         if (this.maxSize > 0) {
-            configuration.fluent().eviction().strategy(EvictionStrategy.LRU).maxEntries(this.maxSize);
+            builder.eviction().strategy(EvictionStrategy.LRU).maxEntries(this.maxSize);
         }
+        // Clear out loaders configuration
+        builder.loaders()
+                .read(new ConfigurationBuilder().build().loaders())
+                .passivation(groupCacheConfiguration.loaders().passivation())
+                .preload(groupCacheConfiguration.loaders().preload())
+                .shared(groupCacheConfiguration.loaders().shared())
+        ;
         // Our cache needs a unique passivation location
-        for (CacheLoaderConfig loader: groupCache.getConfiguration().getCacheLoaders()) {
-            CacheLoaderConfig config = loader.clone();
-            if (config instanceof FileCacheStoreConfig) {
-                FileCacheStoreConfig fileConfig = (FileCacheStoreConfig) config;
-                fileConfig.path(fileConfig.getPath() + File.separatorChar + beanName);
-            }
-            configuration.fluent().loaders().addCacheLoader(config);
+        for (AbstractLoaderConfiguration loader: groupCacheConfiguration.loaders().cacheLoaders()) {
+            this.addCacheLoader(builder.loaders(), loader, beanName)
+                .async().read(loader.async())
+                .singletonStore().read(loader.singletonStore())
+            ;
         }
-        groupCache.getCacheManager().defineConfiguration(beanName, groupCache.getName(), configuration);
+        groupCache.getCacheManager().defineConfiguration(beanName, builder.build());
         Cache<MarshalledValue<K, MarshallingContext>, MarshalledValue<E, MarshallingContext>> cache = container.<MarshalledValue<K, MarshallingContext>, MarshalledValue<E, MarshallingContext>>getCache(beanName).getAdvancedCache().with(this.getClass().getClassLoader());
         MarshallingContext context = new MarshallingContext(this.factory, passivationManager.getMarshallingConfiguration());
         MarshalledValueFactory<MarshallingContext> keyFactory = new HashableMarshalledValueFactory(context);
@@ -142,6 +154,32 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
             }
         };
         return new InfinispanBackingCacheEntryStore<K, V, E, MarshallingContext>(cache, this.invoker, this.passivateEventsOnReplicate ? passivationManager : null, timeout, this, true, keyFactory, valueFactory, context, this.lockManager.getValue(), lockKeyFactory);
+    }
+
+    private AbstractLoaderConfigurationBuilder<?> addCacheLoader(LoadersConfigurationBuilder loadersBuilder, AbstractLoaderConfiguration config, String beanName) {
+        if (config instanceof LoaderConfiguration) {
+            LoaderConfiguration loader = (LoaderConfiguration) config;
+            Properties properties = new TypedProperties(loader.properties());
+            String location = loader.properties().getProperty("location");
+            if (location != null) {
+                properties.setProperty("location", this.createBeanLocation(location, beanName));
+            }
+            return loadersBuilder.addCacheLoader()
+                    .read(loader)
+                    .withProperties(properties)
+            ;
+        } else if (config instanceof FileCacheStoreConfiguration) {
+            FileCacheStoreConfiguration store = (FileCacheStoreConfiguration) config;
+            return loadersBuilder.addFileCacheStore()
+                    .read(store)
+                    .location(this.createBeanLocation(store.location(), beanName))
+            ;
+        }
+        throw new IllegalStateException(String.format("Unsupported cache loader: %s", config.getClass().getName()));
+    }
+
+    private String createBeanLocation(String location, String beanName) {
+        return location + File.separatorChar + beanName;
     }
 
     @Override

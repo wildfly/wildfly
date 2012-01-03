@@ -22,9 +22,10 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import javax.xml.XMLConstants;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.xml.XMLConstants;
 
 import org.jboss.as.controller.AttributeDefinition;
 

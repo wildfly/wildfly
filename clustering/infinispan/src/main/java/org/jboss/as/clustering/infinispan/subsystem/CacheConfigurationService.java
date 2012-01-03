@@ -25,25 +25,15 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 
-import org.infinispan.config.Configuration;
-import org.infinispan.config.FluentConfiguration;
-import org.infinispan.manager.CacheContainer;
+import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.transaction.tm.BatchModeTransactionManager;
 import org.jboss.as.clustering.infinispan.TransactionManagerProvider;
 import org.jboss.as.clustering.infinispan.TransactionSynchronizationRegistryProvider;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.logging.Logger;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.ImmediateValue;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 
 /**
  * @author Paul Ferraro
@@ -51,27 +41,25 @@ import org.jboss.msc.value.Value;
  */
 public class CacheConfigurationService implements Service<Configuration> {
 
-    private static final Logger log = Logger.getLogger(CacheConfigurationService.class.getPackage().getName()) ;
-
     private final String name;
-    private final String template;
-    private final Configuration overrides;
-    private final CacheConfigurationHelper configurationHelper;
-    private Configuration configuration;
+    private final ConfigurationBuilder builder;
+    private final Dependencies dependencies;
+    private volatile Configuration config;
 
     public static ServiceName getServiceName(String container, String cache) {
-        return EmbeddedCacheManagerService.getServiceName(container).append((cache != null) ? cache : CacheContainer.DEFAULT_CACHE_NAME, "config");
+        return CacheService.getServiceName(container, cache).append("config");
     }
 
-    public CacheConfigurationService(String name, Configuration overrides, CacheConfigurationHelper configurationHelper) {
-        this(name, null, overrides, configurationHelper);
+    interface Dependencies {
+        EmbeddedCacheManager getCacheContainer();
+        TransactionManager getTransactionManager();
+        TransactionSynchronizationRegistry getTransactionSynchronizationRegistry();
     }
 
-    public CacheConfigurationService(String name, String template, Configuration overrides, CacheConfigurationHelper configurationHelper) {
+    public CacheConfigurationService(String name, ConfigurationBuilder builder, Dependencies dependencies) {
         this.name = name;
-        this.template = template;
-        this.overrides = overrides ;
-        this.configurationHelper = configurationHelper;
+        this.builder = builder;
+        this.dependencies = dependencies;
     }
 
     /**
@@ -79,8 +67,8 @@ public class CacheConfigurationService implements Service<Configuration> {
      * @see org.jboss.msc.value.Value#getValue()
      */
     @Override
-    public Configuration getValue() throws IllegalStateException, IllegalArgumentException {
-        return this.configuration;
+    public Configuration getValue() {
+        return this.config;
     }
 
     /**
@@ -88,56 +76,17 @@ public class CacheConfigurationService implements Service<Configuration> {
      * @see org.jboss.msc.service.Service#start(org.jboss.msc.service.StartContext)
      */
     @Override
-    public void start(StartContext context) throws StartException {
-
-        EmbeddedCacheManager container = this.configurationHelper.getCacheContainer();
-        EmbeddedCacheManagerDefaults defaults = this.configurationHelper.getEmbeddedCacheManagerDefaults();
-
-        // set up the cache configuration
-        Configuration.CacheMode mode = this.overrides.getCacheMode() ;
-        Configuration configurationDefaults = defaults.getDefaultConfiguration(mode);
-        configuration = configurationDefaults.clone() ;
-        configuration.applyOverrides(overrides);
-
-        // check for missing dependencies
-        if (configuration.isTransactionalCache() && !configuration.isInvocationBatchingEnabled() && configurationHelper.getTransactionManager() == null) {
-            throw new StartException("Missing dependency: transaction manager required") ;
+    public void start(StartContext context) {
+        TransactionManager tm = this.dependencies.getTransactionManager();
+        if (tm != null) {
+            this.builder.transaction().transactionManagerLookup(new TransactionManagerProvider(tm));
         }
-        if (configuration.isUseSynchronizationForTransactions() && configurationHelper.getTransactionSynchronizationRegistry() == null) {
-            throw new StartException("Missing dependency: transaction synchronization registry provider required") ;
+        TransactionSynchronizationRegistry tsr = this.dependencies.getTransactionSynchronizationRegistry();
+        if (tsr != null) {
+            this.builder.transaction().transactionSynchronizationRegistryLookup(new TransactionSynchronizationRegistryProvider(tsr));
         }
-
-        // for transactional caches, our first opportunity to set the providers
-        FluentConfiguration.TransactionConfig tx = configuration.fluent().transaction();
-        if (configuration.isTransactionalCache()) {
-            if (configuration.isInvocationBatchingEnabled()) {
-                tx.transactionManagerLookup(new TransactionManagerProvider(new ImmediateValue<TransactionManager>(BatchModeTransactionManager.getInstance())));
-            } else {
-                Value<TransactionManager> tm = this.configurationHelper.getTransactionManager();
-                if (tm != null) {
-                    tx.transactionManagerLookup(new TransactionManagerProvider(tm));
-                }
-                if (configuration.isUseSynchronizationForTransactions()) {
-                    Value<TransactionSynchronizationRegistry> txSyncRegistry = this.configurationHelper.getTransactionSynchronizationRegistry();
-                    if (txSyncRegistry != null) {
-                        tx.transactionSynchronizationRegistryLookup(new TransactionSynchronizationRegistryProvider(txSyncRegistry));
-                    }
-                }
-            }
-        }
-
-        // if template != null, a cache named template is used as the base; otherwise default
-        if (this.template != null) {
-            container.defineConfiguration(this.name, this.template, configuration);
-        } else {
-            container.defineConfiguration(this.name, configuration);
-        }
-
-        // advertise
-        if (log.isDebugEnabled()) {
-            Configuration config = ((EmbeddedCacheManager) container).defineConfiguration(this.name, new Configuration());
-            log.debugf("Cache configuration defined for cache %s with contents: %s", this.name, dumpCacheConfiguration(this.name, config));
-        }
+        this.config = this.builder.build();
+        this.dependencies.getCacheContainer().defineConfiguration(this.name, this.config);
     }
 
     /**
@@ -146,71 +95,6 @@ public class CacheConfigurationService implements Service<Configuration> {
      */
     @Override
     public void stop(StopContext context) {
-    }
-
-    private String dumpCacheConfiguration(String name, Configuration c) {
-        StringBuilder sb = new StringBuilder() ;
-        if (name != null && c != null) {
-            sb.append("cache name: " + name) ;
-            sb.append(", eviction strategy: " + c.getEvictionStrategy()) ;
-            sb.append(", eviction max entries: " + c.getEvictionMaxEntries()) ;
-            sb.append(", expiration max idle: " + c.getExpirationMaxIdle());
-            sb.append(", expiration lifespan: " + c.getExpirationLifespan());
-            sb.append(", expiration interval: " + c.getExpirationWakeUpInterval());
-            return sb.toString() ;
-        }
-        return null ;
-    }
-
-    static class CacheConfigurationHelperImpl implements CacheConfigurationHelper {
-        private final InjectedValue<EmbeddedCacheManager> container = new InjectedValue<EmbeddedCacheManager>();
-        private final InjectedValue<EmbeddedCacheManagerDefaults> defaults = new InjectedValue<EmbeddedCacheManagerDefaults>();
-        private final InjectedValue<TransactionManager> transactionManager = new InjectedValue<TransactionManager>();
-        private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistry = new InjectedValue<TransactionSynchronizationRegistry>();
-        private final String name;
-
-        CacheConfigurationHelperImpl(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String getName() {
-            return this.name;
-        }
-
-        Injector<EmbeddedCacheManager> getCacheContainerInjector() {
-            return this.container;
-        }
-
-        Injector<EmbeddedCacheManagerDefaults> getDefaultsInjector() {
-            return this.defaults;
-        }
-        Injector<TransactionManager> getTransactionManagerInjector() {
-            return this.transactionManager;
-        }
-
-        Injector<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistryInjector() {
-            return this.transactionSynchronizationRegistry;
-        }
-
-        @Override
-        public EmbeddedCacheManager getCacheContainer() {
-            return this.container.getValue();
-        }
-
-        @Override
-        public EmbeddedCacheManagerDefaults getEmbeddedCacheManagerDefaults() {
-            return this.defaults.getValue();
-        }
-
-        @Override
-        public Value<TransactionManager> getTransactionManager() {
-            return this.transactionManager;
-        }
-
-        @Override
-        public Value<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistry() {
-            return this.transactionSynchronizationRegistry;
-        }
+        this.config = null;
     }
 }

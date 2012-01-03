@@ -21,19 +21,15 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.InfinispanLogger.ROOT_LOGGER;
-
-import javax.management.MBeanServer;
-import javax.transaction.xa.XAResource;
-import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.infinispan.config.Configuration;
-import org.infinispan.config.FluentConfiguration;
-import org.infinispan.config.FluentGlobalConfiguration;
-import org.infinispan.config.GlobalConfiguration;
-import org.infinispan.manager.CacheContainer;
+import javax.management.MBeanServer;
+
+import org.infinispan.configuration.global.GlobalConfigurationBuilder;
+import org.infinispan.configuration.global.GlobalJmxStatisticsConfigurationBuilder;
+import org.infinispan.configuration.global.ShutdownHookBehavior;
+import org.infinispan.configuration.global.TransportConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.Listener;
@@ -41,13 +37,11 @@ import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStarted
 import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStopped;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStartedEvent;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent;
-import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.jboss.as.clustering.infinispan.ChannelProvider;
 import org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.ExecutorProvider;
+import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
-import org.jboss.as.clustering.infinispan.TransactionManagerProvider;
-import org.jboss.as.clustering.infinispan.TransactionSynchronizationRegistryProvider;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
@@ -55,14 +49,14 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.tm.XAResourceRecovery;
-import org.jboss.tm.XAResourceRecoveryRegistry;
+import org.jboss.msc.value.Value;
+import org.jgroups.Channel;
 
 /**
  * @author Paul Ferraro
  */
 @Listener
-public class EmbeddedCacheManagerService implements Service<CacheContainer> {
+public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager> {
 
     private static final Logger log = Logger.getLogger(EmbeddedCacheManagerService.class.getPackage().getName());
     private static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(InfinispanExtension.SUBSYSTEM_NAME);
@@ -79,12 +73,34 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
         return getTransportServiceName(name).append("required");
     }
 
-    private final EmbeddedCacheManagerConfiguration configuration;
+    interface TransportConfiguration {
+        Long getLockTimeout();
+        String getSite();
+        String getRack();
+        String getMachine();
 
-    private volatile CacheContainer container;
+        Value<Channel> getChannel();
+        Executor getExecutor();
+    }
 
-    public EmbeddedCacheManagerService(EmbeddedCacheManagerConfiguration configuration) {
-        this.configuration = configuration;
+    interface Dependencies {
+        TransportConfiguration getTransportConfiguration();
+        MBeanServer getMBeanServer();
+        Executor getListenerExecutor();
+        ScheduledExecutorService getEvictionExecutor();
+        ScheduledExecutorService getReplicationQueueExecutor();
+    }
+
+    private final String name;
+    private final String defaultCache;
+    private final Dependencies dependencies;
+
+    private volatile EmbeddedCacheManager container;
+
+    public EmbeddedCacheManagerService(String name, String defaultCache, Dependencies dependencies) {
+        this.name = name;
+        this.defaultCache = defaultCache;
+        this.dependencies = dependencies;
     }
 
     /**
@@ -92,7 +108,7 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
      * @see org.jboss.msc.value.Value#getValue()
      */
     @Override
-    public CacheContainer getValue() throws IllegalStateException, IllegalArgumentException {
+    public EmbeddedCacheManager getValue() throws IllegalStateException, IllegalArgumentException {
         return this.container;
     }
 
@@ -103,100 +119,78 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
     @Override
     public void start(StartContext context) throws StartException {
 
-        EmbeddedCacheManagerDefaults defaults = this.configuration.getDefaults();
-        GlobalConfiguration global = defaults.getGlobalConfiguration().clone();
+        GlobalConfigurationBuilder globalBuilder = new GlobalConfigurationBuilder();
+        globalBuilder.shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER).transport().strictPeerToPeer(false);
 
-        String name = this.configuration.getName();
         // set up transport only if transport is required by some cache in the cache manager
-        TransportConfiguration transport = this.configuration.getTransportConfiguration();
-        FluentGlobalConfiguration.TransportConfig fluentTransport = global.fluent().transport();
+        TransportConfiguration transport = this.dependencies.getTransportConfiguration();
+        TransportConfigurationBuilder transportBuilder = globalBuilder.transport();
 
         // If our transport service is running, configure Infinispan to use it
-        if (context.getController().getServiceContainer().getRequiredService(getTransportServiceName(name)).getState() == ServiceController.State.UP) {
-            log.debugf("Initializing %s cache container transport", name) ;
-
-            fluentTransport.transportClass(JGroupsTransport.class);
+        if (context.getController().getServiceContainer().getRequiredService(getTransportServiceName(this.name)).getState() == ServiceController.State.UP) {
+            // See ISPN-1675
+            // transportBuilder.transport(new ChannelTransport(transport.getChannel()));
+            ChannelProvider.init(transportBuilder, transport.getChannel());
             Long timeout = transport.getLockTimeout();
-            if (timeout != null) {
-                fluentTransport.distributedSyncTimeout(timeout.longValue());
-            }
+            transportBuilder.distributedSyncTimeout((timeout != null) ? timeout.longValue() : 60000);
             String site = transport.getSite();
             if (site != null) {
-                fluentTransport.siteId(site);
+                transportBuilder.siteId(site);
             }
             String rack = transport.getRack();
             if (rack != null) {
-                fluentTransport.rackId(rack);
+                transportBuilder.rackId(rack);
             }
             String machine = transport.getMachine();
             if (machine != null) {
-                fluentTransport.machineId(machine);
+                transportBuilder.machineId(machine);
             }
-            fluentTransport.clusterName(this.configuration.getName());
-
-            ChannelProvider.init(global, transport.getChannel());
+            transportBuilder.clusterName(this.name);
 
             Executor executor = transport.getExecutor();
             if (executor != null) {
-                ExecutorProvider.initTransportExecutor(global, executor);
+                // See ISPN-1675
+                // globalBuilder.asyncTransportExecutor().factory(new ManagedExecutorFactory(executor));
+                ExecutorProvider.initTransportExecutor(globalBuilder, executor);
             }
         } else {
-            fluentTransport.transportClass(null);
+            transportBuilder.clearTransport();
         }
 
-        Executor listenerExecutor = this.configuration.getListenerExecutor();
+        Executor listenerExecutor = this.dependencies.getListenerExecutor();
         if (listenerExecutor != null) {
-            ExecutorProvider.initListenerExecutor(global, listenerExecutor);
+            // See ISPN-1675
+            // globalBuilder.asyncListenerExecutor().factory(new ManagedExecutorFactory(listenerExecutor));
+            ExecutorProvider.initListenerExecutor(globalBuilder, listenerExecutor);
         }
-        ScheduledExecutorService evictionExecutor = this.configuration.getEvictionExecutor();
+        ScheduledExecutorService evictionExecutor = this.dependencies.getEvictionExecutor();
         if (evictionExecutor != null) {
-            ExecutorProvider.initEvictionExecutor(global, evictionExecutor);
+            // See ISPN-1675
+            // globalBuilder.evictionScheduledExecutor().factory(new ManagedScheduledExecutorFactory(evictionExecutor));
+            ExecutorProvider.initEvictionExecutor(globalBuilder, evictionExecutor);
         }
-        ScheduledExecutorService replicationQueueExecutor = this.configuration.getReplicationQueueExecutor();
+        ScheduledExecutorService replicationQueueExecutor = this.dependencies.getReplicationQueueExecutor();
         if (replicationQueueExecutor != null) {
-            ExecutorProvider.initReplicationQueueExecutor(global, replicationQueueExecutor);
+            // See ISPN-1675
+            // globalBuilder.replicationQueueScheduledExecutor().factory(new ManagedScheduledExecutorFactory(replicationQueueExecutor));
+            ExecutorProvider.initReplicationQueueExecutor(globalBuilder, replicationQueueExecutor);
         }
 
-        FluentGlobalConfiguration.GlobalJmxStatisticsConfig globalJmx = fluentTransport.globalJmxStatistics();
-        globalJmx.cacheManagerName(this.configuration.getName());
+        GlobalJmxStatisticsConfigurationBuilder jmxBuilder = globalBuilder.globalJmxStatistics().cacheManagerName(this.name);
 
-        // setup default cache configuration
-        Configuration defaultConfig = new Configuration();
-        FluentConfiguration fluent = defaultConfig.fluent();
-
-        MBeanServer server = this.configuration.getMBeanServer();
+        MBeanServer server = this.dependencies.getMBeanServer();
         if (server != null) {
-            globalJmx.mBeanServerLookup(new MBeanServerProvider(server)).jmxDomain(SERVICE_NAME.getCanonicalName());
-            fluent.jmxStatistics();
+            jmxBuilder.enable().mBeanServerLookup(new MBeanServerProvider(server)).jmxDomain(SERVICE_NAME.getCanonicalName());
         } else {
-            globalJmx.disable();
+            jmxBuilder.disable();
         }
-
-        this.configureTransactions(defaultConfig);
 
         // create the cache manager
-        EmbeddedCacheManager manager = new DefaultCacheManager(global, defaultConfig, false);
-        manager.addListener(this);
-        // Add named configurations
-        for (Map.Entry<String, Configuration> entry: this.configuration.getConfigurations().entrySet()) {
-            Configuration overrides = entry.getValue();
-            Configuration configuration = defaults.getDefaultConfiguration(overrides.getCacheMode()).clone();
-            configuration.applyOverrides(overrides);
-            this.configureTransactions(configuration);
-            manager.defineConfiguration(entry.getKey(), configuration);
-        }
-        this.container = new DefaultEmbeddedCacheManager(manager, this.configuration.getDefaultCache());
+        EmbeddedCacheManager manager = new DefaultCacheManager(globalBuilder.build(), false);
+        this.container = new DefaultEmbeddedCacheManager(manager, this.defaultCache);
+        this.container.addListener(this);
         this.container.start();
-        log.debugf("%s cache container started", name);
-    }
-
-    private void configureTransactions(Configuration config) {
-        boolean transactional = config.isTransactionalCache();
-        boolean synchronizations = transactional && config.isUseSynchronizationForTransactions();
-        config.fluent().transaction()
-            .transactionManagerLookup(transactional ? new TransactionManagerProvider(this.configuration.getTransactionManager()) : null)
-            .transactionSynchronizationRegistryLookup(synchronizations ? new TransactionSynchronizationRegistryProvider(this.configuration.getTransactionSynchronizationRegistry()) : null)
-        ;
+        log.debugf("%s cache container started", this.name);
     }
 
     /**
@@ -206,86 +200,18 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
     @Override
     public void stop(StopContext context) {
         this.container.stop();
+        this.container.removeListener(this);
+        log.debugf("%s cache container stopped", this.name);
         this.container = null;
-        log.debug("cache manager stopped");
     }
 
     @CacheStarted
     public void cacheStarted(CacheStartedEvent event) {
-        String cacheName = event.getCacheName();
-        EmbeddedCacheManager container = event.getCacheManager();
-
-        ROOT_LOGGER.cacheStarted(event.getCacheName(), event.getCacheManager().getGlobalConfiguration().getCacheManagerName());
-
-        XAResourceRecoveryRegistry recoveryRegistry = this.configuration.getXAResourceRecoveryRegistry();
-        if ((recoveryRegistry != null) && container.defineConfiguration(cacheName, new Configuration()).isTransactionRecoveryEnabled()) {
-            recoveryRegistry.addXAResourceRecovery(new InfinispanXAResourceRecovery(cacheName, container));
-        }
+        InfinispanLogger.ROOT_LOGGER.cacheStarted(event.getCacheName(), event.getCacheManager().getGlobalConfiguration().getCacheManagerName());
     }
 
     @CacheStopped
     public void cacheStopped(CacheStoppedEvent event) {
-       String cacheName = event.getCacheName();
-       EmbeddedCacheManager container = event.getCacheManager();
-
-       ROOT_LOGGER.cacheStopped(cacheName, container.getGlobalConfiguration().getCacheManagerName());
-
-       XAResourceRecoveryRegistry recoveryRegistry = this.configuration.getXAResourceRecoveryRegistry();
-       if (recoveryRegistry != null) {
-           recoveryRegistry.removeXAResourceRecovery(new InfinispanXAResourceRecovery(cacheName, container));
-       }
-/*
-       // Infinispan does not unregister cache mbean when cache stops (only when cache manager is stopped), so do it now to avoid classloader leaks
-       MBeanServer server = this.configuration.getMBeanServer();
-       if (server != null) {
-           Configuration configuration = cacheName.equals(CacheContainer.DEFAULT_CACHE_NAME) ? container.getDefaultConfiguration() : container.defineConfiguration(cacheName, new Configuration());
-           if (configuration.isExposeJmxStatistics()) {
-               String domain = global.getJmxDomain();
-               String jmxCacheName = String.format("%s(%s)", cacheName, configuration.getCacheModeString().toLowerCase(Locale.ENGLISH));
-               try {
-                  // Fragile code alert!
-                  ObjectName name = ObjectName.getInstance(String.format("%s:%s,%s=%s,manager=%s,%s=%s", domain, CacheJmxRegistration.CACHE_JMX_GROUP, ComponentsJmxRegistration.NAME_KEY, ObjectName.quote(jmxCacheName), ObjectName.quote(containerName), ComponentsJmxRegistration.COMPONENT_KEY, "Cache"));
-                  if (server.isRegistered(name)) {
-                     server.unregisterMBean(name);
-                     ROOT_LOGGER.tracef("Unregistered cache mbean: %s", name);
-                  }
-               } catch (JMException e) {
-                   ROOT_LOGGER.debugf(e, "Failed to unregister mbean for %s cache", cacheName);
-               }
-           }
-       }
-*/
-    }
-
-    static class InfinispanXAResourceRecovery implements XAResourceRecovery {
-        private final String cacheName;
-        private final EmbeddedCacheManager container;
-
-        InfinispanXAResourceRecovery(String cacheName, EmbeddedCacheManager container) {
-            this.cacheName = cacheName;
-            this.container = container;
-        }
-
-        @Override
-        public XAResource[] getXAResources() {
-            return new XAResource[] { this.container.getCache(this.cacheName).getAdvancedCache().getXAResource() };
-        }
-
-        @Override
-        public int hashCode() {
-            return this.container.getGlobalConfiguration().getCacheManagerName().hashCode() ^ this.cacheName.hashCode();
-        }
-
-        @Override
-        public boolean equals(Object object) {
-            if ((object == null) || !(object instanceof InfinispanXAResourceRecovery)) return false;
-            InfinispanXAResourceRecovery recovery = (InfinispanXAResourceRecovery) object;
-            return this.container.getGlobalConfiguration().getCacheManagerName().equals(recovery.container.getGlobalConfiguration().getCacheManagerName()) && this.cacheName.equals(recovery.cacheName);
-        }
-
-        @Override
-        public String toString() {
-            return container.getGlobalConfiguration().getCacheManagerName() + "." + this.cacheName;
-        }
+        InfinispanLogger.ROOT_LOGGER.cacheStopped(event.getCacheName(), event.getCacheManager().getGlobalConfiguration().getCacheManagerName());
     }
 }

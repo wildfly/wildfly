@@ -21,33 +21,24 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import javax.management.MBeanServer;
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-import java.util.Map;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ScheduledExecutorService;
-
-import org.infinispan.config.Configuration;
-import org.jboss.msc.value.Value;
-import org.jboss.tm.XAResourceRecoveryRegistry;
+import org.jboss.as.naming.deployment.JndiName;
 
 /**
  * @author Paul Ferraro
  */
-public interface EmbeddedCacheManagerConfiguration {
+public class InfinispanJndiName {
 
-    String getName();
-    String getDefaultCache();
-    Map<String, Configuration> getConfigurations();
+    private static final String DEFAULT_JNDI_NAMESPACE = "java:jboss";
 
-    TransportConfiguration getTransportConfiguration();
-    EmbeddedCacheManagerDefaults getDefaults();
-    Value<TransactionManager> getTransactionManager();
-    Value<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistry();
-    XAResourceRecoveryRegistry getXAResourceRecoveryRegistry();
-    MBeanServer getMBeanServer();
-    Executor getListenerExecutor();
-    ScheduledExecutorService getEvictionExecutor();
-    ScheduledExecutorService getReplicationQueueExecutor();
+    public static JndiName defaultCacheContainerJndiName(String containerName) {
+        return JndiName.of(DEFAULT_JNDI_NAMESPACE).append(InfinispanExtension.SUBSYSTEM_NAME).append("container").append(containerName);
+    }
+
+    public static JndiName defaultCacheJndiName(String containerName, String cacheName) {
+        return JndiName.of(DEFAULT_JNDI_NAMESPACE).append(InfinispanExtension.SUBSYSTEM_NAME).append("cache").append(containerName).append(cacheName);
+    }
+
+    public static JndiName toJndiName(String value) {
+        return value.startsWith("java:") ? JndiName.of(value) : JndiName.of(DEFAULT_JNDI_NAMESPACE).append(value.startsWith("/") ? value.substring(1) : value);
+    }
 }

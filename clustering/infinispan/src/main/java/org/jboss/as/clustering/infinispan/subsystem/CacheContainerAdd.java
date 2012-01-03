@@ -25,22 +25,20 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import javax.management.MBeanServer;
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.infinispan.config.Configuration;
+import javax.management.MBeanServer;
+
 import org.infinispan.manager.CacheContainer;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelFactoryService;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.operations.common.Util;
@@ -49,10 +47,8 @@ import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.threads.ThreadsServices;
-import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
@@ -63,7 +59,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
-import org.jboss.tm.XAResourceRecoveryRegistry;
 import org.jgroups.Channel;
 
 /**
@@ -81,19 +76,6 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         ModelNode operation = Util.getEmptyOperation(ADD, address);
         populate(existing, operation);
         return operation;
-    }
-
-    static String getContainerJNDIName(ModelNode container, String name) {
-        JndiName jndiName = null ;
-        if (container.hasDefined(ModelKeys.JNDI_NAME)) {
-            // convert the JNDI name passed by the user
-            jndiName = toJndiName(container.get(ModelKeys.JNDI_NAME).asString()) ;
-        }
-        else {
-            // build the name from scratch as java:jboss/infinispan/<container name>
-            jndiName = JndiName.of("java:jboss").append(InfinispanExtension.SUBSYSTEM_NAME).append(name) ;
-        }
-        return jndiName.getAbsoluteName();
     }
 
     private static void populate(ModelNode source, ModelNode target) {
@@ -124,7 +106,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         // Because we use child resources in a read-only manner to configure the cache container, replace the local model with the full model
         model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
 
@@ -134,7 +116,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         String defaultCache = model.require(ModelKeys.DEFAULT_CACHE).asString();
 
         Transport transportConfig = new Transport();
-        EmbeddedCacheManager config = new EmbeddedCacheManager(name, defaultCache, transportConfig);
+        EmbeddedCacheManagerDependencies dependencies = new EmbeddedCacheManagerDependencies(transportConfig);
 
         ServiceName[] aliases = null;
         if (model.hasDefined(ModelKeys.ALIAS)) {
@@ -147,17 +129,14 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
 
         ServiceTarget target = context.getServiceTarget();
         ServiceName serviceName = EmbeddedCacheManagerService.getServiceName(name);
-        ServiceBuilder<CacheContainer> containerBuilder = target.addService(serviceName, new EmbeddedCacheManagerService(config))
-                .addDependency(EmbeddedCacheManagerDefaultsService.SERVICE_NAME, EmbeddedCacheManagerDefaults.class, config.getDefaultsInjector())
-                .addDependency(DependencyType.OPTIONAL, TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, config.getTransactionManagerInjector())
-                .addDependency(DependencyType.OPTIONAL, TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, config.getTransactionSynchronizationRegistryInjector())
-                .addDependency(DependencyType.OPTIONAL, TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, XAResourceRecoveryRegistry.class, config.getXAResourceRecoveryRegistryInjector())
-                .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, config.getMBeanServerInjector())
+        ServiceBuilder<EmbeddedCacheManager> containerBuilder = target.addService(serviceName, new EmbeddedCacheManagerService(name, defaultCache, dependencies))
+                .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, dependencies.getMBeanServerInjector())
                 .addAliases(aliases)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND);
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+        ;
 
-        String jndiName = (model.hasDefined(ModelKeys.JNDI_NAME) ? toJndiName(model.get(ModelKeys.JNDI_NAME).asString()) : JndiName.of("java:jboss").append(InfinispanExtension.SUBSYSTEM_NAME).append(name)).getAbsoluteName();
-        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
+        String jndiName = (model.hasDefined(ModelKeys.JNDI_NAME) ? InfinispanJndiName.toJndiName(model.get(ModelKeys.JNDI_NAME).asString()) : InfinispanJndiName.defaultCacheContainerJndiName(name)).getAbsoluteName();
+        ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
 
         BinderService binder = new BinderService(bindInfo.getBindName());
         ServiceBuilder<ManagedReferenceFactory> binderBuilder = target.addService(bindInfo.getBinderServiceName(), binder)
@@ -184,7 +163,6 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
             if (transport.hasDefined(ModelKeys.STACK)) {
                 stack = transport.get(ModelKeys.STACK).asString();
             }
-            addExecutorDependency(containerBuilder, transport, ModelKeys.EXECUTOR, transportConfig.getExecutorInjector());
             if (transport.hasDefined(ModelKeys.LOCK_TIMEOUT)) {
                 transportConfig.setLockTimeout(transport.get(ModelKeys.LOCK_TIMEOUT).asLong());
             }
@@ -197,81 +175,53 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
             if (transport.hasDefined(ModelKeys.MACHINE)) {
                 transportConfig.setMachine(transport.get(ModelKeys.MACHINE).asString());
             }
+            addExecutorDependency(containerBuilder, transport, ModelKeys.EXECUTOR, transportConfig.getExecutorInjector());
         }
 
         ServiceName channelServiceName = ChannelService.getServiceName(name);
         // add an optional dependency on a ChannelService which has the cache-container name
         containerBuilder.addDependency(DependencyType.OPTIONAL, channelServiceName, Channel.class, transportConfig.getChannelInjector());
 
-        addExecutorDependency(containerBuilder, model, ModelKeys.LISTENER_EXECUTOR, config.getListenerExecutorInjector());
-        addScheduledExecutorDependency(containerBuilder, model, ModelKeys.EVICTION_EXECUTOR, config.getEvictionExecutorInjector());
-        addScheduledExecutorDependency(containerBuilder, model, ModelKeys.REPLICATION_QUEUE_EXECUTOR, config.getReplicationQueueExecutorInjector());
+        addExecutorDependency(containerBuilder, model, ModelKeys.LISTENER_EXECUTOR, dependencies.getListenerExecutorInjector());
+        addScheduledExecutorDependency(containerBuilder, model, ModelKeys.EVICTION_EXECUTOR, dependencies.getEvictionExecutorInjector());
+        addScheduledExecutorDependency(containerBuilder, model, ModelKeys.REPLICATION_QUEUE_EXECUTOR, dependencies.getReplicationQueueExecutorInjector());
 
         newControllers.add(containerBuilder.install());
 
         InjectedValue<ChannelFactory> channelFactory = new InjectedValue<ChannelFactory>();
         // Set initial mode to NEVER - Cache add operations will update mode to ON_DEMAND when necessary
         ServiceBuilder<Channel> channelBuilder = target.addService(channelServiceName, new ChannelService(name, channelFactory))
-            .addAliases(EmbeddedCacheManagerService.getTransportServiceName(name))
-            .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, channelFactory)
-            .setInitialMode(ServiceController.Mode.NEVER)
+                .addAliases(EmbeddedCacheManagerService.getTransportServiceName(name))
+                .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, channelFactory)
+                .setInitialMode(ServiceController.Mode.NEVER)
         ;
         newControllers.add(channelBuilder.install());
 
         log.debugf("Cache container %s installed", name);
      }
 
-    private void addExecutorDependency(ServiceBuilder<CacheContainer> builder, ModelNode model, String key, Injector<Executor> injector) {
+    private void addExecutorDependency(ServiceBuilder<EmbeddedCacheManager> builder, ModelNode model, String key, Injector<Executor> injector) {
         if (model.hasDefined(key)) {
             builder.addDependency(ThreadsServices.executorName(model.get(key).asString()), Executor.class, injector);
         }
     }
 
-    private void addScheduledExecutorDependency(ServiceBuilder<CacheContainer> builder, ModelNode model, String key, Injector<ScheduledExecutorService> injector) {
+    private void addScheduledExecutorDependency(ServiceBuilder<EmbeddedCacheManager> builder, ModelNode model, String key, Injector<ScheduledExecutorService> injector) {
         if (model.hasDefined(key)) {
             builder.addDependency(ThreadsServices.executorName(model.get(key).asString()), ScheduledExecutorService.class, injector);
         }
     }
 
-    private static JndiName toJndiName(String value) {
-        return value.startsWith("java:") ? JndiName.of(value) : JndiName.of("java:jboss").append(value.startsWith("/") ? value.substring(1) : value);
-    }
-
-    static class EmbeddedCacheManager implements EmbeddedCacheManagerConfiguration {
-        private final InjectedValue<EmbeddedCacheManagerDefaults> defaults = new InjectedValue<EmbeddedCacheManagerDefaults>();
-        private final InjectedValue<TransactionManager> transactionManager = new InjectedValue<TransactionManager>();
-        private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistry = new InjectedValue<TransactionSynchronizationRegistry>();
-        private final InjectedValue<XAResourceRecoveryRegistry> recoveryRegistry = new InjectedValue<XAResourceRecoveryRegistry>();
+    static class EmbeddedCacheManagerDependencies implements EmbeddedCacheManagerService.Dependencies {
         private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
         private final InjectedValue<Executor> listenerExecutor = new InjectedValue<Executor>();
         private final InjectedValue<ScheduledExecutorService> evictionExecutor = new InjectedValue<ScheduledExecutorService>();
         private final InjectedValue<ScheduledExecutorService> replicationQueueExecutor = new InjectedValue<ScheduledExecutorService>();
 
-        private final String name;
-        private final String defaultCache;
-        private final Map<String, Configuration> configurations = new HashMap<String, Configuration>();
-        private final TransportConfiguration transport;
+        private final EmbeddedCacheManagerService.TransportConfiguration transport;
 
-        EmbeddedCacheManager(String name, String defaultCache, TransportConfiguration transport) {
-            this.name = name;
-            this.defaultCache = defaultCache;
+        EmbeddedCacheManagerDependencies(EmbeddedCacheManagerService.TransportConfiguration transport) {
             this.transport = transport;
-        }
-
-        Injector<EmbeddedCacheManagerDefaults> getDefaultsInjector() {
-            return this.defaults;
-        }
-
-        Injector<TransactionManager> getTransactionManagerInjector() {
-            return this.transactionManager;
-        }
-
-        Injector<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistryInjector() {
-            return this.transactionSynchronizationRegistry;
-        }
-
-        Injector<XAResourceRecoveryRegistry> getXAResourceRecoveryRegistryInjector() {
-            return this.recoveryRegistry;
         }
 
         Injector<MBeanServer> getMBeanServerInjector() {
@@ -291,43 +241,8 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         }
 
         @Override
-        public String getName() {
-            return this.name;
-        }
-
-        @Override
-        public String getDefaultCache() {
-            return this.defaultCache;
-        }
-
-        @Override
-        public Map<String, Configuration> getConfigurations() {
-            return this.configurations;
-        }
-
-        @Override
-        public TransportConfiguration getTransportConfiguration() {
+        public EmbeddedCacheManagerService.TransportConfiguration getTransportConfiguration() {
             return this.transport;
-        }
-
-        @Override
-        public EmbeddedCacheManagerDefaults getDefaults() {
-            return this.defaults.getValue();
-        }
-
-        @Override
-        public Value<TransactionManager> getTransactionManager() {
-            return this.transactionManager;
-        }
-
-        @Override
-        public Value<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistry() {
-            return this.transactionSynchronizationRegistry;
-        }
-
-        @Override
-        public XAResourceRecoveryRegistry getXAResourceRecoveryRegistry() {
-            return this.recoveryRegistry.getOptionalValue();
         }
 
         @Override
@@ -351,7 +266,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         }
     }
 
-    static class Transport implements TransportConfiguration {
+    static class Transport implements EmbeddedCacheManagerService.TransportConfiguration {
         private final InjectedValue<Channel> channel = new InjectedValue<Channel>();
         private final InjectedValue<Executor> executor = new InjectedValue<Executor>();
 

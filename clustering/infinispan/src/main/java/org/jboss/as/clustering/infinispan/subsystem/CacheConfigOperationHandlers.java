@@ -5,11 +5,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -40,9 +36,9 @@ public class CacheConfigOperationHandlers {
 
     /** The cache locking config add operation handler. */
     static final OperationStepHandler LOCKING_ADD = new BasicCacheConfigAdd(CommonAttributes.LOCKING_ATTRIBUTES) {
-       public void process(ModelNode submodel , ModelNode operation){
+        public void process(ModelNode submodel , ModelNode operation){
           // override locking stuff here
-       }
+        }
     };
     static final SelfRegisteringAttributeHandler LOCKING_ATTR = new AttributeWriteHandler(CommonAttributes.LOCKING_ATTRIBUTES);
 
@@ -74,7 +70,7 @@ public class CacheConfigOperationHandlers {
     static final OperationStepHandler REMOVE = new OperationStepHandler() {
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-            final Resource resource = context.removeResource(PathAddress.EMPTY_ADDRESS);
+            context.removeResource(PathAddress.EMPTY_ADDRESS);
             reloadRequiredStep(context);
             context.completeStep();
         }

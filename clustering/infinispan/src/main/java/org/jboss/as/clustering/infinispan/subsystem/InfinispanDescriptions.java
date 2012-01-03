@@ -22,7 +22,23 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -100,31 +116,31 @@ public class InfinispanDescriptions {
             addNode(attributes, attr.getName(), resources.getString(keyPrefix + "." + attr.getName()), attr.getType(), !attr.isAllowNull());
         }
         // alias is a special case as it has a value type
-        addNode(attributes, ModelKeys.ALIAS, resources.getString(keyPrefix+".alias"), ModelType.LIST, false).get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
+        addNode(attributes, ModelKeys.ALIAS, resources.getString(keyPrefix + ".alias"), ModelType.LIST, false).get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
 
         // information about its child "singleton=transport"
-        description.get(CHILDREN, ModelKeys.SINGLETON, DESCRIPTION).set(resources.getString(keyPrefix+".singleton"));
+        description.get(CHILDREN, ModelKeys.SINGLETON, DESCRIPTION).set(resources.getString(keyPrefix + ".singleton"));
         description.get(CHILDREN, ModelKeys.SINGLETON, MIN_OCCURS).set(0);
         description.get(CHILDREN, ModelKeys.SINGLETON, MAX_OCCURS).set(1);
         description.get(CHILDREN, ModelKeys.SINGLETON, ALLOWED).setEmptyList().add("transport");
         description.get(CHILDREN, ModelKeys.SINGLETON, MODEL_DESCRIPTION);
         // information about its child "local-cache"
-        description.get(CHILDREN, ModelKeys.LOCAL_CACHE, DESCRIPTION).set(resources.getString(keyPrefix+".local-cache"));
+        description.get(CHILDREN, ModelKeys.LOCAL_CACHE, DESCRIPTION).set(resources.getString(keyPrefix + ".local-cache"));
         description.get(CHILDREN, ModelKeys.LOCAL_CACHE, MIN_OCCURS).set(0);
         description.get(CHILDREN, ModelKeys.LOCAL_CACHE, MAX_OCCURS).set(Integer.MAX_VALUE);
         description.get(CHILDREN, ModelKeys.LOCAL_CACHE, MODEL_DESCRIPTION);
         // information about its child "invalidation-cache"
-        description.get(CHILDREN, ModelKeys.INVALIDATION_CACHE, DESCRIPTION).set(resources.getString(keyPrefix+".invalidation-cache"));
+        description.get(CHILDREN, ModelKeys.INVALIDATION_CACHE, DESCRIPTION).set(resources.getString(keyPrefix + ".invalidation-cache"));
         description.get(CHILDREN, ModelKeys.INVALIDATION_CACHE, MIN_OCCURS).set(0);
         description.get(CHILDREN, ModelKeys.INVALIDATION_CACHE, MAX_OCCURS).set(Integer.MAX_VALUE);
         description.get(CHILDREN, ModelKeys.INVALIDATION_CACHE, MODEL_DESCRIPTION);
         // information about its child "local-cache"
-        description.get(CHILDREN, ModelKeys.REPLICATED_CACHE, DESCRIPTION).set(resources.getString(keyPrefix+".replicated-cache"));
+        description.get(CHILDREN, ModelKeys.REPLICATED_CACHE, DESCRIPTION).set(resources.getString(keyPrefix + ".replicated-cache"));
         description.get(CHILDREN, ModelKeys.REPLICATED_CACHE, MIN_OCCURS).set(0);
         description.get(CHILDREN, ModelKeys.REPLICATED_CACHE, MAX_OCCURS).set(Integer.MAX_VALUE);
         description.get(CHILDREN, ModelKeys.REPLICATED_CACHE, MODEL_DESCRIPTION);
         // information about its child "local-cache"
-        description.get(CHILDREN, ModelKeys.DISTRIBUTED_CACHE, DESCRIPTION).set(resources.getString(keyPrefix+".distributed-cache"));
+        description.get(CHILDREN, ModelKeys.DISTRIBUTED_CACHE, DESCRIPTION).set(resources.getString(keyPrefix + ".distributed-cache"));
         description.get(CHILDREN, ModelKeys.DISTRIBUTED_CACHE, MIN_OCCURS).set(0);
         description.get(CHILDREN, ModelKeys.DISTRIBUTED_CACHE, MAX_OCCURS).set(Integer.MAX_VALUE);
         description.get(CHILDREN, ModelKeys.DISTRIBUTED_CACHE, MODEL_DESCRIPTION);

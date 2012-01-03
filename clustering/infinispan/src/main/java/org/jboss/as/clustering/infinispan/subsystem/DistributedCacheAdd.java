@@ -4,9 +4,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 
 import java.util.List;
 
-import org.infinispan.config.Configuration;
-import org.infinispan.config.Configuration.CacheMode;
-import org.infinispan.config.FluentConfiguration;
+import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
@@ -49,28 +48,27 @@ public class DistributedCacheAdd extends ClusteredCacheAdd {
      *
      * @param cache
      * @param configuration
-     * @param additionalDeps
+     * @param dependencies
      * @return
      */
     @Override
-    void processModelNode(ModelNode cache, Configuration configuration, List<AdditionalDependency<?>> additionalDeps) {
+    void processModelNode(ModelNode cache, ConfigurationBuilder builder, List<Dependency<?>> dependencies) {
         // process the basic clustered configuration
-        super.processModelNode(cache, configuration, additionalDeps);
+        super.processModelNode(cache, builder, dependencies);
 
         // process the additional distributed attributes and elements
-        FluentConfiguration fluent = configuration.fluent();
         if (cache.hasDefined(ModelKeys.OWNERS)) {
-            fluent.hash().numOwners(cache.get(ModelKeys.OWNERS).asInt());
+            builder.clustering().hash().numOwners(cache.get(ModelKeys.OWNERS).asInt());
         }
         if (cache.hasDefined(ModelKeys.VIRTUAL_NODES)) {
-            fluent.hash().numVirtualNodes(cache.get(ModelKeys.VIRTUAL_NODES).asInt());
+            builder.clustering().hash().numVirtualNodes(cache.get(ModelKeys.VIRTUAL_NODES).asInt());
         }
         if (cache.hasDefined(ModelKeys.L1_LIFESPAN)) {
             long lifespan = cache.get(ModelKeys.L1_LIFESPAN).asLong();
             if (lifespan > 0) {
-                fluent.l1().lifespan(lifespan);
+                builder.clustering().l1().lifespan(lifespan);
             } else {
-                fluent.l1().disable();
+                builder.clustering().l1().disable();
             }
         }
 
@@ -78,15 +76,14 @@ public class DistributedCacheAdd extends ClusteredCacheAdd {
         if (cache.hasDefined(ModelKeys.SINGLETON) && cache.get(ModelKeys.SINGLETON, ModelKeys.REHASHING).isDefined()) {
             ModelNode rehashing = cache.get(ModelKeys.SINGLETON, ModelKeys.REHASHING);
 
-            FluentConfiguration.HashConfig fluentHash = fluent.hash();
             if (rehashing.hasDefined(ModelKeys.ENABLED)) {
-                fluentHash.rehashEnabled(rehashing.get(ModelKeys.ENABLED).asBoolean());
+                builder.clustering().hash().rehashEnabled(rehashing.get(ModelKeys.ENABLED).asBoolean());
             }
             if (rehashing.hasDefined(ModelKeys.TIMEOUT)) {
-                fluentHash.rehashRpcTimeout(rehashing.get(ModelKeys.TIMEOUT).asLong());
+                builder.clustering().hash().rehashRpcTimeout(rehashing.get(ModelKeys.TIMEOUT).asLong());
             }
             if (rehashing.hasDefined(ModelKeys.WAIT)) {
-                fluentHash.rehashWait(rehashing.get(ModelKeys.WAIT).asLong());
+                builder.clustering().hash().rehashWait(rehashing.get(ModelKeys.WAIT).asLong());
             }
         }
     }

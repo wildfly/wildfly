@@ -33,7 +33,6 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
@@ -43,8 +42,6 @@ import org.jboss.msc.value.InjectedValue;
  * @author Paul Ferraro
  */
 public class InfinispanSubsystemAdd extends AbstractAddStepHandler {
-
-    private static final Logger log = Logger.getLogger(InfinispanSubsystemAdd.class.getPackage().getName());
 
     public static final InfinispanSubsystemAdd INSTANCE = new InfinispanSubsystemAdd();
 
@@ -66,16 +63,15 @@ public class InfinispanSubsystemAdd extends AbstractAddStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         ROOT_LOGGER.activatingSubsystem();
         ServiceTarget target = context.getServiceTarget();
-        newControllers.add(target.addService(EmbeddedCacheManagerDefaultsService.SERVICE_NAME, new EmbeddedCacheManagerDefaultsService())
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install());
         String defaultContainer = operation.require(ModelKeys.DEFAULT_CACHE_CONTAINER).asString();
         InjectedValue<EmbeddedCacheManager> container = new InjectedValue<EmbeddedCacheManager>();
         ValueService<EmbeddedCacheManager> service = new ValueService<EmbeddedCacheManager>(container);
-        newControllers.add(target.addService(EmbeddedCacheManagerService.getServiceName(null), service)
+        ServiceController<EmbeddedCacheManager> controller = target.addService(EmbeddedCacheManagerService.getServiceName(null), service)
                 .addDependency(EmbeddedCacheManagerService.getServiceName(defaultContainer), EmbeddedCacheManager.class, container)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install());
+                .install()
+        ;
+        newControllers.add(controller);
     }
 
     protected boolean requiresRuntimeVerification() {

@@ -12,7 +12,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 
 /**
@@ -20,7 +19,6 @@ import org.jboss.msc.service.ServiceController;
  */
 public class TransportAdd extends AbstractAddStepHandler {
 
-    private static final Logger log = Logger.getLogger(TransportAdd.class.getPackage().getName());
     public static final TransportAdd INSTANCE = new TransportAdd();
 
     static ModelNode createOperation(ModelNode address, ModelNode existing) {
@@ -29,14 +27,8 @@ public class TransportAdd extends AbstractAddStepHandler {
         return operation;
     }
 
-    public TransportAdd() {
-        super();
-    }
-
-
-
+    @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-
         // this is not necessary as the CLI checks for duplicate addresses
         if (model.isDefined()) {
             ModelNode exception = new ModelNode() ;
@@ -48,7 +40,6 @@ public class TransportAdd extends AbstractAddStepHandler {
         populate(operation, model);
     }
 
-
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         //
@@ -56,7 +47,6 @@ public class TransportAdd extends AbstractAddStepHandler {
     }
 
     private static void populate(ModelNode operation, ModelNode model) {
-
         // simply transfer the attributes from operation to model
         for (AttributeDefinition attr : CommonAttributes.TRANSPORT_ATTRIBUTES) {
 

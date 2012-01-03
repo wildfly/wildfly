@@ -23,7 +23,6 @@
 package org.jboss.as.clustering.infinispan;
 
 import org.infinispan.transaction.lookup.TransactionSynchronizationRegistryLookup;
-import org.jboss.msc.value.Value;
 
 import javax.transaction.TransactionSynchronizationRegistry;
 
@@ -34,14 +33,14 @@ import javax.transaction.TransactionSynchronizationRegistry;
  */
 public class TransactionSynchronizationRegistryProvider implements TransactionSynchronizationRegistryLookup {
 
-    private final Value<TransactionSynchronizationRegistry> transactionSynchronizationRegistry;
+    private final TransactionSynchronizationRegistry tsr;
 
-    public TransactionSynchronizationRegistryProvider(Value<TransactionSynchronizationRegistry> transactionSynchronizationRegistry) {
-        this.transactionSynchronizationRegistry = transactionSynchronizationRegistry;
+    public TransactionSynchronizationRegistryProvider(TransactionSynchronizationRegistry tsr) {
+        this.tsr = tsr;
     }
 
     @Override
     public TransactionSynchronizationRegistry getTransactionSynchronizationRegistry() throws Exception {
-        return transactionSynchronizationRegistry.getValue();
+        return tsr;
     }
 }

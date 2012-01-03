@@ -26,20 +26,16 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import java.util.EnumSet;
-import java.util.Locale;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
-import org.jboss.dmr.ModelNode;
 
 /**
  * Defines the Infinispan subsystem and its addressable resources.
@@ -73,8 +69,8 @@ public class InfinispanExtension implements Extension {
      */
     @Override
     public void initialize(ExtensionContext context) {
-        SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
-        subsystem.registerXMLElementWriter(InfinispanSubsystemParser_1_0.getInstance());
+        SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, Namespace.CURRENT.getMajorVersion(), Namespace.CURRENT.getMinorVersion());
+        subsystem.registerXMLElementWriter(Namespace.CURRENT.getWriter());
 
         ManagementResourceRegistration registration = subsystem.registerSubsystemModel(InfinispanSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, InfinispanSubsystemAdd.INSTANCE, InfinispanSubsystemProviders.SUBSYSTEM_ADD, false);
@@ -125,10 +121,12 @@ public class InfinispanExtension implements Extension {
      */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.INFINISPAN_1_0.getUri(), InfinispanSubsystemParser_1_0.getInstance());
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.INFINISPAN_1_1.getUri(),InfinispanSubsystemParser_1_0.getInstance());
+        for (Namespace namespace: Namespace.values()) {
+            if (namespace != Namespace.UNKNOWN) {
+                context.setSubsystemXmlMapping(namespace.getUri(), namespace.getReader());
+            }
+        }
     }
-
 
     private void registerCommonCacheAttributeHandlers(ManagementResourceRegistration resource) {
         // register the singleton=locking handlers

@@ -47,7 +47,7 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
         this.invoker = invoker;
         this.passivationManager = passivationManager;
         this.controlCacheLifecycle = controlCacheLifecycle;
-        this.clustered = cache.getConfiguration().getCacheMode().isClustered();
+        this.clustered = cache.getCacheConfiguration().clustering().cacheMode().isClustered();
         this.keyFactory = keyFactory;
         this.valueFactory = valueFactory;
         this.context = context;

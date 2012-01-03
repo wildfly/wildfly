@@ -38,8 +38,9 @@ import java.util.Set;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.commands.VisitableCommand;
-import org.infinispan.config.Configuration;
 import org.infinispan.config.ConfigurationException;
+import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.manager.AbstractDelegatingEmbeddedCacheManager;
@@ -71,8 +72,9 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
      * {@inheritDoc}
      * @see org.infinispan.manager.EmbeddedCacheManager#defineConfiguration(java.lang.String, org.infinispan.config.Configuration)
      */
+    @Deprecated
     @Override
-    public Configuration defineConfiguration(String cacheName, Configuration configurationOverride) {
+    public org.infinispan.config.Configuration defineConfiguration(String cacheName, org.infinispan.config.Configuration configurationOverride) {
         return this.cm.defineConfiguration(this.getCacheName(cacheName), configurationOverride);
     }
 
@@ -80,8 +82,9 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
      * {@inheritDoc}
      * @see org.infinispan.manager.EmbeddedCacheManager#defineConfiguration(java.lang.String, java.lang.String, org.infinispan.config.Configuration)
      */
+    @Deprecated
     @Override
-    public Configuration defineConfiguration(String cacheName, String templateCacheName, Configuration configurationOverride) {
+    public org.infinispan.config.Configuration defineConfiguration(String cacheName, String templateCacheName, org.infinispan.config.Configuration configurationOverride) {
         return this.cm.defineConfiguration(this.getCacheName(cacheName), this.getCacheName(templateCacheName), configurationOverride);
     }
 
@@ -89,10 +92,11 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
      * {@inheritDoc}
      * @see org.infinispan.manager.EmbeddedCacheManager#defineConfiguration(String, org.infinispan.configuration.cache.Configuration)
      */
+    @SuppressWarnings("deprecation")
     @Override
-    public org.infinispan.configuration.cache.Configuration defineConfiguration(String cacheName,
-            org.infinispan.configuration.cache.Configuration configuration) {
-        return this.cm.defineConfiguration(this.getCacheName(cacheName), configuration);
+    public Configuration defineConfiguration(String cacheName, Configuration configuration) {
+        this.cm.defineConfiguration(this.getCacheName(cacheName), new LegacyConfigurationAdapter().adapt(configuration));
+        return configuration;
     }
 
     /**
@@ -209,6 +213,14 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
 
         DelegatingCache(Cache<K, V> cache) {
             this(cache.getAdvancedCache());
+        }
+
+        /**
+         * Workaround for ISPN-1682
+         */
+        @Override
+        public Configuration getCacheConfiguration() {
+            return new LegacyConfigurationAdapter().adapt(this.getConfiguration());
         }
 
         @Override
