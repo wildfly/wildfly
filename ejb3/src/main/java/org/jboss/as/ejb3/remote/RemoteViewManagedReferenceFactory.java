@@ -34,7 +34,9 @@ import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.ejb.client.StatelessEJBLocator;
 import org.jboss.msc.value.ImmediateValue;
+
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 /**
  * Managed reference factory for remote EJB views that are bound to java: JNDI locations
  *
@@ -65,10 +67,12 @@ public class RemoteViewManagedReferenceFactory implements ManagedReferenceFactor
         try {
             viewClass = Class.forName(this.viewClass, false, tccl);
         } catch (ClassNotFoundException e) {
-            throw MESSAGES.failToLoadViewClassEjb(beanName,e);
+            throw MESSAGES.failToLoadViewClassEjb(beanName, e);
         }
         EJBLocator ejbLocator = null;
-        if (stateful) {
+        if (EJBHome.class.isAssignableFrom(viewClass) || EJBLocalHome.class.isAssignableFrom(viewClass)) {
+            ejbLocator = new EJBHomeLocator(viewClass, appName, moduleName, beanName, distinctName);
+        } else if (stateful) {
             final SessionID sessionID;
             try {
                 sessionID = EJBClient.createSession(appName, moduleName, beanName, distinctName);
@@ -77,11 +81,7 @@ public class RemoteViewManagedReferenceFactory implements ManagedReferenceFactor
             }
             ejbLocator = new StatefulEJBLocator(viewClass, appName, moduleName, beanName, distinctName, sessionID);
         } else {
-            if(EJBHome.class.isAssignableFrom(viewClass) || EJBLocalHome.class.isAssignableFrom(viewClass)) {
-                ejbLocator = new EJBHomeLocator(viewClass, appName, moduleName, beanName, distinctName);
-            } else {
-                ejbLocator = new StatelessEJBLocator(viewClass, appName, moduleName, beanName, distinctName);
-            }
+            ejbLocator = new StatelessEJBLocator(viewClass, appName, moduleName, beanName, distinctName);
         }
         final Object proxy = EJBClient.createProxy(ejbLocator);
 

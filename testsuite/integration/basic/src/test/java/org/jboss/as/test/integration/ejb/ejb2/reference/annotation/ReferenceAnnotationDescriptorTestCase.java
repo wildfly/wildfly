@@ -43,14 +43,13 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * Test for EJB3.0/EJB2.1 references.
  * Part of migration from EJB Testsuite (reference21_30) to AS7 [JIRA JBQA-5483].
- * 
+ *
  * @author William DeCoste, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
@@ -62,26 +61,26 @@ public class ReferenceAnnotationDescriptorTestCase {
     public static Archive<?> deployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "reference-ejb2-ejb3.jar")
            .addClasses(
-                   HomedStatefulSession30Bean.class, 
-                   LocalSession30.class, 
-                   LocalSession30Business.class, 
-                   LocalStatefulSession30.class, 
+                   HomedStatefulSession30Bean.class,
+                   LocalSession30.class,
+                   LocalSession30Business.class,
+                   LocalStatefulSession30.class,
                    LocalStatefulSession30Business.class,
                    ReferenceAnnotationDescriptorTestCase.class,
-                   Session30Home.class, 
-                   Session30LocalHome.class, 
+                   Session30Home.class,
+                   Session30LocalHome.class,
                    Session30Bean.class,
-                   StatefulSession30.class, 
-                   StatefulSession30Bean.class, 
-                   StatefulSession30Home.class, 
+                   StatefulSession30.class,
+                   StatefulSession30Bean.class,
+                   StatefulSession30Home.class,
                    StatefulSession30LocalHome.class,
                    StatefulSession30RemoteBusiness.class
                    )
            .addClasses(
-                   Session30.class, 
-                   Session30RemoteBusiness.class, 
-                   Session21.class, 
-                   Session21Home.class, 
+                   Session30.class,
+                   Session30RemoteBusiness.class,
+                   Session21.class,
+                   Session21Home.class,
                    Session21Bean.class);
         jar.addAsManifestResource(ReferenceAnnotationDescriptorTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         jar.addAsManifestResource(ReferenceAnnotationDescriptorTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
@@ -296,7 +295,6 @@ public class ReferenceAnnotationDescriptorTestCase {
         Assert.assertEquals("secondinit", session7.getValue());
     }
 
-    @Ignore("AS7-3157")
     @Test
     public void testStateful21Interfaces() throws Exception {
         InitialContext jndiContext = new InitialContext();
@@ -315,14 +313,12 @@ public class ReferenceAnnotationDescriptorTestCase {
         Assert.assertNotNull(ejbHome);
         metadata = ejbHome.getEJBMetaData();
         Assert.assertNotNull(metadata);
-        Assert.assertEquals(StatefulSession30.class, metadata.getRemoteInterfaceClass()); 
+        Assert.assertEquals(StatefulSession30.class, metadata.getRemoteInterfaceClass());
 
         StatefulSession30 session = (StatefulSession30) home.create();
         Assert.assertNotNull(session);
         ejbHome = session.getEJBHome();
         Assert.assertNotNull(ejbHome);
-        Object primaryKey = session.getPrimaryKey();
-        Assert.assertNotNull(primaryKey);
 
         Handle handle = session.getHandle();
         Assert.assertNotNull(handle);
@@ -341,7 +337,6 @@ public class ReferenceAnnotationDescriptorTestCase {
         Assert.assertTrue(session.isIdentical(session));
     }
 
-    @Ignore("AS7-3157")
     @Test
     public void testStateless21Interfaces() throws Exception {
         InitialContext jndiContext = new InitialContext();
@@ -366,8 +361,6 @@ public class ReferenceAnnotationDescriptorTestCase {
         Assert.assertNotNull(session);
         ejbHome = session.getEJBHome();
         Assert.assertNotNull(ejbHome);
-        Object primaryKey = session.getPrimaryKey();
-        Assert.assertNull(primaryKey);
 
         Handle handle = session.getHandle();
         Assert.assertNotNull(handle);
@@ -382,6 +375,6 @@ public class ReferenceAnnotationDescriptorTestCase {
         Assert.assertNotNull(handle1);
 
         Session30 session1 = (Session30) home.create();
-        Assert.assertFalse(session.isIdentical(session1));
+        Assert.assertTrue(session.isIdentical(session1));
     }
 }
