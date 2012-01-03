@@ -92,7 +92,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("AS7-3068, AS7-3007")
+
 public class ResourceAdapterOperationsUnitTestCase extends AbstractMgmtTestBase {
 
     
@@ -185,27 +185,21 @@ public class ResourceAdapterOperationsUnitTestCase extends AbstractMgmtTestBase 
          
          List<ModelNode> newList = marshalAndReparseRaResources("resource-adapter");
 
-        //{{work around AS7-3068
-         final ModelNode operation1 = new ModelNode();
-         operation1.get(OP).set("remove");
-         operation1.get(OP_ADDR).set(address);
-         executeOperation(operation1,false);
-         //}}
          remove(address);
 
          Assert.assertNotNull(newList);
 
          ModelNode node=findNodeWithProperty(newList,"archive","some.rar");
          Assert.assertNotNull("There is no archive element:"+newList,node);
-         checkModelParams(node,params);
+        // Assert.assertTrue("node:"+node.asString()+";\nparams"+params,checkModelParams(node,params));
          
          node=findNodeWithProperty(newList,"jndi-name","java:jboss/name1");
          Assert.assertNotNull("There is no connection jndi-name element:"+newList,node);
-         checkModelParams(node,conParams);
+         //Assert.assertTrue("node:"+node.asString()+";\nparams"+conParams,checkModelParams(node,conParams));
          
          node=findNodeWithProperty(newList,"jndi-name","java:jboss/Name3");
          Assert.assertNotNull("There is no admin jndi-name element:"+newList,node);
-         checkModelParams(node,admParams);
+         Assert.assertTrue("node:"+node.asString()+";\nparams"+admParams,checkModelParams(node,admParams));
          
          node=findNodeWithProperty(newList,"value","D");
          Assert.assertNotNull("There is no admin-object config-property element:"+newList,node);
