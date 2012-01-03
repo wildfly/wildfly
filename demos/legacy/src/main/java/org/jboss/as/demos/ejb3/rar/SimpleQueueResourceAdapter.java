@@ -21,6 +21,11 @@
  */
 package org.jboss.as.demos.ejb3.rar;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
+
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.BootstrapContext;
@@ -35,10 +40,8 @@ import javax.resource.spi.work.Work;
 import javax.resource.spi.work.WorkException;
 import javax.resource.spi.work.WorkManager;
 import javax.transaction.xa.XAResource;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
+
+import org.jboss.logging.Logger;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -49,6 +52,8 @@ import static java.util.concurrent.TimeUnit.SECONDS;
    reauthenticationSupport = false,
    transactionSupport = TransactionSupport.TransactionSupportLevel.NoTransaction)
 public class SimpleQueueResourceAdapter implements ResourceAdapter {
+    private static final Logger log = Logger.getLogger(SimpleQueueResourceAdapter.class);
+
     private static final BlockingQueue<String> queue = new LinkedBlockingDeque<String>();
     private static WorkManager workManager;
     private static List<MessageEndpointFactory> endpointFactories = new LinkedList<MessageEndpointFactory>();
@@ -111,7 +116,7 @@ public class SimpleQueueResourceAdapter implements ResourceAdapter {
                     try {
                         ((PostmanPat) endpoint).deliver(message);
                     } catch (Throwable t) {
-                        t.printStackTrace();
+                        log.error("Failed to deliver message " + message, t);
                         // ignore
                     }
                 } catch (InterruptedException e) {
