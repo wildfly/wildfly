@@ -605,7 +605,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         ModelNode rightChild=findNodeWithProperty(newList,"jndi-name",complexDsJndi);
         
-        Assert.assertTrue(checkModelParams(rightChild, params));
+        Assert.assertTrue("node:"+rightChild.asString()+";\nparams"+params,checkModelParams(rightChild, params));
     }
     /**
      * AS7-2720 tests for parsing particular XA-datasource in standalone mode
@@ -654,7 +654,7 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
 
         ModelNode rightChild=findNodeWithProperty(newList,"jndi-name",complexXaDsJndi);
         
-        Assert.assertTrue(checkModelParams(rightChild, params));
+        Assert.assertTrue("node:"+rightChild.asString()+";\nparams"+params,checkModelParams(rightChild, params));
     }
     
     

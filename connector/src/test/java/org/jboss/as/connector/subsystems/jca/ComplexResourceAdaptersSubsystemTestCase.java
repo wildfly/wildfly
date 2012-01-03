@@ -21,7 +21,7 @@
 */
 package org.jboss.as.connector.subsystems.jca;
 
-import static org.jboss.as.connector.subsystems.jca.ParseUtils.controlModelParams;
+import static org.jboss.as.connector.subsystems.jca.ParseUtils.checkModelParams;
 import static org.jboss.as.connector.subsystems.jca.ParseUtils.raAdminProperties;
 import static org.jboss.as.connector.subsystems.jca.ParseUtils.raCommonProperties;
 import static org.jboss.as.connector.subsystems.jca.ParseUtils.raConnectionProperties;
@@ -71,17 +71,18 @@ public class ComplexResourceAdaptersSubsystemTestCase extends AbstractSubsystemT
         // Check model..
         Properties params=raCommonProperties();
         ModelNode raCommonModel=model.get("subsystem", "resource-adapters","resource-adapter","some.rar");
-        controlModelParams(raCommonModel,params);
+        checkModelParams(raCommonModel,params);
         Assert.assertEquals(raCommonModel.asString(),"A",raCommonModel.get("config-properties","Property","value").asString());
-
+        Assert.assertEquals(raCommonModel.get("beanvalidationgroups").asString(),raCommonModel.get("beanvalidationgroups").asString(), "[\"Class0\",\"Class00\"]");
+        
         params=raAdminProperties();
         ModelNode raAdminModel=raCommonModel.get("admin-objects", "Pool2");
-        controlModelParams(raAdminModel,params);
+        checkModelParams(raAdminModel,params);
         Assert.assertEquals(raAdminModel.asString(),"D",raAdminModel.get("config-properties","Property","value").asString());
 
         params=raConnectionProperties();
         ModelNode raConnModel=raCommonModel.get("connection-definitions", "Pool1");
-        controlModelParams(raConnModel,params);
+        checkModelParams(raConnModel,params);
         Assert.assertEquals(raConnModel.asString(),"B",raConnModel.get("config-properties","Property","value").asString());
         Assert.assertEquals(raConnModel.asString(),"C",raConnModel.get("recovery-plugin-properties","Property").asString());
 

@@ -237,29 +237,25 @@ public class ComplexPropertiesParseUtils {
 
     }
     /**
-     * Checks if result of reparsing contains certain parameters
+     * Checks if result of re-parsing contains certain parameters
      * @param model
      * @param params
-     * @returns whether the node is ok
+     * @returns boolean whether the node is ok
      */
     public static boolean checkModelParams(ModelNode node,Properties params){
     	
     	if (node==null) return false;
-    	String str;
-        StringBuffer sb = new StringBuffer();
-        String par,child;
+    	String str, par;
         Enumeration e = params.propertyNames();
 
         while (e.hasMoreElements()) {
         	str=(String)e.nextElement();
         	par=params.getProperty(str);
-        	if (node.get(str)==null) sb.append("Parameter <"+str+"> is not set, but must be set to '"+par+"' \n");
+        	if (node.get(str)==null) return false;
         	else{
-        		child= node.get(str).asString();
-        		if (!child.equals(par)) sb.append("Parameter <"+str+"> is set to '"+child+"', but must be set to '"+par+"' \n");
+        		if (!node.get(str).asString().equals(par)) return false;
         	}
         }
-        if (sb.length()>0) return false;
         return true;
     }
 

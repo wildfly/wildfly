@@ -32,7 +32,7 @@ import org.junit.Test;
 
 import java.util.Properties;
 
-import static org.jboss.as.connector.subsystems.jca.ParseUtils.controlModelParams;
+import static org.jboss.as.connector.subsystems.jca.ParseUtils.checkModelParams;
 import static org.jboss.as.connector.subsystems.jca.ParseUtils.nonXaDsProperties;
 import static org.jboss.as.connector.subsystems.jca.ParseUtils.xaDsProperties;
 
@@ -72,14 +72,14 @@ public class ComplexDatasourceSubsystemTestCase extends AbstractSubsystemTest {
         final String complexDsJndi = "java:jboss/datasources/" + complexDs;
         Properties params=nonXaDsProperties(complexDsJndi);
         ModelNode modelDs=model.get("subsystem", "datasources","data-source",complexDs+"_Pool");
-        controlModelParams(modelDs,params);
+        checkModelParams(modelDs,params);
         Assert.assertEquals(modelDs.asString(),"UTF-8",modelDs.get("connection-properties","char.encoding","value").asString());
 
         final String complexXaDs = "complexXaDs";
         final String complexXaDsJndi = "java:jboss/xa-datasources/" + complexXaDs;
         params=xaDsProperties(complexXaDsJndi);
         ModelNode modelXaDs=model.get("subsystem", "datasources","xa-data-source",complexXaDs+"_Pool");
-        controlModelParams(modelXaDs,params);
+        checkModelParams(modelXaDs,params);
         Assert.assertEquals(modelXaDs.asString(),"jdbc:h2:mem:test",modelXaDs.get("xa-datasource-properties","URL","value").asString());
 
         //Marshal the xml to see that it is the same as before

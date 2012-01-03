@@ -242,7 +242,7 @@ public class ParseUtils {
      * @param model
      * @param params
      */
-    public static void controlModelParams(ModelNode node,Properties params){
+    public static void checkModelParams(ModelNode node,Properties params){
     	String str;
 
         StringBuffer sb = new StringBuffer();
