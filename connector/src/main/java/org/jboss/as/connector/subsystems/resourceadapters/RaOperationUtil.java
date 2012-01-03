@@ -164,15 +164,21 @@ public class RaOperationUtil {
         //TODO This will be cleaned up once it uses attribute definitions
         String recoveryPassword = getResolvedStringIfSetOrGetDefault(context, operation, RECOVERY_PASSWORD.getName(), null);
         final String recoverySecurityDomain = getStringIfSetOrGetDefault(operation, RECOVERY_SECURITY_DOMAIN.getName(), null);
-        final Boolean noRecovery = getBooleanIfSetOrGetDefault(operation, NO_RECOVERY.getName(), null);
+        Boolean noRecovery = getBooleanIfSetOrGetDefault(operation, NO_RECOVERY.getName(), null);
 
         Recovery recovery = null;
-        if (recoveryUsername != null || recoveryPassword != null || recoverySecurityDomain != null ||
-            (noRecovery != null && noRecovery.booleanValue())) {
-           final Credential credential = new CredentialImpl(recoveryUsername, recoveryPassword, recoverySecurityDomain);
+        if ((recoveryUsername != null && recoveryPassword != null) || recoverySecurityDomain != null || noRecovery != null) {
+            Credential credential = null;
 
-           final Extension recoverPlugin = extractExtension(operation, RECOVERLUGIN_CLASSNAME.getName(), RECOVERLUGIN_PROPERTIES.getName());
-           recovery = new Recovery(credential, recoverPlugin, noRecovery);
+            if ((recoveryUsername != null && recoveryPassword != null) || recoverySecurityDomain != null)
+                credential = new CredentialImpl(recoveryUsername, recoveryPassword, recoverySecurityDomain);
+
+            Extension recoverPlugin = extractExtension(operation, RECOVERLUGIN_CLASSNAME.getName(), RECOVERLUGIN_PROPERTIES.getName());
+
+            if (noRecovery == null)
+                noRecovery = Boolean.FALSE;
+
+            recovery = new Recovery(credential, recoverPlugin, noRecovery);
         }
         ModifiableConnDef connectionDefinition = new ModifiableConnDef(configProperties, className, jndiName, poolName,
                 enabled, useJavaContext, useCcm, pool, timeOut, validation, security, recovery);

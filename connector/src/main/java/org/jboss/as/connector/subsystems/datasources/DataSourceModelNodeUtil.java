@@ -271,13 +271,19 @@ class DataSourceModelNodeUtil {
         final String recoveryUsername = getStringIfSetOrGetDefault(dataSourceNode, RECOVERY_USERNAME, null);
         final String recoveryPassword = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, RECOVERY_PASSWORD, null);
         final String recoverySecurityDomain = getStringIfSetOrGetDefault(dataSourceNode, RECOVERY_SECURITY_DOMAIN, null);
-        final Boolean noRecovery = getBooleanIfSetOrGetDefault(dataSourceNode, NO_RECOVERY, null);
+        Boolean noRecovery = getBooleanIfSetOrGetDefault(dataSourceNode, NO_RECOVERY, null);
 
         Recovery recovery = null;
-        if (recoveryUsername != null || recoveryPassword != null || recoverySecurityDomain != null ||
-            (noRecovery != null && noRecovery.booleanValue())) {
-            final Credential credential = new CredentialImpl(recoveryUsername, recoveryPassword, recoverySecurityDomain);
-            final Extension recoverPlugin = extractExtension(dataSourceNode, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES);
+        if ((recoveryUsername != null && recoveryPassword != null) || recoverySecurityDomain != null || noRecovery != null) {
+            Credential credential = null;
+
+            if ((recoveryUsername != null && recoveryPassword != null) || recoverySecurityDomain != null)
+               credential = new CredentialImpl(recoveryUsername, recoveryPassword, recoverySecurityDomain);
+
+            Extension recoverPlugin = extractExtension(dataSourceNode, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES);
+
+            if (noRecovery == null)
+                noRecovery = Boolean.FALSE;
 
             recovery = new Recovery(credential, recoverPlugin, noRecovery);
         }
