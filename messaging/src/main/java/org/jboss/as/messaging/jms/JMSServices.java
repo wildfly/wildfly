@@ -111,7 +111,7 @@ public class JMSServices {
     static String CACHE_LARGE_MESSAGE_CLIENT_METHOD = "cacheLargeMessageClient"; // TODO HornetQResourceAdapter does not have this method
     static String CALL_TIMEOUT_METHOD = "callTimeout";
     static String CLIENT_FAILURE_CHECK_PERIOD_METHOD = "clientFailureCheckPeriod";
-    static String CLIENT_ID_METHOD = "clientId";
+    static String CLIENT_ID_METHOD = "clientID";
     static String CONFIRMATION_WINDOW_SIZE_METHOD = "confirmationWindowSize";
     static String CONNECTION_TTL_METHOD = "connectionTTL";
     static String CONSUMER_MAX_RATE_METHOD = "consumerMaxRate";
