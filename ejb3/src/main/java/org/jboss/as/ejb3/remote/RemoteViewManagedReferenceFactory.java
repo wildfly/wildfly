@@ -21,21 +21,20 @@
  */
 package org.jboss.as.ejb3.remote;
 
-import javax.ejb.EJBHome;
-import javax.ejb.EJBLocalHome;
-
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBHomeLocator;
 import org.jboss.ejb.client.EJBLocator;
-import org.jboss.ejb.client.SessionID;
-import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.ejb.client.StatelessEJBLocator;
 import org.jboss.msc.value.ImmediateValue;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import javax.ejb.EJBHome;
+import javax.ejb.EJBLocalHome;
+
+import static org.jboss.as.ejb3.EjbMessages.*;
+
 
 /**
  * Managed reference factory for remote EJB views that are bound to java: JNDI locations
@@ -73,13 +72,11 @@ public class RemoteViewManagedReferenceFactory implements ManagedReferenceFactor
         if (EJBHome.class.isAssignableFrom(viewClass) || EJBLocalHome.class.isAssignableFrom(viewClass)) {
             ejbLocator = new EJBHomeLocator(viewClass, appName, moduleName, beanName, distinctName);
         } else if (stateful) {
-            final SessionID sessionID;
             try {
-                sessionID = EJBClient.createSession(appName, moduleName, beanName, distinctName);
+                ejbLocator = EJBClient.createSession(viewClass, appName, moduleName, beanName, distinctName);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            ejbLocator = new StatefulEJBLocator(viewClass, appName, moduleName, beanName, distinctName, sessionID);
         } else {
             ejbLocator = new StatelessEJBLocator(viewClass, appName, moduleName, beanName, distinctName);
         }

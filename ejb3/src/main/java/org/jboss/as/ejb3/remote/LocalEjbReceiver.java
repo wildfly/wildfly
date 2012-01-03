@@ -21,13 +21,6 @@
  */
 package org.jboss.as.ejb3.remote;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.utils.DescriptorUtils;
@@ -61,6 +54,13 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * {@link EJBReceiver} for local same-VM invocations. This handles all invocations on remote interfaces
@@ -178,6 +178,18 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         }
     }
 
+    @Override
+    protected <T> StatefulEJBLocator<T> openSession(EJBReceiverContext context, Class<T> viewType, String appName, String moduleName, String distinctName, String beanName) throws Exception {
+        final EjbDeploymentInformation ejbInfo = findBean(appName, moduleName, distinctName, beanName);
+        final EJBComponent component = ejbInfo.getEjbComponent();
+        if (!(component instanceof StatefulSessionComponent)) {
+            throw new IllegalArgumentException("EJB " + beanName + " is not a Stateful Session bean in app: " + appName + " module: " + moduleName + " distinct name:" + distinctName);
+        }
+        final StatefulSessionComponent stateful = (StatefulSessionComponent) component;
+        final SessionID sessionID = stateful.createSession();
+        return new StatefulEJBLocator<T>(viewType, appName, moduleName, beanName, distinctName, sessionID);
+    }
+
     private Object clone(final Class<?> target, final ObjectCloner cloner, final Object object, final boolean allowPassByReference) {
         if (object == null) {
             return null;
@@ -203,18 +215,6 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         }
     }
 
-
-    @Override
-    protected SessionID openSession(final EJBReceiverContext ejbReceiverContext, final String appName, final String moduleName, final String distinctName, final String beanName) throws Exception {
-        final EjbDeploymentInformation ejbInfo = findBean(appName, moduleName, distinctName, beanName);
-        final EJBComponent component = ejbInfo.getEjbComponent();
-        if (component instanceof StatefulSessionComponent) {
-            final StatefulSessionComponent stateful = (StatefulSessionComponent) component;
-            return stateful.createSession();
-        } else {
-            throw new IllegalArgumentException("EJB " + beanName + " is not a Stateful Session bean in app: " + appName + " module: " + moduleName + " distinct name:" + distinctName);
-        }
-    }
 
     @Override
     protected void verify(final String appName, final String moduleName, final String distinctName, final String beanName) throws Exception {
