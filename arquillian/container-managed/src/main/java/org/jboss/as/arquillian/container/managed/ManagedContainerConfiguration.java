@@ -39,7 +39,7 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
 
     private String javaVmArguments = System.getProperty("jboss.options", "-Xmx512m -XX:MaxPermSize=128m");
 
-    private int startupTimeoutInSeconds = 30;
+    private int startupTimeoutInSeconds = 60;
 
     private boolean outputToConsole = true;
 
