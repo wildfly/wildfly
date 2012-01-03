@@ -148,6 +148,7 @@
                                         <exclude>org/jboss/as/test/integration/ee/injection/resource/resourceref/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ee/injection/resource/enventry/EnvEntryTestCase.java</exclude>
 					<exclude>org/jboss/as/test/integration/ee/injection/resource/basic/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/runas/mdb/*TestCase.java</exclude>
                                     </excludes>
 
                                     <!-- Parameters to test cases. -->
