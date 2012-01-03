@@ -11,8 +11,8 @@ import org.jboss.modules.DependencySpec;
 import org.jboss.modules.ModuleIdentifier;
 
 /**
-* @author Stuart Douglas
-*/
+ * @author Stuart Douglas
+ */
 class ModuleStructureSpec {
 
     private ModuleIdentifier moduleIdentifier;
@@ -23,6 +23,8 @@ class ModuleStructureSpec {
     private final List<ModuleIdentifier> exclusions = new ArrayList<ModuleIdentifier>();
     private final List<String> classFileTransformers = new ArrayList<String>();
     private final List<ModuleIdentifier> aliases = new ArrayList<ModuleIdentifier>();
+    private final List<ModuleIdentifier> annotationModules = new ArrayList<ModuleIdentifier>();
+
     private boolean localLast = false;
 
     public ModuleIdentifier getModuleIdentifier() {
@@ -64,6 +66,15 @@ class ModuleStructureSpec {
     public List<ModuleIdentifier> getAliases() {
         return Collections.unmodifiableList(aliases);
     }
+
+    public void addAnnotationModule(final ModuleIdentifier dependency) {
+        annotationModules.add(dependency);
+    }
+
+    public List<ModuleIdentifier> getAnnotationModules() {
+        return Collections.unmodifiableList(annotationModules);
+    }
+
     public List<ModuleIdentifier> getExclusions() {
         return exclusions;
     }

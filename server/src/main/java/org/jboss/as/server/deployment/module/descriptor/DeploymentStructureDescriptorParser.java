@@ -52,6 +52,7 @@ import org.jboss.as.server.deployment.module.AdditionalModuleSpecification;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.staxmapper.XMLMapper;
 import org.jboss.vfs.VirtualFile;
@@ -197,6 +198,10 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         }
         for (final String classFileTransformer : rootDeploymentSpecification.getClassFileTransformers()) {
             moduleSpec.addClassFileTransformer(classFileTransformer);
+        }
+        //handle annotations
+        for(final ModuleIdentifier dependency : rootDeploymentSpecification.getAnnotationModules()) {
+            deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_ANNOTATION_INDEXES, dependency);
         }
         moduleSpec.setLocalLast(rootDeploymentSpecification.isLocalLast());
     }

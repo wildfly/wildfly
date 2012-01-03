@@ -356,6 +356,13 @@
                 </documentation>
             </annotation>
         </xsd:attribute>
+        <xsd:attribute name="annotations" type="xsd:boolean" use="optional" default="false">
+            <annotation xmlns="http://www.w3.org/2001/XMLSchema">
+                <documentation>
+                    Specifies whether annotation indexes found in the dependency should be imported.
+                </documentation>
+            </annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="systemDependencyType">
