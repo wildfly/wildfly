@@ -27,7 +27,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.infinispan.config.GlobalConfiguration;
+import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.executors.ExecutorFactory;
 import org.infinispan.executors.ScheduledExecutorFactory;
 import org.jboss.as.clustering.ManagedExecutorService;
@@ -39,30 +39,29 @@ import static org.jboss.as.clustering.infinispan.InfinispanMessages.MESSAGES;
  * @author Paul Ferraro
  */
 public class ExecutorProvider implements ExecutorFactory, ScheduledExecutorFactory {
+    private static final ExecutorProvider INSTANCE = new ExecutorProvider();
     private static final String EXECUTOR = "executor";
 
-    public static void initListenerExecutor(GlobalConfiguration global, Executor executor) {
-        Properties properties = global.getAsyncListenerExecutorProperties();
-        properties.put(EXECUTOR, executor);
-        global.fluent().asyncListenerExecutor().factory(ExecutorProvider.class);
+    public static void initListenerExecutor(GlobalConfigurationBuilder builder, Executor executor) {
+        builder.asyncListenerExecutor().factory(INSTANCE).withProperties(createProperties(executor));
     }
 
-    public static void initTransportExecutor(GlobalConfiguration global, Executor executor) {
-        Properties properties = global.getAsyncTransportExecutorProperties();
-        properties.put(EXECUTOR, executor);
-        global.fluent().asyncTransportExecutor().factory(ExecutorProvider.class);
+    public static void initTransportExecutor(GlobalConfigurationBuilder builder, Executor executor) {
+        builder.asyncTransportExecutor().factory(INSTANCE).withProperties(createProperties(executor));
     }
 
-    public static void initEvictionExecutor(GlobalConfiguration global, ScheduledExecutorService executor) {
-        Properties properties = global.getEvictionScheduledExecutorProperties();
-        properties.put(EXECUTOR, executor);
-        global.fluent().evictionScheduledExecutor().factory(ExecutorProvider.class);
+    public static void initEvictionExecutor(GlobalConfigurationBuilder builder, ScheduledExecutorService executor) {
+        builder.evictionScheduledExecutor().factory(INSTANCE).withProperties(createProperties(executor));
     }
 
-    public static void initReplicationQueueExecutor(GlobalConfiguration global, ScheduledExecutorService executor) {
-        Properties properties = global.getReplicationQueueScheduledExecutorProperties();
+    public static void initReplicationQueueExecutor(GlobalConfigurationBuilder builder, ScheduledExecutorService executor) {
+        builder.replicationQueueScheduledExecutor().factory(INSTANCE).withProperties(createProperties(executor));
+    }
+
+    private static Properties createProperties(Executor executor) {
+        Properties properties = new Properties();
         properties.put(EXECUTOR, executor);
-        global.fluent().replicationQueueScheduledExecutor().factory(ExecutorProvider.class);
+        return properties;
     }
 
     /**

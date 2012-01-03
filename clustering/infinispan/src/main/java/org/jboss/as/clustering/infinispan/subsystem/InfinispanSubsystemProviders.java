@@ -53,15 +53,15 @@ public class InfinispanSubsystemProviders {
     };
 
     static final DescriptionProvider REMOVE_ALIAS = new DescriptionProvider() {
-    public ModelNode getModelDescription(Locale locale) {
-        return InfinispanDescriptions.getRemoveAliasCommandDescription(locale);
-    }
+        public ModelNode getModelDescription(Locale locale) {
+            return InfinispanDescriptions.getRemoveAliasCommandDescription(locale);
+        }
     };
 
     static final DescriptionProvider ADD_ALIAS = new DescriptionProvider() {
-    public ModelNode getModelDescription(Locale locale) {
-        return InfinispanDescriptions.getAddAliasCommandDescription(locale);
-    }
+        public ModelNode getModelDescription(Locale locale) {
+            return InfinispanDescriptions.getAddAliasCommandDescription(locale);
+        }
     };
 
     static final DescriptionProvider LOCAL_CACHE = new DescriptionProvider() {
@@ -250,26 +250,22 @@ public class InfinispanSubsystemProviders {
         }
     };
 
-
-
-    public static final DescriptionProvider STORE_PROPERTY = new DescriptionProvider() {
+    static final DescriptionProvider STORE_PROPERTY = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             return InfinispanDescriptions.getCacheStorePropertyDescription(locale);
         }
     };
-    public static final DescriptionProvider STORE_PROPERTY_ADD = new DescriptionProvider() {
+    static final DescriptionProvider STORE_PROPERTY_ADD = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             return InfinispanDescriptions.getCacheStorePropertyAddDescription(locale);
         }
     };
-    public static final DescriptionProvider STORE_PROPERTY_REMOVE = new DescriptionProvider() {
+    static final DescriptionProvider STORE_PROPERTY_REMOVE = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             return InfinispanDescriptions.getCacheStorePropertyRemoveDescription(locale);
         }
     };
-
-
 }

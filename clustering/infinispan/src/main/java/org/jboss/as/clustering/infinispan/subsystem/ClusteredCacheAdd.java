@@ -1,9 +1,9 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.List;
-import org.infinispan.config.Configuration;
-import org.infinispan.config.Configuration.CacheMode;
-import org.infinispan.config.FluentConfiguration;
+
+import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 
@@ -14,10 +14,8 @@ import org.jboss.dmr.ModelNode;
  */
 public abstract class ClusteredCacheAdd extends CacheAdd {
 
-    private final CacheMode mode;
-
     ClusteredCacheAdd(CacheMode mode) {
-        this.mode = mode;
+        super(mode);
     }
 
     void populateMode(ModelNode fromModel, ModelNode toModel) {
@@ -52,22 +50,23 @@ public abstract class ClusteredCacheAdd extends CacheAdd {
      * @return initialised Configuration object
      */
     @Override
-    void processModelNode(ModelNode cache, Configuration configuration, List<AdditionalDependency<?>> additionalDeps) {
+    void processModelNode(ModelNode cache, ConfigurationBuilder builder, List<Dependency<?>> dependencies) {
 
         // process cache attributes and elements
-        super.processModelNode(cache, configuration, additionalDeps);
+        super.processModelNode(cache, builder, dependencies);
 
         // process clustered cache attributes and elements
-        FluentConfiguration fluent = configuration.fluent();
-        if (cache.hasDefined(ModelKeys.QUEUE_SIZE)) {
-            fluent.async().replQueueMaxElements(cache.get(ModelKeys.QUEUE_SIZE).asInt());
-        }
-        if (cache.hasDefined(ModelKeys.QUEUE_FLUSH_INTERVAL)) {
-            fluent.async().replQueueInterval(cache.get(ModelKeys.QUEUE_FLUSH_INTERVAL).asLong());
-        }
-        // TODO  - need to check cache mode before setting
-        if (cache.hasDefined(ModelKeys.REMOTE_TIMEOUT)) {
-            // fluent.sync().replTimeout(cache.get(ModelKeys.REMOTE_TIMEOUT).asLong());
+        if (CacheMode.valueOf(cache.get(ModelKeys.CACHE_MODE).asString()).isSynchronous()) {
+            if (cache.hasDefined(ModelKeys.REMOTE_TIMEOUT)) {
+                builder.clustering().sync().replTimeout(cache.get(ModelKeys.REMOTE_TIMEOUT).asLong());
+            }
+        } else {
+            if (cache.hasDefined(ModelKeys.QUEUE_SIZE)) {
+                builder.clustering().async().replQueueMaxElements(cache.get(ModelKeys.QUEUE_SIZE).asInt());
+            }
+            if (cache.hasDefined(ModelKeys.QUEUE_FLUSH_INTERVAL)) {
+                builder.clustering().async().replQueueInterval(cache.get(ModelKeys.QUEUE_FLUSH_INTERVAL).asLong());
+            }
         }
     }
 }

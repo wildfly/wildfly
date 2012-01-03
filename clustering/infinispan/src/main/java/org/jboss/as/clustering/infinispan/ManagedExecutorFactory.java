@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,16 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.clustering.infinispan;
 
-package org.jboss.as.clustering.infinispan.subsystem;
+import java.util.Properties;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
-import org.infinispan.config.Configuration;
-import org.infinispan.config.GlobalConfiguration;
+import org.jboss.as.clustering.ManagedExecutorService;
 
 /**
+ * Executor factory that produces {@link ManagedExecutorService} instances.
  * @author Paul Ferraro
  */
-public interface EmbeddedCacheManagerDefaults {
-    GlobalConfiguration getGlobalConfiguration();
-    Configuration getDefaultConfiguration(Configuration.CacheMode mode);
+public class ManagedExecutorFactory implements org.infinispan.executors.ExecutorFactory {
+
+    private final Executor executor;
+
+    public ManagedExecutorFactory(Executor executor) {
+        this.executor = executor;
+    }
+
+    @Override
+    public ExecutorService getExecutor(Properties p) {
+        return new ManagedExecutorService(this.executor);
+    }
 }

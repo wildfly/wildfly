@@ -22,15 +22,15 @@
 
 package org.jboss.as.clustering.infinispan;
 
+import static org.jboss.as.clustering.infinispan.InfinispanMessages.MESSAGES;
+
 import java.util.Properties;
 
-import org.infinispan.config.GlobalConfiguration;
+import org.infinispan.configuration.global.TransportConfigurationBuilder;
 import org.infinispan.remoting.transport.jgroups.JGroupsChannelLookup;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.jboss.msc.value.Value;
 import org.jgroups.Channel;
-
-import static org.jboss.as.clustering.infinispan.InfinispanMessages.MESSAGES;
 
 /**
  * @author Paul Ferraro
@@ -39,10 +39,11 @@ public class ChannelProvider implements JGroupsChannelLookup {
 
     private static final String CHANNEL = "channel";
 
-    public static void init(GlobalConfiguration global, Value<Channel> channel) {
-        Properties properties = global.getTransportProperties();
+    public static void init(TransportConfigurationBuilder builder, Value<Channel> channel) {
+        Properties properties = new Properties();
         properties.setProperty(JGroupsTransport.CHANNEL_LOOKUP, ChannelProvider.class.getName());
         properties.put(CHANNEL, channel);
+        builder.transport().transport(new JGroupsTransport()).withProperties(properties);
     }
 
     /**

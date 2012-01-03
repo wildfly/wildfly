@@ -1,20 +1,15 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.util.List;
-import java.util.Locale;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 
 /**
  * Custom command to add an alias to a cache-container.
@@ -23,7 +18,6 @@ import org.jboss.logging.Logger;
  */
 public class AddAliasCommand implements OperationStepHandler {
 
-    private static final Logger log = Logger.getLogger(AddAliasCommand.class.getPackage().getName());
     public static final AddAliasCommand INSTANCE = new AddAliasCommand();
 
     private final ParametersValidator nameValidator = new ParametersValidator();

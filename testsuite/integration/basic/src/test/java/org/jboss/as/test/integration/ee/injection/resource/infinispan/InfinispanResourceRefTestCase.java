@@ -71,12 +71,18 @@ public class InfinispanResourceRefTestCase {
     }
 
     private static StringAsset getWebXml() {
-        return new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<web-app version=\"3.0\"\n" + "         xmlns=\"http://java.sun.com/xml/ns/javaee\"\n"
+        return new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<web-app version=\"3.0\" metadata-complete=\"false\" xmlns=\"http://java.sun.com/xml/ns/javaee\"\n"
                 + "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-                + "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd\"\n"
-                + "         metadata-complete=\"false\">\n" + "    <resource-ref>\n" + "        <res-ref-name>" + InfinispanBean.CONTAINER_REF_NAME
-                + "</res-ref-name>\n" + "        <lookup-name>java:jboss/infinispan/hibernate</lookup-name>\n" + "        <injection-target>"
-                + "           <injection-target-class>" + InfinispanBean.class.getName() + "</injection-target-class>"
-                + "           <injection-target-name>container</injection-target-name>" + "        </injection-target>\n" + "    </resource-ref>\n" + "</web-app>");
+                + "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd\">\n"
+                + "    <resource-ref>\n"
+                + "        <res-ref-name>" + InfinispanBean.CONTAINER_REF_NAME + "</res-ref-name>\n"
+                + "        <lookup-name>java:jboss/infinispan/container/hibernate</lookup-name>\n"
+                + "        <injection-target>"
+                + "            <injection-target-class>" + InfinispanBean.class.getName() + "</injection-target-class>"
+                + "            <injection-target-name>container</injection-target-name>"
+                + "        </injection-target>\n"
+                + "    </resource-ref>\n"
+                + "</web-app>");
     }
 }

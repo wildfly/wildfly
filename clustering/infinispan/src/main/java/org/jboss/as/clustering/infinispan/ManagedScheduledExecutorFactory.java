@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,42 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.clustering.infinispan;
 
-package org.jboss.as.clustering.infinispan.subsystem;
+import java.util.Properties;
+import java.util.concurrent.ScheduledExecutorService;
 
-import java.io.File;
-
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.value.InjectedValue;
+import org.infinispan.executors.ScheduledExecutorFactory;
+import org.jboss.as.clustering.ManagedScheduledExecutorService;
 
 /**
+ * Executor factory that produces {@link ManagedScheduledExecutorService} instances.
  * @author Paul Ferraro
  */
-public class FileCacheStoreConfig extends org.infinispan.loaders.file.FileCacheStoreConfig {
-    private static final long serialVersionUID = -4014773345198955321L;
+public class ManagedScheduledExecutorFactory implements ScheduledExecutorFactory {
 
-    private final InjectedValue<String> relativeTo = new InjectedValue<String>();
-    private String path;
+    private final ScheduledExecutorService executor;
 
-    public Injector<String> getRelativeToInjector() {
-        return relativeTo;
-    }
-
-    public FileCacheStoreConfig path(String path) {
-        this.path = path;
-        return this;
-    }
-
-    public String getPath() {
-        return this.path;
+    public ManagedScheduledExecutorFactory(ScheduledExecutorService executor) {
+        this.executor = executor;
     }
 
     @Override
-    public String getLocation() {
-        StringBuilder builder = new StringBuilder(this.relativeTo.getValue());
-        if (this.path != null) {
-            builder.append(File.separatorChar).append(this.path);
-        }
-        return builder.toString();
+    public ScheduledExecutorService getScheduledExecutor(Properties p) {
+        return new ManagedScheduledExecutorService(this.executor);
     }
 }

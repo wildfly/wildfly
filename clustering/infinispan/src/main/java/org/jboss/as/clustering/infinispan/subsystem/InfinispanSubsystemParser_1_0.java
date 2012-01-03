@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
-import org.infinispan.config.Configuration;
+import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.util.concurrent.IsolationLevel;
@@ -75,19 +75,10 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
         operations.add(subsystem);
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case INFINISPAN_1_0:
-                case INFINISPAN_1_1: {
-                    Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case CACHE_CONTAINER: {
-                            parseContainer(reader, subsystemAddress, operations);
-                            break;
-                        }
-                        default: {
-                            throw ParseUtils.unexpectedElement(reader);
-                        }
-                    }
+            Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case CACHE_CONTAINER: {
+                    parseContainer(reader, subsystemAddress, operations);
                     break;
                 }
                 default: {
@@ -245,6 +236,10 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
                 } catch (IllegalArgumentException e) {
                     throw ParseUtils.invalidAttributeValue(reader, index);
                 }
+                break;
+            }
+            case JNDI_NAME: {
+                cache.get(ModelKeys.JNDI_NAME).set(value);
                 break;
             }
             case BATCHING: {
@@ -1078,7 +1073,7 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
 
                 // for (ModelNode cache: container.get(ModelKeys.CACHE).asList()) {
                 for (ModelNode cache: caches) {
-                    Configuration.CacheMode mode = Configuration.CacheMode.valueOf(cache.get(ModelKeys.CACHE_MODE).asString());
+                    CacheMode mode = CacheMode.valueOf(cache.get(ModelKeys.CACHE_MODE).asString());
                     if (mode.isClustered()) {
                         if (mode.isDistributed()) {
                             writer.writeStartElement(Element.DISTRIBUTED_CACHE.getLocalName());
@@ -1101,7 +1096,7 @@ public class InfinispanSubsystemParser_1_0 implements XMLElementReader<List<Mode
                     this.writeOptional(writer, Attribute.START, cache, ModelKeys.START);
                     this.writeOptional(writer, Attribute.BATCHING, cache, ModelKeys.BATCHING);
                     this.writeOptional(writer, Attribute.INDEXING, cache, ModelKeys.INDEXING);
-
+                    this.writeOptional(writer, Attribute.JNDI_NAME, cache, ModelKeys.JNDI_NAME);
 
                     // all child elements can be governed by this
                     if (cache.hasDefined(ModelKeys.SINGLETON)) {

@@ -35,13 +35,19 @@
     </xs:element>
 
     <xs:complexType name="subsystem">
-        <xs:sequence>
-            <xs:element name="cache-container" type="tns:cache-container" maxOccurs="unbounded">
+        <xs:choice maxOccurs="unbounded">
+            <xs:element name="cache-container" type="tns:cache-container">
                 <xs:annotation>
                     <xs:documentation>Defines an embedded cache container.</xs:documentation>
                 </xs:annotation>
             </xs:element>
-        </xs:sequence>
+            <!-- Preparation for AS7-3156 -->
+            <!--xs:element name="local-cache-container" type="tns:local-cache-container">
+                <xs:annotation>
+                    <xs:documentation>Defines an embedded cache container.</xs:documentation>
+                </xs:annotation>
+            </xs:element-->
+        </xs:choice>
         <xs:attribute name="default-cache-container" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>Identifies the default cache container.</xs:documentation>
@@ -49,49 +55,22 @@
         </xs:attribute>
     </xs:complexType>
 
-    <xs:complexType name="cache-container">
-        <xs:sequence>
-            <xs:element name="alias" type="xs:string" minOccurs="0" maxOccurs="unbounded">
-                <xs:annotation>
-                    <xs:documentation>Defines an additional name by which this cache container may be referenced.</xs:documentation>
-                </xs:annotation>
-            </xs:element>
-            <xs:element name="transport" type="tns:transport" minOccurs="0">
-                <xs:annotation>
-                    <xs:documentation>Overrides the transport characteristics for this cache container.</xs:documentation>
-                </xs:annotation>
-            </xs:element>
-            <xs:choice maxOccurs="unbounded">
-                <xs:element name="local-cache" type="tns:local-cache">
-                    <xs:annotation>
-                        <xs:documentation>Defines a LOCAL mode cache.</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-                <xs:element name="replicated-cache" type="tns:replicated-cache">
-                    <xs:annotation>
-                        <xs:documentation>Defines a REPL_* mode cache.</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-                <xs:element name="invalidation-cache" type="tns:invalidation-cache">
-                    <xs:annotation>
-                        <xs:documentation>Defines an INVALIDATION_* mode cache.</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-                <xs:element name="distributed-cache" type="tns:distributed-cache">
-                    <xs:annotation>
-                        <xs:documentation>Defines a DIST_* mode cache.</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-            </xs:choice>
-        </xs:sequence>
+    <xs:complexType name="base-cache-container" abstract="true">
         <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>Uniquely identifies this cache container.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <!-- Preparation for AS7-2883 -->
+        <!-- Will also need to remove alias element from cache-container -->
+        <!--xs:attribute name="aliases" type="tns:aliases">
+            <xs:annotation>
+                <xs:documentation>A set of aliases by which this cache container may also be referenced.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute-->
         <xs:attribute name="jndi-name" type="xs:string">
             <xs:annotation>
-                <xs:documentation></xs:documentation>
+                <xs:documentation>The jndi name to which to bind this cache container.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="default-cache" type="xs:string" use="required">
@@ -114,6 +93,67 @@
                 <xs:documentation>Defines the scheduled executor used by the asynchronous replication queue.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
+    </xs:complexType>
+
+    <!-- Preparation for AS7-3156 -->
+    <!--xs:complexType name="local-cache-container">
+        <xs:complexContent>
+            <xs:extension base="tns:base-cache-container">
+                <xs:sequence>
+                    <xs:element name="alias" type="xs:string" minOccurs="0" maxOccurs="unbounded">
+                        <xs:annotation>
+                            <xs:documentation>Defines an additional name by which this cache container may be referenced.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="local-cache" type="tns:local-cache" minOccurs="0" maxOccurs="unbounded">
+                        <xs:annotation>
+                            <xs:documentation>Defines a LOCAL mode cache.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType-->
+
+    <xs:complexType name="cache-container">
+        <xs:complexContent>
+            <xs:extension base="tns:base-cache-container">
+                <xs:sequence>
+                    <xs:element name="alias" type="xs:string" minOccurs="0" maxOccurs="unbounded">
+                        <xs:annotation>
+                            <xs:documentation>Defines an additional name by which this cache container may be referenced.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="transport" type="tns:transport" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>Overrides the transport characteristics for this cache container.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:choice maxOccurs="unbounded">
+                        <xs:element name="local-cache" type="tns:local-cache">
+                            <xs:annotation>
+                                <xs:documentation>Defines a LOCAL mode cache.</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                        <xs:element name="replicated-cache" type="tns:replicated-cache">
+                            <xs:annotation>
+                                <xs:documentation>Defines a REPL_* mode cache.</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                        <xs:element name="invalidation-cache" type="tns:invalidation-cache">
+                            <xs:annotation>
+                                <xs:documentation>Defines an INVALIDATION_* mode cache.</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                        <xs:element name="distributed-cache" type="tns:distributed-cache">
+                            <xs:annotation>
+                                <xs:documentation>Defines a DIST_* mode cache.</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                    </xs:choice>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="transport">
@@ -221,6 +261,11 @@
                 <xs:documentation></xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="jndi-name" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>The jndi name to which to bind this cache.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="local-cache">
@@ -253,7 +298,7 @@
     </xs:complexType>
 
     <xs:complexType name="transaction">
-        <xs:attribute name="mode" type="tns:transaction-mode" default="NON_XA">
+        <xs:attribute name="mode" type="tns:transaction-mode" default="NONE">
             <xs:annotation>
                 <xs:documentation></xs:documentation>
             </xs:annotation>
@@ -483,7 +528,11 @@
     </xs:complexType>
 
     <xs:complexType name="remote-server">
-       <xs:attribute name="outbound-socket-binding"/>
+        <xs:attribute name="outbound-socket-binding" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="jdbc-store">
@@ -810,5 +859,12 @@
                 </xs:annotation>
             </xs:enumeration>
         </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="aliases">
+        <xs:annotation>
+            <xs:documentation>A list of aliases.</xs:documentation>
+        </xs:annotation>
+        <xs:list itemType="xs:string"/>
     </xs:simpleType>
 </xs:schema>

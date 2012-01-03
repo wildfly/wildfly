@@ -25,17 +25,16 @@ package org.jboss.as.clustering.infinispan;
 import javax.transaction.TransactionManager;
 
 import org.infinispan.transaction.lookup.TransactionManagerLookup;
-import org.jboss.msc.value.Value;
 
 /**
  * @author Paul Ferraro
  */
 public class TransactionManagerProvider implements TransactionManagerLookup {
 
-    private final Value<TransactionManager> manager;
+    private final TransactionManager tm;
 
-    public TransactionManagerProvider(Value<TransactionManager> manager) {
-        this.manager = manager;
+    public TransactionManagerProvider(TransactionManager tm) {
+        this.tm = tm;
     }
 
     /**
@@ -44,6 +43,6 @@ public class TransactionManagerProvider implements TransactionManagerLookup {
      */
     @Override
     public TransactionManager getTransactionManager() throws Exception {
-        return this.manager.getValue();
+        return this.tm;
     }
 }

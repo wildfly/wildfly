@@ -33,8 +33,8 @@ import java.util.Map;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
-import org.infinispan.config.Configuration;
-import org.infinispan.config.Configuration.CacheMode;
+import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.DataLocality;
 import org.infinispan.distribution.DistributionManager;
@@ -81,10 +81,10 @@ public class DistributedCacheManagerTest {
     @SuppressWarnings("unchecked")
     @Before
     public void before() {
-        Configuration configuration = new Configuration();
-        configuration.fluent().mode(CacheMode.DIST_SYNC);
+        ConfigurationBuilder builder = new ConfigurationBuilder();
+        builder.clustering().cacheMode(CacheMode.DIST_SYNC);
 
-        when(this.sessionCache.getConfiguration()).thenReturn(configuration);
+        when(this.sessionCache.getCacheConfiguration()).thenReturn(builder.build());
 
         this.manager = new DistributedCacheManager<OutgoingDistributableSessionData, SessionKey>(this.sessionManager, this.sessionCache, this.jvmRouteCache, this.lockManager, this.storage, this.batchingManager, this.keyFactory, this.invoker);
 
@@ -650,7 +650,6 @@ public class DistributedCacheManagerTest {
         Address newMember = mock(Address.class);
         Address member = mock(Address.class);
         Address oldMember = mock(Address.class);
-        @SuppressWarnings("unchecked")
         String jvmRoute = "node1";
 
         DistributedCacheManager.JvmRouteHandler handler = this.start(ComponentStatus.RUNNING, false);
