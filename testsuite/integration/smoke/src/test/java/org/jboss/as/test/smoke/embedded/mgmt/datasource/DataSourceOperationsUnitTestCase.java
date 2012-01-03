@@ -596,8 +596,9 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
         Assert.assertNotNull("Reparsing failed:",newList);
 
         ModelNode rightChild=findNodeWithProperty(newList,"jndi-name",complexDsJndi);
+        
+        Assert.assertTrue("node:"+rightChild.asString()+";\nparams"+params,checkModelParams(rightChild, params));
 
-        Assert.assertTrue(checkModelParams(rightChild, params));
     }
     /**
      * AS7-2720 tests for parsing particular XA-datasource in standalone mode
@@ -645,8 +646,9 @@ public class DataSourceOperationsUnitTestCase extends AbstractMgmtTestBase{
         Assert.assertNotNull("Reparsing failed:",newList);
 
         ModelNode rightChild=findNodeWithProperty(newList,"jndi-name",complexXaDsJndi);
+        
+        Assert.assertTrue("node:"+rightChild.asString()+";\nparams"+params,checkModelParams(rightChild, params));
 
-        Assert.assertTrue(checkModelParams(rightChild, params));
     }
 
 
