@@ -13,6 +13,7 @@ import junit.framework.AssertionFailedError;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelController.OperationTransactionControl;
+import org.jboss.as.controller.operations.validation.OperationValidator;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest.StringConfigurationPersister;
 import org.jboss.dmr.ModelNode;

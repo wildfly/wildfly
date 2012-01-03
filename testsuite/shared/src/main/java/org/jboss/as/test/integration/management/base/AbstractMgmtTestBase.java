@@ -22,35 +22,37 @@
  */
 package org.jboss.as.test.integration.management.base;
 
-import org.jboss.dmr.Property;
-import java.util.List;
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
-import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import java.util.Map;
-import java.util.HashMap;
 /**
  *
  * @author Dominik Pospisil <dpospisi@redhat.com>
@@ -90,7 +92,7 @@ public class AbstractMgmtTestBase {
         if (! unwrapResult) return ret;
 
         if (! SUCCESS.equals(ret.get(OUTCOME).asString())) {
-            throw new MgmtOperationException("Management operation failed.", op, ret);
+            throw new MgmtOperationException("Management operation failed: " + ret.get(FAILURE_DESCRIPTION), op, ret);
         }
         return ret.get(RESULT);
     }
@@ -102,7 +104,7 @@ public class AbstractMgmtTestBase {
     protected ModelNode executeOperation(final String address, final String operation) throws IOException, MgmtOperationException {
         return executeOperation(createOpNode(address, operation));
     }
-    
+
     protected ModelNode executeAndRollbackOperation(final ModelNode op) throws IOException, OperationFormatException {
 
         ModelNode addDeploymentOp = createOpNode("deployment=malformedDeployment.war", "add");

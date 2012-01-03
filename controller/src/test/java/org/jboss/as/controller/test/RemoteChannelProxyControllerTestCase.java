@@ -21,9 +21,12 @@
 */
 package org.jboss.as.controller.test;
 
+import java.io.IOException;
+import java.util.concurrent.Executors;
+
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
@@ -32,9 +35,6 @@ import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.junit.After;
-
-import java.io.IOException;
-import java.util.concurrent.Executors;
 
 /**
  *

@@ -51,6 +51,7 @@ import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationRemoveHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyRemoveHandler;
+import org.jboss.as.controller.operations.common.ValidateOperationHandler;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -241,6 +242,11 @@ public class CommonDescriptions {
         root.get(TAIL_COMMENT_ALLOWED).set(false);
         root.get(OPERATIONS);
         return root;
+    }
+
+    public static ModelNode getValidateOperationDescription(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        return getSingleParamOnlyOperation(bundle, ValidateOperationHandler.OPERATION_NAME, "global", VALUE, ModelType.OBJECT, false);
     }
 
     public static ModelNode getDescriptionOnlyOperation(final ResourceBundle bundle, final String operationName, final String descriptionPrefix) {

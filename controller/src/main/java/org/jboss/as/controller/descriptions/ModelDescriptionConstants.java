@@ -272,12 +272,13 @@ public class ModelDescriptionConstants {
     public static final String USER_DN = "user-dn";
     public static final String USERNAME_ATTRIBUTE = "username-attribute";
     public static final String USERS = "users";
+    public static final String VALIDATE_OPERATION = "validate-operation";
     public static final String VALUE = "value";
     public static final String VALUE_TYPE = "value-type";
-    public static final String WRITE_ATTRIBUTE_OPERATION = "write-attribute";
     public static final String VAULT = "vault";
     public static final String VAULT_OPTION = "vault-option";
     public static final String VAULT_OPTIONS = "vault-options";
+    public static final String WRITE_ATTRIBUTE_OPERATION = "write-attribute";
 
     private ModelDescriptionConstants() {
     }

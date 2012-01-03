@@ -33,6 +33,7 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
@@ -2153,7 +2154,6 @@ public interface ControllerMessages {
     @Message(id = 14816, value = "Failed to recover services during operation rollback")
     RuntimeException failedToRecoverServices(@Param OperationFailedException cause);
 
-
     /**
      * Creates an IllegalStateException indicating a subsystem with the given name has already been registered by
      * a different extension.
@@ -2163,4 +2163,194 @@ public interface ControllerMessages {
      */
     @Message(id = 14817, value = "A subsystem named '%s' cannot be registered by extension '%s' -- a subsystem with that name has already been registered by extension '%s'.")
     IllegalStateException duplicateSubsystem(String subsystemName, String duplicatingModule, String existingModule);
+
+    /**
+     * Creates an exception indicating that the operation is missing one of the standard fields.
+     *
+     * @param field the standard field name
+     * @param operation the operation as a string. May be empty
+     */
+    @Message(id = 14818, value = "Operation has no '%s' field. %s")
+    IllegalArgumentException validationFailedOperationHasNoField(String field, String operation);
+
+    /**
+     * Creates an exception indicating that the operation has an empty name.
+     *
+     * @param operation the operation. May be null
+     * @param operation the operation as a string. May be empty
+     */
+    @Message(id = 14819, value = "Operation has a null or empty name. %s")
+    IllegalArgumentException validationFailedOperationHasANullOrEmptyName(String operation);
+
+    /**
+     * Creates an exception indicating that the operation could not be found
+     *
+     * @param name the name of the operation
+     * @param address the operation address
+     * @param operation the operation as a string. May be empty
+     */
+    @Message(id = 14820, value = "No operation called '%s' at '%s'. %s")
+    IllegalArgumentException validationFailedNoOperationFound(String name, PathAddress address, String operation);
+
+    /**
+     * Creates an exception indicating that the operation contains a parameter not in its descriptor
+     *
+     * @param paramName the name of the parameter in the operation
+     * @param parameterNames the valid parameter names
+     * @param operation the operation as a string. May be empty
+     */
+    @Message(id = 14821, value = "Operation contains a parameter '%s' which is not one of the expected parameters %s. %s")
+    IllegalArgumentException validationFailedActualParameterNotDescribed(String paramName, Set<String> parameterNames, String operation);
+
+    /**
+     * Creates an exception indicating that the operation does not contain a required parameter
+     *
+     * @param paramName the name of the required parameter
+     * @param operation the operation as a string. May be empty
+     */
+    @Message(id = 14822, value = "Required parameter %s is not present. %s")
+    IllegalArgumentException validationFailedRequiredParameterNotPresent(String paramName, String operation);
+
+    /**
+     * Creates an exception indicating that the operation contains both an alternative and a required parameter
+     *
+     * @param alternative the name of the alternative parameter
+     * @param paramName the name of the required parameter
+     * @param operation the operation as a string. May be empty
+     */
+    @Message(id = 14823, value = "Alternative parameter '%s' for required parameter '%s' was used. Please use one or the other. %s")
+    IllegalArgumentException validationFailedRequiredParameterPresentAsWellAsAlternative(String alternative, String paramName, String operation);
+
+    /**
+     * Creates an exception indicating that an operation parameter could not be converted to the required type
+     *
+     * @param paramName the name of the required parameter
+     * @param type the required type
+     * @param operation the operation as a string. May be empty
+     */
+    @Message(id = 14824, value = "Could not convert the paramter '%s' to a %s. %s")
+    IllegalArgumentException validationFailedCouldNotConvertParamToType(String paramName, ModelType type, String operation);
+
+    /**
+     * Creates an exception indicating that an operation parameter value is smaller than the allowed minimum value
+     *
+     * @param value the name of the required parameter
+     * @param paramName the name of the required parameter
+     * @param min the minimum value
+     * @param operation the operation as a string. May be empty
+     */
+    @Message(id = 14825, value = "The value '%s' passed in for '%s' is smaller than the minimum value '%s'. %s")
+    IllegalArgumentException validationFailedValueIsSmallerThanMin(Number value, String paramName, Number min, String operation);
+
+    /**
+     * Creates an exception indicating that an operation parameter value is greater than the allowed minimum value
+     *
+     * @param value the name of the required parameter
+     * @param paramName the name of the required parameter
+     * @param max the minimum value
+     * @param operation the operation as a string. May be empty
+     */
+    @Message(id = 14826, value = "The value '%s' passed in for '%s' is bigger than the maximum value '%s'. %s")
+    IllegalArgumentException validationFailedValueIsGreaterThanMax(Number value, String paramName, Number max, String operation);
+
+    /**
+     * Creates an exception indicating that an operation parameter value is shorter than the allowed minimum length
+     *
+     * @param value the name of the required parameter
+     * @param paramName the name of the required parameter
+     * @param minLength the minimum value
+     * @param operation the operation as a string. May be empty
+     */
+    @Message(id = 14827, value = "The value '%s' passed in for '%s' is shorter than the minimum length '%s'. %s")
+    IllegalArgumentException validationFailedValueIsShorterThanMinLength(Object value, String paramName, Object minLength, String operation);
+
+    /**
+     * Creates an exception indicating that an operation parameter value is longer than the allowed maximum length
+     *
+     * @param value the name of the required parameter
+     * @param paramName the name of the required parameter
+     * @param minLength the minimum value
+     * @param operation the operation as a string. May be empty
+     */
+    @Message(id = 14828, value = "The value '%s' passed in for '%s' is longer than the maximum length '%s'. %s")
+    IllegalArgumentException validationFailedValueIsLongerThanMaxLength(Object value, String paramName, Object maxLength, String operation);
+
+    /**
+     * Creates an exception indicating that an operation parameter list value has an element that is not of the accepted type
+     *
+     * @param paramName the name of the required parameter
+     * @param elementType the expected element type
+     * @param operation the operation as a string. May be empty
+     */
+    @Message(id = 14829, value = "%s is expected to be a list of %s. %s")
+    IllegalArgumentException validationFailedInvalidElementType(String paramName, ModelType elementType, String operation);
+
+    /**
+     * Creates a string for use in an IllegalArgumentException or a warning message indicating that
+     * the required attribute of a parameter in the operation description is not a boolean.
+     *
+     * @param paramName the name of the parameter
+     * @param address the address of the operation
+     * @param description the operation description
+     */
+    @Message(id = 14830, value = "'" + ModelDescriptionConstants.REQUIRED + "' parameter: '%s' must be a boolean in the description of the operation at %s: %s")
+    String invalidDescriptionRequiredFlagIsNotABoolean(String paramName, PathAddress address, ModelNode description);
+
+    /**
+     * Creates a string for use in an IllegalArgumentException or a warning message indicating that
+     * a parameter is undefined in the operation description.
+     *
+     * @param paramName the name of the parameter
+     * @param address the address of the operation
+     * @param description the operation description
+     */
+    @Message(id = 14831, value = "Undefined request property '%s' in description of the operation at %s: %s")
+    String invalidDescriptionUndefinedRequestProperty(String name, PathAddress address, ModelNode description);
+
+    /**
+     * Creates a string for use in an IllegalArgumentException or a warning message indicating that
+     * a parameter has no type in the operation description
+     *
+     * @param paramName the name of the parameter
+     * @param address the address of the operation
+     * @param description the operation description
+     */
+    @Message(id = 14832, value = "There is no type for parameter '%s' in the description of the operation at %s: %s")
+    String invalidDescriptionNoParamTypeInDescription(String paramName, PathAddress address, ModelNode description);
+
+    /**
+     * Creates a string for use in an IllegalArgumentException or a warning message indicating that
+     * a parameter has an invalid type in the operation description
+     *
+     * @param paramName the name of the parameter
+     * @param address the address of the operation
+     * @param description the operation description
+     */
+    @Message(id = 14833, value = "Could not determine the type of parameter '%s' in the description of the operation at %s: %s")
+    String invalidDescriptionInvalidParamTypeInDescription(String paramName, PathAddress address, ModelNode description);
+
+    /**
+     * Creates a string for use in an IllegalArgumentException or a warning message indicating that
+     * a parameter has a min or max attribute value of a different type from its expected value.
+     *
+     * @param minOrMax {@code min} or {@code max}
+     * @param paramName the name of the parameter
+     * @param expectedType the expected type
+     * @param address the address of the operation
+     * @param description the operation description
+     */
+    @Message(id = 14834, value = "The '%s' attribute of the '%s' parameter can not be converted to its type: %s in the description of the operation at %s: %s")
+    String invalidDescriptionMinMaxForParameterHasWrongType(String minOrMax, String paramName, ModelType expectedType, PathAddress address, ModelNode description);
+
+    /**
+     * Creates a string for use in an IllegalArgumentException or a warning message indicating that
+     * a parameter has a min-length or max-lenght attribute value that is not an integer.
+     *
+     * @param minOrMaxLength {@code min} or {@code max}
+     * @param paramName the name of the parameter
+     * @param address the address of the operation
+     * @param description the operation description
+     */
+    @Message(id = 14835, value = "The '%s' attribute of the '%s' parameter can not be converted to an integer in the description of the operation at %s: %s")
+    String invalidDescriptionMinMaxLengthForParameterHasWrongType(String minOrMaxLength, String paramName, PathAddress address, ModelNode description);
 }
