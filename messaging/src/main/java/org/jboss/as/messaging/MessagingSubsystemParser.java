@@ -1478,7 +1478,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
            ModelNode topic = node.get(JMS_TOPIC);
            boolean hasQueue = queue.isDefined() && queue.keys().size() > 0;
            boolean hasTopic = topic.isDefined() && topic.keys().size() > 0;
-           if (hasQueue && hasTopic) {
+           if (hasQueue || hasTopic) {
                writer.writeStartElement(JMS_DESTINATIONS);
                if (hasQueue) {
                    writeJmsQueues(writer, node.get(JMS_QUEUE));
