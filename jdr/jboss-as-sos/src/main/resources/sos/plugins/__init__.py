@@ -299,10 +299,9 @@ class Plugin(object):
         any of the option names is returned."""
 
         def _check(key):
-            try:
-                iter(optionname)
+            if hasattr(key, "__iter__"):
                 return key in optionname
-            except Exception:
+            else:
                 return key == optionname
 
         for name, parms in izip(self.optNames, self.optParms):

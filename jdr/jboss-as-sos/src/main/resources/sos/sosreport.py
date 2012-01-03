@@ -415,7 +415,8 @@ class SoSReport(object):
 
     def load_plugins(self):
 
-        helper = ImporterHelper(package_path=os.path.join('sos', 'plugins'))
+        import sos.plugins
+        helper = ImporterHelper(sos.plugins)
         plugins = helper.get_modules()
         self.plugin_names = deque()
 
@@ -531,7 +532,7 @@ class SoSReport(object):
     def list_plugins(self):
         if not self.loaded_plugins and not self.skipped_plugins:
             self.soslog.fatal(_("no valid plugins found"))
-            self._exit(1)
+            return
 
         if self.loaded_plugins:
             self.ui_log.info(_("The following plugins are currently enabled:"))
@@ -570,7 +571,6 @@ class SoSReport(object):
             self.ui_log.info(_("No plugin options available."))
 
         self.ui_log.info("")
-        self._exit()
 
     def batch(self):
         if self.opts.batch:
@@ -912,6 +912,7 @@ class SoSReport(object):
 
             if self.opts.listPlugins:
                 self.list_plugins()
+                return
 
             self.ensure_plugins()
             self.batch()

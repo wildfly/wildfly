@@ -164,13 +164,15 @@ class DirTree(object):
 
 class ImporterHelper(object):
     """Provides a list of modules that can be imported in a package.
-    The package is located along the base_path (default = sys.path)
-    and modules are files that end in .py. This class will read from
-    PKZip archives as well for listing out jar and egg contents."""
+    Importable modules are located along the module __path__ list and modules
+    are files that end in .py. This class will read from PKZip archives as well
+    for listing out jar and egg contents."""
 
-    def __init__(self, package_path, base_path=sys.path):
-        self.package_path = package_path
-        self.base_path = base_path
+    def __init__(self, package):
+        """package is a package module
+        import my.package.module
+        helper = ImporterHelper(my.package.module)"""
+        self.package = package
 
     def _plugin_name(self, path):
         "Returns the plugin module name given the path"
@@ -178,63 +180,64 @@ class ImporterHelper(object):
         name, ext = os.path.splitext(base)
         return name
 
-    def _get_plugins_from_list(self, list_, package_path=None):
-
-        # jarfiles represent their paths with a / even on windows
-        # so we need to be able to use a different path separator
-        # in order for this to work right
-        if not package_path:
-            package_path = self.package_path
-
+    def _get_plugins_from_list(self, list_):
         plugins = [self._plugin_name(plugin)
                 for plugin in list_
-                if package_path in plugin
-                and "__init__" not in plugin
+                if "__init__" not in plugin
                 and plugin.endswith(".py")]
         plugins.sort()
         return plugins
 
     def _find_plugins_in_dir(self, path):
-        candidate = os.path.join(path, self.package_path)
-        if os.path.exists(candidate):
-           pnames = self._get_plugins_from_list(
-                   list(find("*.py", candidate)))
-           if pnames:
-               return pnames
+        if os.path.exists(path):
+            py_files = list(find("*.py", path))
+            pnames = self._get_plugins_from_list(py_files)
+            if pnames:
+                return pnames
+            else:
+                return []
 
-    def _get_path_to_zip(self, path):
+    def _get_path_to_zip(self, path, tail_list=None):
+        if not tail_list:
+            tail_list = ['']
+
         if path.endswith(('.jar', '.zip', '.egg')):
-            return path
+            return path, os.path.join(*tail_list)
 
         head, tail = os.path.split(path)
+        tail_list.insert(0, tail)
 
         if head == path:
-            return path
+            raise Exception("not a zip file")
         else:
-            return self._get_path_to_zip(head)
+            return self._get_path_to_zip(head, tail_list)
+
 
     def _find_plugins_in_zipfile(self, path):
         try:
-            zf = zipfile.ZipFile(self._get_path_to_zip(path))
-            package_path = self.package_path.replace(os.path.sep, "/")
-            candidates = self._get_plugins_from_list(zf.namelist(), package_path)
+            path_to_zip, tail = self._get_path_to_zip(path)
+            zf = zipfile.ZipFile(path_to_zip)
+            root_names = [name for name in zf.namelist() if tail in name]
+            candidates = self._get_plugins_from_list(root_names)
             zf.close()
             if candidates:
                 return candidates
-        except IOError:
-            pass
+            else:
+                return []
+        except (IOError, Exception):
+            return []
 
     def get_modules(self):
         "Returns the list of importable modules in the configured python package."
-        for path in self.base_path:
+        plugins = []
+        for path in self.package.__path__:
             if os.path.isdir(path) or path == '':
-                plugins = self._find_plugins_in_dir(path)
+                plugins.extend(self._find_plugins_in_dir(path))
             else:
-                plugins = self._find_plugins_in_zipfile(path)
+                plugins.extend(self._find_plugins_in_zipfile(path))
 
-            if plugins:
-                return plugins
-        return []
+        return plugins
+
 
 def find(file_pattern, top_dir, max_depth=None, path_pattern=None):
     """generator function to find files recursively. Usage:
