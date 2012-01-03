@@ -21,12 +21,13 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.persistence;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import javax.annotation.Resource;
 import javax.ejb.Singleton;
 import javax.ejb.Timeout;
 import javax.ejb.TimerService;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Stuart Douglas
@@ -53,7 +54,8 @@ public class SimpleTimerServiceBean {
 
     public static boolean awaitTimerCall() {
         try {
-            latch.await(2, TimeUnit.SECONDS);
+            //on a slow machine this may take a while
+            latch.await(30, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
