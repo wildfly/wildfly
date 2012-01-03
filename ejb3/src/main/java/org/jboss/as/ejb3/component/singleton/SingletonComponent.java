@@ -109,8 +109,9 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
     public SingletonComponentInstance getComponentInstance() {
         if (this.singletonComponentInstance == null) {
             synchronized (this) {
-                // no need to check here, createInstance has a wait (on start)
-                this.singletonComponentInstance = (SingletonComponentInstance) this.createInstance();
+                if(this.singletonComponentInstance == null) {
+                    this.singletonComponentInstance = (SingletonComponentInstance) this.createInstance();
+                }
             }
         }
         return this.singletonComponentInstance;
