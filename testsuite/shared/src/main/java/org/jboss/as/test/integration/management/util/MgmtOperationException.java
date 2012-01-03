@@ -14,7 +14,7 @@ public class MgmtOperationException extends Exception {
 
     private ModelNode operation;
     private ModelNode result;
-    
+
     /**
      * Creates a new instance of
      * <code>MgmtOperationException</code> without detail message.
@@ -31,7 +31,7 @@ public class MgmtOperationException extends Exception {
     public MgmtOperationException(String msg) {
         super(msg);
     }
-    
+
     /**
      * Constructs an instance of
      * <code>MgmtOperationException</code> with the specified detail message.
@@ -57,5 +57,5 @@ public class MgmtOperationException extends Exception {
     public ModelNode getResult() {
         return result;
     }
-    
+
 }

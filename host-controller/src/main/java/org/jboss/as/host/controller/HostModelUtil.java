@@ -84,12 +84,15 @@ import org.jboss.as.controller.operations.common.SnapshotTakeHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyRemoveHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyValueWriteAttributeHandler;
+import org.jboss.as.controller.operations.common.ValidateOperationHandler;
 import org.jboss.as.controller.operations.common.XmlMarshallingHandler;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.OperationEntry.EntryType;
+import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
@@ -208,6 +211,7 @@ public class HostModelUtil {
         root.registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true, OperationEntry.EntryType.PUBLIC, flags);
         root.registerOperationHandler(UNDEFINE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.UNDEFINE_ATTRIBUTE, CommonProviders.UNDEFINE_ATTRIBUTE_PROVIDER, true);
         root.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
+        root.registerOperationHandler(ValidateOperationHandler.OPERATION_NAME, ValidateOperationHandler.INSTANCE, ValidateOperationHandler.INSTANCE, false, EntryType.PUBLIC, EnumSet.of(Flag.READ_ONLY));
 
 
         // Other root resource operations
@@ -243,7 +247,8 @@ public class HostModelUtil {
         DomainServerLifecycleHandlers.initializeServerInventory(serverInventory);
 
         hostRegistration.registerOperationHandler(SpecifiedInterfaceResolveHandler.OPERATION_NAME, SpecifiedInterfaceResolveHandler.INSTANCE, SpecifiedInterfaceResolveHandler.INSTANCE);
-
+        ValidateOperationHandler validateOperationHandler = hostControllerInfo.isMasterDomainController() ? ValidateOperationHandler.INSTANCE : ValidateOperationHandler.SLAVE_HC_INSTANCE;
+        hostRegistration.registerOperationHandler(ValidateOperationHandler.OPERATION_NAME, validateOperationHandler, validateOperationHandler, false, EntryType.PRIVATE, EnumSet.of(Flag.READ_ONLY));
 
 
         // System Properties

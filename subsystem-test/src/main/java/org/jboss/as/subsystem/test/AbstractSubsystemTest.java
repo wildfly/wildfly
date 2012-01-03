@@ -75,6 +75,7 @@ import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
+import org.jboss.as.controller.operations.validation.OperationValidator;
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.Namespace;

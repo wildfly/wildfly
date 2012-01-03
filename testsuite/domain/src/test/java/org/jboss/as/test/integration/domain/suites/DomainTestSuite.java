@@ -41,7 +41,8 @@ import org.junit.runners.Suite;
         DeploymentManagementTestCase.class,
         ServerManagementTestCase.class,
         ManagementAccessTestCase.class,
-        ManagementClientContentTestCase.class
+        ManagementClientContentTestCase.class,
+        ValidateOperationOperationTestCase.class
 })
 public class DomainTestSuite {
 

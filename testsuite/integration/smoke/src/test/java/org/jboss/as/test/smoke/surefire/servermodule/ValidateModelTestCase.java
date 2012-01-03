@@ -41,12 +41,15 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALIDATE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import junit.framework.Assert;
+
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -89,9 +92,11 @@ public class ValidateModelTestCase {
 
         System.out.println(description);
 
+        final ModelNode ROOT_ADDR = new ModelNode().setEmptyList();
+        //Exclude the operations where one of the reply properties is known to have {type=OBJECT,value-type=UNDEFINED}
+        config.allowNullValueTypeForOperationParameter(ROOT_ADDR, VALIDATE_OPERATION, VALUE);
 
         //Exclude the operations where reply-properties is known to have {type=OBJECT,value-type=UNDEFINED}
-        final ModelNode ROOT_ADDR = new ModelNode().setEmptyList();
         config.allowNullValueTypeForOperationReplyProperties(ROOT_ADDR, READ_OPERATION_DESCRIPTION_OPERATION);
         config.allowNullValueTypeForOperationReplyProperties(ROOT_ADDR, READ_RESOURCE_DESCRIPTION_OPERATION);
         config.allowNullValueTypeForOperationReplyProperties(ROOT_ADDR, READ_RESOURCE_OPERATION);
@@ -141,7 +146,6 @@ public class ValidateModelTestCase {
         for (String remove : removes) {
             subsystemDescriptions.remove(remove);
         }
-
     }
 
     protected static ModelNode getDescription() throws Exception {
