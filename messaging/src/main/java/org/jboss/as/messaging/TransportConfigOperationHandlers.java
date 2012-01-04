@@ -306,7 +306,7 @@ class TransportConfigOperationHandlers {
     }
 
     interface SelfRegisteringAttributeHandler extends OperationStepHandler {
-        void registerAttributes(final ManagementResourceRegistration registry);
+        void registerAttributes(final ManagementResourceRegistration registry, boolean registerRuntimeOnly);
     }
 
     static class AttributeWriteHandler extends ReloadRequiredWriteAttributeHandler implements SelfRegisteringAttributeHandler {
@@ -317,10 +317,12 @@ class TransportConfigOperationHandlers {
             this.attributes = attributes;
         }
 
-        public void registerAttributes(final ManagementResourceRegistration registry) {
+        public void registerAttributes(final ManagementResourceRegistration registry, boolean registerRuntimeOnly) {
             final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
             for (AttributeDefinition attr : attributes) {
-                registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
+                if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
+                    registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
+                }
             }
         }
     }

@@ -114,7 +114,7 @@ public class JPAExtension implements Extension {
             // load the default persistence provider adaptor
             PersistenceProviderAdaptor provider = PersistenceProviderAdaptorLoader.loadPersistenceAdapterModule(Configuration.ADAPTER_MODULE_DEFAULT);
             final ManagementAdaptor managementAdaptor = provider.getManagementAdaptor();
-            if (managementAdaptor != null) {
+            if (managementAdaptor != null && context.isRuntimeOnlyRegistrationValid()) {
                 DescriptionProvider JPA_SUBSYSTEM = new DescriptionProvider() {
                     @Override
                     public ModelNode getModelDescription(Locale locale) {
@@ -131,6 +131,7 @@ public class JPAExtension implements Extension {
                         return subsystem;
                     }
                 };
+
                 final ManagementResourceRegistration jpaSubsystemDeployments = registration.registerDeploymentModel(JPA_SUBSYSTEM);
 
                 managementAdaptor.register(jpaSubsystemDeployments, persistenceUnitRegistry);

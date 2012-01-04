@@ -471,7 +471,7 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     private ModelNode loadServerModel(final File file) throws Exception {
-        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER);
+        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, new RunningModeControl(RunningMode.NORMAL));
         final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
         final StandaloneXml parser = new StandaloneXml(Module.getBootModuleLoader(), null, extensionRegistry);
         final XmlConfigurationPersister persister = new XmlConfigurationPersister(file, rootElement, parser, parser);
@@ -623,7 +623,7 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     private ModelNode loadDomainModel(File file) throws Exception {
-        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER);
+        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, new RunningModeControl(RunningMode.NORMAL));
         final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "domain");
         final DomainXml parser = new DomainXml(Module.getBootModuleLoader(), null, extensionRegistry);
         final XmlConfigurationPersister persister = new XmlConfigurationPersister(file, rootElement, parser, parser);

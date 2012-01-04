@@ -799,17 +799,27 @@ public class ThreadsSubsystemTestCase {
         return operation;
     }
 
-    static class TestNewExtensionContext implements ExtensionContext {
+    static class TestExtensionContext implements ExtensionContext {
         final ManagementResourceRegistration testProfileRegistration;
         ManagementResourceRegistration createdRegistration;
 
-        TestNewExtensionContext(ManagementResourceRegistration testProfileRegistration) {
+        TestExtensionContext(ManagementResourceRegistration testProfileRegistration) {
             this.testProfileRegistration = testProfileRegistration;
         }
 
         @Override
         public ProcessType getProcessType() {
             return ProcessType.EMBEDDED_SERVER;
+        }
+
+        @Override
+        public RunningMode getRunningMode() {
+            return RunningMode.NORMAL;
+        }
+
+        @Override
+        public boolean isRuntimeOnlyRegistrationValid() {
+            return getProcessType().isServer() && getRunningMode() != RunningMode.ADMIN_ONLY;
         }
 
         @Override
@@ -950,7 +960,7 @@ public class ThreadsSubsystemTestCase {
             });
 
             ManagementResourceRegistration profileRegistration = rootRegistration.registerSubModel(PathElement.pathElement("profile"), profileDescriptionProvider);
-            TestNewExtensionContext context = new TestNewExtensionContext(profileRegistration);
+            TestExtensionContext context = new TestExtensionContext(profileRegistration);
             ThreadsExtension extension = new ThreadsExtension();
             extension.initialize(context);
             Assert.assertNotNull(context.createdRegistration);

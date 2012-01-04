@@ -40,6 +40,7 @@ import javax.xml.stream.XMLStreamWriter;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -77,11 +78,14 @@ public class SaslResource extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadOnlyAttribute(INCLUDE_MECHANISMS_ATTRIBUTE, null);
-        resourceRegistration.registerReadOnlyAttribute(QOP_ATTRIBUTE, null);
-        resourceRegistration.registerReadOnlyAttribute(STRENGTH_ATTRIBUTE, null);
-        resourceRegistration.registerReadOnlyAttribute(REUSE_SESSION_ATTRIBUTE, null);
-        resourceRegistration.registerReadOnlyAttribute(SERVER_AUTH_ATTRIBUTE, null);
+        final ReloadRequiredWriteAttributeHandler writeHandler =
+                new ReloadRequiredWriteAttributeHandler(INCLUDE_MECHANISMS_ATTRIBUTE, QOP_ATTRIBUTE, STRENGTH_ATTRIBUTE,
+                        REUSE_SESSION_ATTRIBUTE, SERVER_AUTH_ATTRIBUTE);
+        resourceRegistration.registerReadWriteAttribute(INCLUDE_MECHANISMS_ATTRIBUTE, null, writeHandler);
+        resourceRegistration.registerReadWriteAttribute(QOP_ATTRIBUTE, null, writeHandler);
+        resourceRegistration.registerReadWriteAttribute(STRENGTH_ATTRIBUTE, null, writeHandler);
+        resourceRegistration.registerReadWriteAttribute(REUSE_SESSION_ATTRIBUTE, null, writeHandler);
+        resourceRegistration.registerReadWriteAttribute(SERVER_AUTH_ATTRIBUTE, null, writeHandler);
     }
 
     private static class SaslListAttributeDefinition extends ListAttributeDefinition {
@@ -92,7 +96,7 @@ public class SaslResource extends SimpleResourceDefinition {
         }
 
         SaslListAttributeDefinition(Element element, String name, boolean allowNull, ParameterValidator validator) {
-            super(name, allowNull, new StringLengthValidator(1));
+            super(name, allowNull, validator);
             this.element = element;
         }
 

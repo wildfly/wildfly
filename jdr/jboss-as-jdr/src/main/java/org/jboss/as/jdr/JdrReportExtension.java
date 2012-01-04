@@ -65,7 +65,10 @@ public class JdrReportExtension implements Extension {
         root.registerOperationHandler(DESCRIBE, JdrSubsystemDescribeHandler.INSTANCE,
                 JdrSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         root.registerOperationHandler(JdrReportSubsystemRemove.OPERATION_NAME, JdrReportSubsystemRemove.INSTANCE, JdrReportSubsystemRemove.INSTANCE);
-        root.registerOperationHandler(JdrReportRequestHandler.OPERATION_NAME, JdrReportRequestHandler.INSTANCE, JdrReportRequestHandler.INSTANCE);
+
+        if (context.isRuntimeOnlyRegistrationValid()) {
+            root.registerOperationHandler(JdrReportRequestHandler.OPERATION_NAME, JdrReportRequestHandler.INSTANCE, JdrReportRequestHandler.INSTANCE);
+        }
         subsystemRegistration.registerXMLElementWriter(JdrReportSubsystemParser.INSTANCE);
     }
 

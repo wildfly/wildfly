@@ -23,16 +23,12 @@
 package org.jboss.as.messaging.jms;
 
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.messaging.CommonAttributes;
-import org.jboss.dmr.ModelNode;
 
 /**
  * Write attribute handler for attributes that update the persistent configuration of a JMS queue resource.
@@ -47,10 +43,12 @@ public class JmsQueueConfigurationWriteHandler extends ReloadRequiredWriteAttrib
         super(CommonAttributes.JMS_QUEUE_ATTRIBUTES);
     }
 
-    public void registerAttributes(final ManagementResourceRegistration registry) {
+    public void registerAttributes(final ManagementResourceRegistration registry, boolean registerRuntimeOnly) {
         final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
         for (AttributeDefinition attr : CommonAttributes.JMS_QUEUE_ATTRIBUTES) {
-            registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
+            if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
+                registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
+            }
         }
     }
 

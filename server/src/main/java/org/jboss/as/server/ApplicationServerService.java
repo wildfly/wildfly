@@ -76,7 +76,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
     ApplicationServerService(final List<ServiceActivator> extraServices, final Bootstrap.Configuration configuration) {
         this.extraServices = extraServices;
         this.configuration = configuration;
-        runningModeControl = new RunningModeControl(configuration.getServerEnvironment().getInitialRunningMode());
+        runningModeControl = configuration.getRunningModeControl();
         startTime = configuration.getStartTime();
         processState = new ControlledProcessState(configuration.getServerEnvironment().isStandalone());
     }

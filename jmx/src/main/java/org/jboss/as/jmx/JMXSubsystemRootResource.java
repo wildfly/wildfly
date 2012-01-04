@@ -47,19 +47,20 @@ import org.jboss.msc.service.ServiceName;
  */
 public class JMXSubsystemRootResource extends SimpleResourceDefinition {
 
-    static final JMXSubsystemRootResource INSTANCE = new JMXSubsystemRootResource();
-
     static final SimpleAttributeDefinition SHOW_MODEL = SimpleAttributeDefinitionBuilder.create(CommonAttributes.SHOW_MODEL, ModelType.BOOLEAN, true).setXmlName(CommonAttributes.VALUE).build();
 
     private static final String INVOKE_MBEAN_RAW = "invoke-mbean-raw";
     private static final String GET_MBEAN_INFO_RAW = "get-mbean-info-raw";
     private static final String GET_MBEAN_ATTRIBUTE_INFO_RAW = "get-mbean-attribute-info-raw";
 
-    private JMXSubsystemRootResource() {
+    private final boolean registerRuntimeOnly;
+
+    JMXSubsystemRootResource(final boolean registerRuntimeOnly) {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JMXExtension.SUBSYSTEM_NAME),
                 JMXExtension.getResourceDescriptionResolver(JMXExtension.SUBSYSTEM_NAME),
                 JMXSubsystemAdd.INSTANCE,
                 JMXSubsystemRemove.INSTANCE);
+        this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
     @Override
@@ -70,9 +71,11 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
-        resourceRegistration.registerOperationHandler(INVOKE_MBEAN_RAW, new InvokeMBeanRaw(), EMPTY_DESCRIPTION , false, EntryType.PRIVATE);
-        resourceRegistration.registerOperationHandler(GET_MBEAN_INFO_RAW, new GetMBeanInfoRaw(), EMPTY_DESCRIPTION, false, EntryType.PRIVATE);
-        resourceRegistration.registerOperationHandler(GET_MBEAN_ATTRIBUTE_INFO_RAW, new GetMBeanAttributeInfoRaw(), EMPTY_DESCRIPTION, false, EntryType.PRIVATE);
+        if (registerRuntimeOnly) {
+            resourceRegistration.registerOperationHandler(INVOKE_MBEAN_RAW, new InvokeMBeanRaw(), EMPTY_DESCRIPTION , false, EntryType.PRIVATE);
+            resourceRegistration.registerOperationHandler(GET_MBEAN_INFO_RAW, new GetMBeanInfoRaw(), EMPTY_DESCRIPTION, false, EntryType.PRIVATE);
+            resourceRegistration.registerOperationHandler(GET_MBEAN_ATTRIBUTE_INFO_RAW, new GetMBeanAttributeInfoRaw(), EMPTY_DESCRIPTION, false, EntryType.PRIVATE);
+        }
     }
 
     private static DescriptionProvider EMPTY_DESCRIPTION = new DescriptionProvider() {

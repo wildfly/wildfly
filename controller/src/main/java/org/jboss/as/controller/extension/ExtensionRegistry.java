@@ -49,6 +49,8 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -83,10 +85,12 @@ public class ExtensionRegistry {
             new ConcurrentHashMap<String, Map<String, SubsystemInformation>>();
     private final ConcurrentMap<String, Set<String>> unnamedParsers = new ConcurrentHashMap<String, Set<String>>();
     private final ConcurrentMap<String, String> registeredSubystems = new ConcurrentHashMap<String, String>();
+    private final RunningModeControl runningModeControl;
     private boolean unnamedMerged;
 
-    public ExtensionRegistry(ProcessType processType) {
+    public ExtensionRegistry(ProcessType processType, RunningModeControl runningModeControl) {
         this.processType = processType;
+        this.runningModeControl = runningModeControl;
     }
 
     /**
@@ -412,7 +416,17 @@ public class ExtensionRegistry {
 
         @Override
         public ProcessType getProcessType() {
-            return ExtensionRegistry.this.processType;
+            return processType;
+        }
+
+        @Override
+        public RunningMode getRunningMode() {
+            return runningModeControl.getRunningMode();
+        }
+
+        @Override
+        public boolean isRuntimeOnlyRegistrationValid() {
+            return processType.isServer() && runningModeControl.getRunningMode() != RunningMode.ADMIN_ONLY;
         }
     }
 

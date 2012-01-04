@@ -50,6 +50,9 @@ public class ModClusterAddMetric implements OperationStepHandler, DescriptionPro
     @Override
     public void execute(OperationContext context, ModelNode operation)
             throws OperationFailedException {
+
+        // TODO AS7-3194 no reason this can't run on the Host Controller; it just updates the model
+        // TODO AS7-3194 this does not update the runtime! The server needs to be marked reload-required
         if (context.getType() == OperationContext.Type.SERVER) {
             context.addStep(new OperationStepHandler() {
                 @Override

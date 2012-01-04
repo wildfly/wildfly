@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutorService;
 
 import javax.xml.namespace.QName;
 
+import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.server.parsing.StandaloneXml;
@@ -74,6 +75,7 @@ public interface Bootstrap {
     final class Configuration {
 
         private final ServerEnvironment serverEnvironment;
+        private final RunningModeControl runningModeControl;
         private final ExtensionRegistry extensionRegistry;
         private ModuleLoader moduleLoader = Module.getBootModuleLoader();
         private ConfigurationPersisterFactory configurationPersisterFactory;
@@ -82,7 +84,8 @@ public interface Bootstrap {
         public Configuration(final ServerEnvironment serverEnvironment) {
             assert serverEnvironment != null : "serverEnvironment is null";
             this.serverEnvironment = serverEnvironment;
-            this.extensionRegistry = new ExtensionRegistry(serverEnvironment.getLaunchType().getProcessType());
+            this.runningModeControl = new RunningModeControl(serverEnvironment.getInitialRunningMode());
+            this.extensionRegistry = new ExtensionRegistry(serverEnvironment.getLaunchType().getProcessType(), runningModeControl);
         }
 
         /**
@@ -103,6 +106,14 @@ public interface Bootstrap {
          */
         public ServerEnvironment getServerEnvironment() {
             return serverEnvironment;
+        }
+
+        /**
+         * Get the server's running mode control.
+         * @return
+         */
+        RunningModeControl getRunningModeControl() {
+            return runningModeControl;
         }
 
         /**

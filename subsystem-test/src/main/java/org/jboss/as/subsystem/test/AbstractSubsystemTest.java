@@ -59,6 +59,7 @@ import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
@@ -161,7 +162,7 @@ public abstract class AbstractSubsystemTest {
         //Initialize the parser
         xmlMapper = XMLMapper.Factory.create();
         testParser = new TestParser();
-        extensionParsingRegistry = new ExtensionRegistry(getProcessType());
+        extensionParsingRegistry = new ExtensionRegistry(getProcessType(), new RunningModeControl(RunningMode.NORMAL));
         xmlMapper.registerRootElement(new QName(TEST_NAMESPACE, "test"), testParser);
         mainExtension.initializeParsers(extensionParsingRegistry.getExtensionParsingContext("Test", xmlMapper));
         addedExtraParsers = false;
@@ -252,7 +253,7 @@ public abstract class AbstractSubsystemTest {
 
         StringConfigurationPersister persister = new StringConfigurationPersister(Collections.<ModelNode>emptyList(), testParser);
 
-        ExtensionRegistry outputExtensionRegistry = new ExtensionRegistry(ProcessType.EMBEDDED_SERVER);
+        ExtensionRegistry outputExtensionRegistry = new ExtensionRegistry(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.NORMAL));
         outputExtensionRegistry.setProfileResourceRegistration(MOCK_RESOURCE_REG);
         outputExtensionRegistry.setDeploymentsResourceRegistration(MOCK_RESOURCE_REG);
         outputExtensionRegistry.setWriterRegistry(persister);
@@ -565,7 +566,7 @@ public abstract class AbstractSubsystemTest {
     }
 
     private ExtensionRegistry cloneExtensionRegistry() {
-        final ExtensionRegistry clone = new ExtensionRegistry(extensionParsingRegistry.getProcessType());
+        final ExtensionRegistry clone = new ExtensionRegistry(extensionParsingRegistry.getProcessType(), new RunningModeControl(RunningMode.NORMAL));
         for (String extension : extensionParsingRegistry.getExtensionModuleNames()) {
             ExtensionParsingContext epc = clone.getExtensionParsingContext(extension, null);
             for (Map.Entry<String, ExtensionRegistry.SubsystemInformation> entry : extensionParsingRegistry.getAvailableSubsystems(extension).entrySet()) {

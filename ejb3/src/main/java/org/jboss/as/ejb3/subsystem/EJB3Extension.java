@@ -98,14 +98,16 @@ public class EJB3Extension implements Extension {
         // subsystem=ejb3/service=iiop
         subsystemRegistration.registerSubModel(EJB3IIOPResourceDefinition.INSTANCE);
 
-        ResourceDefinition deploymentsDef = new SimpleResourceDefinition(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME),
-                getResourceDescriptionResolver("deployed"));
-        final ManagementResourceRegistration deploymentsRegistration = subsystem.registerDeploymentModel(deploymentsDef);
-        deploymentsRegistration.registerSubModel(EntityBeanResourceDefinition.INSTANCE);
-        deploymentsRegistration.registerSubModel(MessageDrivenBeanResourceDefinition.INSTANCE);
-        deploymentsRegistration.registerSubModel(SingletonBeanDeploymentResourceDefinition.INSTANCE);
-        deploymentsRegistration.registerSubModel(StatelessSessionBeanDeploymentResourceDefinition.INSTANCE);
-        deploymentsRegistration.registerSubModel(StatefulSessionBeanDeploymentResourceDefinition.INSTANCE);
+        if (context.isRuntimeOnlyRegistrationValid()) {
+            ResourceDefinition deploymentsDef = new SimpleResourceDefinition(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME),
+                    getResourceDescriptionResolver("deployed"));
+            final ManagementResourceRegistration deploymentsRegistration = subsystem.registerDeploymentModel(deploymentsDef);
+            deploymentsRegistration.registerSubModel(EntityBeanResourceDefinition.INSTANCE);
+            deploymentsRegistration.registerSubModel(MessageDrivenBeanResourceDefinition.INSTANCE);
+            deploymentsRegistration.registerSubModel(SingletonBeanDeploymentResourceDefinition.INSTANCE);
+            deploymentsRegistration.registerSubModel(StatelessSessionBeanDeploymentResourceDefinition.INSTANCE);
+            deploymentsRegistration.registerSubModel(StatefulSessionBeanDeploymentResourceDefinition.INSTANCE);
+        }
     }
 
     /**

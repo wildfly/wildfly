@@ -27,6 +27,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -80,20 +82,7 @@ public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 
-    private static final Map<String, AttributeDefinition> ATTRIBUTES;
-
-    static {
-        Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
-        map.put(BINDING_TYPE.getName(), BINDING_TYPE);
-        map.put(VALUE.getName(), VALUE);
-        map.put(TYPE.getName(), TYPE);
-        map.put(CLASS.getName(), CLASS);
-        map.put(MODULE.getName(), MODULE);
-        map.put(LOOKUP.getName(), LOOKUP);
-
-        ATTRIBUTES = Collections.unmodifiableMap(map);
-    }
-
+    private static final AttributeDefinition[] ATTRIBUTES = {BINDING_TYPE, VALUE, TYPE, CLASS, MODULE, LOOKUP};
 
     private NamingBindingResourceDefinition() {
         super(NamingSubsystemModel.BINDING_PATH,
@@ -103,9 +92,9 @@ public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        for (AttributeDefinition attr : ATTRIBUTES.values()) {
-            // TODO: Make this read-write attribute
-            resourceRegistration.registerReadOnlyAttribute(attr, null);
+        OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
+        for (AttributeDefinition attr : ATTRIBUTES) {
+            resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
         }
     }
 }

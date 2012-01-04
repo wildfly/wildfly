@@ -170,7 +170,7 @@ public class InterleavedSubsystemTestCase {
         private final ManagementResourceRegistration rootRegistration;
 
         private FakeExtensionAddHandler(ManagementResourceRegistration rootRegistration) {
-            super(new ExtensionRegistry(ProcessType.EMBEDDED_SERVER), false);
+            super(new ExtensionRegistry(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.NORMAL)), false);
             this.rootRegistration = rootRegistration;
         }
 

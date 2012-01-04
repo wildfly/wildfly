@@ -23,33 +23,21 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE;
 
 import java.util.EnumSet;
-import java.util.Locale;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DefaultResourceAddDescriptionProvider;
-import org.jboss.as.controller.descriptions.DefaultResourceDescriptionProvider;
-import org.jboss.as.controller.descriptions.DefaultResourceRemoveDescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.messaging.jms.ConnectionFactoryAdd;
@@ -61,9 +49,9 @@ import org.jboss.as.messaging.jms.JMSQueueAdd;
 import org.jboss.as.messaging.jms.JMSQueueAddJndiHandler;
 import org.jboss.as.messaging.jms.JMSQueueControlHandler;
 import org.jboss.as.messaging.jms.JMSQueueRemove;
-import org.jboss.as.messaging.jms.JMSServerControlHandler;
 import org.jboss.as.messaging.jms.JMSTopicAdd;
 import org.jboss.as.messaging.jms.JMSTopicAddJndiHandler;
+import org.jboss.as.messaging.jms.JMSTopicConfigurationWriteHandler;
 import org.jboss.as.messaging.jms.JMSTopicControlHandler;
 import org.jboss.as.messaging.jms.JMSTopicReadAttributeHandler;
 import org.jboss.as.messaging.jms.JMSTopicRemove;
@@ -72,8 +60,6 @@ import org.jboss.as.messaging.jms.JmsQueueReadAttributeHandler;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryAdd;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryRemove;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryWriteAttributeHandler;
-import org.jboss.as.messaging.jms.JMSTopicConfigurationWriteHandler;
-import org.jboss.dmr.ModelNode;
 
 /**
  * Domain extension that integrates HornetQ.
@@ -121,124 +107,143 @@ public class MessagingExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
         subsystem.registerXMLElementWriter(MessagingSubsystemParser.getInstance());
 
+        boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
+
         // Root resource
         final ManagementResourceRegistration rootRegistration = subsystem.registerSubsystemModel(MessagingSubsystemRootResourceDefinition.INSTANCE);
         rootRegistration.registerOperationHandler(DESCRIBE, MessagingSubsystemDescribeHandler.INSTANCE, MessagingSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         // HQ servers
-        final ManagementResourceRegistration serverRegistration = rootRegistration.registerSubModel(HornetQServerResourceDefinition.INSTANCE);
+        final ManagementResourceRegistration serverRegistration = rootRegistration.registerSubModel(new HornetQServerResourceDefinition(registerRuntimeOnly));
 
         // TODO convert the remaining resources to ResourceDefinition
         // Runtime addresses
-        final ManagementResourceRegistration coreAddress = serverRegistration.registerSubModel(CORE_ADDRESS_PATH, MessagingSubsystemProviders.CORE_ADDRESS);
-        AddressControlHandler.INSTANCE.register(coreAddress);
+        if (registerRuntimeOnly) {
+            final ManagementResourceRegistration coreAddress = serverRegistration.registerSubModel(CORE_ADDRESS_PATH, MessagingSubsystemProviders.CORE_ADDRESS);
+            coreAddress.setRuntimeOnly(true);
+            AddressControlHandler.INSTANCE.register(coreAddress);
+        }
 
         // Address settings
         final ManagementResourceRegistration addressSetting = serverRegistration.registerSubModel(ADDRESS_SETTING, MessagingSubsystemProviders.ADDRESS_SETTING);
         addressSetting.registerOperationHandler(ADD, AddressSettingAdd.INSTANCE, MessagingSubsystemProviders.ADDRESS_SETTING_ADD);
         addressSetting.registerOperationHandler(REMOVE, AddressSettingRemove.INSTANCE, MessagingSubsystemProviders.ADDRESS_SETTING_REMOVE);
-        AddressSettingsWriteHandler.INSTANCE.registerAttributes(addressSetting);
+        AddressSettingsWriteHandler.INSTANCE.registerAttributes(addressSetting, registerRuntimeOnly);
 
         // Broadcast groups
         final ManagementResourceRegistration broadcastGroups = serverRegistration.registerSubModel(BROADCAST_GROUP_PATH, MessagingSubsystemProviders.BROADCAST_GROUP_RESOURCE);
         broadcastGroups.registerOperationHandler(ADD, BroadcastGroupAdd.INSTANCE, BroadcastGroupAdd.INSTANCE);
         broadcastGroups.registerOperationHandler(REMOVE, BroadcastGroupRemove.INSTANCE, BroadcastGroupRemove.INSTANCE);
-        BroadcastGroupWriteAttributeHandler.INSTANCE.registerAttributes(broadcastGroups);
-        BroadcastGroupControlHandler.INSTANCE.register(broadcastGroups);
+        BroadcastGroupWriteAttributeHandler.INSTANCE.registerAttributes(broadcastGroups, registerRuntimeOnly);
+        if (registerRuntimeOnly) {
+            BroadcastGroupControlHandler.INSTANCE.register(broadcastGroups);
+        }
         // getConnectorPairs, -- no, this is just the same as attribute connector-refs
 
         // Discovery groups
         final ManagementResourceRegistration discoveryGroups = serverRegistration.registerSubModel(DISCOVERY_GROUP_PATH, MessagingSubsystemProviders.DISCOVERY_GROUP_RESOURCE);
         discoveryGroups.registerOperationHandler(ADD, DiscoveryGroupAdd.INSTANCE, DiscoveryGroupAdd.INSTANCE);
         discoveryGroups.registerOperationHandler(REMOVE, DiscoveryGroupRemove.INSTANCE, DiscoveryGroupRemove.INSTANCE);
-        DiscoveryGroupWriteAttributeHandler.INSTANCE.registerAttributes(discoveryGroups);
+        DiscoveryGroupWriteAttributeHandler.INSTANCE.registerAttributes(discoveryGroups, registerRuntimeOnly);
 
         // Diverts
         final ManagementResourceRegistration diverts = serverRegistration.registerSubModel(DIVERT_PATH, MessagingSubsystemProviders.DIVERT_RESOURCE);
         diverts.registerOperationHandler(ADD, DivertAdd.INSTANCE, DivertAdd.INSTANCE);
         diverts.registerOperationHandler(REMOVE, DivertRemove.INSTANCE, DivertRemove.INSTANCE);
-        DivertConfigurationWriteHandler.INSTANCE.registerAttributes(diverts);
+        DivertConfigurationWriteHandler.INSTANCE.registerAttributes(diverts, registerRuntimeOnly);
 
         // Core queues
         final ManagementResourceRegistration queue = serverRegistration.registerSubModel(PathElement.pathElement(QUEUE), MessagingSubsystemProviders.QUEUE_RESOURCE);
         queue.registerOperationHandler(ADD, QueueAdd.INSTANCE, QueueAdd.INSTANCE, false);
         queue.registerOperationHandler(REMOVE, QueueRemove.INSTANCE, QueueRemove.INSTANCE, false);
-        QueueConfigurationWriteHandler.INSTANCE.registerAttributes(queue);
-        QueueReadAttributeHandler.INSTANCE.registerAttributes(queue);
-        QueueControlHandler.INSTANCE.registerOperations(queue);
+        QueueConfigurationWriteHandler.INSTANCE.registerAttributes(queue, registerRuntimeOnly);
+        if (registerRuntimeOnly) {
+            QueueReadAttributeHandler.INSTANCE.registerAttributes(queue);
+            QueueControlHandler.INSTANCE.registerOperations(queue);
+        }
         // getExpiryAddress, setExpiryAddress, getDeadLetterAddress, setDeadLetterAddress  -- no -- just toggle the 'queue-address', make this a mutable attr of address-setting
 
         final ManagementResourceRegistration acceptor = serverRegistration.registerSubModel(GENERIC_ACCEPTOR, MessagingSubsystemProviders.ACCEPTOR);
         acceptor.registerOperationHandler(ADD, TransportConfigOperationHandlers.GENERIC_ADD, MessagingSubsystemProviders.ACCEPTOR_ADD);
         acceptor.registerOperationHandler(REMOVE, TransportConfigOperationHandlers.REMOVE, MessagingSubsystemProviders.ACCEPTOR_REMOVE);
-        TransportConfigOperationHandlers.GENERIC_ATTR.registerAttributes(acceptor);
+        TransportConfigOperationHandlers.GENERIC_ATTR.registerAttributes(acceptor, registerRuntimeOnly);
         createParamRegistration(acceptor);
-        AcceptorControlHandler.INSTANCE.register(acceptor);
+        if (registerRuntimeOnly) {
+            AcceptorControlHandler.INSTANCE.register(acceptor);
+        }
 
 
         // remote acceptor
         final ManagementResourceRegistration remoteAcceptor = serverRegistration.registerSubModel(REMOTE_ACCEPTOR, MessagingSubsystemProviders.REMOTE_ACCEPTOR);
         remoteAcceptor.registerOperationHandler(ADD, TransportConfigOperationHandlers.REMOTE_ADD, MessagingSubsystemProviders.REMOTE_ACCEPTOR_ADD);
         remoteAcceptor.registerOperationHandler(REMOVE, TransportConfigOperationHandlers.REMOVE, MessagingSubsystemProviders.ACCEPTOR_REMOVE);
-        TransportConfigOperationHandlers.REMOTE_ATTR.registerAttributes(remoteAcceptor);
+        TransportConfigOperationHandlers.REMOTE_ATTR.registerAttributes(remoteAcceptor, registerRuntimeOnly);
         createParamRegistration(remoteAcceptor);
-        AcceptorControlHandler.INSTANCE.register(remoteAcceptor);
+        if (registerRuntimeOnly) {
+            AcceptorControlHandler.INSTANCE.register(remoteAcceptor);
+        }
 
         // in-vm acceptor
         final ManagementResourceRegistration inVMAcceptor = serverRegistration.registerSubModel(IN_VM_ACCEPTOR, MessagingSubsystemProviders.IN_VM_ACCEPTOR);
         inVMAcceptor.registerOperationHandler(ADD, TransportConfigOperationHandlers.IN_VM_ADD, MessagingSubsystemProviders.IN_VM_ACCEPTOR_ADD);
         inVMAcceptor.registerOperationHandler(REMOVE, TransportConfigOperationHandlers.REMOVE, MessagingSubsystemProviders.ACCEPTOR_REMOVE);
-        TransportConfigOperationHandlers.IN_VM_ATTR.registerAttributes(inVMAcceptor);
+        TransportConfigOperationHandlers.IN_VM_ATTR.registerAttributes(inVMAcceptor, registerRuntimeOnly);
         createParamRegistration(inVMAcceptor);
-        AcceptorControlHandler.INSTANCE.register(inVMAcceptor);
+        if (registerRuntimeOnly) {
+            AcceptorControlHandler.INSTANCE.register(inVMAcceptor);
+        }
 
         // connector
         final ManagementResourceRegistration connector = serverRegistration.registerSubModel(GENERIC_CONNECTOR, MessagingSubsystemProviders.CONNECTOR);
         connector.registerOperationHandler(ADD, TransportConfigOperationHandlers.GENERIC_ADD, MessagingSubsystemProviders.CONNECTOR_ADD);
         connector.registerOperationHandler(REMOVE, TransportConfigOperationHandlers.REMOVE, MessagingSubsystemProviders.CONNECTOR_REMOVE);
-        TransportConfigOperationHandlers.GENERIC_ATTR.registerAttributes(connector);
+        TransportConfigOperationHandlers.GENERIC_ATTR.registerAttributes(connector, registerRuntimeOnly);
         createParamRegistration(connector);
 
         // remote connector
         final ManagementResourceRegistration remoteConnector = serverRegistration.registerSubModel(REMOTE_CONNECTOR, MessagingSubsystemProviders.REMOTE_CONNECTOR);
         remoteConnector.registerOperationHandler(ADD, TransportConfigOperationHandlers.REMOTE_ADD, MessagingSubsystemProviders.REMOTE_CONNECTOR_ADD);
         remoteConnector.registerOperationHandler(REMOVE, TransportConfigOperationHandlers.REMOVE, MessagingSubsystemProviders.CONNECTOR_REMOVE);
-        TransportConfigOperationHandlers.REMOTE_ATTR.registerAttributes(remoteConnector);
+        TransportConfigOperationHandlers.REMOTE_ATTR.registerAttributes(remoteConnector, registerRuntimeOnly);
         createParamRegistration(remoteConnector);
 
         // in-vm connector
         final ManagementResourceRegistration inVMConnector = serverRegistration.registerSubModel(IN_VM_CONNECTOR, MessagingSubsystemProviders.IN_VM_CONNECTOR);
         inVMConnector.registerOperationHandler(ADD, TransportConfigOperationHandlers.IN_VM_ADD, MessagingSubsystemProviders.IN_VM_CONNECTOR_ADD);
         inVMConnector.registerOperationHandler(REMOVE, TransportConfigOperationHandlers.REMOVE, MessagingSubsystemProviders.CONNECTOR_REMOVE);
-        TransportConfigOperationHandlers.IN_VM_ATTR.registerAttributes(inVMConnector);
+        TransportConfigOperationHandlers.IN_VM_ATTR.registerAttributes(inVMConnector, registerRuntimeOnly);
         createParamRegistration(inVMConnector);
 
         // Bridges
         final ManagementResourceRegistration bridge = serverRegistration.registerSubModel(PathElement.pathElement(CommonAttributes.BRIDGE), MessagingSubsystemProviders.BRIDGE_RESOURCE);
         bridge.registerOperationHandler(ADD, BridgeAdd.INSTANCE, BridgeAdd.INSTANCE, false);
         bridge.registerOperationHandler(REMOVE, BridgeRemove.INSTANCE, BridgeRemove.INSTANCE, false);
-        BridgeWriteAttributeHandler.INSTANCE.registerAttributes(bridge);
-        BridgeControlHandler.INSTANCE.register(bridge);
+        BridgeWriteAttributeHandler.INSTANCE.registerAttributes(bridge, registerRuntimeOnly);
+        if (registerRuntimeOnly) {
+            BridgeControlHandler.INSTANCE.register(bridge);
+        }
 
         // Cluster connections
         final ManagementResourceRegistration cluster = serverRegistration.registerSubModel(PathElement.pathElement(CommonAttributes.CLUSTER_CONNECTION),
                 MessagingSubsystemProviders.CLUSTER_CONNECTION_RESOURCE);
         cluster.registerOperationHandler(ADD, ClusterConnectionAdd.INSTANCE, ClusterConnectionAdd.INSTANCE, false);
         cluster.registerOperationHandler(REMOVE, ClusterConnectionRemove.INSTANCE, ClusterConnectionRemove.INSTANCE, false);
-        ClusterConnectionWriteAttributeHandler.INSTANCE.registerAttributes(cluster);
-        ClusterConnectionControlHandler.INSTANCE.register(cluster);
+        ClusterConnectionWriteAttributeHandler.INSTANCE.registerAttributes(cluster, registerRuntimeOnly);
+        if (registerRuntimeOnly) {
+            ClusterConnectionControlHandler.INSTANCE.register(cluster);
+        }
 
         // Grouping Handler
         final ManagementResourceRegistration groupingHandler = serverRegistration.registerSubModel(GROUPING_HANDLER_PATH, MessagingSubsystemProviders.GROUPING_HANDLER_RESOURCE);
         groupingHandler.registerOperationHandler(ADD, GroupingHandlerAdd.INSTANCE, GroupingHandlerAdd.INSTANCE);
         groupingHandler.registerOperationHandler(REMOVE, GroupingHandlerRemove.INSTANCE, GroupingHandlerRemove.INSTANCE);
-        GroupingHandlerWriteAttributeHandler.INSTANCE.registerAttributes(groupingHandler);
+        GroupingHandlerWriteAttributeHandler.INSTANCE.registerAttributes(groupingHandler, registerRuntimeOnly);
 
         // Connector services
         final ManagementResourceRegistration connectorService = serverRegistration.registerSubModel(PathElement.pathElement(CommonAttributes.CONNECTOR_SERVICE),
                 MessagingSubsystemProviders.CONNECTOR_SERVICE_RESOURCE);
         connectorService.registerOperationHandler(ADD, ConnectorServiceAdd.INSTANCE, ConnectorServiceAdd.INSTANCE, false);
         connectorService.registerOperationHandler(REMOVE, ConnectorServiceRemove.INSTANCE, ConnectorServiceRemove.INSTANCE, false);
-        ConnectorServiceWriteAttributeHandler.INSTANCE.registerAttributes(connectorService);
+        ConnectorServiceWriteAttributeHandler.INSTANCE.registerAttributes(connectorService, registerRuntimeOnly);
 
         final ManagementResourceRegistration connectorServiceParam = connectorService.registerSubModel(PathElement.pathElement(CommonAttributes.PARAM),
                 MessagingSubsystemProviders.CONNECTOR_SERVICE_PARAM_RESOURCE);
@@ -258,7 +263,9 @@ public class MessagingExtension implements Extension {
         cfs.registerOperationHandler(ADD, ConnectionFactoryAdd.INSTANCE, MessagingSubsystemProviders.CF_ADD, false);
         cfs.registerOperationHandler(REMOVE, ConnectionFactoryRemove.INSTANCE, MessagingSubsystemProviders.CF_REMOVE, false);
         ConnectionFactoryWriteAttributeHandler.INSTANCE.registerAttributes(cfs);
-        ConnectionFactoryReadAttributeHandler.INSTANCE.registerAttributes(cfs);
+        if (registerRuntimeOnly) {
+            ConnectionFactoryReadAttributeHandler.INSTANCE.registerAttributes(cfs);
+        }
         ConnectionFactoryAddJndiHandler.INSTANCE.registerOperation(cfs);
         // getJNDIBindings (no -- same as "entries")
 
@@ -266,17 +273,19 @@ public class MessagingExtension implements Extension {
         final ManagementResourceRegistration resourceAdapters = serverRegistration.registerSubModel(RA_PATH, MessagingSubsystemProviders.RA);
         resourceAdapters.registerOperationHandler(ADD, PooledConnectionFactoryAdd.INSTANCE, MessagingSubsystemProviders.RA_ADD, false);
         resourceAdapters.registerOperationHandler(REMOVE, PooledConnectionFactoryRemove.INSTANCE, MessagingSubsystemProviders.RA_REMOVE);
-        PooledConnectionFactoryWriteAttributeHandler.INSTANCE.registerAttributes(resourceAdapters);
+        PooledConnectionFactoryWriteAttributeHandler.INSTANCE.registerAttributes(resourceAdapters, registerRuntimeOnly);
         // TODO how do ConnectionFactoryControl things relate?
 
         // JMS Queues
         final ManagementResourceRegistration queues = serverRegistration.registerSubModel(JMS_QUEUE_PATH, MessagingSubsystemProviders.JMS_QUEUE_RESOURCE);
         queues.registerOperationHandler(ADD, JMSQueueAdd.INSTANCE, JMSQueueAdd.INSTANCE, false);
         queues.registerOperationHandler(REMOVE, JMSQueueRemove.INSTANCE, JMSQueueRemove.INSTANCE, false);
-        JmsQueueConfigurationWriteHandler.INSTANCE.registerAttributes(queues);
-        JmsQueueReadAttributeHandler.INSTANCE.registerAttributes(queues);
+        JmsQueueConfigurationWriteHandler.INSTANCE.registerAttributes(queues, registerRuntimeOnly);
         JMSQueueAddJndiHandler.INSTANCE.registerOperation(queues);
-        JMSQueueControlHandler.INSTANCE.registerOperations(queues);
+        if (registerRuntimeOnly) {
+            JmsQueueReadAttributeHandler.INSTANCE.registerAttributes(queues);
+            JMSQueueControlHandler.INSTANCE.registerOperations(queues);
+        }
         // setExpiryAddress, setDeadLetterAddress  -- no -- just toggle the 'queue-address', make this a mutable attr of address-setting
         // getJNDIBindings (no -- same as "entries")
 
@@ -285,9 +294,11 @@ public class MessagingExtension implements Extension {
         topics.registerOperationHandler(ADD, JMSTopicAdd.INSTANCE, JMSTopicAdd.INSTANCE, false);
         topics.registerOperationHandler(REMOVE, JMSTopicRemove.INSTANCE, JMSTopicRemove.INSTANCE, false);
         JMSTopicConfigurationWriteHandler.INSTANCE.registerAttributes(topics);
-        JMSTopicReadAttributeHandler.INSTANCE.registerAttributes(topics);
-        JMSTopicControlHandler.INSTANCE.registerOperations(topics);
         JMSTopicAddJndiHandler.INSTANCE.registerOperation(topics);
+        if (registerRuntimeOnly) {
+            JMSTopicReadAttributeHandler.INSTANCE.registerAttributes(topics);
+            JMSTopicControlHandler.INSTANCE.registerOperations(topics);
+        }
         // getJNDIBindings (no -- same as "entries")
 
         final ManagementResourceRegistration securitySettings = serverRegistration.registerSubModel(SECURITY_SETTING, MessagingSubsystemProviders.SECURITY_SETTING);
@@ -297,7 +308,7 @@ public class MessagingExtension implements Extension {
         final ManagementResourceRegistration securityRole = securitySettings.registerSubModel(SECURITY_ROLE, MessagingSubsystemProviders.SECURITY_ROLE);
         securityRole.registerOperationHandler(ADD, SecurityRoleAdd.INSTANCE, SecurityRoleAdd.INSTANCE);
         securityRole.registerOperationHandler(REMOVE, SecurityRoleRemove.INSTANCE, SecurityRoleRemove.INSTANCE);
-        SecurityRoleAttributeHandler.INSTANCE.registerAttributes(securityRole);
+        SecurityRoleAttributeHandler.INSTANCE.registerAttributes(securityRole, registerRuntimeOnly);
     }
 
     public void initializeParsers(ExtensionParsingContext context) {

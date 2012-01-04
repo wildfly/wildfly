@@ -61,6 +61,7 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
@@ -89,7 +90,9 @@ import org.junit.Test;
 public class ApplyRemoteMasterDomainModelHandlerTestCase {
 
     private final ApplyRemoteMasterDomainModelHandler handler =
-            new ApplyRemoteMasterDomainModelHandler(new ExtensionRegistry(ProcessType.HOST_CONTROLLER), null, null, HOST_INFO) {
+            new ApplyRemoteMasterDomainModelHandler(
+                    new ExtensionRegistry(ProcessType.HOST_CONTROLLER, new RunningModeControl(RunningMode.NORMAL)),
+                    null, null, HOST_INFO) {
         protected void initializeExtension(String module) {
         }
     };

@@ -84,7 +84,7 @@ public class ServerControllerUnitTestCase {
     @Before
     public void beforeClass() throws Exception {
         final ServiceTarget target = container.subTarget();
-        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER);
+        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, new RunningModeControl(RunningMode.NORMAL));
         final StringConfigurationPersister persister = new StringConfigurationPersister(Collections.<ModelNode>emptyList(), new StandaloneXml(null, null, extensionRegistry));
         extensionRegistry.setWriterRegistry(persister);
         final ControlledProcessState processState = new ControlledProcessState(true);
@@ -249,7 +249,7 @@ public class ServerControllerUnitTestCase {
 
             final String hostControllerName = "hostControllerName"; // Host Controller name may not be null when in a managed domain
             final ServerEnvironment environment = new ServerEnvironment(hostControllerName, properties, new HashMap<String, String>(), null, ServerEnvironment.LaunchType.DOMAIN, null, new ProductConfig(Module.getBootModuleLoader(), "."));
-            final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER);
+            final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, new RunningModeControl(RunningMode.NORMAL));
             ServerControllerModelUtil.initOperations(rootRegistration, null, persister, environment, processState, null, null, extensionRegistry, false);
         }
 
