@@ -16,9 +16,6 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
-import static org.jboss.as.arquillian.container.Authentication.PASSWORD;
-import static org.jboss.as.arquillian.container.Authentication.USERNAME;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -35,6 +32,9 @@ import java.util.logging.Logger;
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.as.arquillian.container.CommonDeployableContainer;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
+
+import static org.jboss.as.arquillian.container.Authentication.PASSWORD;
+import static org.jboss.as.arquillian.container.Authentication.USERNAME;
 
 /**
  * JBossAsManagedContainer
@@ -108,6 +108,11 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                     cmd.add(opt);
                 }
             }
+
+            if(config.isEnableAssertions()) {
+                cmd.add("-ea");
+            }
+
             cmd.add("-Djboss.home.dir=" + jbossHomeDir);
             cmd.add("-Dorg.jboss.boot.log.file=" + jbossHomeDir + "/standalone/log/boot.log");
             cmd.add("-Dlogging.configuration=file:" + jbossHomeDir + "/standalone/configuration/logging.properties");

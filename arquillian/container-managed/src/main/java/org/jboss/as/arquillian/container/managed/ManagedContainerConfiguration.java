@@ -45,6 +45,8 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
 
     private boolean allowConnectingToRunningServer = false;
 
+    private boolean enableAssertions = true;
+
     public ManagedContainerConfiguration() {
         // if no javaHome is set use java.home of already running jvm
         if (javaHome == null || javaHome.isEmpty()) {
@@ -164,5 +166,13 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
 
     public void setAllowConnectingToRunningServer(final boolean allowConnectingToRunningServer) {
         this.allowConnectingToRunningServer = allowConnectingToRunningServer;
+    }
+
+    public boolean isEnableAssertions() {
+        return enableAssertions;
+    }
+
+    public void setEnableAssertions(final boolean enableAssertions) {
+        this.enableAssertions = enableAssertions;
     }
 }
