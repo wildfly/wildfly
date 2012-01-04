@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileReader;
 
 import org.jboss.as.cli.CliInitializationException;
+import org.jboss.as.cli.gui.GuiMain;
 import org.jboss.as.cli.handlers.VersionHandler;
 import org.jboss.as.protocol.StreamUtils;
 
@@ -46,6 +47,7 @@ public class CliLauncher {
             boolean version = false;
             String username = null;
             char[] password = null;
+            boolean gui = false;
             for(String arg : args) {
                 if(arg.startsWith("--controller=") || arg.startsWith("controller=")) {
                     final String value;
@@ -84,6 +86,8 @@ public class CliLauncher {
                     connect = true;
                 } else if("--version".equals(arg)) {
                     version = true;
+                } else if ("--gui".equals(arg)) {
+                    gui = true;
                 } else if(arg.startsWith("--file=") || arg.startsWith("file=")) {
                     if(file != null) {
                         argError = "Duplicate argument '--file'.";
@@ -168,6 +172,11 @@ public class CliLauncher {
                 return;
             }
 
+            if (gui) {
+                processGui(defaultControllerHost, defaultControllerPort, connect, username, password);
+                return;
+            }
+
             // Interactive mode
 
             final CommandContextImpl cmdCtx = new CommandContextImpl(defaultControllerHost, defaultControllerPort, username, password, true);
@@ -178,6 +187,32 @@ public class CliLauncher {
             System.exit(0);
         }
         System.exit(0);
+    }
+
+    private static void processGui(String defaultControllerHost, int defaultControllerPort, final boolean connect, final String username, final char[] password) throws CliInitializationException {
+
+        final CommandContextImpl cmdCtx = new CommandContextImpl(defaultControllerHost, defaultControllerPort, username, password, false);
+        SecurityActions.addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                cmdCtx.disconnectController();
+            }
+        }));
+
+        if(connect) {
+            cmdCtx.connectController(null, -1);
+        }
+
+        try {
+            new GuiMain(cmdCtx);
+        } catch(Throwable t) {
+            t.printStackTrace();
+        } finally {
+            if (!cmdCtx.isTerminated()) {
+                cmdCtx.terminateSession();
+            }
+            cmdCtx.disconnectController();
+        }
     }
 
     private static void processCommands(String[] commands, String defaultControllerHost, int defaultControllerPort, final boolean connect, final String username, final char[] password) throws CliInitializationException {
