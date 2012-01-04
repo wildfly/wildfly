@@ -80,7 +80,7 @@ public interface Bootstrap {
         private long startTime = Module.getStartTime();
 
         public Configuration(final ServerEnvironment serverEnvironment) {
-            assert serverEnvironment == null : "serverEnvironment is null";
+            assert serverEnvironment != null : "serverEnvironment is null";
             this.serverEnvironment = serverEnvironment;
             this.extensionRegistry = new ExtensionRegistry(serverEnvironment.getLaunchType().getProcessType());
         }
