@@ -58,10 +58,10 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
 
     @Override
     public void addProviderProperties(Map properties, PersistenceUnitMetadata pu) {
-        putPropertyIfAbsent(properties, Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true");
-        putPropertyIfAbsent(properties, org.hibernate.ejb.AvailableSettings.SCANNER, "org.jboss.as.jpa.hibernate4.HibernateAnnotationScanner");
+        putPropertyIfAbsent(pu, properties, Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true");
+        putPropertyIfAbsent(pu, properties, org.hibernate.ejb.AvailableSettings.SCANNER, "org.jboss.as.jpa.hibernate4.HibernateAnnotationScanner");
         properties.put(AvailableSettings.APP_CLASSLOADER, pu.getClassLoader());
-        putPropertyIfAbsent(properties, AvailableSettings.JTA_PLATFORM, appServerJtaPlatform);
+        putPropertyIfAbsent(pu, properties, AvailableSettings.JTA_PLATFORM, appServerJtaPlatform);
         properties.remove(AvailableSettings.TRANSACTION_MANAGER_STRATEGY);  // remove legacy way of specifying TX manager (conflicts with JTA_PLATFORM)
     }
 
@@ -104,8 +104,8 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
         return ServiceName.JBOSS.append("infinispan", container, cache, "config");
     }
 
-    private void putPropertyIfAbsent(Map properties, String property, Object value) {
-        if (!properties.containsKey(property)) {
+    private void putPropertyIfAbsent(PersistenceUnitMetadata pu,Map properties, String property, Object value) {
+        if (!pu.getProperties().containsKey(property)) {
             properties.put(property, value);
         }
     }
