@@ -21,22 +21,22 @@
  */
 package org.jboss.as.test.smoke.embedded.demos.jaxrs;
 
-import java.net.URL;
-
 import junit.framework.Assert;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.demos.jaxrs.archive.HelloWorldResource;
+import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.smoke.modular.utils.PollingUtils;
-import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.net.URL;
+
 /**
- *
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
@@ -44,8 +44,17 @@ import org.junit.runner.RunWith;
 public class JaxrsTestCase {
 
     @Deployment(testable = false)
-    public static Archive<?> getDeployment(){
-        return ShrinkWrapUtils.createWebArchive("demos/jaxrs-example.war", HelloWorldResource.class.getPackage());
+    public static Archive<?> getDeployment() {
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "jaxrs-example.war");
+        war.addPackage(HttpRequest.class.getPackage());
+        war.addClasses(JaxrsTestCase.class, HelloWorldResource.class);
+        war.addAsWebInfResource(WebXml.get("<servlet-mapping>\n" +
+                "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n" +
+                "        <url-pattern>/*</url-pattern>\n" +
+                "    </servlet-mapping>\n" +
+                "\n"), "web.xml");
+        return war;
+
     }
 
     @Test
