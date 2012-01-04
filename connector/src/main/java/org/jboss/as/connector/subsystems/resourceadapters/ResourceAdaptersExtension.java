@@ -335,12 +335,12 @@ public class ResourceAdaptersExtension implements Extension {
                     POOL_FLUSH_STRATEGY.marshallAsElement(conDef, streamWriter);
 
                     SAME_RM_OVERRIDE.marshallAsElement(conDef, streamWriter);
-                    if (conDef.get(INTERLEAVING.getName()).asBoolean()) {
+                    if (conDef.hasDefined(INTERLEAVING.getName()) && conDef.get(INTERLEAVING.getName()).asBoolean()) {
                         streamWriter.writeEmptyElement(INTERLEAVING.getXmlName());
                     } else {
                         INTERLEAVING.marshallAsElement(conDef, streamWriter);
                     }
-                    if (conDef.get(NOTXSEPARATEPOOL.getName()).asBoolean()) {
+                    if (conDef.hasDefined(NOTXSEPARATEPOOL.getName()) && conDef.get(NOTXSEPARATEPOOL.getName()).asBoolean()) {
                         streamWriter.writeEmptyElement(NOTXSEPARATEPOOL.getXmlName());
                     } else {
                         NOTXSEPARATEPOOL.marshallAsElement(conDef, streamWriter);
