@@ -58,8 +58,8 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
 
     @Override
     public void addProviderProperties(Map properties, PersistenceUnitMetadata pu) {
-        putPropertyIfAbsent(properties, "hibernate.transaction.manager_lookup_class", "org.jboss.as.jpa.hibernate3.JBossAppServerJtaPlatform");
-        putPropertyIfAbsent(properties, Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true");
+        putPropertyIfAbsent(pu, properties, "hibernate.transaction.manager_lookup_class", "org.jboss.as.jpa.hibernate3.JBossAppServerJtaPlatform");
+        putPropertyIfAbsent(pu, properties, Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true");
         addAnnotationScanner(pu);
     }
 
@@ -117,8 +117,8 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
         return ServiceName.JBOSS.append("infinispan", container, cache, "config");
     }
 
-    private void putPropertyIfAbsent(Map properties, String property, Object value) {
-        if (!properties.containsKey(property)) {
+    private void putPropertyIfAbsent(PersistenceUnitMetadata pu,Map properties, String property, Object value) {
+        if (!pu.getProperties().containsKey(property)) {
             properties.put(property, value);
         }
     }
