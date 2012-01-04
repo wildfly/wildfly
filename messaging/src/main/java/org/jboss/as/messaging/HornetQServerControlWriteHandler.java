@@ -52,9 +52,11 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
         super(CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES);
     }
 
-    public void registerAttributes(final ManagementResourceRegistration registry) {
+    public void registerAttributes(final ManagementResourceRegistration registry, boolean registerRuntimeOnly) {
         for (AttributeDefinition attr : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
-            registry.registerReadWriteAttribute(attr, null, this);
+            if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
+                registry.registerReadWriteAttribute(attr, null, this);
+            }
         }
     }
 

@@ -22,14 +22,12 @@
 
 package org.jboss.as.controller;
 
-import org.jboss.as.controller.registry.Resource;
-
-
 /**
  * The context for registering a new extension.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author David Bosschaert
+ * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public interface ExtensionContext {
 
@@ -76,9 +74,38 @@ public interface ExtensionContext {
     SubsystemRegistration registerSubsystem(String name, int majorVersion, int minorVersion);
 
     /**
-     * Provide the current Process Type.
-     * @return The current Process Type.
+     * Gets the type of the current process.
+     * @return the current process type. Will not be {@code null}
      */
     ProcessType getProcessType();
+
+    /**
+     * Gets the current running mode of the process.
+     * @return the current running mode. Will not be {@code null}
+     */
+    RunningMode getRunningMode();
+
+    /**
+     * Gets whether it is valid for the extension to register resources, attributes or operations that do not
+     * involve the persistent configuration, but rather only involve runtime services. Extensions should use this
+     * method before registering such "runtime only" resources, attributes or operations. The specific uses case this
+     * method is intended to support is avoiding registering resources, attributes or operations:
+     *
+     * <ul>
+     *     <li>on a Host Controller (which is only concerned with subsystem configuration) and typically doesn't
+     *     install runtime services associated with a subsystem</li>
+     *     <li>on a server whose running mode is {@link RunningMode#ADMIN_ONLY ADMIN_ONLY}, where again the
+     *     runtime services associated with a subsystem typically would not be installed</li>
+     * </ul>
+     * <p>
+     * This method is a shorthand for:
+     * <pre>
+     *     boolean valid = context.getProcessType().isServer() && context.getRunningMode() != RunningMode.ADMIN_ONLY;
+     * </pre>
+     * </p>
+     *
+     * @return whether the current process type is a server and the server running mode is not ADMIN_ONLY
+     */
+    boolean isRuntimeOnlyRegistrationValid();
 
 }

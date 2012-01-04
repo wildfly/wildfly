@@ -25,7 +25,9 @@ import static org.jboss.as.remoting.CommonAttributes.POLICY;
 import static org.jboss.as.remoting.CommonAttributes.SASL_POLICY;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -56,12 +58,15 @@ public class SaslPolicyResource extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadOnlyAttribute(FORWARD_SECRECY, null);
-        resourceRegistration.registerReadOnlyAttribute(NO_ACTIVE, null);
-        resourceRegistration.registerReadOnlyAttribute(NO_ANONYMOUS, null);
-        resourceRegistration.registerReadOnlyAttribute(NO_DICTIONARY, null);
-        resourceRegistration.registerReadOnlyAttribute(NO_PLAIN_TEXT, null);
-        resourceRegistration.registerReadOnlyAttribute(PASS_CREDENTIALS, null);
+        final OperationStepHandler writeHandler =
+                new ReloadRequiredWriteAttributeHandler(FORWARD_SECRECY, NO_ACTIVE, NO_ANONYMOUS, NO_DICTIONARY,
+                        NO_PLAIN_TEXT, PASS_CREDENTIALS);
+        resourceRegistration.registerReadWriteAttribute(FORWARD_SECRECY, null, writeHandler);
+        resourceRegistration.registerReadWriteAttribute(NO_ACTIVE, null, writeHandler);
+        resourceRegistration.registerReadWriteAttribute(NO_ANONYMOUS, null, writeHandler);
+        resourceRegistration.registerReadWriteAttribute(NO_DICTIONARY, null, writeHandler);
+        resourceRegistration.registerReadWriteAttribute(NO_PLAIN_TEXT, null, writeHandler);
+        resourceRegistration.registerReadWriteAttribute(PASS_CREDENTIALS, null, writeHandler);
     }
 
     private static class BooleanValueAttributeDefinition extends NamedValueAttributeDefinition {

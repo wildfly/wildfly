@@ -46,8 +46,6 @@ import org.jboss.dmr.ModelType;
  */
 public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDefinition {
 
-    public static final TransactionSubsystemRootResourceDefinition INSTANCE = new TransactionSubsystemRootResourceDefinition();
-
     //recovery environment
     public static final SimpleAttributeDefinition BINDING = new SimpleAttributeDefinitionBuilder(CommonAttributes.BINDING, ModelType.STRING, false)
             .setValidator(new StringLengthValidator(1))
@@ -140,11 +138,14 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setFlags(AttributeAccess.Flag.RESTART_JVM)  //I think the use of statics in arjunta will require a JVM restart
             .build();
 
-    private TransactionSubsystemRootResourceDefinition() {
+    private final boolean registerRuntimeOnly;
+
+    TransactionSubsystemRootResourceDefinition(boolean registerRuntimeOnly) {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME),
                 TransactionExtension.getResourceDescriptionResolver(TransactionExtension.SUBSYSTEM_NAME),
                 TransactionSubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE,
                 OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
+        this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
 
@@ -167,6 +168,8 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         resourceRegistration.registerReadWriteAttribute(OBJECT_STORE_PATH, null, new ReloadRequiredWriteAttributeHandler(OBJECT_STORE_PATH));
         resourceRegistration.registerReadWriteAttribute(JTS, null, new ReloadRequiredWriteAttributeHandler(JTS));
 
-        TxStatsHandler.INSTANCE.registerMetrics(resourceRegistration);
+        if (registerRuntimeOnly) {
+            TxStatsHandler.INSTANCE.registerMetrics(resourceRegistration);
+        }
     }
 }

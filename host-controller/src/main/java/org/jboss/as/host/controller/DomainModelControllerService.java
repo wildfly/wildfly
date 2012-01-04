@@ -137,7 +137,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final ExecutorService proxyExecutor = Executors.newCachedThreadPool(threadFactory);
     private final AbstractVaultReader vaultReader;
     private final ContentRepository contentRepository;
-    private final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER);
+    private final ExtensionRegistry extensionRegistry;
 
     private volatile ServerInventory serverInventory;
 
@@ -186,6 +186,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         this.prepareStepHandler = prepareStepHandler;
         this.vaultReader = vaultReader;
         this.bootstrapListener = bootstrapListener;
+        this.extensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, runningModeControl);
     }
 
     @Override

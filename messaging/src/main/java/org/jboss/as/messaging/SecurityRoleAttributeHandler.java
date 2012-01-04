@@ -52,10 +52,12 @@ class SecurityRoleAttributeHandler extends AbstractWriteAttributeHandler<Set<Rol
         super(SecurityRoleAdd.ROLE_ATTRIBUTES);
     }
 
-    public void registerAttributes(final ManagementResourceRegistration registry) {
+    public void registerAttributes(final ManagementResourceRegistration registry, boolean registerRuntimeOnly) {
         final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_NONE);
         for (AttributeDefinition attr : SecurityRoleAdd.ROLE_ATTRIBUTES) {
-            registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
+            if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
+                registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
+            }
         }
     }
 

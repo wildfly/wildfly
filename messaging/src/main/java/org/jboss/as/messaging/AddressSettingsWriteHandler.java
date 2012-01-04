@@ -48,10 +48,12 @@ class AddressSettingsWriteHandler implements OperationStepHandler {
     static final AddressSettingsWriteHandler INSTANCE = new AddressSettingsWriteHandler();
 
 
-    public void registerAttributes(final ManagementResourceRegistration registry) {
+    public void registerAttributes(final ManagementResourceRegistration registry, boolean registerRuntimeOnly) {
         final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_NONE);
         for (AttributeDefinition attr : AddressSettingAdd.ATTRIBUTES) {
-            registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
+            if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
+                registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
+            }
         }
     }
 
@@ -62,39 +64,40 @@ class AddressSettingsWriteHandler implements OperationStepHandler {
         final AttributeDefinition def = getAttributeDefinition(attribute);
         if(def == null) {
             context.getFailureDescription().set(new ModelNode().set(MESSAGES.unknownAttribute(attribute)));
-        }
-        def.getValidator().validateParameter(ModelDescriptionConstants.VALUE, operation);
-        resource.getModel().get(attribute).set(operation.get(ModelDescriptionConstants.VALUE));
+        } else {
+            def.getValidator().validateParameter(ModelDescriptionConstants.VALUE, operation);
+            resource.getModel().get(attribute).set(operation.get(ModelDescriptionConstants.VALUE));
 
-        if(context.getType() == OperationContext.Type.SERVER) {
-            context.addStep(new OperationStepHandler() {
-                @Override
-                public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                    final HornetQServer server = AddressSettingAdd.getServer(context, operation);
-                    PathAddress address = null;
-                    HierarchicalRepository<AddressSettings> repository = null;
-                    AddressSettings existingSettings = null;
-                    if(server != null) {
-                        final ModelNode model = resource.getModel();
-                        address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
-                        final AddressSettings settings = AddressSettingAdd.createSettings(context, model);
-                        repository = server.getAddressSettingsRepository();
-                        String match = address.getLastElement().getValue();
-                        existingSettings = repository.getMatch(match);
-                        repository.addMatch(match, settings);
-                    }
+            if(context.getType() == OperationContext.Type.SERVER) {
+                context.addStep(new OperationStepHandler() {
+                    @Override
+                    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+                        final HornetQServer server = AddressSettingAdd.getServer(context, operation);
+                        PathAddress address = null;
+                        HierarchicalRepository<AddressSettings> repository = null;
+                        AddressSettings existingSettings = null;
+                        if(server != null) {
+                            final ModelNode model = resource.getModel();
+                            address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
+                            final AddressSettings settings = AddressSettingAdd.createSettings(context, model);
+                            repository = server.getAddressSettingsRepository();
+                            String match = address.getLastElement().getValue();
+                            existingSettings = repository.getMatch(match);
+                            repository.addMatch(match, settings);
+                        }
 
-                    if (context.completeStep() != OperationContext.ResultAction.KEEP && existingSettings != null) {
-                        // Restore the old settings
-                        repository.addMatch(address.getLastElement().getValue(), existingSettings);
+                        if (context.completeStep() != OperationContext.ResultAction.KEEP && existingSettings != null) {
+                            // Restore the old settings
+                            repository.addMatch(address.getLastElement().getValue(), existingSettings);
+                        }
                     }
-                }
-            }, OperationContext.Stage.RUNTIME);
+                }, OperationContext.Stage.RUNTIME);
+            }
         }
         context.completeStep();
     }
 
-    static final AttributeDefinition getAttributeDefinition(final String attributeName) {
+    static AttributeDefinition getAttributeDefinition(final String attributeName) {
         for(final AttributeDefinition def : AddressSettingAdd.ATTRIBUTES) {
             if(def.getName().equals(attributeName)) {
                 return def;

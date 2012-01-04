@@ -50,14 +50,15 @@ import org.jboss.security.SimplePrincipal;
  */
 public class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
 
-    public static final SecurityDomainResourceDefinition INSTANCE = new SecurityDomainResourceDefinition();
-
     public static final SimpleAttributeDefinition CACHE_TYPE =
             new SimpleAttributeDefinitionBuilder(Constants.CACHE_TYPE, ModelType.STRING, true).build();
 
-    private SecurityDomainResourceDefinition() {
+    private final boolean registerRuntimeOnly;
+
+    SecurityDomainResourceDefinition(boolean registerRuntimeOnly) {
         super(PathElement.pathElement(Constants.SECURITY_DOMAIN),
                 SecurityExtension.getResourceDescriptionResolver(Constants.SECURITY_DOMAIN), SecurityDomainAdd.INSTANCE, SecurityDomainRemove.INSTANCE);
+        this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
@@ -68,10 +69,12 @@ public class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
 
-        resourceRegistration.registerOperationHandler(Constants.LIST_CACHED_PRINCIPALS,
-                ListCachePrincipals.INSTANCE, SecuritySubsystemDescriptions.LIST_CACHED_PRINCIPALS);
-        resourceRegistration.registerOperationHandler(Constants.FLUSH_CACHE, FlushOperation.INSTANCE,
-                SecuritySubsystemDescriptions.FLUSH_CACHE);
+        if (registerRuntimeOnly) {
+            resourceRegistration.registerOperationHandler(Constants.LIST_CACHED_PRINCIPALS,
+                    ListCachePrincipals.INSTANCE, SecuritySubsystemDescriptions.LIST_CACHED_PRINCIPALS);
+            resourceRegistration.registerOperationHandler(Constants.FLUSH_CACHE, FlushOperation.INSTANCE,
+                    SecuritySubsystemDescriptions.FLUSH_CACHE);
+        }
     }
 
     public static ServiceName getSecurityDomainServiceName(PathAddress pathAddress) {
@@ -145,7 +148,7 @@ public class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
             }
             context.completeStep();
         }
-    };
+    }
 
 
 }

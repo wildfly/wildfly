@@ -22,7 +22,6 @@
 
 package org.jboss.as.web;
 
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -30,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -72,6 +72,8 @@ public class WebExtension implements Extension {
     public void initialize(ExtensionContext context) {
         log.debugf("Activating Web Extension");
 
+        final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
+
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(WebSubsystemDescriptionProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, WebSubsystemAdd.INSTANCE, WebSubsystemAdd.INSTANCE, false);
@@ -83,8 +85,10 @@ public class WebExtension implements Extension {
         final ManagementResourceRegistration connectors = registration.registerSubModel(connectorPath, WebSubsystemDescriptionProviders.CONNECTOR);
         connectors.registerOperationHandler(ADD, WebConnectorAdd.INSTANCE, WebConnectorAdd.INSTANCE, false);
         connectors.registerOperationHandler(REMOVE, WebConnectorRemove.INSTANCE, WebConnectorRemove.INSTANCE, false);
-        for(final String attributeName : WebConnectorMetrics.ATTRIBUTES) {
-            connectors.registerMetric(attributeName, WebConnectorMetrics.INSTANCE);
+        if (registerRuntimeOnly) {
+            for (final String attributeName : WebConnectorMetrics.ATTRIBUTES) {
+                connectors.registerMetric(attributeName, WebConnectorMetrics.INSTANCE);
+            }
         }
         connectors.registerReadWriteAttribute(Constants.PROTOCOL, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
         connectors.registerReadWriteAttribute(Constants.SCHEME, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
@@ -180,9 +184,11 @@ public class WebExtension implements Extension {
         container.registerOperationHandler("remove-mime", MimeMappingRemove.INSTANCE, MimeMappingRemove.INSTANCE, false);
         container.registerReadWriteAttribute(Constants.WELCOME_FILE, null, new WriteAttributeHandlers. ListValidatatingHandler(new StringLengthValidator(1, false), true), Storage.CONFIGURATION);
 
-        final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(WebSubsystemDescriptionProviders.DEPLOYMENT);
-        final ManagementResourceRegistration servlets = deployments.registerSubModel(PathElement.pathElement("servlet"), WebSubsystemDescriptionProviders.SERVLET);
-        ServletDeploymentStats.register(servlets);
+        if (registerRuntimeOnly) {
+            final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(WebSubsystemDescriptionProviders.DEPLOYMENT);
+            final ManagementResourceRegistration servlets = deployments.registerSubModel(PathElement.pathElement("servlet"), WebSubsystemDescriptionProviders.SERVLET);
+            ServletDeploymentStats.register(servlets);
+        }
     }
 
     /** {@inheritDoc} */

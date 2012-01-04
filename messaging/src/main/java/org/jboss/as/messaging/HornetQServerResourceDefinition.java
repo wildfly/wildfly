@@ -22,22 +22,17 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import java.util.Locale;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DefaultResourceAddDescriptionProvider;
 import org.jboss.as.controller.descriptions.DefaultResourceDescriptionProvider;
-import org.jboss.as.controller.descriptions.DefaultResourceRemoveDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.messaging.jms.JMSServerControlHandler;
@@ -52,18 +47,21 @@ public class HornetQServerResourceDefinition extends SimpleResourceDefinition {
 
     private static final PathElement HORNETQ_SERVER_PATH = PathElement.pathElement(CommonAttributes.HORNETQ_SERVER);
 
-    public static final HornetQServerResourceDefinition INSTANCE = new HornetQServerResourceDefinition();
+    private final boolean registerRuntimeOnly;
 
-    private HornetQServerResourceDefinition() {
+    HornetQServerResourceDefinition(boolean registerRuntimeOnly) {
         super(HORNETQ_SERVER_PATH, MessagingExtension.getResourceDescriptionResolver(CommonAttributes.HORNETQ_SERVER),
                 HornetQServerAdd.INSTANCE, HornetQServerRemove.INSTANCE);
+        this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
-        HornetQServerControlHandler.INSTANCE.registerOperations(resourceRegistration);
-        JMSServerControlHandler.INSTANCE.registerOperations(resourceRegistration);
+        if (registerRuntimeOnly) {
+            HornetQServerControlHandler.INSTANCE.registerOperations(resourceRegistration);
+            JMSServerControlHandler.INSTANCE.registerOperations(resourceRegistration);
+        }
 
         // unsupported runtime operations exposed by HornetQServerControl
         // enableMessageCounters, disableMessageCounters
@@ -71,8 +69,10 @@ public class HornetQServerResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        HornetQServerControlWriteHandler.INSTANCE.registerAttributes(resourceRegistration);
-        HornetQServerControlHandler.INSTANCE.registerAttributes(resourceRegistration);
+        HornetQServerControlWriteHandler.INSTANCE.registerAttributes(resourceRegistration, registerRuntimeOnly);
+        if (registerRuntimeOnly) {
+            HornetQServerControlHandler.INSTANCE.registerAttributes(resourceRegistration);
+        }
         // unsupported READ-ATTRIBUTES
         // getConnectors, getAddressNames, getQueueNames, getDivertNames, getBridgeNames,
         // unsupported JMSServerControlHandler READ-ATTRIBUTES

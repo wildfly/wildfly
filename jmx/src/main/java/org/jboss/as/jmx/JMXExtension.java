@@ -77,7 +77,8 @@ public class JMXExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
-        final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(JMXSubsystemRootResource.INSTANCE);
+        final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
+        final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(new JMXSubsystemRootResource(registerRuntimeOnly));
         subsystem.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         subsystem.registerSubModel(JMXConnectorResource.INSTANCE);
         registration.registerXMLElementWriter(parserCurrent);

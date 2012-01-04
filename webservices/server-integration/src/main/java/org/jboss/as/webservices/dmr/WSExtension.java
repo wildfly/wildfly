@@ -21,8 +21,6 @@
  */
 package org.jboss.as.webservices.dmr;
 
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -33,6 +31,7 @@ import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -51,6 +50,9 @@ public final class WSExtension implements Extension {
 
     @Override
     public void initialize(final ExtensionContext context) {
+
+        final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
+
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
         subsystem.registerXMLElementWriter(WebservicesSubsystemParser.getInstance());
         // ws subsystem
@@ -63,11 +65,13 @@ public final class WSExtension implements Extension {
         epConfigs.registerOperationHandler(ADD, EndpointConfigAdd.INSTANCE, WSSubsystemProviders.ENDPOINTCONFIG_ADD_DESCRIPTION, false);
         epConfigs.registerOperationHandler(REMOVE, EndpointConfigRemove.INSTANCE, WSSubsystemProviders.ENDPOINTCONFIG_REMOVE_DESCRIPTION, false);
 
-        final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(WSSubsystemProviders.DEPLOYMENT_DESCRIPTION);
-        // ws endpoint children
-        final ManagementResourceRegistration endpoints = deployments.registerSubModel(PathElement.pathElement(ENDPOINT), WSSubsystemProviders.ENDPOINT_DESCRIPTION);
-        for (final String attributeName : WSEndpointMetrics.ATTRIBUTES) {
-            endpoints.registerMetric(attributeName, WSEndpointMetrics.INSTANCE);
+        if (registerRuntimeOnly) {
+            final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(WSSubsystemProviders.DEPLOYMENT_DESCRIPTION);
+            // ws endpoint children
+            final ManagementResourceRegistration endpoints = deployments.registerSubModel(PathElement.pathElement(ENDPOINT), WSSubsystemProviders.ENDPOINT_DESCRIPTION);
+            for (final String attributeName : WSEndpointMetrics.ATTRIBUTES) {
+                endpoints.registerMetric(attributeName, WSEndpointMetrics.INSTANCE);
+            }
         }
     }
 
