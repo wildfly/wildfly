@@ -37,6 +37,7 @@ import org.jboss.as.protocol.StreamUtils;
 public class CliLauncher {
 
     public static void main(String[] args) throws Exception {
+        boolean gui = false;
         try {
             String argError = null;
             String[] commands = null;
@@ -47,7 +48,6 @@ public class CliLauncher {
             boolean version = false;
             String username = null;
             char[] password = null;
-            boolean gui = false;
             for(String arg : args) {
                 if(arg.startsWith("--controller=") || arg.startsWith("controller=")) {
                     final String value;
@@ -184,7 +184,7 @@ public class CliLauncher {
         } catch(Throwable t) {
             t.printStackTrace();
         } finally {
-            System.exit(0);
+            if (!gui) System.exit(0);
         }
         System.exit(0);
     }
@@ -195,6 +195,9 @@ public class CliLauncher {
         SecurityActions.addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
+                if (!cmdCtx.isTerminated()) {
+                    cmdCtx.terminateSession();
+                }
                 cmdCtx.disconnectController();
             }
         }));
@@ -207,11 +210,6 @@ public class CliLauncher {
             new GuiMain(cmdCtx);
         } catch(Throwable t) {
             t.printStackTrace();
-        } finally {
-            if (!cmdCtx.isTerminated()) {
-                cmdCtx.terminateSession();
-            }
-            cmdCtx.disconnectController();
         }
     }
 
