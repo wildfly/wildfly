@@ -118,7 +118,9 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
     }
 
     public void containerClose() {
-        underlyingEntityManager.close();
+        if (underlyingEntityManager.isOpen()) {
+            underlyingEntityManager.close();
+        }
     }
 
     @Override
