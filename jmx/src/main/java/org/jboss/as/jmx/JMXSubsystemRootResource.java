@@ -53,7 +53,7 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
 
     private static final String INVOKE_MBEAN_RAW = "invoke-mbean-raw";
     private static final String GET_MBEAN_INFO_RAW = "get-mbean-info-raw";
-
+    private static final String GET_MBEAN_ATTRIBUTE_INFO_RAW = "get-mbean-attribute-info-raw";
 
     private JMXSubsystemRootResource() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JMXExtension.SUBSYSTEM_NAME),
@@ -67,13 +67,12 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
         resourceRegistration.registerReadWriteAttribute(SHOW_MODEL, null, new JMXWriteAttributeHandler(SHOW_MODEL));
     }
 
-
-
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
         resourceRegistration.registerOperationHandler(INVOKE_MBEAN_RAW, new InvokeMBeanRaw(), EMPTY_DESCRIPTION , false, EntryType.PRIVATE);
         resourceRegistration.registerOperationHandler(GET_MBEAN_INFO_RAW, new GetMBeanInfoRaw(), EMPTY_DESCRIPTION, false, EntryType.PRIVATE);
+        resourceRegistration.registerOperationHandler(GET_MBEAN_ATTRIBUTE_INFO_RAW, new GetMBeanAttributeInfoRaw(), EMPTY_DESCRIPTION, false, EntryType.PRIVATE);
     }
 
     private static DescriptionProvider EMPTY_DESCRIPTION = new DescriptionProvider() {
