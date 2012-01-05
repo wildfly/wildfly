@@ -68,8 +68,11 @@ public class CapedwarfJPAProcessor extends CapedwarfDeploymentUnitProcessor {
             if (pus != null && pus.isEmpty() == false) {
                 for (PersistenceUnitMetadata pumd : pus) {
                     final String providerClassName = pumd.getPersistenceProviderClassName();
-                    if (Configuration.getProviderModuleNameFromProviderClassName(providerClassName) == null) {
-                        log.debug("Changing JPA configuration - " + providerClassName + " not yet supported.");
+                    final boolean isProviderUndefined = (providerClassName == null || providerClassName.length() == 0);
+                    if (isProviderUndefined || Configuration.getProviderModuleNameFromProviderClassName(providerClassName) == null) {
+                        if (isProviderUndefined == false)
+                            log.debug("Changing JPA configuration - " + providerClassName + " not yet supported.");
+
                         pumd.setPersistenceProviderClassName(Configuration.PROVIDER_CLASS_HIBERNATE); // TODO OGM usage
                         final Properties properties = pumd.getProperties();
                         if (properties.contains(DIALECT_PROPERTY_KEY) == false)
