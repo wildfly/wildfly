@@ -108,7 +108,10 @@ public abstract class AbstractEntityManager implements EntityManager {
         if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
-            return getEntityManager().createNamedQuery(name, resultClass);
+            // invoke underlying entity manager method and if not running in a tx
+            // return a Query wrapper around the result.
+            EntityManager entityManager = getEntityManager();
+            return detachTypedQueryNonTxInvocation(entityManager,entityManager.createNamedQuery(name, resultClass));
         } finally {
             if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
@@ -122,7 +125,10 @@ public abstract class AbstractEntityManager implements EntityManager {
         if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
-            return getEntityManager().createQuery(criteriaQuery);
+            // invoke underlying entity manager method and if not running in a tx
+            // return a Query wrapper around the result.
+            EntityManager entityManager = getEntityManager();
+            return detachTypedQueryNonTxInvocation(entityManager,entityManager.createQuery(criteriaQuery));
         } finally {
             if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
@@ -136,7 +142,10 @@ public abstract class AbstractEntityManager implements EntityManager {
         if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
-            return getEntityManager().createQuery(qlString, resultClass);
+            // invoke underlying entity manager method and if not running in a tx
+            // return a Query wrapper around the result.
+            EntityManager entityManager = getEntityManager();
+            return detachTypedQueryNonTxInvocation(entityManager,entityManager.createQuery(qlString, resultClass));
         } finally {
             if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
@@ -376,7 +385,10 @@ public abstract class AbstractEntityManager implements EntityManager {
         if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
-            return getEntityManager().createNamedQuery(name);
+            // invoke underlying entity manager method and if not running in a tx
+            // return a Query wrapper around the result.
+            EntityManager entityManager = getEntityManager();
+            return detachQueryNonTxInvocation(entityManager, entityManager.createNamedQuery(name));
         } finally {
             if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
@@ -391,7 +403,10 @@ public abstract class AbstractEntityManager implements EntityManager {
         if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
-            return getEntityManager().createNativeQuery(sqlString, resultClass);
+            // invoke underlying entity manager method and if not running in a tx
+            // return a Query wrapper around the result.
+            EntityManager entityManager = getEntityManager();
+            return detachQueryNonTxInvocation(entityManager, entityManager.createNativeQuery(sqlString, resultClass));
         } finally {
             if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
@@ -405,7 +420,10 @@ public abstract class AbstractEntityManager implements EntityManager {
         if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
-            return getEntityManager().createNativeQuery(sqlString, resultSetMapping);
+            // invoke underlying entity manager method and if not running in a tx
+            // return a Query wrapper around the result.
+            EntityManager entityManager = getEntityManager();
+            return detachQueryNonTxInvocation(entityManager, entityManager.createNativeQuery(sqlString, resultSetMapping));
         } finally {
             if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
@@ -419,7 +437,10 @@ public abstract class AbstractEntityManager implements EntityManager {
         if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
-            return getEntityManager().createNativeQuery(sqlString);
+            // invoke underlying entity manager method and if not running in a tx
+            // return a Query wrapper around the result.
+            EntityManager entityManager = getEntityManager();
+            return detachQueryNonTxInvocation(entityManager, entityManager.createNativeQuery(sqlString));
         } finally {
             if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
@@ -433,7 +454,10 @@ public abstract class AbstractEntityManager implements EntityManager {
         if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
-            return getEntityManager().createQuery(ejbqlString);
+            // invoke underlying entity manager method and if not running in a tx
+            // return a Query wrapper around the result.
+            EntityManager entityManager = getEntityManager();
+            return detachQueryNonTxInvocation(entityManager, entityManager.createQuery(ejbqlString));
         } finally {
             if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
@@ -669,14 +693,32 @@ public abstract class AbstractEntityManager implements EntityManager {
         }
     }
 
-    // perform any cleanup needed after an invocation.
-    // currently used by TransactionScopedEntityManager to autoclose the
-    // underlying entitymanager after each invocation.
+    // used by TransactionScopedEntityManager to auto detach loaded entities
+    // after each non-jta invocation
     protected void detachNonTxInvocation(EntityManager underlyingEntityManager) {
         if (!this.isExtendedPersistenceContext() && !this.isInTx()) {
             underlyingEntityManager.clear();
         }
     }
+
+    // for JPA 2.0 section 3.8.6
+    // used by TransactionScopedEntityManager to detach entities loaded by a query in a non-jta invocation.
+    protected Query detachQueryNonTxInvocation(EntityManager underlyingEntityManager, Query underLyingQuery) {
+        if (!this.isExtendedPersistenceContext() && !this.isInTx()) {
+            return new QueryNonTxInvocationDetacher(underlyingEntityManager, underLyingQuery);
+        }
+        return underLyingQuery;
+    }
+
+    // for JPA 2.0 section 3.8.6
+    // used by TransactionScopedEntityManager to detach entities loaded by a query in a non-jta invocation.
+    protected TypedQuery detachTypedQueryNonTxInvocation(EntityManager underlyingEntityManager, TypedQuery underLyingQuery) {
+        if (!this.isExtendedPersistenceContext() && !this.isInTx()) {
+            return new TypedQueryNonTxInvocationDetacher(underlyingEntityManager, underLyingQuery);
+        }
+        return underLyingQuery;
+    }
+
 
     // JPA 7.9.1 if invoked without a JTA transaction and a transaction scoped persistence context is used,
     // will throw TransactionRequiredException for any calls to entity manager remove/merge/persist/refresh.
