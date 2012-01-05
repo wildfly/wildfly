@@ -99,21 +99,21 @@ public class SFSB1 {
     }
 
     public String queryEmployeeNameNoTX(int id) {
-        Query q = em.createQuery("SELECT e.name FROM Employee e");
+        Query q = em.createQuery("SELECT e.name FROM Employee e where e.id=:id");
+        q.setParameter("id", new Integer(id));
         try {
-            String name = (String)q.getSingleResult();
+            String name = (String) q.getSingleResult();
             return name;
-        }
-        catch (NoResultException expected) {
+        } catch (NoResultException expected) {
             return "success";
-        }
-        catch (Exception unexpected) {
+        } catch (Exception unexpected) {
             return unexpected.getMessage();
         }
     }
 
     public Employee queryEmployeeNoTX(int id) {
-        TypedQuery<Employee> q = em.createQuery("SELECT e FROM Employee e", Employee.class);
+        TypedQuery<Employee> q = em.createQuery("SELECT e FROM Employee e where e.id=:id", Employee.class);
+        q.setParameter("id", new Integer(id));
         return q.getSingleResult();
     }
 
@@ -121,7 +121,8 @@ public class SFSB1 {
     // For a transaction scoped persistence context non jta-tx invocation, entities returned from Query
     // must be detached.
     public boolean isQueryEmployeeDetached(int id) {
-        TypedQuery<Employee> q = em.createQuery("SELECT e FROM Employee e", Employee.class);
+        TypedQuery<Employee> q = em.createQuery("SELECT e FROM Employee e where e.id=:id", Employee.class);
+        q.setParameter("id", new Integer(id));
         Employee employee = q.getSingleResult();
         return em.contains(employee) != true;
     }
