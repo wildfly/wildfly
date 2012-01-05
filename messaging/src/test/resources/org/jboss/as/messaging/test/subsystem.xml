@@ -200,6 +200,7 @@
                  <entries>
                     <entry name="RemoteConnectionFactory"/>
                  </entries>
+                 <client-id>testClient</client-id>
               </connection-factory>
               <pooled-connection-factory name="hornetq-ra">
                  <transaction mode="xa"/>

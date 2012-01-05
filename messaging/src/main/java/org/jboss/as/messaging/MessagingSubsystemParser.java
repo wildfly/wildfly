@@ -1896,7 +1896,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 if (factory.isDefined()) {
                    writer.writeStartElement(Element.CONNECTION_FACTORY.getLocalName());
                    writer.writeAttribute(Attribute.NAME.getLocalName(), name);
-                   writeConnectionFactory(writer, node, name, factory);
+                   writeConnectionFactory(writer, name, factory);
                 }
             }
         }
@@ -1911,13 +1911,13 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 if (factory.isDefined()) {
                    writer.writeStartElement(Element.POOLED_CONNECTION_FACTORY.getLocalName());
                    writer.writeAttribute(Attribute.NAME.getLocalName(), name);
-                   writeConnectionFactory(writer, node, name, factory);
+                   writeConnectionFactory(writer, name, factory);
                 }
             }
         }
     }
 
-    private void writeConnectionFactory(XMLExtendedStreamWriter writer, ModelNode node, String name, ModelNode factory) throws XMLStreamException
+    private void writeConnectionFactory(XMLExtendedStreamWriter writer, String name, ModelNode factory) throws XMLStreamException
     {
         if(factory.hasDefined(INBOUND_CONFIG)) {
             final ModelNode inboundConfigs = factory.get(INBOUND_CONFIG);
@@ -1942,13 +1942,13 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             writer.writeEndElement();
         }
 
-        if (CommonAttributes.DISCOVERY_GROUP_NAME.isMarshallable(node)) {
+        if (CommonAttributes.DISCOVERY_GROUP_NAME.isMarshallable(factory)) {
             writer.writeStartElement(Element.DISCOVERY_GROUP_REF.getLocalName());
-            CommonAttributes.DISCOVERY_GROUP_NAME.marshallAsAttribute(node, writer);
+            CommonAttributes.DISCOVERY_GROUP_NAME.marshallAsAttribute(factory, writer);
             writer.writeEndElement();
         }
 
-        CommonAttributes.DISCOVERY_INITIAL_WAIT_TIMEOUT.marshallAsElement(node, writer);
+        CommonAttributes.DISCOVERY_INITIAL_WAIT_TIMEOUT.marshallAsElement(factory, writer);
 
         if (factory.hasDefined(CONNECTOR)) {
             writer.writeStartElement(Element.CONNECTORS.getLocalName());
@@ -1966,36 +1966,36 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
 
         JndiEntriesAttribute.CONNECTION_FACTORY.marshallAsElement(factory, writer);
 
-        CommonAttributes.HA.marshallAsElement(node, writer);
-        CommonAttributes.CLIENT_FAILURE_CHECK_PERIOD.marshallAsElement(node, writer);
-        CommonAttributes.CONNECTION_TTL.marshallAsElement(node, writer);
-        CommonAttributes.CALL_TIMEOUT.marshallAsElement(node, writer);
-        CommonAttributes.CONSUMER_WINDOW_SIZE.marshallAsElement(node, writer);
-        CommonAttributes.CONSUMER_MAX_RATE.marshallAsElement(node, writer);
-        CommonAttributes.CONFIRMATION_WINDOW_SIZE.marshallAsElement(node, writer);
-        CommonAttributes.PRODUCER_WINDOW_SIZE.marshallAsElement(node, writer);
-        CommonAttributes.PRODUCER_MAX_RATE.marshallAsElement(node, writer);
-        CommonAttributes.CACHE_LARGE_MESSAGE_CLIENT.marshallAsElement(node, writer);
-        CommonAttributes.MIN_LARGE_MESSAGE_SIZE.marshallAsElement(node, writer);
-        CommonAttributes.CLIENT_ID.marshallAsElement(node, writer);
-        CommonAttributes.DUPS_OK_BATCH_SIZE.marshallAsElement(node, writer);
-        CommonAttributes.TRANSACTION_BATCH_SIZE.marshallAsElement(node, writer);
-        CommonAttributes.BLOCK_ON_ACK.marshallAsElement(node, writer);
-        CommonAttributes.BLOCK_ON_NON_DURABLE_SEND.marshallAsElement(node, writer);
-        CommonAttributes.BLOCK_ON_DURABLE_SEND.marshallAsElement(node, writer);
-        CommonAttributes.AUTO_GROUP.marshallAsElement(node, writer);
-        CommonAttributes.PRE_ACK.marshallAsElement(node, writer);
-        CommonAttributes.RETRY_INTERVAL.marshallAsElement(node, writer);
-        CommonAttributes.RETRY_INTERVAL_MULTIPLIER.marshallAsElement(node, writer);
-        CommonAttributes.MAX_RETRY_INTERVAL.marshallAsElement(node, writer);
-        CommonAttributes.CONNECTION_FACTORY_RECONNECT_ATTEMPTS.marshallAsElement(node, writer);
-        CommonAttributes.FAILOVER_ON_INITIAL_CONNECTION.marshallAsElement(node, writer);
-        CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN.marshallAsElement(node, writer);
-        CommonAttributes.LOAD_BALANCING_CLASS_NAME.marshallAsElement(node, writer);
-        CommonAttributes.USE_GLOBAL_POOLS.marshallAsElement(node, writer);
+        CommonAttributes.HA.marshallAsElement(factory, writer);
+        CommonAttributes.CLIENT_FAILURE_CHECK_PERIOD.marshallAsElement(factory, writer);
+        CommonAttributes.CONNECTION_TTL.marshallAsElement(factory, writer);
+        CommonAttributes.CALL_TIMEOUT.marshallAsElement(factory, writer);
+        CommonAttributes.CONSUMER_WINDOW_SIZE.marshallAsElement(factory, writer);
+        CommonAttributes.CONSUMER_MAX_RATE.marshallAsElement(factory, writer);
+        CommonAttributes.CONFIRMATION_WINDOW_SIZE.marshallAsElement(factory, writer);
+        CommonAttributes.PRODUCER_WINDOW_SIZE.marshallAsElement(factory, writer);
+        CommonAttributes.PRODUCER_MAX_RATE.marshallAsElement(factory, writer);
+        CommonAttributes.CACHE_LARGE_MESSAGE_CLIENT.marshallAsElement(factory, writer);
+        CommonAttributes.MIN_LARGE_MESSAGE_SIZE.marshallAsElement(factory, writer);
+        CommonAttributes.CLIENT_ID.marshallAsElement(factory, writer);
+        CommonAttributes.DUPS_OK_BATCH_SIZE.marshallAsElement(factory, writer);
+        CommonAttributes.TRANSACTION_BATCH_SIZE.marshallAsElement(factory, writer);
+        CommonAttributes.BLOCK_ON_ACK.marshallAsElement(factory, writer);
+        CommonAttributes.BLOCK_ON_NON_DURABLE_SEND.marshallAsElement(factory, writer);
+        CommonAttributes.BLOCK_ON_DURABLE_SEND.marshallAsElement(factory, writer);
+        CommonAttributes.AUTO_GROUP.marshallAsElement(factory, writer);
+        CommonAttributes.PRE_ACK.marshallAsElement(factory, writer);
+        CommonAttributes.RETRY_INTERVAL.marshallAsElement(factory, writer);
+        CommonAttributes.RETRY_INTERVAL_MULTIPLIER.marshallAsElement(factory, writer);
+        CommonAttributes.MAX_RETRY_INTERVAL.marshallAsElement(factory, writer);
+        CommonAttributes.CONNECTION_FACTORY_RECONNECT_ATTEMPTS.marshallAsElement(factory, writer);
+        CommonAttributes.FAILOVER_ON_INITIAL_CONNECTION.marshallAsElement(factory, writer);
+        CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN.marshallAsElement(factory, writer);
+        CommonAttributes.LOAD_BALANCING_CLASS_NAME.marshallAsElement(factory, writer);
+        CommonAttributes.USE_GLOBAL_POOLS.marshallAsElement(factory, writer);
         CommonAttributes.CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE.marshallAsElement(factory, writer);
         CommonAttributes.CONNECTION_THREAD_POOL_MAX_SIZE.marshallAsElement(factory, writer);
-        CommonAttributes.GROUP_ID.marshallAsElement(node, writer);
+        CommonAttributes.GROUP_ID.marshallAsElement(factory, writer);
 
         writer.writeEndElement();
     }
