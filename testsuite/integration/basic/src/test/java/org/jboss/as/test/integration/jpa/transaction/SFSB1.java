@@ -31,6 +31,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.transaction.UserTransaction;
 
 /**
@@ -70,6 +71,27 @@ public class SFSB1 {
         em.flush();         // should throw TransactionRequiredException
     }
 
+    public void createEmployee(String name, String address, int id) {
+
+
+        Employee emp = new Employee();
+        emp.setId(id);
+        emp.setAddress(address);
+        emp.setName(name);
+
+        UserTransaction tx1 = sessionContext.getUserTransaction();
+        try {
+            tx1.begin();
+            em.joinTransaction();
+            em.persist(emp);
+            tx1.commit();
+        }
+        catch (Exception e) {
+            throw new RuntimeException("couldn't start tx" , e);
+        }
+
+    }
+
 
     public Employee getEmployeeNoTX(int id) {
 
@@ -88,8 +110,19 @@ public class SFSB1 {
         catch (Exception unexpected) {
             return unexpected.getMessage();
         }
-
     }
 
+    public Employee queryEmployeeNoTX(int id) {
+        TypedQuery<Employee> q = em.createQuery("SELECT e FROM Employee e", Employee.class);
+        return q.getSingleResult();
+    }
 
+    // return true if the queried Employee is detached as required by JPA 2.0 section 3.8.6
+    // For a transaction scoped persistence context non jta-tx invocation, entities returned from Query
+    // must be detached.
+    public boolean isQueryEmployeeDetached(int id) {
+        TypedQuery<Employee> q = em.createQuery("SELECT e FROM Employee e", Employee.class);
+        Employee employee = q.getSingleResult();
+        return em.contains(employee) != true;
+    }
 }

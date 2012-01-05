@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.jpa.transaction;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -106,6 +107,20 @@ public class TransactionTestCase {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
         String name = sfsb1.queryEmployeeNameNoTX(1);
         assertEquals("Query should of thrown NoResultException, which we indicate by returning 'success'", "success", name);
+    }
+
+    // Test that the queried Employee is detached as required by JPA 2.0 section 3.8.6
+    // For a transaction scoped persistence context non jta-tx invocation, entities returned from Query
+    // must be detached.
+    @Test
+    public void testQueryNonTXTransactionalDetach() throws Exception {
+        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        sfsb1.createEmployee("Jill", "54 Country Lane", 2);
+        Employee employee = sfsb1.queryEmployeeNoTX(2);
+        assertNotNull(employee);
+
+        boolean detached = sfsb1.isQueryEmployeeDetached(2);
+        assertTrue("JPA 2.0 section 3.8.6 violated, query returned entity in non-tx that wasn't detached ", detached);
     }
 
     /**
