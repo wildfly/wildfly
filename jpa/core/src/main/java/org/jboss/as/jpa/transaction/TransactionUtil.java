@@ -30,7 +30,6 @@ import java.util.Map;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceException;
-import javax.transaction.RollbackException;
 import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
@@ -134,14 +133,7 @@ public class TransactionUtil {
     }
 
     private void registerSynchronization(EntityManager entityManager, String puScopedName, boolean closeEMAtTxEnd) {
-        Transaction tx = getTransaction();
-        try {
-            tx.registerSynchronization(new SessionSynchronization(entityManager, closeEMAtTxEnd, puScopedName));
-        } catch (RollbackException e) {
-            throw new RuntimeException(e);
-        } catch (SystemException e) {
-            throw new RuntimeException(e);
-        }
+        getTransactionSynchronizationRegistry().registerInterposedSynchronization(new SessionSynchronization(entityManager, closeEMAtTxEnd, puScopedName));
     }
 
     private Transaction getTransaction() {
