@@ -59,6 +59,7 @@ public class JacORBExtension implements Extension {
                 JacORBSubsystemProviders.SUBSYSTEM_REMOVE, false);
         registration.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE,
                 JacORBSubsystemProviders.SUBSYSTEM_DESCRIBE, false, OperationEntry.EntryType.PRIVATE);
+        JacORBAttributesWriteHandler.INSTANCE.registerAttributes(registration);
 
         subsystem.registerXMLElementWriter(PARSER);
     }
