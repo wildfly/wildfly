@@ -49,7 +49,7 @@ public class TransactionLeakRollbackProcessor implements DeploymentUnitProcessor
                 .addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class, service.getTransactionManager())
                 .install();
 
-        deploymentUnit.addToAttachmentList(org.jboss.as.ee.component.Attachments.EE_SETUP_ACTIONS, service);
+        deploymentUnit.addToAttachmentList(org.jboss.as.ee.component.Attachments.WEB_SETUP_ACTIONS, service);
     }
 
 

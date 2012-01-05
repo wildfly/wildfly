@@ -52,9 +52,14 @@ public class Attachments {
     public static final AttachmentKey<Set<ServiceName>> FAILED_COMPONENTS = AttachmentKey.create(Set.class);
 
     /**
-     * A list of actions that should be performed for every EE thread.
+     * A list of actions that should be performed for every web invocation
      */
-    public static final AttachmentKey<AttachmentList<SetupAction>> EE_SETUP_ACTIONS = AttachmentKey.createList(SetupAction.class);
+    public static final AttachmentKey<AttachmentList<SetupAction>> WEB_SETUP_ACTIONS = AttachmentKey.createList(SetupAction.class);
+
+    /**
+     * A list of actions that should be performed for other non-web EE threads. At the moment this is ejb timer, remote, async invocations, and the app client.
+     */
+    public static final AttachmentKey<AttachmentList<SetupAction>> OTHER_EE_SETUP_ACTIONS = AttachmentKey.createList(SetupAction.class);
 
     /**
      * Additional (remote) components that can be resolved but are not installed.

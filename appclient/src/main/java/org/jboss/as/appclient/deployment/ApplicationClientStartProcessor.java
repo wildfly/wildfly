@@ -22,6 +22,7 @@
 package org.jboss.as.appclient.deployment;
 
 import java.lang.reflect.Method;
+import java.util.List;
 
 import javax.security.auth.callback.CallbackHandler;
 
@@ -38,6 +39,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -102,7 +104,9 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
             callbackHandler = new DefaultApplicationClientCallbackHandler();
         }
 
-        final ApplicationClientStartService startService = new ApplicationClientStartService(method, parameters, hostUrl, moduleDescription.getNamespaceContextSelector(), module.getClassLoader(), callbackHandler);
+        final List<SetupAction> setupActions = deploymentUnit.getAttachmentList(org.jboss.as.ee.component.Attachments.OTHER_EE_SETUP_ACTIONS);
+
+        final ApplicationClientStartService startService = new ApplicationClientStartService(method, parameters, hostUrl, moduleDescription.getNamespaceContextSelector(), module.getClassLoader(), callbackHandler, setupActions);
         phaseContext.getServiceTarget()
                 .addService(deploymentUnit.getServiceName().append(ApplicationClientStartService.SERVICE_NAME), startService)
                 .addDependency(ApplicationClientDeploymentService.SERVICE_NAME, ApplicationClientDeploymentService.class, startService.getApplicationClientDeploymentServiceInjectedValue())

@@ -22,6 +22,9 @@
 package org.jboss.as.appclient.service;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.List;
+import java.util.ListIterator;
 
 import javax.security.auth.callback.CallbackHandler;
 
@@ -30,6 +33,7 @@ import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -55,6 +59,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
     private final InjectedValue<ApplicationClientDeploymentService> applicationClientDeploymentServiceInjectedValue = new InjectedValue<ApplicationClientDeploymentService>();
     private final InjectedValue<Component> applicationClientComponent = new InjectedValue<Component>();
     private final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue;
+    private final List<SetupAction> setupActions;
     private final Method mainMethod;
     private final String[] parameters;
     private final ClassLoader classLoader;
@@ -65,13 +70,14 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
     private Thread thread;
     private ComponentInstance instance;
 
-    public ApplicationClientStartService(final Method mainMethod, final String[] parameters, final String hostUrl, final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue, final ClassLoader classLoader, final CallbackHandler callbackHandler) {
+    public ApplicationClientStartService(final Method mainMethod, final String[] parameters, final String hostUrl, final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue, final ClassLoader classLoader, final CallbackHandler callbackHandler, final List<SetupAction> setupActions) {
         this.mainMethod = mainMethod;
         this.parameters = parameters;
         this.namespaceContextSelectorInjectedValue = namespaceContextSelectorInjectedValue;
         this.classLoader = classLoader;
         this.hostUrl = hostUrl;
         this.callbackHandler = callbackHandler;
+        this.setupActions = setupActions;
         this.lazyConnectionContextSelector = new LazyConnectionContextSelector(hostUrl, callbackHandler);
     }
 
@@ -91,10 +97,31 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                             applicationClientDeploymentServiceInjectedValue.getValue().getDeploymentCompleteLatch().await();
                             NamespaceContextSelector.setDefault(namespaceContextSelectorInjectedValue);
 
-                            //do static injection etc
-                            instance = applicationClientComponent.getValue().createInstance();
+                            try {
+                                //perform any additional setup that may be needed
+                                for (SetupAction action : setupActions) {
+                                    action.setup(Collections.<String, Object>emptyMap());
+                                }
 
-                            mainMethod.invoke(null, new Object[]{parameters});
+                                //do static injection etc
+                                instance = applicationClientComponent.getValue().createInstance();
+
+                                mainMethod.invoke(null, new Object[]{parameters});
+                            } finally {
+                                final ListIterator<SetupAction> iterator = setupActions.listIterator(setupActions.size());
+                                Throwable error = null;
+                                while (iterator.hasPrevious()) {
+                                    SetupAction action = iterator.previous();
+                                    try {
+                                        action.teardown(Collections.<String, Object>emptyMap());
+                                    } catch (Throwable e) {
+                                        error = e;
+                                    }
+                                }
+                                if (error != null) {
+                                    throw new RuntimeException(error);
+                                }
+                            }
                         } catch (Exception e) {
                             ROOT_LOGGER.exceptionRunningAppClient(e, e.getClass().getSimpleName());
                         } finally {

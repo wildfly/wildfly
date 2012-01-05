@@ -99,7 +99,7 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
         // add the arquillian setup action, so the module namespace is available in arquillian tests
         final JavaNamespaceSetup setupAction = new JavaNamespaceSetup(selector, serviceTarget);
         deploymentUnit.addToAttachmentList(SETUP_ACTIONS, setupAction);
-        deploymentUnit.addToAttachmentList(org.jboss.as.ee.component.Attachments.EE_SETUP_ACTIONS, setupAction);
+        deploymentUnit.addToAttachmentList(org.jboss.as.ee.component.Attachments.WEB_SETUP_ACTIONS, setupAction);
     }
 
     public void undeploy(DeploymentUnit context) {

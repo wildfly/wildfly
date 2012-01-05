@@ -36,6 +36,8 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.tm.JBossXATerminator;
 import org.jboss.tm.LastResource;
+import org.jboss.tm.usertx.UserTransactionRegistry;
+import org.jboss.tm.usertx.client.ServerVMClientUserTransaction;
 import org.omg.CORBA.ORB;
 
 import com.arjuna.ats.arjuna.common.CoordinatorEnvironmentBean;
@@ -61,6 +63,7 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
 
     private final InjectedValue<JBossXATerminator> xaTerminatorInjector = new InjectedValue<JBossXATerminator>();
     private final InjectedValue<ORB> orbInjector = new InjectedValue<ORB>();
+    private final InjectedValue<UserTransactionRegistry> userTransactionRegistry = new InjectedValue<UserTransactionRegistry>();
 
 
     private com.arjuna.ats.jbossatx.jta.TransactionManagerService value;
@@ -105,10 +108,12 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
         if (!jts) {
             // No IIOP, stick with JTA mode.
             jtaEnvironmentBean.setTransactionManagerClassName(com.arjuna.ats.jbossatx.jta.TransactionManagerDelegate.class.getName());
-            jtaEnvironmentBean.setUserTransactionClassName(com.arjuna.ats.internal.jta.transaction.arjunacore.UserTransactionImple.class.getName());
             jtaEnvironmentBean.setTransactionSynchronizationRegistryClassName(com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionSynchronizationRegistryImple.class.getName());
 
             final com.arjuna.ats.jbossatx.jta.TransactionManagerService service = new com.arjuna.ats.jbossatx.jta.TransactionManagerService();
+            final ServerVMClientUserTransaction userTransaction = new ServerVMClientUserTransaction(service.getTransactionManager());
+            userTransactionRegistry.getValue().addProvider(userTransaction);
+            jtaEnvironmentBean.setUserTransaction(userTransaction);
             service.setJbossXATerminator(xaTerminatorInjector.getValue());
             service.setTransactionSynchronizationRegistry(new com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionSynchronizationRegistryImple());
 
@@ -123,10 +128,12 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
             final ORB orb = orbInjector.getValue();
             // IIOP is enabled, so fire up JTS mode.
             jtaEnvironmentBean.setTransactionManagerClassName(com.arjuna.ats.jbossatx.jts.TransactionManagerDelegate.class.getName());
-            jtaEnvironmentBean.setUserTransactionClassName(com.arjuna.ats.internal.jta.transaction.jts.UserTransactionImple.class.getName());
             jtaEnvironmentBean.setTransactionSynchronizationRegistryClassName(com.arjuna.ats.internal.jta.transaction.jts.TransactionSynchronizationRegistryImple.class.getName());
 
             final com.arjuna.ats.jbossatx.jts.TransactionManagerService service = new com.arjuna.ats.jbossatx.jts.TransactionManagerService();
+            final ServerVMClientUserTransaction userTransaction = new ServerVMClientUserTransaction(service.getTransactionManager());
+            jtaEnvironmentBean.setUserTransaction(userTransaction);
+            userTransactionRegistry.getValue().addProvider(userTransaction);
             service.setJbossXATerminator(xaTerminatorInjector.getValue());
             service.setTransactionSynchronizationRegistry(new com.arjuna.ats.internal.jta.transaction.jts.TransactionSynchronizationRegistryImple());
 
@@ -176,4 +183,7 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
         return orbInjector;
     }
 
+    public InjectedValue<UserTransactionRegistry> getUserTransactionRegistry() {
+        return userTransactionRegistry;
+    }
 }

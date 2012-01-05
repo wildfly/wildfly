@@ -9,6 +9,7 @@ public enum InvocationType {
     TIMER("timer"),
     REMOTE("remote"),
     ASYNC("async"),
+    MESSAGE_DELIVERY("messageDelivery"),
     SET_ENTITY_CONTEXT("setEntityContext"),
     UNSET_ENTITY_CONTEXT("unsetEntityContext"),
     POST_CONSTRUCT("postConstruct"),

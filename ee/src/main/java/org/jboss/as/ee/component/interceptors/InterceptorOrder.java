@@ -26,8 +26,7 @@ package org.jboss.as.ee.component.interceptors;
  *
  * @author Stuart Douglas
  */
-public class
-        InterceptorOrder {
+public class InterceptorOrder {
 
     private InterceptorOrder() {
 
@@ -124,6 +123,8 @@ public class
     public static final class View {
         public static final int EJB_EXCEPTION_LOGGING_INTERCEPTOR = 0x000;
         public static final int TCCL_INTERCEPTOR = 0x001;
+        public static final int INVOCATION_TYPE = 0x005;
+        public static final int EE_SETUP = 0x010;
         public static final int EJB_IIOP_TRANSACTION = 0x020;
         public static final int JNDI_NAMESPACE_INTERCEPTOR = 0x050;
         public static final int NOT_BUSINESS_METHOD_EXCEPTION = 0x100;

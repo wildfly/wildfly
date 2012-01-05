@@ -33,7 +33,6 @@ import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
@@ -72,7 +71,7 @@ public final class AspectDeploymentProcessor implements DeploymentUnitProcessor 
             if (aspect.canHandle(dep)) {
                 ROOT_LOGGER.aspectStart(aspect, unit.getName());
                 ClassLoader origClassLoader = SecurityActions.getContextClassLoader();
-                final List<SetupAction> setupActions = unit.getAttachmentList(org.jboss.as.ee.component.Attachments.EE_SETUP_ACTIONS);
+                final List<SetupAction> setupActions = unit.getAttachmentList(org.jboss.as.ee.component.Attachments.WEB_SETUP_ACTIONS);
                 try {
                     SecurityActions.setContextClassLoader(aspect.getLoader());
                     dep.addAttachment(ServiceTarget.class, phaseContext.getServiceTarget());

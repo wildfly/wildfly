@@ -39,6 +39,7 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
@@ -54,6 +55,8 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.invocation.ImmediateInterceptorFactory;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
 import org.jboss.metadata.ejb.spec.MessageDrivenBeanMetaData;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -160,18 +163,23 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         // let the super do its job
         super.setupViewInterceptors(view);
 
-        // add the instance associating interceptor at the start of the interceptor chain
         view.getConfigurators().add(new ViewConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.addViewInterceptor(MessageDrivenComponentInstanceAssociatingFactory.instance(), InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
-            }
-        });
 
-        //add the transaction interceptor
-        view.getConfigurators().add(new ViewConfigurator() {
-            @Override
-            public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                //add the invocation type to the start of the chain
+                //TODO: is there a cleaner way to do this?
+                configuration.addViewInterceptor(new ImmediateInterceptorFactory(new Interceptor() {
+                    @Override
+                    public Object processInvocation(final InterceptorContext context) throws Exception {
+                        context.putPrivateData(InvocationType.class, InvocationType.MESSAGE_DELIVERY);
+                        return context.proceed();
+                    }
+                }), InterceptorOrder.View.INVOCATION_TYPE);
+
+                // add the instance associating interceptor at the start of the interceptor chain
+                configuration.addViewInterceptor(MessageDrivenComponentInstanceAssociatingFactory.instance(), InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
+
                 final MessageDrivenComponentDescription mdb = (MessageDrivenComponentDescription) componentConfiguration.getComponentDescription();
                 if (mdb.getTransactionManagementType() == TransactionManagementType.CONTAINER) {
                     configuration.addViewInterceptor(CMTTxInterceptor.FACTORY, InterceptorOrder.View.CMT_TRANSACTION_INTERCEPTOR);

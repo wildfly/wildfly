@@ -135,7 +135,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         final ClassLoader classLoader = module.getClassLoader();
         final JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
         final List<SetupAction> setupActions = deploymentUnit
-                .getAttachmentList(org.jboss.as.ee.component.Attachments.EE_SETUP_ACTIONS);
+                .getAttachmentList(org.jboss.as.ee.component.Attachments.WEB_SETUP_ACTIONS);
 
         // Create the context
         final StandardContext webContext = new StandardContext();
