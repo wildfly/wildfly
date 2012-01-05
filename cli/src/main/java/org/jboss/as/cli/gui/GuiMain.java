@@ -18,36 +18,88 @@
  */
 package org.jboss.as.cli.gui;
 
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.JTextPane;
+import javax.swing.KeyStroke;
 import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.operation.CommandLineParser;
-import org.jboss.as.cli.operation.OperationFormatException;
-import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.dmr.ModelNode;
 
 /**
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
 public class GuiMain {
+    private static final String SUBMIT_ACTION = "submit-action";
 
     private CommandContext cmdCtx;
-    /** parsed command arguments */
-    private DefaultCallbackHandler parsedCmd = new DefaultCallbackHandler(true);
+    private JFrame frame = new JFrame("CLI GUI");
+    private Container contentPane;
+    private JPanel mainPanel = new JPanel();
+    private JTextField cmdText = new JTextField();
+    private JButton submitButton = new JButton("Submit");
+    private JTextPane output = new JTextPane();
 
     public GuiMain(CommandContext cmdCtx) {
         this.cmdCtx = cmdCtx;
-        ModelControllerClient client = cmdCtx.getModelControllerClient();
-        CommandLineParser parser = cmdCtx.getCommandLineParser();
-        parsedCmd.rootNode(0);
-        try {
-            parser.parse("/:read-resource(recursive=true)", parsedCmd);
-            ModelNode result = client.execute(parsedCmd.toOperationRequest(cmdCtx));
-            System.out.println("result=");
-            System.out.println(result.toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        initJFrame();
     }
 
+    private void initJFrame() {
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                System.exit(0);
+            }
+        });
+        frame.setSize(640, 480);
+
+        contentPane = frame.getContentPane();
+        mainPanel.setBorder(BorderFactory.createEtchedBorder());
+        contentPane.add(mainPanel, BorderLayout.CENTER);
+
+        mainPanel.setLayout(new BorderLayout(5,5));
+        mainPanel.add(makeCommandLine(), BorderLayout.NORTH);
+        mainPanel.add(makeOutputDisplay(), BorderLayout.CENTER);
+
+        //frame.pack();
+        frame.setVisible(true);
+    }
+
+    private JPanel makeCommandLine() {
+        JPanel cmdLine = new JPanel();
+        cmdLine.setLayout(new BorderLayout(2,5));
+        cmdLine.add(new JLabel("cmd>"), BorderLayout.WEST);
+        cmdText.setText("/subsystem=weld/:read-resource");
+        cmdLine.add(cmdText, BorderLayout.CENTER);
+        Action submitListener = new DoOperationActionListener(cmdCtx, cmdText, output);
+
+        KeyStroke enterKey = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true);
+        cmdText.getInputMap().put(enterKey, SUBMIT_ACTION);
+        cmdText.getActionMap().put(SUBMIT_ACTION, submitListener);
+
+        submitButton.addActionListener(submitListener);
+        cmdLine.add(submitButton, BorderLayout.EAST);
+        return cmdLine;
+    }
+
+    private JPanel makeOutputDisplay() {
+        JPanel outputDisplay = new JPanel();
+        outputDisplay.setSize(400, 5000);
+        outputDisplay.setLayout(new BorderLayout(5,5));
+        output.setEditable(false);
+        outputDisplay.add(new JScrollPane(output), BorderLayout.CENTER);
+        return outputDisplay;
+    }
 }
