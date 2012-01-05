@@ -29,6 +29,7 @@ import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 
 import static org.jboss.as.jaxrs.JaxrsLogger.JAXRS_LOGGER;
+import static org.jboss.as.jaxrs.JaxrsMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -166,6 +167,11 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
             servletName = JAX_RS_SERVLET_NAME;
 
         } else {
+            if (servletMappingsExist(webdata, JAX_RS_SERVLET_NAME)) {
+                throw new DeploymentUnitProcessingException(MESSAGES.conflictUrlMapping());
+
+            }
+
             //now there are two options.
             //if there is already a servlet defined with an init param
             //we don't do anything.

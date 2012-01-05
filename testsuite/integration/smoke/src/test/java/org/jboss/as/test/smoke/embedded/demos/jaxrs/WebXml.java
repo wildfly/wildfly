@@ -19,17 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.demos.jaxrs.archive;
+package org.jboss.as.test.smoke.embedded.demos.jaxrs;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 
-@Path("helloworld")
-@Produces({"text/plain"})
-public class HelloWorldResource {
-    @GET
-    public String getMessage() {
-        return "Hello World!";
+/**
+ * Utility class that generates a web.xml file
+ *
+ * TODO: replace with the SW descriptors project when it becomes available
+ * @author Stuart Douglas
+ */
+public class WebXml {
+
+    public static StringAsset get(String contents) {
+        return new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "\n" +
+                "<web-app version=\"3.0\"\n" +
+                "         xmlns=\"http://java.sun.com/xml/ns/javaee\"\n" +
+                "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+                "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd\"\n" +
+                "         metadata-complete=\"false\">\n" +
+                contents +
+                "</web-app>");
     }
+
 }
