@@ -21,18 +21,6 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.ejb.AccessTimeout;
-import javax.ejb.EJBLocalObject;
-import javax.ejb.EJBObject;
-import javax.ejb.TimerService;
-
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
@@ -48,7 +36,11 @@ import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.ejb.client.Affinity;
+import org.jboss.ejb.client.ClusterAffinity;
 import org.jboss.ejb.client.EJBClient;
+import org.jboss.ejb.client.NodeAffinity;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.invocation.Interceptor;
@@ -59,7 +51,18 @@ import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.StopContext;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import javax.ejb.AccessTimeout;
+import javax.ejb.EJBLocalObject;
+import javax.ejb.EJBObject;
+import javax.ejb.TimerService;
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static org.jboss.as.ejb3.EjbMessages.*;
 
 /**
  * Stateful Session Bean
@@ -88,7 +91,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
 
     /**
      * Set of context keys for serializable interceptors.
-     *
+     * <p/>
      * These are used to serialize the user provided interceptors
      */
     private final Set<Object> serialiableInterceptorContextKeys;
@@ -127,7 +130,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     }
 
     @Override
-    public StatefulSessionComponentInstance createInstance( final Object instance) {
+    public StatefulSessionComponentInstance createInstance(final Object instance) {
         return (StatefulSessionComponentInstance) super.createInstance();
     }
 
@@ -182,12 +185,12 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     @Override
     public EJBObject getEJBObject(final InterceptorContext ctx) throws IllegalStateException {
         if (getEjbObjectViewServiceName() == null) {
-            throw MESSAGES.beanComponentMissingEjbObject(getComponentName(),"EJBObject");
+            throw MESSAGES.beanComponentMissingEjbObject(getComponentName(), "EJBObject");
         }
         final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(getEjbObjectViewServiceName());
         final ComponentView view = (ComponentView) serviceController.getValue();
         final String locatorAppName = getEarApplicationName() == null ? "" : getEarApplicationName();
-        return EJBClient.createProxy(new StatefulEJBLocator<EJBObject>((Class<EJBObject>) view.getViewClass(), locatorAppName, getModuleName(), getComponentName(), getDistinctName(), getSessionIdOf(ctx)));
+        return EJBClient.createProxy(new StatefulEJBLocator<EJBObject>((Class<EJBObject>) view.getViewClass(), locatorAppName, getModuleName(), getComponentName(), getDistinctName(), getSessionIdOf(ctx), this.getCache().getStrictAffinity()));
     }
 
     @Override
@@ -235,11 +238,11 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
 
     @Override
     protected void componentInstanceCreated(final BasicComponentInstance basicComponentInstance, final InterceptorFactoryContext context) {
-        final StatefulSessionComponentInstance instance = (StatefulSessionComponentInstance)basicComponentInstance;
+        final StatefulSessionComponentInstance instance = (StatefulSessionComponentInstance) basicComponentInstance;
         final Map<Object, Object> serializableInterceptors = new HashMap<Object, Object>();
-        for(final Object key : serialiableInterceptorContextKeys) {
-            final AtomicReference<ManagedReference> data = (AtomicReference<ManagedReference>)context.getContextData().get(key);
-            if(data != null) {
+        for (final Object key : serialiableInterceptorContextKeys) {
+            final AtomicReference<ManagedReference> data = (AtomicReference<ManagedReference>) context.getContextData().get(key);
+            if (data != null) {
                 serializableInterceptors.put(key, data.get().getInstance());
             }
         }
@@ -312,4 +315,5 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     public Set<Object> getSerialiableInterceptorContextKeys() {
         return serialiableInterceptorContextKeys;
     }
+
 }

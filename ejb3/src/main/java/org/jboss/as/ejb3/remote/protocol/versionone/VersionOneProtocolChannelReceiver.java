@@ -23,14 +23,6 @@
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
 
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-
 import org.jboss.as.clustering.ClusterNode;
 import org.jboss.as.clustering.GroupMembershipListener;
 import org.jboss.as.clustering.GroupMembershipNotifier;
@@ -46,6 +38,14 @@ import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.MessageInputStream;
 import org.xnio.IoUtils;
+
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 /**
  * @author Jaikiran Pai
@@ -276,7 +276,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         final ClusterTopologyWriter clusterTopologyWriter = new ClusterTopologyWriter();
         try {
             logger.debug("Writing out cluster formation message for " + clusters.length + " clusters, to channel " + this.channel);
-            clusterTopologyWriter.writeClusterTopology(outputStream, clusters);
+            clusterTopologyWriter.writeCompleteClusterTopology(outputStream, clusters);
         } finally {
             outputStream.close();
         }
@@ -325,12 +325,69 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
 
         @Override
         public void membershipChanged(List<ClusterNode> deadMembers, List<ClusterNode> newMembers, List<ClusterNode> allMembers) {
-            //To change body of implemented methods use File | Settings | File Templates.
+            // check removed nodes
+            if (deadMembers != null && !deadMembers.isEmpty()) {
+                try {
+                    this.sendClusterNodesRemoved(deadMembers);
+                } catch (IOException ioe) {
+                    logger.warn("Could not write a cluster node removal message to channel " + this.channelReceiver.channel, ioe);
+                }
+            }
+            // check added nodes
+            if (newMembers != null && !newMembers.isEmpty()) {
+                try {
+                    this.sendClusterNodesAdded(newMembers);
+                } catch (IOException ioe) {
+                    logger.warn("Could not write a new cluster node addition message to channel " + this.channelReceiver.channel, ioe);
+                }
+            }
         }
 
         @Override
         public void membershipChangedDuringMerge(List<ClusterNode> deadMembers, List<ClusterNode> newMembers, List<ClusterNode> allMembers, List<List<ClusterNode>> originatingGroups) {
-            //To change body of implemented methods use File | Settings | File Templates.
+            // TODO: This merge logic needs to be better understood. I am not sure if we need to send a removal notification
+            // for the new nodes, for the originating group from where these nodes were merged
+
+            // check removed nodes
+            if (deadMembers != null && !deadMembers.isEmpty()) {
+                try {
+                    this.sendClusterNodesRemoved(deadMembers);
+                } catch (IOException ioe) {
+                    logger.warn("Could not write a cluster node removal message to channel " + this.channelReceiver.channel, ioe);
+                }
+            }
+            // check added nodes
+            if (newMembers != null && !newMembers.isEmpty()) {
+                try {
+                    this.sendClusterNodesAdded(newMembers);
+                } catch (IOException ioe) {
+                    logger.warn("Could not write a new cluster node addition message to channel " + this.channelReceiver.channel, ioe);
+                }
+            }
         }
+
+        private void sendClusterNodesRemoved(final List<ClusterNode> removedNodes) throws IOException {
+            final DataOutputStream outputStream = new DataOutputStream(this.channelReceiver.channel.writeMessage());
+            final ClusterTopologyWriter clusterTopologyWriter = new ClusterTopologyWriter();
+            try {
+                logger.debug(removedNodes.size() + " nodes removed from cluster " + clusterName + ", writing a protocol message to channel " + this.channelReceiver.channel);
+                clusterTopologyWriter.writeNodesRemoved(outputStream, clusterName, removedNodes);
+            } finally {
+                outputStream.close();
+            }
+        }
+
+        private void sendClusterNodesAdded(final List<ClusterNode> addedNodes) throws IOException {
+            final DataOutputStream outputStream = new DataOutputStream(this.channelReceiver.channel.writeMessage());
+            final ClusterTopologyWriter clusterTopologyWriter = new ClusterTopologyWriter();
+            try {
+                logger.debug(addedNodes.size() + " nodes added to cluster " + clusterName + ", writing a protocol message to channel " + this.channelReceiver.channel);
+                clusterTopologyWriter.writeNewNodesAdded(outputStream, clusterName, addedNodes);
+            } finally {
+                outputStream.close();
+            }
+
+        }
+
     }
 }

@@ -92,7 +92,7 @@ public class GroupAwareCacheFactory<K extends Serializable, V extends Cacheable<
         backingCache.addLifecycleListener(this);
 
         // Finally, the front-end cache
-        return new GroupAwareCache<K, V, UUID, SerializationGroupMember<K, V, UUID>>(backingCache, true);
+        return new GroupAwareCache<K, V, UUID, SerializationGroupMember<K, V, UUID>>(this.storeSource, backingCache, true);
     }
 
     private PassivatingBackingCache<UUID, Cacheable<UUID>, SerializationGroup<K, V, UUID>> createGroupCache(PassivationManager<K, V> passivationManager, StatefulTimeoutInfo timeout) {

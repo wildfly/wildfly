@@ -77,7 +77,6 @@ public abstract class AbstractCache<K extends Serializable, V extends Cacheable<
 
     /**
      * {@inheritDoc}
-     * @see org.jboss.as.ejb3.cache.Cache#remove(java.io.Serializable)
      */
     @Override
     public void remove(K key) {

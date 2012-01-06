@@ -22,22 +22,24 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
+import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.logging.Logger;
+import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageInputStream;
 import org.xnio.IoUtils;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
 
 /**
  * @author Jaikiran Pai
@@ -89,7 +91,7 @@ class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
 
     }
 
-    private void writeSessionId(final Channel channel, final short invocationId, final SessionID sessionID) throws IOException {
+    private void writeSessionId(final Channel channel, final short invocationId, final SessionID sessionID, final Affinity hardAffinity) throws IOException {
         final byte[] sessionIdBytes = sessionID.getEncodedForm();
         final DataOutputStream dataOutputStream = new DataOutputStream(channel.writeMessage());
         try {
@@ -101,6 +103,13 @@ class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
             PackedInteger.writePackedInteger(dataOutputStream, sessionIdBytes.length);
             // write out the session id bytes
             dataOutputStream.write(sessionIdBytes);
+            // now marshal the hard affinity associated with this session
+            final Marshaller marshaller = this.prepareForMarshalling(this.marshallerFactory, dataOutputStream);
+            marshaller.writeObject(hardAffinity);
+
+            // finish marshalling
+            marshaller.finish();
+
         } finally {
             dataOutputStream.close();
         }
@@ -132,7 +141,9 @@ class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
                     SessionOpenRequestHandler.this.writeException(channel, SessionOpenRequestHandler.this.marshallerFactory, invocationId, t, null);
                     return;
                 }
-                SessionOpenRequestHandler.this.writeSessionId(channel, invocationId, sessionID);
+                // get the affinity of the component
+                final Affinity hardAffinity = statefulSessionComponent.getCache().getStrictAffinity();
+                SessionOpenRequestHandler.this.writeSessionId(channel, invocationId, sessionID, hardAffinity);
             } catch (IOException ioe) {
                 logger.error("IOException while generating session id for invocation id: " + invocationId + " on channel " + channel, ioe);
                 // close the channel
