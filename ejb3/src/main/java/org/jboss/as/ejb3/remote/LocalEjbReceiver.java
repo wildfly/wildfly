@@ -185,9 +185,9 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         if (!(component instanceof StatefulSessionComponent)) {
             throw new IllegalArgumentException("EJB " + beanName + " is not a Stateful Session bean in app: " + appName + " module: " + moduleName + " distinct name:" + distinctName);
         }
-        final StatefulSessionComponent stateful = (StatefulSessionComponent) component;
-        final SessionID sessionID = stateful.createSession();
-        return new StatefulEJBLocator<T>(viewType, appName, moduleName, beanName, distinctName, sessionID);
+        final StatefulSessionComponent statefulComponent = (StatefulSessionComponent) component;
+        final SessionID sessionID = statefulComponent.createSession();
+        return new StatefulEJBLocator<T>(viewType, appName, moduleName, beanName, distinctName, sessionID, statefulComponent.getCache().getStrictAffinity());
     }
 
     private Object clone(final Class<?> target, final ObjectCloner cloner, final Object object, final boolean allowPassByReference) {

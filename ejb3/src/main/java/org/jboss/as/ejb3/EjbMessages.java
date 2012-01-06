@@ -1989,4 +1989,12 @@ public interface EjbMessages {
     @Message(id = 14552, value = "Default interceptors cannot specify an <interceptor-order> element in ejb-jar.xml")
     DeploymentUnitProcessingException defaultInterceptorsNotSpecifyOrder();
 
+    /**
+     * Creates an returns a {@link IllegalStateException} to indicate that a cache is not clustered
+     *
+     * @return
+     */
+    @Message(id = 14553, value = "Cache is not clustered")
+    IllegalStateException cacheIsNotClustered();
+
 }

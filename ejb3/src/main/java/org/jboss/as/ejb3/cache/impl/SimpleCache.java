@@ -32,6 +32,9 @@ import org.jboss.as.ejb3.cache.spi.GroupAwareBackingCache;
 import org.jboss.as.ejb3.cache.spi.SerializationGroupMember;
 import org.jboss.as.ejb3.cache.spi.impl.AbstractCache;
 import org.jboss.as.ejb3.cache.spi.impl.GroupCreationContext;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.ejb.client.Affinity;
+import org.jboss.ejb.client.NodeAffinity;
 
 /**
  * @author Paul Ferraro
@@ -72,5 +75,16 @@ public class SimpleCache<K extends Serializable, V extends Cacheable<K>, E exten
                 GroupCreationContext.clearGroupCreationContext();
             }
         }
+    }
+
+    @Override
+    public Affinity getStrictAffinity() {
+        final String nodeName = SecurityActions.getSystemProperty(ServerEnvironment.NODE_NAME);
+        return new NodeAffinity(nodeName);
+    }
+
+    @Override
+    public Affinity getWeakAffinity() {
+        return Affinity.NONE;
     }
 }
