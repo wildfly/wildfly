@@ -25,43 +25,20 @@ package org.jboss.as.capedwarf.deployment;
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
-import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.logging.Logger;
 
 import java.util.List;
 import java.util.Properties;
 
 /**
  * Fix CapeDwarf JPA usage - atm we use Hibernate.
- * DataNucleus support is on the roadmap.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CapedwarfJPAProcessor extends CapedwarfDeploymentUnitProcessor {
+public class CapedwarfJPAProcessor extends CapedwarfPersistenceProcessor {
 
-    static final String DIALECT_PROPERTY_KEY = "hibernate.dialect";
-    static final String DEFAULT_DIALECT = "org.hibernate.dialect.H2Dialect";
-
-    private Logger log = Logger.getLogger(getClass());
-
-    @Override
-    protected void doDeploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit unit = phaseContext.getDeploymentUnit();
-
-        final ResourceRoot deploymentRoot = unit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        modifyPersistenceInfo(deploymentRoot);
-
-        final List<ResourceRoot> resourceRoots = unit.getAttachment(Attachments.RESOURCE_ROOTS);
-        for (ResourceRoot rr : resourceRoots) {
-            modifyPersistenceInfo(rr);
-        }
-    }
-
-    protected void modifyPersistenceInfo(ResourceRoot resourceRoot) {
+    protected void modifyPersistenceInfo(DeploymentUnit unit, ResourceRoot resourceRoot) {
         final PersistenceUnitMetadataHolder holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
         if (holder != null) {
             final List<PersistenceUnitMetadata> pus = holder.getPersistenceUnits();

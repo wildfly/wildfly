@@ -26,6 +26,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.logging.Logger;
 
 /**
  * Capedwarf deployment unit processor.
@@ -33,6 +34,9 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public abstract class CapedwarfDeploymentUnitProcessor implements DeploymentUnitProcessor {
+
+    protected static final String CAPEDWARF = "capedwarf";
+    protected Logger log = Logger.getLogger(getClass());
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         if (CapedwarfDeploymentMarker.isCapedwarfDeployment(phaseContext.getDeploymentUnit())) {

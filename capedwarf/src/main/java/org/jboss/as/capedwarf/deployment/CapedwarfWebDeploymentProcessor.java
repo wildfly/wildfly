@@ -34,9 +34,6 @@ import org.jboss.logging.Logger;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public abstract class CapedwarfWebDeploymentProcessor extends CapedwarfDeploymentUnitProcessor {
-
-    protected Logger log = Logger.getLogger(getClass());
-
     @Override
     protected void doDeploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();

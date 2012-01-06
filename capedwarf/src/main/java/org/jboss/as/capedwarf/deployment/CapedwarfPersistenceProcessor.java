@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,24 +22,42 @@
 
 package org.jboss.as.capedwarf.deployment;
 
-import org.jboss.as.clustering.infinispan.subsystem.CacheConfigurationService;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
+import org.jboss.as.server.deployment.module.ResourceRoot;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
- * Define any MSC dependencies.
+ * Fix CapeDwarf persistence.xml / JPA usage - atm we use Hibernate.
+ * DataNucleus support is on the roadmap.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CapedwarfDependenciesProcessor extends CapedwarfDeploymentUnitProcessor {
+public abstract class CapedwarfPersistenceProcessor extends CapedwarfDeploymentUnitProcessor {
 
-    private final ServiceName DEFAULT_CACHE_CONFIG = CacheConfigurationService.getServiceName(CAPEDWARF, "default");
+    static final String DIALECT_PROPERTY_KEY = "hibernate.dialect";
+    static final String DEFAULT_DIALECT = "org.hibernate.dialect.H2Dialect";
 
+    @Override
     protected void doDeploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
-        serviceTarget.addDependency(DEFAULT_CACHE_CONFIG); // make sure the default cache config is registerd into container before we get the cache
+        final DeploymentUnit unit = phaseContext.getDeploymentUnit();
+        try {
+            final ResourceRoot deploymentRoot = unit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+            modifyPersistenceInfo(unit, deploymentRoot);
+
+            final List<ResourceRoot> resourceRoots = unit.getAttachment(Attachments.RESOURCE_ROOTS);
+            for (ResourceRoot rr : resourceRoots) {
+                modifyPersistenceInfo(unit, rr);
+            }
+        } catch (IOException e) {
+            throw new DeploymentUnitProcessingException(e);
+        }
     }
+
+    protected abstract void modifyPersistenceInfo(DeploymentUnit unit, ResourceRoot resourceRoot) throws IOException;
 
 }
