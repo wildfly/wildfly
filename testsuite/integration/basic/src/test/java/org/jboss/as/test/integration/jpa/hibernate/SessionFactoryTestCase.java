@@ -22,11 +22,16 @@
 
 package org.jboss.as.test.integration.jpa.hibernate;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import javax.naming.InitialContext;
+import javax.naming.NameClassPair;
+import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -56,8 +61,7 @@ public class SessionFactoryTestCase {
             "    </description>" +
             "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
             "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
-//  Disabled until JBAS-9229 & JBAS-9224 are fixed.
-//            "<property name=\"hibernate.session_factory_name\" value=\"modelSessionFactory\" />" +
+            "<property name=\"hibernate.session_factory_name\" value=\"modelSessionFactory\" />" +
             "</properties>" +
             "  </persistence-unit>" +
             "</persistence>";
@@ -85,25 +89,51 @@ public class SessionFactoryTestCase {
     }
 
     protected <T> T rawLookup(String name, Class<T> interfaceType) throws NamingException {
-        return interfaceType.cast(iniCtx.lookup(name));
+        try {
+            return interfaceType.cast(iniCtx.lookup(name));
+
+        } catch (NamingException e) {
+            dumpJndi("");
+            throw e;
+        }
     }
+
+    private void dumpJndi(String s) {
+        try {
+            dumpTreeEntry(iniCtx.list(s), s);
+        } catch (NamingException ignore) {
+        }
+    }
+
+    private void dumpTreeEntry(NamingEnumeration<NameClassPair> list, String s) throws NamingException {
+        System.out.println("\ndump " + s);
+        while (list.hasMore()) {
+            NameClassPair ncp = list.next();
+            System.out.println(ncp.toString());
+            if (s.length() == 0) {
+                dumpJndi(ncp.getName());
+            } else {
+                dumpJndi(s + "/" + ncp.getName());
+            }
+        }
+    }
+
 
     // test that we didn't break the Hibernate hibernate.session_factory_name (bind Hibernate session factory to
     // specified jndi name) functionality.
     @Test
     public void testHibernateSessionFactoryName() throws Exception {
-// Disabled until JBAS-9229 & JBAS-9224 are fixed.
-//        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
-//        sfsb1.createEmployee("Sally","1 home street", 1);
+        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        sfsb1.createEmployee("Sally","1 home street", 1);
 
         // check if we can look up the Hibernate session factory that should of been bound because of
         // the hibernate.session_factory_name was specified in the properties (in peristence.xml above).
-//        SessionFactory hibernateSessionFactory = rawLookup("modelSessionFactory",SessionFactory.class);
-//        assertNotNull("jndi lookup of hibernate.session_factory_name should return HibernateSessionFactory", hibernateSessionFactory);
+        SessionFactory hibernateSessionFactory = rawLookup("modelSessionFactory",SessionFactory.class);
+        assertNotNull("jndi lookup of hibernate.session_factory_name should return HibernateSessionFactory", hibernateSessionFactory);
 
-//        Session session = hibernateSessionFactory.openSession();
-//        Employee emp = (Employee)session.get(Employee.class,1);
-//        assertTrue("name read from hibernate session is Sally", "Sally".equals(emp.getName()));
+        Session session = hibernateSessionFactory.openSession();
+        Employee emp = (Employee)session.get(Employee.class,1);
+        assertTrue("name read from hibernate session is Sally", "Sally".equals(emp.getName()));
     }
 
     // Test that an extended Persistence context can be injected into a Hibernate Session
