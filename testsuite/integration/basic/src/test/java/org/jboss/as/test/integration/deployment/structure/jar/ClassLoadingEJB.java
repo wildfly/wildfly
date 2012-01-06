@@ -23,6 +23,8 @@
 package org.jboss.as.test.integration.deployment.structure.jar;
 
 import javax.ejb.Stateless;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 /**
  * User: jpai
@@ -36,5 +38,10 @@ public class ClassLoadingEJB {
             throw new RuntimeException("Classname parameter cannot be null or empty");
         }
         return this.getClass().getClassLoader().loadClass(className);
+    }
+    
+    public String query(String name) throws NamingException
+    {
+       return new InitialContext().lookup(name).toString();
     }
 }

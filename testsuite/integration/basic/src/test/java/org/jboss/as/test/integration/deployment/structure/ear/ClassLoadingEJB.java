@@ -23,6 +23,8 @@
 package org.jboss.as.test.integration.deployment.structure.ear;
 
 import javax.ejb.Stateless;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 /**
  * User: jpai
@@ -40,5 +42,10 @@ public class ClassLoadingEJB {
 
     public boolean hasResource(String resource) {
         return this.getClass().getResource(resource) != null;
+    }
+    
+    public String query(String name) throws NamingException
+    {
+       return new InitialContext().lookup(name).toString();
     }
 }

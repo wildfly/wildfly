@@ -1,5 +1,7 @@
 package org.jboss.as.test.integration.deployment.structure.war;
 
+import static org.junit.Assert.assertEquals;
+
 import javax.ejb.EJB;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -77,4 +79,13 @@ public class WarJBossDeploymentStructureTestCase {
         Assert.assertTrue(ClassLoadingEJB.class.getProtectionDomain().getCodeSource().getLocation().getProtocol().equals("file"));
     }
 
+    /**
+     * EE.5.15, part of testsuite migration AS6->AS7 (jbas7556)
+     */
+    @Test
+    public void testModuleName() throws Exception
+    {
+       String result = ejb.query("java:module/ModuleName");
+       assertEquals("deployment-structure", result);
+    }
 }
