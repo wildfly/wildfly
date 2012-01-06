@@ -22,7 +22,8 @@
 
 package org.jboss.as.service;
 
-import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
+import java.lang.reflect.Method;
+
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -35,18 +36,22 @@ import org.jboss.msc.service.StopContext;
  */
 final class StartStopService extends AbstractService {
 
-    private static final String START_METHOD_NAME = "start";
-    private static final String STOP_METHOD_NAME = "stop";
+    private final Method startMethod;
+    private final Method stopMethod;
 
-    StartStopService(final Object mBeanInstance, final ClassReflectionIndex<?> mBeanClassIndex) {
-        super(mBeanInstance, mBeanClassIndex);
+    StartStopService(final Object mBeanInstance, final Method startMethod, final Method stopMethod) {
+        super(mBeanInstance);
+        this.startMethod = startMethod;
+        this.stopMethod = stopMethod;
     }
 
     /** {@inheritDoc} */
     public void start(final StartContext context) throws StartException {
-        log.debugf("Starting Service: %s", context.getController().getName());
+        if (log.isTraceEnabled()) {
+            log.tracef("Starting Service: %s", context.getController().getName());
+        }
         try {
-            invokeLifecycleMethod(START_METHOD_NAME);
+            invokeLifecycleMethod(startMethod);
         } catch (final Exception e) {
             throw new StartException("Failed to execute legacy service start() method", e);
         }
@@ -54,9 +59,11 @@ final class StartStopService extends AbstractService {
 
     /** {@inheritDoc} */
     public void stop(final StopContext context) {
-        log.debugf("Stopping Service: %s", context.getController().getName());
+        if (log.isTraceEnabled()) {
+            log.tracef("Stopping Service: %s", context.getController().getName());
+        }
         try {
-            invokeLifecycleMethod(STOP_METHOD_NAME);
+            invokeLifecycleMethod(stopMethod);
         } catch (final Exception e) {
             log.error("Failed to execute legacy service stop() method", e);
         }
