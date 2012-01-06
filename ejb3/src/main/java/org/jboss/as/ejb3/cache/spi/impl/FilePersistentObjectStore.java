@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.cache.spi.impl;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -171,13 +172,19 @@ public class FilePersistentObjectStore<K extends Serializable, V extends Cacheab
         log.tracef("Loading state from %s", file);
         try {
             Unmarshaller unmarshaller = this.marshallerFactory.createUnmarshaller(this.configuration);
-            unmarshaller.start(Marshalling.createByteInput(FISAction.open(file)));
+            FileInputStream inputStream = null;
             try {
-                V value = (V) unmarshaller.readObject();
-                unmarshaller.finish();
-                return value;
+                inputStream = FISAction.open(file);
+                unmarshaller.start(Marshalling.createByteInput(inputStream));
+                try {
+                    V value = (V) unmarshaller.readObject();
+                    unmarshaller.finish();
+                    return value;
+                } finally {
+                    unmarshaller.close();
+                }
             } finally {
-                unmarshaller.close();
+                safeClose(inputStream);
                 DeleteFileAction.delete(file);
             }
         } catch (Exception e) {
@@ -224,15 +231,31 @@ public class FilePersistentObjectStore<K extends Serializable, V extends Cacheab
         log.tracef("Storing state to %s", file);
         try {
             Marshaller marshaller = this.marshallerFactory.createMarshaller(this.configuration);
-            marshaller.start(Marshalling.createByteOutput(FOSAction.open(file)));
+            FileOutputStream outputStream = null;
             try {
-                marshaller.writeObject(obj);
-                marshaller.finish();
+                outputStream = FOSAction.open(file);
+                marshaller.start(Marshalling.createByteOutput(outputStream));
+                try {
+                    marshaller.writeObject(obj);
+                    marshaller.finish();
+                } finally {
+                    marshaller.close();
+                }
             } finally {
-                marshaller.close();
+                safeClose(outputStream);
             }
         } catch (IOException e) {
             throw EjbMessages.MESSAGES.passivationFailed(e, obj.getId());
+        }
+    }
+
+    protected static void safeClose(final Closeable closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (Exception ignore) {
+                //
+            }
         }
     }
 }
