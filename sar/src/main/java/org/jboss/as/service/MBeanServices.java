@@ -22,6 +22,9 @@
 
 package org.jboss.as.service;
 
+import java.lang.reflect.Method;
+import java.util.List;
+
 import javax.management.MBeanServer;
 
 import org.jboss.as.jmx.MBeanRegistrationService;
@@ -32,7 +35,6 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.Value;
 
 /**
@@ -42,6 +44,11 @@ import org.jboss.msc.value.Value;
  */
 final class MBeanServices {
 
+    private static final String CREATE_METHOD_NAME = "create";
+    private static final String DESTROY_METHOD_NAME = "destroy";
+    private static final String START_METHOD_NAME = "start";
+    private static final String STOP_METHOD_NAME = "stop";
+    private static final Class<?>[] NO_ARGS = new Class<?>[0];
     private final String mBeanName;
     private final ServiceName createDestroyServiceName;
     private final ServiceName startStopServiceName;
@@ -52,16 +59,20 @@ final class MBeanServices {
     private final ServiceTarget target;
     private boolean installed;
 
-    MBeanServices(final String mBeanName, final Object mBeanInstance, final ClassReflectionIndex<?> mBeanClassIndex, final ServiceTarget target) {
+    MBeanServices(final String mBeanName, final Object mBeanInstance, final List<ClassReflectionIndex<?>> mBeanClassHierarchy, final ServiceTarget target) {
         if ((mBeanName == null) || (mBeanInstance == null) || (target == null)) {
             throw new IllegalArgumentException("Parameters must not be null");
         }
 
-        createDestroyService = new CreateDestroyService(mBeanInstance, mBeanClassIndex);
+        final Method createMethod = ReflectionUtils.getMethod(mBeanClassHierarchy, CREATE_METHOD_NAME, NO_ARGS, false);
+        final Method destroyMethod = ReflectionUtils.getMethod(mBeanClassHierarchy, DESTROY_METHOD_NAME, NO_ARGS, false);
+        createDestroyService = new CreateDestroyService(mBeanInstance, createMethod, destroyMethod);
         createDestroyServiceName = ServiceNameFactory.newCreateDestroy(mBeanName);
         createDestroyServiceBuilder = target.addService(createDestroyServiceName, createDestroyService);
 
-        startStopService = new StartStopService(mBeanInstance, mBeanClassIndex);
+        final Method startMethod = ReflectionUtils.getMethod(mBeanClassHierarchy, START_METHOD_NAME, NO_ARGS, false);
+        final Method stopMethod = ReflectionUtils.getMethod(mBeanClassHierarchy, STOP_METHOD_NAME, NO_ARGS, false);
+        startStopService = new StartStopService(mBeanInstance, startMethod, stopMethod);
         startStopServiceName = ServiceNameFactory.newStartStop(mBeanName);
         startStopServiceBuilder = target.addService(startStopServiceName, startStopService);
         startStopServiceBuilder.addDependency(createDestroyServiceName);

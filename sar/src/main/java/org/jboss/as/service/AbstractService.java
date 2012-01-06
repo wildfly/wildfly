@@ -25,7 +25,6 @@ package org.jboss.as.service;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 
@@ -37,13 +36,10 @@ import org.jboss.msc.service.Service;
 abstract class AbstractService implements Service<Object> {
 
     protected static final Logger log = Logger.getLogger("org.jboss.as.service");
-    private static final Class<?>[] NO_ARGS = new Class<?>[0];
     private final Object mBeanInstance;
-    private final ClassReflectionIndex<?> mBeanClassIndex;
 
-    protected AbstractService(final Object mBeanInstance, final ClassReflectionIndex<?> mBeanClassIndex) {
+    protected AbstractService(final Object mBeanInstance) {
         this.mBeanInstance = mBeanInstance;
-        this.mBeanClassIndex = mBeanClassIndex;
     }
 
     /** {@inheritDoc} */
@@ -51,12 +47,11 @@ abstract class AbstractService implements Service<Object> {
         return mBeanInstance;
     }
 
-    protected void invokeLifecycleMethod(final String methodName) throws InvocationTargetException, IllegalAccessException {
-        final Method lifecycleMethod = ReflectionUtils.getMethod(mBeanClassIndex, methodName, NO_ARGS, false);
-        if (lifecycleMethod != null) {
+    protected void invokeLifecycleMethod(final Method method) throws InvocationTargetException, IllegalAccessException {
+        if (method != null) {
             final ClassLoader old = SecurityActions.setThreadContextClassLoader(mBeanInstance.getClass().getClassLoader());
             try {
-                lifecycleMethod.invoke(mBeanInstance);
+                method.invoke(mBeanInstance);
             } finally {
                 SecurityActions.resetThreadContextClassLoader(old);
             }

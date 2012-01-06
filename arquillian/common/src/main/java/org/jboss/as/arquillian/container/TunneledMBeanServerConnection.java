@@ -66,8 +66,10 @@ import org.jboss.dmr.ModelNode;
 public class TunneledMBeanServerConnection implements MBeanServerConnection {
     private static final String INVOKE_MBEAN_RAW = "invoke-mbean-raw";
     private static final String GET_MBEAN_INFO_RAW ="get-mbean-info-raw";
+    private static final String GET_MBEAN_ATTRIBUTE_INFO_RAW = "get-mbean-attribute-info-raw";
     private static final String JMX = "jmx";
     private static final String MBEAN_NAME = "mbean-name";
+    private static final String MBEAN_ATTRIBUTE_NAME = "mbean-attribute-name";
     private static final String MBEAN_OPERATION_NAME = "mbean-operation-name";
     private static final String NOTIFICATION_FILE = "notification-file";
     private static final String SIGNATURE = "signature";
@@ -120,7 +122,23 @@ public class TunneledMBeanServerConnection implements MBeanServerConnection {
     }
 
     public Object getAttribute(ObjectName name, String attribute) throws MBeanException, AttributeNotFoundException, InstanceNotFoundException, ReflectionException, IOException {
-        return null;
+        ModelNode request = new ModelNode();
+        request.get(OP).set(GET_MBEAN_ATTRIBUTE_INFO_RAW);
+        request.get(OP_ADDR).add(SUBSYSTEM, JMX);
+
+        request.get(MBEAN_NAME).set(name.toString());
+        request.get(MBEAN_ATTRIBUTE_NAME).set(attribute);
+
+        ModelNode response = client.execute(request);
+        if (!SUCCESS.equals(response.get(OUTCOME).asString())) {
+            throw new IOException("Failed operation: " + response.get(FAILURE_DESCRIPTION).toString());
+        }
+        byte[] bytes = response.get(RESULT).asBytes();
+        try {
+            return Object.class.cast(new ObjectInputStream(new ByteArrayInputStream(bytes)).readObject());
+        } catch (ClassNotFoundException e) {
+            throw new IOException(e);
+        }
     }
 
     public AttributeList getAttributes(ObjectName name, String[] attributes) throws InstanceNotFoundException, ReflectionException, IOException {
