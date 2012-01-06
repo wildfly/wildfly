@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ironjacamar>
+        <connection-definitions>  
+        	<connection-definition  class-name="org.jboss.as.test.smoke.embedded.deployment.rar.MultipleManagedConnectionFactory2" jndi-name="java:jboss/D2CF2"  pool-name="D2CF2">    </connection-definition>
+        	<connection-definition  class-name="org.jboss.as.test.smoke.embedded.deployment.rar.MultipleManagedConnectionFactory1" jndi-name="java:jboss/D2CF1"  pool-name="D2CF2">    </connection-definition>
+		</connection-definitions>
+		 <admin-objects>
+          <admin-object class-name="org.jboss.as.test.smoke.embedded.deployment.rar.MultipleAdminObject1Impl"  jndi-name="java:jboss/D2AO1"	pool-name="D2AO1">  </admin-object>
+          <admin-object  class-name="org.jboss.as.test.smoke.embedded.deployment.rar.MultipleAdminObject2Impl" jndi-name="java:jboss/D2AO2" pool-name="D2AO2"> </admin-object>
+         </admin-objects>
+		
+</ironjacamar>

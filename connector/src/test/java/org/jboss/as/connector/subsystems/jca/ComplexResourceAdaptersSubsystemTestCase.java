@@ -50,12 +50,13 @@ public class ComplexResourceAdaptersSubsystemTestCase extends AbstractSubsystemT
     public ComplexResourceAdaptersSubsystemTestCase() {
         super(ResourceAdaptersExtension.SUBSYSTEM_NAME, new ResourceAdaptersExtension());
     }
+    public  ModelNode getModel(String resourceFileName) throws Exception{
+    	return getModel(resourceFileName,true);
+    }
 
-    @Test
+    public  ModelNode getModel(String resourceFileName, boolean checkMarshalledXML) throws Exception{
 
-    public void testResourceAdapters() throws Exception{
-
-        String xml = readResource("ra.xml");
+        String xml = readResource(resourceFileName);
 
         KernelServices services = super.installInController(new AdditionalInitialization() {
 
@@ -70,6 +71,36 @@ public class ComplexResourceAdaptersSubsystemTestCase extends AbstractSubsystemT
         ModelNode model = services.readWholeModel();
         ConnectorServices.unregisterResourceIdentifiers("some.rar");
 
+        //Marshal the xml to see that it is the same as before
+        String marshalled = services.getPersistedSubsystemXml();
+        if(checkMarshalledXML)Assert.assertEquals(normalizeXML(xml), normalizeXML(marshalled));
+
+        services = super.installInController(new AdditionalInitialization() {
+
+            @Override
+            protected Type getType() {
+                //This override makes it only install in the model, not create the services
+                return Type.MANAGEMENT;
+            }
+
+        }, marshalled);
+
+        //Check that the model looks the same
+        ModelNode modelReloaded = services.readWholeModel();
+        compare(model, modelReloaded);
+
+        assertRemoveSubsystemResources(services);
+        return model;
+
+
+    }
+    @Test
+
+    public void testResourceAdapters() throws Exception{
+
+
+        ModelNode model = getModel("ra.xml");
+        if (model==null) return;
         // Check model..
         Properties params=raCommonProperties();
         ModelNode raCommonModel=model.get("subsystem", "resource-adapters","resource-adapter","some.rar");
@@ -87,24 +118,11 @@ public class ComplexResourceAdaptersSubsystemTestCase extends AbstractSubsystemT
         checkModelParams(raConnModel,params);
         Assert.assertEquals(raConnModel.asString(),"B",raConnModel.get("config-properties","Property","value").asString());
         Assert.assertEquals(raConnModel.asString(),"C",raConnModel.get("recovery-plugin-properties","Property").asString());
-
-        //Marshal the xml to see that it is the same as before
-        String marshalled = services.getPersistedSubsystemXml();
-        Assert.assertEquals(normalizeXML(xml), normalizeXML(marshalled));
-        services = super.installInController(new AdditionalInitialization() {
-
-            @Override
-            protected Type getType() {
-                //This override makes it only install in the model, not create the services
-                return Type.MANAGEMENT;
-            }
-
-        }, marshalled);
-
-        //Check that the model looks the same
-        ModelNode modelReloaded = services.readWholeModel();
-        compare(model, modelReloaded);
-
-        assertRemoveSubsystemResources(services);
     }
+    // @Test
+    public void testResourceAdapterWith2ConDefAnd2AdmObj() throws Exception{
+
+    	ModelNode model = getModel("ra2.xml",false);
+
+     }
 }
