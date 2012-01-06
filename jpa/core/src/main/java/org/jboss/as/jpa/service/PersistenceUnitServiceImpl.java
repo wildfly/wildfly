@@ -34,6 +34,7 @@ import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.jpa.spi.PersistenceUnitService;
 import org.jboss.as.jpa.util.JPAServiceNames;
+import org.jboss.as.naming.WritableServiceBasedNamingStore;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -76,9 +77,11 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
             JPA_LOGGER.startingService("Persistence Unit", pu.getScopedPersistenceUnitName());
             pu.setJtaDataSource(jtaDataSource.getOptionalValue());
             pu.setNonJtaDataSource(nonJtaDataSource.getOptionalValue());
+            WritableServiceBasedNamingStore.pushOwner(context.getController().getServiceContainer().subTarget());
             this.entityManagerFactory = createContainerEntityManagerFactory();
         } finally {
             pu.setTempClassLoaderFactory(null);    // release the temp classloader factory (only needed when creating the EMF)
+            WritableServiceBasedNamingStore.popOwner();
         }
     }
 
@@ -86,8 +89,13 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
     public void stop(StopContext context) {
         JPA_LOGGER.stoppingService("Persistence Unit", pu.getScopedPersistenceUnitName());
         if (entityManagerFactory != null) {
-            entityManagerFactory.close();
-            entityManagerFactory = null;
+            WritableServiceBasedNamingStore.pushOwner(context.getController().getServiceContainer().subTarget());
+            try {
+                entityManagerFactory.close();
+            } finally {
+                entityManagerFactory = null;
+                WritableServiceBasedNamingStore.popOwner();
+            }
         }
     }
 

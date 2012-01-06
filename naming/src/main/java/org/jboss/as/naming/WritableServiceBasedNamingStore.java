@@ -22,13 +22,17 @@
 
 package org.jboss.as.naming;
 
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
+import static org.jboss.as.naming.util.NamingUtils.isLastComponentEmpty;
+import static org.jboss.as.naming.util.NamingUtils.namingException;
+
 import java.util.Hashtable;
+
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.NamingException;
+
 import org.jboss.as.naming.service.BinderService;
-import static org.jboss.as.naming.util.NamingUtils.isLastComponentEmpty;
-import static org.jboss.as.naming.util.NamingUtils.namingException;
 import org.jboss.as.naming.util.ThreadLocalStack;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceBuilder;
@@ -37,7 +41,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 /**
  * @author John Bailey
@@ -78,7 +81,12 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
     }
 
     public void rebind(Name name, Object object) throws NamingException {
-        unbind(name);
+        try {
+            unbind(name);
+        } catch (NamingException ignore) {
+            // rebind may fail if there is no existing binding
+        }
+
         bind(name, object);
     }
 
