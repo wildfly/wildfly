@@ -48,15 +48,7 @@ public class DeployAllServerGroupsTestCase extends AbstractCliTestBase {
     
     private static WebArchive war;
     private static File warFile;
-
-    
-    @Deployment
-    public static Archive<?> getDeployment() {
-        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
-        ja.addClass(DeployAllServerGroupsTestCase.class);
-        return ja;
-    }    
-    
+        
     @BeforeClass
     public static void before() throws Exception {
         war = ShrinkWrap.create(WebArchive.class, "SimpleServlet.war");

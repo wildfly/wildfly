@@ -49,14 +49,7 @@ public class DeploySingleServerGroupTestCase extends AbstractCliTestBase {
     private static WebArchive war;
     private static File warFile;
 
-    private static String[] serverGroups;
-    
-    @Deployment
-    public static Archive<?> getDeployment() {
-        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
-        ja.addClass(DeploySingleServerGroupTestCase.class);
-        return ja;
-    }    
+    private static String[] serverGroups;      
     
     @BeforeClass
     public static void before() throws Exception {

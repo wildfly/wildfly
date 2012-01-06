@@ -65,13 +65,6 @@ public class DataSourceTestCase extends AbstractCliTestBase {
          profileNames = CLITestSuite.serverProfiles.keySet().toArray(new String[] {});
     }    
 
-    @Deployment
-    public static Archive<?> getDeployment() {
-        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
-        ja.addClass(DataSourceTestCase.class);
-        return ja;
-    }
-
     @Test
     public void testDataSource() throws Exception {
         testAddDataSource();
