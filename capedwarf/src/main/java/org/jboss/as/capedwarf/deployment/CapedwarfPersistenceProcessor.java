@@ -42,22 +42,27 @@ public abstract class CapedwarfPersistenceProcessor extends CapedwarfDeploymentU
     static final String DIALECT_PROPERTY_KEY = "hibernate.dialect";
     static final String DEFAULT_DIALECT = "org.hibernate.dialect.H2Dialect";
 
+    static enum ResourceType {
+        DEPLOYMENT_ROOT,
+        RESOURCE_ROOT
+    }
+
     @Override
     protected void doDeploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
         try {
             final ResourceRoot deploymentRoot = unit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-            modifyPersistenceInfo(unit, deploymentRoot);
+            modifyPersistenceInfo(unit, deploymentRoot, ResourceType.DEPLOYMENT_ROOT);
 
             final List<ResourceRoot> resourceRoots = unit.getAttachment(Attachments.RESOURCE_ROOTS);
             for (ResourceRoot rr : resourceRoots) {
-                modifyPersistenceInfo(unit, rr);
+                modifyPersistenceInfo(unit, rr, ResourceType.RESOURCE_ROOT);
             }
         } catch (IOException e) {
             throw new DeploymentUnitProcessingException(e);
         }
     }
 
-    protected abstract void modifyPersistenceInfo(DeploymentUnit unit, ResourceRoot resourceRoot) throws IOException;
+    protected abstract void modifyPersistenceInfo(DeploymentUnit unit, ResourceRoot resourceRoot, ResourceType type) throws IOException;
 
 }

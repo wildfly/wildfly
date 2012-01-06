@@ -55,16 +55,20 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
     private CapedwarfSubsystemAdd() {
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         model.setEmptyObject();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void performBoottime(final OperationContext context, ModelNode operation, ModelNode model,
-            ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
+                                ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
             throws OperationFailedException {
 
         final String appengineAPI = operation.hasDefined("appengine-api") ? operation.get("appengine-api").asString() : null;
@@ -73,8 +77,7 @@ class CapedwarfSubsystemAdd extends AbstractBoottimeAddStepHandler {
             public void execute(DeploymentProcessorTarget processorTarget) {
                 final int initialPhaseOrder = Math.min(Phase.PARSE_WEB_DEPLOYMENT, Phase.PARSE_PERSISTENCE_UNIT);
                 processorTarget.addDeploymentProcessor(Phase.PARSE, initialPhaseOrder - 20, new CapedwarfInitializationProcessor());
-                // TODO
-                // processorTarget.addDeploymentProcessor(Phase.PARSE, initialPhaseOrder - 10, new CapedwarfPersistenceModificationProcessor(context.getServiceTarget())); // before persistence.xml parsing
+                processorTarget.addDeploymentProcessor(Phase.PARSE, initialPhaseOrder - 10, new CapedwarfPersistenceModificationProcessor(context.getServiceTarget())); // before persistence.xml parsing
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_DEPLOYMENT + 1, new CapedwarfWebCleanupProcessor()); // right after web.xml parsing
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_MERGE_METADATA + 1, new CapedwarfWebComponentsDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WELD - 10, new CapedwarfWeldProcessor()); // before Weld

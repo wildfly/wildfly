@@ -38,7 +38,7 @@ import java.util.Properties;
  */
 public class CapedwarfJPAProcessor extends CapedwarfPersistenceProcessor {
 
-    protected void modifyPersistenceInfo(DeploymentUnit unit, ResourceRoot resourceRoot) {
+    protected void modifyPersistenceInfo(DeploymentUnit unit, ResourceRoot resourceRoot, ResourceType type) {
         final PersistenceUnitMetadataHolder holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
         if (holder != null) {
             final List<PersistenceUnitMetadata> pus = holder.getPersistenceUnits();
