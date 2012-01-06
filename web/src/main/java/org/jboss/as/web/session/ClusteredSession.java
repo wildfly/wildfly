@@ -462,9 +462,6 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
     @Override
     public void setMaxInactiveInterval(int interval) {
         this.maxInactiveInterval = interval;
-        if (isValid && interval == 0) {
-            expire();
-        }
         checkAlwaysReplicateTimestamp();
         sessionMetadataDirty();
     }
@@ -1194,7 +1191,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
             return true;
         }
 
-        if (maxInactiveInterval >= 0) {
+        if (maxInactiveInterval > 0) {
             long timeNow = System.currentTimeMillis();
             int timeIdle = (int) ((timeNow - thisAccessedTime) / 1000L);
             if (timeIdle >= maxInactiveInterval) {
