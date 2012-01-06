@@ -19,7 +19,6 @@
 package org.jboss.as.cli.gui;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
 import javax.swing.JTextField;
 import javax.swing.text.AttributeSet;
@@ -28,10 +27,6 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
-import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.operation.CommandLineParser;
-import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -40,28 +35,21 @@ import org.jboss.dmr.ModelNode;
  */
 public class DoOperationActionListener extends AbstractAction {
 
-    private ModelControllerClient client;
-    private DefaultCallbackHandler parsedCmd = new DefaultCallbackHandler(true);
-    private CommandContext cmdCtx;
+    private CommandExecutor executor;
 
     private JTextField cmdText;
     private JTextComponent output;
 
-    public DoOperationActionListener(CommandContext cmdCtx, JTextField cmdText, JTextComponent output) {
-        this.cmdCtx = cmdCtx;
-        this.client = cmdCtx.getModelControllerClient();
+    public DoOperationActionListener(CommandExecutor executor, JTextField cmdText, JTextComponent output) {
+        this.executor = executor;
         this.cmdText = cmdText;
         this.output = output;
     }
 
     public void actionPerformed(ActionEvent ae) {
         String command = cmdText.getText();
-        CommandLineParser parser = cmdCtx.getCommandLineParser();
-        parsedCmd.rootNode(0);
         try {
-            parser.parse(command, parsedCmd);
-            ModelNode request = parsedCmd.toOperationRequest(cmdCtx);
-            ModelNode result = client.execute(request);
+            ModelNode result = executor.doCommand(command);
             postOutput(command, result.toString());
         } catch (Exception e) {
             try {
