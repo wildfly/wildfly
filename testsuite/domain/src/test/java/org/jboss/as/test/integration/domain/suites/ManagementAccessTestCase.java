@@ -47,7 +47,7 @@ import static org.jboss.as.test.integration.domain.DomainTestSupport.validateRes
 
 import java.io.IOException;
 
-import org.jboss.as.arquillian.container.domain.managed.DomainLifecycleUtil;
+import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationRemoveHandler;

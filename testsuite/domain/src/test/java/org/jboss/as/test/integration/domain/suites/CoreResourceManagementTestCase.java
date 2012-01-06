@@ -45,12 +45,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UND
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import org.jboss.as.test.integration.domain.DomainTestSupport;
-import static org.jboss.as.test.integration.domain.DomainTestSupport.validateFailedResponse;
+
 import static org.jboss.as.test.integration.domain.DomainTestSupport.validateResponse;
 
 import java.io.IOException;
 
-import org.jboss.as.arquillian.container.domain.managed.DomainLifecycleUtil;
+import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;

@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.domain;
 
-import org.jboss.as.arquillian.container.domain.managed.DomainLifecycleUtil;
-import org.jboss.as.arquillian.container.domain.managed.JBossAsManagedConfiguration;
+import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
+import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.junit.Assert;

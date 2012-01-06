@@ -22,16 +22,13 @@
 
 package org.jboss.as.test.integration.domain;
 
-import org.jboss.as.arquillian.container.domain.managed.DomainLifecycleUtil;
-import org.jboss.as.arquillian.container.domain.managed.JBossAsManagedConfiguration;
-import org.junit.Assert;
+import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
+import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
 import org.junit.Test;
 
 import java.io.File;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Arrays;
-import java.util.Collections;
 
 /**
  * Test validating the configuration starts and can accept a simple web request.

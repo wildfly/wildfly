@@ -43,7 +43,6 @@
         <module>protocol-jmx</module>
         <module>testenricher-msc</module>
         <module>testng-integration</module>
-        <module>container-managed-domain</module>
         <!--
         <module>container-embedded</module>
         <module>protocol-servlet</module>
