@@ -47,12 +47,16 @@ public class ProductConfig implements Serializable {
         String productVersion = null;
         String consoleSlot = null;
 
+        Properties props = new Properties();
         try {
             FileReader reader = new FileReader(home + File.separator + "bin" + File.separator + "product.conf");
-            Properties props = new Properties();
             props.load(reader);
+        } catch (Exception e) {
+        	// Don't care
+        }
 
-            String slot = (String) props.get("slot");
+        try {
+            String slot = (String) props.getProperty("slot", "main");
             if (slot != null) {
                 Module module = loader.loadModule(ModuleIdentifier.create("org.jboss.as.product", slot));
 
@@ -69,7 +73,7 @@ public class ProductConfig implements Serializable {
                 }
             }
         } catch (Exception e) {
-            // Don't care
+        	// Don't care
         }
 
         name = productName;
@@ -93,7 +97,7 @@ public class ProductConfig implements Serializable {
         if (name != null)
            return String.format("JBoss %s %s (AS %s)", name, version, Version.AS_VERSION);
 
-        return String.format("JBoss AS %s \"%s\"", Version.AS_VERSION, Version.AS_RELEASE_CODENAME);
+        return String.format("JBoss Application Server %s \"%s\"", Version.AS_VERSION, Version.AS_RELEASE_CODENAME);
     }
 
 }
