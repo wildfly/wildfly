@@ -30,7 +30,17 @@ import java.util.List;
 /**
  * Base class for {@link OperationStepHandler} implementations that add managed resource and also perform runtime
  * processing that <strong>should only occur during server boot</strong>. An example of such processing would be installing a
- * deployment processor.
+ * deployment unit processor.
+ * <p>
+ * <strong>Do not extend this class for operations that can run after server boot.</strong> Typically it should only
+ * be extended for operations that add a deployment unit processor.
+ * </p>
+ * <p>
+ * If an operation handled via an extension of this class is executed on a server after boot, the server's persistent
+ * configuration model will be updated, but the
+ * {@link #performBoottime(OperationContext, ModelNode, ModelNode, ServiceVerificationHandler, List) performBoottime}
+ * method will not be invoked. Instead the server will be {@link OperationContext#reloadRequired() put into "reload required" state}.
+ * </p>
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
