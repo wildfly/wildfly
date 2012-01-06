@@ -87,7 +87,7 @@ public class AbstractMgmtTestBase {
         }
     }
 
-    protected ModelNode executeOperation(final ModelNode op, boolean unwrapResult) throws IOException, MgmtOperationException {
+    protected static ModelNode executeOperation(final ModelNode op, boolean unwrapResult) throws IOException, MgmtOperationException {
         ModelNode ret = modelControllerClient.execute(op);
         if (! unwrapResult) return ret;
 
@@ -97,11 +97,11 @@ public class AbstractMgmtTestBase {
         return ret.get(RESULT);
     }
 
-    protected ModelNode executeOperation(final ModelNode op) throws IOException, MgmtOperationException  {
+    protected static ModelNode executeOperation(final ModelNode op) throws IOException, MgmtOperationException  {
         return executeOperation(op, true);
     }
 
-    protected ModelNode executeOperation(final String address, final String operation) throws IOException, MgmtOperationException {
+    protected static ModelNode executeOperation(final String address, final String operation) throws IOException, MgmtOperationException {
         return executeOperation(createOpNode(address, operation));
     }
 
@@ -128,7 +128,7 @@ public class AbstractMgmtTestBase {
         return modelControllerClient.execute(ob.build());
     }
 
-    protected void remove(final ModelNode address) throws IOException, MgmtOperationException {
+    protected static void remove(final ModelNode address) throws IOException, MgmtOperationException {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set("remove");
         operation.get(OP_ADDR).set(address);

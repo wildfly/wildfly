@@ -1,0 +1,8 @@
+<subsystem xmlns="urn:jboss:domain:resource-adapters:1.0">
+ <resource-adapters>
+  <resource-adapter>
+   <archive>pure.rar</archive>
+      <transaction-support>NoTransaction</transaction-support>
+    </resource-adapter>
+  </resource-adapters>
+</subsystem>
