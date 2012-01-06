@@ -30,6 +30,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
@@ -43,6 +44,8 @@ public class GuiMain {
     private static final String SUBMIT_ACTION = "submit-action";
 
     private CommandContext cmdCtx;
+    private CommandExecutor executor;
+
     private JFrame frame = new JFrame("CLI GUI");
     private Container contentPane;
     private JPanel mainPanel = new JPanel();
@@ -52,6 +55,7 @@ public class GuiMain {
 
     public GuiMain(CommandContext cmdCtx) {
         this.cmdCtx = cmdCtx;
+        this.executor = new CommandExecutor(cmdCtx);
         initJFrame();
     }
 
@@ -71,10 +75,17 @@ public class GuiMain {
 
         mainPanel.setLayout(new BorderLayout(5,5));
         mainPanel.add(makeCommandLine(), BorderLayout.NORTH);
-        mainPanel.add(makeOutputDisplay(), BorderLayout.CENTER);
+        mainPanel.add(makeTabbedPane(), BorderLayout.CENTER);
 
         //frame.pack();
         frame.setVisible(true);
+    }
+
+    private JTabbedPane makeTabbedPane() {
+        JTabbedPane tabs = new JTabbedPane();
+        tabs.addTab("Management Model", new JScrollPane(new ManagementModel(cmdText, executor)));
+        tabs.addTab("Output", makeOutputDisplay());
+        return tabs;
     }
 
     private JPanel makeCommandLine() {
@@ -83,7 +94,7 @@ public class GuiMain {
         cmdLine.add(new JLabel("cmd>"), BorderLayout.WEST);
         cmdText.setText("/subsystem=weld/:read-resource");
         cmdLine.add(cmdText, BorderLayout.CENTER);
-        Action submitListener = new DoOperationActionListener(cmdCtx, cmdText, output);
+        Action submitListener = new DoOperationActionListener(executor, cmdText, output);
 
         KeyStroke enterKey = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true);
         cmdText.getInputMap().put(enterKey, SUBMIT_ACTION);
