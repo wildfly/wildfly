@@ -101,7 +101,7 @@ public class ValidateOperationHandler implements OperationStepHandler, Descripti
             }
         } else {
             try {
-                new OperationValidator(context.getResourceRegistration()).validateOperation(op);
+                new OperationValidator(context.getResourceRegistration(), false, false).validateOperation(op);
             } catch (IllegalArgumentException e) {
                 e.printStackTrace();
                 context.getFailureDescription().set(e.getMessage());

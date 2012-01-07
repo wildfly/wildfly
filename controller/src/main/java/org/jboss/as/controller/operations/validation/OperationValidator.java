@@ -59,16 +59,16 @@ public class OperationValidator {
 
     private final ImmutableManagementResourceRegistration root;
     private final boolean validateDescriptions;
-    private final boolean includeOperation;
+    private final boolean includeOperationInError;
 
     public OperationValidator(final ImmutableManagementResourceRegistration root) {
         this(root, true, true);
     }
 
-    public OperationValidator(final ImmutableManagementResourceRegistration root, boolean validateDescriptions, boolean includeOperationAndDescription) {
+    public OperationValidator(final ImmutableManagementResourceRegistration root, boolean validateDescriptions, boolean includeOperationInError) {
         this.root = root;
         this.validateDescriptions = validateDescriptions;
-        this.includeOperation = includeOperationAndDescription;
+        this.includeOperationInError = includeOperationInError;
     }
 
     /**
@@ -519,7 +519,7 @@ public class OperationValidator {
     }
 
     private String formatOperationForMessage(ModelNode operation) {
-        if (includeOperation) {
+        if (includeOperationInError) {
             return operation.asString();
         }
         return "";
