@@ -36,6 +36,7 @@ import javax.xml.stream.XMLStreamReader;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
+import org.jboss.as.ejb3.clustering.EJBBoundClusteringMetaDataParser;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
@@ -264,6 +265,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
             XMLStreamReader reader = getXMLStreamReader(stream, descriptor, dtdInfo);
 
             Map<String, AbstractMetaDataParser<?>> parsers = new HashMap<String, AbstractMetaDataParser<?>>();
+            parsers.put(EJBBoundClusteringMetaDataParser.NAMESPACE_URI, new EJBBoundClusteringMetaDataParser());
             parsers.put("urn:security", new EJBBoundSecurityMetaDataParser());
             parsers.put("urn:security-role", new SecurityRoleMetaDataParser());
             parsers.put("urn:resource-adapter-binding", new EJBBoundResourceAdapterBindingMetaDataParser());

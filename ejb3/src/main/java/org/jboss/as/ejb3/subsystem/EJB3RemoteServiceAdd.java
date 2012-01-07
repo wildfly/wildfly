@@ -105,8 +105,8 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         final ServiceBuilder<EJBRemoteConnectorService> ejbRemoteConnectorServiceBuilder = serviceTarget.addService(EJBRemoteConnectorService.SERVICE_NAME, service);
         // add dependency on the Remoting subsytem endpoint
         ejbRemoteConnectorServiceBuilder.addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, service.getEndpointInjector());
-        // add dependency on the remoting connector
-        ejbRemoteConnectorServiceBuilder.addDependency(RemotingServices.connectorServiceName(connectorName));
+        // add dependency on the remoting server (which allows remoting connector to connect to it)
+        ejbRemoteConnectorServiceBuilder.addDependency(RemotingServices.serverServiceName(connectorName));
         // add rest of the dependencies
         ejbRemoteConnectorServiceBuilder.addDependency(EJB3ThreadPoolAdd.BASE_SERVICE_NAME.append(threadPoolName), ExecutorService.class, service.getExecutorService())
                 .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, service.getDeploymentRepositoryInjector())
