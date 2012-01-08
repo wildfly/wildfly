@@ -62,7 +62,7 @@ abstract class AbstractMessageHandler implements MessageHandler {
     protected Map<String, Object> readAttachments(final ObjectInput input) throws IOException, ClassNotFoundException {
         final int numAttachments = input.readByte();
         if (numAttachments == 0) {
-            return null;
+            return new HashMap<String, Object>();
         }
         final Map<String, Object> attachments = new HashMap<String, Object>(numAttachments);
         for (int i = 0; i < numAttachments; i++) {
