@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.remote;
 
+import org.jboss.as.clustering.GroupMembershipNotifier;
+import org.jboss.as.clustering.GroupMembershipNotifierRegistry;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.utils.DescriptorUtils;
@@ -35,6 +37,8 @@ import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.DeploymentRepositoryListener;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
+import org.jboss.ejb.client.ClusterContext;
+import org.jboss.ejb.client.ClusterNodeManager;
 import org.jboss.ejb.client.EJBClientInvocationContext;
 import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.EJBReceiver;
@@ -48,6 +52,7 @@ import org.jboss.marshalling.cloner.ClassLoaderClassCloner;
 import org.jboss.marshalling.cloner.ClonerConfiguration;
 import org.jboss.marshalling.cloner.ObjectCloner;
 import org.jboss.marshalling.cloner.ObjectCloners;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -68,7 +73,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * @author Stuart Douglas
  */
-public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbReceiver> {
+public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbReceiver>, GroupMembershipNotifierRegistry.Listener {
 
     public static final ServiceName BY_VALUE_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "localEjbReceiver", "value");
     public static final ServiceName BY_REFERENCE_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "localEjbReceiver", "reference");
@@ -77,6 +82,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
 
     private final List<EJBReceiverContext> contexts = new CopyOnWriteArrayList<EJBReceiverContext>();
     private final InjectedValue<DeploymentRepository> deploymentRepository = new InjectedValue<DeploymentRepository>();
+    private final InjectedValue<GroupMembershipNotifierRegistry> clusterRegistry = new InjectedValue<GroupMembershipNotifierRegistry>();
     private final Listener deploymentListener = new Listener();
     private final boolean allowPassByReference;
 
@@ -237,6 +243,8 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
     public void start(final StartContext context) throws StartException {
 
         deploymentRepository.getValue().addListener(deploymentListener);
+        // register ourselves as a listener to new cluster formations/removal
+        this.clusterRegistry.getValue().addListener(this);
     }
 
     @Override
@@ -246,6 +254,8 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         }
         this.contexts.clear();
         deploymentRepository.getValue().removeListener(deploymentListener);
+        // remove ourselves from cluster creation/removal event notifications
+        this.clusterRegistry.getValue().removeListener(this);
     }
 
     @Override
@@ -255,6 +265,33 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
 
     public InjectedValue<DeploymentRepository> getDeploymentRepository() {
         return deploymentRepository;
+    }
+
+    @Override
+    public void newGroupMembershipNotifierRegistered(GroupMembershipNotifier groupMembershipNotifier) {
+        final String clusterName = groupMembershipNotifier.getGroupName();
+        for (final EJBReceiverContext receiverContext : this.contexts) {
+            final ClusterContext clusterContext = receiverContext.getClientContext().getOrCreateClusterContext(clusterName);
+            // TODO: we currently don't take into account any nodes in the cluster for Local EJB receiver.
+            // We just register the current local receiver for the cluster context which effectively means that
+            // any invocations via the LocalEJBReceiver for any clusters will be pinned to the current local node.
+            // We need to decide whether we want to create remote ejb receiver(s) for the cluster nodes, out of this
+            // local receiver
+            clusterContext.addClusterNode(this.getNodeName(), new LocalClusterNodeManager());
+        }
+        // TODO: We also should register a listener for listening to removed/added nodes from the cluster
+    }
+
+    @Override
+    public void groupMembershipNotifierUnregistered(GroupMembershipNotifier groupMembershipNotifier) {
+        final String clusterName = groupMembershipNotifier.getGroupName();
+        for (final EJBReceiverContext receiverContext : this.contexts) {
+            receiverContext.getClientContext().removeCluster(clusterName);
+        }
+    }
+
+    public Injector<GroupMembershipNotifierRegistry> getClusterRegistryInjector() {
+        return this.clusterRegistry;
     }
 
     private static class ImmediateResultProducer implements EJBReceiverInvocationContext.ResultProducer {
@@ -297,6 +334,19 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         @Override
         public void deploymentRemoved(final DeploymentModuleIdentifier deployment) {
             LocalEjbReceiver.this.deregisterModule(deployment.getApplicationName(), deployment.getModuleName(), deployment.getDistinctName());
+        }
+    }
+
+    private class LocalClusterNodeManager implements ClusterNodeManager {
+
+        @Override
+        public String getNodeName() {
+            return LocalEjbReceiver.this.getNodeName();
+        }
+
+        @Override
+        public EJBReceiver getEJBReceiver() {
+            return LocalEjbReceiver.this;
         }
     }
 }

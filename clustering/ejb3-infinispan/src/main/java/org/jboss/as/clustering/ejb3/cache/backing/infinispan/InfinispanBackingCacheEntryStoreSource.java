@@ -102,7 +102,7 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
         // install the GroupCommunicationService
         final CoreGroupCommunicationServiceService groupCommunicationService = new CoreGroupCommunicationServiceService(SCOPE_ID);
         groupCommunicationService.build(target, container).setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .addDependency(GroupMembershipNotifierRegistryService.SERVICE_NAME, GroupMembershipNotifierRegistry.class, groupCommunicationService.getGroupMembershipNotifierRegistryInjector())
+                .addDependency(ServiceBuilder.DependencyType.OPTIONAL, GroupMembershipNotifierRegistryService.SERVICE_NAME, GroupMembershipNotifierRegistry.class, groupCommunicationService.getGroupMembershipNotifierRegistryInjector())
                 .install();
         new SharedLocalYieldingClusterLockManagerService(container).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         builder.addDependency(serviceName, Cache.class, this.groupCache);
