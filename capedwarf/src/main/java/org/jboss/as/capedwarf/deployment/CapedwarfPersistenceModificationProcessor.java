@@ -70,12 +70,12 @@ public class CapedwarfPersistenceModificationProcessor extends CapedwarfPersiste
 
     static final String PROVIDER_START = "<provider>";
     static final String PROVIDER_END = "</provider>";
-    static final String PROVIDER_REGEXP = PROVIDER_START + "[.]*" + PROVIDER_END;
+    static final String PROVIDER_REGEXP = PROVIDER_START + "[a-zA-z0-9\\.^<]+" + PROVIDER_END;
     static final String HIBERNATE_PROVIDER = PROVIDER_START + Configuration.PROVIDER_CLASS_HIBERNATE + PROVIDER_END;
     static final String HIBERNATE_OGM_PROVIDER = PROVIDER_START + Configuration.PROVIDER_CLASS_HIBERNATE_OGM + PROVIDER_END;
     static final String NON_JTA_DS = "<non-jta-data-source>";
     static final String NON_JTA_DS_DEFINITION = NON_JTA_DS + "java:jboss/datasources/ExampleDS</non-jta-data-source>";
-    static final String PROPERTIES = "<properpties>";
+    static final String PROPERTIES = "<properties>";
     static final String DIALECT_PROPERTY = "<property name=\"hibernate.dialect\" value=\"" + DEFAULT_DIALECT + "\"/>";
     static final String CREATE_DROP = "<property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>";
 
