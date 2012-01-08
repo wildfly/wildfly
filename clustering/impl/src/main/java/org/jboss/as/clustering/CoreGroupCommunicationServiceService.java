@@ -85,7 +85,10 @@ public class CoreGroupCommunicationServiceService implements Service<CoreGroupCo
             throw new StartException(e);
         }
         // add it to the registry
-        this.groupMembershipNotifierRegistry.getValue().registerGroupMembershipNotifier(this.service);
+        final GroupMembershipNotifierRegistry registry = this.groupMembershipNotifierRegistry.getOptionalValue();
+        if (registry != null) {
+            registry.registerGroupMembershipNotifier(this.service);
+        }
     }
 
     /**
@@ -96,7 +99,10 @@ public class CoreGroupCommunicationServiceService implements Service<CoreGroupCo
     public void stop(StopContext context) {
         this.service.stop();
         // remove from registry
-        this.groupMembershipNotifierRegistry.getValue().unregisterGroupMembershipNotifier(this.service.getGroupName());
+        final GroupMembershipNotifierRegistry registry = this.groupMembershipNotifierRegistry.getOptionalValue();
+        if (registry != null) {
+            registry.unregisterGroupMembershipNotifier(this.service.getGroupName());
+        }
     }
 
     public Injector<GroupMembershipNotifierRegistry> getGroupMembershipNotifierRegistryInjector() {
