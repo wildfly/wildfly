@@ -22,13 +22,12 @@
 package org.jboss.as.ejb3.remote;
 
 import org.jboss.as.clustering.GroupMembershipNotifierRegistry;
+import org.jboss.as.clustering.registry.Registry;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.remote.protocol.versionone.VersionOneProtocolChannelReceiver;
 import org.jboss.as.network.ClientMapping;
-import org.jboss.as.network.SocketBinding;
-import org.jboss.as.remoting.AbstractStreamServerService;
-import org.jboss.as.remoting.InjectedSocketBindingStreamServerService;
+import org.jboss.as.server.ServerEnvironment;
 import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.MarshallerFactory;
@@ -55,7 +54,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
@@ -75,7 +73,9 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     private final InjectedValue<DeploymentRepository> deploymentRepositoryInjectedValue = new InjectedValue<DeploymentRepository>();
     private final InjectedValue<EJBRemoteTransactionsRepository> ejbRemoteTransactionsRepositoryInjectedValue = new InjectedValue<EJBRemoteTransactionsRepository>();
     private final InjectedValue<GroupMembershipNotifierRegistry> clusterRegistry = new InjectedValue<GroupMembershipNotifierRegistry>();
-    private final InjectedValue<AbstractStreamServerService> remotingServer = new InjectedValue<AbstractStreamServerService>();
+    private final InjectedValue<Registry> clientMappingRegistryService = new InjectedValue<Registry>();
+    private final String nodeName;
+
     private volatile Registration registration;
     private final byte serverProtocolVersion;
     private final String[] supportedMarshallingStrategies;
@@ -83,6 +83,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     public EJBRemoteConnectorService(final byte serverProtocolVersion, final String[] supportedMarshallingStrategies) {
         this.serverProtocolVersion = serverProtocolVersion;
         this.supportedMarshallingStrategies = supportedMarshallingStrategies;
+        this.nodeName = SecurityActions.getSystemProperty(ServerEnvironment.NODE_NAME);
     }
 
     @Override
@@ -248,8 +249,8 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
         return this.clusterRegistry;
     }
 
-    public Injector<AbstractStreamServerService> getRemotingServerInjector() {
-        return this.remotingServer;
+    public Injector<Registry> getClientMappingRegistryServiceInjector() {
+        return this.clientMappingRegistryService;
     }
 
     private boolean isSupportedMarshallingStrategy(final String strategy) {
@@ -265,11 +266,9 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     }
 
     private List<ClientMapping> getClientMappings() {
-        final AbstractStreamServerService streamServerService = this.remotingServer.getValue();
-        if (!(streamServerService instanceof InjectedSocketBindingStreamServerService)) {
-            return Collections.emptyList();
-        }
-        final SocketBinding socketBinding = ((InjectedSocketBindingStreamServerService) streamServerService).getSocketBinding();
-        return socketBinding.getClientMappings();
+        final Registry<String, List<ClientMapping>> clientMappingsPerNode = this.clientMappingRegistryService.getValue();
+        // get the client mappings for this node
+        final List<ClientMapping> clientMappings = clientMappingsPerNode.getEntries().get(nodeName);
+        return clientMappings;
     }
 }

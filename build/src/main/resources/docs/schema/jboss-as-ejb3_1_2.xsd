@@ -60,6 +60,8 @@
     <xs:complexType name="remoteType">
         <xs:attribute name="connector-ref" type="xs:string" use="required"/>
         <xs:attribute name="thread-pool-name" type="xs:token" use="required"/>
+        <xs:attribute name="client-mappings-cache-container-ref" type="xs:string" use="optional" default="sfsb"/>
+        <xs:attribute name="client-mappings-cache-ref" type="xs:string" use="optional" default="ejb-remote-connector-client-mappings"/>
     </xs:complexType>
 
     <xs:complexType name="asyncType">
