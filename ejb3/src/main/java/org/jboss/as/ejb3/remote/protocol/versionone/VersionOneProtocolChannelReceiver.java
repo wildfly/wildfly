@@ -32,6 +32,7 @@ import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.DeploymentRepositoryListener;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
+import org.jboss.as.network.ClientMapping;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.remoting3.Channel;
@@ -72,16 +73,18 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
     private final MarshallerFactory marshallerFactory;
     private final ExecutorService executorService;
     private final GroupMembershipNotifierRegistry groupMembershipNotifierRegistry;
+    private final List<ClientMapping> clientMappings;
 
     public VersionOneProtocolChannelReceiver(final Channel channel, final DeploymentRepository deploymentRepository,
                                              final EJBRemoteTransactionsRepository transactionsRepository, final GroupMembershipNotifierRegistry groupMembershipNotifierRegistry,
-                                             final MarshallerFactory marshallerFactory, final ExecutorService executorService) {
+                                             final List<ClientMapping> clientMappings, final MarshallerFactory marshallerFactory, final ExecutorService executorService) {
         this.marshallerFactory = marshallerFactory;
         this.channel = channel;
         this.executorService = executorService;
         this.deploymentRepository = deploymentRepository;
         this.transactionsRepository = transactionsRepository;
         this.groupMembershipNotifierRegistry = groupMembershipNotifierRegistry;
+        this.clientMappings = clientMappings;
     }
 
     public void startReceiving() {

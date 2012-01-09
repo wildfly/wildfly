@@ -44,6 +44,7 @@ import org.jboss.as.ejb3.cache.impl.backing.clustering.GroupMembershipNotifierRe
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
+import org.jboss.as.remoting.AbstractStreamServerService;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.as.txn.service.UserTransactionService;
@@ -106,7 +107,7 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         // add dependency on the Remoting subsytem endpoint
         ejbRemoteConnectorServiceBuilder.addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, service.getEndpointInjector());
         // add dependency on the remoting server (which allows remoting connector to connect to it)
-        ejbRemoteConnectorServiceBuilder.addDependency(RemotingServices.serverServiceName(connectorName));
+        ejbRemoteConnectorServiceBuilder.addDependency(RemotingServices.serverServiceName(connectorName), AbstractStreamServerService.class, service.getRemotingServerInjector());
         // add rest of the dependencies
         ejbRemoteConnectorServiceBuilder.addDependency(EJB3ThreadPoolAdd.BASE_SERVICE_NAME.append(threadPoolName), ExecutorService.class, service.getExecutorService())
                 .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, service.getDeploymentRepositoryInjector())
