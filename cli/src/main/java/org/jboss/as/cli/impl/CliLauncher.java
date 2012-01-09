@@ -207,7 +207,7 @@ public class CliLauncher {
         }
 
         try {
-            new GuiMain(cmdCtx);
+            GuiMain.start(cmdCtx);
         } catch(Throwable t) {
             t.printStackTrace();
         }

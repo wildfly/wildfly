@@ -34,32 +34,63 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
+import javax.swing.ToolTipManager;
 import org.jboss.as.cli.CommandContext;
 
 /**
+ * Static main class for the GUI.
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
 public class GuiMain {
     private static final String SUBMIT_ACTION = "submit-action";
+    private static JFrame frame;
+    private static JTextField cmdText = new JTextField();
 
-    private CommandContext cmdCtx;
-    private CommandExecutor executor;
+    private static CommandExecutor executor;
 
-    private JFrame frame = new JFrame("CLI GUI");
-    private Container contentPane;
-    private JPanel mainPanel = new JPanel();
-    private JTextField cmdText = new JTextField();
-    private JButton submitButton = new JButton("Submit");
-    private JTextPane output = new JTextPane();
+    private static Container contentPane;
+    private static JPanel mainPanel = new JPanel();
 
-    public GuiMain(CommandContext cmdCtx) {
-        this.cmdCtx = cmdCtx;
-        this.executor = new CommandExecutor(cmdCtx);
+    private static JButton submitButton = new JButton("Submit");
+    private static JTextPane output = new JTextPane();
+    private static JTabbedPane tabs;
+
+    private GuiMain() {} // don't allow an instance
+
+    public static synchronized void start(CommandContext cmdCtx) {
+        if (executor != null) throw new RuntimeException("Gui is already initialized.");
+        executor = new CommandExecutor(cmdCtx);
+        ToolTipManager.sharedInstance().setDismissDelay(15000);
         initJFrame();
     }
 
-    private void initJFrame() {
+    /**
+     * Get the singleton JFrame instance for the GUI
+     * @return The JFrame
+     */
+    public static JFrame getFrame() {
+        return frame;
+    }
+
+    /**
+     * Get the main command text field.
+     * @return The main command text field.
+     */
+    public static JTextField getCommandText() {
+        return cmdText;
+    }
+
+    /**
+     * Get the command executor.
+     * @return The command executor.
+     */
+    public static CommandExecutor getExecutor() {
+        return executor;
+    }
+
+    private static synchronized void initJFrame() {
+        frame = new JFrame("CLI GUI");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.addWindowListener(new WindowAdapter() {
             @Override
@@ -67,34 +98,36 @@ public class GuiMain {
                 System.exit(0);
             }
         });
-        frame.setSize(640, 480);
+        frame.setSize(800, 600);
 
         contentPane = frame.getContentPane();
         mainPanel.setBorder(BorderFactory.createEtchedBorder());
         contentPane.add(mainPanel, BorderLayout.CENTER);
 
         mainPanel.setLayout(new BorderLayout(5,5));
+        tabs = makeTabbedPane();
+
         mainPanel.add(makeCommandLine(), BorderLayout.NORTH);
-        mainPanel.add(makeTabbedPane(), BorderLayout.CENTER);
+        mainPanel.add(tabs, BorderLayout.CENTER);
 
         //frame.pack();
         frame.setVisible(true);
     }
 
-    private JTabbedPane makeTabbedPane() {
+    private static JTabbedPane makeTabbedPane() {
         JTabbedPane tabs = new JTabbedPane();
-        tabs.addTab("Management Model", new JScrollPane(new ManagementModel(cmdText, executor)));
+        tabs.addTab("Command Builder", new JScrollPane(new ManagementModel()));
         tabs.addTab("Output", makeOutputDisplay());
         return tabs;
     }
 
-    private JPanel makeCommandLine() {
+    private static JPanel makeCommandLine() {
         JPanel cmdLine = new JPanel();
         cmdLine.setLayout(new BorderLayout(2,5));
         cmdLine.add(new JLabel("cmd>"), BorderLayout.WEST);
-        cmdText.setText("/subsystem=weld/:read-resource");
+        cmdText.setText("/");
         cmdLine.add(cmdText, BorderLayout.CENTER);
-        Action submitListener = new DoOperationActionListener(executor, cmdText, output);
+        Action submitListener = new DoOperationActionListener(output, tabs);
 
         KeyStroke enterKey = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true);
         cmdText.getInputMap().put(enterKey, SUBMIT_ACTION);
@@ -105,7 +138,7 @@ public class GuiMain {
         return cmdLine;
     }
 
-    private JPanel makeOutputDisplay() {
+    private static JPanel makeOutputDisplay() {
         JPanel outputDisplay = new JPanel();
         outputDisplay.setSize(400, 5000);
         outputDisplay.setLayout(new BorderLayout(5,5));
