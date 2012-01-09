@@ -20,9 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.nonjpa.hibernate;
+package org.jboss.as.test.integration.hibernate.envers;
 
 import java.io.File;
+import java.util.List;
 import java.util.Properties;
 
 import javax.ejb.Stateful;
@@ -31,17 +32,19 @@ import javax.ejb.TransactionManagementType;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
+import org.hibernate.envers.AuditReader;
+import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.hibernate.service.BootstrapServiceRegistryBuilder;
 import org.hibernate.service.ServiceRegistry;
 import org.hibernate.service.ServiceRegistryBuilder;
 
 /**
- * Test that a Hibernate sessionfactory can be inititated from hibernate.cfg.xml and properties added to Hibernate Configuration
- * in AS7 container without any JPA assistance
+ * Test that Hibernate Envers is working over Native Hibernate API in AS7 container without any JPA assistance
  * 
  * @author Madhumita Sadhukhan
  */
@@ -53,6 +56,7 @@ public class SFSBHibernateSessionFactory {
     private static Configuration configuration;
     private static ServiceRegistryBuilder builder;
     private static ServiceRegistry serviceRegistry;
+    private static Session session;
 
     protected static final Class[] NO_CLASSES = new Class[0];
     protected static final String NO_MAPPINGS = new String();
@@ -68,6 +72,8 @@ public class SFSBHibernateSessionFactory {
                     "true");
             configuration.setProperty(Environment.HBM2DDL_AUTO, "create-drop");
             configuration.setProperty(Environment.DATASOURCE, "java:jboss/datasources/ExampleDS");
+            configuration.setProperty("org.hibernate.envers.audit_strategy",
+                    "org.hibernate.envers.strategy.DefaultAuditStrategy");
             // fetch the properties
             Properties properties = new Properties();
             properties.putAll(configuration.getProperties());
@@ -80,10 +86,10 @@ public class SFSBHibernateSessionFactory {
             serviceRegistry = builder.buildServiceRegistry();
             // Create the SessionFactory from Configuration
             sessionFactory = configuration.configure("hibernate.cfg.xml").buildSessionFactory(serviceRegistry);
+            // Session session = sessionFactory.openSession();
 
         } catch (Throwable ex) { // Make sure you log the exception, as it might be swallowed
             System.err.println("Initial SessionFactory creation failed." + ex);
-            // ex.printStackTrace();
             throw new ExceptionInInitializerError(ex);
         }
 
@@ -101,23 +107,55 @@ public class SFSBHibernateSessionFactory {
 
         try {
             Session session = sessionFactory.openSession();
+            Transaction trans = session.beginTransaction();
             session.save(student);
             session.flush();
+            trans.commit();
             session.close();
         } catch (Exception e) {
 
             e.printStackTrace();
-            throw new RuntimeException("transactional failure while persisting student entity", e);
+            throw new RuntimeException("Failure while persisting student entity", e);
 
         }
 
         return student;
     }
 
-    // fetch student
-    public Student getStudent(int id) {
-        Student emp = (Student) sessionFactory.openSession().load(Student.class, id);
-        return emp;
+    // update student
+    public Student updateStudent(String address, int id) {
+
+        Student student;
+
+        try {
+            Session session = sessionFactory.openSession();
+            Transaction trans = session.beginTransaction();
+            student = (Student) session.load(Student.class, id);
+            student.setAddress(address);
+            session.save(student);
+            session.flush();
+            trans.commit();
+            session.close();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            throw new RuntimeException("Failure while persisting student entity", e);
+
+        }
+
+        // session.close();
+        return student;
+    }
+
+    // fetch Audited entity from Audit tables
+    public Student retrieveOldStudentVersion(int id) {
+        AuditReader reader = AuditReaderFactory.get(sessionFactory.openSession());
+        Student student_rev = reader.find(Student.class, id, 1);
+        List<Number> revlist = reader.getRevisions(Student.class, id);
+        // this is for checking revision size hence not removing this S.o.p
+        System.out.println("Size of revisionList:--" + revlist.size());
+        return student_rev;
     }
 
 }
