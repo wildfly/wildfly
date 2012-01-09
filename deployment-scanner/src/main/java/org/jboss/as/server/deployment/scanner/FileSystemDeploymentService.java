@@ -551,7 +551,11 @@ class FileSystemDeploymentService implements DeploymentScanner {
                                     final boolean archive = child.isFile();
                                     addContentAddingTask(path, archive, fileName, child, timestamp, scanContext);
                                 } else {
-                                    scanContext.incompleteFiles.put(child, new IncompleteDeploymentStatus(child, timestamp));
+                                    //we need to make sure that the file was not deleted while
+                                    //the scanner was running
+                                    if(child.exists()) {
+                                        scanContext.incompleteFiles.put(child, new IncompleteDeploymentStatus(child, timestamp));
+                                    }
                                 }
                             } catch (NonScannableZipException e) {
                                 // Track for possible logging in scan()
