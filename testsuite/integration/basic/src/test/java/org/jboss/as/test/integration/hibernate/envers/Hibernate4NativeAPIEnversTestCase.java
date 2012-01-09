@@ -1,4 +1,4 @@
-package org.jboss.as.test.integration.nonjpa.hibernate;
+package org.jboss.as.test.integration.hibernate.envers;
 
 import static org.junit.Assert.assertTrue;
 
@@ -21,27 +21,35 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Test that a Hibernate sessionfactory can be inititated from hibernate.cfg.xml and properties added to Hibernate Configuration
- * in AS7 container without any JPA assistance
+ * Test that Hibernate Envers is working over Native Hibernate API in AS7 container without any JPA assistance
  * 
  * @author Madhumita Sadhukhan
  */
 @RunWith(Arquillian.class)
-public class Hibernate4NativeAPIProviderTestCase {
+public class Hibernate4NativeAPIEnversTestCase {
 
     private static final String ARCHIVE_NAME = "hibernate4native_test";
 
     public static final String hibernate_cfg = "<?xml version='1.0' encoding='utf-8'?>"
-            + "<!DOCTYPE hibernate-configuration PUBLIC " + "\"//Hibernate/Hibernate Configuration DTD 3.0//EN\" "
+            + "<!DOCTYPE hibernate-configuration PUBLIC "
+            + "\"//Hibernate/Hibernate Configuration DTD 3.0//EN\" "
             + "\"http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd\">"
-            + "<hibernate-configuration><session-factory>" + "<property name=\"show_sql\">true</property>"
+            + "<hibernate-configuration><session-factory>"
+            + "<property name=\"show_sql\">true</property>"
             + "<property name=\"current_session_context_class\">thread</property>"
+            + "<!-- Hibernate ENVERS Listener Configuration -->"
+            + "<property name=\"hibernate.ejb.event.post-insert\">org.hibernate.ejb.event.EJB3PostInsertEventListener,org.hibernate.envers.event.AuditEventListener</property>"
+            + "<property name=\"hibernate.ejb.event.post-update\">org.hibernate.ejb.event.EJB3PostUpdateEventListener,org.hibernate.envers.event.AuditEventListener</property>"
+            + "<property name=\"hibernate.ejb.event.post-delete\">org.hibernate.ejb.event.EJB3PostDeleteEventListener,org.hibernate.envers.event.AuditEventListener</property>"
+            + "<property name=\"hibernate.ejb.event.pre-collection-update\">org.hibernate.envers.event.AuditEventListener</property>"
+            + "<property name=\"hibernate.ejb.event.pre-collection-update\">org.hibernate.envers.event.AuditEventListener</property>"
+            + "<property name=\"hibernate.ejb.event.pre-collection-update\">org.hibernate.envers.event.AuditEventListener</property>"
             + "<mapping resource=\"testmapping.hbm.xml\"/>" + "</session-factory></hibernate-configuration>";
 
     public static final String testmapping = "<?xml version=\"1.0\"?>" + "<!DOCTYPE hibernate-mapping PUBLIC "
             + "\"-//Hibernate/Hibernate Mapping DTD 3.0//EN\" " + "\"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd\">"
             + "<hibernate-mapping package=\"org.jboss.as.test.integration.nonjpa.hibernate\">"
-            + "<class name=\"org.jboss.as.test.integration.nonjpa.hibernate.Student\" table=\"STUDENT\">"
+            + "<class name=\"org.jboss.as.test.integration.hibernate.envers.Student\" table=\"STUDENT\">"
             + "<id name=\"studentId\" column=\"student_id\">" + "<generator class=\"native\"/>" + "</id>"
             + "<property name=\"firstName\" column=\"first_name\"/>" + "<property name=\"lastName\" column=\"last_name\"/>"
             + "<property name=\"address\"/>"
@@ -80,7 +88,7 @@ public class Hibernate4NativeAPIProviderTestCase {
         ear.addAsLibraries(lib);
 
         final WebArchive main = ShrinkWrap.create(WebArchive.class, "main.war");
-        main.addClasses(Hibernate4NativeAPIProviderTestCase.class);
+        main.addClasses(Hibernate4NativeAPIEnversTestCase.class);
         ear.addAsModule(main);
 
         // add application dependency on H2 JDBC driver, so that the Hibernate classloader (same as app classloader)
@@ -127,13 +135,14 @@ public class Hibernate4NativeAPIProviderTestCase {
     }
 
     @Test
-    public void testSimpleOperation() throws Exception {
+    public void testEnversonHibernateNativeAPI() throws Exception {
         SFSBHibernateSessionFactory sfsb = lookup("SFSBHibernateSessionFactory", SFSBHibernateSessionFactory.class);
         // setup Configuration and SessionFactory
         sfsb.setupConfig();
         Student s1 = sfsb.createStudent("MADHUMITA", "SADHUKHAN", "99 Purkynova REDHAT BRNO CZ", 1);
-        Student s2 = sfsb.createStudent("REDHAT", "LINUX", "Worldwide", 3);
-        Student st = sfsb.getStudent(s1.getStudentId());
-        assertTrue("name read from hibernate session is MADHUMITA", "MADHUMITA".equals(st.getFirstName()));
+        Student s2 = sfsb.updateStudent("REDHAT Brisbane,Australia", 1);
+        Student st = sfsb.retrieveOldStudentVersion(s2.getStudentId());
+        assertTrue("address read from audit tables after envers implementation is 99 Purkynova REDHAT BRNO CZ",
+                "99 Purkynova REDHAT BRNO CZ".equals(st.getAddress()));
     }
 }

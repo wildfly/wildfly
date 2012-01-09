@@ -20,14 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.nonjpa.hibernate;
+package org.jboss.as.test.integration.hibernate.envers;
 
+import org.hibernate.envers.Audited;
 
 /**
  * Represents a student object.
  * 
  * @author Madhumita Sadhukhan
  */
+@Audited
 public class Student {
     // unique student id
     private int studentId;
