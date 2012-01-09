@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -44,12 +44,12 @@ import org.junit.runner.RunWith;
 /**
  * Transaction tests
  *
- * @author Scott Marlow
+ * @author Scott Marlow and Zbynek Roubalik
  */
 @RunWith(Arquillian.class)
 public class TransactionTestCase {
 
-    private static final String ARCHIVE_NAME = "jpa_sessionfactory";
+    private static final String ARCHIVE_NAME = "jpa_transaction";
 
     private static final String persistence_xml =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
@@ -71,7 +71,8 @@ public class TransactionTestCase {
             Employee.class,
             SFSB1.class,
             SFSBXPC.class,
-            SFSBCMT.class
+            SFSBCMT.class,
+            SLSB1.class
         );
 
         jar.addAsResource(new StringAsset(persistence_xml), "META-INF/persistence.xml");
@@ -151,6 +152,30 @@ public class TransactionTestCase {
         Employee emp = sfsbxpc.persistAfterLookupInDifferentTX(sfsbcmt, 10);
         assertNull("should not leak dirty data from one TX to another", emp);
 
+    }
+    
+    
+    
+    /**
+     * Tests JTA involving an EJB 3 SLSB which makes two DAO calls in transaction.
+     * Scenarios: 
+     * 1) The transaction fails during the first DAO call and the JTA transaction is rolled back and no database changes should occur. 
+     * 2) The transaction fails during the second DAO call and the JTA transaction is rolled back and no database changes should occur.
+     * 3) The transaction fails after the DAO calls and the JTA transaction is rolled back and no database changes should occur.  
+     */
+    @Test
+    public void testFailInDAOCalls() throws Exception {
+    	SLSB1 slsb1 = lookup("SLSB1", SLSB1.class);
+    	slsb1.addEmployee();
+
+    	String message = slsb1.failAfterCalls();
+    	assertEquals("DB should be unchanged, which we indicate by returning 'success'","success", message);
+    	
+    	message = slsb1.failInSecondCall();
+    	assertEquals("DB should be unchanged, which we indicate by returning 'success'","success", message);
+    	
+    	message = slsb1.failAfterCalls();
+    	assertEquals("DB should be unchanged, which we indicate by returning 'success'","success", message);
     }
 
 }
