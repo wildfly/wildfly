@@ -53,6 +53,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
+@Deprecated
 public class JacORBSubsystemProviders {
 
     static final String RESOURCE_NAME = JacORBSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
