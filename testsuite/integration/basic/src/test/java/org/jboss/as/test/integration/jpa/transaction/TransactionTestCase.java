@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -169,13 +169,13 @@ public class TransactionTestCase {
     	slsb1.addEmployee();
 
     	String message = slsb1.failAfterCalls();
-    	assertEquals("DB should be unchaged, which we indicate by returning 'success'","success", message);
+    	assertEquals("DB should be unchanged, which we indicate by returning 'success'","success", message);
     	
     	message = slsb1.failInSecondCall();
-    	assertEquals("DB should be unchaged, which we indicate by returning 'success'","success", message);
+    	assertEquals("DB should be unchanged, which we indicate by returning 'success'","success", message);
     	
     	message = slsb1.failAfterCalls();
-    	assertEquals("DB should be unchaged, which we indicate by returning 'success'","success", message);
+    	assertEquals("DB should be unchanged, which we indicate by returning 'success'","success", message);
     }
 
 }
