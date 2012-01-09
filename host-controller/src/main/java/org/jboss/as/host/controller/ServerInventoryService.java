@@ -119,7 +119,7 @@ class ServerInventoryService implements Service<ServerInventory> {
                     try {
                         serverInventory.stopServers(-1, true); // TODO graceful shutdown // TODO async
                         serverInventory = null;
-                        client.getValue().setServerInventory(null);
+                        // client.getValue().setServerInventory(null);
                     } finally {
                         context.complete();
                     }

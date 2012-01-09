@@ -63,10 +63,6 @@ class ProcessControllerConnectionService implements Service<ProcessControllerCon
         this.authCode = authCode;
     }
 
-    ServerInventory getServerInventory() {
-        return serverInventory;
-    }
-
     void setServerInventory(ServerInventory serverInventory) {
         this.serverInventory = serverInventory;
     }
@@ -86,12 +82,21 @@ class ProcessControllerConnectionService implements Service<ProcessControllerCon
             client = ProcessControllerClient.connect(configuration, authCode, new ProcessMessageHandler() {
                 @Override
                 public void handleProcessAdded(final ProcessControllerClient client, final String processName) {
+                    if (serverInventory == null){
+                        throw MESSAGES.noServerInventory();
+                    }
+                    if(ManagedServer.isServerProcess(processName)) {
+                        serverInventory.serverProcessAdded(processName);
+                    }
                 }
 
                 @Override
                 public void handleProcessStarted(final ProcessControllerClient client, final String processName) {
                     if (serverInventory == null){
                         throw MESSAGES.noServerInventory();
+                    }
+                    if(ManagedServer.isServerProcess(processName)) {
+                        serverInventory.serverProcessStarted(processName);
                     }
                 }
 
@@ -100,29 +105,61 @@ class ProcessControllerConnectionService implements Service<ProcessControllerCon
                     if (serverInventory == null){
                         throw MESSAGES.noServerInventory();
                     }
-                    serverInventory.serverStopped(processName);
+                    if(ManagedServer.isServerProcess(processName)) {
+                        serverInventory.serverProcessStopped(processName);
+                    }
                 }
 
                 @Override
                 public void handleProcessRemoved(final ProcessControllerClient client, final String processName) {
+                    if (serverInventory == null){
+                        throw MESSAGES.noServerInventory();
+                    }
+                    if(ManagedServer.isServerProcess(processName)) {
+                        serverInventory.serverProcessRemoved(processName);
+                    }
                 }
 
                 @Override
                 public void handleProcessInventory(final ProcessControllerClient client, final Map<String, ProcessInfo> inventory) {
-                    // TODO: reconcile our server list against the process controller inventory
+                    if (serverInventory == null){
+                        throw MESSAGES.noServerInventory();
+                    }
                     serverInventory.processInventory(inventory);
                 }
 
                 @Override
                 public void handleConnectionShutdown(final ProcessControllerClient client) {
+                    if(serverInventory == null) {
+                        return;
+                    }
+                    serverInventory.connectionFinished();
                 }
 
                 @Override
                 public void handleConnectionFailure(final ProcessControllerClient client, final IOException cause) {
+                    if(serverInventory == null) {
+                        return;
+                    }
+                    serverInventory.connectionFinished();
                 }
 
                 @Override
                 public void handleConnectionFinished(final ProcessControllerClient client) {
+                    if(serverInventory == null) {
+                        return;
+                    }
+                    serverInventory.connectionFinished();
+                }
+
+                @Override
+                public void handleOperationFailed(ProcessControllerClient client, OperationType operation, String processName) {
+                    if (serverInventory == null){
+                        throw MESSAGES.noServerInventory();
+                    }
+                    if(ManagedServer.isServerProcess(processName)) {
+                        serverInventory.operationFailed(processName, operation);
+                    }
                 }
             });
         } catch(IOException e) {

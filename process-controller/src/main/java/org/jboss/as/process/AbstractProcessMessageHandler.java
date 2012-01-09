@@ -53,4 +53,7 @@ public abstract class AbstractProcessMessageHandler implements ProcessMessageHan
 
     public void handleConnectionFinished(final ProcessControllerClient client) {
     }
+
+    public void handleOperationFailed(ProcessControllerClient client, OperationType operation, String processName) {
+    }
 }

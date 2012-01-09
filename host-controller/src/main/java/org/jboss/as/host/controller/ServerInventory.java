@@ -28,6 +28,7 @@ import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.process.ProcessInfo;
+import org.jboss.as.process.ProcessMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementMessageHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
@@ -147,7 +148,7 @@ public interface ServerInventory {
      * @param callback callback the listener is to invoke when an operation handler is available for handling
      *                 management operations from the server. The callback will be invoked before this method returns
      */
-    void serverRegistered(String serverProcessName, Channel channel, ProxyCreatedCallback callback);
+    void serverCommunicationRegistered(String serverProcessName, Channel channel, ProxyCreatedCallback callback);
 
     /**
      * Notification that the start of a server process has failed.
@@ -161,7 +162,41 @@ public interface ServerInventory {
      *
      * @param serverProcessName the name of the server process
      */
-    void serverStopped(String serverProcessName);
+    void serverProcessStopped(String serverProcessName);
+
+    /**
+     * Signal the end of the PC connection, regardless of the reason.
+     */
+    void connectionFinished();
+
+    /**
+     * Notification that a server has been added to the process-controller.
+     *
+     * @param processName the process name
+     */
+    void serverProcessAdded(String processName);
+
+    /**
+     * Notification that a server process has been started.
+     *
+     * @param processName the process name
+     */
+    void serverProcessStarted(String processName);
+
+    /**
+     * Notification that a server has been removed from the process-controller.
+     *
+     * @param processName the process name
+     */
+    void serverProcessRemoved(String processName);
+
+    /**
+     * Notification that an operation failed on the process-controller.
+     *
+     * @param processName the process name
+     * @param type the operation type
+     */
+    void operationFailed(String processName, ProcessMessageHandler.OperationType type);
 
     /**
      * Notification that managed server process information is available.

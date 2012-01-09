@@ -23,6 +23,7 @@
 package org.jboss.as.host.controller;
 
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.parsing.JvmType;
 import org.jboss.as.server.ServerState;
 import org.jboss.logging.BasicLogger;
@@ -114,8 +115,8 @@ public interface HostControllerLogger extends BasicLogger {
      * @param state      the current state.
      */
     @LogMessage(level = Level.WARN)
-    @Message(id = 10904, value = "Existing server [%s] with state: %s")
-    void existingServerWithState(String serverName, ServerState state);
+    @Message(id = 10904, value = "Existing server [%s] with status: %s")
+    void existingServerWithState(String serverName, ServerStatus state);
 
     /**
      * Logs an error message indicating a failure to create a server process.

@@ -111,4 +111,11 @@ public interface DomainController {
      * Stops this host controller
      */
     void stopLocalHost();
+
+    /**
+     * Stop this host controller with a specific exit code.
+     *
+     * @param exitCode the exit code passed to the ProcessController
+     */
+    void stopLocalHost(int exitCode);
 }
