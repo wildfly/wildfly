@@ -112,7 +112,7 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler implements Descrip
                     final NetworkInterfaceBinding b = new NetworkInterfaceBinding(Collections.singleton(intf), inet);
                     final InetAddress group = InetAddress.getByName(groupAddress);
 
-                    final SocketBinding socketBinding = new SocketBinding(name, -1, false, group, groupPort, b, null);
+                    final SocketBinding socketBinding = new SocketBinding(name, -1, false, group, groupPort, b, null, null);
 
                     final GroupBindingService bindingService = new GroupBindingService();
                     target.addService(GroupBindingService.getDiscoveryBaseServiceName(hqServiceName).append(name), bindingService)

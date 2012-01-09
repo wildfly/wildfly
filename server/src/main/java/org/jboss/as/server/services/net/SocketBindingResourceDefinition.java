@@ -74,4 +74,9 @@ public class SocketBindingResourceDefinition extends AbstractSocketBindingResour
     protected OperationStepHandler getMulticastPortWriteAttributeHandler() {
         return BindingMulticastPortHandler.INSTANCE;
     }
+
+    @Override
+    protected OperationStepHandler getClientMappingsWriteAttributeHandler() {
+        return ClientMappingsHandler.INSTANCE;
+    }
 }

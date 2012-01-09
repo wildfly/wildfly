@@ -22,6 +22,7 @@ package org.jboss.as.controller.operations.common;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CLIENT_MAPPINGS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_ADDRESS;
@@ -62,14 +63,17 @@ public class SocketBindingAddHandler extends AbstractAddStepHandler {
             op.get(INTERFACE).set(socketBinding.get(INTERFACE));
         }
         op.get(PORT).set(socketBinding.get(PORT));
-        if (socketBinding.get(FIXED_PORT).isDefined()) {
+        if (socketBinding.hasDefined(FIXED_PORT)) {
             op.get(FIXED_PORT).set(socketBinding.get(FIXED_PORT));
         }
-        if (socketBinding.get(MULTICAST_ADDRESS).isDefined()) {
+        if (socketBinding.hasDefined(MULTICAST_ADDRESS)) {
             op.get(MULTICAST_ADDRESS).set(socketBinding.get(MULTICAST_ADDRESS));
         }
-        if (socketBinding.get(MULTICAST_PORT).isDefined()) {
+        if (socketBinding.hasDefined(MULTICAST_PORT)) {
             op.get(MULTICAST_PORT).set(socketBinding.get(MULTICAST_PORT));
+        }
+        if (socketBinding.hasDefined(CLIENT_MAPPINGS)) {
+            op.get(CLIENT_MAPPINGS).set(socketBinding.get(CLIENT_MAPPINGS));
         }
         return op;
     }
@@ -93,5 +97,6 @@ public class SocketBindingAddHandler extends AbstractAddStepHandler {
         AbstractSocketBindingResourceDefinition.FIXED_PORT.validateAndSet(operation, model);
         AbstractSocketBindingResourceDefinition.MULTICAST_ADDRESS.validateAndSet(operation, model);
         AbstractSocketBindingResourceDefinition.MULTICAST_PORT.validateAndSet(operation, model);
+        AbstractSocketBindingResourceDefinition.CLIENT_MAPPINGS.validateAndSet(operation, model);
     }
 }

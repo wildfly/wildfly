@@ -73,6 +73,8 @@ public abstract class AbstractSocketBindingResourceDefinition extends SimpleReso
             .setAllowExpression(true).setValidator(new IntRangeValidator(1, 65535, true, true))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
 
+    public static final ClientMappingsAttributeDefinition CLIENT_MAPPINGS = new ClientMappingsAttributeDefinition(ModelDescriptionConstants.CLIENT_MAPPINGS);
+
     public AbstractSocketBindingResourceDefinition(final OperationStepHandler addHandler, final OperationStepHandler removeHandler) {
         super(PathElement.pathElement(ModelDescriptionConstants.SOCKET_BINDING),
                 CommonDescriptions.getResourceDescriptionResolver(ModelDescriptionConstants.SOCKET_BINDING),
@@ -87,6 +89,8 @@ public abstract class AbstractSocketBindingResourceDefinition extends SimpleReso
         resourceRegistration.registerReadWriteAttribute(FIXED_PORT, null, getFixedPortWriteAttributeHandler());
         resourceRegistration.registerReadWriteAttribute(MULTICAST_ADDRESS, null, getMulticastAddressWriteAttributeHandler());
         resourceRegistration.registerReadWriteAttribute(MULTICAST_PORT, null, getMulticastPortWriteAttributeHandler());
+        resourceRegistration.registerReadWriteAttribute(CLIENT_MAPPINGS, null, getClientMappingsWriteAttributeHandler());
+
     }
 
     protected void registerAddOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler,
@@ -110,4 +114,5 @@ public abstract class AbstractSocketBindingResourceDefinition extends SimpleReso
     protected abstract OperationStepHandler getFixedPortWriteAttributeHandler();
     protected abstract OperationStepHandler getMulticastAddressWriteAttributeHandler();
     protected abstract OperationStepHandler getMulticastPortWriteAttributeHandler();
+    protected abstract OperationStepHandler getClientMappingsWriteAttributeHandler();
 }

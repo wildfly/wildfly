@@ -28,8 +28,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CLIENT_MAPPINGS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESTINATION_ADDRESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESTINATION_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_SOURCE_PORT;
@@ -56,6 +59,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_REF;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOURCE_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOURCE_NETWORK;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOURCE_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
@@ -89,6 +93,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
@@ -1022,32 +1027,38 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 final String value = reader.getAttributeValue(0);
                 requireNoContent(reader);
 
-                final String[] split = value.split("/");
-                try {
-                    if (split.length != 2) {
-                        throw new XMLStreamException(MESSAGES.invalidAddressMaskValue(value), reader.getLocation());
-                    }
-                    // todo - possible DNS hit here
-                    final InetAddress addr = InetAddress.getByName(split[0]);
-                    // Validate both parts of the split
-                    addr.getAddress();
-                    Integer.parseInt(split[1]);
-                    if(nested) {
-                        subModel.get(localName).add(value);
-                    } else {
-                        subModel.get(localName).set(value);
-                    }
-                    break;
-                } catch (final NumberFormatException e) {
-                    throw new XMLStreamException(MESSAGES.invalidAddressMask(split[0], e.getLocalizedMessage()),
-                            reader.getLocation(), e);
-                } catch (final UnknownHostException e) {
-                    throw new XMLStreamException(MESSAGES.invalidAddressValue(split[1], e.getLocalizedMessage()),
-                            reader.getLocation(), e);
+                validateAddressMask(value, reader.getLocation());
+
+                if(nested) {
+                    subModel.get(localName).add(value);
+                } else {
+                    subModel.get(localName).set(value);
                 }
+                break;
             }
             default:
                 throw unexpectedElement(reader);
+        }
+    }
+
+    private void validateAddressMask(String value, Location location) throws XMLStreamException {
+        final String[] split = value.split("/");
+        try {
+            if (split.length != 2) {
+                throw new XMLStreamException(MESSAGES.invalidAddressMaskValue(value), location);
+            }
+            // todo - possible DNS hit here
+            final InetAddress addr = InetAddress.getByName(split[0]);
+            // Validate both parts of the split
+            addr.getAddress();
+            Integer.parseInt(split[1]);
+
+        } catch (final NumberFormatException e) {
+            throw new XMLStreamException(MESSAGES.invalidAddressMask(split[1], e.getLocalizedMessage()),
+                    location, e);
+        } catch (final UnknownHostException e) {
+            throw new XMLStreamException(MESSAGES.invalidAddressValue(split[0], e.getLocalizedMessage()),
+                    location, e);
         }
     }
 
@@ -1212,10 +1223,62 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             throw missingRequired(reader, required);
         }
         // Handle elements
-        requireNoContent(reader);
+            // Handle elements
+        while (reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case CLIENT_MAPPING:
+                    binding.get(CLIENT_MAPPINGS).add(parseClientMapping(reader));
+                    break;
+                default:
+                    throw unexpectedElement(reader);
+            }
+        }
 
         updates.add(binding);
         return name;
+    }
+
+    private ModelNode parseClientMapping(XMLExtendedStreamReader reader) throws XMLStreamException {
+        final ModelNode mapping = new ModelNode();
+
+        // Ensure all fields exist, even if not defined
+        final ModelNode sourceNetwork = mapping.get(SOURCE_NETWORK);
+        final ModelNode destination = mapping.get(DESTINATION_ADDRESS);
+        final ModelNode destinationPort = mapping.get(DESTINATION_PORT);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            }
+
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case SOURCE_NETWORK:
+                    validateAddressMask(value, reader.getLocation());
+                    sourceNetwork.set(value);
+                    break;
+                case DESTINATION_ADDRESS:
+                    if (value == null || value.isEmpty()) {
+                        throw invalidAttributeValue(reader, i);
+                    }
+                    // We can't validate the address since the client is allowed to resolve private DNS names
+                    destination.set(value);
+                    break;
+                case DESTINATION_PORT: {
+                    destinationPort.set(parseBoundedIntegerAttribute(reader, i, 0, 65535, true));
+                    break;
+                }
+            }
+        }
+        if (!destination.isDefined()) {
+            throw MESSAGES.missingRequiredAttributes(new StringBuilder(DESTINATION_PORT), reader.getLocation());
+        }
+
+        requireNoContent(reader);
+
+        return mapping;
     }
 
     protected String parseOutboundSocketBinding(final XMLExtendedStreamReader reader, final Set<String> interfaces,
@@ -1704,6 +1767,30 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 if (attr.isDefined()) {
                     writeAttribute(writer, Attribute.MULTICAST_PORT, attr.asString());
                 }
+
+
+                attr = binding.get(CLIENT_MAPPINGS);
+                if (attr.isDefined()) {
+                    for (ModelNode mapping : attr.asList()) {
+                        writer.writeEmptyElement(Element.CLIENT_MAPPING.getLocalName());
+
+                        attr = mapping.get(SOURCE_NETWORK);
+                        if (attr.isDefined()) {
+                            writeAttribute(writer, Attribute.SOURCE_NETWORK, attr.asString());
+                        }
+
+                        attr = mapping.get(DESTINATION_ADDRESS);
+                        if (attr.isDefined()) {
+                            writeAttribute(writer, Attribute.DESTINATION_ADDRESS, attr.asString());
+                        }
+
+                        attr = mapping.get(DESTINATION_PORT);
+                        if (attr.isDefined()) {
+                            writeAttribute(writer, Attribute.DESTINATION_PORT, attr.asString());
+                        }
+                    }
+                }
+
                 writer.writeEndElement();
             }
         }

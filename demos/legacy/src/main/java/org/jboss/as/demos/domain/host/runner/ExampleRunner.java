@@ -162,7 +162,7 @@ public class ExampleRunner {
             throw new RuntimeException("Operation outcome is " + result.get("outcome").asString());
         }
         else {
-            throw new IllegalStateException("Result is undefined");
+            throw new IllegalStateException("ParsedResult is undefined");
         }
     }
 

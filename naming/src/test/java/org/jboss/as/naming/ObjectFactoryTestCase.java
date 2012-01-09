@@ -69,7 +69,7 @@ public class ObjectFactoryTestCase {
 
         final Object result = namingContext.lookup("test");
         assertTrue(result instanceof String);
-        assertEquals("Test Result", result);
+        assertEquals("Test ParsedResult", result);
     }
 
     @Test
@@ -80,13 +80,13 @@ public class ObjectFactoryTestCase {
         final InitialContext initialContext = new InitialContext();
         final Object result = initialContext.lookup("test");
         assertTrue(result instanceof String);
-        assertEquals("Test Result", result);
+        assertEquals("Test ParsedResult", result);
     }
 
 
     public static class TestObjectFactory implements ObjectFactory {
         public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
-            return "Test Result";
+            return "Test ParsedResult";
         }
     }
 }

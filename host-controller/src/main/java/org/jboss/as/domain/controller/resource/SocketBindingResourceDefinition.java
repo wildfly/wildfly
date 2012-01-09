@@ -62,6 +62,9 @@ public class SocketBindingResourceDefinition extends AbstractSocketBindingResour
     private static final OperationStepHandler MULTICAST_PORT_HANDLER =
             new WriteAttributeHandlers.AttributeDefinitionValidatingHandler(AbstractSocketBindingResourceDefinition.MULTICAST_PORT);
 
+    private static final OperationStepHandler CLIENT_MAPPINGS_HANDLER =
+            new WriteAttributeHandlers.AttributeDefinitionValidatingHandler(AbstractSocketBindingResourceDefinition.CLIENT_MAPPINGS);
+
     private SocketBindingResourceDefinition() {
         super(SocketBindingAddHandler.INSTANCE, SocketBindingRemoveHandler.INSTANCE);
     }
@@ -89,5 +92,10 @@ public class SocketBindingResourceDefinition extends AbstractSocketBindingResour
     @Override
     protected OperationStepHandler getMulticastPortWriteAttributeHandler() {
         return MULTICAST_PORT_HANDLER;
+    }
+
+    @Override
+    protected OperationStepHandler getClientMappingsWriteAttributeHandler() {
+        return CLIENT_MAPPINGS_HANDLER;
     }
 }

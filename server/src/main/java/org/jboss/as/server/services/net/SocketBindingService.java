@@ -22,7 +22,9 @@
 package org.jboss.as.server.services.net;
 
 import java.net.InetAddress;
+import java.util.List;
 
+import org.jboss.as.network.ClientMapping;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
@@ -42,6 +44,7 @@ public class SocketBindingService implements Service<SocketBinding> {
     private final boolean isFixedPort;
     private final InetAddress multicastAddress;
     private final int multicastPort;
+    private final List<ClientMapping> clientMappings;
 
     /** The created binding. */
     private SocketBinding binding;
@@ -50,7 +53,8 @@ public class SocketBindingService implements Service<SocketBinding> {
     private final InjectedValue<SocketBindingManager> socketBindings = new InjectedValue<SocketBindingManager>();
 
     public SocketBindingService(final String name, int port, boolean isFixedPort,
-                  InetAddress multicastAddress, int multicastPort) {
+                                InetAddress multicastAddress, int multicastPort,
+                                List<ClientMapping> clientMappings) {
         if (name == null) {
             throw new IllegalArgumentException("name is null");
         }
@@ -59,13 +63,14 @@ public class SocketBindingService implements Service<SocketBinding> {
         this.isFixedPort = isFixedPort;
         this.multicastAddress = multicastAddress;
         this.multicastPort = multicastPort;
+        this.clientMappings = clientMappings;
     }
 
     @Override
     public synchronized void start(StartContext context) throws StartException {
         this.binding = new SocketBinding(name, port, isFixedPort,
            multicastAddress, multicastPort,
-           interfaceBinding.getOptionalValue(), socketBindings.getValue());
+           interfaceBinding.getOptionalValue(), socketBindings.getValue(), clientMappings);
     }
 
     @Override

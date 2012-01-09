@@ -56,6 +56,7 @@ public class ModelDescriptionConstants {
     public static final String CANCELLED = "cancelled";
     public static final String CHILD_TYPE = "child-type";
     public static final String CHILDREN = "children";
+    public static final String CLIENT_MAPPINGS = "client-mappings";
     public static final String CODE = "code";
     public static final String COMPOSITE = "composite";
     public static final String CONCURRENT_GROUPS = "concurrent-groups";
@@ -71,6 +72,8 @@ public class ModelDescriptionConstants {
     public static final String DEPLOYMENT = "deployment";
     public static final String DESCRIBE = "describe";
     public static final String DESCRIPTION = "description";
+    public static final String DESTINATION_ADDRESS = "destination-address";
+    public static final String DESTINATION_PORT = "destination-port";
     public static final String DIRECTORY = "directory";
     public static final String DISABLE = "disable";
     public static final String DOMAIN_FAILURE_DESCRIPTION = "domain-failure-description";
@@ -231,6 +234,7 @@ public class ModelDescriptionConstants {
     public static final String SERVER_IDENTITY = "server-identity";
     public static final String SERVER_OPERATIONS = "server-operations";
     public static final String SERVICE_CONTAINER = "service-container";
+    public static final String SOURCE_NETWORK = "source-network";
     public static final String OPERATION_REQUIRES_RELOAD = "operation-requires-reload";
     public static final String OPERATION_REQUIRES_RESTART = "operation-requires-restart";
     public static final String RESTART_SERVERS = "restart-servers";

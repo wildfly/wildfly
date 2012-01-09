@@ -29,6 +29,9 @@ import java.net.MulticastSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.jboss.msc.service.ServiceName;
 
@@ -48,11 +51,12 @@ public final class SocketBinding {
     private volatile boolean isFixedPort;
     private volatile InetAddress multicastAddress;
     private volatile int multicastPort;
+    private volatile List<ClientMapping> clientMappings;
     private final NetworkInterfaceBinding networkInterface;
     private final SocketBindingManager socketBindings;
 
     public SocketBinding(final String name, int port, boolean isFixedPort, InetAddress multicastAddress, int multicastPort,
-            final NetworkInterfaceBinding networkInterface, SocketBindingManager socketBindings) {
+                         final NetworkInterfaceBinding networkInterface, SocketBindingManager socketBindings, List<ClientMapping> clientMappings) {
         this.name = name;
         this.port = port;
         this.isFixedPort = isFixedPort;
@@ -60,6 +64,7 @@ public final class SocketBinding {
         this.multicastPort = multicastPort;
         this.socketBindings = socketBindings;
         this.networkInterface = networkInterface;
+        this.clientMappings = clientMappings == null ? Collections.<ClientMapping>emptyList() : clientMappings;
     }
 
     /**
@@ -229,6 +234,14 @@ public final class SocketBinding {
     public void setMulticastAddress(InetAddress multicastAddress) {
         checkNotBound();
         this.multicastAddress = multicastAddress;
+    }
+
+    public void setClientMappings(List<ClientMapping> clientMappings) {
+        this.clientMappings = clientMappings;
+    }
+
+    public List<ClientMapping> getClientMappings() {
+        return clientMappings;
     }
 
     void checkNotBound() {

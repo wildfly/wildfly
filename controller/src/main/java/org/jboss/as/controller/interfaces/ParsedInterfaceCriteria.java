@@ -296,9 +296,9 @@ public final class ParsedInterfaceCriteria {
         } catch (final ParsingException e) {
             throw e;
         } catch (final NumberFormatException e) {
-            throw new ParsingException(MESSAGES.invalidAddressMask(split[0], e.getLocalizedMessage()));
+            throw new ParsingException(MESSAGES.invalidAddressMask(split[1], e.getLocalizedMessage()));
         } catch (final UnknownHostException e) {
-            throw new ParsingException(MESSAGES.invalidAddressValue(split[1], e.getLocalizedMessage()));
+            throw new ParsingException(MESSAGES.invalidAddressValue(split[0], e.getLocalizedMessage()));
         }
     }
 

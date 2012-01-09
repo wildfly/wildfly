@@ -102,7 +102,7 @@ public class DomainSlaveHandler implements OperationStepHandler {
                 }
 
                 if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
-                    HOST_CONTROLLER_LOGGER.tracef("Result for remote host %s is %s", entry.getKey(), result);
+                    HOST_CONTROLLER_LOGGER.tracef("ParsedResult for remote host %s is %s", entry.getKey(), result);
                 }
                 domainOperationContext.addHostControllerResult(entry.getKey(), result);
             }

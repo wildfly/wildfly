@@ -1081,6 +1081,24 @@
         <xs:annotation>
             <xs:documentation>Configuration information for a socket.</xs:documentation>
         </xs:annotation>
+        <xs:choice>
+            <xs:element name="client-mapping" type="socket-binding-client-mappingType"
+                        minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>
+                        Specifies zero or more client mappings for this socket binding.
+                        A client connecting to this socket should use the destination address
+                        specified in the mapping that matches its desired outbound interface.
+                        This allows for advanced network topologies that use either network
+                        address translation, or have bindings on multiple network interfaces
+                        to function.
+
+                        Each mapping should be evaluated in declared order, with the first successful
+                        match used to determine the destination.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:choice>
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="interface" type="xs:string" use="optional">
             <xs:annotation>
@@ -1120,6 +1138,49 @@
                 <xs:documentation>
                     Port on which the socket should receive multicast
                     traffic. Must be configured if 'multicast-address' is configured.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    
+    <xs:complexType name="socket-binding-client-mappingType">
+        <xs:annotation>
+                <xs:documentation>
+                    Type definition for a client mapping on a socket binding. A client
+                    mapping specifies how external clients should connect to this
+                    socket's port, provided that the client's outbound interface
+                    match the specified source network value.
+                </xs:documentation>
+            </xs:annotation>
+        <xs:attribute name="source-network" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Source network the client connection binds on. This value is in
+                    the form of ip/netmask. A client should match this value against
+                    the desired client host network interface, and if matched the
+                    client should connect to the corresponding destination values.
+
+                    If omitted this mapping should match any interface.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="destination-address" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The destination address that a client should connect to if the
+                    source-network matches. This value can either be a hostname or
+                    an ip address.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="destination-port" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    The destination port that a client should connect to if the
+                    source-network matches.
+
+                    If omitted this mapping will reuse the effective socket binding
+                    port.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>

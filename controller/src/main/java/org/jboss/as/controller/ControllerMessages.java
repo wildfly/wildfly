@@ -772,7 +772,7 @@ public interface ControllerMessages {
      * @return the message.
      */
     @Message(id = 14694, value = "Invalid mask %s (%s)")
-    String invalidAddressMask(String mask, String msg);
+    String  invalidAddressMask(String mask, String msg);
 
     /**
      * A message indicating the address value, represented by the {@code value} parameter, is invalid.
