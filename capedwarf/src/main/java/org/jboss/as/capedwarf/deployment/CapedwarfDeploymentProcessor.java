@@ -31,6 +31,7 @@ import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ResourceLoader;
 import org.jboss.modules.ResourceLoaderSpec;
 import org.jboss.modules.ResourceLoaders;
@@ -95,9 +96,10 @@ public class CapedwarfDeploymentProcessor extends CapedwarfDeploymentUnitProcess
     protected void doDeploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit unit = phaseContext.getDeploymentUnit();
 
+        final ModuleLoader loader = Module.getBootModuleLoader();
         final ModuleSpecification moduleSpecification = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
         // always add Infinispan
-        moduleSpecification.addSystemDependency(createModuleDependency(INFINISPAN));
+        moduleSpecification.addSystemDependency(createModuleDependency(loader, INFINISPAN));
         // check if we bundle gae api jar
         if (hasAppEngineAPI(unit)) {
             // add a transformer, modifying GAE service factories
@@ -107,12 +109,12 @@ public class CapedwarfDeploymentProcessor extends CapedwarfDeploymentUnitProcess
                 moduleSpecification.addResourceLoader(rls);
             // add other needed dependencies
             for (ModuleIdentifier mi : INLINE)
-                moduleSpecification.addSystemDependency(createModuleDependency(mi));
+                moduleSpecification.addSystemDependency(createModuleDependency(loader, mi));
         } else {
             // add CapeDwarf
-            moduleSpecification.addSystemDependency(createModuleDependency(CAPEDWARF));
+            moduleSpecification.addSystemDependency(createModuleDependency(loader, CAPEDWARF));
             // add modified AppEngine
-            moduleSpecification.addSystemDependency(createModuleDependency(APPENGINE));
+            moduleSpecification.addSystemDependency(createModuleDependency(loader, APPENGINE));
         }
     }
 
@@ -132,8 +134,8 @@ public class CapedwarfDeploymentProcessor extends CapedwarfDeploymentUnitProcess
         }
     }
 
-    protected ModuleDependency createModuleDependency(ModuleIdentifier moduleIdentifier) {
-        return new ModuleDependency(Module.getBootModuleLoader(), moduleIdentifier, false, false, true);
+    protected ModuleDependency createModuleDependency(ModuleLoader loader, ModuleIdentifier moduleIdentifier) {
+        return new ModuleDependency(loader, moduleIdentifier, false, false, true);
     }
 
     protected synchronized List<ResourceLoaderSpec> getCapedwarfResources() throws DeploymentUnitProcessingException {
