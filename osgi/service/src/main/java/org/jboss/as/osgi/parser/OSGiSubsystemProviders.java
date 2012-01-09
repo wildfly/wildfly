@@ -74,7 +74,6 @@ class OSGiSubsystemProviders {
             subsystem.get(ATTRIBUTES, ModelConstants.STARTLEVEL, ModelDescriptionConstants.RESTART_REQUIRED).set(Flag.RESTART_NONE.toString());
             subsystem.get(ATTRIBUTES, ModelConstants.STARTLEVEL, ModelDescriptionConstants.STORAGE).set(Flag.STORAGE_RUNTIME.toString());
 
-            subsystem.get(CHILDREN, ModelConstants.CONFIGURATION, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("configuration"));
             subsystem.get(CHILDREN, ModelConstants.PROPERTY, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("framework.property"));
             subsystem.get(CHILDREN, ModelConstants.CAPABILITY, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("capability"));
             subsystem.get(CHILDREN, ModelConstants.BUNDLE, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("bundle"));
@@ -93,21 +92,6 @@ class OSGiSubsystemProviders {
             op.get(REPLY_PROPERTIES).setEmptyObject();
             op.get(REQUEST_PROPERTIES).setEmptyObject();
             return op;
-        }
-    };
-
-    static final DescriptionProvider CONFIGURATION_DESCRIPTION = new DescriptionProvider() {
-        public ModelNode getModelDescription(Locale locale) {
-            final ModelNode node = new ModelNode();
-            ResourceBundle resbundle = getResourceBundle(locale);
-            node.get(DESCRIPTION).set(resbundle.getString("configuration"));
-            node.get(ATTRIBUTES, ModelConstants.ENTRIES, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("configuration.entries"));
-            node.get(ATTRIBUTES, ModelConstants.ENTRIES, ModelDescriptionConstants.REQUIRED).set(true);
-            node.get(ATTRIBUTES, ModelConstants.ENTRIES, ModelDescriptionConstants.TYPE).set(ModelType.LIST);
-            node.get(ATTRIBUTES, ModelConstants.ENTRIES, ModelDescriptionConstants.VALUE_TYPE).set(ModelType.PROPERTY);
-            node.get(ATTRIBUTES, ModelConstants.ENTRIES, ModelDescriptionConstants.ACCESS_TYPE).set(AccessType.READ_WRITE.toString());
-            node.get(ATTRIBUTES, ModelConstants.ENTRIES, ModelDescriptionConstants.RESTART_REQUIRED).set(Flag.RESTART_NONE.toString());
-            return node;
         }
     };
 

@@ -23,7 +23,7 @@
 package org.jboss.as.osgi.configadmin;
 
 import org.apache.felix.cm.PersistenceManager;
-import org.jboss.as.osgi.service.ConfigAdminService;
+import org.jboss.as.configadmin.service.ConfigAdminService;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.osgi.framework.BundleActivator;

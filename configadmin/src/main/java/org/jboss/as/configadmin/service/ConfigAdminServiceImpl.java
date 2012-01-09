@@ -20,15 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.osgi.service;
+package org.jboss.as.configadmin.service;
 
+import org.jboss.as.configadmin.parser.ModelConstants;
+import org.jboss.as.configadmin.parser.ConfigAdminExtension;
+import org.jboss.as.configadmin.parser.ConfigAdminState;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.osgi.parser.ModelConstants;
-import org.jboss.as.osgi.parser.OSGiExtension;
-import org.jboss.as.osgi.parser.SubsystemState;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -50,7 +50,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
+import static org.jboss.as.configadmin.ConfigAdminLogger.ROOT_LOGGER;
 
 /**
  * Maintains a set of {@link Dictionary}s in the domain model keyd be persistent ID (PID).
@@ -60,7 +60,7 @@ import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
  */
 public class ConfigAdminServiceImpl implements ConfigAdminService {
 
-    private final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();
+    private final InjectedValue<ConfigAdminState> injectedSubsystemState = new InjectedValue<ConfigAdminState>();
     private final InjectedValue<ModelController> injectedModelController = new InjectedValue<ModelController>();
     private final Set<ConfigAdminListener> listeners = new CopyOnWriteArraySet<ConfigAdminListener>();
     private final Executor executor = Executors.newSingleThreadExecutor();
@@ -71,8 +71,8 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
 
     public static ServiceController<?> addService(final ServiceTarget target, final ServiceListener<Object>... listeners) {
         ConfigAdminServiceImpl service = new ConfigAdminServiceImpl();
-        ServiceBuilder<?> builder = target.addService(ConfigAdminService.SERVICE_NAME, service);
-        builder.addDependency(SubsystemState.SERVICE_NAME, SubsystemState.class, service.injectedSubsystemState);
+        ServiceBuilder<?> builder = target.addService(SERVICE_NAME, service);
+        builder.addDependency(ConfigAdminState.SERVICE_NAME, ConfigAdminState.class, service.injectedSubsystemState);
         builder.addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, service.injectedModelController);
         builder.addListener(listeners);
         return builder.install();
@@ -192,7 +192,7 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
 
     private ModelNode getSubsystemAddress() {
         ModelNode address = new ModelNode();
-        address.add(new ModelNode().set(ModelDescriptionConstants.SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME));
+        address.add(new ModelNode().set(ModelDescriptionConstants.SUBSYSTEM, ConfigAdminExtension.SUBSYSTEM_NAME));
         return address;
     }
 

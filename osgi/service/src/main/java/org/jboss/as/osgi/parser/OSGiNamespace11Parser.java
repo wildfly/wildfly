@@ -21,6 +21,16 @@
  */
 package org.jboss.as.osgi.parser;
 
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -32,19 +42,8 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttri
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-
 /**
- * Parse subsystem configuration for namespace {@link Namespace#OSGI_1_1}.
+ * Parse subsystem configuration for namespace {@link Namespace#VERSION_1_1}.
  *
  * @author Thomas.Diesler@jboss.com
  */
@@ -68,12 +67,11 @@ class OSGiNamespace11Parser implements Namespace11, XMLStreamConstants, XMLEleme
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case OSGI_1_1: {
+                case VERSION_1_1: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case CONFIGURATION: {
-                            List<ModelNode> result = parseConfigurations(reader, address);
-                            operations.addAll(result);
+                            parseConfigurations(reader);
                             break;
                         }
                         case PROPERTIES: {
@@ -99,7 +97,7 @@ class OSGiNamespace11Parser implements Namespace11, XMLStreamConstants, XMLEleme
         result.get(OP).set(ADD);
         result.get(OP_ADDR).set(address);
         switch (Namespace.forUri(reader.getNamespaceURI())) {
-            case OSGI_1_1: {
+            case VERSION_1_1: {
                 // Handle attributes
                 int count = reader.getAttributeCount();
                 for (int i = 0; i < count; i++) {
@@ -123,18 +121,15 @@ class OSGiNamespace11Parser implements Namespace11, XMLStreamConstants, XMLEleme
         return result;
     }
 
-    private List<ModelNode> parseConfigurations(XMLExtendedStreamReader reader, ModelNode address) throws XMLStreamException {
+    private void parseConfigurations(XMLExtendedStreamReader reader) throws XMLStreamException {
 
         // Handle attributes
-        String pid = null;
         int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
-            final String attrValue = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case PID: {
-                    pid = attrValue;
                     break;
                 }
                 default:
@@ -142,57 +137,28 @@ class OSGiNamespace11Parser implements Namespace11, XMLStreamConstants, XMLEleme
             }
         }
 
-        if (pid == null)
-            throw missingRequired(reader, Collections.singleton(Attribute.PID));
-
-        ModelNode configuration = new ModelNode();
-        configuration.get(OP).set(ADD);
-        configuration.get(OP_ADDR).set(address).add(ModelConstants.CONFIGURATION, pid);
-
-        List<ModelNode> result = new ArrayList<ModelNode>();
-        result.add(configuration);
-
-        ModelNode propNode = configuration.get(ModelConstants.ENTRIES);
-
         // Handle elements
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case OSGI_1_1: {
+                case VERSION_1_1: {
                     final Element element = Element.forName(reader.getLocalName());
                     if (element == Element.PROPERTY) {
-                        // Handle attributes
-                        String name = null;
-                        String value = null;
                         count = reader.getAttributeCount();
                         for (int i = 0; i < count; i++) {
                             requireNoNamespaceAttribute(reader, i);
-                            final String attrValue = reader.getAttributeValue(i);
-
                             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                             switch (attribute) {
                                 case NAME: {
-                                    name = attrValue;
-                                    // if (configuration.has(name))
-                                    // throw new XMLStreamException(MESSAGES.propertyAlreadyExists(name), reader.getLocation());
                                     break;
                                 }
                                 case VALUE: {
-                                    value = attrValue;
                                     break;
                                 }
                                 default:
                                     throw unexpectedAttribute(reader, i);
                             }
                         }
-                        if (name == null)
-                            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
-                        if (value == null)
-                            throw missingRequired(reader, Collections.singleton(Attribute.VALUE));
-
                         requireNoContent(reader);
-
-                        propNode.get(name).set(value);
-
                         break;
                     } else {
                         throw unexpectedElement(reader);
@@ -202,8 +168,6 @@ class OSGiNamespace11Parser implements Namespace11, XMLStreamConstants, XMLEleme
                     throw unexpectedElement(reader);
             }
         }
-
-        return result;
     }
 
     private List<ModelNode> parseFrameworkProperties(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> operations) throws XMLStreamException {
@@ -215,7 +179,7 @@ class OSGiNamespace11Parser implements Namespace11, XMLStreamConstants, XMLEleme
         // Handle elements
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case OSGI_1_1: {
+                case VERSION_1_1: {
                     final Element element = Element.forName(reader.getLocalName());
                     if (element == Element.PROPERTY) {
                         String name = null;
@@ -265,7 +229,7 @@ class OSGiNamespace11Parser implements Namespace11, XMLStreamConstants, XMLEleme
         // Handle elements
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case OSGI_1_1: {
+                case VERSION_1_1: {
                     final Element element = Element.forName(reader.getLocalName());
                     if (element == Element.CAPABILITY) {
                         String name = null;

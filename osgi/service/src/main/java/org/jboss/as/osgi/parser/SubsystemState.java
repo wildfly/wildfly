@@ -22,19 +22,6 @@
 
 package org.jboss.as.osgi.parser;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Dictionary;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Set;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.osgi.service.FrameworkBootstrapService;
 import org.jboss.modules.ModuleIdentifier;
@@ -47,7 +34,15 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.osgi.spi.util.UnmodifiableDictionary;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Observable;
 
 /**
  * The OSGi subsystem state.
@@ -57,14 +52,12 @@ import org.jboss.osgi.spi.util.UnmodifiableDictionary;
  * @since 13-Oct-2010
  */
 public class SubsystemState  extends Observable implements Serializable, Service<SubsystemState> {
-    private static final long serialVersionUID = 6268537612248019022L;
 
     public static final ServiceName SERVICE_NAME = FrameworkBootstrapService.FRAMEWORK_BASE_NAME.append("subsystemstate");
     public static final String PROP_JBOSS_OSGI_SYSTEM_MODULES = "org.jboss.osgi.system.modules";
     public static final String PROP_JBOSS_OSGI_SYSTEM_PACKAGES = "org.jboss.osgi.system.packages";
     public static final String PROP_JBOSS_OSGI_SYSTEM_MODULES_EXTRA = "org.jboss.osgi.system.modules.extra";
 
-    private final Map<String, Dictionary<String, String>> configurations = new LinkedHashMap<String, Dictionary<String, String>>();
     private final Map<String, Object> properties = new LinkedHashMap<String, Object>();
     private final List<OSGiCapability> capabilities = new ArrayList<OSGiCapability>();
     private volatile Activation activationPolicy = Activation.LAZY;
@@ -100,45 +93,6 @@ public class SubsystemState  extends Observable implements Serializable, Service
     @Override
     public void stop(StopContext context) {
         // Nothing to do
-    }
-
-    public Set<String> getConfigurations() {
-        synchronized (configurations) {
-            Collection<String> values = configurations.keySet();
-            return Collections.unmodifiableSet(new HashSet<String>(values));
-        }
-    }
-
-    public boolean hasConfiguration(String pid) {
-        synchronized (configurations) {
-            return configurations.containsKey(pid);
-        }
-    }
-
-    public Dictionary<String, String> getConfiguration(String pid) {
-        synchronized (configurations) {
-            return configurations.get(pid);
-        }
-    }
-
-    public Dictionary<String, String> putConfiguration(String pid, Dictionary<String, String> props) {
-        try {
-            synchronized (configurations) {
-                return configurations.put(pid, new UnmodifiableDictionary<String, String>(props));
-            }
-        } finally {
-            notifyObservers(new ChangeEvent(ChangeType.CONFIG, false, pid));
-        }
-    }
-
-    public Dictionary<String, String> removeConfiguration(String pid) {
-        try {
-            synchronized (configurations) {
-                return configurations.remove(pid);
-            }
-        } finally {
-            notifyObservers(new ChangeEvent(ChangeType.CONFIG, true, pid));
-        }
     }
 
     public enum Activation {
@@ -263,5 +217,5 @@ public class SubsystemState  extends Observable implements Serializable, Service
         }
     }
 
-    public enum ChangeType { ACTIVATION, CONFIG, PROPERTY, CAPABILITY };
+    public enum ChangeType { ACTIVATION, PROPERTY, CAPABILITY };
 }

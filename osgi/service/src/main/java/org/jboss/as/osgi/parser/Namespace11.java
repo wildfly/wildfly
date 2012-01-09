@@ -27,7 +27,7 @@ import java.util.Map;
 
 
 /**
- * Constants related to namespace {@link Namespace#OSGI_1_1}.
+ * Constants related to namespace {@link Namespace#VERSION_1_1}.
  *
  * @author Thomas.Diesler@jboss.com
  * @since 29-Sep-2011

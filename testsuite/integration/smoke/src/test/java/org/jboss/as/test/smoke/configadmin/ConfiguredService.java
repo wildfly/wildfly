@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.smoke.configadmin;
 
-import org.jboss.as.osgi.service.ConfigAdminService;
+import org.jboss.as.configadmin.service.ConfigAdminService;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;

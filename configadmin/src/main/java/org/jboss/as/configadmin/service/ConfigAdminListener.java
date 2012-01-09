@@ -20,32 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.osgi.parser;
+package org.jboss.as.configadmin.service;
 
+import java.util.Dictionary;
+import java.util.Set;
 
 /**
- * An enumeration of the supported OSGi subsystem namespaces.
+ * A configuration listener for the {@link ConfigAdminService}.
+ *
+ * When a configuration listener is first registered with the {@link ConfigAdminService}
+ * its configurationModified method is invoked for every PID the listener registers with.
+ *
+ * A <code>null</code> dictionary indicates that there is currently no configuration for the associated PID.
  *
  * @author Thomas.Diesler@jboss.com
- * @author David Bosschaert
- * @since 13-Sep-2010
+ * @since 11-Dec-2010
  */
-public interface ModelConstants {
+public interface ConfigAdminListener {
 
-    String ACTIVATE = "activate";
-    String ACTIVATION = "activation";
-    String BUNDLE = "bundle";
-    String CAPABILITY = "capability";
-    String ENTRIES = "entries";
-    String FRAGMENT = "fragment";
-    String ID = "id";
-    String NAME = "name";
-    String PROPERTY = "property";
-    String STARTLEVEL = "startlevel";
-    String STATE = "state";
-    String SYMBOLIC_NAME = "symbolic-name";
-    String TYPE = "type";
-    String VALUE = "value";
-    String VERSION = "version";
+    /**
+     * Called when the {@code ConfigAdminService} receives an update for
+     * a PID that the listener has registered with.
+     */
+    void configurationModified(String pid, Dictionary<String, String> props);
 
+    /**
+     * Return the set of PIDs that this listener is interested in.
+     * A <code>null</code> return value denotes any PID.
+     */
+    Set<String> getPIDs();
 }

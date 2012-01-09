@@ -685,6 +685,10 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-clustering-web-spi"/>
         </module-def>
 
+        <module-def name="org.jboss.as.configadmin">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-configadmin"/>
+        </module-def>
+
         <module-def name="org.jboss.as.cmp">
             <maven-resource group="org.jboss.as" artifact="jboss-as-cmp"/>
         </module-def>

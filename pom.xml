@@ -789,6 +789,12 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-configadmin</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-connector</artifactId>
                 <version>${project.version}</version>
             </dependency>
