@@ -377,9 +377,12 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
         }
     }
 
-    private HornetQServerControl getServerControl(final OperationContext context, ModelNode operation) {
+    private HornetQServerControl getServerControl(final OperationContext context, ModelNode operation) throws OperationFailedException {
         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
         ServiceController<?> hqService = context.getServiceRegistry(false).getService(hqServiceName);
+        if (hqService == null || hqService.getState() != ServiceController.State.UP) {
+            throw MESSAGES.hornetQServerNotInstalled(hqServiceName.getSimpleName());
+        }
         HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
         return hqServer.getHornetQServerControl();
     }

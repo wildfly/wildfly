@@ -24,6 +24,7 @@ package org.jboss.as.messaging;
 
 import static org.jboss.logging.Message.INHERIT;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelType;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
@@ -436,4 +437,15 @@ public interface MessagingMessages {
      */
     @Message(id = 11664, value = "Runtime handling for %s is not implemented")
     UnsupportedOperationException unsupportedRuntimeAttribute(String name);
+
+    /**
+     * Creates an exception indicating the HornetQService for the server with the given name is either not installed
+     * or not started.
+     *
+     * @param name the name of the Hornet Q server.
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 11665, value = "No HornetQ Server is available under name %s")
+    OperationFailedException hornetQServerNotInstalled(String name);
 }
