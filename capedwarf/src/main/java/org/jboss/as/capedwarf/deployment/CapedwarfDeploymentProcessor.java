@@ -29,12 +29,20 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.server.deployment.module.VFSResourceLoader;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ResourceLoader;
+import org.jboss.modules.ResourceLoaderSpec;
+import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Add CapeDwarf modules.
@@ -48,12 +56,26 @@ public class CapedwarfDeploymentProcessor extends CapedwarfDeploymentUnitProcess
     private static final ModuleIdentifier CAPEDWARF = ModuleIdentifier.create("org.jboss.capedwarf");
     private static final ModuleIdentifier INFINISPAN = ModuleIdentifier.create("org.infinispan");
 
-    private static final VirtualFileFilter LIBS = new VirtualFileFilter() {
+    private static final ModuleIdentifier TX = ModuleIdentifier.create("javax.transaction.api");
+    private static final ModuleIdentifier ACTIVATION = ModuleIdentifier.create("javax.activation.api");
+    private static final ModuleIdentifier MAIL = ModuleIdentifier.create("org.javassist");
+    private static final ModuleIdentifier JAVASSIST = ModuleIdentifier.create("javax.mail.api");
+    private static final ModuleIdentifier INFINISPAN_QUERY = ModuleIdentifier.create("org.infinispan.query");
+    private static final ModuleIdentifier HIBERNATE_SEARCH = ModuleIdentifier.create("org.hibernate.search");
+    private static final ModuleIdentifier LUCENE = ModuleIdentifier.create("org.apache.lucene");
+    private static final ModuleIdentifier HTTP_COMPONENTS = ModuleIdentifier.create("org.apache.httpcomponents");
+    private static final ModuleIdentifier PICKETLINK = ModuleIdentifier.create("org.picketlink.fed");
+    // inline this module deps, if running with bundled
+    private static final ModuleIdentifier[] INLINE = {TX, ACTIVATION, MAIL, JAVASSIST, INFINISPAN_QUERY, HIBERNATE_SEARCH, LUCENE, HTTP_COMPONENTS, PICKETLINK};
+
+    private static final VirtualFileFilter JARS = new VirtualFileFilter() {
         @Override
         public boolean accepts(VirtualFile file) {
             return file.getName().endsWith(".jar");
         }
     };
+
+    private List<ResourceLoaderSpec> capedwarfResources;
 
     private String appengingAPI;
 
@@ -67,15 +89,23 @@ public class CapedwarfDeploymentProcessor extends CapedwarfDeploymentUnitProcess
     protected void doDeploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit unit = phaseContext.getDeploymentUnit();
 
-        ModuleSpecification moduleSpecification = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        // always add CapeDwarf
-        moduleSpecification.addSystemDependency(createModuleDependency(CAPEDWARF));
+        final ModuleSpecification moduleSpecification = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
         // always add Infinispan
         moduleSpecification.addSystemDependency(createModuleDependency(INFINISPAN));
-         // check if we bundle gae api jar
+        // check if we bundle gae api jar
         if (hasAppEngineAPI(unit)) {
+            // add a transformer, modifying GAE service factories
             moduleSpecification.addClassFileTransformer("org.jboss.capedwarf.bytecode.FactoriesTransformer");
+            // add CapeDwarf resources directly as libs
+            for (ResourceLoaderSpec rls : getCapedwarfResources())
+                moduleSpecification.addResourceLoader(rls);
+            // add other needed dependencies
+            for (ModuleIdentifier mi : INLINE)
+                moduleSpecification.addSystemDependency(createModuleDependency(mi));
         } else {
+            // add CapeDwarf
+            moduleSpecification.addSystemDependency(createModuleDependency(CAPEDWARF));
+            // add modified AppEngine
             moduleSpecification.addSystemDependency(createModuleDependency(APPENGINE));
         }
     }
@@ -83,9 +113,9 @@ public class CapedwarfDeploymentProcessor extends CapedwarfDeploymentUnitProcess
     protected boolean hasAppEngineAPI(DeploymentUnit unit) throws DeploymentUnitProcessingException {
         try {
             final ResourceRoot root = unit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-            VirtualFile libs = root.getRoot().getChild("WEB-INF/lib");
+            final VirtualFile libs = root.getRoot().getChild("WEB-INF/lib");
             if (libs.exists()) {
-                for (VirtualFile lib : libs.getChildren(LIBS)) {
+                for (VirtualFile lib : libs.getChildren(JARS)) {
                     if (lib.getName().contains(appengingAPI))
                         return true;
                 }
@@ -100,4 +130,27 @@ public class CapedwarfDeploymentProcessor extends CapedwarfDeploymentUnitProcess
         return new ModuleDependency(Module.getBootModuleLoader(), moduleIdentifier, false, false, true);
     }
 
+    protected synchronized List<ResourceLoaderSpec> getCapedwarfResources() throws DeploymentUnitProcessingException {
+        try {
+            if (capedwarfResources == null) {
+                // hardcoded location of CapeDwarf resources ...
+                final URI capedwarfModules = new File(System.getProperty("jboss.home.dir"), "modules/org/jboss/capedwarf/main").toURI();
+                final VirtualFile vf = VFS.getChild(capedwarfModules);
+                if (vf.exists() == false)
+                    throw new DeploymentUnitProcessingException("No such CapeDwarf modules directory: " + capedwarfModules);
+
+                final List<ResourceLoaderSpec> resources = new ArrayList<ResourceLoaderSpec>();
+                for (VirtualFile jar : vf.getChildren(JARS)) {
+                    ResourceLoader rl = new VFSResourceLoader(jar.getName(), jar);
+                    resources.add(ResourceLoaderSpec.createResourceLoaderSpec(rl));
+                }
+                capedwarfResources = resources;
+            }
+            return capedwarfResources;
+        } catch (DeploymentUnitProcessingException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new DeploymentUnitProcessingException(e);
+        }
+    }
 }
