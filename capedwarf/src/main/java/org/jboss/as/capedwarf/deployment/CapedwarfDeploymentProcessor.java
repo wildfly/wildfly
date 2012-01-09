@@ -29,20 +29,20 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.server.deployment.module.VFSResourceLoader;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ResourceLoader;
 import org.jboss.modules.ResourceLoaderSpec;
-import org.jboss.vfs.VFS;
+import org.jboss.modules.ResourceLoaders;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.jar.JarFile;
 
 /**
  * Add CapeDwarf modules.
@@ -68,10 +68,15 @@ public class CapedwarfDeploymentProcessor extends CapedwarfDeploymentUnitProcess
     // inline this module deps, if running with bundled
     private static final ModuleIdentifier[] INLINE = {TX, ACTIVATION, MAIL, JAVASSIST, INFINISPAN_QUERY, HIBERNATE_SEARCH, LUCENE, HTTP_COMPONENTS, PICKETLINK};
 
-    private static final VirtualFileFilter JARS = new VirtualFileFilter() {
-        @Override
+    private static final VirtualFileFilter JARS_VFS = new VirtualFileFilter() {
         public boolean accepts(VirtualFile file) {
             return file.getName().endsWith(".jar");
+        }
+    };
+
+    private static final FilenameFilter JARS_SDK = new FilenameFilter() {
+        public boolean accept(File dir, String name) {
+            return name.endsWith(".jar");
         }
     };
 
@@ -115,7 +120,7 @@ public class CapedwarfDeploymentProcessor extends CapedwarfDeploymentUnitProcess
             final ResourceRoot root = unit.getAttachment(Attachments.DEPLOYMENT_ROOT);
             final VirtualFile libs = root.getRoot().getChild("WEB-INF/lib");
             if (libs.exists()) {
-                for (VirtualFile lib : libs.getChildren(JARS)) {
+                for (VirtualFile lib : libs.getChildren(JARS_VFS)) {
                     if (lib.getName().contains(appengingAPI))
                         return true;
                 }
@@ -134,14 +139,14 @@ public class CapedwarfDeploymentProcessor extends CapedwarfDeploymentUnitProcess
         try {
             if (capedwarfResources == null) {
                 // hardcoded location of CapeDwarf resources ...
-                final URI capedwarfModules = new File(System.getProperty("jboss.home.dir"), "modules/org/jboss/capedwarf/main").toURI();
-                final VirtualFile vf = VFS.getChild(capedwarfModules);
-                if (vf.exists() == false)
+                final File capedwarfModules = new File(System.getProperty("jboss.home.dir"), "modules/org/jboss/capedwarf/main");
+                if (capedwarfModules.exists() == false)
                     throw new DeploymentUnitProcessingException("No such CapeDwarf modules directory: " + capedwarfModules);
 
                 final List<ResourceLoaderSpec> resources = new ArrayList<ResourceLoaderSpec>();
-                for (VirtualFile jar : vf.getChildren(JARS)) {
-                    ResourceLoader rl = new VFSResourceLoader(jar.getName(), jar);
+                for (File jar : capedwarfModules.listFiles(JARS_SDK)) {
+                    final JarFile jarFile = new JarFile(jar);
+                    final ResourceLoader rl = ResourceLoaders.createJarResourceLoader(jar.getName(), jarFile);
                     resources.add(ResourceLoaderSpec.createResourceLoaderSpec(rl));
                 }
                 capedwarfResources = resources;
