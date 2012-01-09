@@ -20,6 +20,7 @@ package org.jboss.as.cli.gui;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -30,6 +31,9 @@ import javax.swing.text.StyleConstants;
 import org.jboss.dmr.ModelNode;
 
 /**
+ * This class executes whatever command is on the command line.
+ * It displays the result in the Output tab and sets "Output" to
+ * be the currently selected tab.
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
@@ -39,11 +43,13 @@ public class DoOperationActionListener extends AbstractAction {
 
     private JTextField cmdText;
     private JTextComponent output;
+    private JTabbedPane tabs;
 
-    public DoOperationActionListener(CommandExecutor executor, JTextField cmdText, JTextComponent output) {
-        this.executor = executor;
-        this.cmdText = cmdText;
+    public DoOperationActionListener(JTextComponent output, JTabbedPane tabs) {
+        this.executor = GuiMain.getExecutor();
+        this.cmdText = GuiMain.getCommandText();
         this.output = output;
+        this.tabs = tabs;
     }
 
     public void actionPerformed(ActionEvent ae) {
@@ -57,6 +63,8 @@ public class DoOperationActionListener extends AbstractAction {
             } catch (BadLocationException ble) {
                 ble.printStackTrace();
             }
+        } finally {
+            tabs.setSelectedIndex(1); // set to Output tab to view the output
         }
     }
 

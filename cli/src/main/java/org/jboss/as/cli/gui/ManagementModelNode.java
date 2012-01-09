@@ -24,6 +24,7 @@ import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 
 /**
+ * A node in the management tree.  Non-leaves are addressable entities in a DMR command.  Leaves are attributes.
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
@@ -32,12 +33,15 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
     private CommandExecutor executor;
     private boolean isLeaf = false;
 
-    public ManagementModelNode(CommandExecutor executor, String label, boolean isLeaf) {
-        this.executor = executor;
+    public ManagementModelNode(String label, boolean isLeaf) {
+        this.executor = GuiMain.getExecutor();
         this.isLeaf = isLeaf;
         setUserObject(label);
     }
 
+    /**
+     * Refresh children using read-resource operation.
+     */
     public void explore() {
         if (isLeaf) return;
         removeAllChildren();
@@ -49,11 +53,11 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
                 ModelType valueType = prop.getValue().getType();
                 if (valueType == ModelType.OBJECT) {
                     for (ModelNode innerNode : prop.getValue().asList()) {
-                        String label = prop.getName() + "=" + innerNode.asProperty().getName() + "/";
-                        add(new ManagementModelNode(executor, label, false));
+                        String label = prop.getName() + "=" + innerNode.asProperty().getName();
+                        add(new ManagementModelNode(label, false));
                     }
                 } else {
-                    add(new ManagementModelNode(executor, node.asString(), true));
+                    add(new ManagementModelNode(prop.getName() + " => " + prop.getValue().asString(), true));
                 }
             }
         } catch (Exception e) {
@@ -61,6 +65,10 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
         }
     }
 
+    /**
+     * Get the DMR path for this node.  For leaves, the DMR path is the path of its parent.
+     * @return The DMR path for this node.
+     */
     public String addressPath() {
         Object[] path;
         if (isLeaf) {
@@ -72,7 +80,16 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
 
         StringBuilder builder = new StringBuilder();
         for (Object pathElement : path) {
-            builder.append(pathElement.toString());
+            String pathElementStr = pathElement.toString();
+
+            // Colon & forward slash mess up parser.  Make them literal.
+            if (!pathElementStr.equals("/")) {
+                pathElementStr = pathElementStr.replace(":", "\\:");
+                pathElementStr = pathElementStr.replace("/", "\\/");
+            }
+            builder.append(pathElementStr);
+
+            if (!pathElementStr.equals("/")) builder.append("/");
         }
         return builder.toString();
     }
