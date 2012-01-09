@@ -527,4 +527,12 @@ public interface HostControllerMessages {
      */
     @Message(id = 10985, value = "unrecognized type %s")
     IOException unrecognizedType(byte type);
+
+    /**
+     * Creates an exception indication that the host controller was already shutdown.
+     * @return an {@link Exception} for the error
+     */
+    @Message(id = 10986, value = "Host-Controller is already shutdown.")
+    IllegalStateException hostAlreadyShutdown();
+
 }

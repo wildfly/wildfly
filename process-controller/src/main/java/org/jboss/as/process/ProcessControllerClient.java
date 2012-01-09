@@ -117,8 +117,15 @@ public final class ProcessControllerClient implements Closeable {
                         CLIENT_LOGGER.tracef("Received process_inventory");
                         messageHandler.handleProcessInventory(client, inventory);
                         break;
-                    }
-                    default: {
+                    } case Protocol.OPERATION_FAILED : {
+                        final int operationType = readUnsignedByte(dataStream);
+                        final ProcessMessageHandler.OperationType type = ProcessMessageHandler.OperationType.fromCode(operationType);
+                        final String processName = readUTFZBytes(dataStream);
+                        dataStream.close();
+                        CLIENT_LOGGER.tracef("Received operation_failed for process %s", processName);
+                        messageHandler.handleOperationFailed(client, type, processName);
+                        break;
+                    } default: {
                         CLIENT_LOGGER.receivedUnknownMessageCode(Integer.valueOf(cmd));
                         // ignore
                         dataStream.close();
@@ -301,9 +308,14 @@ public final class ProcessControllerClient implements Closeable {
     }
 
     public void shutdown() throws IOException {
+        shutdown(0);
+    }
+
+    public void shutdown(int exitCode) throws IOException {
         final OutputStream os = connection.writeMessage();
         try {
             os.write(Protocol.SHUTDOWN);
+            writeInt(os, exitCode);
             os.close();
         } finally {
             safeClose(os);

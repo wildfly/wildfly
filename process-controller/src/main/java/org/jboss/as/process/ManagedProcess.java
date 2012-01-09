@@ -149,13 +149,14 @@ final class ManagedProcess {
         }
     }
 
-    public void sendStdin(final InputStream msg) {
+    public void sendStdin(final InputStream msg) throws IOException {
         assert holdsLock(lock); // Call under lock
         try {
             StreamUtils.copyStream(msg, stdin);
             stdin.flush();
         } catch (IOException e) {
             log.failedToSendDataBytes(e, processName);
+            throw e;
         }
     }
 
@@ -190,6 +191,7 @@ final class ManagedProcess {
         try {
             process = builder.start();
         } catch (IOException e) {
+            processController.operationFailed(processName, ProcessMessageHandler.OperationType.START);
             log.failedToStartProcess(processName);
             return;
         }
@@ -206,16 +208,24 @@ final class ManagedProcess {
         final Thread joinThread = new Thread(new JoinTask(startTime));
         joinThread.setName(String.format("reaper for %s", processName));
         joinThread.start();
+        boolean ok = false;
         try {
             stdin.write(authKey);
             stdin.flush();
+            ok = true;
         } catch (Exception e) {
             log.failedToSendAuthKey(processName, e);
         }
-        state = State.STARTED;
+
         this.process = process;
         this.stdin = stdin;
-        processController.processStarted(processName);
+
+        if(ok) {
+            state = State.STARTED;
+            processController.processStarted(processName);
+        } else {
+            processController.operationFailed(processName, ProcessMessageHandler.OperationType.START);
+        }
         return;
     }
 
@@ -244,7 +254,12 @@ final class ManagedProcess {
                 StreamUtils.safeClose(stdin);
                 state = State.STOPPING;
             } else {
-                processController.removeProcess(processName);
+                new Thread() {
+                    @Override
+                    public void run() {
+                        processController.removeProcess(processName);
+                    }
+                }.start();
             }
         }
     }

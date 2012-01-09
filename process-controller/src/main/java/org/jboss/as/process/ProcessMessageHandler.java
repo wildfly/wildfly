@@ -45,4 +45,38 @@ public interface ProcessMessageHandler {
     void handleConnectionFailure(ProcessControllerClient client, IOException cause);
 
     void handleConnectionFinished(ProcessControllerClient client);
+
+    void handleOperationFailed(ProcessControllerClient client, OperationType operation, String processName);
+
+    public enum OperationType {
+
+        ADD(Protocol.ADD_PROCESS),
+        INVENTORY(Protocol.REQUEST_PROCESS_INVENTORY),
+        REMOVE(Protocol.REMOVE_PROCESS),
+        RECONNECT(Protocol.RECONNECT_PROCESS),
+        SEND_STDIN(Protocol.SEND_STDIN),
+        START(Protocol.START_PROCESS),
+        STOP(Protocol.STOP_PROCESS),
+        ;
+
+        final int code;
+
+        private OperationType(int code) {
+            this.code = code;
+        }
+
+        public int getCode() {
+            return code;
+        }
+
+        static OperationType fromCode(int code) {
+            for(OperationType type : values()) {
+                if( type.getCode() == code) {
+                    return type;
+                }
+            }
+            return null;
+        }
+    }
+
 }
