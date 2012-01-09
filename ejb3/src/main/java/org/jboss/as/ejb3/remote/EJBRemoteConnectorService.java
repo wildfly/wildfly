@@ -21,17 +21,14 @@
  */
 package org.jboss.as.ejb3.remote;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.concurrent.ExecutorService;
-
 import org.jboss.as.clustering.GroupMembershipNotifierRegistry;
 import org.jboss.as.ejb3.EjbLogger;
-import org.jboss.as.ejb3.cache.impl.backing.clustering.GroupMembershipNotifierRegistryService;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.remote.protocol.versionone.VersionOneProtocolChannelReceiver;
+import org.jboss.as.network.ClientMapping;
+import org.jboss.as.network.SocketBinding;
+import org.jboss.as.remoting.AbstractStreamServerService;
+import org.jboss.as.remoting.InjectedSocketBindingStreamServerService;
 import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.MarshallerFactory;
@@ -54,6 +51,14 @@ import org.jboss.remoting3.ServiceRegistrationException;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
@@ -70,6 +75,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     private final InjectedValue<DeploymentRepository> deploymentRepositoryInjectedValue = new InjectedValue<DeploymentRepository>();
     private final InjectedValue<EJBRemoteTransactionsRepository> ejbRemoteTransactionsRepositoryInjectedValue = new InjectedValue<EJBRemoteTransactionsRepository>();
     private final InjectedValue<GroupMembershipNotifierRegistry> clusterRegistry = new InjectedValue<GroupMembershipNotifierRegistry>();
+    private final InjectedValue<AbstractStreamServerService> remotingServer = new InjectedValue<AbstractStreamServerService>();
     private volatile Registration registration;
     private final byte serverProtocolVersion;
     private final String[] supportedMarshallingStrategies;
@@ -205,7 +211,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
                         final GroupMembershipNotifierRegistry groupMembershipNotifierRegistry = EJBRemoteConnectorService.this.clusterRegistry.getValue();
                         final VersionOneProtocolChannelReceiver receiver = new VersionOneProtocolChannelReceiver(channel, deploymentRepository,
                                 EJBRemoteConnectorService.this.ejbRemoteTransactionsRepositoryInjectedValue.getValue(), groupMembershipNotifierRegistry,
-                                marshallerFactory, executorService.getValue());
+                                EJBRemoteConnectorService.this.getClientMappings(), marshallerFactory, executorService.getValue());
                         // trigger the receiving
                         receiver.startReceiving();
                         break;
@@ -242,6 +248,10 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
         return this.clusterRegistry;
     }
 
+    public Injector<AbstractStreamServerService> getRemotingServerInjector() {
+        return this.remotingServer;
+    }
+
     private boolean isSupportedMarshallingStrategy(final String strategy) {
         return Arrays.asList(this.supportedMarshallingStrategies).contains(strategy);
     }
@@ -252,5 +262,14 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
             throw new RuntimeException("Could not find a marshaller factory for " + marshallerStrategy + " marshalling strategy");
         }
         return marshallerFactory;
+    }
+
+    private List<ClientMapping> getClientMappings() {
+        final AbstractStreamServerService streamServerService = this.remotingServer.getValue();
+        if (!(streamServerService instanceof InjectedSocketBindingStreamServerService)) {
+            return Collections.emptyList();
+        }
+        final SocketBinding socketBinding = ((InjectedSocketBindingStreamServerService) streamServerService).getSocketBinding();
+        return socketBinding.getClientMappings();
     }
 }
