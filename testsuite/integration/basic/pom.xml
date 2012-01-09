@@ -106,7 +106,7 @@
                                         <include>org/jboss/as/test/integration/management/cli/JmsTestCase.java</include>
                                         <include>org/jboss/as/test/integration/ee/injection/resource/resourceref/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ee/injection/resource/enventry/EnvEntryTestCase.java</include>
-					<include>org/jboss/as/test/integration/ee/injection/resource/basic/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/injection/resource/basic/*TestCase.java</include>
                                     </includes>
 
                                     <!-- Parameters to test cases. -->
@@ -147,7 +147,7 @@
                                         <exclude>org/jboss/as/test/integration/management/cli/JmsTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ee/injection/resource/resourceref/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ee/injection/resource/enventry/EnvEntryTestCase.java</exclude>
-					<exclude>org/jboss/as/test/integration/ee/injection/resource/basic/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ee/injection/resource/basic/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/security/runas/mdb/*TestCase.java</exclude>
                                     </excludes>
 
