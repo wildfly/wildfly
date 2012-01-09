@@ -35,6 +35,8 @@ public interface EJB3SubsystemModel {
     String ASYNC = "async";
     String IIOP = "iiop";
 
+    String CLIENT_MAPPINGS_CACHE_CONTAINER_REF = "client-mappings-cache-container-ref";
+    String CLIENT_MAPPINGS_CACHE_REF = "client-mappings-cache-ref";
     String CONNECTOR_REF = "connector-ref";
 
     String DEFAULT_MDB_INSTANCE_POOL = "default-mdb-instance-pool";

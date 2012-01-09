@@ -35,7 +35,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.ee.component.deployers.EEResourceReferenceProcessorRegistry;
 import org.jboss.as.ejb3.cache.impl.backing.clustering.GroupMembershipNotifierRegistryService;
 import org.jboss.as.ejb3.component.EJBUtilities;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
@@ -339,11 +338,12 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     private void addClusteringServices(final OperationContext context, final List<ServiceController<?>> newControllers, final boolean appclient) {
-        if (!appclient) {
-            final GroupMembershipNotifierRegistryService groupMembershipNotifierRegistryService = new GroupMembershipNotifierRegistryService();
-            final ServiceController<GroupMembershipNotifierRegistry> groupMembershipNotifierRegistryServiceController = context.getServiceTarget().addService(GroupMembershipNotifierRegistryService.SERVICE_NAME, groupMembershipNotifierRegistryService).install();
-            newControllers.add(groupMembershipNotifierRegistryServiceController);
+        if (appclient) {
+            return;
         }
+        final GroupMembershipNotifierRegistryService groupMembershipNotifierRegistryService = new GroupMembershipNotifierRegistryService();
+        final ServiceController<GroupMembershipNotifierRegistry> groupMembershipNotifierRegistryServiceController = context.getServiceTarget().addService(GroupMembershipNotifierRegistryService.SERVICE_NAME, groupMembershipNotifierRegistryService).install();
+        newControllers.add(groupMembershipNotifierRegistryServiceController);
     }
 
 }

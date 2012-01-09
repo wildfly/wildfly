@@ -67,4 +67,22 @@ final class SecurityActions {
         }
     }
 
+    static String getSystemProperty(final String key) {
+        return getSystemProperty(key, null);
+    }
+
+    static String getSystemProperty(final String key, final String defaultValue) {
+        if (System.getSecurityManager() == null) {
+            return System.getProperty(key, defaultValue);
+        }
+
+        return AccessController.doPrivileged(new PrivilegedAction<String>() {
+
+            @Override
+            public String run() {
+                return System.getProperty(key, defaultValue);
+            }
+        });
+    }
+
 }

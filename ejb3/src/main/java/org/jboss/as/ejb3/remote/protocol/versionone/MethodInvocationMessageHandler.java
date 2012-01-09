@@ -214,9 +214,12 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                     // write out the (successful) method invocation result to the channel output stream
                     try {
                         // attach any weak affinity if available
-                        final Affinity weakAffinity = MethodInvocationMessageHandler.this.getWeakAffinity(componentView);
-                        if (weakAffinity != null) {
-                            attachments.put(Affinity.WEAK_AFFINITY_CONTEXT_KEY, weakAffinity);
+                        if (locator instanceof StatefulEJBLocator && componentView.getComponent() instanceof StatefulSessionComponent) {
+                            final StatefulSessionComponent statefulSessionComponent = (StatefulSessionComponent) componentView.getComponent();
+                            final Affinity weakAffinity = MethodInvocationMessageHandler.this.getWeakAffinity(statefulSessionComponent, (StatefulEJBLocator) locator);
+                            if (weakAffinity != null) {
+                                attachments.put(Affinity.WEAK_AFFINITY_CONTEXT_KEY, weakAffinity);
+                            }
                         }
                         writeMethodInvocationResponse(channel, invocationId, result, attachments);
                     } catch (IOException ioe) {
@@ -237,12 +240,9 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
 
     }
 
-    private Affinity getWeakAffinity(final ComponentView componentView) {
-        if (!(componentView.getComponent() instanceof StatefulSessionComponent)) {
-            return null;
-        }
-        final StatefulSessionComponent statefulSessionComponent = (StatefulSessionComponent) componentView.getComponent();
-        return statefulSessionComponent.getCache().getWeakAffinity();
+    private Affinity getWeakAffinity(final StatefulSessionComponent statefulSessionComponent, final StatefulEJBLocator statefulEJBLocator) {
+        final SessionID sessionID = statefulEJBLocator.getSessionId();
+        return statefulSessionComponent.getCache().getWeakAffinity(sessionID);
     }
 
     private Object invokeMethod(final ComponentView componentView, final Method method, final Object[] args, final EJBLocator ejbLocator, final Map<String, Object> attachments) throws Throwable {

@@ -324,6 +324,14 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
     private void writeRemote(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
         writer.writeAttribute(EJB3SubsystemXMLAttribute.CONNECTOR_REF.getLocalName(), model.require(EJB3SubsystemModel.CONNECTOR_REF).asString());
         writer.writeAttribute(EJB3SubsystemXMLAttribute.THREAD_POOL_NAME.getLocalName(), model.require(EJB3SubsystemModel.THREAD_POOL_NAME).asString());
+        if (model.hasDefined(EJB3SubsystemModel.CLIENT_MAPPINGS_CACHE_CONTAINER_REF)) {
+            final String clientMappingsCacheContainerRef = model.get(EJB3SubsystemModel.CLIENT_MAPPINGS_CACHE_CONTAINER_REF).asString();
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.CLIENT_MAPPINGS_CACHE_CONTAINER_REF.getLocalName(), clientMappingsCacheContainerRef);
+        }
+        if (model.hasDefined(EJB3SubsystemModel.CLIENT_MAPPINGS_CACHE_REF)) {
+            final String clientMappingsCacheRef = model.get(EJB3SubsystemModel.CLIENT_MAPPINGS_CACHE_REF).asString();
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.CLIENT_MAPPINGS_CACHE_REF.getLocalName(), clientMappingsCacheRef);
+        }
     }
 
     private void writeAsync(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
@@ -522,6 +530,8 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
         final int count = reader.getAttributeCount();
         String connectorName = null;
         String threadPoolName = null;
+        String clientMappingsCacheContainerRef = EJB3RemoteServiceAdd.DEFAULT_CLIENT_MAPPINGS_CACHE_CONTAINER_REF;
+        String clientMappingsCacheRef = EJB3RemoteServiceAdd.DEFAULT_CLIENT_MAPPINGS_CACHE_REF;
         final EnumSet<EJB3SubsystemXMLAttribute> required = EnumSet.of(EJB3SubsystemXMLAttribute.CONNECTOR_REF, EJB3SubsystemXMLAttribute.THREAD_POOL_NAME);
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -535,6 +545,12 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                 case THREAD_POOL_NAME:
                     threadPoolName = value;
                     break;
+                case CLIENT_MAPPINGS_CACHE_CONTAINER_REF:
+                    clientMappingsCacheContainerRef = value;
+                    break;
+                case CLIENT_MAPPINGS_CACHE_REF:
+                    clientMappingsCacheRef = value;
+                    break;
                 default:
                     throw unexpectedAttribute(reader, i);
             }
@@ -543,7 +559,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             throw missingRequired(reader, required);
         }
         requireNoContent(reader);
-        operations.add(EJB3RemoteServiceAdd.create(connectorName, threadPoolName));
+        operations.add(EJB3RemoteServiceAdd.create(connectorName, threadPoolName, clientMappingsCacheContainerRef, clientMappingsCacheRef));
     }
 
     private void parseAsync(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {

@@ -49,7 +49,7 @@ public class EJB3RemoteServiceRemove extends AbstractRemoveStepHandler {
     @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         if (context.isResourceServiceRestartAllowed()) {
-            EJB3RemoteServiceAdd.INSTANCE.installRuntimeService(context, model, null);
+            EJB3RemoteServiceAdd.INSTANCE.installRuntimeServices(context, model, null);
         } else {
             context.revertReloadRequired();
         }
