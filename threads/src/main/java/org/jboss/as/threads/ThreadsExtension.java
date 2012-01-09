@@ -87,6 +87,8 @@ public class ThreadsExtension implements Extension {
 
         log.debugf("Initializing Threading Extension");
 
+        final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
+
         // Register the remoting subsystem
         final SubsystemRegistration registration = context.registerSubsystem(THREADS, 1, 0);
         registration.registerXMLElementWriter(ThreadsParser.INSTANCE);
@@ -109,7 +111,9 @@ public class ThreadsExtension implements Extension {
                 BoundedQueueThreadPoolAdd.INSTANCE, false);
         boundedQueueThreadPools.registerOperationHandler(REMOVE, BoundedQueueThreadPoolRemove.INSTANCE,
                 BoundedQueueThreadPoolRemove.INSTANCE, false);
-        BoundedQueueThreadPoolReadAttributeHandler.INSTANCE.registerAttributes(boundedQueueThreadPools);
+        if (registerRuntimeOnly) {
+            BoundedQueueThreadPoolReadAttributeHandler.INSTANCE.registerAttributes(boundedQueueThreadPools);
+        }
         BoundedQueueThreadPoolWriteAttributeHandler.INSTANCE.registerAttributes(boundedQueueThreadPools);
 
         final ManagementResourceRegistration unboundedQueueThreadPools = subsystem.registerSubModel(
@@ -118,7 +122,9 @@ public class ThreadsExtension implements Extension {
                 UnboundedQueueThreadPoolAdd.INSTANCE, false);
         unboundedQueueThreadPools.registerOperationHandler(REMOVE, UnboundedQueueThreadPoolRemove.INSTANCE,
                 UnboundedQueueThreadPoolRemove.INSTANCE, false);
-        UnboundedQueueThreadPoolReadAttributeHandler.INSTANCE.registerAttributes(unboundedQueueThreadPools);
+        if (registerRuntimeOnly) {
+            UnboundedQueueThreadPoolReadAttributeHandler.INSTANCE.registerAttributes(unboundedQueueThreadPools);
+        }
         UnboundedQueueThreadPoolWriteAttributeHandler.INSTANCE.registerAttributes(unboundedQueueThreadPools);
 
         final ManagementResourceRegistration queuelessThreadPools = subsystem.registerSubModel(
@@ -127,7 +133,9 @@ public class ThreadsExtension implements Extension {
                 false);
         queuelessThreadPools.registerOperationHandler(REMOVE, QueuelessThreadPoolRemove.INSTANCE,
                 QueuelessThreadPoolRemove.INSTANCE, false);
-        QueuelessThreadPoolReadAttributeHandler.INSTANCE.registerAttributes(queuelessThreadPools);
+        if (registerRuntimeOnly) {
+            QueuelessThreadPoolReadAttributeHandler.INSTANCE.registerAttributes(queuelessThreadPools);
+        }
         QueuelessThreadPoolWriteAttributeHandler.INSTANCE.registerAttributes(queuelessThreadPools);
 
         final ManagementResourceRegistration scheduledThreadPools = subsystem.registerSubModel(
@@ -136,7 +144,9 @@ public class ThreadsExtension implements Extension {
                 false);
         scheduledThreadPools.registerOperationHandler(REMOVE, ScheduledThreadPoolRemove.INSTANCE,
                 ScheduledThreadPoolRemove.INSTANCE, false);
-        ScheduledThreadPoolReadAttributeHandler.INSTANCE.registerAttributes(scheduledThreadPools);
+        if (registerRuntimeOnly) {
+            ScheduledThreadPoolReadAttributeHandler.INSTANCE.registerAttributes(scheduledThreadPools);
+        }
         ScheduledThreadPoolWriteAttributeHandler.INSTANCE.registerAttributes(scheduledThreadPools);
     }
 
