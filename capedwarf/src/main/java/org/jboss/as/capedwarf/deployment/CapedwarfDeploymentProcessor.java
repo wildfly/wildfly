@@ -64,9 +64,10 @@ public class CapedwarfDeploymentProcessor extends CapedwarfDeploymentUnitProcess
     private static final ModuleIdentifier HIBERNATE_SEARCH = ModuleIdentifier.create("org.hibernate.search");
     private static final ModuleIdentifier LUCENE = ModuleIdentifier.create("org.apache.lucene");
     private static final ModuleIdentifier HTTP_COMPONENTS = ModuleIdentifier.create("org.apache.httpcomponents");
-    private static final ModuleIdentifier PICKETLINK = ModuleIdentifier.create("org.picketlink.fed");
+    private static final ModuleIdentifier PICKETLINK_FED = ModuleIdentifier.create("org.picketlink.fed");
+    private static final ModuleIdentifier PICKETLINK_OPENID = ModuleIdentifier.create("org.picketlink.openid");
     // inline this module deps, if running with bundled
-    private static final ModuleIdentifier[] INLINE = {TX, ACTIVATION, MAIL, JAVASSIST, INFINISPAN_QUERY, HIBERNATE_SEARCH, LUCENE, HTTP_COMPONENTS, PICKETLINK};
+    private static final ModuleIdentifier[] INLINE = {TX, ACTIVATION, MAIL, JAVASSIST, INFINISPAN_QUERY, HIBERNATE_SEARCH, LUCENE, HTTP_COMPONENTS, PICKETLINK_FED, PICKETLINK_OPENID};
 
     private static final VirtualFileFilter JARS_VFS = new VirtualFileFilter() {
         public boolean accepts(VirtualFile file) {
