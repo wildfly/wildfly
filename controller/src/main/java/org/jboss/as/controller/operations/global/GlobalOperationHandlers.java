@@ -221,7 +221,8 @@ public class GlobalOperationHandlers {
                                 ModelNode rrOp = new ModelNode();
                                 rrOp.get(OP).set(opName);
                                 rrOp.get(OP_ADDR).set(PathAddress.pathAddress(address, childPE).toModelNode());
-                                rrOp.get(RECURSIVE).set(true);
+                                rrOp.get(RECURSIVE).set(operation.get(RECURSIVE));
+                                rrOp.get(RECURSIVE_DEPTH).set(newDepth);
                                 rrOp.get(PROXIES).set(proxies);
                                 rrOp.get(INCLUDE_RUNTIME).set(queryRuntime);
                                 ModelNode rrRsp = new ModelNode();
@@ -486,8 +487,6 @@ public class GlobalOperationHandlers {
             return descriptionProvider.getModelDescription(locale);
         }
     }
-
-    ;
 
     /**
      * {@link org.jboss.as.controller.OperationStepHandler} writing a single attribute. The required request parameter "name" represents the attribute name.

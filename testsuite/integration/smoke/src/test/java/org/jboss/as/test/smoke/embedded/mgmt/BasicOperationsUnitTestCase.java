@@ -116,6 +116,7 @@ public class BasicOperationsUnitTestCase {
         }
     }
 
+    @Test
     public void testReadResourceRecursiveDepth() throws IOException {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(READ_RESOURCE_OPERATION);
