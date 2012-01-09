@@ -40,8 +40,8 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.osgi.service.ConfigAdminListener;
-import org.jboss.as.osgi.service.ConfigAdminService;
+import org.jboss.as.configadmin.service.ConfigAdminListener;
+import org.jboss.as.configadmin.service.ConfigAdminService;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -75,7 +75,7 @@ public class ConfigAdminServiceTestCase {
                 .addPackage(ConfiguredService.class.getPackage())
                 .addAsManifestResource(new StringAsset(
                         "Manifest-Version: 1.0\n" +
-                        "Dependencies: org.jboss.as.osgi,javax.inject.api\n"
+                        "Dependencies: org.jboss.as.configadmin,javax.inject.api\n"
                 ), "MANIFEST.MF");
     }
 

@@ -20,14 +20,14 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.osgi.parser;
+package org.jboss.as.configadmin.parser;
 
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * An enumeration of the supported OSGi subsystem namespaces.
+ * An enumeration of the supported ConfigAdmin subsystem namespaces.
  *
  * @author Thomas.Diesler@jboss.com
  * @since 13-Sep-2010
@@ -36,15 +36,13 @@ enum Namespace {
 
     // must be first
     UNKNOWN(null),
-    VERSION_1_0("urn:jboss:domain:osgi:1.0"),
-    VERSION_1_1("urn:jboss:domain:osgi:1.1"),
-    VERSION_1_2("urn:jboss:domain:osgi:1.2")
+    VERSION_1_0("urn:jboss:domain:configadmin:1.0")
     ;
 
     /**
      * The current namespace version.
      */
-    static final Namespace CURRENT = VERSION_1_2;
+    static final Namespace CURRENT = VERSION_1_0;
 
     private final String name;
 

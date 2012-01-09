@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,34 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.configadmin.parser;
 
-package org.jboss.as.osgi.service;
-
-import java.util.Dictionary;
-import java.util.Set;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
+import org.jboss.dmr.ModelNode;
 
 /**
- * A configuration listener for the {@link ConfigAdminService}.
- *
- * When a configuration listener is first registered with the {@link ConfigAdminService}
- * its configurationModified method is invoked for every PID the listener registers with.
- *
- * A <code>null</code> dictionary indicates that there is currently no configuration for the associated PID.
+ * Descibe and handle subsystem operations.
  *
  * @author Thomas.Diesler@jboss.com
- * @since 11-Dec-2010
  */
-public interface ConfigAdminListener {
+class ConfigAdminDescribeHandler extends GenericSubsystemDescribeHandler {
 
-    /**
-     * Called when the {@code ConfigAdminService} receives an update for
-     * a PID that the listener has registered with.
-     */
-    void configurationModified(String pid, Dictionary<String, String> props);
+    static final ConfigAdminDescribeHandler INSTANCE = new ConfigAdminDescribeHandler();
 
-    /**
-     * Return the set of PIDs that this listener is interested in.
-     * A <code>null</code> return value denotes any PID.
-     */
-    Set<String> getPIDs();
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        super.execute(context, operation);
+        context.completeStep();
+    }
 }

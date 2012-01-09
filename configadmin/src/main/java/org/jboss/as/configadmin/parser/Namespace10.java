@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.osgi.parser;
+package org.jboss.as.configadmin.parser;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,11 +36,8 @@ interface Namespace10 {
 
     enum Attribute {
         UNKNOWN(null),
-        ACTIVATION("activation"),
         NAME("name"),
-        IDENTIFIER("identifier"),
         PID("pid"),
-        STARTLEVEL("startlevel"),
         VALUE("value"),
         ;
         private final String name;
@@ -83,11 +80,7 @@ interface Namespace10 {
         // must be first
         UNKNOWN(null),
         CONFIGURATION("configuration"),
-        MODULES("modules"),
-        MODULE("module"),
-        PROPERTIES("properties"),
-        PROPERTY("property"),
-        ;
+        PROPERTY("property");
 
         private final String name;
 

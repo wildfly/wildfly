@@ -21,13 +21,6 @@
  */
 package org.jboss.as.osgi.parser;
 
-import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
-
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -40,7 +33,6 @@ import org.jboss.as.osgi.deployment.BundleStartTracker;
 import org.jboss.as.osgi.deployment.OSGiDeploymentActivator;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
 import org.jboss.as.osgi.service.BundleInstallProviderIntegration;
-import org.jboss.as.osgi.service.ConfigAdminServiceImpl;
 import org.jboss.as.osgi.service.FrameworkBootstrapService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
@@ -56,6 +48,13 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.osgi.framework.Services;
 import org.osgi.framework.Bundle;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
+
+import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
 
 /**
  * OSGi subsystem operation handler.
@@ -121,7 +120,6 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 newControllers.add(BundleStartTracker.addService(serviceTarget));
                 newControllers.add(BundleInstallProviderIntegration.addService(serviceTarget));
                 newControllers.add(FrameworkBootstrapService.addService(serviceTarget, verificationHandler));
-                newControllers.add(ConfigAdminServiceImpl.addService(serviceTarget, verificationHandler));
                 context.completeStep();
             }
         }, OperationContext.Stage.RUNTIME);

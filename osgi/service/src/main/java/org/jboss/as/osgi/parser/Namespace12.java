@@ -27,19 +27,17 @@ import java.util.Map;
 
 
 /**
- * Constants related to namespace {@link Namespace#VERSION_1_0}.
+ * Constants related to namespace {@link org.jboss.as.osgi.parser.Namespace#VERSION_1_1}.
  *
  * @author Thomas.Diesler@jboss.com
  * @since 29-Sep-2011
  */
-interface Namespace10 {
+interface Namespace12 {
 
     enum Attribute {
         UNKNOWN(null),
         ACTIVATION("activation"),
         NAME("name"),
-        IDENTIFIER("identifier"),
-        PID("pid"),
         STARTLEVEL("startlevel"),
         VALUE("value"),
         ;
@@ -82,9 +80,8 @@ interface Namespace10 {
     enum Element {
         // must be first
         UNKNOWN(null),
-        CONFIGURATION("configuration"),
-        MODULES("modules"),
-        MODULE("module"),
+        CAPABILITIES("capabilities"),
+        CAPABILITY("capability"),
         PROPERTIES("properties"),
         PROPERTY("property"),
         ;

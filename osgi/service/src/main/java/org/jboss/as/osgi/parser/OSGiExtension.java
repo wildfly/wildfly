@@ -48,8 +48,9 @@ public class OSGiExtension implements Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.OSGI_1_0.getUriString(), OSGiNamespace10Parser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.OSGI_1_1.getUriString(), OSGiNamespace11Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.VERSION_1_0.getUriString(), OSGiNamespace10Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.VERSION_1_1.getUriString(), OSGiNamespace11Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.VERSION_1_2.getUriString(), OSGiNamespace12Parser.INSTANCE);
     }
 
     @Override
@@ -67,11 +68,6 @@ public class OSGiExtension implements Extension {
         }
         registration.registerOperationHandler(ModelDescriptionConstants.DESCRIBE, OSGiSubsystemDescribeHandler.INSTANCE, OSGiSubsystemAdd.DESCRIPTION, false, OperationEntry.EntryType.PRIVATE);
         registration.registerOperationHandler(ModelDescriptionConstants.REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, OSGiSubsystemProviders.SUBSYSTEM_REMOVE, false);
-
-        // Configuration Admin Setings
-        ManagementResourceRegistration configuration = registration.registerSubModel(PathElement.pathElement(ModelConstants.CONFIGURATION), OSGiSubsystemProviders.CONFIGURATION_DESCRIPTION);
-        configuration.registerOperationHandler(ModelDescriptionConstants.ADD, OSGiConfigurationAdd.INSTANCE, OSGiConfigurationAdd.DESCRIPTION, false);
-        configuration.registerOperationHandler(ModelDescriptionConstants.REMOVE, OSGiConfigurationRemove.INSTANCE, OSGiConfigurationRemove.DESCRIPTION, false);
 
         // Framework Properties
         ManagementResourceRegistration properties = registration.registerSubModel(PathElement.pathElement(ModelConstants.PROPERTY), OSGiSubsystemProviders.PROPERTY_DESCRIPTION);

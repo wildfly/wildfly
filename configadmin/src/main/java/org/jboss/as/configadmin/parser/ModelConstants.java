@@ -20,32 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.osgi.parser;
+package org.jboss.as.configadmin.parser;
 
 
 /**
- * An enumeration of the supported OSGi subsystem namespaces.
+ * An enumeration of the supported ConfigAdmin subsystem namespaces.
  *
  * @author Thomas.Diesler@jboss.com
- * @author David Bosschaert
  * @since 13-Sep-2010
  */
 public interface ModelConstants {
 
-    String ACTIVATE = "activate";
-    String ACTIVATION = "activation";
-    String BUNDLE = "bundle";
-    String CAPABILITY = "capability";
+    String CONFIGURATION = "configuration";
     String ENTRIES = "entries";
-    String FRAGMENT = "fragment";
-    String ID = "id";
-    String NAME = "name";
-    String PROPERTY = "property";
-    String STARTLEVEL = "startlevel";
-    String STATE = "state";
-    String SYMBOLIC_NAME = "symbolic-name";
-    String TYPE = "type";
-    String VALUE = "value";
-    String VERSION = "version";
-
 }

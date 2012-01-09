@@ -19,13 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.osgi.parser;
-
-import java.util.Dictionary;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
+package org.jboss.as.configadmin.parser;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -37,14 +31,19 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 
+import java.util.Dictionary;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 /**
- * @author David Bosschaert
  * @author Thomas.Diesler@jboss.com
  */
-public class OSGiConfigurationAdd extends AbstractAddStepHandler {
-    static final OSGiConfigurationAdd INSTANCE = new OSGiConfigurationAdd();
+public class ConfigurationAdd extends AbstractAddStepHandler {
+    static final ConfigurationAdd INSTANCE = new ConfigurationAdd();
 
-    private OSGiConfigurationAdd() {
+    private ConfigurationAdd() {
     }
 
     @Override
@@ -68,7 +67,7 @@ public class OSGiConfigurationAdd extends AbstractAddStepHandler {
             dictionary.put(key, entries.get(key).asString());
         }
 
-        SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
+        ConfigAdminState subsystemState = ConfigAdminState.getSubsystemState(context);
         if (subsystemState != null) {
             subsystemState.putConfiguration(pid, dictionary);
         }
@@ -77,7 +76,7 @@ public class OSGiConfigurationAdd extends AbstractAddStepHandler {
     @Override
     protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model, List<ServiceController<?>> controllers) {
         String pid = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.CONFIGURATION).asString();
-        SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
+        ConfigAdminState subsystemState = ConfigAdminState.getSubsystemState(context);
         if (subsystemState != null) {
             subsystemState.removeConfiguration(pid);
         }
@@ -88,7 +87,7 @@ public class OSGiConfigurationAdd extends AbstractAddStepHandler {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             ModelNode node = new ModelNode();
-            ResourceBundle resbundle = OSGiSubsystemProviders.getResourceBundle(locale);
+            ResourceBundle resbundle = ConfigAdminProviders.getResourceBundle(locale);
             node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.ADD);
             node.get(ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("configuration.add"));
             node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.ENTRIES, ModelDescriptionConstants.DESCRIPTION).set(

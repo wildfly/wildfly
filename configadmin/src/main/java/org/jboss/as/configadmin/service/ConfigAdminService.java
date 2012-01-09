@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.osgi.service;
+package org.jboss.as.configadmin.service;
 
 import java.util.Dictionary;
 import java.util.Set;
@@ -35,7 +35,7 @@ import org.jboss.msc.service.ServiceName;
  */
 public interface ConfigAdminService extends Service<ConfigAdminService> {
 
-    ServiceName SERVICE_NAME = ServiceName.JBOSS.append("osgi", "configadmin");
+    ServiceName SERVICE_NAME = ServiceName.JBOSS.append("configadmin");
 
     /**
      * Get the set of registered PIDs

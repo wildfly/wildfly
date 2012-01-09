@@ -19,10 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.osgi.parser;
-
-import java.util.Locale;
-import java.util.ResourceBundle;
+package org.jboss.as.configadmin.parser;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -31,20 +28,22 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 /**
- * @author David Bosschaert
  * @author Thomas.Diesler@jboss.com
  */
-public class OSGiConfigurationRemove extends AbstractRemoveStepHandler {
-    static final OSGiConfigurationRemove INSTANCE = new OSGiConfigurationRemove();
+public class ConfigurationRemove extends AbstractRemoveStepHandler {
+    static final ConfigurationRemove INSTANCE = new ConfigurationRemove();
 
-    private OSGiConfigurationRemove() {
+    private ConfigurationRemove() {
     }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         String pid = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.CONFIGURATION).asString();
-        SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
+        ConfigAdminState subsystemState = ConfigAdminState.getSubsystemState(context);
         if (subsystemState != null && context.completeStep() == OperationContext.ResultAction.KEEP) {
             subsystemState.removeConfiguration(pid);
         }
@@ -55,7 +54,7 @@ public class OSGiConfigurationRemove extends AbstractRemoveStepHandler {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             ModelNode node = new ModelNode();
-            ResourceBundle resbundle = OSGiSubsystemProviders.getResourceBundle(locale);
+            ResourceBundle resbundle = ConfigAdminProviders.getResourceBundle(locale);
             node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.REMOVE);
             node.get(ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("configuration.remove"));
             node.get(ModelDescriptionConstants.REQUEST_PROPERTIES).setEmptyObject();

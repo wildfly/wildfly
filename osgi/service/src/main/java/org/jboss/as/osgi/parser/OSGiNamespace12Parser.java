@@ -43,18 +43,16 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 /**
- * Parse subsystem configuration for namespace {@link Namespace#VERSION_1_0}.
+ * Parse subsystem configuration for namespace {@link Namespace#VERSION_1_2}.
  *
  * @author Thomas.Diesler@jboss.com
- * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
- * @author David Bosschaert
  */
-class OSGiNamespace10Parser implements Namespace10, XMLStreamConstants, XMLElementReader<List<ModelNode>> {
+class OSGiNamespace12Parser implements Namespace12, XMLStreamConstants, XMLElementReader<List<ModelNode>> {
 
-    static XMLElementReader<List<ModelNode>> INSTANCE = new OSGiNamespace10Parser();
+    static XMLElementReader<List<ModelNode>> INSTANCE = new OSGiNamespace12Parser();
 
     // hide ctor
-    private OSGiNamespace10Parser() {
+    private OSGiNamespace12Parser() {
     }
 
     @Override
@@ -69,30 +67,23 @@ class OSGiNamespace10Parser implements Namespace10, XMLStreamConstants, XMLEleme
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case VERSION_1_0: {
+                case VERSION_1_2: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
-                        case CONFIGURATION: {
-                            parseConfigurations(reader);
-                            break;
-                        }
                         case PROPERTIES: {
                             List<ModelNode> result = parseFrameworkProperties(reader, address, operations);
                             operations.addAll(result);
                             break;
                         }
-                        case MODULES: {
-                            List<ModelNode> result = parseModules(reader, address);
+                        case CAPABILITIES: {
+                            List<ModelNode> result = parseCapabilities(reader, address);
                             operations.addAll(result);
                             break;
                         }
                         default:
                             throw unexpectedElement(reader);
                     }
-                    break;
                 }
-                default:
-                    throw unexpectedElement(reader);
             }
         }
     }
@@ -102,7 +93,7 @@ class OSGiNamespace10Parser implements Namespace10, XMLStreamConstants, XMLEleme
         result.get(OP).set(ADD);
         result.get(OP_ADDR).set(address);
         switch (Namespace.forUri(reader.getNamespaceURI())) {
-            case VERSION_1_0: {
+            case VERSION_1_2: {
                 // Handle attributes
                 int count = reader.getAttributeCount();
                 for (int i = 0; i < count; i++) {
@@ -126,52 +117,6 @@ class OSGiNamespace10Parser implements Namespace10, XMLStreamConstants, XMLEleme
         return result;
     }
 
-    private void parseConfigurations(XMLExtendedStreamReader reader) throws XMLStreamException {
-
-        // Handle attributes
-        int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            requireNoNamespaceAttribute(reader, i);
-            final Namespace11.Attribute attribute = Namespace11.Attribute.forName(reader.getAttributeLocalName(i));
-            switch (attribute) {
-                case PID: {
-                    break;
-                }
-                default:
-                    throw unexpectedAttribute(reader, i);
-            }
-        }
-
-        // Handle elements
-        while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case VERSION_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    if (element == Element.PROPERTY) {
-                        count = reader.getAttributeCount();
-                        for (int i = 0; i < count; i++) {
-                            requireNoNamespaceAttribute(reader, i);
-                            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                            switch (attribute) {
-                                case NAME: {
-                                    break;
-                                }
-                                default:
-                                    throw unexpectedAttribute(reader, i);
-                            }
-                        }
-                        reader.getElementText().trim();
-                        break;
-                    } else {
-                        throw unexpectedElement(reader);
-                    }
-                }
-                default:
-                    throw unexpectedElement(reader);
-            }
-        }
-    }
-
     private List<ModelNode> parseFrameworkProperties(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> operations) throws XMLStreamException {
 
         requireNoAttributes(reader);
@@ -181,7 +126,7 @@ class OSGiNamespace10Parser implements Namespace10, XMLStreamConstants, XMLEleme
         // Handle elements
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case VERSION_1_0: {
+                case VERSION_1_2: {
                     final Element element = Element.forName(reader.getLocalName());
                     if (element == Element.PROPERTY) {
                         String name = null;
@@ -224,43 +169,43 @@ class OSGiNamespace10Parser implements Namespace10, XMLStreamConstants, XMLEleme
         return result;
     }
 
-    private List<ModelNode> parseModules(XMLExtendedStreamReader reader, ModelNode address) throws XMLStreamException {
+    private List<ModelNode> parseCapabilities(XMLExtendedStreamReader reader, ModelNode address) throws XMLStreamException {
         List<ModelNode> nodes = new ArrayList<ModelNode>();
         requireNoAttributes(reader);
 
         // Handle elements
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case VERSION_1_0: {
+                case VERSION_1_2: {
                     final Element element = Element.forName(reader.getLocalName());
-                    if (element == Element.MODULE) {
-                        String identifier = null;
-                        String startlevel = null;
+                    if (element == Element.CAPABILITY) {
+                        String name = null;
+                        String start = null;
                         final int count = reader.getAttributeCount();
                         for (int i = 0; i < count; i++) {
                             requireNoNamespaceAttribute(reader, i);
                             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                             switch (attribute) {
-                                case IDENTIFIER: {
-                                    identifier = reader.getAttributeValue(i);
+                                case NAME: {
+                                    name = reader.getAttributeValue(i);
                                     break;
                                 }
                                 case STARTLEVEL: {
-                                    startlevel = reader.getAttributeValue(i);
+                                    start = reader.getAttributeValue(i);
                                     break;
                                 }
                                 default:
                                     throw unexpectedAttribute(reader, i);
                             }
                         }
-                        if (identifier == null)
+                        if (name == null)
                             throw missingRequired(reader, Collections.singleton(Attribute.NAME));
 
                         ModelNode moduleNode = new ModelNode();
                         moduleNode.get(OP).set(ADD);
-                        moduleNode.get(OP_ADDR).set(address).add(ModelConstants.CAPABILITY, identifier);
-                        if (startlevel != null)
-                            moduleNode.get(ModelConstants.STARTLEVEL).set(startlevel);
+                        moduleNode.get(OP_ADDR).set(address).add(ModelConstants.CAPABILITY, name);
+                        if (start != null)
+                            moduleNode.get(ModelConstants.STARTLEVEL).set(start);
 
                         nodes.add(moduleNode);
 
