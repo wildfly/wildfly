@@ -60,7 +60,7 @@ abstract class AbstractPlatformMBeanAttributeHandler implements OperationStepHan
             executeWriteAttribute(context, operation);
         }
 
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
     protected abstract void executeReadAttribute (OperationContext context, ModelNode operation) throws OperationFailedException;

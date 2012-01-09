@@ -70,6 +70,6 @@ public class RuntimeMXBeanReadResourceHandler implements OperationStepHandler {
             RuntimeMXBeanAttributeHandler.storeResult(PlatformMBeanConstants.OBJECT_NAME, store);
         }
 
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 }

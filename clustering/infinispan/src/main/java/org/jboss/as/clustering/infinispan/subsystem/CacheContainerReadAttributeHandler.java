@@ -81,7 +81,7 @@ public class CacheContainerReadAttributeHandler implements OperationStepHandler 
         }
 
         // since we are not updating the model, there is no need for a RUNTIME step
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
     public void registerAttributes(final ManagementResourceRegistration registry) {

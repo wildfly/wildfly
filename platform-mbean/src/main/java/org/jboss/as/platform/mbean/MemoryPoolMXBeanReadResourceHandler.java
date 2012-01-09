@@ -83,6 +83,6 @@ public class MemoryPoolMXBeanReadResourceHandler implements OperationStepHandler
             MemoryPoolMXBeanAttributeHandler.storeResult(PlatformMBeanConstants.OBJECT_NAME, store, memoryPoolMXBean, memPoolName);
         }
 
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 }

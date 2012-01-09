@@ -67,6 +67,6 @@ public class CompilationMXBeanReadResourceHandler implements OperationStepHandle
             CompilationMXBeanAttributeHandler.storeResult(PlatformMBeanConstants.OBJECT_NAME, store);
         }
 
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 }

@@ -91,7 +91,7 @@ public abstract class AbstractRuntimeOnlyHandler implements OperationStepHandler
             }
         }, OperationContext.Stage.RUNTIME);
 
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
     /**

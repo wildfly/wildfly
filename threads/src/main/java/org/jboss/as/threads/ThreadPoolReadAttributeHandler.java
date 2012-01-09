@@ -68,7 +68,7 @@ public abstract class ThreadPoolReadAttributeHandler extends AbstractRuntimeOnly
 
         setResult(context, attributeName, service);
 
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
     protected abstract void setResult(OperationContext context, String attributeName, Service<?> service) throws OperationFailedException;

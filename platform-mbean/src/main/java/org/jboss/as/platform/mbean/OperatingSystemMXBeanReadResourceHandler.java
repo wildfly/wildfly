@@ -71,6 +71,6 @@ public class OperatingSystemMXBeanReadResourceHandler implements OperationStepHa
             OperatingSystemMXBeanAttributeHandler.storeResult(PlatformMBeanConstants.OBJECT_NAME, store);
         }
 
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 }
