@@ -39,6 +39,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -72,7 +73,7 @@ public class ManagedDMRContentTypeResource implements Resource.ResourceEntry {
         try {
             this.messageDigest = MessageDigest.getInstance("SHA-1");
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("Cannot obtain Message Digest algorithm SHA-1", e);
+            throw ManagedDMRContentMessages.MESSAGES.messageDigestAlgorithmNotAvailable(e);
         }
 
         // Establish an initial hash attribute
@@ -197,10 +198,10 @@ public class ManagedDMRContentTypeResource implements Resource.ResourceEntry {
     @Override
     public void registerChild(PathElement address, Resource resource) {
         if (!childType.equals(address.getKey())) {
-            throw new IllegalArgumentException(String.format("Illegal child type %s", address.getKey()));
+            throw ManagedDMRContentMessages.MESSAGES.illegalChildType(address.getKey(), childType);
         }
         if (! (resource instanceof ManagedDMRContentResource)) {
-            throw new IllegalArgumentException(String.format("Illegal child resource class %s", resource.getClass()));
+            throw ManagedDMRContentMessages.MESSAGES.illegalChildClass(resource.getClass());
         }
 
         // Just attach ourself to this child so during the course of this operation it can access data
@@ -266,7 +267,7 @@ public class ManagedDMRContentTypeResource implements Resource.ResourceEntry {
     private void loadContent(byte[] initialHash) {
         VirtualFile vf = contentRepository.getContent(initialHash);
         if (vf == null) {
-            throw new IllegalStateException("No content found with hash " + new String(initialHash));
+            throw ManagedDMRContentMessages.MESSAGES.noContentFoundWithHash(HashUtil.bytesToHexString(initialHash));
         }
         InputStream is = null;
         try {
@@ -291,7 +292,7 @@ public class ManagedDMRContentTypeResource implements Resource.ResourceEntry {
 
     private void storeContent() throws IOException {
         final ModelNode node = new ModelNode();
-        boolean hasContent = false;
+        boolean hasContent;
         synchronized (content) {
             hasContent = !content.isEmpty();
             if (hasContent) {
