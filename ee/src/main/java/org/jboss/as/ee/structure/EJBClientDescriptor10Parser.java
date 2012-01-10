@@ -246,6 +246,11 @@ class EJBClientDescriptor10Parser implements XMLElementReader<EJBClientDescripto
         if (!required.isEmpty()) {
             missingAttributes(reader.getLocation(), required);
         }
+        // This element is just composed of attributes which we already processed, so no more content
+        // is expected
+        if (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            unexpectedContent(reader);
+        }
     }
 
     private static void unexpectedEndOfDocument(final Location location) throws XMLStreamException {
