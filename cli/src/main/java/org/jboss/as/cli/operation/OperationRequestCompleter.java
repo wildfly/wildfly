@@ -86,14 +86,45 @@ public class OperationRequestCompleter implements CommandLineCompleter {
 
             int result = buffer.length();
             if(parsedCmd.getLastHeaderName() != null) {
-                result = parsedCmd.getLastChunkIndex();
-                for(String name : headers.keySet()) {
-                    if(name.startsWith(parsedCmd.getLastHeaderName())) {
-                        candidates.add(name);
+                if(buffer.endsWith(parsedCmd.getLastHeaderName())) {
+                    result = parsedCmd.getLastChunkIndex();
+                    for(String name : headers.keySet()) {
+                        if(name.startsWith(parsedCmd.getLastHeaderName())) {
+                            candidates.add(name);
+                        }
                     }
+                } else {
+                    final OperationRequestHeader header = headers.get(parsedCmd.getLastHeaderName());
+                    if(header == null) {
+                        return -1;
+                    }
+                    final CommandLineCompleter headerCompleter = header.getCompleter();
+                    if(headerCompleter == null) {
+                        return -1;
+                    }
+                    result = headerCompleter.complete(ctx, buffer, cursor, candidates);
                 }
             } else {
-                candidates.addAll(headers.keySet());
+                final List<ParsedOperationRequestHeader> parsedHeaders = parsedCmd.getHeaders();
+                if(parsedHeaders.isEmpty()) {
+                    candidates.addAll(headers.keySet());
+                } else if(parsedCmd.endsOnHeaderSeparator()) {
+                    candidates.addAll(headers.keySet());
+                    for(ParsedOperationRequestHeader parsed : parsedHeaders) {
+                        candidates.remove(parsed.getName());
+                    }
+                } else {
+                    final ParsedOperationRequestHeader lastParsedHeader = parsedHeaders.get(parsedHeaders.size() - 1);
+                    final OperationRequestHeader lastHeader = headers.get(lastParsedHeader.getName());
+                    if(lastHeader == null) {
+                        return -1;
+                    }
+                    final CommandLineCompleter headerCompleter = lastHeader.getCompleter();
+                    if(headerCompleter == null) {
+                        return -1;
+                    }
+                    result = headerCompleter.complete(ctx, buffer, cursor, candidates);
+                }
             }
             Collections.sort(candidates);
             return result;

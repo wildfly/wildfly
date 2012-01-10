@@ -38,12 +38,14 @@ import org.jboss.dmr.ModelNode;
  */
 public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
 
-    private static final String HEADER_NAME = "rollout-plan";
+    private static final String HEADER_NAME = "rollout";
 
     private final String planId;
     private String planRef;
     private List<RolloutPlanGroup> groups;
     private Map<String,String> props;
+
+    private RolloutPlanGroup lastGroup;
 
     public ParsedRolloutPlanHeader() {
         this(null);
@@ -90,6 +92,7 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
             groups = new ArrayList<RolloutPlanGroup>();
         }
         groups.add(group);
+        this.lastGroup = group;
     }
 
     public void addConcurrentGroup(RolloutPlanGroup group) {
@@ -112,6 +115,7 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
             concurrent.addGroup(group);
             groups.set(lastIndex, concurrent);
         }
+        this.lastGroup = group;
     }
 
     // TODO perhaps add a list of allowed properties and their values
@@ -126,6 +130,8 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
             props = new HashMap<String,String>();
         }
         props.put(name, value);
+
+        this.lastGroup = null;
     }
 
     public String getProperty(String name) {
@@ -149,7 +155,7 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
             headers.set(rolloutPlan);
             return;
         }
-        ModelNode header = headers.get(HEADER_NAME);
+        ModelNode header = headers.get(Util.ROLLOUT_PLAN);
         final ModelNode series = header.get(Util.IN_SERIES);
         for(RolloutPlanGroup group : groups) {
             group.addTo(series);
@@ -160,6 +166,10 @@ public class ParsedRolloutPlanHeader implements ParsedOperationRequestHeader {
                 header.get(propName).set(props.get(propName));
             }
         }
+    }
+
+    public RolloutPlanGroup getLastGroup() {
+        return lastGroup;
     }
 
 /*    public static void main(String[] args) throws Exception {

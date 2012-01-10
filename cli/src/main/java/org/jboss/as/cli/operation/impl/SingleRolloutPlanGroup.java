@@ -23,6 +23,7 @@ package org.jboss.as.cli.operation.impl;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.Util;
@@ -34,8 +35,15 @@ import org.jboss.dmr.ModelNode;
  */
 public class SingleRolloutPlanGroup implements RolloutPlanGroup {
 
+    private static final int SEPARATOR_PROPERTY_LIST_START = 1;
+    private static final int SEPARATOR_PROPERTY_LIST_END = 2;
+    private static final int SEPARATOR_PROPERTY = 3;
+
     private String groupName;
     private Map<String,String> props;
+
+    private int lastSeparatorIndex;
+    private int separator;
 
     public SingleRolloutPlanGroup() {
     }
@@ -56,7 +64,7 @@ public class SingleRolloutPlanGroup implements RolloutPlanGroup {
     }
 
     // TODO perhaps add a list of allowed properties and their values
-    public void addProperty(String name, String value) {
+    public void addProperty(String name, String value, int nameValueSep) {
         if(name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Invalid property name: " + name);
         }
@@ -67,6 +75,33 @@ public class SingleRolloutPlanGroup implements RolloutPlanGroup {
             props = new HashMap<String,String>();
         }
         props.put(name, value);
+        lastSeparatorIndex = nameValueSep;
+    }
+
+    public boolean hasProperties() {
+        return props != null;
+    }
+
+    public void propertyListStart(int index) {
+        this.lastSeparatorIndex = index;
+        separator = SEPARATOR_PROPERTY_LIST_START;
+    }
+
+    public boolean endsOnPropertyListStart() {
+        return separator == SEPARATOR_PROPERTY_LIST_START;
+    }
+
+    public void propertyListEnd(int index) {
+        this.lastSeparatorIndex = index;
+        separator = SEPARATOR_PROPERTY_LIST_END;
+    }
+
+    public boolean endsOnPropertyListEnd() {
+        return separator == SEPARATOR_PROPERTY_LIST_END;
+    }
+
+    public int getLastSeparatorIndex() {
+        return lastSeparatorIndex;
     }
 
     /* (non-Javadoc)
