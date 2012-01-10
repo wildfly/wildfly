@@ -262,7 +262,7 @@ public class MasterDomainControllerOperationHandlerImpl extends ManagementChanne
         }
 
         private String getRelativePath(final File parent, final File child) {
-            return child.getAbsolutePath().substring(parent.getAbsolutePath().length());
+            return child.getAbsolutePath().substring(parent.getAbsolutePath().length()+1);
         }
 
         private void writeFile(final File localPath, final File file, final FlushableDataOutput output) throws IOException {
