@@ -67,17 +67,17 @@ public class MemoryPoolMXBeanResetPeakUsageHandler implements OperationStepHandl
     }
 
     private MemoryPoolMXBean getMemoryPoolMXBean(ModelNode operation) throws OperationFailedException {
-        final String gcName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
+        final String memPoolName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
         MemoryPoolMXBean memoryPoolMXBean = null;
 
         for (MemoryPoolMXBean mbean : ManagementFactory.getMemoryPoolMXBeans()) {
-            if (gcName.equals(escapeMBeanName(mbean.getName()))) {
+            if (memPoolName.equals(escapeMBeanName(mbean.getName()))) {
                 memoryPoolMXBean = mbean;
             }
         }
 
         if (memoryPoolMXBean == null) {
-            throw new OperationFailedException(new ModelNode().set(String.format("No MemoryPoolMXBean with name %s currently exists")));
+            throw PlatformMBeanMessages.MESSAGES.unknownMemoryPool2(memPoolName);
         }
         return memoryPoolMXBean;
     }

@@ -92,7 +92,7 @@ public class MemoryPoolMXBeanAttributeHandler extends AbstractPlatformMBeanAttri
                 memoryPoolMXBean.setCollectionUsageThreshold(operation.require(ModelDescriptionConstants.VALUE).asLong());
             } else if (PlatformMBeanConstants.MEMORY_POOL_READ_WRITE_ATTRIBUTES.contains(name)) {
                 // Bug
-                throw new IllegalStateException(String.format("Write support for attribute %s was not properly implemented", name));
+                throw PlatformMBeanMessages.MESSAGES.badWriteAttributeImpl3(name);
             } else {
                 // Shouldn't happen; the global handler should reject
                 throw unknownAttribute(operation);
@@ -170,7 +170,7 @@ public class MemoryPoolMXBeanAttributeHandler extends AbstractPlatformMBeanAttri
                 || PlatformMBeanConstants.MEMORY_POOL_READ_WRITE_ATTRIBUTES.contains(name)
                 || PlatformMBeanConstants.MEMORY_POOL_METRICS.contains(name)) {
             // Bug
-            throw new IllegalStateException(String.format("Read support for attribute %s was not properly implemented", name));
+            throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl7(name);
         }
 
     }
@@ -186,7 +186,7 @@ public class MemoryPoolMXBeanAttributeHandler extends AbstractPlatformMBeanAttri
         }
 
         if (memoryPoolMXBean == null) {
-            throw new OperationFailedException(new ModelNode().set(String.format("No MemoryPoolMXBean with name %s currently exists", memPoolName)));
+            throw PlatformMBeanMessages.MESSAGES.unknownMemoryPool1(memPoolName);
         }
         return memoryPoolMXBean;
     }

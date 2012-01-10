@@ -22,34 +22,22 @@
 
 package org.jboss.as.platform.mbean;
 
-import java.util.Collections;
-import java.util.Set;
-
-import org.jboss.as.controller.PathElement;
+import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Logger;
+import org.jboss.logging.MessageLogger;
 
 /**
- * Resource impl for leaf platform mbean resources.
+ * This module is using message IDs in the range 12300-12399. This file is using the subset 12350-12399 for
+ * non-logger messages. See http://community.jboss.org/docs/DOC-16810 for the full list of currently reserved
+ * JBAS message id blocks.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-class LeafPlatformMBeanResource extends AbstractPlatformMBeanResource {
+@MessageLogger(projectCode = "JBAS")
+public interface PlatformMBeanLogger extends BasicLogger {
 
-    public LeafPlatformMBeanResource(PathElement pathElement) {
-        super(pathElement);
-    }
-
-    @Override
-    ResourceEntry getChildEntry(String name) {
-        return null;
-    }
-
-    @Override
-    Set<String> getChildrenNames() {
-        return Collections.emptySet();
-    }
-
-    @Override
-    public Set<String> getChildTypes() {
-        return Collections.emptySet();
-    }
+    /**
+     * A logger with the category of the package.
+     */
+    PlatformMBeanLogger ROOT_LOGGER = Logger.getMessageLogger(PlatformMBeanLogger.class, PlatformMBeanLogger.class.getPackage().getName());
 }

@@ -22,17 +22,18 @@
 
 package org.jboss.as.platform.mbean;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Base class for handlers for reading and writing platform mbean attributes.
@@ -70,7 +71,6 @@ abstract class AbstractPlatformMBeanAttributeHandler implements OperationStepHan
     protected abstract void register(ManagementResourceRegistration registration);
 
     protected static OperationFailedException unknownAttribute(final ModelNode operation) {
-        return new OperationFailedException(new ModelNode().set(String.format("No known attribute %s",
-                operation.require(NAME).asString()))); // TODO i18n
+        return PlatformMBeanMessages.MESSAGES.unknownAttribute(operation.require(NAME).asString());
     }
 }

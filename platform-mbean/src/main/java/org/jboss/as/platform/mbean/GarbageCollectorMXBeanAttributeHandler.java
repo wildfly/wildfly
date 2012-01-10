@@ -24,8 +24,6 @@ package org.jboss.as.platform.mbean;
 
 import static org.jboss.as.platform.mbean.PlatformMBeanUtil.escapeMBeanName;
 
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 
@@ -67,7 +65,7 @@ public class GarbageCollectorMXBeanAttributeHandler extends AbstractPlatformMBea
         }
 
         if (gcMBean == null) {
-            throw new OperationFailedException(new ModelNode().set(String.format("No GarbageCollectorMXBean with name %s currently exists", gcName)));
+            throw PlatformMBeanMessages.MESSAGES.unknownGarbageCollector(gcName);
         }
 
         if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.equals(name)) {
@@ -90,7 +88,7 @@ public class GarbageCollectorMXBeanAttributeHandler extends AbstractPlatformMBea
         } else if (PlatformMBeanConstants.GARBAGE_COLLECTOR_READ_ATTRIBUTES.contains(name)
                 || PlatformMBeanConstants.GARBAGE_COLLECTOR_METRICS.contains(name)) {
             // Bug
-            throw new IllegalStateException(String.format("Read support for attribute %s was not properly implemented", name));
+            throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl4(name);
         } else {
             // Shouldn't happen; the global handler should reject
             throw unknownAttribute(operation);

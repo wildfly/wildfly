@@ -21,16 +21,12 @@
  */
 package org.jboss.as.platform.mbean;
 
-import java.lang.management.GarbageCollectorMXBean;
-import java.lang.management.ManagementFactory;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
@@ -52,7 +48,7 @@ abstract class AbstractPlatformMBeanResource implements Resource.ResourceEntry {
 
     @Override
     public void writeModel(ModelNode newModel) {
-        throw new UnsupportedOperationException("A platform mbean resource does not have a writeable model");
+        throw PlatformMBeanMessages.MESSAGES.modelNotWritable();
     }
 
     @Override
@@ -121,12 +117,12 @@ abstract class AbstractPlatformMBeanResource implements Resource.ResourceEntry {
 
     @Override
     public void registerChild(PathElement address, Resource resource) {
-        throw new UnsupportedOperationException("Adding child resources is not supported");
+        throw PlatformMBeanMessages.MESSAGES.addingChildrenNotSupported();
     }
 
     @Override
     public Resource removeChild(PathElement address) {
-        throw new UnsupportedOperationException("Removing child resources is not supported");
+        throw PlatformMBeanMessages.MESSAGES.removingChildrenNotSupported();
     }
 
     @Override

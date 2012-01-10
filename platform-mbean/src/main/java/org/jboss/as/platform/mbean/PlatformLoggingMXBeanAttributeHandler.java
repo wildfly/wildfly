@@ -22,12 +22,8 @@
 
 package org.jboss.as.platform.mbean;
 
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -68,7 +64,7 @@ public class PlatformLoggingMXBeanAttributeHandler extends AbstractPlatformMBean
             }
         } else if (PlatformMBeanConstants.LOGGING_READ_ATTRIBUTES.contains(name)) {
             // Bug
-            throw new IllegalStateException(String.format("Read support for attribute %s was not properly implemented", name));
+            throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl9(name);
         } else {
             // Shouldn't happen; the global handler should reject
             throw unknownAttribute(operation);
