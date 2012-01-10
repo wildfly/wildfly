@@ -63,11 +63,12 @@ public class ParsedKernelDeploymentProcessor implements DeploymentUnitProcessor 
 
         final Module module = unit.getAttachment(Attachments.MODULE);
         if (module == null)
-            throw new DeploymentUnitProcessingException("Failed to get module attachment for " + unit);
+            throw PojoMessages.MESSAGES.noModuleFound(unit);
+
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         final DeploymentReflectionIndex index = unit.getAttachment(Attachments.REFLECTION_INDEX);
         if (index == null)
-            throw new DeploymentUnitProcessingException("Missing deployment reflection index for " + unit);
+            throw PojoMessages.MESSAGES.missingReflectionIndex(unit);
 
         for (KernelDeploymentXmlDescriptor kdXmlDescriptor : kdXmlDescriptors) {
             final List<BeanMetaDataConfig> beanConfigs = kdXmlDescriptor.getBeans();

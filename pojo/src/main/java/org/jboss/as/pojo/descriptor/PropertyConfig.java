@@ -22,6 +22,7 @@
 
 package org.jboss.as.pojo.descriptor;
 
+import org.jboss.as.pojo.PojoMessages;
 import org.jboss.as.pojo.service.BeanInfo;
 
 import java.io.Serializable;
@@ -43,7 +44,7 @@ public class PropertyConfig extends AbstractConfigVisitorNode implements Seriali
 
     public void visit(ConfigVisitor visitor) {
         if (value == null)
-            throw new IllegalArgumentException("Null value");
+            throw PojoMessages.MESSAGES.nullValue();
         this.beanInfo = visitor.getBeanInfo();
         super.visit(visitor);
     }

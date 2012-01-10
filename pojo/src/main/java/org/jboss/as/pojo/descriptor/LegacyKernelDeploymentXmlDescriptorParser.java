@@ -23,6 +23,7 @@
 package org.jboss.as.pojo.descriptor;
 
 import org.jboss.as.pojo.ParseResult;
+import org.jboss.as.pojo.PojoLogger;
 import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
@@ -41,7 +42,7 @@ public class LegacyKernelDeploymentXmlDescriptorParser extends KernelDeploymentX
 
     @Override
     public void readElement(XMLExtendedStreamReader reader, ParseResult<KernelDeploymentXmlDescriptor> value) throws XMLStreamException {
-        log.info("Found legacy bean/pojo namespace: " + reader.getNamespaceURI() + " - might be missing some xml features (potential exceptions).");
+        PojoLogger.ROOT_LOGGER.oldNamespace(reader.getNamespaceURI());
         super.readElement(reader, value);
     }
 }

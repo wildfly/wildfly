@@ -23,8 +23,8 @@
 package org.jboss.as.pojo.service;
 
 import org.jboss.as.pojo.BeanState;
+import org.jboss.as.pojo.PojoLogger;
 import org.jboss.as.pojo.descriptor.BeanMetaDataConfig;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.DuplicateServiceException;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -51,8 +51,6 @@ import java.util.Set;
  */
 @SuppressWarnings({"SynchronizationOnLocalVariableOrMethodParameter"})
 final class InstancesService implements Service<Set<Object>> {
-    private static final Logger log = Logger.getLogger(InstancesService.class);
-
     private final Class<?> type;
     private final Set<Object> instances = new HashSet<Object>(); // we do own locking, per type (service is also per type)
 
@@ -131,7 +129,7 @@ final class InstancesService implements Service<Set<Object>> {
                 try {
                     callback.dispatch(); // check all previous
                 } catch (Throwable t) {
-                    log.warn("Error invoking incallback: " + callback, t);
+                    PojoLogger.ROOT_LOGGER.errorAtIncallback(callback, t);
                 }
             }
 
@@ -160,7 +158,7 @@ final class InstancesService implements Service<Set<Object>> {
                 try {
                     callback.dispatch(); // try all remaining
                 } catch (Throwable t) {
-                    log.warn("Error invoking uncallback: " + callback, t);
+                    PojoLogger.ROOT_LOGGER.errorAtUncallback(callback, t);
                 }
             }
         }
@@ -175,7 +173,7 @@ final class InstancesService implements Service<Set<Object>> {
                     try {
                         c.dispatch(bean);
                     } catch (Throwable t) {
-                        log.warn("Error invoking callback: " + c, t);
+                        PojoLogger.ROOT_LOGGER.invokingCallback(c, t);
                     }
                 }
             }

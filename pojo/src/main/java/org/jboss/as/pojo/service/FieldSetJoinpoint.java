@@ -22,6 +22,8 @@
 
 package org.jboss.as.pojo.service;
 
+import org.jboss.as.pojo.PojoMessages;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.Arrays;
@@ -40,7 +42,7 @@ public class FieldSetJoinpoint extends FieldJoinpoint {
     public Object dispatch() throws Throwable {
         Object[] params = toObjects(new Type[]{getField().getGenericType()});
         if (params == null || params.length != 1)
-            throw new IllegalArgumentException("Illegal parameters: " + Arrays.toString(params));
+            throw PojoMessages.MESSAGES.illegalParameterLength(Arrays.toString(params));
 
         getField().set(getTarget().getValue(), params[0]);
         return null;

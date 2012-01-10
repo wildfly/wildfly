@@ -22,6 +22,7 @@
 
 package org.jboss.as.pojo.descriptor;
 
+import org.jboss.as.pojo.PojoMessages;
 import org.jboss.as.pojo.service.Configurator;
 
 /**
@@ -53,7 +54,7 @@ public class StringValueConfig extends ValueConfig {
         if (type == null)
             type = clazz;
         if (type == null)
-            throw new IllegalArgumentException("Cannot determine proper type, set class attribute.");
+            throw PojoMessages.MESSAGES.cannotDetermineInjectedType(toString());
 
         try {
             return Configurator.convertValue(type, value, replaceProperties, trim);

@@ -23,6 +23,7 @@
 package org.jboss.as.pojo.service;
 
 import org.jboss.as.pojo.BeanState;
+import org.jboss.as.pojo.PojoMessages;
 import org.jboss.as.pojo.descriptor.BeanMetaDataConfig;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.msc.service.ServiceBuilder;
@@ -59,6 +60,7 @@ public class DescribedPojoPhase extends AbstractPojoPhase {
         return new InstantiatedPojoPhase(this);
     }
 
+    @SuppressWarnings("unchecked")
     public void start(StartContext context) throws StartException {
         try {
             setModule(getBeanConfig().getModule().getInjectedModule().getValue());
@@ -76,7 +78,7 @@ public class DescribedPojoPhase extends AbstractPojoPhase {
     public BeanInfo getValue() throws IllegalStateException, IllegalArgumentException {
         BeanInfo beanInfo = getBeanInfo();
         if (beanInfo == null)
-            throw new IllegalStateException("Cannot determine bean info at this state, try setting bean's class attribute.");
+            throw new IllegalStateException(PojoMessages.MESSAGES.missingBeanInfo(getBeanConfig()));
         return beanInfo;
     }
 }

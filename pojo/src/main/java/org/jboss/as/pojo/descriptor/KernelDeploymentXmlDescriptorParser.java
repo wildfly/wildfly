@@ -24,6 +24,7 @@ package org.jboss.as.pojo.descriptor;
 
 import org.jboss.as.pojo.BeanState;
 import org.jboss.as.pojo.ParseResult;
+import org.jboss.as.pojo.PojoMessages;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
@@ -310,7 +311,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
     private String parseAlias(final XMLExtendedStreamReader reader) throws XMLStreamException {
         final String alias = parseTextElement(reader);
         if (alias == null || alias.trim().length() == 0)
-            throw new IllegalArgumentException("Null or empty alias");
+            throw PojoMessages.MESSAGES.nullOrEmptyAlias();
         return alias;
     }
 
@@ -548,7 +549,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
 
         String dependency = parseTextElement(reader);
         if (dependency == null || dependency.trim().length() == 0)
-            throw new IllegalArgumentException("Null or empty dependency");
+            throw PojoMessages.MESSAGES.nullOrEmptyDependency();
         dependsConfig.setDependency(dependency);
 
         return dependsConfig;
@@ -616,7 +617,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
             switch (reader.next()) {
                 case END_ELEMENT:
                     if (valueConfig == null)
-                        throw new XMLStreamException("Missing value", reader.getLocation());
+                        throw new XMLStreamException(PojoMessages.MESSAGES.missingValue(), reader.getLocation());
                     if (valueConfig.getType() == null)
                         valueConfig.setType(type);
                     return valueConfig;
@@ -837,7 +838,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
             switch (reader.next()) {
                 case END_ELEMENT:
                     if (value == null)
-                        throw new IllegalArgumentException("Null value: " + reader.getLocation());
+                        throw new XMLStreamException(PojoMessages.MESSAGES.missingValue(), reader.getLocation());
                     return value;
                 case START_ELEMENT:
                     switch (Element.of(reader.getLocalName())) {

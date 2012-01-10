@@ -22,6 +22,8 @@
 
 package org.jboss.as.pojo.descriptor;
 
+import org.jboss.as.pojo.PojoMessages;
+
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -50,7 +52,7 @@ public abstract class ValueConfig extends AbstractConfigVisitorNode implements S
             ParameterizedType pt = (ParameterizedType) type;
             return getPtValue(pt);
         } else {
-            throw new IllegalArgumentException("Unknown type: " + type);
+            throw PojoMessages.MESSAGES.unknownType(type);
         }
     }
 
