@@ -48,7 +48,8 @@ public class CommandBuilderTree extends JTree {
             ModelNode readResource = GuiMain.getExecutor().doCommand(node.addressPath() + ":read-resource-description");
             if (!node.isLeaf()) return readResource.get("result", "description").asString();
 
-            String attrName = node.getUserObject().toString().split(".=>.")[0];
+            String attrName = node.getUserObject().toString();
+            attrName = attrName.substring(0, attrName.indexOf(ManagementModelNode.ATTR_VALUE_SEPERATOR));
             ModelNode description = readResource.get("result", "attributes", attrName, "description");
             if (description.isDefined()) return description.asString();
         } catch (Exception e) {

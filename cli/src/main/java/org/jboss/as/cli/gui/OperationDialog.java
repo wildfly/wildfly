@@ -77,8 +77,8 @@ public class OperationDialog extends JDialog {
     @Override
     public void setVisible(boolean isVisible) {
         if (node.isLeaf()) {
-            // "value" field should have focus for write-attribute dialog
-            // where "name" field is already populated
+            // "rightSide" field should have focus for write-attribute dialog
+            // where "leftSide" field is already populated
             for (RequestProp prop : props) {
                 if (prop.getName().equals("value")) {
                     prop.getValueComponent().requestFocus();
@@ -256,13 +256,18 @@ public class OperationDialog extends JDialog {
             if (!OperationDialog.this.opName.equals("write-attribute")) return;
 
             String nodeName = OperationDialog.this.node.getUserObject().toString();
-            String[] nameAndValue = nodeName.split(".=>.");
-            if (this.name.equals("name")) ((JTextField)valueComponent).setText(nameAndValue[0]);
+            String seperator = ManagementModelNode.ATTR_VALUE_SEPERATOR;
+            String leftSide = nodeName.substring(0, nodeName.indexOf(seperator));
+            String rightSide = nodeName.substring(nodeName.indexOf(seperator) + seperator.length());
 
-            if (nameAndValue[1].equals("undefined")) return;
+            if (this.name.equals("name")) {
+                ((JTextField)valueComponent).setText(leftSide);
+                return;
+            }
 
-            String value = nodeName.substring(nameAndValue[0].length() + 4);
-            if (this.name.equals("value")) ((JTextField)valueComponent).setText(value);
+            if (rightSide.equals("undefined")) return;
+
+            if (this.name.equals("value")) ((JTextField)valueComponent).setText(rightSide);
         }
 
     }
