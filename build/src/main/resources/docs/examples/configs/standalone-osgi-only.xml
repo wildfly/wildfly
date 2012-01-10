@@ -4,6 +4,7 @@
 
     <extensions>
         <extension module="org.jboss.as.jmx"/>
+        <extension module="org.jboss.as.configadmin"/>
         <extension module="org.jboss.as.logging"/>
         <extension module="org.jboss.as.osgi"/>
         <extension module="org.jboss.as.remoting"/>
@@ -28,7 +29,6 @@
     </management>
 
     <profile>
-        <subsystem xmlns="urn:jboss:domain:jmx:1.1"/>
         <subsystem xmlns="urn:jboss:domain:logging:1.1">
             <console-handler name="CONSOLE">
                 <level name="INFO"/>
@@ -60,7 +60,9 @@
                 </handlers>
             </root-logger>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:osgi:1.1" activation="eager">
+        <subsystem xmlns="urn:jboss:domain:configadmin:1.0"/>
+        <subsystem xmlns="urn:jboss:domain:jmx:1.1"/>
+        <subsystem xmlns="urn:jboss:domain:osgi:1.2" activation="eager">
             <capabilities>
                 <capability name="org.osgi.compendium"/>
             </capabilities>
