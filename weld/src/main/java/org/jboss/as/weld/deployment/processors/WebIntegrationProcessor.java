@@ -42,8 +42,8 @@ import org.jboss.as.web.deployment.component.ComponentInstantiator;
 import org.jboss.as.web.deployment.component.WebComponentDescription;
 import org.jboss.as.web.deployment.component.WebComponentInstantiator;
 import org.jboss.as.weld.WeldDeploymentMarker;
+import org.jboss.as.weld.WeldLogger;
 import org.jboss.as.weld.webtier.jsp.JspInitializationListener;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.FilterMappingMetaData;
 import org.jboss.metadata.web.spec.FilterMetaData;
@@ -62,9 +62,6 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
     private final ListenerMetaData JIL;
     private final FilterMetaData CPF;
     private final FilterMappingMetaData CPFM;
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.weld");
-
 
     private static final String WELD_LISTENER = WeldListener.class.getName();
 
@@ -106,12 +103,12 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
 
         WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         if (warMetaData == null) {
-            log.info("Not installing Weld web tier integration as no war metadata found");
+            WeldLogger.DEPLOYMENT_LOGGER.debug("Not installing Weld web tier integration as no war metadata found");
             return;
         }
         JBossWebMetaData webMetaData = warMetaData.getMergedJBossWebMetaData();
         if (webMetaData == null) {
-            log.info("Not installing Weld web tier integration as no merged web metadata found");
+            WeldLogger.DEPLOYMENT_LOGGER.debug("Not installing Weld web tier integration as no merged web metadata found");
             return;
         }
 
@@ -126,7 +123,7 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
             while (iterator.hasNext()) {
                 final ListenerMetaData listener = iterator.next();
                 if (listener.getListenerClass().trim().equals(WELD_SERVLET_LISTENER)) {
-                    log.debugf("Removing weld servlet listener %s from web config, as it is not needed in EE6 environments", WELD_SERVLET_LISTENER);
+                    WeldLogger.DEPLOYMENT_LOGGER.debugf("Removing weld servlet listener %s from web config, as it is not needed in EE6 environments", WELD_SERVLET_LISTENER);
                     iterator.remove();
                     break;
                 }

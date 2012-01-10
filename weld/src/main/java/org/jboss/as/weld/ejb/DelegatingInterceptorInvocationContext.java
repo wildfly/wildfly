@@ -17,15 +17,16 @@
 
 package org.jboss.as.weld.ejb;
 
-import org.jboss.weld.exceptions.WeldException;
-
-import javax.enterprise.inject.spi.InterceptionType;
-import javax.enterprise.inject.spi.Interceptor;
-import javax.interceptor.InvocationContext;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import javax.enterprise.inject.spi.InterceptionType;
+import javax.enterprise.inject.spi.Interceptor;
+import javax.interceptor.InvocationContext;
+
+import org.jboss.weld.exceptions.WeldException;
 
 public class DelegatingInterceptorInvocationContext implements InvocationContext {
 
@@ -89,6 +90,6 @@ public class DelegatingInterceptorInvocationContext implements InvocationContext
     }
 
     public Object getTimer() {
-        throw new UnsupportedOperationException("Get timer not supported");
+        return delegateInvocationContext.getTimer();
     }
 }

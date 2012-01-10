@@ -39,7 +39,7 @@ import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.InjectionTarget;
 import javax.inject.Inject;
 
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.weld.WeldMessages;
 import org.jboss.weld.bean.AbstractClassBean;
 import org.jboss.weld.manager.BeanManagerImpl;
 import org.jboss.weld.resources.ClassTransformer;
@@ -119,7 +119,7 @@ class WeldEEInjection {
         for (AnnotatedConstructor<?> constructor : type.getConstructors()) {
             if (constructor.isAnnotationPresent(Inject.class)) {
                 if (injectConstructor != null) {
-                    throw new RuntimeException("Class " + componentClass + " has more that one constructor annotated with @Inject");
+                    throw WeldMessages.MESSAGES.moreThanOneBeanConstructor(componentClass);
                 }
                 injectConstructor = constructor;
             }
@@ -145,7 +145,7 @@ class WeldEEInjection {
                 if (field.isAnnotationPresent(Inject.class)) {
 
                     if (InjectionPoint.class.isAssignableFrom(field.getJavaMember().getType())) {
-                        throw new RuntimeException("Component " + componentClass + " is attempting to inject the InjectionPoint into a field: " + field.getJavaMember());
+                        throw WeldMessages.MESSAGES.attemptingToInjectInjectionPointIntoField(componentClass, field.getJavaMember());
                     }
 
                     final Set<Annotation> qualifiers = new HashSet<Annotation>();
@@ -158,7 +158,7 @@ class WeldEEInjection {
                     Set<Bean<?>> beans = beanManager.getBeans(ip);
                     Bean<?> ipBean = beanManager.resolve(beans);
                     if (ipBean == null) {
-                        throw new RuntimeException("Could not resolve CDI bean for injection point " + field.getJavaMember() + " with qualifiers " + qualifiers);
+                        throw WeldMessages.MESSAGES.couldNotResolveInjectionPoint(field.getJavaMember().toGenericString(), qualifiers);
                     }
                     injectableFields.add(new InjectableField(field.getJavaMember(), ipBean, ip));
                 }
@@ -178,14 +178,14 @@ class WeldEEInjection {
                         }
                         final Class<?> parameterType = method.getJavaMember().getParameterTypes()[param.getPosition()];
                         if (InjectionPoint.class.isAssignableFrom(parameterType)) {
-                            throw new RuntimeException("Component " + componentClass + " is attempting to inject the InjectionPoint into a method on a component that is not a CDI bean " + method.getJavaMember());
+                            throw WeldMessages.MESSAGES.attemptingToInjectInjectionPointIntoNonBean(componentClass, method.getJavaMember());
                         }
 
                         ParameterInjectionPoint ip = new ParameterInjectionPoint(param, qualifiers, bean);
                         Set<Bean<?>> beans = beanManager.getBeans(ip);
                         Bean<?> ipBean = beanManager.resolve(beans);
                         if (ipBean == null) {
-                            throw new RuntimeException("Could not resolve CDI bean for injection point " + param + " with qualifiers " + qualifiers);
+                            throw WeldMessages.MESSAGES.couldNotResolveInjectionPoint(param.toString(), qualifiers);
                         }
                         parameterBeans.add(ipBean);
                         ips.add(ip);

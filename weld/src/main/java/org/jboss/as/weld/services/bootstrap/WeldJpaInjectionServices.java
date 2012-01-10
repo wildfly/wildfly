@@ -35,6 +35,7 @@ import org.jboss.as.jpa.container.TransactionScopedEntityManager;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.weld.WeldMessages;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -55,7 +56,7 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
         //TODO: cache this stuff
         final PersistenceContext context = injectionPoint.getAnnotated().getAnnotation(PersistenceContext.class);
         if (context == null) {
-            throw new RuntimeException("Could not find @PersistenceContext annotation on " + injectionPoint.getMember());
+            throw WeldMessages.MESSAGES.annotationNotFound(PersistenceContext.class, injectionPoint.getMember());
         }
         final String scopedPuName = getScopedPUName(deploymentUnit, context.unitName());
         final ServiceName persistenceUnitServiceName = PersistenceUnitServiceImpl.getPUServiceName(scopedPuName);
@@ -72,7 +73,7 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
         //TODO: cache this stuff
         final PersistenceUnit context = injectionPoint.getAnnotated().getAnnotation(PersistenceUnit.class);
         if (context == null) {
-            throw new RuntimeException("Could not find @PersistenceUnit annotation on " + injectionPoint.getMember());
+            throw WeldMessages.MESSAGES.annotationNotFound(PersistenceUnit.class, injectionPoint.getMember());
         }
         final String scopedPuName = getScopedPUName(deploymentUnit, context.unitName());
         final ServiceName persistenceUnitServiceName = PersistenceUnitServiceImpl.getPUServiceName(scopedPuName);
@@ -92,7 +93,7 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
         PersistenceUnitMetadata scopedPu;
         scopedPu = PersistenceUnitSearch.resolvePersistenceUnitSupplier(deploymentUnit, persistenceUnitName);
         if (null == scopedPu) {
-            throw new RuntimeException("Error injecting persistence unit into CDI managed bean. Can't find a persistence unit named " + persistenceUnitName + " in deployment " + deploymentUnit.getName());
+            throw WeldMessages.MESSAGES.couldNotFindPersistenceUnit(persistenceUnitName, deploymentUnit.getName());
         }
         return scopedPu.getScopedPersistenceUnitName();
     }

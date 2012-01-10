@@ -21,6 +21,7 @@
  */
 package org.jboss.as.weld.services.bootstrap;
 
+import org.jboss.as.weld.WeldLogger;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -31,6 +32,8 @@ import org.jboss.weld.injection.spi.ResourceInjectionServices;
 import org.jboss.weld.injection.spi.helpers.AbstractResourceServices;
 
 import javax.annotation.Resource;
+import javax.ejb.TimerService;
+import javax.ejb.spi.HandleDelegate;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -40,8 +43,6 @@ public class WeldResourceInjectionServices extends AbstractResourceServices impl
         ResourceInjectionServices {
 
     public static final ServiceName SERVICE_NAME = ServiceName.of("WeldResourceInjectionServices");
-
-    private static final Logger log = Logger.getLogger("org.jboss.weld");
 
     private static final String USER_TRANSACTION_LOCATION = "java:comp/UserTransaction";
     private static final String USER_TRANSACTION_CLASS_NAME = "javax.transaction.UserTransaction";
@@ -70,15 +71,13 @@ public class WeldResourceInjectionServices extends AbstractResourceServices impl
             if (USER_TRANSACTION_CLASS_NAME.equals(type.getName())) {
                 return USER_TRANSACTION_LOCATION;
             } else if (HANDLE_DELEGATE_CLASS_NAME.equals(type.getName())) {
-                log.warn("Injection of @Resource HandleDelegate not supported in managed beans. Injection Point: "
-                        + injectionPoint);
+                WeldLogger.ROOT_LOGGER.injectionTypeNotValue(HandleDelegate.class, injectionPoint.getMember());
                 return proposedName;
             } else if (ORB_CLASS_NAME.equals(type.getName())) {
-                log.warn("Injection of @Resource ORB not supported in managed beans. Injection Point: " + injectionPoint);
+                WeldLogger.ROOT_LOGGER.injectionTypeNotValue(org.omg.CORBA.ORB.class, injectionPoint.getMember());
                 return proposedName;
             } else if (TIMER_SERVICE_CLASS_NAME.equals(type.getName())) {
-                log.warn("Injection of @Resource TimerService not supported in managed beans. Injection Point: "
-                        + injectionPoint);
+                WeldLogger.ROOT_LOGGER.injectionTypeNotValue(TimerService.class, injectionPoint.getMember());
                 return proposedName;
             }
         }

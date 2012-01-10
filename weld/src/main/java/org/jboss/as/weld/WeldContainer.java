@@ -21,19 +21,20 @@
  */
 package org.jboss.as.weld;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import javax.enterprise.inject.spi.BeanManager;
+
 import org.jboss.as.weld.deployment.WeldDeployment;
 import org.jboss.as.weld.services.ModuleGroupSingletonProvider;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.api.Environment;
 import org.jboss.weld.bootstrap.api.Service;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
-
-import javax.enterprise.inject.spi.BeanManager;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Provides access to a running weld deployment.
@@ -69,7 +70,7 @@ public class WeldContainer {
      */
     public synchronized void start() {
         if (started) {
-            throw new IllegalStateException("WeldContainer is already running");
+            throw WeldMessages.MESSAGES.alreadyRunning("WeldContainer");
         }
         ModuleGroupSingletonProvider.addClassLoaders(deployment.getModule().getClassLoader(), deployment.getSubDeploymentClassLoaders());
         started = true;
@@ -94,7 +95,7 @@ public class WeldContainer {
      */
     public synchronized void stop() {
         if (!started) {
-            throw new IllegalStateException("WeldContainer is not started");
+            throw WeldMessages.MESSAGES.notStarted("WeldContainer");
         }
         ClassLoader oldTccl = SecurityActions.getContextClassLoader();
         try {
@@ -114,7 +115,7 @@ public class WeldContainer {
      */
     public BeanManager getBeanManager(BeanDeploymentArchive archive) {
         if (!started) {
-            throw new IllegalStateException("WeldContainer is not started");
+            throw WeldMessages.MESSAGES.notStarted("WeldContainer");
         }
         return bootstrap.getManager(archive);
     }
@@ -127,11 +128,11 @@ public class WeldContainer {
      */
     public BeanManager getBeanManager(String beanArchiveId) {
         if (!started) {
-            throw new IllegalStateException("WeldContainer is not started");
+            throw WeldMessages.MESSAGES.notStarted("WeldContainer");
         }
         BeanDeploymentArchive beanDeploymentArchive = beanDeploymentArchives.get(beanArchiveId);
         if (beanDeploymentArchive == null) {
-            throw new IllegalArgumentException("BeanDeploymentArchive with id " + beanArchiveId + " not found in deplyoment");
+            throw WeldMessages.MESSAGES.beanDeploymentNotFound(beanArchiveId);
         }
         return bootstrap.getManager(beanDeploymentArchive);
     }
@@ -141,7 +142,7 @@ public class WeldContainer {
      */
     public <T extends Service> void addWeldService(Class<T> type, T service) {
         if (started) {
-            throw new IllegalStateException("services cannot be added after weld has started");
+            throw WeldMessages.MESSAGES.cannotAddServicesAfterStart();
         }
         deployment.getServices().add(type, service);
         deployment.getAdditionalBeanDeploymentArchive().getServices().add(type, service);
@@ -155,7 +156,7 @@ public class WeldContainer {
      */
     public BeanManager getBeanManager() {
         if (!started) {
-            throw new IllegalStateException("WeldContainer is not started");
+            throw WeldMessages.MESSAGES.notStarted("WeldContainer");
         }
         return bootstrap.getManager(deployment.getAdditionalBeanDeploymentArchive());
     }

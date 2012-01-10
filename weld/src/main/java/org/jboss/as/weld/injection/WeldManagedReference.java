@@ -21,10 +21,12 @@
  */
 package org.jboss.as.weld.injection;
 
-import org.jboss.as.naming.ManagedReference;
+import java.util.Map;
 
 import javax.enterprise.context.spi.CreationalContext;
-import java.util.Map;
+
+import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.weld.WeldMessages;
 
 /**
 * @author Stuart Douglas
@@ -54,7 +56,7 @@ class WeldManagedReference implements ManagedReference {
         if(injection != null) {
             injection.inject(instance, context);
         } else {
-            throw new IllegalArgumentException("Unknown interceptor class for CDI injection " + interceptorClass);
+            throw WeldMessages.MESSAGES.unknownInterceptorClassForCDIInjection(interceptorClass);
         }
     }
 

@@ -21,6 +21,11 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
+import java.lang.reflect.Constructor;
+import java.util.List;
+
+import javax.enterprise.inject.spi.Extension;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -30,15 +35,12 @@ import org.jboss.as.server.deployment.PrivateSubDeploymentMarker;
 import org.jboss.as.server.deployment.ServicesAttachment;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.weld.WeldDeploymentMarker;
+import org.jboss.as.weld.WeldLogger;
+import org.jboss.as.weld.WeldMessages;
 import org.jboss.as.weld.deployment.WeldAttachments;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.weld.bootstrap.spi.Metadata;
 import org.jboss.weld.metadata.MetadataImpl;
-
-import javax.enterprise.inject.spi.Extension;
-import java.lang.reflect.Constructor;
-import java.util.List;
 
 /**
  * Deployment processor that loads CDI portable extensions.
@@ -46,8 +48,6 @@ import java.util.List;
  * @author Stuart Douglas
  */
 public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
-
-    private static final Logger log = Logger.getLogger("org.jboss.weld");
 
     private static final String[] EMPTY_STRING_ARRAY = {};
 
@@ -89,7 +89,7 @@ public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private void loadAttachments(final ServicesAttachment servicesAttachment, Module module, DeploymentUnit deploymentUnit) {
+    private void loadAttachments(final ServicesAttachment servicesAttachment, Module module, DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
         // now load extensions
         final DeploymentReflectionIndex index = deploymentUnit.getAttachment(Attachments.REFLECTION_INDEX);
         final List<String> services = servicesAttachment.getServiceImplementations(Extension.class.getName());
@@ -102,12 +102,12 @@ public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
                 continue;
             }
             Metadata<Extension> metadata = new MetadataImpl<Extension>(extension, deploymentUnit.getName());
-            log.debug("Loaded portable extension " + extension);
+            WeldLogger.DEPLOYMENT_LOGGER.debug("Loaded portable extension " + extension);
             deploymentUnit.addToAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS, metadata);
         }
     }
 
-    private Extension loadExtension(String serviceClassName, final DeploymentReflectionIndex index, final ClassLoader loader) {
+    private Extension loadExtension(String serviceClassName, final DeploymentReflectionIndex index, final ClassLoader loader) throws DeploymentUnitProcessingException {
         Class<?> clazz = null;
         Class<Extension> serviceClass = null;
         try {
@@ -115,12 +115,10 @@ public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
             serviceClass = (Class<Extension>) clazz;
             final Constructor<Extension> ctor = index.getClassIndex(serviceClass).getConstructor(EMPTY_STRING_ARRAY);
             return ctor.newInstance();
-        } catch (ClassNotFoundException e) {
-            log.warn("Could not load portable extension class " + serviceClassName);
-        } catch (ClassCastException e) {
-            throw new RuntimeException("Service class " + serviceClassName + " didn't implement the Extension interface");
+        }  catch (ClassCastException e) {
+            throw WeldMessages.MESSAGES.extensionDoesNotImplementExtension(serviceClassName, e);
         } catch (Exception e) {
-            log.warn("Could not load portable extension " + serviceClassName, e);
+            WeldLogger.DEPLOYMENT_LOGGER.couldNotLoadPortableExceptionClass(serviceClassName, e);
         }
         return null;
     }

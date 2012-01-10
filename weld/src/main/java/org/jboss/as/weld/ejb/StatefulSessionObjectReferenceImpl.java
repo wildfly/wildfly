@@ -30,11 +30,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ejb.NoSuchEJBException;
-
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.as.weld.WeldMessages;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -119,7 +118,7 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
     @SuppressWarnings({"unchecked"})
     public synchronized <S> S getBusinessObject(Class<S> businessInterfaceType) {
         if (isRemoved()) {
-            throw new NoSuchEJBException("Bean has been removed");
+            throw WeldMessages.MESSAGES.ejbHashBeenRemoved();
         }
         if (viewServices.containsKey(businessInterfaceType.getName())) {
             final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(viewServices.get(businessInterfaceType.getName()));
@@ -130,7 +129,7 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
                 throw new RuntimeException(e);
             }
         } else {
-            throw new IllegalStateException("View of type " + businessInterfaceType + " not found on bean " + ejbComponent);
+            throw WeldMessages.MESSAGES.viewNotFoundOnEJB(businessInterfaceType.getName(), ejbComponent.getComponentName());
         }
     }
 

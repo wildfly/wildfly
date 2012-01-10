@@ -21,16 +21,18 @@
  */
 package org.jboss.as.weld.services;
 
-import org.jboss.modules.ModuleClassLoader;
-import org.jboss.weld.bootstrap.api.Singleton;
-import org.jboss.weld.bootstrap.api.SingletonProvider;
-
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.Hashtable;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.jboss.as.weld.WeldMessages;
+import org.jboss.modules.ModuleClassLoader;
+import org.jboss.weld.bootstrap.api.Singleton;
+import org.jboss.weld.bootstrap.api.SingletonProvider;
 
 /**
  * Singleton Provider that uses the TCCL to figure out the current application.
@@ -64,13 +66,13 @@ public class ModuleGroupSingletonProvider extends SingletonProvider {
     }
 
     private static class TCCLSingleton<T> implements Singleton<T> {
-        // use Hashtable for concurrent access
-        private final Map<ClassLoader, T> store = new Hashtable<ClassLoader, T>();
+
+        private final Map<ClassLoader, T> store = Collections.synchronizedMap(new HashMap<ClassLoader, T>());
 
         public T get() {
             T instance = store.get(findParentModuleCl(getClassLoader()));
             if (instance == null) {
-                throw new IllegalStateException("Singleton not set for " + getClassLoader());
+                throw WeldMessages.MESSAGES.singletonNotSet(getClassLoader());
             }
             return instance;
         }
