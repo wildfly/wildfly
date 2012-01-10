@@ -22,6 +22,8 @@
 
 package org.jboss.as.pojo.descriptor;
 
+import org.jboss.as.pojo.PojoMessages;
+
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -54,7 +56,7 @@ public abstract class CollectionConfig extends ValueConfig implements Serializab
                 return createDefaultInstance();
             }
         } catch (Exception e) {
-            throw new IllegalArgumentException("Cannot instantiate new collection instace.", e);
+            throw PojoMessages.MESSAGES.cannotInstantiateCollection(e);
         }
     }
 

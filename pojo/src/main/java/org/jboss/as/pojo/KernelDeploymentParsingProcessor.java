@@ -147,9 +147,11 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
             if(xmlDescriptor != null)
                 unit.addToAttachmentList(KernelDeploymentXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
             else
-                throw new DeploymentUnitProcessingException("Failed to parse POJO xml [" + beansXmlFile + "]");
+                throw PojoMessages.MESSAGES.failedToParse(beansXmlFile);
+        } catch(DeploymentUnitProcessingException e) {
+            throw e;
         } catch(Exception e) {
-            throw new DeploymentUnitProcessingException("Failed to parse POJO xml [" + beansXmlFile + "]", e);
+            throw PojoMessages.MESSAGES.failedToParse(beansXmlFile);
         } finally {
             VFSUtils.safeClose(xmlStream);
         }

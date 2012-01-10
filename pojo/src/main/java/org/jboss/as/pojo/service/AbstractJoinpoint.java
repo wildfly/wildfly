@@ -22,6 +22,7 @@
 
 package org.jboss.as.pojo.service;
 
+import org.jboss.as.pojo.PojoMessages;
 import org.jboss.as.pojo.descriptor.ValueConfig;
 
 import java.lang.reflect.Type;
@@ -39,7 +40,7 @@ public abstract class AbstractJoinpoint implements Joinpoint {
             return new Object[0];
 
         if (types == null || types.length != parameters.length)
-            throw new IllegalArgumentException("Wrong types size, doesn't match parameters!");
+            throw PojoMessages.MESSAGES.wrongTypeSize();
 
         try {
             Object[] result = new Object[parameters.length];

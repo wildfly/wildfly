@@ -22,6 +22,8 @@
 
 package org.jboss.as.pojo.descriptor;
 
+import org.jboss.as.pojo.PojoMessages;
+
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -55,7 +57,7 @@ public class MapConfig extends ValueConfig implements Serializable {
                 return new HashMap();
             }
         } catch (Exception e) {
-            throw new IllegalArgumentException("Cannot instantiate new map instace.", e);
+            throw PojoMessages.MESSAGES.cannotInstantiateMap(e);
         }
     }
 

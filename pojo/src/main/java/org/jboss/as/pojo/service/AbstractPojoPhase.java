@@ -23,6 +23,8 @@
 package org.jboss.as.pojo.service;
 
 import org.jboss.as.pojo.BeanState;
+import org.jboss.as.pojo.PojoLogger;
+import org.jboss.as.pojo.PojoMessages;
 import org.jboss.as.pojo.descriptor.BeanMetaDataConfig;
 import org.jboss.as.pojo.descriptor.CallbackConfig;
 import org.jboss.as.pojo.descriptor.ConfigVisitor;
@@ -150,7 +152,7 @@ public abstract class AbstractPojoPhase implements Service<Object> {
     protected Joinpoint createJoinpoint(InstallConfig config) {
         String methodName = config.getMethodName();
         if (methodName == null)
-            throw new IllegalArgumentException("Null method name");
+            throw PojoMessages.MESSAGES.nullMethodName();
 
         ValueConfig[] parameters = config.getParameters();
         String[] types = Configurator.getTypes(parameters);
@@ -200,7 +202,7 @@ public abstract class AbstractPojoPhase implements Service<Object> {
             try {
                 uninstalls.get(j).dispatch();
             } catch (Throwable t) {
-                log.warn("Ignoring uninstall action on target: " + uninstalls.get(j), t);
+                PojoLogger.ROOT_LOGGER.ignoreUninstallError(uninstalls.get(j), t);
             }
         }
     }

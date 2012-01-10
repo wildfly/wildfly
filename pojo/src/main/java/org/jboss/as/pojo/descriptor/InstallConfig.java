@@ -23,6 +23,7 @@
 package org.jboss.as.pojo.descriptor;
 
 import org.jboss.as.pojo.BeanState;
+import org.jboss.as.pojo.PojoMessages;
 import org.jboss.as.pojo.service.BeanInfo;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
@@ -57,7 +58,7 @@ public class InstallConfig extends LifecycleConfig {
     @Override
     public Class<?> getType(ConfigVisitor visitor, ConfigVisitorNode previous) {
         if (dependency != null)
-            throw new IllegalArgumentException("Too dynamic, cannot determine type on dependency bean!");
+            throw PojoMessages.MESSAGES.tooDynamicFromDependency();
 
         return super.getType(visitor, previous);
     }

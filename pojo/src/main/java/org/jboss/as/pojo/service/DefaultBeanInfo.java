@@ -22,6 +22,7 @@
 
 package org.jboss.as.pojo.service;
 
+import org.jboss.as.pojo.PojoMessages;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 
@@ -53,6 +54,11 @@ public class DefaultBeanInfo<T> implements BeanInfo<T> {
 
     /**
      * Do lazy lookup.
+     *
+     * @param lookup the lookup
+     * @param start the start
+     * @param depth the depth
+     * @return reflection index result
      */
     protected <U> U lookup(Lookup<U> lookup, int start, int depth) {
         int size;
@@ -95,7 +101,7 @@ public class DefaultBeanInfo<T> implements BeanInfo<T> {
                     if (Configurator.equals(parameterTypes, c.getParameterTypes()))
                         return c;
                 }
-                throw new IllegalArgumentException("No such constructor: " + Arrays.toString(parameterTypes) + " on class " + beanClass.getName());
+                throw PojoMessages.MESSAGES.ctorNotFound(Arrays.toString(parameterTypes), beanClass.getName());
             }
         }, 0, 1);
     }
@@ -117,7 +123,7 @@ public class DefaultBeanInfo<T> implements BeanInfo<T> {
             public Method lookup(ClassReflectionIndex index) {
                 Collection<Method> methods = index.getMethods(name, parameterTypes);
                 if (methods.size() != 1)
-                    throw new IllegalArgumentException("Ambigous method matching: " + methods);
+                    throw PojoMessages.MESSAGES.ambigousMatch(methods);
                 return methods.iterator().next();
             }
         }, 0, Integer.MAX_VALUE);
@@ -151,7 +157,7 @@ public class DefaultBeanInfo<T> implements BeanInfo<T> {
             }
         }, 0, Integer.MAX_VALUE);
         if (result == null)
-            throw new IllegalArgumentException("No such getter: " + type + " on class " + beanClass.getName());
+            throw PojoMessages.MESSAGES.getterNotFound(type, beanClass.getName());
         return result;
     }
 
@@ -177,7 +183,7 @@ public class DefaultBeanInfo<T> implements BeanInfo<T> {
             }
         }, 0, Integer.MAX_VALUE);
         if (result == null)
-            throw new IllegalArgumentException("No such setter: " + type + " on class " + beanClass.getName());
+            throw PojoMessages.MESSAGES.setterNotFound(type, beanClass.getName());
         return result;
     }
 

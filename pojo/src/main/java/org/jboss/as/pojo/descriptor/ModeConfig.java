@@ -22,6 +22,7 @@
 
 package org.jboss.as.pojo.descriptor;
 
+import org.jboss.as.pojo.PojoMessages;
 import org.jboss.msc.service.ServiceController;
 
 import java.util.HashMap;
@@ -60,7 +61,7 @@ public enum ModeConfig {
 
     static ModeConfig of(String value) {
         if (value == null)
-            throw new IllegalArgumentException("Null mode value");
+            throw PojoMessages.MESSAGES.nullValue();
 
         final ModeConfig controllerMode = MAP.get(value.toLowerCase());
         return controllerMode == null ? PASSIVE : controllerMode;

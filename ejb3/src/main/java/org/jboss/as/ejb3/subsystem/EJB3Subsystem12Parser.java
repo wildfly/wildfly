@@ -22,6 +22,24 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -35,57 +53,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttri
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ALIASES;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ASYNC;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.BACKING_CACHE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CACHE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CLUSTER_PASSIVATION_STORE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_CLUSTERED_SFSB_CACHE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_CACHE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.FILE_PASSIVATION_STORE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.GROUPS_PATH;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IDLE_TIMEOUT;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IDLE_TIMEOUT_UNIT;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IIOP;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT_UNIT;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.KEEPALIVE_TIME;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_POOL_SIZE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_SIZE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_THREADS;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PASSIVATE_EVENTS_ON_REPLICATE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PASSIVATION_STORE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SESSIONS_PATH;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SUBDIRECTORY_COUNT;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL_NAME;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
-
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.*;
 
 /**
  * @author Jaikiran Pai
@@ -348,8 +316,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
 
         final String value = reader.getElementText();
         if (value == null || value.trim().isEmpty()) {
-            MESSAGES.invalidValueForElement(value,element,reader.getLocation());
-            throw new XMLStreamException("Invalid value: " + value + " for '" + element + "' element", reader.getLocation());
+            throw new XMLStreamException(MESSAGES.invalidValueForElement(value, element, reader.getLocation()));
         }
         return value.trim();
     }

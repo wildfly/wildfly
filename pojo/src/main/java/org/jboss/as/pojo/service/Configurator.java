@@ -22,6 +22,7 @@
 
 package org.jboss.as.pojo.service;
 
+import org.jboss.as.pojo.PojoMessages;
 import org.jboss.as.pojo.descriptor.ValueConfig;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -67,7 +68,7 @@ public class Configurator {
             ParameterizedType pt = (ParameterizedType) type;
             return toClass(pt.getRawType());
         } else {
-            throw new IllegalArgumentException("Unknown type: " + type);
+            throw PojoMessages.MESSAGES.unknownType(type);
         }
     }
 
@@ -168,12 +169,13 @@ public class Configurator {
      * @return the method info
      * @throws IllegalArgumentException when no such method
      */
+    @SuppressWarnings("unchecked")
     public static Method findMethod(DeploymentReflectionIndex index, Class classInfo, String name, String[] paramTypes, boolean isStatic, boolean isPublic, boolean strict) throws IllegalArgumentException {
         if (name == null)
-            throw new IllegalArgumentException("Null name");
+            throw PojoMessages.MESSAGES.nullName();
 
         if (classInfo == null)
-            throw new IllegalArgumentException("ClassInfo cannot be null!");
+            throw PojoMessages.MESSAGES.nullClassInfo();
 
         if (paramTypes == null)
             paramTypes = NO_PARAMS_TYPES;
@@ -186,7 +188,7 @@ public class Configurator {
                 return result;
             current = current.getSuperclass();
         }
-        throw new IllegalArgumentException("Method not found " + name + Arrays.asList(paramTypes) + " for class " + classInfo.getName());
+        throw PojoMessages.MESSAGES.methodNotFound(name, Arrays.toString(paramTypes), classInfo.getName());
     }
 
     /**
@@ -200,6 +202,7 @@ public class Configurator {
      * @param strict     is strict about method modifiers
      * @return the method info or null if not found
      */
+    @SuppressWarnings("unchecked")
     private static Method locateMethod(ClassReflectionIndex classInfo, String name, String[] paramTypes, boolean isStatic, boolean isPublic, boolean strict) {
         Collection<Method> methods = classInfo.getMethods();
         if (methods != null) {
