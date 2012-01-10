@@ -170,7 +170,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
         //check the data source is not listed
         cli.sendLine("cd /profile=" + profileNames[0] + "/subsystem=datasources/xa-data-source");
         cli.sendLine("ls");
-        String ls = cli.readAllUnformated(WAIT_TIMEOUT, WAIT_LINETIMEOUT);
+        String ls = cli.readAllUnformated(WAIT_LINETIMEOUT, WAIT_LINETIMEOUT);
         assertFalse(ls.contains("java:jboss/datasources/TestXADS"));
 
     }

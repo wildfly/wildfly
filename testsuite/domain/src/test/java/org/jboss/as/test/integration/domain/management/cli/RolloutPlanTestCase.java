@@ -51,7 +51,7 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
     public void testRolloutPlan() throws Exception {
         addRolloutPlan();
         testRolloutPlanDeployment();
-        removeRolloutPlan(); //fuckyouall 
+        removeRolloutPlan();
     }
     
     private void addRolloutPlan() throws Exception {

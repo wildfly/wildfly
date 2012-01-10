@@ -26,6 +26,7 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
+import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.as.test.integration.common.HttpRequest;
@@ -63,7 +64,7 @@ public class DeployAllServerGroupsTestCase extends AbstractCliTestBase {
     
     @AfterClass
     public static void after() throws Exception {
-        warFile.delete();
+        Assert.assertTrue(warFile.delete());
         AbstractCliTestBase.closeCLI();
     }
     
@@ -78,15 +79,17 @@ public class DeployAllServerGroupsTestCase extends AbstractCliTestBase {
                 
         // deploy to all servers
         cli.sendLine("deploy --all-server-groups " + warFile.getAbsolutePath(), true);
+        cli.waitForPrompt(WAIT_TIMEOUT);
+        
         
         // check that the deployment is available on all servers
-        checkURL("SimpleServlet/SimpleServlet", "SimpleServlet");
+        checkURL("/SimpleServlet/SimpleServlet", "SimpleServlet");
     }
 
     public void testRedeploy() throws Exception {
 
         // check we have original deployment
-        checkURL("SimpleServlet/page.html", "Version1");
+        checkURL("/SimpleServlet/page.html", "Version1");
         
         // update the deployment - replace page.html
         war = ShrinkWrap.create(WebArchive.class, "SimpleServlet.war");
@@ -103,18 +106,20 @@ public class DeployAllServerGroupsTestCase extends AbstractCliTestBase {
         
         // force redeploy
         cli.sendLine("deploy " + warFile.getAbsolutePath() + " --force", true);
+        cli.waitForPrompt(WAIT_TIMEOUT);
         
         // check that new version is running
-        checkURL("SimpleServlet/page.html", "Version2");
+        checkURL("/SimpleServlet/page.html", "Version2");
     }
     
     public void testUndeploy() throws Exception {
         
         //undeploy
         cli.sendLine("undeploy --all-relevant-server-groups SimpleServlet.war", true);
+        cli.waitForPrompt(WAIT_TIMEOUT);
         
         // check undeployment
-        checkURL("SimpleServlet/SimpleServlet" , "SimpleServlet", true);
+        checkURL("/SimpleServlet/SimpleServlet" , "SimpleServlet", true);
     }
     
     private void checkURL(String path, String content) throws Exception {
@@ -124,6 +129,7 @@ public class DeployAllServerGroupsTestCase extends AbstractCliTestBase {
         for (String host : CLITestSuite.hostAddresses.keySet()) {
             String address = CLITestSuite.hostAddresses.get(host);
             for (String server : CLITestSuite.hostServers.get(host)) {
+                if (! CLITestSuite.serverStatus.get(server)) continue;
                 Integer portOffset = CLITestSuite.portOffsets.get(server);
                                 
                 URL url = new URL("http", address, 8080 + portOffset, path);
@@ -133,6 +139,7 @@ public class DeployAllServerGroupsTestCase extends AbstractCliTestBase {
                     assertTrue(response.contains(content));                
                 } catch (Exception e) {
                     failed = true;
+                    if (!shouldFail) throw new Exception("Http request failed.", e);
                 }                
                 if (shouldFail) assertTrue(failed);
             }
