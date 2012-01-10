@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<component name="sample.component" immediate="true">
-  <implementation class="org.jboss.as.test.integration.osgi.ds.SampleComparator" />
-  <property name="service.description" value="Sample Comparator Service" />
-  <property name="service.vendor" value="Apache Software Foundation" />
-  <service>
-    <provide interface="java.util.Comparator" />
-  </service>
-</component>
