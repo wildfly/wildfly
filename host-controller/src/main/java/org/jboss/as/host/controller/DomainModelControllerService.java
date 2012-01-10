@@ -54,7 +54,6 @@ import javax.security.auth.callback.CallbackHandler;
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.BootContext;
 import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -64,6 +63,7 @@ import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
@@ -138,6 +138,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final AbstractVaultReader vaultReader;
     private final ContentRepository contentRepository;
     private final ExtensionRegistry extensionRegistry;
+    private final ControlledProcessState processState;
 
     private volatile ServerInventory serverInventory;
 
@@ -177,6 +178,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 DomainDescriptionProviders.ROOT_PROVIDER, prepareStepHandler, new RuntimeExpressionResolver(vaultReader));
         this.environment = environment;
         this.runningModeControl = runningModeControl;
+        this.processState = processState;
         this.hostControllerInfo = hostControllerInfo;
         this.localFileRepository = new LocalFileRepository(environment);
         this.remoteFileRepository = new RemoteFileRepository(localFileRepository);
@@ -291,7 +293,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         DomainModelUtil.updateCoreModel(rootResource, environment);
         HostModelUtil.createHostRegistry(rootRegistration, hostControllerConfigurationPersister, environment, runningModeControl,
                 localFileRepository, hostControllerInfo, new DelegatingServerInventory(), remoteFileRepository, contentRepository,
-                this, this, extensionRegistry,vaultReader);
+                this, this, extensionRegistry,vaultReader, processState);
         this.modelNodeRegistration = rootRegistration;
     }
 
