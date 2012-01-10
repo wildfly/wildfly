@@ -22,15 +22,6 @@
 
 package org.jboss.as.protocol.mgmt;
 
-import org.jboss.as.protocol.ProtocolLogger;
-import org.jboss.as.protocol.ProtocolMessages;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.CloseHandler;
-import org.jboss.remoting3.MessageOutputStream;
-import org.jboss.threads.AsyncFuture;
-import org.xnio.Cancellable;
-
 import java.io.DataInput;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -41,6 +32,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.jboss.as.protocol.ProtocolLogger;
+import org.jboss.as.protocol.ProtocolMessages;
+import org.jboss.as.protocol.StreamUtils;
+import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.CloseHandler;
+import org.jboss.remoting3.HandleableCloseable;
+import org.jboss.remoting3.MessageOutputStream;
+import org.jboss.threads.AsyncFuture;
+import org.xnio.Cancellable;
 
 /**
  * Utility class for request/response handling
@@ -151,6 +152,18 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
         final ManagementRequestHeader header = new ManagementRequestHeader(ManagementProtocol.VERSION, requestId, support.getOperationId(), request.getOperationType());
         final ActiveOperation.ResultHandler<T> resultHandler = support.getResultHandler();
         try {
+
+
+            final HandleableCloseable.Key closableKey = channel.addCloseHandler(new CloseHandler<Channel>() {
+                @Override
+                public void handleClose(Channel closed, IOException e) {
+                    if (channel == closed) {
+                        IOException failure = e == null ? new IOException("Channel closed") : e;
+                        resultHandler.failed(failure);
+                    }
+                }
+            });
+
             request.sendRequest(resultHandler, new ManagementRequestContext<A>() {
 
                 @Override
@@ -188,6 +201,8 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
                             } catch (Exception e) {
                                 resultHandler.failed(e);
                                 requests.remove(requestId);
+                            } finally {
+                                closableKey.remove();
                             }
                         }
                     };
@@ -199,16 +214,6 @@ public abstract class AbstractMessageHandler<T, A> extends ActiveOperationSuppor
                 public FlushableDataOutput writeMessage(final ManagementProtocolHeader header) throws IOException {
                     final MessageOutputStream os = channel.writeMessage();
                     return writeHeader(header, os);
-                }
-            });
-
-            channel.addCloseHandler(new CloseHandler<Channel>() {
-                @Override
-                public void handleClose(Channel closed, IOException e) {
-                    if (channel == closed) {
-                        IOException failure = e == null ? new IOException("Channel closed") : e;
-                        resultHandler.failed(failure);
-                    }
                 }
             });
 
