@@ -40,10 +40,12 @@ import org.infinispan.Cache;
 import org.infinispan.commands.VisitableCommand;
 import org.infinispan.config.ConfigurationException;
 import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.manager.AbstractDelegatingEmbeddedCacheManager;
 import org.infinispan.manager.CacheContainer;
+import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
@@ -61,6 +63,11 @@ import org.infinispan.notifications.cachelistener.event.Event;
  */
 public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCacheManager {
     private final String defaultCache;
+
+    @SuppressWarnings("deprecation")
+    public DefaultEmbeddedCacheManager(GlobalConfiguration config, String defaultCache) {
+        this(new DefaultCacheManager(LegacyGlobalConfigurationAdapter.adapt(config), false), defaultCache);
+    }
 
     public DefaultEmbeddedCacheManager(EmbeddedCacheManager container, String defaultCache) {
         super(container);
@@ -183,6 +190,14 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
 
     private String getCacheName(String name) {
         return ((name == null) || name.equals(CacheContainer.DEFAULT_CACHE_NAME)) ? this.defaultCache : name;
+    }
+
+    /**
+     * Workaround for ISPN-1701.
+     */
+    @Override
+    public GlobalConfiguration getCacheManagerConfiguration() {
+        return LegacyGlobalConfigurationAdapter.adapt(this.getGlobalConfiguration());
     }
 
     /**
