@@ -48,20 +48,6 @@
 
     </properties>
 
-
-    <!--
-    Compile-time dependencies upon anything  in the AS7 runtime
-    are allowed in this section
-    -->
-
-    <dependencies>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-arquillian-container-managed-domain</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-
     <build>
         <plugins>
             <plugin>
